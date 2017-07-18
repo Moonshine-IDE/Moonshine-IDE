@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.settings
 {
-	import mx.collections.ArrayCollection;
 	import mx.core.IVisualElement;
 	
 	import __AS3__.vec.Vector;
@@ -30,14 +29,13 @@ package actionScripts.plugin.actionscript.as3project.settings
 	
 	public class NewProjectSourcePathListSetting extends AbstractSetting
 	{
-		protected var copiedPaths:ArrayCollection;
-		
 		public var relativeRoot:FileLocation;
 		
 		private var rdr:NewProjectSourcePathListSettingRenderer;
 		
 		private var _project:AS3ProjectVO;
 		private var _visible:Boolean = true;
+		private var _isMainApplicationFileVisible:Boolean = true;
 		
 		public function NewProjectSourcePathListSetting(provider:Object, name:String, label:String, 
 										relativeRoot:FileLocation=null)
@@ -77,10 +75,21 @@ package actionScripts.plugin.actionscript.as3project.settings
 			_visible = value;
 			if (rdr) rdr.enabled = _visible;
 		}
+		
 		public function get visible():Boolean
 		{
 			return _visible;
 		}
+		
+        public function get isMainApplicationFileVisible():Boolean
+        {
+            return _isMainApplicationFileVisible;
+        }
+
+        public function set isMainApplicationFileVisible(value:Boolean):void
+        {
+            _isMainApplicationFileVisible = value;
+        }
 		
 		public function set project(value:AS3ProjectVO):void
 		{
@@ -111,7 +120,6 @@ package actionScripts.plugin.actionscript.as3project.settings
 			}
 			
 			return lbl;
-		}        
-
-	}
+		}
+    }
 }

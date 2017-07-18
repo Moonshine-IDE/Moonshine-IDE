@@ -22,13 +22,12 @@
 <s:VGroup 
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
   	xmlns:s="library://ns.adobe.com/flex/spark"
-  	xmlns:mx="library://ns.adobe.com/flex/mx"
   	width="100%"
   	gap="0"
   	paddingTop="15"
   	paddingBottom="5"
   	paddingLeft="15"
-  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*">
+  	paddingRight="15">
 	
 	<fx:Script>
 		<![CDATA[
@@ -162,14 +161,12 @@
 		</s:stroke>
 	</s:Rect>
 	
-	<s:Label 
-		text="Main application file"
-		styleName="uiTextSettingsLabel" paddingTop="19"/>
+	<s:Label text="Main application file"
+			 styleName="uiTextSettingsLabel" paddingTop="19"
+			 visible="{setting.isMainApplicationFileVisible}" />
 	
-	<s:HGroup 
-		width="100%" 
-		paddingLeft="15" paddingBottom="4"
-		verticalAlign="middle">
+	<s:HGroup width="100%" paddingLeft="15" paddingBottom="4" verticalAlign="middle"
+			  visible="{setting.isMainApplicationFileVisible}">
 		<s:TextInput id="pathFile"
 					 width="100%"
 					 styleName="uiTextSettingsValue"

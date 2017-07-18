@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-	import flash.display.DisplayObject;
+    import actionScripts.plugin.project.ProjectType;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
 	import flash.net.SharedObject;
@@ -66,10 +68,12 @@ package actionScripts.plugins.as3project
 		private var project:AS3ProjectVO;
 		private var allProjectTemplates:ArrayCollection;
 		private var model:IDEModel = IDEModel.getInstance();
+		
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
+		private var isVisualEditorProject:Boolean;
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
@@ -125,8 +129,10 @@ package actionScripts.plugins.as3project
 		{
 			// Only template for those we can handle
 			if (event.projectFileEnding != "as3proj") return;
-			
-			cookie = SharedObject.getLocal("moonshine-ide-local");
+
+            SetProjectType(event);
+
+            cookie = SharedObject.getLocal("moonshine-ide-local");
 			//Read recent project path from shared object
 			
 			// if opened by Open project, event.settingsFile will be false
@@ -180,6 +186,8 @@ package actionScripts.plugins.as3project
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true);
 			newProjectSourcePathSetting = new NewProjectSourcePathListSetting(project, "projectWithExistingSourcePaths", "Main source folder");
 			newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
+            newProjectSourcePathSetting.isMainApplicationFileVisible = isVisualEditorProject == false;
+
 			if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
 			
 			var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
@@ -189,23 +197,13 @@ package actionScripts.plugins.as3project
 				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
 				newProjectSourcePathSetting
 			]));
-			
-			if (event.templateDir.fileBridge.name.indexOf("Feathers") != -1) isFeathersProject = true;
-			if (event.templateDir.fileBridge.name.indexOf("Actionscript Project") != -1)
+
+			if (isActionScriptProject)
 			{
-				isActionScriptProject = true;
-				newProjectTypeSetting = new MultiOptionSetting(this, "activeType", "Select project type", nvps);
-				settings.getSettingsList().splice(3, 0, newProjectTypeSetting);
+                newProjectTypeSetting = new MultiOptionSetting(this, "activeType", "Select project type", nvps);
+                settings.getSettingsList().splice(3, 0, newProjectTypeSetting);
 			}
-			else if (event.templateDir.fileBridge.name.indexOf("Mobile Project") != -1)
-			{
-				isMobileProject = true;
-			}
-			else
-			{
-				isActionScriptProject = false;
-			}
-			
+
 			if (isOpenProjectCall)
 			{
 				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
@@ -224,8 +222,36 @@ package actionScripts.plugins.as3project
 			
 			templateLookup[project] = event.templateDir;
 		}
-		
-		private function swap(fromIndex:int, toIndex:int,myArray:Array):void
+
+        private function SetProjectType(event:NewProjectEvent):void
+        {
+			var templateName:String = event.templateDir.fileBridge.name;
+
+			if (templateName.indexOf(ProjectType.VISUAL_EDITOR) != -1)
+			{
+				isVisualEditorProject = true;
+			}
+
+            if (templateName.indexOf(ProjectType.FEATHERS) != -1)
+            {
+                isFeathersProject = true;
+            }
+
+            if (templateName.indexOf(ProjectType.ACTIONSCRIPT) != -1)
+            {
+                isActionScriptProject = true;
+            }
+            else if (templateName.indexOf(ProjectType.MOBILE) != -1)
+            {
+                isMobileProject = true;
+            }
+            else
+            {
+                isActionScriptProject = false;
+            }
+        }
+
+        private function swap(fromIndex:int, toIndex:int,myArray:Array):void
 		{
 			var temp:* = myArray[toIndex];
 			myArray[toIndex] = myArray[fromIndex];

@@ -68,6 +68,7 @@ package actionScripts.valueObjects
 		public static var FLEXBROWSER_PROJECT:FileLocation;
 		public static var FLEXDESKTOP_PROJECT:FileLocation;
 		public static var FLEXMOBILE_PROJECT:FileLocation;
+		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
 		public static var HAXESWF_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
 		public static var FLEXJSBL_PROJECT:FileLocation;
@@ -279,7 +280,12 @@ package actionScripts.valueObjects
 			HAXESWF_PROJECT.fileBridge.name = "HaXe SWF Project";
 			HAXESWF_PROJECT.fileBridge.isDirectory = true;
 			HAXESWF_PROJECT.fileBridge.data = "Create a HaXe-based project that will generate a SWF file only.";
-			
+
+			VISUALEDITOR_FLEX_PROJECT = new FileLocation("Visual Editor Project (Flex)");
+			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = "Visual Editor Project (Flex)";
+            VISUALEDITOR_FLEX_PROJECT.fileBridge.isDirectory = true;
+            VISUALEDITOR_FLEX_PROJECT.fileBridge.data = "Create a Flex project using visual editor.";
+
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
 			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/JS Project..";
@@ -289,7 +295,7 @@ package actionScripts.valueObjects
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,FLEXJSBL_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,VISUALEDITOR_FLEX_PROJECT,FLEXJSBL_PROJECT,HAXESWF_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
