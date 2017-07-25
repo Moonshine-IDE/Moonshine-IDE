@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import flash.display.DisplayObject;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -34,11 +33,7 @@ package actionScripts.ui.editor.text
 	import flash.text.engine.TextElement;
 	import flash.text.engine.TextLine;
 	import flash.utils.Timer;
-	
-	import mx.controls.Alert;
-	
-	import spark.components.Label;
-	
+
 	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.Settings;
 	

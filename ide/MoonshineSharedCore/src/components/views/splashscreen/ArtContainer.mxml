@@ -18,8 +18,7 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		   xmlns:s="library://ns.adobe.com/flex/spark" 
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
 		   xmlns:mx="library://ns.adobe.com/flex/mx"
 	width="100%" 
 	height="100%"
@@ -28,8 +27,6 @@
 	resize="updateSize()">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
-			
 			[Embed(source="/elements/images/background.jpg")]
 			[Bindable] protected var art:Class;
 			

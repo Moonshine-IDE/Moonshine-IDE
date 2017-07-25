@@ -18,9 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
-	import actionScripts.ui.tabview.TabEvent;
-	import actionScripts.ui.tabview.TabViewTab;
-	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -30,7 +27,6 @@ package actionScripts.ui.tabview
 	
 	import mx.containers.Canvas;
 	import mx.containers.VBox;
-	import mx.controls.Alert;
 	import mx.core.UIComponent;
 	import mx.events.ResizeEvent;
 	
