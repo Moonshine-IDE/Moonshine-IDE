@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-	import mx.collections.ArrayCollection;
+    import actionScripts.interfaces.IVisualEditorBridge;
+
+    import mx.collections.ArrayCollection;
 	import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.factory.FileLocation;
@@ -46,6 +48,7 @@ package actionScripts.locator
 		public var contextMenuCore: IContextMenuBridge;
 		public var flexCore: IFlexCoreBridge;
 		public var aboutCore: IAboutBridge;
+		public var visualEditor:IVisualEditorBridge;
 		
 		// Currently active editor
 		public var activeEditor:IContentWindow;

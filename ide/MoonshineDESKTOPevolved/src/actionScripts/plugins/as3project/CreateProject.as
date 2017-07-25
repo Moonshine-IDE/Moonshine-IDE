@@ -73,8 +73,7 @@ package actionScripts.plugins.as3project
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
-		private var isVisualEditorProject:Boolean;
-		
+
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
 		
@@ -186,7 +185,6 @@ package actionScripts.plugins.as3project
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true);
 			newProjectSourcePathSetting = new NewProjectSourcePathListSetting(project, "projectWithExistingSourcePaths", "Main source folder");
 			newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
-            newProjectSourcePathSetting.isMainApplicationFileVisible = isVisualEditorProject == false;
 
 			if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
 			
@@ -226,12 +224,7 @@ package actionScripts.plugins.as3project
         private function SetProjectType(event:NewProjectEvent):void
         {
 			var templateName:String = event.templateDir.fileBridge.name;
-
-			if (templateName.indexOf(ProjectType.VISUAL_EDITOR) != -1)
-			{
-				isVisualEditorProject = true;
-			}
-
+			
             if (templateName.indexOf(ProjectType.FEATHERS) != -1)
             {
                 isFeathersProject = true;

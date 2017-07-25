@@ -19,9 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+    import actionScripts.plugins.core.ProjectBridgeImplBase;
+
+    import flash.desktop.NativeApplication;
 	import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
-	
-	import flash.desktop.NativeApplication;
+
 	import flash.display.DisplayObject;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
@@ -31,7 +33,6 @@ package actionScripts.impls
 	import mx.core.IVisualElement;
 	
 	import actionScripts.events.ChangeLineEncodingEvent;
-	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
@@ -61,7 +62,6 @@ package actionScripts.impls
 	import actionScripts.plugin.templating.TemplatingPlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
-	import actionScripts.plugins.as3project.CreateProject;
 	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
 	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
@@ -89,22 +89,14 @@ package actionScripts.impls
 	import actionScripts.utils.TypeAheadProcess;
 	import actionScripts.utils.Untar;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
 	import components.popup.SoftwareInformation;
 	
-	public class IFlexCoreBridgeImp implements IFlexCoreBridge
+	public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
-		public var newProjectSourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		
-		private var model:IDEModel = IDEModel.getInstance();
-		private var createProject:CreateProject;
-		
-		private var _folderPath:String;
-		
 		//--------------------------------------------------------------------------
 		//
 		//  INTERFACE METHODS
@@ -142,27 +134,7 @@ package actionScripts.impls
 			myArray[toIndex] = myArray[fromIndex];
 			myArray[fromIndex] = temp;	
 		}
-		
-		public function createAS3Project(event:NewProjectEvent):void
-		{
-			createProject = new CreateProject(event);
-		}
-		
-		public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void
-		{
-			try
-			{
-				projectWrapper.file.fileBridge.deleteDirectory(true);
-			} 
-			catch (e:Error)
-			{
-				projectWrapper.file.fileBridge.deleteDirectoryAsync(true);
-			}
-			
-			// when done call the finish handler
-			finishHandler(projectWrapper);
-		}
-		
+
 		public function exportFlashDevelop(project:AS3ProjectVO, file:FileLocation):void
 		{
 			FlashDevelopExporter.export(project, file);	
@@ -400,12 +372,7 @@ package actionScripts.impls
 		{
 			return (new AntBuildScreen());
 		}
-		
-		public function exitApplication():void
-		{
-			NativeApplication.nativeApplication.exit();
-		}
-		
+
 		public function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void
 		{
 			var tmpUnzip:Untar = new Untar(fileToUnzip, unzipTo, unzipCompleteFunction, unzipErrorFunction);

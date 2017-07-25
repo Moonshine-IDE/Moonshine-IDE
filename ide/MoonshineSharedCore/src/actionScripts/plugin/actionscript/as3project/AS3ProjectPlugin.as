@@ -41,7 +41,7 @@ package actionScripts.plugin.actionscript.as3project
 	
 	import components.popup.OpenFlexProject;
 	
-	public class AS3ProjectPlugin extends PluginBase 
+	public class AS3ProjectPlugin extends PluginBase
 	{
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
 		public static const EVENT_IMPORT_FLASHDEVELOP_PROJECT:String = "importFDProjectEvent";
@@ -263,7 +263,7 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			model.flexCore.createAS3Project(event);
+			model.flexCore.createProject(event);
 		}
 	}
 }

@@ -35,8 +35,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 		
 		private var _project:AS3ProjectVO;
 		private var _visible:Boolean = true;
-		private var _isMainApplicationFileVisible:Boolean = true;
-		
+
 		public function NewProjectSourcePathListSetting(provider:Object, name:String, label:String, 
 										relativeRoot:FileLocation=null)
 		{
@@ -80,17 +79,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 		{
 			return _visible;
 		}
-		
-        public function get isMainApplicationFileVisible():Boolean
-        {
-            return _isMainApplicationFileVisible;
-        }
 
-        public function set isMainApplicationFileVisible(value:Boolean):void
-        {
-            _isMainApplicationFileVisible = value;
-        }
-		
 		public function set project(value:AS3ProjectVO):void
 		{
 			_project = value;

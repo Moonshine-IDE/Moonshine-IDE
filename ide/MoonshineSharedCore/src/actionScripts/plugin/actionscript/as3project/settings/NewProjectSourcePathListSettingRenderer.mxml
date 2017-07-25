@@ -162,11 +162,9 @@
 	</s:Rect>
 	
 	<s:Label text="Main application file"
-			 styleName="uiTextSettingsLabel" paddingTop="19"
-			 visible="{setting.isMainApplicationFileVisible}" />
+			 styleName="uiTextSettingsLabel" paddingTop="19"/>
 	
-	<s:HGroup width="100%" paddingLeft="15" paddingBottom="4" verticalAlign="middle"
-			  visible="{setting.isMainApplicationFileVisible}">
+	<s:HGroup width="100%" paddingLeft="15" paddingBottom="4" verticalAlign="middle">
 		<s:TextInput id="pathFile"
 					 width="100%"
 					 styleName="uiTextSettingsValue"
