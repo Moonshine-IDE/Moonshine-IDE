@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+    import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
 
     import flash.display.DisplayObject;
@@ -57,7 +58,7 @@ package actionScripts.plugins.as3project
 	
 	public class CreateProject
 	{
-		public var activeType:uint = AS3ProjectPlugin.AS3PROJ_AS_AIR;
+		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		private var newProjectSourcePathSetting:NewProjectSourcePathListSetting;
 		private var newProjectNameSetting:StringSetting;
@@ -73,7 +74,8 @@ package actionScripts.plugins.as3project
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
-
+		private var isVisualEditorProject:Boolean;
+		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
 		
@@ -127,9 +129,9 @@ package actionScripts.plugins.as3project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
 			// Only template for those we can handle
-			if (event.projectFileEnding != "as3proj") return;
+			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
 
-            SetProjectType(event);
+            SetProjectType(event.templateDir.fileBridge.name);
 
             cookie = SharedObject.getLocal("moonshine-ide-local");
 			//Read recent project path from shared object
@@ -177,8 +179,9 @@ package actionScripts.plugins.as3project
 			project.projectName = project.projectName.replace(/ /g, "");
 			
 			var nvps:Vector.<NameValuePair> = Vector.<NameValuePair>([
-				new NameValuePair("AIR", AS3ProjectPlugin.AS3PROJ_AS_AIR),
-				new NameValuePair("Web", AS3ProjectPlugin.AS3PROJ_AS_WEB)
+				new NameValuePair("AIR", ProjectType.AS3PROJ_AS_AIR),
+				new NameValuePair("Web", ProjectType.AS3PROJ_AS_WEB),
+			    new NameValuePair("Visual Editor", ProjectType.VISUAL_EDITOR)
 			]);
 			
 			newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._');
@@ -221,27 +224,9 @@ package actionScripts.plugins.as3project
 			templateLookup[project] = event.templateDir;
 		}
 
-        private function SetProjectType(event:NewProjectEvent):void
+        private function isAllowedTemplateFile(projectFileExtension:String):Boolean
         {
-			var templateName:String = event.templateDir.fileBridge.name;
-			
-            if (templateName.indexOf(ProjectType.FEATHERS) != -1)
-            {
-                isFeathersProject = true;
-            }
-
-            if (templateName.indexOf(ProjectType.ACTIONSCRIPT) != -1)
-            {
-                isActionScriptProject = true;
-            }
-            else if (templateName.indexOf(ProjectType.MOBILE) != -1)
-            {
-                isMobileProject = true;
-            }
-            else
-            {
-                isActionScriptProject = false;
-            }
+            return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj";
         }
 
         private function swap(fromIndex:int, toIndex:int,myArray:Array):void
@@ -329,16 +314,18 @@ package actionScripts.plugins.as3project
 				{
 					if (i.title == projectTemplateType)
 					{
-						if (i.title.indexOf("Feathers") != -1) isFeathersProject = true;
-						if (i.title.indexOf("Actionscript Project") != -1) isActionScriptProject = true;
-						else if (i.title.indexOf("Mobile Project") != -1) isMobileProject = true;
-						
+						SetProjectType(i.title);
+
+						var templateSettingsName:String = isVisualEditorProject ?
+								"$Settings.veditorproj.template" :
+								"$Settings.as3proj.template";
+
 						var tmpLocation:FileLocation = pvo.folderLocation;
 						var tmpName:String = pvo.projectName;
 						var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
 						var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
 						templateLookup[pvo] = i.file;
-						pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath("$Settings.as3proj.template"));
+						pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
 						pvo.folderLocation = tmpLocation;
 						pvo.projectName = tmpName;
 						pvo.projectWithExistingSourcePaths = tmpExistingSource;
@@ -393,7 +380,7 @@ package actionScripts.plugins.as3project
 			var descriptorFile:FileLocation;
 			if (isActionScriptProject || pvo.air || isMobileProject)
 			{
-				if (activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)
+				if (activeType == ProjectType.AS3PROJ_AS_AIR)
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
@@ -457,12 +444,16 @@ package actionScripts.plugins.as3project
 				stringOutput = stringOutput.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ movieVersion);
 				descriptorFile.fileBridge.save(stringOutput);
 			}
+
+			var projectSettingsFile:String = isVisualEditorProject ?
+                    projectName+".veditorproj" :
+                    projectName+".as3proj";
 			
 			// Figure out which one is the settings file
-			var settingsFile:FileLocation = targetFolder.resolvePath(projectName+".as3proj");
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
 			
 			// Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, (isMobileProject || (isActionScriptProject && activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)) ? new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") : null);
+			pvo = FlashDevelopImporter.parse(settingsFile, projectName, (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ? new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") : null);
 			pvo.projectName = projectName;
 			
 			// Write settings
@@ -470,5 +461,31 @@ package actionScripts.plugins.as3project
 			
 			return pvo;
 		}
-	}
+
+        private function SetProjectType(templateName:String):void
+        {
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
+			{
+				isVisualEditorProject = true;
+			}
+
+            if (templateName.indexOf(ProjectTemplateType.FEATHERS) != -1)
+            {
+                isFeathersProject = true;
+            }
+
+            if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1)
+            {
+                isActionScriptProject = true;
+            }
+            else if (templateName.indexOf(ProjectTemplateType.MOBILE) != -1)
+            {
+                isMobileProject = true;
+            }
+            else
+            {
+                isActionScriptProject = false;
+            }
+        }
+    }
 }

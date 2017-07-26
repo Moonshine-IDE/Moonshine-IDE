@@ -18,10 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.project
 {
-    public class ProjectType
+    public class ProjectTemplateType
     {
-        public static const AS3PROJ_AS_AIR:uint = 1;
-        public static const AS3PROJ_AS_WEB:uint = 2;
-        public static const VISUAL_EDITOR:uint = 3;
+        public static const FEATHERS:String = "Feathers";
+        public static const ACTIONSCRIPT:String = "Actionscript Project";
+        public static const MOBILE:String = "Mobile Project";
+        public static const VISUAL_EDITOR:String = "Visual Editor";
     }
 }

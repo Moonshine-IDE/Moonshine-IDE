@@ -48,7 +48,8 @@ package actionScripts.plugin
         public function setupPlugins():void
         {
 			//Need to copy asset folder into bin dir also.
-        	var allPlugins:Array = corePlugins.concat(defaultPlugins);
+        	var allPlugins:Array = corePlugins.concat(defaultPlugins,
+                    model.visualEditor.getDefaultPlugins());
         	
             var plug:Class;
             for each (plug in allPlugins)

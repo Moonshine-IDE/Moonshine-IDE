@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.interfaces.IProject;
     import actionScripts.interfaces.IVisualEditorBridge;
     import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
     import actionScripts.plugin.findreplace.FindReplacePlugin;
@@ -36,6 +35,7 @@ package actionScripts.impls
     import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
     import actionScripts.plugin.syntax.XMLSyntaxPlugin;
     import actionScripts.plugin.templating.TemplatingPlugin;
+    import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.plugins.ant.AntBuildPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
     import actionScripts.plugins.problems.ProblemsPlugin;
@@ -54,48 +54,19 @@ package actionScripts.impls
         public function getCorePlugins():Array
         {
             return [
-                SettingsPlugin,
-                ProjectPlugin,
-                TemplatingPlugin,
-                HelpPlugin,
-                FindReplacePlugin,
-                RecentlyOpenedPlugin,
-                FullscreenPlugin,
-                AntBuildPlugin,
             ];
         }
 
         public function getDefaultPlugins():Array
         {
             return [
-                AS3SyntaxPlugin,
-                CSSSyntaxPlugin,
-                JSSyntaxPlugin,
-                HTMLSyntaxPlugin,
-                MXMLSyntaxPlugin,
-                XMLSyntaxPlugin,
-                SplashScreenPlugin,
-                SVNPlugin,
-                SaveFilesPlugin,
-                ProblemsPlugin,
-                SymbolsPlugin,
-                ReferencesPlugin,
-                RenamePlugin
+                VisualEditorProjectPlugin
             ];
         }
 
         public function getPluginsNotToShowInSettings():Array
         {
             return [
-                ProjectPlugin,
-                HelpPlugin,
-                FindReplacePlugin,
-                RecentlyOpenedPlugin,
-                ProblemsPlugin,
-                SymbolsPlugin,
-                ReferencesPlugin,
-                StartupHelperPlugin,
-                RenamePlugin
             ];
         }
 
