@@ -69,21 +69,24 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var prebuildCommands:String;
 		public var postbuildCommands:String;
 		public var postbuildAlways:Boolean;
-		public var FlexJS:Boolean = false;
-		public var isMDLFlexJS:Boolean;
-		
+
+
 		public var testMovie:String = TEST_MOVIE_EXTERNAL_PLAYER;
 		public var testMovieCommand:String;
 		public var defaultBuildTargets:String;
-		public var isMobile:Boolean;
-		public var isProjectFromExistingSource:Boolean;
-		
+
 		public var config:MXMLCConfigVO;
 		
 		public var flashBuilderProperties:XML;
 		public var flashDevelopObjConfig:XML;
 		public var isFlashBuilderProject:Boolean;
 		public var flashBuilderDOCUMENTSPath:String;
+
+        public var FlexJS:Boolean = false;
+        public var isMDLFlexJS:Boolean;
+        public var isMobile:Boolean;
+        public var isProjectFromExistingSource:Boolean;
+		public var isVisualEditorProject:Boolean;
 		
 		public function get air():Boolean
 		{

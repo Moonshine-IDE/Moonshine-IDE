@@ -49,7 +49,7 @@ package actionScripts.plugin
         {
 			//Need to copy asset folder into bin dir also.
         	var allPlugins:Array = corePlugins.concat(defaultPlugins,
-                    model.visualEditor.getDefaultPlugins());
+                    model.visualEditorCore.getDefaultPlugins());
         	
             var plug:Class;
             for each (plug in allPlugins)

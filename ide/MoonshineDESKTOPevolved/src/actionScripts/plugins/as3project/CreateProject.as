@@ -140,8 +140,12 @@ package actionScripts.plugins.as3project
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
 			
-			project = isOpenProjectCall ? new AS3ProjectVO(event.templateDir, null, false) : FlashDevelopImporter.parse(event.settingsFile, null, null, false);
+			project = isOpenProjectCall ?
+					new AS3ProjectVO(event.templateDir, null, false) :
+					FlashDevelopImporter.parse(event.settingsFile, null, null, false);
 			
+			project.isVisualEditorProject = isVisualEditorProject;
+
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
@@ -156,13 +160,19 @@ package actionScripts.plugins.as3project
 			if (!isOpenProjectCall)
 			{
 				var tempName: String = event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("("));
-				if (event.templateDir.fileBridge.name.indexOf("FlexJS") != -1) project.projectName = "NewFlexJSBrowserProject";
+				if (event.templateDir.fileBridge.name.indexOf("FlexJS") != -1)
+				{
+					project.projectName = "NewFlexJSBrowserProject";
+                }
 				else project.projectName = "New"+tempName;
 			}
 			
 			if (isOpenProjectCall)
 			{
-				if (!model.recentSaveProjectPath.contains(event.templateDir.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(event.templateDir.fileBridge.nativePath);
+				if (!model.recentSaveProjectPath.contains(event.templateDir.fileBridge.nativePath))
+				{
+					model.recentSaveProjectPath.addItem(event.templateDir.fileBridge.nativePath);
+                }
 				project.projectName = "ExternalProject";
 				project.isProjectFromExistingSource = true;
 			}
@@ -269,8 +279,7 @@ package actionScripts.plugins.as3project
 			var view:SettingsView = event.target as SettingsView;
 			var pvo:AS3ProjectVO = view.associatedData as AS3ProjectVO;
 			var targetFolder:FileLocation = pvo.folderLocation;
-			var comparePath:Boolean=false;
-			
+
 			//save  project path in shared object
 			cookie = SharedObject.getLocal("moonshine-ide-local");
 			var tmpParent:FileLocation;
@@ -284,7 +293,12 @@ package actionScripts.plugins.as3project
 			{
 				tmpParent = pvo.folderLocation;
 			}
-			if (!model.recentSaveProjectPath.contains(tmpParent.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
+
+			if (!model.recentSaveProjectPath.contains(tmpParent.fileBridge.nativePath))
+			{
+				model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
+            }
+
 			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 			
@@ -377,21 +391,21 @@ package actionScripts.plugins.as3project
 			th.projectTemplate(templateDir, targetFolder);
 			
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
-			var descriptorFile:FileLocation;
+			var descriptorFileLocation:FileLocation;
 			if (isActionScriptProject || pvo.air || isMobileProject)
 			{
 				if (activeType == ProjectType.AS3PROJ_AS_AIR)
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
-					descriptorFile = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
+					descriptorFileLocation = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
 					try
 					{
-						descriptorFile.fileBridge.moveTo(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						descriptorFileLocation.fileBridge.moveTo(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 					}
 					catch(e:Error)
 					{
-						descriptorFile.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						descriptorFileLocation.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 					}
 				}
 				else
@@ -424,36 +438,38 @@ package actionScripts.plugins.as3project
 			}
 			
 			// creating certificate conditional checks
-			if (!descriptorFile || !descriptorFile.fileBridge.exists)
+			if (!descriptorFileLocation || !descriptorFileLocation.fileBridge.exists)
 			{
-				descriptorFile = targetFolder.resolvePath("application.xml");
-				if (!descriptorFile.fileBridge.exists)
+				descriptorFileLocation = targetFolder.resolvePath("application.xml");
+				if (!descriptorFileLocation.fileBridge.exists)
 				{
-					descriptorFile = targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml");
+					descriptorFileLocation = targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml");
 				}
 			}
 			
-			if (descriptorFile.fileBridge.exists)
+			if (descriptorFileLocation.fileBridge.exists)
 			{
 				// lets update $SWFVersion with SWF version now
-				var stringOutput:String = descriptorFile.fileBridge.read() as String;
+				var stringOutput:String = descriptorFileLocation.fileBridge.read() as String;
 				var firstNamespaceQuote:int = stringOutput.indexOf('"', stringOutput.indexOf("<application xmlns=")) + 1;
 				var lastNamespaceQuote:int = stringOutput.indexOf('"', firstNamespaceQuote);
 				var currentAIRNamespaceVersion:String = stringOutput.substring(firstNamespaceQuote, lastNamespaceQuote);
 				
 				stringOutput = stringOutput.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ movieVersion);
-				descriptorFile.fileBridge.save(stringOutput);
+				descriptorFileLocation.fileBridge.save(stringOutput);
 			}
 
 			var projectSettingsFile:String = isVisualEditorProject ?
                     projectName+".veditorproj" :
                     projectName+".as3proj";
-			
+
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
-			
+            var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
+                    new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
+                    null;
 			// Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ? new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") : null);
+			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
 			
 			// Write settings

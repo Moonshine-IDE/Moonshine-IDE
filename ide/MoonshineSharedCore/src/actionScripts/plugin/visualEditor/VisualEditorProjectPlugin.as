@@ -60,7 +60,7 @@ package actionScripts.plugin.visualEditor
         {
             if (!canCreateProject(event)) return;
 
-            model.visualEditor.createProject(event);
+            model.visualEditorCore.createProject(event);
         }
 
         private function onTemplatingRequestAdditionalData(event:TemplateEvent):void
