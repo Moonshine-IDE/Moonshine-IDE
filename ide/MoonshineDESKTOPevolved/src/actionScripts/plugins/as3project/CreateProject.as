@@ -468,9 +468,13 @@ package actionScripts.plugins.as3project
             var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
+
+			var isVisualEditorProject:Boolean = pvo.isVisualEditorProject;
+
 			// Set some stuff to get the paths right
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
+			pvo.isVisualEditorProject = isVisualEditorProject;
 			
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
