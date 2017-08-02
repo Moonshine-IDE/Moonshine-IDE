@@ -43,12 +43,19 @@ package actionScripts.impls
     import actionScripts.plugins.rename.RenamePlugin;
     import actionScripts.plugins.svn.SVNPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;
+    import actionScripts.plugins.ui.editor.VisualEditorViewer;
+    import actionScripts.ui.editor.BasicTextEditor;
 
     public class IVisualEditorProjectBridgeImpl extends ProjectBridgeImplBase implements IVisualEditorBridge
     {
         public function IVisualEditorProjectBridgeImpl()
         {
             super();
+        }
+
+        public function getVisualEditor():BasicTextEditor
+        {
+            return new VisualEditorViewer();
         }
 
         public function getCorePlugins():Array

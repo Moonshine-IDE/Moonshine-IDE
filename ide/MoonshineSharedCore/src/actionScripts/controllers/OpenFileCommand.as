@@ -33,7 +33,6 @@ package actionScripts.controllers
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicHTMLViewer;
 	import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.VisualEditorCodeViewer;
     import actionScripts.ui.notifier.ActionNotifier;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
@@ -49,7 +48,7 @@ package actionScripts.controllers
 		protected var openAsTourDe:Boolean;
 		protected var tourDeSWFSource:String;
 		protected var ged:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		
+
 		private var loader: DataAgent;
 
 		public function execute(event:Event):void
@@ -202,7 +201,7 @@ package actionScripts.controllers
 				var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
 				if (activeProject && activeProject.isVisualEditorProject)
 				{
-					 editor = new VisualEditorCodeViewer();
+					 editor = model.visualEditorCore.getVisualEditor();
 				}
 				else
                 {

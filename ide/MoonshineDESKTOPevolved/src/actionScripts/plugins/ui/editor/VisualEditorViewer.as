@@ -16,25 +16,44 @@
 //  limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.editor
+package actionScripts.plugins.ui.editor
 {
+    import actionScripts.plugins.help.view.VisualEditorView;
+    import actionScripts.ui.editor.*;
     import actionScripts.events.ChangeEvent;
     import actionScripts.ui.editor.text.TextEditor;
 
-    public class VisualEditorCodeViewer extends BasicTextEditor
+    public class VisualEditorViewer extends BasicTextEditor
     {
-        public function VisualEditorCodeViewer()
+        private var visualEditorView:VisualEditorView;
+        
+        public function VisualEditorViewer()
         {
             super();
         }
 
         override protected function initializeChildrens():void
         {
+            isVisualEditor = true;
+            
+            visualEditorView = new VisualEditorView();
+            visualEditorView.percentWidth = 100;
+
             editor = new TextEditor(true);
             editor.percentHeight = 100;
             editor.percentWidth = 100;
             editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);
+
+            visualEditorView.addCodeView(editor);
+            
             text = "";
+        }
+
+        override protected function createChildren():void
+        {
+            addElement(visualEditorView);
+            
+            super.createChildren();
         }
     }
 }

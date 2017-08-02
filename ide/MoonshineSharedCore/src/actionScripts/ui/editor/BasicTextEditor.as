@@ -65,6 +65,8 @@ package actionScripts.ui.editor
 		private var textData:String;
 		protected var model:IDEModel = IDEModel.getInstance();
 		private var selectProjectPopup:SelectOpenedFlexProject;
+
+		protected var isVisualEditor:Boolean;
 		
 		override public function get label():String
 		{
@@ -152,7 +154,11 @@ package actionScripts.ui.editor
 
 		override protected function createChildren():void
 		{
-			addChild(editor);
+			if (!isVisualEditor)
+            {
+                addChild(editor);
+            }
+			
 			super.createChildren();
 		}
 

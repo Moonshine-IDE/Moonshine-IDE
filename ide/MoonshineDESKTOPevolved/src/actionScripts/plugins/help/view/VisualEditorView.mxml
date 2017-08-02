@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:view="view.*"
+          creationComplete="onVisualEditorViewCreationComplete(event)">
+    <mx:ViewStack id="viewStack" width="100%" height="100%">
+        <s:NavigatorContent id="visualViewContent" label="Visual">
+           <view:VisualEditor top="0" right="0" bottom="0" left="0"/>
+        </s:NavigatorContent>
+    </mx:ViewStack>
+    <s:TabBar dataProvider="{viewStack}"/>
+    <fx:Script><![CDATA[
+        import actionScripts.ui.editor.text.TextEditor;
+
+        import mx.events.FlexEvent;
+
+        private var codeViewContent:NavigatorContent;
+
+        public function addCodeView(codeView:TextEditor):void
+        {
+            codeViewContent = new NavigatorContent();
+            codeViewContent.label = "Code";
+            codeViewContent.addElement(codeView);
+        }
+
+        private function onVisualEditorViewCreationComplete(event:FlexEvent):void
+        {
+            if (codeViewContent)
+            {
+                viewStack.addElement(codeViewContent);
+            }
+        }
+        ]]></fx:Script>
+</s:VGroup>
