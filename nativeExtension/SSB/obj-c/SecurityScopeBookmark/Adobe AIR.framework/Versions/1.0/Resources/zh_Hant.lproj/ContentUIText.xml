@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE asf SYSTEM "http://ns.adobe.com/asf/asf_1_0.dtd" >
+<asf xmlns="http://ns.adobe.com/asf" version="1.0" locale="zh_TW">
+   <str name="ERROR__CAPTION__ADOBE_AIR" translate="yes">
+     <val>Adobe AIR</val> 
+   </str>
+   <str name="ERROR__DAMAGED_APPLICATION" translate="yes">
+     <val>此應用程式的安裝程式已損毀。請嘗試重新安裝，或聯絡發行者以取得協助。</val> 
+   </str>
+   <str name="ERROR__INVALID_DESC" translate="yes">
+     <val>這個應用程式具有無效的應用程式描述器。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__NO_DESC" translate="yes">
+     <val>找不到這個應用程式的應用程式描述器。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__LOAD_CONTENT" translate="yes">
+     <val>無法載入這個應用程式的初始內容。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__NO_CONTENT" translate="yes">
+     <val>找不到這個應用程式的初始內容。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__NO_PUBID" translate="yes">
+     <val>找不到這個應用程式的發行者 ID。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__PROFILE_NOT_SUPPORTED" translate="yes">
+     <val>這個應用程式不支援指定的描述檔。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__UNEXPECTED_PUBID" translate="yes">
+     <val>在這個應用程式中找到未預期的發行者 ID。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__DUPLICATE_EXTENSION" translate="yes">
+     <val>在這個應用程式中找到重複的原生擴充功能。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__EXTENSION_DEPLOYMENT_MISMATCH" translate="yes">
+     <val>這個應用程式的原生擴充功能部署不符。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__EXTENSION_MISSING" translate="yes">
+     <val>這個應用程式遺失必要的原生擴充功能。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__EXTENSION_XML_INVALID" translate="yes">
+     <val>這個應用程式的原生擴充功能 xml 檔案無效。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__NOT_SUPPORTED_IN_PROFILE" translate="yes">
+     <val>這個應用程式不支援原生擴充功能描述檔。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__EXTENSION_SWF_VERSION_INVALID" translate="yes">
+     <val>這個應用程式的原生擴充功能 library.swf 版本無效。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="ERROR__EXTENSION_APP_VERSION_MISMATCH" translate="yes">
+     <val>原生擴充功能命名空間或 SWF 版本與這個應用程式不相容。請嘗試重新安裝或聯絡發行者，以取得協助。</val>
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__STOP" translate="yes">
+     <val>停止</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__RELOAD" translate="yes">
+     <val>重新載入</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_BACK" translate="yes">
+     <val>後移</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_FORWARD" translate="yes">
+     <val>前移</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_FRAME_IN_NEW_WINDOW" translate="yes">
+     <val>在新視窗中開啟影格</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK" translate="yes">
+     <val>開啟連結</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK_IN_NEW_WINDOW" translate="yes">
+     <val>在新視窗中開啟連結</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_LINKED_FILE" translate="yes">
+     <val>下載連結的檔案</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_IMAGE_IN_NEW_WINDOW" translate="yes">
+     <val>在新視窗中開啟影像</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_IMAGE" translate="yes">
+     <val>下載影像</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_LINK" translate="yes">
+     <val>複製連結</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_IMAGE" translate="yes">
+     <val>複製影像</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SEARCH__SEARCH_THE_WEB" translate="yes">
+     <val>搜尋網路 </val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SEARCH_IN_DICTIONARY" translate="yes">
+     <val>在字典中尋找</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__NO_GUESSES_FOUND" translate="yes">
+     <val>找不到猜測文字</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_SPELLING" translate="yes">
+     <val>忽略拼字</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__LEARN_SPELLING" translate="yes">
+     <val>學習拼字</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_GRAMMAR" translate="yes">
+     <val>忽略文法</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SPELLING_AND_GRAMMAR" translate="yes">
+     <val>拼字與文法</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SHOW" translate="yes">
+     <val>顯示拼字與文法 </val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__SPELLING__HIDE" translate="yes">
+		<val>隱藏拼字與文法 </val>
+	</str>
+	<str name="HTML_CONTEXTMENU__SPELLING__CHECK_SPELLING" translate="yes">
+     <val>拼字檢查</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_WHILE_TYPING" translate="yes">
+     <val>在輸入時檢查拼字</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_GRAMMAR" translate="yes">
+     <val>文法與拼字檢查</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__INSPECT__ELEMENT" translate="yes">
+		<val>檢查元素 </val>
+	</str>	
+   <str name="HTML_CONTEXTMENU__FONTS" translate="yes">
+     <val>字型 </val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__BOLD" translate="yes">
+     <val>粗體</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__ITALICS" translate="yes">
+     <val>斜體</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__UNDERLINE" translate="yes">
+     <val>底線</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__OUTLINE" translate="yes">
+     <val>外框</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION" translate="yes">
+     <val>書寫方向</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__DEFAULT" translate="yes">
+     <val>預設</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__LEFT_TO_RIGHT" translate="yes">
+     <val>從左到右</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__RIGHT_TO_LEFT" translate="yes">
+     <val>從右到左</val> 
+   </str>
+  <str name="EDIT__CUT" translate="yes">
+    <val>剪下</val>
+  </str>
+  <str name="EDIT__COPY" translate="yes">
+    <val>複製</val>
+  </str>
+  <str name="EDIT__PASTE" translate="yes">
+    <val>貼上</val>
+  </str>
+  <str name="EDIT__SELECT_ALL" translate="yes">
+    <val>全選</val>
+  </str>
+  <str name="EDIT__DELETE" translate="yes">
+    <val>刪除</val>
+  </str>
+  <str name="HTML_RESET_BUTTON_DEFAULT" translate="yes">
+    <val>重設</val>
+  </str>
+  <str name="HTML_INPUT_ELEMENT_ALT_TEXT" translate="yes">
+	<val>送出 </val>
+  </str>	
+  <str name="HTML_FILE_BUTTON_CHOOSE_FILE" translate="yes">
+    <val>瀏覽...</val>
+  </str>
+  <str name="HTML_SEARCHABLE_INDEX_INTRO" translate="yes">
+    <val>可搜尋的索引</val>
+  </str>
+  <str name="HTML_SUBMIT_BUTTON_DEFAULT" translate="yes">
+    <val>送出</val>
+  </str>
+  <str name="HTML_UNKNOWN_FILE_SIZE" translate="yes">
+    <val>不明</val>
+  </str>
+	<str name="HTML_SEARCH_MENU__CLEAR_RECENT_SEARCHES" translate="yes">
+		<val>清除最近使用的搜尋 </val>
+	</str>
+	<str name="HTML_SEARCH_MENU__NO_RECENT_SEARCHES" translate="yes">
+		<val>無最近使用的搜尋 </val>
+	</str>
+	<str name="HTML_SEARCH_MENU__RECENT_SEARCHES" translate="yes">
+		<val>最近使用的搜尋 </val>
+	</str>
+	<str name="HTML_IMAGE_TITLE" translate="yes">
+		<val>%s (%dx%d 像素) </val>
+	</str>
+  <str name="HTML_AX_WEB_AREA" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>HTML 內容 </val>
+  </str>
+  <str name="HTML_AX_LINK" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>連結 </val>
+  </str>
+  <str name="HTML_AX_LIST_MARKER" translate="yes">
+    <!-- accessibility role description for list marker -->
+    <val>清單記號 </val>
+  </str>
+  <str name="HTML_AX_IMAGE_MAP" translate="yes">
+    <!-- accessibility role description for image map -->
+    <val>影像對應 </val>
+  </str>
+  <str name="HTML_AX_HEADING" translate="yes">
+    <!-- accessibility role description for headings -->
+    <val>標題 </val>
+  </str>
+  <str name="HTML_AX_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a button is pressed, as used by accessibility -->
+    <val>按下 </val>
+  </str>
+  <str name="HTML_AX_RADIO_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a radio button is clicked, as used by accessibility -->
+    <val>選取 </val>
+  </str>
+  <str name="HTML_AX_TEXT_FIELD_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a text field is selected, as used by accessibility -->
+    <val>啟動 </val>
+  </str>
+  <str name="HTML_AX_CHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility -->
+    <val>取消核取 </val>
+  </str>
+  <str name="HTML_AX_UNCHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility -->
+    <val>核取 </val>
+  </str>
+  <str name="HTML_AX_LINK_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a link is clicked, as used by accessibility -->
+    <val>跳到 </val>
+  </str>
+</asf>

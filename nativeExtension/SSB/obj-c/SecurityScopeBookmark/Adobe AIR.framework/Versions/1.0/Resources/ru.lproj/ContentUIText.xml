@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE asf SYSTEM "http://ns.adobe.com/asf/asf_1_0.dtd" >
+<asf xmlns="http://ns.adobe.com/asf" version="1.0" locale="ru_RU">
+   <str name="ERROR__CAPTION__ADOBE_AIR" translate="yes">
+     <val>Adobe AIR</val> 
+   </str>
+   <str name="ERROR__DAMAGED_APPLICATION" translate="yes">
+     <val>Установка данного приложения повреждена. Выполните установку повторно или обратитесь к издателю.</val> 
+   </str>
+   <str name="ERROR__INVALID_DESC" translate="yes">
+     <val>Неверный дескриптор приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__NO_DESC" translate="yes">
+     <val>Не найден дескриптор приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__LOAD_CONTENT" translate="yes">
+     <val>Не удается загрузить начальное содержимое приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__NO_CONTENT" translate="yes">
+     <val>Начальное содержимое приложения не найдено. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__NO_PUBID" translate="yes">
+     <val>Не удалось обнаружить идентификатор Publisher ID для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__PROFILE_NOT_SUPPORTED" translate="yes">
+     <val>Указанный профиль не поддерживается для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__UNEXPECTED_PUBID" translate="yes">
+     <val>Обнаружен некорректный идентификатор Publisher ID для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__DUPLICATE_EXTENSION" translate="yes">
+     <val>Обнаружено дублированное расширение в машинном коде для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__EXTENSION_DEPLOYMENT_MISMATCH" translate="yes">
+     <val>Обнаружено несоответствие при развертывании расширения в машинном коде для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__EXTENSION_MISSING" translate="yes">
+     <val>Отсутствует требуемое расширение в машинном коде для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__EXTENSION_XML_INVALID" translate="yes">
+     <val>Версия файла xml расширения в машинном коде недействительна для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__NOT_SUPPORTED_IN_PROFILE" translate="yes">
+     <val>Профиль расширения в машинном коде не поддерживается данным приложением. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__EXTENSION_SWF_VERSION_INVALID" translate="yes">
+     <val>Версия файла library.swf расширения в машинном коде недействительна для данного приложения. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="ERROR__EXTENSION_APP_VERSION_MISMATCH" translate="yes">
+     <val>Пространство имен расширения в машинном коде либо версия swf не совместимы с данным приложением. Попробуйте переустановить приложение или обратитесь к его разработчику за поддержкой.</val>
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__STOP" translate="yes">
+     <val>Остановить</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__RELOAD" translate="yes">
+     <val>Перезагрузить</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_BACK" translate="yes">
+     <val>Назад</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_FORWARD" translate="yes">
+     <val>Вперед</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_FRAME_IN_NEW_WINDOW" translate="yes">
+     <val>Открыть кадр в новом окне</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK" translate="yes">
+     <val>Открыть ссылку</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK_IN_NEW_WINDOW" translate="yes">
+     <val>Открыть ссылку в новом окне</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_LINKED_FILE" translate="yes">
+     <val>Загрузить связанный файл</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_IMAGE_IN_NEW_WINDOW" translate="yes">
+     <val>Открыть изображение в новом окне</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_IMAGE" translate="yes">
+     <val>Загрузить изображение</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_LINK" translate="yes">
+     <val>Копировать ссылку</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_IMAGE" translate="yes">
+     <val>Копировать изображение</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SEARCH__SEARCH_THE_WEB" translate="yes">
+     <val>Поиск в Интернете</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SEARCH_IN_DICTIONARY" translate="yes">
+     <val>Найти в словаре</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__NO_GUESSES_FOUND" translate="yes">
+     <val>Варианты не найдены</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_SPELLING" translate="yes">
+     <val>Пропустить проверку правописания</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__LEARN_SPELLING" translate="yes">
+     <val>Включить обучение при проверке правописания</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_GRAMMAR" translate="yes">
+     <val>Пропустить проверку грамматики</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SPELLING_AND_GRAMMAR" translate="yes">
+     <val>Правописание и грамматика</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SHOW" translate="yes">
+     <val>Показать проверку орфографии и грамматики</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__SPELLING__HIDE" translate="yes">
+		<val>Скрыть проверку орфографии и грамматики</val>
+	</str>
+	<str name="HTML_CONTEXTMENU__SPELLING__CHECK_SPELLING" translate="yes">
+     <val>Проверить правописание</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_WHILE_TYPING" translate="yes">
+     <val>Проверять правописание во время ввода текста</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_GRAMMAR" translate="yes">
+     <val>Проверить грамматику и правописание</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__INSPECT__ELEMENT" translate="yes">
+		<val>Проверить элемент</val>
+	</str>	
+   <str name="HTML_CONTEXTMENU__FONTS" translate="yes">
+     <val>Шрифты</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__BOLD" translate="yes">
+     <val>Полужирный</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__ITALICS" translate="yes">
+     <val>Курсив</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__UNDERLINE" translate="yes">
+     <val>Подчеркнутый</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__OUTLINE" translate="yes">
+     <val>Контур</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION" translate="yes">
+     <val>Направление текста</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__DEFAULT" translate="yes">
+     <val>По умолчанию</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__LEFT_TO_RIGHT" translate="yes">
+     <val>Слева направо</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__RIGHT_TO_LEFT" translate="yes">
+     <val>Справа налево</val> 
+   </str>
+  <str name="EDIT__CUT" translate="yes">
+    <val>Вырезать</val>
+  </str>
+  <str name="EDIT__COPY" translate="yes">
+    <val>Копировать</val>
+  </str>
+  <str name="EDIT__PASTE" translate="yes">
+    <val>Вставить</val>
+  </str>
+  <str name="EDIT__SELECT_ALL" translate="yes">
+    <val>Выделить все</val>
+  </str>
+  <str name="EDIT__DELETE" translate="yes">
+    <val>Удалить</val>
+  </str>
+  <str name="HTML_RESET_BUTTON_DEFAULT" translate="yes">
+    <val>Сброс</val>
+  </str>
+  <str name="HTML_INPUT_ELEMENT_ALT_TEXT" translate="yes">
+	<val>Отправить</val>
+  </str>	
+  <str name="HTML_FILE_BUTTON_CHOOSE_FILE" translate="yes">
+    <val>Обзор...</val>
+  </str>
+  <str name="HTML_SEARCHABLE_INDEX_INTRO" translate="yes">
+    <val>Индекс, доступный для поиска</val>
+  </str>
+  <str name="HTML_SUBMIT_BUTTON_DEFAULT" translate="yes">
+    <val>Отправить</val>
+  </str>
+  <str name="HTML_UNKNOWN_FILE_SIZE" translate="yes">
+    <val>нет данных</val>
+  </str>
+	<str name="HTML_SEARCH_MENU__CLEAR_RECENT_SEARCHES" translate="yes">
+		<val>Удалить последние поиски</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__NO_RECENT_SEARCHES" translate="yes">
+		<val>Нет последних поисков</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__RECENT_SEARCHES" translate="yes">
+		<val>Последние поиски</val>
+	</str>
+	<str name="HTML_IMAGE_TITLE" translate="yes">
+		<val>%s (%dx%d пикс.)</val>
+	</str>
+  <str name="HTML_AX_WEB_AREA" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>HTML-содержимое</val>
+  </str>
+  <str name="HTML_AX_LINK" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>ссылка</val>
+  </str>
+  <str name="HTML_AX_LIST_MARKER" translate="yes">
+    <!-- accessibility role description for list marker -->
+    <val>маркер списка</val>
+  </str>
+  <str name="HTML_AX_IMAGE_MAP" translate="yes">
+    <!-- accessibility role description for image map -->
+    <val>карта изображения</val>
+  </str>
+  <str name="HTML_AX_HEADING" translate="yes">
+    <!-- accessibility role description for headings -->
+    <val>заголовок</val>
+  </str>
+  <str name="HTML_AX_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a button is pressed, as used by accessibility -->
+    <val>нажать</val>
+  </str>
+  <str name="HTML_AX_RADIO_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a radio button is clicked, as used by accessibility -->
+    <val>выбрать</val>
+  </str>
+  <str name="HTML_AX_TEXT_FIELD_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a text field is selected, as used by accessibility -->
+    <val>активировать</val>
+  </str>
+  <str name="HTML_AX_CHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility -->
+    <val>снять флажок</val>
+  </str>
+  <str name="HTML_AX_UNCHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility -->
+    <val>установить флажок</val>
+  </str>
+  <str name="HTML_AX_LINK_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a link is clicked, as used by accessibility -->
+    <val>перейти</val>
+  </str>
+</asf>

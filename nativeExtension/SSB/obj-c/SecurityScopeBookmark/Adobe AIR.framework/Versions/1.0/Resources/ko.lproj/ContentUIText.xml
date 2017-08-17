@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE asf SYSTEM "http://ns.adobe.com/asf/asf_1_0.dtd" >
+<asf xmlns="http://ns.adobe.com/asf" version="1.0" locale="ko_KR">
+   <str name="ERROR__CAPTION__ADOBE_AIR" translate="yes">
+     <val>Adobe AIR</val> 
+   </str>
+   <str name="ERROR__DAMAGED_APPLICATION" translate="yes">
+     <val>이 응용 프로그램의 설치가 중단되었습니다. 다시 설치하거나 제작자에게 문의하십시오.</val> 
+   </str>
+   <str name="ERROR__INVALID_DESC" translate="yes">
+     <val>응용 프로그램에 유효하지 않은 응용 프로그램 설명자가 있습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__NO_DESC" translate="yes">
+     <val>이 응용 프로그램에 대한 응용 프로그램 설명자를 찾을 수 없습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__LOAD_CONTENT" translate="yes">
+     <val>이 응용 프로그램에 대한 초기 내용을 로드할 수 없습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__NO_CONTENT" translate="yes">
+     <val>이 응용 프로그램에 대한 초기 내용을 찾을 수 없습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__NO_PUBID" translate="yes">
+     <val>이 응용 프로그램에 대한 제작자 ID를 찾을 수 없습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__PROFILE_NOT_SUPPORTED" translate="yes">
+     <val>지정한 프로파일이 이 응용 프로그램에 대해 지원되지 않습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__UNEXPECTED_PUBID" translate="yes">
+     <val>이 응용 프로그램에 대한 예기치 않은 제작자 ID가 있습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__DUPLICATE_EXTENSION" translate="yes">
+     <val>이 응용 프로그램에 대해 중복된 기본 확장이 있습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__EXTENSION_DEPLOYMENT_MISMATCH" translate="yes">
+     <val>이 응용 프로그램에 대해 기본 확장 배포 불일치가 발생했습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__EXTENSION_MISSING" translate="yes">
+     <val>이 응용 프로그램에 필요한 기본 확장이 누락되었습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__EXTENSION_XML_INVALID" translate="yes">
+     <val>기본 확장 xml 파일이 이 응용 프로그램에 대해 유효하지 않습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__NOT_SUPPORTED_IN_PROFILE" translate="yes">
+     <val>기본 확장 프로파일이 이 응용 프로그램에서 지원되지 않습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__EXTENSION_SWF_VERSION_INVALID" translate="yes">
+     <val>기본 확장 라이브러리 .swf 버전이 이 응용 프로그램에 대해 유효하지 않습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="ERROR__EXTENSION_APP_VERSION_MISMATCH" translate="yes">
+     <val>기본 확장 네임스페이스 또는 swf 버전이 이 응용 프로그램과 호환되지 않습니다. 다시 설치하거나 제작자에게 도움을 요청하십시오.</val>
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__STOP" translate="yes">
+     <val>중지</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__RELOAD" translate="yes">
+     <val>다시 불러오기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_BACK" translate="yes">
+     <val>뒤로</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_FORWARD" translate="yes">
+     <val>앞으로</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_FRAME_IN_NEW_WINDOW" translate="yes">
+     <val>새 창에서 프레임 열기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK" translate="yes">
+     <val>링크 열기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK_IN_NEW_WINDOW" translate="yes">
+     <val>새 창에서 링크 열기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_LINKED_FILE" translate="yes">
+     <val>연결된 파일 다운로드</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_IMAGE_IN_NEW_WINDOW" translate="yes">
+     <val>새 창에서 이미지 열기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_IMAGE" translate="yes">
+     <val>이미지 다운로드</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_LINK" translate="yes">
+     <val>링크 복사</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_IMAGE" translate="yes">
+     <val>이미지 복사</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SEARCH__SEARCH_THE_WEB" translate="yes">
+     <val>웹 검색</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SEARCH_IN_DICTIONARY" translate="yes">
+     <val>사전에서 찾기</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__NO_GUESSES_FOUND" translate="yes">
+     <val>추측 내용을 찾을 수 없음</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_SPELLING" translate="yes">
+     <val>맞춤법 무시</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__LEARN_SPELLING" translate="yes">
+     <val>맞춤법 정보 추가</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_GRAMMAR" translate="yes">
+     <val>문법 무시</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SPELLING_AND_GRAMMAR" translate="yes">
+     <val>맞춤법 및 문법</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SHOW" translate="yes">
+     <val>맞춤법 및 문법 검사 표시</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__SPELLING__HIDE" translate="yes">
+		<val>맞춤법 및 문법 검사 숨김</val>
+	</str>
+	<str name="HTML_CONTEXTMENU__SPELLING__CHECK_SPELLING" translate="yes">
+     <val>맞춤법 검사</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_WHILE_TYPING" translate="yes">
+     <val>입력할 때 맞춤법 검사</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_GRAMMAR" translate="yes">
+     <val>맞춤법 및 문법 검사</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__INSPECT__ELEMENT" translate="yes">
+		<val>관리 요소</val>
+	</str>	
+   <str name="HTML_CONTEXTMENU__FONTS" translate="yes">
+     <val>글꼴</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__BOLD" translate="yes">
+     <val>굵게</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__ITALICS" translate="yes">
+     <val>기울임꼴</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__UNDERLINE" translate="yes">
+     <val>밑줄</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__OUTLINE" translate="yes">
+     <val>윤곽선</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION" translate="yes">
+     <val>쓰기 방향</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__DEFAULT" translate="yes">
+     <val>기본</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__LEFT_TO_RIGHT" translate="yes">
+     <val>왼쪽에서 오른쪽</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__RIGHT_TO_LEFT" translate="yes">
+     <val>오른쪽에서 왼쪽</val> 
+   </str>
+  <str name="EDIT__CUT" translate="yes">
+    <val>잘라내기</val>
+  </str>
+  <str name="EDIT__COPY" translate="yes">
+    <val>복사</val>
+  </str>
+  <str name="EDIT__PASTE" translate="yes">
+    <val>붙여넣기</val>
+  </str>
+  <str name="EDIT__SELECT_ALL" translate="yes">
+    <val>전체 선택</val>
+  </str>
+  <str name="EDIT__DELETE" translate="yes">
+    <val>삭제</val>
+  </str>
+  <str name="HTML_RESET_BUTTON_DEFAULT" translate="yes">
+    <val>다시 설정</val>
+  </str>
+  <str name="HTML_INPUT_ELEMENT_ALT_TEXT" translate="yes">
+	<val>전송</val>
+  </str>	
+  <str name="HTML_FILE_BUTTON_CHOOSE_FILE" translate="yes">
+    <val>탐색...</val>
+  </str>
+  <str name="HTML_SEARCHABLE_INDEX_INTRO" translate="yes">
+    <val>검색 가능한 인덱스</val>
+  </str>
+  <str name="HTML_SUBMIT_BUTTON_DEFAULT" translate="yes">
+    <val>전송</val>
+  </str>
+  <str name="HTML_UNKNOWN_FILE_SIZE" translate="yes">
+    <val>알 수 없음</val>
+  </str>
+	<str name="HTML_SEARCH_MENU__CLEAR_RECENT_SEARCHES" translate="yes">
+		<val>최근 검색 지우기</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__NO_RECENT_SEARCHES" translate="yes">
+		<val>최근 검색 없음</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__RECENT_SEARCHES" translate="yes">
+		<val>최근 검색</val>
+	</str>
+	<str name="HTML_IMAGE_TITLE" translate="yes">
+		<val>%s(%dx%d픽셀)</val>
+	</str>
+  <str name="HTML_AX_WEB_AREA" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>HTML 내용</val>
+  </str>
+  <str name="HTML_AX_LINK" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>링크</val>
+  </str>
+  <str name="HTML_AX_LIST_MARKER" translate="yes">
+    <!-- accessibility role description for list marker -->
+    <val>목록 표시자</val>
+  </str>
+  <str name="HTML_AX_IMAGE_MAP" translate="yes">
+    <!-- accessibility role description for image map -->
+    <val>이미지 맵</val>
+  </str>
+  <str name="HTML_AX_HEADING" translate="yes">
+    <!-- accessibility role description for headings -->
+    <val>머리글</val>
+  </str>
+  <str name="HTML_AX_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a button is pressed, as used by accessibility -->
+    <val>누르기</val>
+  </str>
+  <str name="HTML_AX_RADIO_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a radio button is clicked, as used by accessibility -->
+    <val>선택</val>
+  </str>
+  <str name="HTML_AX_TEXT_FIELD_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a text field is selected, as used by accessibility -->
+    <val>활성화</val>
+  </str>
+  <str name="HTML_AX_CHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility -->
+    <val>확인 표시 취소</val>
+  </str>
+  <str name="HTML_AX_UNCHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility -->
+    <val>확인 표시</val>
+  </str>
+  <str name="HTML_AX_LINK_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a link is clicked, as used by accessibility -->
+    <val>이동</val>
+  </str>
+</asf>

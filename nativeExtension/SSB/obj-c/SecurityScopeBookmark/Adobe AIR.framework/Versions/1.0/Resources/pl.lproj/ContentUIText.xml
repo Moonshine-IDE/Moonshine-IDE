@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE asf SYSTEM "http://ns.adobe.com/asf/asf_1_0.dtd" >
+<asf xmlns="http://ns.adobe.com/asf" version="1.0" locale="pl_PL">
+   <str name="ERROR__CAPTION__ADOBE_AIR" translate="yes">
+     <val>Adobe AIR</val> 
+   </str>
+   <str name="ERROR__DAMAGED_APPLICATION" translate="yes">
+     <val>Ta instalacja aplikacji jest uszkodzona. Spróbuj ponownie zainstalować aplikację lub skontaktuj się z jej wydawcą, aby uzyskać pomoc.</val> 
+   </str>
+   <str name="ERROR__INVALID_DESC" translate="yes">
+     <val>Deskryptor tej aplikacji jest nieprawidłowy. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__NO_DESC" translate="yes">
+     <val>Nie można znaleźć deskryptora tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__LOAD_CONTENT" translate="yes">
+     <val>Nie można wczytać zawartości początkowej dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__NO_CONTENT" translate="yes">
+     <val>Nie można znaleźć zawartości początkowej dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__NO_PUBID" translate="yes">
+     <val>Nie można znaleźć identyfikatora wydawcy tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__PROFILE_NOT_SUPPORTED" translate="yes">
+     <val>Określony profil nie jest obsługiwany dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__UNEXPECTED_PUBID" translate="yes">
+     <val>Znaleziono nieoczekiwany identyfikator wydawcy dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__DUPLICATE_EXTENSION" translate="yes">
+     <val>Znaleziono powielone rozszerzenie natywne dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__EXTENSION_DEPLOYMENT_MISMATCH" translate="yes">
+     <val>Wystąpiła niezgodność zainstalowanego rozszerzenia natywnego z tą aplikacją. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__EXTENSION_MISSING" translate="yes">
+     <val>Brak rozszerzenia natywnego wymaganego dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__EXTENSION_XML_INVALID" translate="yes">
+     <val>Plik XML rozszerzenia natywnego jest nieprawidłowy dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__NOT_SUPPORTED_IN_PROFILE" translate="yes">
+     <val>Profil rozszerzenia natywnego nie jest obsługiwany w przypadku tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__EXTENSION_SWF_VERSION_INVALID" translate="yes">
+     <val>Wersja pliku SWF biblioteki rozszerzenia natywnego jest nieprawidłowa dla tej aplikacji. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="ERROR__EXTENSION_APP_VERSION_MISMATCH" translate="yes">
+     <val>Przestrzeń nazw rozszerzenia natywnego lub wersji pliku SWF jest niezgodna z tą aplikacją. Spróbuj ponownie zainstalować aplikację lub uzyskać pomoc od wydawcy.</val>
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__STOP" translate="yes">
+     <val>Zatrzymaj</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__RELOAD" translate="yes">
+     <val>Wczytaj ponownie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_BACK" translate="yes">
+     <val>Wstecz</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_FORWARD" translate="yes">
+     <val>Naprzód</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_FRAME_IN_NEW_WINDOW" translate="yes">
+     <val>Otwórz klatkę w nowym oknie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK" translate="yes">
+     <val>Otwórz łącze</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK_IN_NEW_WINDOW" translate="yes">
+     <val>Otwórz łącze w nowym oknie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_LINKED_FILE" translate="yes">
+     <val>Pobierz dołączony plik</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_IMAGE_IN_NEW_WINDOW" translate="yes">
+     <val>Otwórz obraz w nowym oknie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_IMAGE" translate="yes">
+     <val>Pobierz obraz</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_LINK" translate="yes">
+     <val>Kopiuj łącze</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_IMAGE" translate="yes">
+     <val>Kopiuj obraz</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SEARCH__SEARCH_THE_WEB" translate="yes">
+     <val>Wyszukaj w Internecie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SEARCH_IN_DICTIONARY" translate="yes">
+     <val>Odszukaj w słowniku</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__NO_GUESSES_FOUND" translate="yes">
+     <val>Nie znaleziono podpowiedzi</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_SPELLING" translate="yes">
+     <val>Ignoruj pisownię</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__LEARN_SPELLING" translate="yes">
+     <val>Nauka pisowni</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_GRAMMAR" translate="yes">
+     <val>Ignoruj gramatykę</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SPELLING_AND_GRAMMAR" translate="yes">
+     <val>Pisownia i gramatyka</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SHOW" translate="yes">
+     <val>Pokaż pisownię i gramatykę</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__SPELLING__HIDE" translate="yes">
+		<val>Ukryj pisownię i gramatykę</val>
+	</str>
+	<str name="HTML_CONTEXTMENU__SPELLING__CHECK_SPELLING" translate="yes">
+     <val>Sprawdź pisownię</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_WHILE_TYPING" translate="yes">
+     <val>Sprawdzanie pisowni podczas pisania</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_GRAMMAR" translate="yes">
+     <val>Sprawdź pisownię i gramatykę</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__INSPECT__ELEMENT" translate="yes">
+		<val>Zbadaj element</val>
+	</str>	
+   <str name="HTML_CONTEXTMENU__FONTS" translate="yes">
+     <val>Czcionki</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__BOLD" translate="yes">
+     <val>Pogrubienie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__ITALICS" translate="yes">
+     <val>Kursywa</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__UNDERLINE" translate="yes">
+     <val>Podkreślenie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__OUTLINE" translate="yes">
+     <val>Kontur</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION" translate="yes">
+     <val>Kierunek pisania</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__DEFAULT" translate="yes">
+     <val>Domyślnie</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__LEFT_TO_RIGHT" translate="yes">
+     <val>Od lewej do prawej</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__RIGHT_TO_LEFT" translate="yes">
+     <val>Od prawej do lewej</val> 
+   </str>
+  <str name="EDIT__CUT" translate="yes">
+    <val>Wytnij</val>
+  </str>
+  <str name="EDIT__COPY" translate="yes">
+    <val>Kopiuj</val>
+  </str>
+  <str name="EDIT__PASTE" translate="yes">
+    <val>Wklej</val>
+  </str>
+  <str name="EDIT__SELECT_ALL" translate="yes">
+    <val>Zaznacz wszystko</val>
+  </str>
+  <str name="EDIT__DELETE" translate="yes">
+    <val>Usuń</val>
+  </str>
+  <str name="HTML_RESET_BUTTON_DEFAULT" translate="yes">
+    <val>Resetuj</val>
+  </str>
+  <str name="HTML_INPUT_ELEMENT_ALT_TEXT" translate="yes">
+	<val>Prześlij</val>
+  </str>	
+  <str name="HTML_FILE_BUTTON_CHOOSE_FILE" translate="yes">
+    <val>Przeglądaj...</val>
+  </str>
+  <str name="HTML_SEARCHABLE_INDEX_INTRO" translate="yes">
+    <val>Indeks z możliwością przeszukiwania</val>
+  </str>
+  <str name="HTML_SUBMIT_BUTTON_DEFAULT" translate="yes">
+    <val>Prześlij</val>
+  </str>
+  <str name="HTML_UNKNOWN_FILE_SIZE" translate="yes">
+    <val>Nieznane</val>
+  </str>
+	<str name="HTML_SEARCH_MENU__CLEAR_RECENT_SEARCHES" translate="yes">
+		<val>Wyczyść ostanie wyszukiwania</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__NO_RECENT_SEARCHES" translate="yes">
+		<val>Brak ostatnich wyszukiwań</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__RECENT_SEARCHES" translate="yes">
+		<val>Ostatnie wyszukiwania</val>
+	</str>
+	<str name="HTML_IMAGE_TITLE" translate="yes">
+		<val>%s (%d x %d pikseli)</val>
+	</str>
+  <str name="HTML_AX_WEB_AREA" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>Zawartość HTML</val>
+  </str>
+  <str name="HTML_AX_LINK" translate="yes">
+    <!-- accessibility role description for web area -->
+    <val>łącze</val>
+  </str>
+  <str name="HTML_AX_LIST_MARKER" translate="yes">
+    <!-- accessibility role description for list marker -->
+    <val>znacznik listy</val>
+  </str>
+  <str name="HTML_AX_IMAGE_MAP" translate="yes">
+    <!-- accessibility role description for image map -->
+    <val>mapa obrazu</val>
+  </str>
+  <str name="HTML_AX_HEADING" translate="yes">
+    <!-- accessibility role description for headings -->
+    <val>nagłówek</val>
+  </str>
+  <str name="HTML_AX_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a button is pressed, as used by accessibility -->
+    <val>naciśnij</val>
+  </str>
+  <str name="HTML_AX_RADIO_BUTTON_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a radio button is clicked, as used by accessibility -->
+    <val>zaznacz</val>
+  </str>
+  <str name="HTML_AX_TEXT_FIELD_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a text field is selected, as used by accessibility -->
+    <val>uaktywnij</val>
+  </str>
+  <str name="HTML_AX_CHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility -->
+    <val>usuń zaznaczenie</val>
+  </str>
+  <str name="HTML_AX_UNCHECKED_CHECK_BOX_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility -->
+    <val>zaznacz</val>
+  </str>
+  <str name="HTML_AX_LINK_ACTION_VERB" translate="yes">
+    <!-- Verb stating the action that will occur when a link is clicked, as used by accessibility -->
+    <val>skocz</val>
+  </str>
+</asf>

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!DOCTYPE asf SYSTEM "http://ns.adobe.com/asf/asf_1_0.dtd">
+<asf xmlns="http://ns.adobe.com/asf" version="1.0" locale="en_US">
+   <str name="ERROR__CAPTION__ADOBE_AIR">
+     <val>Adobe AIR</val> 
+   </str>
+   <str name="ERROR__DAMAGED_APPLICATION">
+     <val>This installation of this application is damaged. Try re-installing or contacting the publisher for assistance.</val> 
+   </str>
+   <str name="ERROR__INVALID_DESC">
+     <val>This application has an invalid application descriptor. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__NO_DESC">
+     <val>Application descriptor could not be found for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__LOAD_CONTENT">
+     <val>Initial content could not be loaded for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__NO_CONTENT">
+     <val>Initial content could not be found for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__NO_PUBID">
+     <val>Publisher Id could not be found for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__PROFILE_NOT_SUPPORTED">
+     <val>The specified profile is not supported for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__UNEXPECTED_PUBID">
+     <val>Unexpected Publisher ID is found for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__DUPLICATE_EXTENSION">
+     <val>A duplicate native extension is found for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__EXTENSION_DEPLOYMENT_MISMATCH">
+     <val>There is a native extension deployment mismatch for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__EXTENSION_MISSING">
+     <val>The required native extension is missing for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__EXTENSION_XML_INVALID">
+     <val>The native extension xml file is invalid for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__NOT_SUPPORTED_IN_PROFILE">
+     <val>The native extension profile is not supported with this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__EXTENSION_SWF_VERSION_INVALID">
+     <val>The native extension library.swf version is invalid for this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="ERROR__EXTENSION_APP_VERSION_MISMATCH">
+     <val>The native extension namespace or swf version is incompatible with this application. Try re-installing or contacting the publisher for assistance.</val>
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__STOP">
+     <val>Stop</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__RELOAD">
+     <val>Reload</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_BACK">
+     <val>Back</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__GO_FORWARD">
+     <val>Forward</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_FRAME_IN_NEW_WINDOW">
+     <val>Open Frame in New Window</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK">
+     <val>Open Link</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_LINK_IN_NEW_WINDOW">
+     <val>Open Link in New Window</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_LINKED_FILE">
+     <val>Download Linked File</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__OPEN_IMAGE_IN_NEW_WINDOW">
+     <val>Open Image in New Window</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__NAVIGATION__DOWNLOAD_IMAGE">
+     <val>Download Image</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_LINK">
+     <val>Copy Link</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__EDIT__COPY_IMAGE">
+     <val>Copy Image</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SEARCH__SEARCH_THE_WEB">
+     <val>Search the Web</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SEARCH_IN_DICTIONARY">
+     <val>Look Up in Dictionary</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__NO_GUESSES_FOUND">
+     <val>No Guesses Found</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_SPELLING">
+     <val>Ignore Spelling</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__LEARN_SPELLING">
+     <val>Learn Spelling</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__IGNORE_GRAMMAR">
+     <val>Ignore Grammar</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SPELLING_AND_GRAMMAR">
+     <val>Spelling and Grammar</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__SHOW">
+     <val>Show Spelling and Grammar</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__SPELLING__HIDE">
+		<val>Hide Spelling and Grammar</val>
+	</str>
+	<str name="HTML_CONTEXTMENU__SPELLING__CHECK_SPELLING">
+     <val>Check Spelling</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_WHILE_TYPING">
+     <val>Check Spelling as You Type</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__SPELLING__CHECK_GRAMMAR">
+     <val>Check Grammar With Spelling</val> 
+   </str>
+	<str name="HTML_CONTEXTMENU__INSPECT__ELEMENT">
+		<val>Inspect Element</val>
+	</str>	
+   <str name="HTML_CONTEXTMENU__FONTS">
+     <val>Fonts</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__BOLD">
+     <val>Bold</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__ITALICS">
+     <val>Italic</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__UNDERLINE">
+     <val>Underline</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__OUTLINE">
+     <val>Outline</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION">
+     <val>Writing Direction</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__DEFAULT">
+     <val>Default</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__LEFT_TO_RIGHT">
+     <val>Left to Right</val> 
+   </str>
+   <str name="HTML_CONTEXTMENU__STYLE__WRITING_DIRECTION__RIGHT_TO_LEFT">
+     <val>Right to Left</val> 
+   </str>
+  <str name="EDIT__CUT">
+    <val>Cut</val>
+  </str>
+  <str name="EDIT__COPY">
+    <val>Copy</val>
+  </str>
+  <str name="EDIT__PASTE">
+    <val>Paste</val>
+  </str>
+  <str name="EDIT__SELECT_ALL">
+    <val>Select All</val>
+  </str>
+  <str name="EDIT__DELETE">
+    <val>Delete</val>
+  </str>
+  <str name="HTML_RESET_BUTTON_DEFAULT">
+    <val>Reset</val>
+  </str>
+  <str name="HTML_INPUT_ELEMENT_ALT_TEXT">
+	<val>Submit</val>
+  </str>	
+  <str name="HTML_FILE_BUTTON_CHOOSE_FILE">
+    <val>Browse...</val>
+  </str>
+  <str name="HTML_SEARCHABLE_INDEX_INTRO">
+    <val>Searchable Index</val>
+  </str>
+  <str name="HTML_SUBMIT_BUTTON_DEFAULT">
+    <val>Submit</val>
+  </str>
+  <str name="HTML_UNKNOWN_FILE_SIZE">
+    <val>Unknown</val>
+  </str>
+	<str name="HTML_SEARCH_MENU__CLEAR_RECENT_SEARCHES">
+		<val>Clear recent searches</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__NO_RECENT_SEARCHES">
+		<val>No recent searches</val>
+	</str>
+	<str name="HTML_SEARCH_MENU__RECENT_SEARCHES">
+		<val>Recent searches</val>
+	</str>
+	<str name="HTML_IMAGE_TITLE">
+		<val>%s (%dx%d pixels)</val>
+	</str>
+  <str name="HTML_AX_WEB_AREA">
+    <!-- accessibility role description for web area -->
+    <val>HTML content</val>
+  </str>
+  <str name="HTML_AX_LINK">
+    <!-- accessibility role description for web area -->
+    <val>link</val>
+  </str>
+  <str name="HTML_AX_LIST_MARKER">
+    <!-- accessibility role description for list marker -->
+    <val>list marker</val>
+  </str>
+  <str name="HTML_AX_IMAGE_MAP">
+    <!-- accessibility role description for image map -->
+    <val>image map</val>
+  </str>
+  <str name="HTML_AX_HEADING">
+    <!-- accessibility role description for headings -->
+    <val>heading</val>
+  </str>
+  <str name="HTML_AX_BUTTON_ACTION_VERB">
+    <!-- Verb stating the action that will occur when a button is pressed, as used by accessibility -->
+    <val>press</val>
+  </str>
+  <str name="HTML_AX_RADIO_BUTTON_ACTION_VERB">
+    <!-- Verb stating the action that will occur when a radio button is clicked, as used by accessibility -->
+    <val>select</val>
+  </str>
+  <str name="HTML_AX_TEXT_FIELD_ACTION_VERB">
+    <!-- Verb stating the action that will occur when a text field is selected, as used by accessibility -->
+    <val>activate</val>
+  </str>
+  <str name="HTML_AX_CHECKED_CHECK_BOX_ACTION_VERB">
+    <!-- Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility -->
+    <val>uncheck</val>
+  </str>
+  <str name="HTML_AX_UNCHECKED_CHECK_BOX_ACTION_VERB">
+    <!-- Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility -->
+    <val>check</val>
+  </str>
+  <str name="HTML_AX_LINK_ACTION_VERB">
+    <!-- Verb stating the action that will occur when a link is clicked, as used by accessibility -->
+    <val>jump</val>
+  </str>
+</asf>

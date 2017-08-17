@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>12F45</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en_US</string>
+	<key>CFBundleExecutable</key>
+	<string>FlashPlayer-10.6</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Adobe Flash Player   254.0 d0 Copyright (c) 1996-2016 Adobe Systems Incorporated. All rights reserved</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.macromedia.FlashPlayer-10.6.plugin</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>FlashPlayer-10.6</string>
+	<key>CFBundlePackageType</key>
+	<string>BRPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>254.0.0.0</string>
+	<key>CFBundleSignature</key>
+	<string>MOSS</string>
+	<key>CFBundleVersion</key>
+	<string>254.0.0.0</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string>4H1503</string>
+	<key>DTPlatformVersion</key>
+	<string>GM</string>
+	<key>DTSDKBuild</key>
+	<string>10K549</string>
+	<key>DTSDKName</key>
+	<string>macosx10.6</string>
+	<key>DTXcode</key>
+	<string>0463</string>
+	<key>DTXcodeBuild</key>
+	<string>4H1503</string>
+	<key>LSHasLocalizedDisplayName</key>
+	<false/>
+	<key>WebPluginDescription</key>
+	<string>Shockwave Flash 254.0 d0</string>
+	<key>WebPluginMIMETypes</key>
+	<dict>
+		<key>application/futuresplash</key>
+		<dict>
+			<key>WebPluginExtensions</key>
+			<array>
+				<string>spl</string>
+			</array>
+			<key>WebPluginTypeDescription</key>
+			<string>FutureSplash Player</string>
+		</dict>
+		<key>application/x-shockwave-flash</key>
+		<dict>
+			<key>WebPluginExtensions</key>
+			<array>
+				<string>swf</string>
+			</array>
+			<key>WebPluginTypeDescription</key>
+			<string>Shockwave Flash</string>
+		</dict>
+	</dict>
+	<key>WebPluginName</key>
+	<string>Shockwave Flash</string>
+</dict>
+</plist>
