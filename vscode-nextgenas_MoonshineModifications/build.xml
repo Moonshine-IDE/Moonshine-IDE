@@ -1,30 +1,34 @@
 <project name="vscode-nextgenas_MoonshineModifications" default="dist" basedir=".">
     <description>
-    	Build script for Bamboo
+        Build script for Bamboo
     </description>
     <!-- set global properties for this build -->
     <property name="src" location="src"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
     <property name="lib" location="target"/>
-	<property name="jar.name" value="codecompletion.jar" />
-	<property name="jar.path" value="${dist}/${jar.name}" />
-	<!-- define the parameter name, to avoid reproducing the name. -->
-	<property name="target.property" value="target.path" />
-	
-	<!-- classpath -->
+    <property name="jar.name" value="codecompletion.jar" />
+    <property name="jar.path" value="${dist}/${jar.name}" />
+    <!-- define the parameter name, to avoid reproducing the name. -->
+    <property name="target.property" value="target.path" />
+    <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
+    <property name="target.path" value="../ide/MoonshineSharedCore/src/elements/" />
+
+
+    
+    <!-- classpath -->
     <path id="default.classpath">
       <fileset dir="target">
         <include name="*.jar"/>
       </fileset>
       <pathelement location="${build}"/>
     </path>
-	
-	<!-- debugging code for the classpath -->
-	<pathconvert property="classpath.string" refid="default.classpath" pathsep=" "/>
-	<echo>Classpath is ${classpath.string}</echo>
-	<!--
-	-->
+    
+    <!-- debugging code for the classpath -->
+    <pathconvert property="classpath.string" refid="default.classpath" pathsep=" "/>
+    <echo>Classpath is ${classpath.string}</echo>
+    <!--
+    -->
 
     <target name="init">
         <!-- Create the time stamp -->
@@ -38,13 +42,13 @@
             description="compile the source">
         <!-- Compile the java code from ${src} into ${build} -->
         <javac  srcdir="${src}" 
-        	    destdir="${build}"
-        	   	includeAntRuntime="false"
-        	    debug="true">
-        	<classpath>
-        		<path refid="default.classpath" />
-        	</classpath>
-    	</javac>
+                destdir="${build}"
+                   includeAntRuntime="false"
+                debug="true">
+            <classpath>
+                <path refid="default.classpath" />
+            </classpath>
+        </javac>
     </target>
 
     <target name="dist" depends="compile">
@@ -101,17 +105,17 @@
             <zipfileset excludes="META-INF/*.SF" src="${lib}/xSocket-2.8.15.jar"/>
         </jar>
     </target>
-	
-	<target name="deploy" depends="check-target-path, dist" 
-			description="Deploy the jar to the path specified by the user-specified ${target.property} property." >
-		<copy file="${jar.path}" toDir="${target.path}" overwrite="true" failonerror="true" />
-	</target>
-	
-	
-	<target name="check-target-path" depends="" unless="${target.property}"
-		    description="If the ${target.property} property does not exist, report an error and terminate the build." >
-		<fail message="Property ${target.property} is required." />
-	</target>
+    
+    <target name="deploy" depends="check-target-path, dist" 
+            description="Deploy the jar to the path specified by the user-specified ${target.property} property." >
+        <copy file="${jar.path}" toDir="${target.path}" overwrite="true" failonerror="true" />
+    </target>
+    
+    
+    <target name="check-target-path" depends="" unless="${target.property}"
+            description="If the ${target.property} property does not exist, report an error and terminate the build." >
+        <fail message="Property ${target.property} is required." />
+    </target>
 
 
     <target name="clean"

@@ -1,4 +1,6 @@
 * text=auto !eol
+/LICENSE.MD -text
+/README.md -text
 ide/MoonshineDESKTOPevolved/.actionScriptProperties -text
 ide/MoonshineDESKTOPevolved/.flexProperties -text
 ide/MoonshineDESKTOPevolved/.project -text
