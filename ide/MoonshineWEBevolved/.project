@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>MoonshineWEBevolved</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.flexnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] en_US</name>
+			<type>2</type>
+			<location>E:/DevareaLocal/Prominic/Prominic_SVN/MoonshineMultiCodeBase/MoonshineSharedCore/src/locale/en_US</location>
+		</link>
+		<link>
+			<name>[source path] ja_JP</name>
+			<type>2</type>
+			<location>E:/DevareaLocal/Prominic/Prominic_SVN/MoonshineMultiCodeBase/MoonshineSharedCore/src/locale/ja_JP</location>
+		</link>
+		<link>
+			<name>[source path] src</name>
+			<type>2</type>
+			<location>E:/DevareaLocal/Prominic/Prominic_SVN/MoonshineMultiCodeBase/MoonshineSharedCore/src</location>
+		</link>
+	</linkedResources>
+</projectDescription>

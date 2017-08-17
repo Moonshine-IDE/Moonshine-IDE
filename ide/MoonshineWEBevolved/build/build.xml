@@ -1,0 +1,3 @@
+<project name="Moonshine Web Build Script" basedir="." default="checkOS">
+	<import file="../../MoonshineSharedCore/build/build-lib.xml" />
+</project>

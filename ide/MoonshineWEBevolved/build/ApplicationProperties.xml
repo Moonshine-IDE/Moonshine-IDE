@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<root>
+	<isDesktop>false</isDesktop> <!-- true|false -->
+	<isDevelopmentVersion>false</isDevelopmentVersion> <!-- true|false -->
+	<buildVersion><![CDATA[1.0.1]]></buildVersion>
+	<isMigration>false</isMigration> <!-- true|false -->
+	<keepDebugFiles>false</keepDebugFiles> <!-- true|false -->
+
+	<!-- FLEX SDK INFORMATION -->
+	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath64><![CDATA[]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+
+	<!-- USE FOLLOWING PROPERTIES SELF-SIGN PACKAGES FOR WINDOWS & MACOS -->
+	<certSelfSignedNameOnly><![CDATA[]]></certSelfSignedNameOnly>
+	<certSelfSigned><![CDATA[]]></certSelfSigned>
+	<certSelfSignedPass><![CDATA[]]></certSelfSignedPass>
+	
+	<!-- USE FOLLOWING FIELDS ONLY TO BUILD SIGNED PACKAGES FOR WINDOWS & MACOS -->
+	<isSignedBuild>false</isSignedBuild> <!-- true|false --> <!-- Leave false if you're not sure or do not have requisite certificates -->
+	<certSignedAIR><![CDATA[]]></certSignedAIR> <!-- Relative path to Adobe AIR certificate (.p12) distributed by signing authorities -->
+	<certSignedAIRPass><![CDATA[]]></certSignedAIRPass>
+	<certSignedWindowsBinary><![CDATA[]]></certSignedWindowsBinary> <!-- Relative path to Windows binary installer certificate (.p12) distributed by signer authorities -->
+	<certSignedWindowsBinaryPass><![CDATA[]]></certSignedWindowsBinaryPass>
+	<certSignedDevIDKeychainName><![CDATA[]]></certSignedDevIDKeychainName> <!-- apple developer ID name as installed in keychain -->
+	<certSignedMacOSKeychainName><![CDATA[]]></certSignedMacOSKeychainName> <!-- apple developer certificate name as installed in keychain -->
+	<certSignedMacOSKeychainInstallerName><![CDATA[]]></certSignedMacOSKeychainInstallerName> <!-- apple installer certificate name as installed in keychain -->
+	<certSignedMacOSKeychainPass><![CDATA[]]></certSignedMacOSKeychainPass> <!-- keychain password is required to sign with installed certificate -->
+</root>
