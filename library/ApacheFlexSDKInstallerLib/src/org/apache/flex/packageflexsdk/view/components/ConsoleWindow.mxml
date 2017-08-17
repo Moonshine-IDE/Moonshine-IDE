@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  title="Install Log" width="600" height="300" showStatusBar="false"
+		  >
+
+	<fx:Script>
+		<![CDATA[
+        import mx.binding.utils.BindingUtils;
+        import mx.binding.utils.ChangeWatcher;
+        import mx.collections.ArrayCollection;
+
+        import org.apache.flex.packageflexsdk.resource.ViewResourceConstants;
+
+        [Bindable]
+        public var messages:ArrayCollection = new ArrayCollection();
+
+        public function closeWindow(event:MouseEvent):void {
+            close();
+        }
+
+        private function handleCopyBtnClick(event:MouseEvent):void {
+            var logText:String = "";
+
+            for each (var str:Object in messages) {
+                logText += str.toString() + "\n";
+            }
+
+            Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, logText);
+        }
+
+        private function logTxtArea_copyHandler(event:Event):void {
+            var message:String = "";
+            var messages:List = event.currentTarget as List;
+            var clipBoardData:String;
+
+            for each (message in messages.selectedItems) {
+                clipBoardData += message + "\n";
+            }
+            if (clipBoardData) {
+                Clipboard.generalClipboard.clear();
+                Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, clipBoardData, false);
+            }
+        }
+        ]]>
+	</fx:Script>
+
+	<s:List id="logTxtArea" dataProvider="{messages}"
+            allowMultipleSelection="true"
+            copy="logTxtArea_copyHandler(event)"
+			top="0"
+			bottom="35"
+			left="0"
+			right="0"
+			fontSize="14">
+		<s:layout>
+			<s:VerticalLayout gap="0" horizontalAlign="justify" />
+		</s:layout>
+	</s:List>
+	<s:Button label="{ViewResourceConstants.instance.BTN_LABEL_COPY_LOG}"
+			  click="handleCopyBtnClick(event)"
+			  styleName="genericBtnStyle"
+			  left="7.5"
+			  bottom="7.5"/>
+	<s:Button label="{ViewResourceConstants.instance.BTN_LABEL_CLOSE}"
+			  click="closeWindow(event)"
+			  right="7.5"
+			  bottom="7.5"
+			  styleName="genericBtnStyle"  />
+</s:Window>

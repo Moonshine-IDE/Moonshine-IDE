@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+
+<config>
+	<version>
+		<latest>1.0.9</latest>
+	</version>
+	<files>
+	
+		<!-- SDK Installer App binary distribution
+			 Notes: 
+			 	- use full URL when binaries are NOT released yet, else use 
+			 	  path relative to mirror
+			 	- if path is relative, don't use starting slash -->
+		<file name="SDKInstallerApp" path="incubator/flex/installer/1.0/binaries/" file="apache-flex-sdk-installer-1.0.9-incubating-bin" />
+		
+		<!-- Mirror URL CGI -->
+		<file name="MirrorURLCGI" path="" file="single-mirror-url.cgi" />
+		
+		<!-- Apache Flex binary distribution
+			 Notes: 
+			 	- path is relative to mirror URL
+			 	- don't use starting slash 
+			 	- for the second and later releases, remove the extension from the file name -->
+		<file name="ApacheFlexSDK" path="incubator/flex/4.8.0-incubating/binaries/" file="apache-flex-sdk-4.8.0-incubating-bin.zip" />
+		
+		<!-- Adobe AIR SDK -->
+		<file name="AdobeAIRSDKWin" path="http://airdownload.adobe.com/air/win/download/3.1/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKMac" path="http://airdownload.adobe.com/air/mac/download/3.1/" file="AdobeAIRSDK.tbz2" />
+		
+		<!-- Adobe Flash Player player global swc -->
+		<file name="FlashPlayer" path="http://fpdownload.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_1.swc" />	
+
+		<!-- SWFObject.js -->
+		<file name="swfobject" path="http://swfobject.googlecode.com/files/" file="swfobject_2_2.zip" />	
+		
+		<!-- BlazeDS -->
+		<file name="BlazeDS" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-messaging-common.jar" />	
+		
+		<!-- FontSWF -->
+		<file name="afe" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="afe.jar" />
+		<file name="aglj40" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="aglj40.jar" />
+		<file name="flex-fontkit" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-fontkit.jar" />
+		<file name="rideau" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="rideau.jar" />
+			
+		<!-- OSMF -->
+		<file name="OSMF" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/frameworks/libs/" file="osmf.swc" />	
+		
+		<!-- TLF -->
+		<file name="TLF" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/frameworks/libs/" file="textLayout.swc" />	
+
+	</files>
+</config>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+
+<config>
+	<version>
+		<latest>2.6.0</latest>
+	</version>
+	<files>
+
+		<!-- SDK Installer Application binary distribution
+			 Notes:
+			 	- use full URL when binaries are NOT released yet, else use
+			 	  path relative to mirror
+			 	- if path is relative, don't use starting slash -->
+		<file name="SDKInstallerApp" path="flex/installer/2.6/binaries/" file="apache-flex-sdk-installer-2.6.0-bin" />
+
+        <!-- Mirror URL CGI -->
+        <file name="MirrorURLCGI" path="" file="single-mirror-url.cgi"/>
+
+		<file name="FlexVersions" versions="4.10.0,4.9.1,Nightly (dev use only),4.11.0 RC1 (dev use only)" default="4.10.0" />
+
+        <!-- Apache Flex binary distribution
+             Notes:
+                 - path is relative to mirror URL; don't use starting slash
+                 - use http based url if you want to use an absolute url instead of mirror
+                 - remove the extension from the file name -->
+        <file name="4.11.0 RC1 (dev use only)" path="https://dist.apache.org/repos/dist/dev/flex/sdk/4.11.0/rc1/binaries/" file="apache-flex-sdk-4.11.0-bin"/>
+		<file name="4.10.0" path="flex/4.10.0/binaries/" file="apache-flex-sdk-4.10.0-bin"/>
+		<file name="4.9.1" path="flex/4.9.1/binaries/" file="apache-flex-sdk-4.9.1-bin"/>
+		<file name="Nightly (dev use only)" path="https://builds.apache.org/job/flex-sdk_release/lastSuccessfulBuild/artifact/out/" file="apache-flex-sdk-4.11.0-bin" /> 
+
+        <!-- All the versions! -->
+		<file name="Versions" airVersions="3.9,3.8,3.7,3.6,3.5,3.4,3.3,3.2,3.1,3.0,2.7,2.6" flashPlayerVersions="11.9,11.8,11.7,11.6,11.5,11.4,11.3,11.2,11.1,11.0,10.3,10.2" airDefault="3.8" flashPlayerDefault="11.8" /> 
+
+        <!-- Adobe AIR SDK -->
+		<file name="AdobeAIRSDKLin2.6" path="http://airdownload.adobe.com/air/lin/download/2.6/" file="AdobeAIRSDK.tbz2" />
+		
+		<file name="AdobeAIRSDKWin2.6" path="http://airdownload.adobe.com/air/win/download/2.6/" file="AdobeAIRSDK.zip" /> 
+		<file name="AdobeAIRSDKWin2.7" path="http://airdownload.adobe.com/air/win/download/2.7/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.0" path="http://airdownload.adobe.com/air/win/download/3.0/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.1" path="http://airdownload.adobe.com/air/win/download/3.1/" file="AdobeAIRSDK.zip" label="tested" />
+		<file name="AdobeAIRSDKWin3.2" path="http://airdownload.adobe.com/air/win/download/3.2/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.3" path="http://airdownload.adobe.com/air/win/download/3.3/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.4" path="http://airdownload.adobe.com/air/win/download/3.4/" file="AdobeAIRSDK.zip" label="tested" />
+		<file name="AdobeAIRSDKWin3.5" path="http://airdownload.adobe.com/air/win/download/3.5/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.6" path="http://airdownload.adobe.com/air/win/download/3.6/" file="AdobeAIRSDK.zip" />
+		<file name="AdobeAIRSDKWin3.7" path="http://airdownload.adobe.com/air/win/download/3.7/" file="AdobeAIRSDK.zip" label="tested"/>
+		<file name="AdobeAIRSDKWin3.8" path="http://airdownload.adobe.com/air/win/download/3.8/" file="AdobeAIRSDK.zip" label="tested"/>
+		<file name="AdobeAIRSDKWin3.9" path="http://airdownload.adobe.com/air/win/download/3.9/" file="AdobeAIRSDK.zip" />
+
+		<file name="AdobeAIRSDKMac2.6" path="http://airdownload.adobe.com/air/mac/download/2.6/" file="AdobeAIRSDK.tbz2" /> 
+		<file name="AdobeAIRSDKMac2.7" path="http://airdownload.adobe.com/air/mac/download/2.7/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.0" path="http://airdownload.adobe.com/air/mac/download/3.0/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.1" path="http://airdownload.adobe.com/air/mac/download/3.1/" file="AdobeAIRSDK.tbz2" label="tested" />
+		<file name="AdobeAIRSDKMac3.2" path="http://airdownload.adobe.com/air/mac/download/3.2/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.3" path="http://airdownload.adobe.com/air/mac/download/3.3/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.4" path="http://airdownload.adobe.com/air/mac/download/3.4/" file="AdobeAIRSDK.tbz2" label="tested" />
+		<file name="AdobeAIRSDKMac3.5" path="http://airdownload.adobe.com/air/mac/download/3.5/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.6" path="http://airdownload.adobe.com/air/mac/download/3.6/" file="AdobeAIRSDK.tbz2" />
+		<file name="AdobeAIRSDKMac3.7" path="http://airdownload.adobe.com/air/mac/download/3.7/" file="AdobeAIRSDK.tbz2" label="tested"/>
+		<file name="AdobeAIRSDKMac3.8" path="http://airdownload.adobe.com/air/mac/download/3.8/" file="AdobeAIRSDK.tbz2" label="tested"/>
+		<file name="AdobeAIRSDKMac3.9" path="http://airdownload.adobe.com/air/mac/download/3.9/" file="AdobeAIRSDK.tbz2" />
+		
+		<!-- Adobe Flash Player player global swc -->
+		<file name="FlashPlayer10.2" path="http://download.macromedia.com/get/flashplayer/installers/archive/playerglobal/" file="playerglobal10_2.swc" version="10.2" swfversion="11" />
+		<file name="FlashPlayer10.3" path="http://download.macromedia.com/get/flashplayer/installers/archive/playerglobal/" file="playerglobal10_3.swc" version="10.3" swfversion="12" />
+		<file name="FlashPlayer11.0" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_0.swc" version="11.0" swfversion="13" />
+		<file name="FlashPlayer11.1" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_1.swc" version="11.1" swfversion="14" label="tested" />
+		<file name="FlashPlayer11.2" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_2.swc" version="11.2" swfversion="15" />
+		<file name="FlashPlayer11.3" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_3.swc" version="11.3" swfversion="16" />
+		<file name="FlashPlayer11.4" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_4.swc" version="11.4" swfversion="17" label="tested" />
+		<file name="FlashPlayer11.5" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_5.swc" version="11.5" swfversion="18" />
+		<file name="FlashPlayer11.6" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_6.swc" version="11.6" swfversion="19" />
+		<file name="FlashPlayer11.7" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_7.swc" version="11.7" swfversion="20" label="tested"/>
+		<file name="FlashPlayer11.8" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_8.swc" version="11.8" swfversion="21" label="tested"/>			
+		<file name="FlashPlayer11.9" path="http://download.macromedia.com/get/flashplayer/updaters/11/" file="playerglobal11_9.swc" version="11.9" swfversion="22" />			
+        
+        <!-- SWFObject.js -->
+        <file name="swfobject" path="http://swfobject.googlecode.com/files/" file="swfobject_2_2.zip"/>
+
+        <!-- BlazeDS -->
+        <file name="BlazeDS" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-messaging-common.jar"/>
+
+        <!-- FontSWF -->
+        <file name="afe" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="afe.jar"/>
+        <file name="aglj40" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="aglj40.jar"/>
+        <file name="flex-fontkit" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-fontkit.jar"/>
+        <file name="rideau" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="rideau.jar"/>
+
+        <!-- OSMF -->
+        <file name="OSMF" path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/frameworks/libs/" file="osmf.swc"/>
+
+    </files>
+</config>

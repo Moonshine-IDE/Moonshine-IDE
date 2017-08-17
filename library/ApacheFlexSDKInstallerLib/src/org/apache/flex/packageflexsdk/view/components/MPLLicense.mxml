@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="600" height="300" showStatusBar="false"
+		  title="Mozilla Public License Version 1.1">
+	<fx:Script>
+		<![CDATA[
+			import org.apache.flex.packageflexsdk.resource.ViewResourceConstants;
+			[Bindable]private var mplTextStr:String = "Mozilla Public License Version 1.1:" +  
+				"The contents of the file(s) are subject to the Mozilla Public License Version 1.1." +
+				"You may not use the file(s) except in compliance with the License. " +
+				"You may obtain a copy of the License here: http://www.mozilla.org/MPL/. " +
+				"By downloading, modifying, distributing, using and/or accessing the file(s), " +
+				"you agree to the terms and conditions of the applicable license agreement.";
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout />
+	</s:layout>
+	<s:TextArea 
+		width="100%" 
+		height="100%" 
+		fontSize="14" 
+		text="{mplTextStr}" 
+		editable="false"/>
+	<s:HGroup width="100%" height="50" verticalAlign="middle" paddingRight="15" >
+		<s:Spacer width="100%" />
+		<s:Button label="{ViewResourceConstants.instance.BTN_LABEL_CLOSE}" click="close()" styleName="genericBtnStyle"  />
+	</s:HGroup>
+</s:Window>

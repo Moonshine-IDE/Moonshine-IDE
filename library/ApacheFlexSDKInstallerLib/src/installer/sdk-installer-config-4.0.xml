@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+
+<!-- NOTE: this file format looks like this so it can be parsed by Ant's xmlproperty task.
+           The basic rule is that there can be no repeat tags as in:
+            <sometag>
+               <oneormoreofthistag />
+               <oneormoreofthistag />
+            </sometag>
+-->
+<config>
+	<version>
+		<latest>3.3.0</latest>
+	</version>
+    <languages>
+        <locale1 id="de_DE" name="Deutsch" path="http://flex.apache.org/installer/properties/de_DE.properties"/>
+        <locale2 id="en_US" name="English (US)" path="http://flex.apache.org/installer/properties/en_US.properties"/>
+        <locale3 id="en_AU" name="English (AU)" path="http://flex.apache.org/installer/properties/en_AU.properties"/>
+        <locale4 id="en_GB" name="English (GB)" path="http://flex.apache.org/installer/properties/en_GB.properties"/>
+        <locale5 id="es_ES" name="Español (ES)" path="http://flex.apache.org/installer/properties/es_ES.properties"/>
+        <locale6 id="fr_FR" name="Français" path="http://flex.apache.org/installer/properties/fr_FR.properties"/>
+        <locale7 id="el_GR" name="Greek" path="http://flex.apache.org/installer/properties/el_GR.properties"/>
+        <locale5 id="ko_KR" name="Korean" path="http://flex.apache.org/installer/properties/ko_KR.properties"/>
+        <locale8 id="nl_NL" name="Nederlands" path="http://flex.apache.org/installer/properties/nl_NL.properties"/>
+        <locale9 id="pt_BR" name="Português" path="http://flex.apache.org/installer/properties/pt_BR.properties"/>
+    </languages>
+    <!-- SDK Installer Application binary distribution
+     Notes:
+     - use full URL when binaries are NOT released yet, else use
+     path relative to mirror
+     - if path is relative, don't use starting slash -->
+    <installer name="SDKInstallerApp" path="flex/installer/3.0/binaries/" file="apache-flex-sdk-installer-3.0.0-bin" />
+    <!-- Mirror URL CGI -->
+    <mirror name="MirrorURLCGI" path="" file="single-mirror-url.cgi"/>
+	<products>
+        <!-- Apache Flex binary distribution
+         Notes:
+         - path is relative to mirror URL; don't use starting slash
+         - use http based url if you want to use an absolute url instead of mirror
+         - remove the extension from the file name -->
+        <ApacheFlexSDK name="Apache Flex SDK" prefix="apache-flex-sdk-" icon="http://flex.apache.org/installer/icons/apache_flex_logo_text.png" latestVersion="4.12.1">
+            <versions>
+                <versionA id="4.9.1" version="4.9.1" path="http://archive.apache.org/dist/flex/4.9.1/binaries/" file="apache-flex-sdk-4.9.1-bin" legacy="true" />
+                <versionB id="4.10.0" version="4.10.0" path="http://archive.apache.org/dist/flex/4.10.0/binaries/" file="apache-flex-sdk-4.10.0-bin" legacy="true" />
+                <versionC id="4.11.0" version="4.11.0" path="http://archive.apache.org/dist/flex/4.11.0/binaries/" file="apache-flex-sdk-4.11.0-bin" legacy="true" />
+                <versionD id="4.12.0" version="4.12.0" path="http://archive.apache.org/dist/flex/4.12.0/binaries/" file="apache-flex-sdk-4.12.0-bin"  />
+                <versionE id="4.12.1" version="4.12.1" path="flex/4.12.1/binaries/" file="apache-flex-sdk-4.12.1-bin" default="true" />
+                <Nightly id="Nightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-sdk-release/lastSuccessfulBuild/artifact/out/" file="apache-flex-sdk-4.13.0-bin" dev="true" nocache="true" />
+            </versions>
+        </ApacheFlexSDK>
+        <ApacheFlexJS name="Apache FlexJS" prefix="apache-flex-flexjs-" icon="http://flex.apache.org/installer/icons/apache_flexjs_logo_text.png" developmentVersion="0.0.1">
+            <versions>
+                <versionAA id="FlexJS0.0.1" version="0.0.1" path="flex/flexjs/0.0.1/binaries/" file="apache-flex-flexjs-0.0.1-bin" />
+                <Nightly id="FlexJSNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-asjs/lastSuccessfulBuild/artifact/out/" file="apache-flex-flexjs-0.0.2-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexJS>
+        <ApacheFlexFalcon name="Apache Flex Falcon" prefix="apache-flex-falcon-" overlay="true" needsAIR="false" needsFlash="false" icon="http://flex.apache.org/installer/icons/apache_flexfalcon_logo_text.png">
+            <versions>
+                <Nightly id="FlexFalconNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-falcon/lastSuccessfulBuild/artifact/out/" file="apache-flex-falcon-0.0.2-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexFalcon>
+        <ApacheFlexFalconJX name="Apache Flex FalconJX" prefix="apache-flex-falconjx-" overlay="true" needsAIR="false" needsFlash="false" icon="http://flex.apache.org/installer/icons/apache_flexfalcon_logo_text.png" developmentVersion="0.0.2" rc="rc3" latestVersion="0.0.1">
+            <versions>
+                <Nightly id="FlexFalconJXNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-falcon/lastSuccessfulBuild/artifact/out/" file="apache-flex-falconjx-0.0.2-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexFalconJX>
+    </products>
+    <airsdk>
+        <linux>
+            <versions default="2.6">
+                <versionA id="air.sdk.version.linux.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.linux.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.linux.2.6">air/lin/download/2.6/</folder>
+                    <path id="air.sdk.path.linux.2.6">http://airdownload.adobe.com/air/lin/download/2.6/</path>
+                    <file id="air.sdk.file.linux.2.6">AdobeAIRSDK.tbz2</file>
+                </versionA>
+            </versions>
+        </linux>
+        <windows>
+            <versions default="13.0">
+                <versionA id="air.sdk.version.windows.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.windows.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.2.6">air/win/download/2.6/</folder>
+                    <path id="air.sdk.path.windows.2.6">http://airdownload.adobe.com/air/win/download/2.6/</path>
+                    <file id="air.sdk.file.windows.2.6">AdobeAIRSDK.zip</file>
+                </versionA>
+                <versionB id="air.sdk.version.windows.2.7" version="2.7" displayVersion="2.7">
+                    <server id="air.sdk.server.windows.2.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.2.7">air/win/download/2.7/</folder>
+                    <path id="air.sdk.path.windows.2.7">http://airdownload.adobe.com/air/win/download/2.7/</path>
+                    <file id="air.sdk.file.windows.2.7">AdobeAIRSDK.zip</file>
+                </versionB>
+                <versionC id="air.sdk.version.windows.3.0" version="3.0" displayVersion="3.0">
+                    <server id="air.sdk.server.windows.3.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.0">air/win/download/3.0/</folder>
+                    <path id="air.sdk.path.windows.3.0">http://airdownload.adobe.com/air/win/download/3.0/</path>
+                    <file id="air.sdk.file.windows.3.0">AdobeAIRSDK.zip</file>
+                </versionC>
+                <versionD id="air.sdk.version.windows.3.1" version="3.1" displayVersion="3.1" label="tested">
+                    <server id="air.sdk.server.windows.3.1">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.1">air/win/download/3.1/</folder>
+                    <path id="air.sdk.path.windows.3.1">http://airdownload.adobe.com/air/win/download/3.1/</path>
+                    <file id="air.sdk.file.windows.3.1">AdobeAIRSDK.zip</file>
+                </versionD>
+                <versionE id="air.sdk.version.windows.3.2" version="3.2" displayVersion="3.2">
+                    <server id="air.sdk.server.windows.3.2">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.2">air/win/download/3.2/</folder>
+                    <path id="air.sdk.path.windows.3.2">http://airdownload.adobe.com/air/win/download/3.2/</path>
+                    <file id="air.sdk.file.windows.3.2">AdobeAIRSDK.zip</file>
+                </versionE>
+                <versionF id="air.sdk.version.windows.3.3" version="3.3" displayVersion="3.3">
+                    <server id="air.sdk.server.windows.3.3">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.3">air/win/download/3.3/</folder>
+                    <path id="air.sdk.path.windows.3.3">http://airdownload.adobe.com/air/win/download/3.3/</path>
+                    <file id="air.sdk.file.windows.3.3">AdobeAIRSDK.zip</file>
+                </versionF>
+                <versionG id="air.sdk.version.windows.3.4" version="3.4" displayVersion="3.4" label="tested">
+                    <server id="air.sdk.server.windows.3.4">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.4">air/win/download/3.4/</folder>
+                    <path id="air.sdk.path.windows.3.4">http://airdownload.adobe.com/air/win/download/3.4/</path>
+                    <file id="air.sdk.file.windows.3.4">AdobeAIRSDK.zip</file>
+                </versionG>
+                <versionH id="air.sdk.version.windows.3.5" version="3.5" displayVersion="3.5">
+                    <server id="air.sdk.server.windows.3.5">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.5">air/win/download/3.5/</folder>
+                    <path id="air.sdk.path.windows.3.5">http://airdownload.adobe.com/air/win/download/3.5/</path>
+                    <file id="air.sdk.file.windows.3.5">AdobeAIRSDK.zip</file>
+                </versionH>
+                <versionI id="air.sdk.version.windows.3.6" version="3.6" displayVersion="3.6">
+                    <server id="air.sdk.server.windows.3.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.6">air/win/download/3.6/</folder>
+                    <path id="air.sdk.path.windows.3.6">http://airdownload.adobe.com/air/win/download/3.6/</path>
+                    <file id="air.sdk.file.windows.3.6">AdobeAIRSDK.zip</file>
+                </versionI>
+                <versionJ id="air.sdk.version.windows.3.7" version="3.7" displayVersion="3.7" label="tested">
+                    <server id="air.sdk.server.windows.3.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.7">air/win/download/3.7/</folder>
+                    <path id="air.sdk.path.windows.3.7">http://airdownload.adobe.com/air/win/download/3.7/</path>
+                    <file id="air.sdk.file.windows.3.7">AdobeAIRSDK.zip</file>
+                </versionJ>
+                <versionK id="air.sdk.version.windows.3.8" version="3.8" displayVersion="3.8" label="tested">
+                    <server id="air.sdk.server.windows.3.8">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.8">air/win/download/3.8/</folder>
+                    <path id="air.sdk.path.windows.3.8">http://airdownload.adobe.com/air/win/download/3.8/</path>
+                    <file id="air.sdk.file.windows.3.8">AdobeAIRSDK.zip</file>
+                </versionK>
+                <versionL id="air.sdk.version.windows.3.9" version="3.9" displayVersion="3.9">
+                    <server id="air.sdk.server.windows.3.9">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.9">air/win/download/3.9/</folder>
+                    <path id="air.sdk.path.windows.3.9">http://airdownload.adobe.com/air/win/download/3.9/</path>
+                    <file id="air.sdk.file.windows.3.9">AdobeAIRSDK.zip</file>
+                </versionL>
+                <versionM id="air.sdk.version.windows.4.0" version="4.0" displayVersion="4.0">
+                    <server id="air.sdk.server.windows.4.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.4.0">air/win/download/4.0/</folder>
+                    <path id="air.sdk.path.windows.4.0">http://airdownload.adobe.com/air/win/download/4.0/</path>
+                    <file id="air.sdk.file.windows.4.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.4.0">7891ce8200dedf50c811017a0d76bcdc</md5>
+                </versionM>
+                <versionN id="air.sdk.version.windows.13.0" version="13.0" displayVersion="13">
+                    <server id="air.sdk.server.windows.13.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.13.0">air/win/download/13.0/</folder>
+                    <path id="air.sdk.path.windows.13.0">http://airdownload.adobe.com/air/win/download/13.0/</path>
+                    <file id="air.sdk.file.windows.13.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.13.0">1fd676eb1bdd17ac8ab814a1ecc4001a</md5>
+                </versionN>
+                <versionO id="air.sdk.version.windows.14.0" version="14.0" displayVersion="14 (beta)">
+                    <server id="air.sdk.server.windows.14.0">http://labsdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.14.0">pub/labs/flashruntimes/air/</folder>
+                    <path id="air.sdk.path.windows.14.0">http://labsdownload.adobe.com/pub/labs/flashruntimes/air/</path>
+                    <file id="air.sdk.file.windows.14.0">air14_sdk_sa_win.zip</file>
+                </versionO>
+            </versions>
+        </windows>
+        <mac>
+            <versions default="13.0">
+                <versionA id="air.sdk.version.mac.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.mac.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.2.6">air/mac/download/2.6/</folder>
+                    <path id="air.sdk.path.mac.2.6">http://airdownload.adobe.com/air/mac/download/2.6/</path>
+                    <file id="air.sdk.file.mac.2.6">AdobeAIRSDK.tbz2</file>
+                </versionA>
+                <versionB id="air.sdk.version.mac.2.7" version="2.7" displayVersion="2.7">
+                    <server id="air.sdk.server.mac.2.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.2.7">air/mac/download/2.7/</folder>
+                    <path id="air.sdk.path.mac.2.7">http://airdownload.adobe.com/air/mac/download/2.7/</path>
+                    <file id="air.sdk.file.mac.2.7">AdobeAIRSDK.tbz2</file>
+                </versionB>
+                <versionC id="air.sdk.version.mac.3.0" version="3.0" displayVersion="3.0">
+                    <server id="air.sdk.server.mac.3.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.0">air/mac/download/3.0/</folder>
+                    <path id="air.sdk.path.mac.3.0">http://airdownload.adobe.com/air/mac/download/3.0/</path>
+                    <file id="air.sdk.file.mac.3.0">AdobeAIRSDK.tbz2</file>
+                </versionC>
+                <versionD id="air.sdk.version.mac.3.1" version="3.1" displayVersion="3.1" label="tested">
+                    <server id="air.sdk.server.mac.3.1">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.1">air/mac/download/3.1/</folder>
+                    <path id="air.sdk.path.mac.3.1">http://airdownload.adobe.com/air/mac/download/3.1/</path>
+                    <file id="air.sdk.file.mac.3.1">AdobeAIRSDK.tbz2</file>
+                </versionD>
+                <versionE id="air.sdk.version.mac.3.2" version="3.2" displayVersion="3.2">
+                    <server id="air.sdk.server.mac.3.2">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.2">air/mac/download/3.2/</folder>
+                    <path id="air.sdk.path.mac.3.2">http://airdownload.adobe.com/air/mac/download/3.2/</path>
+                    <file id="air.sdk.file.mac.3.2">AdobeAIRSDK.tbz2</file>
+                </versionE>
+                <versionF id="air.sdk.version.mac.3.3" version="3.3" displayVersion="3.3">
+                    <server id="air.sdk.server.mac.3.3">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.3">air/mac/download/3.3/</folder>
+                    <path id="air.sdk.path.mac.3.3">http://airdownload.adobe.com/air/mac/download/3.3/</path>
+                    <file id="air.sdk.file.mac.3.3">AdobeAIRSDK.tbz2</file>
+                </versionF>
+                <versionG id="air.sdk.version.mac.3.4" version="3.4" displayVersion="3.4" label="tested">
+                    <server id="air.sdk.server.mac.3.4">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.4">air/mac/download/3.4/</folder>
+                    <path id="air.sdk.path.mac.3.4">http://airdownload.adobe.com/air/mac/download/3.4/</path>
+                    <file id="air.sdk.file.mac.3.4">AdobeAIRSDK.tbz2</file>
+                </versionG>
+                <versionH id="air.sdk.version.mac.3.5" version="3.5" displayVersion="3.5">
+                    <server id="air.sdk.server.mac.3.5">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.5">air/mac/download/3.5/</folder>
+                    <path id="air.sdk.path.mac.3.5">http://airdownload.adobe.com/air/mac/download/3.5/</path>
+                    <file id="air.sdk.file.mac.3.5">AdobeAIRSDK.tbz2</file>
+                </versionH>
+                <versionI id="air.sdk.version.mac.3.6" version="3.6" displayVersion="3.6">
+                    <server id="air.sdk.server.mac.3.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.6">air/mac/download/3.6/</folder>
+                    <path id="air.sdk.path.mac.3.6">http://airdownload.adobe.com/air/mac/download/3.6/</path>
+                    <file id="air.sdk.file.mac.3.6">AdobeAIRSDK.tbz2</file>
+                </versionI>
+                <versionJ id="air.sdk.version.mac.3.7" version="3.7" displayVersion="3.7" label="tested">
+                    <server id="air.sdk.server.mac.3.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.7">air/mac/download/3.7/</folder>
+                    <path id="air.sdk.path.mac.3.7">http://airdownload.adobe.com/air/mac/download/3.7/</path>
+                    <file id="air.sdk.file.mac.3.7">AdobeAIRSDK.tbz2</file>
+                </versionJ>
+                <versionK id="air.sdk.version.mac.3.8" version="3.8" displayVersion="3.8" label="tested">
+                    <server id="air.sdk.server.mac.3.8">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.8">air/mac/download/3.8/</folder>
+                    <path id="air.sdk.path.mac.3.8">http://airdownload.adobe.com/air/mac/download/3.8/</path>
+                    <file id="air.sdk.file.mac.3.8">AdobeAIRSDK.tbz2</file>
+                </versionK>
+                <versionL id="air.sdk.version.mac.3.9" version="3.9" displayVersion="3.9">
+                    <server id="air.sdk.server.mac.3.9">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.9">air/mac/download/3.9/</folder>
+                    <path id="air.sdk.path.mac.3.9">http://airdownload.adobe.com/air/mac/download/3.9/</path>
+                    <file id="air.sdk.file.mac.3.9">AdobeAIRSDK.tbz2</file>
+                </versionL>
+                <versionM id="air.sdk.version.mac.4.0" version="4.0" displayVersion="4.0">
+                    <server id="air.sdk.server.mac.4.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.4.0">air/mac/download/4.0/</folder>
+                    <path id="air.sdk.path.mac.4.0">http://airdownload.adobe.com/air/mac/download/4.0/</path>
+                    <file id="air.sdk.file.mac.4.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.4.0">0787bb2edbef4417aeef4ef99f105859</md5>
+                </versionM>
+                <versionN id="air.sdk.version.mac.13.0" version="13.0" displayVersion="13">
+                    <server id="air.sdk.server.mac.13.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.13.0">air/mac/download/13.0/</folder>
+                    <path id="air.sdk.path.mac.13.0">http://airdownload.adobe.com/air/mac/download/13.0/</path>
+                    <file id="air.sdk.file.mac.13.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.13.0">9156e9b92c13b11db91ea9958926060b</md5>
+                </versionN>
+                <versionO id="air.sdk.version.mac.14.0" version="14.0" displayVersion="14 (beta)">
+                    <server id="air.sdk.server.mac.14.0">http://labsdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.14.0">pub/labs/flashruntimes/air/</folder>
+                    <path id="air.sdk.path.mac.14.0">http://labsdownload.adobe.com/pub/labs/flashruntimes/air/</path>
+                    <file id="air.sdk.file.mac.14.0">air14_sdk_sa_mac.tbz2</file>
+                </versionO>
+            </versions>
+        </mac>
+    </airsdk>
+    <flashsdk>
+        <versions default="13.0">
+            <versionA id="flash.sdk.version.10.2" version="10.2" displayVersion="10.2">
+                <server id="flash.sdk.server.10.2">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.10.2">get/flashplayer/installers/archive/playerglobal/</folder>
+                <path id="flash.sdk.path.10.2">http://download.macromedia.com/get/flashplayer/installers/archive/playerglobal/</path>
+                <file id="flash.sdk.file.10.2">playerglobal10_2.swc</file>
+                <swfversion id="flash.sdk.swfversion.10.2">11</swfversion>
+            </versionA>
+            <versionB id="flash.sdk.version.10.3" version="10.3" displayVersion="10.3">
+                <server id="flash.sdk.server.10.3">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.10.3">get/flashplayer/installers/archive/playerglobal/</folder>
+                <path id="flash.sdk.path.10.3">http://download.macromedia.com/get/flashplayer/installers/archive/playerglobal/</path>
+                <file id="flash.sdk.file.10.3">playerglobal10_3.swc</file>
+                <swfversion id="flash.sdk.swfversion.10.3">12</swfversion>
+            </versionB>
+            <versionC id="flash.sdk.version.11.0" version="11.0" displayVersion="11.0">
+                <server id="flash.sdk.server.11.0">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.0">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.0">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.0">playerglobal11_0.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.0">13</swfversion>
+            </versionC>
+            <versionD id="flash.sdk.version.11.1" version="11.1" displayVersion="11.1" label="tested">
+                <server id="flash.sdk.server.11.1">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.1">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.1">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.1">playerglobal11_1.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.1">14</swfversion>
+            </versionD>
+            <versionE id="flash.sdk.version.11.2" version="11.2" displayVersion="11.2">
+                <server id="flash.sdk.server.11.2">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.2">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.2">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.2">playerglobal11_2.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.2">15</swfversion>
+            </versionE>
+            <versionF id="flash.sdk.version.11.3" version="11.3" displayVersion="11.3">
+                <server id="flash.sdk.server.11.3">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.3">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.3">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.3">playerglobal11_3.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.3">16</swfversion>
+            </versionF>
+            <versionG id="flash.sdk.version.11.4" version="11.4" displayVersion="11.4" label="tested">
+                <server id="flash.sdk.server.11.4">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.4">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.4">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.4">playerglobal11_4.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.4">17</swfversion>
+            </versionG>
+            <versionH id="flash.sdk.version.11.5" version="11.5" displayVersion="11.5">
+                <server id="flash.sdk.server.11.5">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.5">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.5">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.5">playerglobal11_5.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.5">18</swfversion>
+            </versionH>
+            <versionI id="flash.sdk.version.11.6" version="11.6" displayVersion="11.6">
+                <server id="flash.sdk.server.11.6">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.6">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.6">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.6">playerglobal11_6.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.6">19</swfversion>
+            </versionI>
+            <versionJ id="flash.sdk.version.11.7" version="11.7" displayVersion="11.7" label="tested">
+                <server id="flash.sdk.server.11.7">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.7">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.7">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.7">playerglobal11_7.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.7">20</swfversion>
+            </versionJ>
+            <versionK id="flash.sdk.version.11.8" version="11.8" displayVersion="11.8" label="tested">
+                <server id="flash.sdk.server.11.8">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.8">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.8">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.8">playerglobal11_8.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.8">21</swfversion>
+            </versionK>
+            <versionL id="flash.sdk.version.11.9" version="11.9" displayVersion="11.9">
+                <server id="flash.sdk.server.11.9">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.9">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.9">http://download.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.9">playerglobal11_9.swc</file>
+                <swfversion id="flash.sdk.swfversion.11.9">22</swfversion>
+            </versionL>
+            <versionM id="flash.sdk.version.12.0" version="12.0" displayVersion="12.0">
+                <server id="flash.sdk.server.12.0">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.12.0">get/flashplayer/updaters/12/</folder>
+                <path id="flash.sdk.path.12.0">http://download.macromedia.com/get/flashplayer/updaters/12/</path>
+                <file id="flash.sdk.file.12.0">playerglobal12_0.swc</file>
+                <md5 id="flash.sdk.md5.12.0">4db4e934f39f774ba68fcd9a79654971</md5>
+                <swfversion id="flash.sdk.swfversion.12.0">23</swfversion>
+            </versionM>
+            <versionN id="flash.sdk.version.13.0" version="13.0" displayVersion="13">
+                <server id="flash.sdk.server.13.0">http://download.macromedia.com</server>
+                <folder id="flash.sdk.folder.13.0">get/flashplayer/updaters/13/</folder>
+                <path id="flash.sdk.path.13.0">http://download.macromedia.com/get/flashplayer/updaters/13/</path>
+                <file id="flash.sdk.file.13.0">playerglobal13_0.swc</file>
+                <md5 id="flash.sdk.md5.13.0">6f56d4d623e7dff9b952b2830d24142c</md5>
+                <swfversion id="flash.sdk.swfversion.13.0">24</swfversion>
+            </versionN>
+            <versionO id="flash.sdk.version.14.0" version="14.0" displayVersion="14 (beta)">
+                <server id="flash.sdk.server.14.0">http://labsdownload.adobe.com</server>
+                <folder id="flash.sdk.folder.14.0">pub/labs/flashruntimes/flashplayer/</folder>
+                <path id="flash.sdk.path.14.0">http://labsdownload.adobe.com/pub/labs/flashruntimes/flashplayer/</path>
+                <file id="flash.sdk.file.14.0">flashplayer14_playerglobal.swc</file>
+                <swfversion id="flash.sdk.swfversion.14.0">25</swfversion>
+            </versionO>
+        </versions>
+    </flashsdk>
+
+    <swfobject path="http://swfobject.googlecode.com/files/" file="swfobject_2_2.zip"/>
+
+    <BlazeDS path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-messaging-common.jar"/>
+
+    <!-- FontSWF -->
+    <fontswf>
+        <afe path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="afe.jar"/>
+        <aglj40 path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="aglj40.jar"/>
+        <flex-fontkit path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="flex-fontkit.jar"/>
+        <rideau path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/lib/" file="rideau.jar"/>
+    </fontswf>
+    
+    <!-- For OSMF, we are including the file name along with the url.  This is to support the weird url format for OSMF2.0 which forces us to do the same -->
+    <!-- OSMF 1.x -->
+    <OSMF_SWC path="http://opensource.adobe.com/svn/opensource/flex/sdk/branches/4.y/frameworks/libs/" file="osmf.swc"/>
+    <!-- OSMF 2.0 -->
+    <OSMF_SWC_2.0 path="osmf.adobe/OSMF%202.0%20Release%20%28final%20source%2C%20ASDocs%2C%20pdf%20guides%20and%20release%20notes%29/" file="OSMF.swc"/>
+
+</config>

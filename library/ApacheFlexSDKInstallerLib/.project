@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>ApacheFlexSDKInstallerLib</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.flexlibnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] ant_on_air-src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/src</locationURI>
+		</link>
+		<link>
+			<name>[source path] common-src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/common/src</locationURI>
+		</link>
+		<link>
+			<name>[source path] en_US</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/locale/en_US</locationURI>
+		</link>
+		<link>
+			<name>[source path] external</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/external</locationURI>
+		</link>
+		<link>
+			<name>bin-debug</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/MoonshineDESKTOPevolved/libs</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>
