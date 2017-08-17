@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:BorderContainer 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+	contentBackgroundColor="0xf5f5f5"
+	contentBackgroundAlpha="1"
+	borderVisible="false"
+	width="450" autoLayout="true" xmlns:view="actionScripts.plugin.findreplace.view.*">
+	
+	<s:filters>
+		<mx:GlowFilter color="0x0" alpha="0.3" blurX="6" blurY="6" quality="2" /> 
+	</s:filters>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import flash.filesystem.File;
+			
+			import mx.validators.Validator;
+			
+			import actionScripts.plugins.svn.event.SVNEvent;
+			
+			protected var closeButtonColor:uint = 0x0;
+			
+			// Populate these before it's shown and it'll be displayed
+			[Bindable] public var file:File;
+			public var svnUrl:String;
+			
+			protected function init():void
+			{
+				if (file) path.text = file.nativePath;
+				if (svnUrl) url.text = svnUrl;
+			}
+			
+			protected function browse():void
+			{
+				var f:File = File.documentsDirectory;
+				f.addEventListener(Event.SELECT, handleDirSelect);
+				f.browseForDirectory("Subversion checkout target");
+			}
+			
+			protected function handleDirSelect(dir:Object):void
+			{
+				file = dir as File;
+				path.text = file.nativePath;
+			}
+			
+			protected function close():void
+			{
+				dispatchEvent(new Event("close"));
+			}
+			
+			protected function checkout():void
+			{
+				if (cbLogin.selected)
+				{
+					var tmpArr : Array = new Array( unValidator, pValidator );
+					if ( Validator.validateAll(tmpArr).length != 0 ) return;
+				}
+				
+				dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, file, url.text, null, cbLogin.selected ? {username:txtLogin.text, password:txtPassword.text} : null));
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="unValidator" source="{txtLogin}" property="text" trigger="{btnCheckout}" triggerEvent="click"/>
+		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnCheckout}" triggerEvent="click"/>
+	</fx:Declarations>
+	
+	<s:VGroup 
+		width="100%" height="100%"
+		paddingLeft="10" paddingRight="10"
+		paddingTop="10" paddingBottom="10">
+		
+		<s:HGroup width="100%">
+			<s:Label
+				width="100%"
+				text="Subversion checkout"
+				styleName="uiTextSettingsLabel"
+				paddingBottom="5" />
+
+			<!-- 
+				TODO: Add close button (same style as tabs perhaps)
+			-->
+			
+		</s:HGroup>
+		
+		<!--
+			TODO: This should be a dropdown (combobox) with memory of past repos (LocalObject) 
+		-->
+		<view:PromptTextInput
+			id="url" 
+			prompt="Where is this SVN repository?"
+			width="100%"
+			styleName="textInput"
+			tabIndex="1"
+			creationComplete="init()"/>
+		
+		<s:HGroup
+			verticalAlign="middle"
+			width="100%">
+		
+			<!-- TODO: Make this editable (with validation) -->
+			<view:PromptTextInput
+				id="path" 
+				prompt="Where do I put it?"
+				width="100%"
+				styleName="textInput"
+				editable="false"
+				tabIndex="2"/>
+				
+			<s:Button
+				width="60"
+				label="Browse"
+				styleName="lightButtonTight"
+				click="browse()" />
+				
+		</s:HGroup>
+		
+		<s:CheckBox id="cbLogin"
+					label="Need Authentication" selected="false"/>
+		
+		<s:VGroup width="100%"
+				  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
+			<view:PromptTextInput
+				id="txtLogin" 
+				prompt="User Name"
+				width="100%"
+				styleName="textInput"/>
+			<view:PromptTextInput
+				id="txtPassword" 
+				prompt="Password" change="txtPassword.displayAsPassword=true"
+				width="100%"
+				styleName="textInput"/>
+		</s:VGroup>
+		
+		<s:HGroup width="100%"
+			horizontalAlign="right"
+			paddingTop="5">
+			<s:Button
+				id="btnCheckout"
+				label="Checkout"
+				styleName="lightButton" 
+				enabled="{file &amp;&amp; path.text}"
+				click="checkout()"/>
+			<s:Button
+				label="Cancel"
+				styleName="lightButton" 
+				click="close()"/>
+		</s:HGroup>
+		
+	</s:VGroup>
+	
+</s:BorderContainer>

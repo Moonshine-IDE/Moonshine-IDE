@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%" 
+	backgroundColor="0x444444"
+	verticalGap="0"
+	implements="actionScripts.ui.IPanelWindow"
+	initialize="onInitialized(event)" xmlns:view="actionScripts.plugins.fdb.view.*">
+	<mx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.ui.editor.TourDeTreeItemRenderer;
+			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.tabview.TabViewTab;
+			
+			[Bindable] protected var noExamples:int = 0;
+			[Bindable] protected var explorerTree:XML;
+			
+			private var stream:FileStream;
+			
+			private var thirdPatyWarningText: String = "<!--\n\nThis example or component has been developed by a 3rd party and is hosted outside of the Tour De Flex site and may contain links to non ASF sites.\nIt's code may not be Open Source or may be under a license other than the Apache license so please check carefully before using it.\nNeither the ASF or the Apache Flex PMC can endorse or recommend using this example but you may still find it useful.\n\n-->";
+		
+			public function refresh():void
+			{
+				compLibTree.invalidateList();
+			}
+			
+			private function getIconForObject(object:Object):Class
+			{
+				return null;
+			}
+			
+			private function initHeader():void {
+				header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+			}
+			
+			private function handleClose(event:Event):void
+			{
+				if (stage) 
+				{
+					LayoutModifier.isTourDeFlex = false;
+					IDEModel.getInstance().mainView.removePanel(this);
+				}
+			}
+		
+			protected function onInitialized(event:FlexEvent):void
+			{
+				compLibTree.itemRenderer = new ClassFactory(TourDeTreeItemRenderer);
+				
+				var tmpFile:File = File.applicationDirectory.resolvePath("tourDeFlex/explorer.xml");
+				if (tmpFile.exists)
+				{
+					stream = new FileStream();
+					stream.addEventListener(Event.COMPLETE, onExplorerLoaded, false, 0, true);
+					stream.openAsync(tmpFile, FileMode.READ);
+				}
+			}
+			
+			protected function onExplorerLoaded(event:Event):void
+			{
+				stream.removeEventListener(Event.COMPLETE, onExplorerLoaded);
+				
+				var data:XML = XML(stream.readUTFBytes(stream.bytesAvailable));
+				data.normalize();
+				explorerTree = XML(data.node);
+				
+				noExamples = (explorerTree..node.(hasOwnProperty("@app") && @app.length() > 0)).length();
+				
+				var tmpFile:File = File.applicationDirectory.resolvePath("tourDeFlex/3rdparty.xml");
+				if (tmpFile.exists)
+				{
+					stream = new FileStream();
+					stream.addEventListener(Event.COMPLETE, load3rdParty, false, 0, true);
+					stream.openAsync(tmpFile, FileMode.READ);
+				}
+			}
+			
+			protected function load3rdParty(event:Event):void
+			{
+				stream.removeEventListener(Event.COMPLETE, onExplorerLoaded);
+				
+				var newNode:XML = XML(stream.readUTFBytes(stream.bytesAvailable));
+				newNode.normalize();
+				
+				for each(var i:XML in newNode..node)
+				{
+					if (i.@thirdParty != undefined) 
+					{
+						var definedName:String = String(i.@label).split(" ").join("");
+						i.@app = definedName+"_ThirdParty.txt";
+					}
+				}
+				
+				if (newNode..node.length() > 0) {
+					explorerTree.appendChild(newNode.node);
+					compLibTree.dataProvider = explorerTree;
+					noExamples += (newNode..node.(hasOwnProperty("@app") && @app.length() > 0)).length();
+				}
+			}
+			
+			private function loadApp(application:String, source:String, thirdParty:Boolean, link:String=""):void
+			{
+				var swfLink:String = "";
+				var tmpFile:File;
+				
+				if (application.indexOf(".swf") > 0) 
+				{
+					swfLink = application;
+				}
+				else if(application.indexOf(".jpg") > 0 || application.indexOf(".png") > 0)
+				{
+					//swfLoader.loadApp(application,link);
+					swfLink = application;
+				}
+				else 
+				{
+					swfLink = application + ".swf";
+				}
+				
+				if (thirdParty) 
+				{
+					// Since we can't use same 'opened' file to open in multiple tabs.
+					// we need some extra works here
+					tmpFile = File.applicationStorageDirectory.resolvePath(application);
+					if (!tmpFile.exists)
+					{
+						var fs : FileStream = new FileStream();
+						fs.open( tmpFile, FileMode.WRITE );
+						fs.writeUTFBytes(thirdPatyWarningText);
+						fs.close();
+					}
+					if (tmpFile.exists)
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent( 
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(tmpFile.nativePath), -1, null, true, link) 
+						);
+					}
+				}
+				else 
+				{
+					tmpFile = File.applicationDirectory.resolvePath("tourDeFlex/"+application+".mxml");
+					if (tmpFile.exists)
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent( 
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(tmpFile.nativePath), -1, null, true, "http://flex.apache.org/tourdeflex/"+swfLink) 
+						);
+					}
+					//vs.loadSource(application, source);
+				}
+			}
+			
+			private function getIconForFile(object:Object):Class
+			{
+				return null;
+			}
+			
+			protected function onTreeChanged(event:ListEvent):void
+			{
+				var nodeApp:String = compLibTree.selectedItem.@app;
+				var link:String = compLibTree.selectedItem.hasOwnProperty("@link") ? compLibTree.selectedItem.@link : "";
+				var thirdParty:Boolean = compLibTree.selectedItem.hasOwnProperty("@thirdParty")
+					&& compLibTree.selectedItem.@thirdParty == "true";
+				
+				if (nodeApp != null && nodeApp != "")
+				{
+					loadApp(nodeApp, compLibTree.selectedItem.@src, thirdParty, link);
+				}
+				else
+				{
+					compLibTree.expandItem(compLibTree.selectedItem, true, true);
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<view:DebugViewHeader
+		id="header"
+		label="Tour De Flex" 
+		width="100%"
+		creationComplete="initHeader()" />
+	
+	<mx:Tree id="compLibTree"
+			 dataProvider="{explorerTree}"
+			 
+			 color="0xEEEEEE"
+			 contentBackgroundColor="0x0"
+			 rollOverColor="0x393939"
+			 selectionColor="0x393939"
+			 alternatingItemColors="[0x444444, 0x4d4c4c]"
+			 verticalScrollBarStyleName="black"
+			 
+			 borderVisible="false"
+			 rowHeight="18"
+			 useRollOver="true"
+			 doubleClickEnabled="true"
+			 
+			 iconFunction="{getIconForFile}"
+			 
+			 width="100%" height="100%" 
+			 showRoot="false" labelField="@label" 
+			 borderStyle="none"
+			 itemClick="onTreeChanged(event)"/>
+</mx:VBox>

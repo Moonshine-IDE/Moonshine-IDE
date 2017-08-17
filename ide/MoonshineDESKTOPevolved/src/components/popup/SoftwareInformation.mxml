@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+//
+// Author: Prominic.NET, Inc. 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" autoLayout="true"
+		  initialize="onInit(event)" creationComplete="onCreationCompletes()" horizontalAlign="center">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.SoftwareVersionChecker;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			[Bindable] private var flexSDKPath:String = "- Not Installed -";
+			[Bindable] private var AntPath:String = "- Not Installed -";
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			
+			private var versionChecker: SoftwareVersionChecker = new SoftwareVersionChecker();
+			/**
+			 * On creation completes
+			 */
+			public function onCreationCompletes():void
+			{
+				if (model.defaultSDK) {
+					var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(model.defaultSDK.fileBridge.nativePath, "path");
+					if (isFound) flexSDKPath = isFound.name;
+				}
+				if(model.antHomePath){
+					AntPath = model.antHomePath.fileBridge.name;
+				}
+			}
+			
+			protected function onInit(event:FlexEvent):void
+			{
+				versionChecker.retrieveAboutInformation();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label text="Apache® Flex SDK (System): {SoftwareVersionChecker.FLEX_SYSTEM_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
+	<s:Label text="Apache® Flex SDK (Moonshine): {flexSDKPath}" 
+			 maxDisplayedLines="5" />
+	<s:Label text="Apache® Ant (System): {SoftwareVersionChecker.ANT_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
+	<s:Label text="Apache® Ant (Moonshine): {AntPath}"  />
+	<s:Label text="Java: {SoftwareVersionChecker.JAVA_VERSION}" />
+</s:VGroup>

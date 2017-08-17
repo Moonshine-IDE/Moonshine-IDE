@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			
+			import mx.utils.StringUtil;
+			
+			public var htmlSource:String;
+			
+			protected function onOpenLink(event:MouseEvent):void
+			{
+				if (htmlSource && (StringUtil.trim(htmlSource).length > 0)) navigateToURL(new URLRequest(htmlSource));
+			}
+		]]>
+	</fx:Script>
+	
+	<s:Rect top="0" left="0" right="0" bottom="0">
+		<s:fill>
+			<s:SolidColor color="0xffffff"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:VGroup autoLayout="true" horizontalAlign="center"
+			  horizontalCenter="0" verticalCenter="0">
+		<s:Label text="This example needs to open in browser."/>
+		<s:Button label="Open in browser"
+				  click="onOpenLink(event)"/>
+	</s:VGroup>
+</s:Group>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="MoonshineDESKTOP.mxml" projectUUID="f5fd8f2e-4925-4bd4-b3a0-3ab29e996081" version="10">
+  <compiler additionalCompilerArguments="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 33 -define+=CONFIG::OSX,false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/MoonshineMultiCodeBase/MoonshineSharedCore/src"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/MoonshineMultiCodeBase/MoonshineSharedCore/src/locale/{locale}"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/MoonshineMultiCodeBase/Balsamiq2FlexJSConverterLib/src"/>
+    </compilerSourcePath>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="10" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicSVNBranch/MoonshineMultiCodeBase/Balsamiq2FlexJSConverterLib/templates" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="10" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicSVNBranch/MoonshineMultiCodeBase/MoonshineSharedCore/src/elements" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="3" linkType="1" path="libs/ApacheFlexSDKInstallerLib.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="${DOCUMENTS}/MoonshineMultiCodeBase/MoonshineSharedCore/libs/AsWing.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="5" linkType="2" path="extensions/SSB.ane"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="MoonshineDESKTOP.mxml">
+      <airExcludes/>
+    </application>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+  <buildTargets>
+    <buildTarget buildTargetName="default">
+      <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
+        <airExcludes/>
+        <anePaths>
+          <anePathEntry path="extensions/SSB.ane"/>
+        </anePaths>
+      </airSettings>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+  </buildTargets>
+</actionScriptProperties>

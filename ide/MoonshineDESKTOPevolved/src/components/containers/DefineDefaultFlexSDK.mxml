@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+//
+// Author: Prominic.NET, Inc. 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 implements="actionScripts.ui.IContentWindow"
+		 label="Flex SDKs" horizontalCenter="0" verticalCenter="0"
+		 width="100%" backgroundColor="0xf5f5f5"
+		 height="100%" creationComplete="DefineSDKCreationComplete(event)" xmlns:containers="components.containers.*" >
+	<fx:Metadata>
+		[Event(name="SDK_SAVED", type="flash.events.Event")]
+		[Event(name="SDK_SAVE_CANCELLED", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
+			
+			public var editedSDKPath:ProjectReferenceVO;
+			
+			private var sdkPopup:SDKSelectorPopup;
+			private var sdkPathPopup:SDKDefinePopup;
+			
+			public static const SET_FLEXSDK: String = "SET_FLEXSDK";
+			
+			public function get longLabel():String
+			{
+				return SET_FLEXSDK;
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			private function DefineSDKCreationComplete(event:FlexEvent):void
+			{
+				var ps:PluginSetting = new PluginSetting("Flex SDKs", "Moonshine Project Team","Define Default Flex SDKs", false);
+				vgContainer.addElementAt(ps.renderer, 0);
+				
+				addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+			}
+			
+			private function onDownload(event:MouseEvent):void
+			{
+				currentState = "downloadState";
+				this.callLater(sdkDownloaderView.initThis);
+			}
+			
+			// open SDK selectable list popup
+			private function onSelect(event:MouseEvent):void
+			{
+				if (!sdkPathPopup)
+				{
+					sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
+					sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+					sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+					PopUpManager.centerPopUp(sdkPopup);
+				}
+				else
+				{
+					PopUpManager.bringToFront(sdkPathPopup);
+				}
+			}
+			
+			private function onFlexSDKUpdated(event:ProjectEvent):void
+			{
+				// in case user deleted the entry
+				txtsdkPath.text = event.anObject.path;
+				btnSave.enabled = true;
+				onSDKPopupClosed(null);
+			}
+			
+			private function onSDKPopupClosed(event:CloseEvent):void
+			{
+				sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+				sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+				sdkPopup = null;
+			}
+			
+			private function onSave(event:MouseEvent):void
+			{
+				// check if valid SDK directory
+				var tmpXML:Object = SDKUtils.isSDKDirectoy(new FileLocation(txtsdkPath.text));
+				if (!tmpXML || !tmpXML.xml || tmpXML.xml == "")
+				{
+					Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
+					return;
+				}
+				
+				// check if already added in saved SDKs list
+				var tmp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({label:tmpXML.xml.name, path:tmpXML.nativePath});
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, tmp ? tmp : SDKUtils.getSDKFromSavedList(tmpXML.nativePath)));
+				
+				// close will close the tab
+				//IDEModel.getInstance().defaultSDK = new FileLocation(txtsdkPath.text);
+				dispatchEvent(new Event(NoSDKNotifier.SDK_SAVED));
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+				);
+			}
+			
+			private function onCancel(event:MouseEvent):void{
+				// close will close the tab
+				// Close the tab
+				dispatchEvent(new Event(NoSDKNotifier.SDK_SAVE_CANCELLED));
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+				);
+			}
+			
+			protected function onSDKDownloadSelected(event:Event):void
+			{
+				txtsdkPath.text = sdkDownloaderView.selectedSDKDir.nativePath;
+				btnSave.enabled = true;
+				currentState = "selectionState";
+			}
+			
+			protected function onSDKDownloadCancel(event:Event):void
+			{
+				currentState = "selectionState";
+			}
+			
+			protected function onThisClosing(event:CloseTabEvent):void
+			{
+				removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
+				if (sdkDownloaderView) sdkDownloaderView.removeListeners();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<mx:states>
+		<s:State name="selectionState"/>
+		<s:State name="downloadState"/>
+	</mx:states>
+	
+	<s:VGroup height="100%" width="100%" horizontalAlign="center"
+			  includeIn="selectionState">
+		<s:VGroup height="100%" width="100%" horizontalAlign="center" >
+			<s:VGroup height="100%" width="100%"  id="vgContainer"  paddingLeft="15" paddingTop="15" paddingRight="15"  paddingBottom="15" >
+				<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+				<s:HGroup width="100%">
+					<s:Label styleName="uiTextSettingsLabel" text="Default Apache Flex® or FlexJS® SDK" />
+					<mx:Spacer width="100%"/>
+					<s:Button id="btnDownload"  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
+							  label="Download a New SDK" 
+							  click="onDownload(event)"/>
+					<s:Button id="btnSelect" skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
+							  label="Select From Filesystem" 
+							  click="onSelect(event)"/>
+				</s:HGroup>
+				<s:TextInput id="txtsdkPath" styleName="uiTextSettingsValue" paddingTop="10" width="100%" editable="false"/>
+				<mx:Spacer width="100%" height="100%"/>
+				<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+				<s:HGroup width="100%" horizontalAlign="center">
+					<s:Button id="btnSave" click="onSave(event)"
+							  label="Save"  enabled="false"
+							  styleName="lightButton" />
+					<s:Button id="btnCancel" click="onCancel(event)"
+							  label="Cancel" styleName="lightButton" />
+				</s:HGroup>
+			</s:VGroup>
+		</s:VGroup>	
+	</s:VGroup>
+	
+	<containers:ApacheFlexSDKInstallerView id="sdkDownloaderView" 
+										   width="100%" height="100%"
+										    includeIn="downloadState"
+											INSTALL_FINISH="onSDKDownloadSelected(event)"
+											INSTALL_CANCEL="onSDKDownloadCancel(event)"/>
+</mx:Canvas>

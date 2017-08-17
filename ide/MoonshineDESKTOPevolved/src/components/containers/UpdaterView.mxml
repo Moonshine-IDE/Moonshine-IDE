@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%" height="100%">
+	<fx:Metadata>
+		[Event( name="UPDATEYES" )]
+		[Event( name="UPDATENO" )]
+		[Event( name="UPDATECANCEL" )]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PUBLIC VARIABLES
+			//
+			//--------------------------------------------------------------------------
+			
+			[Bindable] public var downlaoding			: Boolean;
+			[Bindable] public var updater				: NativeApplicationUpdater;
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Rect left="0" right="0" top="0" bottom="0">
+		<s:fill>
+			<s:SolidColor color="#000000" alpha=".3"/>
+		</s:fill>    		
+	</s:Rect>
+	
+	<s:Image source="@Embed('/elements/images/icoBigClose.png')"
+			 top="10" right="24"
+			 click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"/>
+	
+	<s:BorderContainer width="96%" height="90%"
+						bottom="10" horizontalCenter="0"
+						borderVisible="false" backgroundColor="#e1e1e1">
+		<s:layout>
+			<s:VerticalLayout verticalAlign="middle"/>
+		</s:layout>
+		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle">
+			<s:Image source="@Embed('/elements/images/imgInstall.png')"/>
+			<s:VGroup>
+				<s:Label text="Updates:"
+						 styleName="dashboardLabel"/>
+				<s:Label text="New version ({updater.updateVersion}) is available."
+						 styleName="dashboardLabel"/>
+				<s:Label text="Do you want to download it and install?"
+						 styleName="dashboardLabel"/>
+				<mx:ProgressBar id="prgBar" source="{updater}" label="{(downlaoding)?'Downloading %3%':''}" alpha="{(downlaoding)?1:.3}" />
+				<s:HGroup width="100%">
+					<s:Button label="YES" 
+							  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
+							  width="30%"/>
+					<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
+							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
+							  width="30%"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:HGroup>
+	</s:BorderContainer>
+</s:Group>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+//
+// Author: Prominic.NET, Inc. 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 implements="actionScripts.ui.IContentWindow"
+		 label="Download a New SDK"
+		 width="100%" backgroundColor="0xf5f5f5"
+		 height="100%" creationComplete="initThis()" xmlns:containers="components.containers.*" >
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			import org.as3commons.asblocks.utils.FileUtil;
+			
+			public var selectedSDKDir:File;
+			public var editedSDKPath:ProjectReferenceVO;
+			public var requestedSDKDownloadVersion:String;
+			
+			private var installerView:InstallApacheFlex;
+			
+			public static const SET_FLEXSDK: String = "DWNLOAD_FLEXSDK";
+			
+			public function get longLabel():String
+			{
+				return label;
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			/**
+			 * On creation completes
+			 */
+			private function initThis():void
+			{
+				var sdksFolder:File;
+				
+				// platformwise default folder path selection
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					sdksFolder = File.userDirectory;
+					
+					var tmpPathSplit: Array = sdksFolder.nativePath.split(FileUtil.separator);
+					tmpPathSplit.shift();
+					
+					sdksFolder = new File(FileUtil.separator + tmpPathSplit[0] + FileUtil.separator + tmpPathSplit[1] + FileUtil.separator + "Downloads");
+					if (!sdksFolder.exists) sdksFolder = File.documentsDirectory;
+				}
+				else
+				{
+					sdksFolder = File.documentsDirectory;
+				}
+				
+				installerView = new InstallApacheFlex();
+				installerView.defaultInstallPathToSDK = sdksFolder;
+				installerView.requestedSDKDownloadVersion = requestedSDKDownloadVersion;
+				installerView.fileSeparator = FileUtil.separator;
+				installerView.addEventListener("INSTALL_FINISH", onSDKSelected, false, 0, true);
+				installerView.addEventListener("INSTALL_CANCEL", onSDKInstallCancelled, false, 0, true);
+				installerView.addEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse, false, 0, true);
+				addElement(installerView);
+				
+				addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+			}
+			
+			private function removeListeners():void
+			{
+				installerView.removeEventListener("INSTALL_FINISH", onSDKSelected);
+				installerView.removeEventListener("INSTALL_CANCEL", onSDKInstallCancelled);
+				installerView.removeEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse);
+			}
+			
+			/**
+			 * On SDK downloaded and selected by the user
+			 */
+			private function onSDKSelected(event:Event):void
+			{
+				selectedSDKDir = InstallApacheFlex(event.target).flexHomeDir;
+				removeListeners();
+				doSave(null);
+			}
+			
+			/**
+			 * On SDK installation cancelled
+			 */
+			private function onSDKInstallCancelled(event:Event):void
+			{
+				removeListeners();
+				IDEModel.getInstance().noSDKNotifier.dispatchEvent(new Event(NoSDKNotifier.SDK_SAVE_CANCELLED));
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+				);
+			}
+			
+			/**
+			 * On SDK directory browse request
+			 */
+			private function onSDKDirBrowse(event:Event):void
+			{
+				var defaultFile:FileLocation = new FileLocation(installerView.defaultInstallPathToSDK.nativePath);
+				defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
+			}
+			
+			private function onSDKPathSelected(fileDir:Object):void
+			{
+				installerView.flexSDKDirSelected(fileDir);
+			}
+			
+			private function doSave(event:Event):void
+			{
+				// check if valid SDK directory
+				var tmpXML:Object = SDKUtils.isSDKDirectoy(new FileLocation(selectedSDKDir.nativePath));
+				if (!tmpXML || !tmpXML.xml || tmpXML.xml == "")
+				{
+					Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
+					return;
+				}
+				
+				// check if already added in saved SDKs list
+				var tmp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({label:tmpXML.xml.name, path:tmpXML.nativePath});
+				//GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, tmp ? tmp : SDKUtils.getSDKFromSavedList("E:\DevareaLocal\ApacheFlexSDK\4.15_AIR.21.0"/*tmpXML.nativePath*/)));
+				
+				if (!tmp) tmp = SDKUtils.getSDKFromSavedList(tmpXML.nativePath); // in case of pre-existing SDK item
+				IDEModel.getInstance().userSavedTempSDKPath = tmp.path;
+				GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				
+				// close will close the tab
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+				);
+			}
+			
+			protected function onThisClosing(event:CloseTabEvent):void
+			{
+				removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
+				if (installerView) removeListeners();
+			}
+			
+		]]>
+	</fx:Script>
+</mx:Canvas>

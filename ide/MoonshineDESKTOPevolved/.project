@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>MoonshineDESKTOPevolved</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.apollobuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.apollonature</nature>
+		<nature>com.adobe.flexbuilder.project.flexnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] Balsamiq2FlexJSConverterLib-src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/Balsamiq2FlexJSConverterLib/src</locationURI>
+		</link>
+		<link>
+			<name>[source path] MoonshineSharedCore-src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/MoonshineSharedCore/src</locationURI>
+		</link>
+		<link>
+			<name>[source path] en_US</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/MoonshineSharedCore/src/locale/en_US</locationURI>
+		</link>
+		<link>
+			<name>[source path] ja_JP</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/MoonshineSharedCore/src/locale/ja_JP</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>

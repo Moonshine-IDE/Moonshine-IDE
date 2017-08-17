@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   implements="actionScripts.ui.IContentWindow" label="Access Manager"
+			   backgroundColor="0xf5f5f5" width="100%" height="100%"
+			   creationComplete="onCreationCompletes(event)" xmlns:popup="components.popup.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.IVisualElement;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.graphics.SolidColorStroke;
+			
+			import spark.components.Label;
+			import spark.primitives.Line;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.vo.ISetting;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.plugin.settings.vo.StaticLabelSetting;
+			import actionScripts.plugin.templating.settings.renderer.PathAccessRenderer;
+			import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
+			import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.valueObjects.FileWrapper;
+			
+			private var _requisitePaths:Vector.<ISetting>;
+			
+			[Bindable] private var projectFolders:ArrayCollection = new ArrayCollection();
+			[Bindable] private var bigMessage:String = 'The Mac OS App Sandbox prevents Moonshine from accessing files that you have never opened. The files listed below are required for some action to run in Moonshine. To allow access to a directory, click "Add", navigate to the directory and click "Open".\n\nGranting access to a folder also grants access to all subfolders and files. If you add access to a common workspace directory (using the "Add Access" button), you maybe able to resolve multiple dependencies at once.';
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			private var workspaceWrapper:FileWrapper;
+			
+			public function get requisitePaths():Vector.<ISetting>
+			{
+				return _requisitePaths;	
+			}
+			public function set requisitePaths(value:Vector.<ISetting>):void
+			{
+				_requisitePaths = value;
+				updateDependenciesPaths();
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				updateUI();
+				updateBookmarkedPaths();
+				updateDependenciesPaths();
+			}
+			
+			private function updateUI():void
+			{
+				var ps:PluginSetting = new PluginSetting("Accessible Paths", "Moonshine Project Team", "Moonshine currently has access to the following directories. You may add more access as desired.", false);
+				vgContents1.addElementAt(ps.renderer, 0);
+				
+				ps = new PluginSetting("Unaccessible Dependencies", "", bigMessage, false);
+				vgContents2.addElementAt(ps.renderer, 0);
+			}
+			
+			private function updateBookmarkedPaths():void
+			{
+				// # Available bookmarked item list parse
+				// ====================================================
+				var tmpBookmarkedPaths: Array = OSXBookmarkerNotifiers.availableBookmarkedPathsArr;
+
+				if (tmpBookmarkedPaths.length >= 1)
+				{
+					if (OSXBookmarkerNotifiers.workspaceLocation && OSXBookmarkerNotifiers.workspaceLocation.fileBridge.exists)
+					{
+						var tmpFindIndex:int = tmpBookmarkedPaths.indexOf(OSXBookmarkerNotifiers.workspaceLocation.fileBridge.nativePath);
+						if (tmpFindIndex != -1) 
+						{
+							var tmpWorkspaceLocation:FileLocation = new FileLocation(tmpBookmarkedPaths.splice(tmpFindIndex, 1));
+							workspaceWrapper = new FileWrapper(tmpWorkspaceLocation, true, null, false);
+							workspaceWrapper.defaultName = "Workspace";
+							workspaceWrapper.children = [];
+							projectFolders.addItem(workspaceWrapper);
+						}
+					}
+					
+					for (var i:int = 0; i < tmpBookmarkedPaths.length; i++)
+					{
+						addNewPathToAccessList(new FileLocation(tmpBookmarkedPaths[i]));
+					}
+				}
+			}
+			
+			private function updateDependenciesPaths():void
+			{
+				// # Resources that may needs access parse
+				// ====================================================
+				if (requisitePaths && pathContent)
+				{
+					// continue
+					pathContent.removeAllElements();
+					
+					// in case of no project opened scenario
+					if (requisitePaths.length == 0)
+					{
+						var naMessage: Label = new Label();
+						naMessage.percentWidth = 100;
+						naMessage.maxDisplayedLines = 2;
+						naMessage.styleName = "uiTextSettingsValue";
+						naMessage.setStyle("textAlign", "center");
+						naMessage.setStyle("paddingTop", 50);
+						naMessage.text = "No dependency found.";
+						pathContent.addElement(naMessage);
+						
+						return;
+					}
+					
+					var line:Line;
+					var rdr:IVisualElement;
+					line = new Line();
+					line.percentWidth = 100;
+					line.height = 1;
+					line.stroke = new SolidColorStroke(0xdadada);
+					pathContent.addElement(line);
+					
+					for each (var setting:ISetting in requisitePaths)
+					{	
+						rdr = setting.renderer;
+						rdr.addEventListener(PathAccessRenderer.EVENT_REFRESH, handleRefreshSettings, false, 0, true);
+						pathContent.addElement(rdr);
+						
+						line = new Line();
+						line.percentWidth = 100;
+						line.height = 1;
+						line.stroke = new SolidColorStroke(0xdadada);
+						pathContent.addElement(line);
+					}
+				}
+			}
+			
+			protected function addNewPathToAccessList(value:FileLocation):void
+			{
+				// lets limit the list addition to folder only
+				if (value.fileBridge.exists && !value.fileBridge.isDirectory) return;
+				
+				var tmpFW: FileWrapper = new FileWrapper(value, true, null, false);
+				tmpFW.defaultName = tmpFW.file.fileBridge.name;
+				tmpFW.children = [];
+				if (workspaceWrapper && (tmpFW.file.fileBridge.nativePath.indexOf(workspaceWrapper.file.fileBridge.nativePath) != -1)) workspaceWrapper.children.push(tmpFW);
+				else projectFolders.addItem(tmpFW);
+			}
+			
+			protected function handleRefreshSettings(event:Event):void
+			{
+				var renderer:PathAccessRenderer = event.target as PathAccessRenderer;
+				
+				renderer.removeEventListener(PathAccessRenderer.EVENT_REFRESH, handleRefreshSettings);
+				var elementIndex:int = pathContent.getElementIndex(renderer as IVisualElement);
+				pathContent.removeElementAt(elementIndex);
+				pathContent.removeElementAt(elementIndex); // this will remove the line beneath
+				
+				// remove from list of items
+				for (var i:int = 0; i < requisitePaths.length; i++)
+				{	
+					if (requisitePaths[i] is StaticLabelSetting) 
+					{
+						requisitePaths.splice(i, 1);
+						i--;
+					}
+					else if (requisitePaths[i].renderer == event.target)
+					{
+						requisitePaths.splice(i, 1);
+						i--;
+						break;
+					}
+				}
+				
+				// adds new path to access list if only folder type
+				var tmpNewFL: FileLocation = renderer.setting.originalPath;
+				OSXBookmarkerNotifiers.availableBookmarkedPaths += ","+ tmpNewFL.fileBridge.nativePath;
+				if (tmpNewFL.fileBridge.isDirectory)
+				{
+					addNewPathToAccessList(tmpNewFL);
+					callLater(tree.invalidateList);
+				}
+				
+				// update application properties file
+				if (renderer.setting.project.air)
+				{
+					if (renderer.setting.project.isFlashBuilderProject) 
+					{
+						var settingsFile:File = (renderer.setting.project.folderLocation.fileBridge.getFile as File).resolvePath(".actionScriptProperties");
+						FlashBuilderExporter.export(renderer.setting.project, settingsFile);
+					}
+					else FlashDevelopExporter.export(renderer.setting.project, renderer.setting.project.projectFile);
+				}
+				
+				// we need to show a re-build button in the interface if all 
+				// dependency problems been taken cared
+				if (requisitePaths.length == 0) 
+				{
+					pathContent.removeAllElements();
+					pathContent.gap = 10;
+					
+					var completionMess: Label = new Label();
+					completionMess.percentWidth = 100;
+					completionMess.maxDisplayedLines = 2;
+					completionMess.styleName = "uiTextSettingsValue";
+					completionMess.setStyle("textAlign", "center");
+					completionMess.setStyle("paddingTop", 50);
+					completionMess.text = "All dependencies have resolved. You can re-build the project now.";
+					
+					pathContent.addElement(completionMess);
+				}
+			}
+			
+			protected function onAddNewAccess(event:MouseEvent):void
+			{
+				model.fileCore.browseForDirectory("Select directory", openNewAccess, newAccessCancelled);
+			}
+			
+			protected function openNewAccess(fileDir:Object):void
+			{
+				var tmpNewLocation:FileLocation = (fileDir is FileLocation) ? fileDir as FileLocation : new FileLocation(fileDir.nativePath);
+				addNewPathToAccessList(tmpNewLocation);
+				
+				callLater(tree.invalidateList);
+			}
+			
+			protected function newAccessCancelled():void
+			{
+			}
+			
+			private function getTreeTooltip(item:Object):String 
+			{
+				if (!FileWrapper(item).isRoot) return null;
+				return FileWrapper(item).file.fileBridge.nativePath;
+			}
+			
+			private function getTrimmedPath(item:Object):String
+			{
+				var thisWidthChar:int = Math.floor(tree.width / 8);
+				var availableWidthByChar:int = thisWidthChar - 8;
+				
+				var value:String = FileWrapper(item).file.fileBridge.nativePath;
+				if (value.length > availableWidthByChar)
+				{
+					var lastPart:String = value.slice(value.length - (availableWidthByChar - 4));
+					return "...."+ lastPart;
+				}
+				
+				return value;
+			}
+			
+			public function get longLabel():String
+			{
+				return label;
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			protected function onResizeList(event:ResizeEvent):void
+			{
+				tree.invalidateList();
+			}
+			
+			protected function onRemoveAllAccess(event:MouseEvent):void
+			{
+				CONFIG::OSX
+				{
+					model.fileCore.getSSBInterface().disposeKeys();
+				}
+				
+				// remove local holdings
+				OSXBookmarkerNotifiers.availableBookmarkedPaths = "";
+				projectFolders.removeAll();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<mx:HDividedBox width="100%" height="100%"
+					paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12">
+		<s:VGroup id="vgContents1" 
+				  width="50%" height="100%"
+				  paddingRight="20">
+			<mx:Tree
+				id="tree"
+				width="100%" height="100%"
+				dataProvider="{projectFolders}"
+				color="0xEEEEEE"
+				contentBackgroundColor="0x0"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+				verticalScrollBarStyleName="black"
+				borderVisible="false"
+				rowHeight="18"
+				useRollOver="true"
+				doubleClickEnabled="true"
+				labelField="name" labelFunction="getTrimmedPath"
+				itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+				showDataTips="true"
+				dataTipFunction="getTreeTooltip"
+				resize="onResizeList(event)"/>
+			<s:HGroup width="100%" horizontalAlign="center">
+				<s:Button label="Add Access" styleName="lightButton" width="160"
+						  click="onAddNewAccess(event)"/>
+				 <s:Button label="Revoke All Access" styleName="lightButton"
+						   click="onRemoveAllAccess(event)"/>
+			</s:HGroup>
+		</s:VGroup>
+		<s:VGroup id="vgContents2" 
+				  width="50%" height="100%"
+				  paddingLeft="20">
+			<s:Scroller width="100%" height="100%"
+						verticalScrollPolicy="auto" horizontalScrollPolicy="off">
+				<s:VGroup id="pathContent"
+						  width="100%" height="100%"	
+						  gap="0" horizontalAlign="center"/>
+			</s:Scroller>
+		</s:VGroup>
+	</mx:HDividedBox>
+</mx:Canvas>

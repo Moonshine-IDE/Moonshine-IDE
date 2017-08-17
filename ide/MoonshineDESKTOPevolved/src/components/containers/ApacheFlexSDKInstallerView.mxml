@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+			   paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+	<fx:Metadata>
+		[Event(name="INSTALL_FINISH", type="flash.events.Event")]
+		[Event(name="INSTALL_CANCEL", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.factory.FileLocation;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			
+			import org.as3commons.asblocks.utils.FileUtil;
+			
+			public var selectedSDKDir:File;
+			
+			private var installerView:InstallApacheFlex;
+			
+			/**
+			 * On creation completes
+			 */
+			public function initThis():void
+			{
+				var sdksFolder:File;
+				
+				// platformwise default folder path selection
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					sdksFolder = File.userDirectory;
+					
+					var tmpPathSplit: Array = sdksFolder.nativePath.split(FileUtil.separator);
+					tmpPathSplit.shift();
+					
+					sdksFolder = new File(FileUtil.separator + tmpPathSplit[0] + FileUtil.separator + tmpPathSplit[1] + FileUtil.separator + "Downloads");
+					if (!sdksFolder.exists) sdksFolder = File.documentsDirectory;
+				}
+				else
+				{
+					sdksFolder = File.documentsDirectory;
+				}
+				
+				installerView = new InstallApacheFlex();
+				installerView.defaultInstallPathToSDK = sdksFolder;
+				installerView.fileSeparator = FileUtil.separator;
+				installerView.addEventListener("INSTALL_FINISH", onSDKSelected, false, 0, true);
+				installerView.addEventListener("INSTALL_CANCEL", onSDKInstallCancelled, false, 0, true);
+				installerView.addEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse, false, 0, true);
+				addElement(installerView);
+			}
+			
+			public function removeListeners():void
+			{
+				installerView.removeEventListener("INSTALL_FINISH", onSDKSelected);
+				installerView.removeEventListener("INSTALL_CANCEL", onSDKInstallCancelled);
+				installerView.removeEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse);
+				if (installerView) removeElement(installerView);
+				installerView = null;
+			}
+			
+			/**
+			 * On SDK downloaded and selected by the user
+			 */
+			private function onSDKSelected(event:Event):void
+			{
+				selectedSDKDir = InstallApacheFlex(event.target).flexHomeDir;
+				removeListeners();
+				dispatchEvent(event);
+			}
+			
+			/**
+			 * On SDK installation cancelled
+			 */
+			private function onSDKInstallCancelled(event:Event):void
+			{
+				removeListeners();
+				dispatchEvent(event);
+			}
+			
+			/**
+			 * On SDK directory browse request
+			 */
+			private function onSDKDirBrowse(event:Event):void
+			{
+				var defaultFile:FileLocation = new FileLocation(installerView.defaultInstallPathToSDK.nativePath);
+				defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
+			}
+			
+			private function onSDKPathSelected(fileDir:Object):void
+			{
+				installerView.flexSDKDirSelected(fileDir);
+			}
+			
+		]]>
+	</fx:Script>
+</s:VGroup>
