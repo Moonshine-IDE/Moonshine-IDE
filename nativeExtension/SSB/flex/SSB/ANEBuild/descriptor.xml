@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension xmlns="http://ns.adobe.com/air/extension/16.0">
+	<id>karar.santanu.SecurityScopeBookmark</id>
+	<versionNumber>1.0.0</versionNumber>
+	<platforms>
+		<platform name="MacOS-x86">
+			<applicationDeployment>
+				<nativeLibrary>SecurityScopeBookmark.framework</nativeLibrary>
+				<initializer>initializer</initializer>
+				<finalizer>finalizer</finalizer>
+			</applicationDeployment>
+		</platform>
+	</platforms>
+</extension>

@@ -1,0 +1,6 @@
+framework module SecurityScopeBookmark {
+  umbrella header "SecurityScopeBookmark.h"
+
+  export *
+  module * { export * }
+}
