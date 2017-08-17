@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	height="18"
+	width="10">
+
+	<fx:Declarations>
+		<fx:uint id="dotColor">0x8B8B8B</fx:uint>
+		<fx:uint id="fillColor">0xFFFFFF</fx:uint>
+		<fx:Number id="fillAlpha">0.2</fx:Number>
+		<fx:Boolean id="fillVisible">true</fx:Boolean>
+	</fx:Declarations>
+
+	<!-- fill a rectangle: -->
+	<s:Rect height="100%"
+		width="100%"
+		visible="{fillVisible}">
+		<s:fill>
+			<s:SolidColor color="{fillColor}"
+				alpha="{fillAlpha}"/>
+		</s:fill>
+	</s:Rect>
+
+	<!-- draw the drag dots handle -->
+	<!--  ..  -->
+	<!--  ..  -->
+	<!--  ..  -->
+	<!--  ..  -->
+	<s:Rect height="2"
+		width="2"
+		left="2"
+		top="2">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="6"
+		top="2">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="2"
+		top="6">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="6"
+		top="6">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="2"
+		top="10">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="6"
+		top="10">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="2"
+		top="14">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		left="6"
+		top="14">
+		<s:fill>
+			<s:SolidColor color="{dotColor}"/>
+		</s:fill>
+	</s:Rect>
+
+</s:Group>

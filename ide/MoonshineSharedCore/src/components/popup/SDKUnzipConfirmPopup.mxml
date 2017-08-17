@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="450" height="200"
+		 cornerRadius="6" borderColor="0x2d2d2d"
+		 creationComplete="addCloseButton()" initialize="onInitialized(event)">
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			import flash.utils.setTimeout;
+			
+			import mx.controls.Alert;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import spark.utils.TextFlowUtil;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.help.HelpPlugin;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			
+			[Bindable] public var showAsHelperDownloader:Boolean;
+			
+			public var showAsRequiresSDKNotification:Boolean;
+			public var isSDKSetupSectionOpened:Boolean;
+			
+			[Bindable] private var userNotes:String;
+			
+			private var unzipperNotes:String = "This is the Moonshine IDE Complete (App Store) release. The IDE requires the Apache Flex® SDK to be un-zipped to enable you to later compile the source code you write in the IDE. This is a one-time operation. Please click Confirm to proceed.";
+			private var helperDownloaderNotes:String = "In order to compile your project, Moonshine needs the Apache Flex® or FlexJS® SDKs, as well as Apache Ant.\n\nDue to Apple sandbox, your SDK location needs to be in your 'Downloads' folder. Use Moonshine App Store Helper 2.1.0 to automatically install the required versions.";
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			private function addCloseButton():void
+			{
+				if (ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT) onPermittedOSX();
+				
+				var closeButtonUIC:UIComponent = new UIComponent();
+				closeButtonUIC.width = closeButtonUIC.height = 27;
+				closeButtonUIC.right = 0;
+				
+				var closeButton:Sprite = new Sprite();
+				// Circle
+				closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.8);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawCircle(14, 12, 6);
+				closeButton.graphics.endFill();
+				// X (\)
+				closeButton.graphics.lineStyle(2, 0xFFFFFF, 0.8, true);
+				closeButton.graphics.moveTo(12, 10);
+				closeButton.graphics.lineTo(16, 14);
+				// X (/)
+				closeButton.graphics.moveTo(16, 10);
+				closeButton.graphics.lineTo(12, 14);
+				// Hit area
+				closeButton.graphics.lineStyle(0, 0x0, 0);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawRect(0, 0, 27, 25);
+				closeButton.graphics.endFill();
+				
+				closeButton.addEventListener(MouseEvent.CLICK, closeButtonClicked, false, 0, true);
+				closeButtonUIC.addChild(closeButton);
+				
+				addElement(closeButtonUIC);
+			}
+			
+			private function onPermittedOSX():void
+			{
+				ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = true;
+				if (ConstantsCoreVO.IS_MACOS) 
+				{
+					this.y = y - 10;
+					this.height = height + 20;
+					showAsHelperDownloader = true;
+					currentState = "default";
+					prepareNotifications();
+					
+					/*if (showAsRequiresSDKNotification) 
+					{
+						onInitialized(null);
+					}
+					else 
+					{
+						currentState = "default";
+						prepareNotifications();
+					}*/
+				}
+				else 
+				{
+					//dispatchEvent(new Event(HelpPlugin.EVENT_APACHE_SDK_DOWNLOADER_REQUEST));
+					GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+					isSDKSetupSectionOpened = true;
+					removeListeners();
+					dispatchEvent(new Event(Event.CLOSE));
+				}
+			}
+			
+			private function prepareNotifications():void
+			{
+				userNotes = showAsHelperDownloader ? helperDownloaderNotes : unzipperNotes;
+				if (cbDNSA) cbDNSA.selected = showAsHelperDownloader ? ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS : ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS;
+			}
+			
+			private function closeButtonClicked(event:MouseEvent):void
+			{
+				if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
+				removeListeners();
+				dispatchEvent(new Event(Event.CLOSE));
+			}
+			
+			protected function onConfirmSDKExtraction(event:MouseEvent):void
+			{
+				grpBody.alpha = .5;
+				lblBusy.visible = true;
+				setTimeout(function():void
+				{
+					GlobalEventDispatcher.getInstance().addEventListener(SDKUtils.EVENT_SDK_EXTRACTED, onSDKsExtracted);
+					GlobalEventDispatcher.getInstance().addEventListener(SDKUtils.EVENT_SDK_EXTRACTION_FAILED, onSDKsExtractionFailed);
+					SDKUtils.extractBundledSDKs(null);
+				}, 300);
+			}
+			
+			protected function onConfirmHelperDownload(event:MouseEvent):void
+			{
+				navigateToURL(new URLRequest("http://moonshine-ide.com/moonshine-app-store-helper/"), "_blank");
+				currentState = "detect";
+			}
+			
+			protected function detectDownloadedSDKPresence(event:MouseEvent):void
+			{
+				SDKUtils.checkHelperDownloadedSDKPresence();
+				if (ConstantsCoreVO.IS_HELPER_DOWNLOADED_SDK_PRESENT) 
+				{
+					var totalBundledSDKs:Array = SDKUtils.initBundledSDKs();
+					if (totalBundledSDKs.length != 0) 
+					{
+						currentState = "detectionSuccess";
+						
+						var markup:String = "<p>Following SDK(s) have been detected and configured automatically:<br/></p>";
+						for each (var i:Object in totalBundledSDKs)
+						{
+							markup += "<p>- "+ i.xml.name.toString() + "</p>";
+						}
+						if (ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT) markup += "<p>- Ant SDK, "+ ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT.name +"</p>";
+						var flow:TextFlow = TextFlowUtil.importFromString(markup);
+						retSuccess.textFlow = flow;
+					}
+					else currentState = "detectionFail";
+				}
+				else currentState = "detectionFail";
+			}
+			
+			private function onSDKsExtracted(event:Event):void
+			{
+				removeListeners();
+				grpBody.alpha = 1;
+				lblBusy.visible = false;
+				
+				SDKUtils.initBundledSDKs();
+				Alert.show("Flex SDKs extracted. You can now use them from MXMLC Compiler Plugin, in Moonshine Settings.", "Note!");
+				closeButtonClicked(null);
+			}
+			
+			private function onSDKsExtractionFailed(event:Event):void
+			{
+				grpBody.alpha = 1;
+				lblBusy.visible = false;
+				
+				Alert.show("Oops! Something is wrong. SDKs extraction failed!", "I/O Error!");
+			}
+			
+			protected function onDNS(event:Event):void
+			{
+				if (showAsHelperDownloader) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = cbDNSA.selected;
+				else ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = cbDNSA.selected;
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(SDKUtils.EVENT_SDK_PROMPT_DNS));
+			}
+			
+			private function removeListeners():void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(SDKUtils.EVENT_SDK_EXTRACTED, onSDKsExtracted);
+				GlobalEventDispatcher.getInstance().removeEventListener(SDKUtils.EVENT_SDK_EXTRACTION_FAILED, onSDKsExtractionFailed);
+			}
+			
+			/**
+			 * On download SDK request
+			 */
+			protected function onSDKDownlaodRequest(event:MouseEvent):void
+			{
+				if (ConstantsCoreVO.IS_MACOS) 
+				{
+					showAsHelperDownloader = true;
+					currentState = "default";
+					prepareNotifications();
+				}
+				else 
+				{
+					dispatchEvent(new Event(HelpPlugin.EVENT_APACHE_SDK_DOWNLOADER_REQUEST));
+					removeListeners();
+					dispatchEvent(new Event(Event.CLOSE));
+				}
+			}
+			
+			protected function onInitialized(event:FlexEvent):void
+			{
+				if (showAsRequiresSDKNotification && !ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT) currentState = "permissionRequestOSX";
+				else if (showAsRequiresSDKNotification) 
+				{
+					currentState = "requiresSDKNotification";
+					var markup:String = ConstantsCoreVO.IS_MACOS ? '<p>Moonshine requires Apache FlexJS 0.7.0+ SDK to work properly. Due to Apple sandbox, your SDK location needs to be in your <span fontWeight="bold">Downloads</span> folder.<br/><br/>To automatically download and setup click on Download button.</p>' : '<p>Moonshine requires Apache FlexJS 0.7.0 SDK to work properly.<br/><br/>To automatically download and setup click on Download button.</p>';
+					var flow:TextFlow = TextFlowUtil.importFromString(markup);
+					callLater(function():void
+					{
+						retForceSDKNotif.textFlow = flow;
+					});
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="permissionRequestOSX"/>
+		<s:State name="default"/>
+		<s:State name="detect"/>
+		<s:State name="detectionFail"/>
+		<s:State name="detectionSuccess"/>
+		<s:State name="requiresSDKNotification"/>
+	</s:states>
+	
+	<s:backgroundFill>
+		<s:SolidColor color="0xa0a0a0"/>
+	</s:backgroundFill>
+	
+	<s:VGroup id="grpBody" 
+			  width="100%" height="100%"
+			  gap="0">
+		<s:HGroup width="100%" height="100%"
+				  verticalAlign="middle"
+				  gap="0">
+			<s:Group width="98">
+				<s:Image source="@Embed('/elements/images/icoSDKExtract.png')"
+						 horizontalCenter="0" verticalCenter="0"
+						 includeIn="default, detect, detectionFail, detectionSuccess"/>
+				<s:Image source="@Embed('/elements/images/icoSDKExclamation.png')"
+						 horizontalCenter="0" verticalCenter="0"
+						 includeIn="requiresSDKNotification"/>
+				<s:Image source="@Embed('/elements/images/icoApache.png')"
+						 horizontalCenter="0" verticalCenter="0"
+						 includeIn="permissionRequestOSX"/>
+			</s:Group>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="default">
+				<s:Label text="{userNotes}"
+						 maxDisplayedLines="0" width="100%" fontSize="13"/>
+				<s:CheckBox id="cbDNSA"
+							label="Do not show again"
+							change="onDNS(event)"/>
+				<s:Label text="(To show again select Extract Bundled SDK in File menu)"
+						 fontSize="12" color="0x666666"
+						 visible="{!showAsHelperDownloader}" includeInLayout="{!showAsHelperDownloader}"/>
+			</s:VGroup>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="permissionRequestOSX">
+				<s:Label text="{ConstantsCoreVO.IS_MACOS ? 'Moonshine can optionally be configured to compile your Apache Flex® and FlexJS® projects. Would you like to enable this feature now?' : 'Moonshine can be configured to compile your Apache Flex® and FlexJS® projects. Would you like to setup or download Flex® or FlexJS® SDK to enable this feature?'}"
+						 maxDisplayedLines="5" width="100%" fontSize="13"/>
+			</s:VGroup>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="detect">
+				<s:RichEditableText editable="false" focusEnabled="false"
+									width="100%" fontSize="13">
+					<s:textFlow>
+						<s:TextFlow>
+							<s:p>The download page should have been opened in your browser. If you didn't see it, <s:a click="onConfirmHelperDownload(null)">Click here</s:a>.<s:br/><s:br/>Install the application and follow the instructions to install the required SDKs. When the installation is complete, click the <s:span fontWeight="bold">Validate &amp; Set</s:span> button to configure the installed SDKs.</s:p>
+						</s:TextFlow>
+					</s:textFlow>
+				</s:RichEditableText>
+			</s:VGroup>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="detectionFail">
+				<s:Label text="Moonshine could not find the installed SDKs."
+						 maxDisplayedLines="5" width="100%" fontSize="13"/>
+			</s:VGroup>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="detectionSuccess">
+				<s:RichEditableText id="retSuccess" 
+									editable="false" focusEnabled="false"
+									width="100%" fontSize="13"/>
+			</s:VGroup>
+			<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+					  includeIn="requiresSDKNotification">
+				<s:RichEditableText id="retForceSDKNotif" 
+									editable="false" focusEnabled="false"
+									width="100%" fontSize="13"/>
+			</s:VGroup>
+		</s:HGroup>
+		<!-- Button bar -->
+		<mx:HRule id="buttonBarLine"
+				  width="100%"
+				  bottom="41"
+				  strokeWidth="1"
+				  strokeColor="0x303030" />
+		<mx:HBox id="buttonBar"
+				 width="100%"
+				 height="41"
+				 bottom="0"
+				 backgroundColor="0x444444"
+				 paddingRight="10"
+				 paddingTop="0"
+				 horizontalAlign="center"
+				 verticalAlign="middle"
+				 ><mx:filters>
+					  <mx:DropShadowFilter 
+						  alpha=".5" 
+						  angle="90" 
+						  blurX="0" 
+						  blurY="7" 
+						  strength="1"
+						  distance="1"
+						  inner="true" />
+				  </mx:filters>
+			<mx:HBox autoLayout="true"
+					 includeIn="default">
+				<s:Button label="Confirm" styleName="darkButton"
+						  click="onConfirmSDKExtraction(event)"
+						  visible="{!showAsHelperDownloader}" includeInLayout="{!showAsHelperDownloader}"/>
+				<s:Button label="Go To Download Page" styleName="darkButton"
+						  click="onConfirmHelperDownload(event)"
+						  visible="{showAsHelperDownloader}" includeInLayout="{showAsHelperDownloader}"/>
+				<s:Button label="Skip For Now" styleName="darkButton"
+						  click="closeButtonClicked(event)"
+						  visible="{showAsHelperDownloader}" includeInLayout="{showAsHelperDownloader}"/>
+			</mx:HBox>
+			<mx:HBox autoLayout="true"
+					 includeIn="permissionRequestOSX">
+				<s:Button label="Configure &amp; Enable" styleName="darkButton"
+						  click="onPermittedOSX()"/>
+				<s:Button label="No Thanks" styleName="darkButton"
+						  click="closeButtonClicked(event)"/>
+			</mx:HBox>
+			<mx:HBox autoLayout="true"
+					 includeIn="detect">
+				<s:Button label="Validate &amp; Set" styleName="darkButton"
+						  click="detectDownloadedSDKPresence(event)"/>
+				<s:Button label="Skip For Now" styleName="darkButton"
+						  click="closeButtonClicked(event)"/>
+			</mx:HBox>
+			<mx:HBox autoLayout="true"
+					 includeIn="detectionFail">
+				<s:Button label="Try Again" styleName="darkButton"
+						  click="currentState='detect'"/>
+				<s:Button label="Skip For Now" styleName="darkButton"
+						  click="closeButtonClicked(event)"/>
+			</mx:HBox>
+			<mx:HBox autoLayout="true"
+					 includeIn="detectionSuccess">
+				<s:Button label="Start Using Moonshine!" styleName="darkButton"
+						  click="closeButtonClicked(event)"/>
+			</mx:HBox>
+			<mx:HBox autoLayout="true"
+					 includeIn="requiresSDKNotification">
+				<s:Button label="Download" styleName="darkButton"
+						  click="onSDKDownlaodRequest(event)"/>
+				<s:Button label="Skip For Now" styleName="darkButton"
+						  click="closeButtonClicked(event)"/>
+			</mx:HBox>
+		</mx:HBox>
+	</s:VGroup>
+	
+	<s:Label id="lblBusy" 
+			 text="Working..." fontSize="14" fontWeight="bold" color="0xffffff"
+			 horizontalCenter="0" verticalCenter="0"
+			 visible="false"/>
+</s:BorderContainer>

@@ -1,0 +1,37 @@
+<root>
+	<node label="IMPORTANT Annoucement(s)">
+		<node label="Flash Player EOL announcement" link="https://blogs.adobe.com/conversations/2017/07/adobe-flash-update.html"/>
+		<node label="Adobe on above development and AIR" link="https://forums.adobe.com/thread/2362234"/>
+	</node>
+	<node label="API Docs">
+		<node label="Apache Flex API Docs" link="https://flex.apache.org/asdoc"/>
+		<node label="ActionScript 3 Docs" link="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/"/>
+	</node>
+	<node label="ActionScript Frameworks">
+		<node label="Starling" link="https://gamua.com/starling/"/>
+		<node label="Feathers" link="http://feathersui.com"/>
+		<node label="Stage3D" link="http://www.adobe.com/devnet/flashplayer/stage3d.html"/>
+		<node label="Away3D" link="http://away3d.com"/>
+		<node label="Alternative3D" link="http://www.adobe.com/devnet/flashplayer/articles/alternativa3d-getting-started.html"/>
+		<node label="Flare3D" link="http://www.flare3d.com/downloads/"/>
+		<node label="Papervision3D" link="http://helloenjoy.com/project/papervision3d/"/>
+		<node label="Swiz Framework" link="https://swizframework.jira.com/wiki/display/SWIZ/Home"/>
+		<node label="Parsley" link="http://www.spicefactory.org/parsley/"/>
+		<node label="PureMVC" link="http://puremvc.org/"/>
+	</node>
+	<node label="Resources">
+		<node label="Apache Flex" link="http://flex.apache.org/"/>
+		<node label="FlexJS Summit at ApacheCon Miami 2017" link="https://www.youtube.com/playlist?list=PL4EsaSA9xpnnraJX7NzpX6eh_P95RO8Pj"/>
+		<node label="Flash iOS Apps Cookbook" link="http://www.yeahbutisitflash.com/?page_id=3371"/>
+		<node label="Adobe Forums List" link="https://forums.adobe.com/welcome"/>
+		<node label="Monster Debugger" link="http://demonsters.nl/nl/projects/monsterdebugger/"/>
+		<node label="Monster Debugger Client Library" link="https://github.com/joshtynjala/monsterdebugger-client-starling"/>
+	</node>
+	<node label="Native Extensions">
+		<node label="My Flash Labs" link="http://www.myflashlabs.com/"/>
+		<node label="Distriqt" link="https://airnativeextensions.com/"/>
+		<node label="Adobe" link="http://www.adobe.com/devnet/air/native-extensions-for-air.html"/>
+		<node label="Milkman Plugins" link="https://www.milkmanplugins.com/air-native-extensions"/>
+		<node label="Easy Native Extensions" link="http://easynativeextensions.com/tutorials-category/"/>
+	</node>
+</root>

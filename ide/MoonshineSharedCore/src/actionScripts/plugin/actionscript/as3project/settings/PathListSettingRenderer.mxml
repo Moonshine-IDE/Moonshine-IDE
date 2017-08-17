@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+  	width="100%"
+  	gap="0"
+  	paddingTop="15"
+  	paddingBottom="5"
+  	paddingLeft="15"
+  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.OSXBookmarkerNotifiers;
+		
+			[Bindable]
+			public var setting:PathListSetting;
+			
+			private var fileBrowsing:PathListItemVO;
+			private var isPresentFileBrowseIsLocale:Boolean = false;
+			
+			protected function init():void
+			{
+				// Add listeners
+				var factory:ClassFactory = new ClassFactory(PathRenderer);
+				factory.properties = {
+					allowFiles: setting.allowFiles,
+					allowFolders: setting.allowFolders,
+					fileMustExist: setting.fileMustExist
+				};
+				pathList.itemRenderer = factory;
+				pathList.dataProvider = setting.paths;
+				
+				pathList.addEventListener(PathRenderer.EVENT_BROWSE_FILE, browseFile);
+				pathList.addEventListener(PathRenderer.EVENT_BROWSE_DIR, browseDir);
+				pathList.addEventListener(PathRenderer.EVENT_REMOVE_ITEM, removeItem);
+				pathList.addEventListener(PathRenderer.EVENT_MANUAL_UPDATE, onManualUpdate);
+			}
+			
+			protected function browseDir(event:Event):void
+			{
+				fileBrowsing = event.target.data;
+				var file:FileLocation = fileBrowsing.file;
+				
+				// {locale} check
+				if (file.fileBridge.nativePath.indexOf("{locale}") != -1) isPresentFileBrowseIsLocale = (OSXBookmarkerNotifiers.isValidLocalePath(file) != null) ? true : false;
+				
+				file.fileBridge.browseForDirectory(setting.label, dirSelect, dirCancel);
+			}
+			
+			protected function dirSelect(dir:Object):void
+			{
+				// I dont' know what the heck it's not working in PKG
+				// if I write:
+				// filebrowsing.label = setting.getlabelFor(dir)
+				// thus a new label initiation and then submission
+				var tmpLabel: String = setting.getLabelFor(dir);
+				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? IDEModel.getInstance().fileCore.separator +"{locale}" : "");
+				
+				var finalPath: String = (dir is FileLocation) ? (dir as FileLocation).fileBridge.nativePath : new FileLocation(dir.nativePath).fileBridge.nativePath;
+				if (isPresentFileBrowseIsLocale) finalPath += IDEModel.getInstance().fileCore.separator +"{locale}";
+				
+				fileBrowsing.file.fileBridge.nativePath = finalPath;
+				isPresentFileBrowseIsLocale = false;
+			}
+			
+			protected function dirCancel():void
+			{
+				fileBrowsing = null;
+			}
+			
+			protected function browseFile(event:Event):void
+			{
+				fileBrowsing = event.target.data;
+				
+				var file:FileLocation = fileBrowsing.file;
+				file.fileBridge.browseForOpen(setting.label, fileSelect, fileCancel);
+			}
+			
+			protected function fileSelect(fileDir:Object):void
+			{
+				// I dont' know what the heck it's not working in PKG
+				// if I write:
+				// filebrowsing.label = setting.getlabelFor(dir)
+				// thus a new label initiation and then submission
+				var tmpLabel: String = setting.getLabelFor(fileDir);
+				fileBrowsing.label = tmpLabel;
+				
+				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
+				fileBrowsing.file.fileBridge.nativePath = finalPath;
+			}
+			
+			protected function fileCancel():void
+			{
+				fileBrowsing = null;
+			}
+			
+			protected function onManualUpdate(event:Event):void
+			{
+				fileBrowsing = event.target.data;
+				
+				var file:FileLocation = fileBrowsing.file;
+				var pattern:RegExp = new RegExp(/(\)/g);
+				var itemPath:String = event.target.path.text.replace(pattern, "\\");
+				
+				fileBrowsing.file.fileBridge.nativePath = IDEModel.getInstance().fileCore.resolvePath(itemPath, setting.relativeRoot.fileBridge.nativePath).fileBridge.nativePath;
+				fileBrowsing.label = event.target.path.text;
+			}
+			
+			protected function removeItem(event:Event):void
+			{
+				var idx:int = setting.paths.getItemIndex(event.target.data)
+				setting.paths.removeItemAt(idx);
+			}
+			
+			protected function addItem():void
+			{
+				// add new item & browse for it
+				var item:PathListItemVO = new PathListItemVO(null, null);
+				if (setting.relativeRoot)
+				{
+					item.file = new FileLocation(setting.relativeRoot.fileBridge.nativePath);
+					item.label = "/";
+				}
+				else
+				{
+					item.file = new FileLocation();
+					item.label = "No value";
+				}
+				
+				setting.paths.addItem(item);
+			}
+		
+		]]>
+	</fx:Script>
+	
+	<s:Label 
+		text="{setting.label}"
+		styleName="uiTextSettingsLabel"/>
+		
+	<s:DataGroup id="pathList"
+		width="100%"
+		creationComplete="init()">
+		<s:layout>
+			<s:VerticalLayout gap="5" />
+		</s:layout>
+	</s:DataGroup>
+	
+	<settings:PathRenderer id="addNew"
+		width="100%"
+		alpha="0.7"
+		showRemove="false"
+		click="addItem()"
+		/>
+	
+</s:VGroup>

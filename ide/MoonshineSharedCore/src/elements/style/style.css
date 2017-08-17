@@ -1,0 +1,310 @@
+@namespace mx "http://www.adobe.com/2006/mxml";
+@namespace s "library://ns.adobe.com/flex/spark";
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSansMono.ttf");
+	fontFamily: "DejaVuMono";
+	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSans.ttf");
+	fontFamily: "DejaVuSans";
+	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSans-Oblique.ttf");
+	fontFamily: "DejaVuSans";
+	fontStyle: italic;
+	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSansCondensed.ttf");
+	fontFamily: "DejaVuSansCond";
+	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSerif-Italic.ttf");
+	fontFamily: "DejaVuSerif";
+	fontStyle: italic;
+	embedAsCFF: true;
+}
+
+.toolTip
+{
+	border-skin: ClassReference("actionScripts.ui.TooltipSkin");
+	backgroundColor: "0xbd60b9";
+	borderColor: #ffffff;
+	borderStyle: solid;
+	cornerRadius: 0;
+	paddingBottom: 8;
+	paddingLeft: 8;
+	paddingRight: 8;
+	paddingTop: 8;
+	color: #ffffff;
+}
+
+.consoleFixedWidthTexts
+{
+	fontFamily: Courier, "_typewriter";
+}
+
+.bigHeadlineText
+{
+	fontFamily: 'DejaVuSans';
+	fontSize: 24;
+	kerning: on;
+	cffHinting: none;
+	paddingBottom: 17;
+}
+
+.uiText
+{
+	fontFamily: 'DejaVuSans';
+}
+
+.uiTextWhite
+{
+	fontFamily: 'DejaVuSans';
+	color: #FFFFFF;
+}
+
+.uiTextSettingsLabel
+{
+	paddingTop: 3;
+	fontFamily: 'DejaVuSans';
+	fontSize: 14;
+	kerning: on;
+	color: #686868;
+	cffHinting: none;
+}
+
+.uiTextSettingsValue
+{
+	paddingTop: 3;
+	fontFamily: 'DejaVuSans';
+	fontSize: 14;
+	kerning: on;
+	color: #252424;
+	cffHinting: none;
+}
+.lightButton
+{
+	skinClass: ClassReference("elements.skins.LightButtonSkin");
+	paddingLeft: 20px;
+	paddingRight: 20px;
+	textAlign: 'center';
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+}
+
+.darkButton
+{
+	skinClass: ClassReference("elements.skins.DarkButtonSkin");
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+}
+
+.lightButtonTight
+{
+	skinClass: ClassReference("elements.skins.LightButtonSkin");
+	paddingLeft: 0px;
+	paddingRight: 0px;
+	textAlign: 'center';
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+}
+
+s|CheckBox
+{
+	/*	skinClass: ClassReference("elements.skins.CheckboxSkin");*/
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+	color: #444444;
+}
+
+.settingsGroup
+{
+	paddingLeft: 15px;
+	paddingRight: 15;
+	paddingTop: 15;
+	paddingBottom: 15;
+}
+
+.standardPopup
+{
+	backgroundAlpha: 1;
+	backgroundColor: #f9f9f7;
+}
+
+global 
+{
+	font-size: 13;
+	font-sharpness: 100;
+	font-thickness: 50;
+	modalTransparencyBlur: 0;
+	modalTransparency: 0;
+	modalTransparencyColor: #ffffff;
+	modalTransparencyDuration: 200;
+}
+
+.tabView {
+	backgroundColor: #353535;
+	horizontal-scroll-policy: off;
+}
+
+.powerButton
+{
+	up-icon: 			Embed("/elements/gfx/pwr_red_up.png");
+	over-icon:	 		Embed("/elements/gfx/pwr_red_over.png");
+	down-icon: 			Embed("/elements/gfx/pwr_red_down.png");
+	selected-up-icon:	Embed("/elements/gfx/pwr_green_up.png");
+	selected-over-icon:	Embed("/elements/gfx/pwr_green_over.png");
+	selected-down-icon:	Embed("/elements/gfx/pwr_green_down.png");
+}
+
+.textInput
+{
+	contentBackgroundAlpha: 1;
+	contentBackgroundColor: #444444;
+	color: #f3f3f3;
+	promptColor: #a6a6a6; 
+	fontSize: 13;
+	focus-thickness: 0;
+	skinClass: ClassReference('actionScripts.plugin.findreplace.view.PromptTextInputSkin');
+}
+.textInputStatus
+{
+	contentBackgroundAlpha: 1;
+	contentBackgroundColor: #444444;
+	color: #f3f3f3;
+	promptColor: #a6a6a6; 
+	fontSize: 13;
+	focus-thickness: 0;
+	skinClass: ClassReference('actionScripts.plugin.findreplace.view.StatusTextInputSkin');
+}
+
+.pathInputs
+{
+	content-background-alpha : 0;
+	border-visible		: false;
+	font-family			: "Arial";
+	font-size			: 18;
+	color				: #2b2b2c;
+}
+
+.pathInputs_small
+{
+	content-background-alpha : 0;
+	border-visible		: false;
+	font-family			: "Arial";
+	font-size			: 14;
+	color				: #2b2b2c;
+}
+
+s|VScrollBar
+{
+	skin-class: ClassReference('elements.skins.SparkVScrollBarSkin');
+}
+
+s|HScrollBar
+{
+	skin-class: ClassReference('elements.skins.SparkHScrollBarSkin');
+}
+
+/*s|List
+{
+	contentBackgroundColor: #000000;
+	alternatingItemColors: #444444, #4d4c4c;
+	rollOverColor: #393939;
+	selectionColor: #c165b8;
+}
+
+s|DropDownList
+{
+	alternatingItemColors: #444444, #4d4c4c;
+	
+}*/
+
+s|DataGroup
+{
+/*	rollOverColor: #393939;*/
+}
+
+.multiLineList
+{
+	contentBackgroundColor: #000000;
+	alternatingItemColors: #444444, #4d4c4c;
+	rollOverColor: #393939;
+	selectionColor: #c165b8;
+	color: #eeeeee;
+}
+
+.completionList
+{
+	fontFamily: "DejaVuMono";
+	selectionColor: #f6b5e9;
+	rollOverColor: #fbe1f6;
+}
+
+mx|ScrollBar
+{
+	thumb-color-left: #FFFFFF;
+	thumb-color-right: #F5F5F5;
+	thumb-left-side-line: #C9C9C9;
+	thumb-hline1: #C5C5C5;
+	thumb-hline2: #FFFFFF;
+	
+	thumb-skin: 		ClassReference('elements.skins.VScrollBarThumbSkin');
+	track-skin: 		ClassReference('elements.skins.VScrollBarTrackSkin');
+	up-arrow-skin: 		ClassReference(null);
+	down-arrow-skin: 	ClassReference(null);
+}
+
+mx|ScrollBar.black
+{
+	thumb-color-left: #616161;
+	thumb-color-right: #585858;
+	thumb-left-side-line: #3A3A3A;
+	thumb-hline1: #444444;
+	thumb-hline2: #777777;
+}
+
+.debugStopButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-stop-icon.png");
+}
+
+.debugPlayButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-play-icon.png");
+}
+
+.debugPauseButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-pause-icon.png");
+}
+
+.debugStepIntoButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-into-icon.png");
+}
+
+.debugStepOverButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-over-icon.png");
+}
+
+.debugStepOutButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-out-icon.png");
+}

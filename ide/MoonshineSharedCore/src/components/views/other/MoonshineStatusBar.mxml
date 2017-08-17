@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="onCreation()">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.StatusBarEvent;
+			
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var loaderBar:loadingBar;
+			
+			private function onCreation():void
+			{
+				dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_STARTED, onProjectBuildStarted, false, 0, true);
+				dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_ENDED, onProjectBuildEnded, false, 0, true);
+				dispatcher.addEventListener(StatusBarEvent.PROJECT_DEBUG_STARTED, onProjectDebugStarted, false, 0, true);
+				dispatcher.addEventListener(StatusBarEvent.PROJECT_DEBUG_ENDED, onProjectDebugEnded, false, 0, true);
+			}
+			
+			private function onProjectBuildStarted(event:StatusBarEvent):void
+			{
+				if (!loaderBar)
+				{
+					lblBuilding.text = event.notificationSuffix + event.projectName;
+					
+					loaderBar = new loadingBar();
+					baseLoader.addChild(loaderBar);
+					
+					hgProjectBuild.visible = true;
+				}
+			}
+			
+			private function onProjectBuildEnded(event:StatusBarEvent):void
+			{
+				if (loaderBar)
+				{
+					loaderBar.parent.removeChild(loaderBar);
+					loaderBar = null;
+					hgProjectBuild.visible = false;
+				}
+			}
+			
+			private function onProjectDebugStarted(event:StatusBarEvent):void
+			{
+				lblDebugging.text = event.notificationSuffix + event.projectName;
+				hgProjectDebug.visible = true;
+			}
+			
+			private function onProjectDebugEnded(event:StatusBarEvent):void
+			{
+				hgProjectDebug.visible = false;
+			}
+			
+			protected function onTerminateBuild(event:MouseEvent):void
+			{
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup id="hgProjectBuild" 
+			  right="10" verticalAlign="middle" verticalCenter="0"
+			  autoLayout="true" gap="6"
+			  visible="false">
+		<s:Label id="lblBuilding"
+				 fontSize="11" paddingTop="3"
+				 color="#333333"/>
+		<s:SpriteVisualElement id="baseLoader"
+							   width="32" height="12"/>
+		<s:Image source="@Embed('/elements/images/icoStop.png')"
+				 click="onTerminateBuild(event)"/>
+	</s:HGroup>
+	
+	<s:HGroup id="hgProjectDebug" 
+			  right="10" verticalAlign="middle" verticalCenter="0"
+			  autoLayout="true" gap="6"
+			  visible="false">
+		<s:Label id="lblDebugging"
+				 fontSize="11" paddingTop="3"
+				 color="#333333"/>
+		<s:Image source="@Embed('/elements/images/icoStop.png')"
+				 click="onTerminateBuild(event)"/>
+	</s:HGroup>
+</s:Group>

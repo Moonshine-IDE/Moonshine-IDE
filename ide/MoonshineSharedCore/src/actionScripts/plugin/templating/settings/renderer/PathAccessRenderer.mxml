@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+  		
+	width="100%"
+	paddingLeft="15"
+	paddingTop="5"
+	paddingRight="15"
+	paddingBottom="5"
+	visible="true"
+	creationComplete="init()"
+	resize="onResizeEvent(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.ResizeEvent;
+			import mx.events.ToolTipEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.plugin.templating.settings.PathAccessSetting;
+			import actionScripts.utils.UtilsCore;
+			
+			public static const EVENT_REFRESH:String = "refresh";
+			
+			[Bindable] public var setting:PathAccessSetting;
+			
+			private var path:String = "";
+			
+			private function init():void
+			{
+				imgError.addEventListener(ToolTipEvent.TOOL_TIP_CREATE, UtilsCore.createCustomToolTip, false, 0, true);
+				imgError.addEventListener(ToolTipEvent.TOOL_TIP_SHOW, UtilsCore.positionTip, false, 0, true);
+				
+				tripPathValue();
+			}
+			
+			private function tripPathValue():void
+			{
+				// we shall show relative paths for those who exists.
+				// setting.project will only be true if the path is exist.
+				// therefore we'll compare the path with setting.project
+				if (setting.originalPath.fileBridge.exists) path = setting.project.folderLocation.fileBridge.getRelativePath(setting.originalPath, true);
+				else path = setting.originalPath.fileBridge.nativePath;
+				
+				onResizeEvent(null);
+			}
+			
+			protected function onAddPermission(event:MouseEvent):void
+			{
+				var tmpStartLocation:FileLocation = setting.originalPath;
+				if (setting.isLocalePath)
+				{
+					var tmpPathArr:Array = setting.originalPath.fileBridge.nativePath.split(setting.originalPath.fileBridge.separator);
+					tmpPathArr.splice(tmpPathArr.length - 1, 1);
+					var tmpLocaleLocation:FileLocation = new FileLocation(tmpPathArr.join(setting.originalPath.fileBridge.separator));
+					if (tmpLocaleLocation.fileBridge.exists) tmpStartLocation = tmpLocaleLocation;
+				}
+				
+				CONFIG::OSX
+				{
+					tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
+					return;
+				}
+				
+				// in @development cases
+				if (!tmpStartLocation.fileBridge.exists)
+				{
+					Alert.yesLabel = "File";
+					Alert.cancelLabel = "Folder";
+					Alert.show("Please choose selection type", "Type Selection", Alert.YES | Alert.CANCEL, null, onTypeSelected, null, 0);
+				}
+				else
+				{
+					if (tmpStartLocation.fileBridge.isDirectory || setting.isLocalePath) tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
+					else tmpStartLocation.fileBridge.browseForOpen("Select File", openNewAccess, newAccessCancelled);
+				}
+				
+				/*
+				 *@local
+				 */
+				function onTypeSelected(event:CloseEvent):void
+				{
+					Alert.yesLabel = "Yes";
+					Alert.cancelLabel = "Cancel";
+					
+					if (event.detail == Alert.CANCEL) tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
+					else tmpStartLocation.fileBridge.browseForOpen("Select File", openNewAccess, newAccessCancelled);
+				}
+			}
+			
+			protected function openNewAccess(fileDir:Object):void
+			{
+				// jhar khachhe at FlashBuilderExporter.export in defineFolderAccess.mxml - jokon file path has /{locale}
+				// same thing chk korar somoy with non-{locale}, file chooser khulche file selection mode e - eta hochhe jokon file.exists = false, ebong
+				// file.isdirectory always coming false at that time, in onAddPermission() method above
+				
+				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
+				if (setting.isLocalePath) finalPath += setting.originalPath.fileBridge.separator +"{locale}";
+				
+				setting.originalPath.fileBridge.nativePath = finalPath;
+				dispatchEvent(new Event(EVENT_REFRESH));
+			}
+			
+			protected function newAccessCancelled():void
+			{
+			}
+			
+			protected function onResizeEvent(event:ResizeEvent):void
+			{
+				var thisWidthChar:int = Math.floor(width / 8);
+				var availableWidthByChar:int = thisWidthChar - 13; // 100/8
+				if (path.length > availableWidthByChar)
+				{
+					var lastPart:String = path.slice(path.length - (availableWidthByChar - 4));
+					updatePathWithValue("...."+ lastPart);	
+				}
+				else
+				{
+					updatePathWithValue(path);
+				}
+				
+				/*
+				 * @local
+				 */
+				function updatePathWithValue(value:String):void
+				{
+					txtPath.callLater(function():void
+					{
+						txtPath.text = value;
+					});	
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Label id="txtPath" 
+				 styleName="uiTextSettingsValue" width="100%"
+				 paddingRight="20"/>
+		<s:Image id="imgError" 
+				 source="@Embed('/elements/images/iconExclamationRed.png')"
+				 toolTip="{setting.errorType}"/>
+		<s:Button label="Add" styleName="lightButton"
+				  click="onAddPermission(event)"/>
+	</s:HGroup>
+	
+</s:VGroup>

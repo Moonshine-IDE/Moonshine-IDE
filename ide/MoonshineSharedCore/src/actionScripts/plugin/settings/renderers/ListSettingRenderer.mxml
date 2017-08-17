@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%"
+	paddingLeft="15" paddingTop="15"
+	paddingRight="15" paddingBottom="15"
+	creationComplete="init()" initialize="onInitialized(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.plugin.settings.vo.ListSetting;
+			
+			[Bindable]
+			public var setting:ListSetting;
+			
+			private function init():void
+			{
+				cmbOption.textInput.editable = false;
+				cmbOption.setStyle("contentBackgroundColor","#FFFFFF");
+				
+				// default value
+				setting.stringValue = setting.labelField ? setting.dataProvider[0][setting.labelField] : setting.dataProvider[0];
+				
+				updatePrompt();
+			}
+			
+			private function updatePrompt():void
+			{
+				/*var hasText:Boolean = (text.text != "");
+				
+				text.visible = text.includeInLayout = hasText;
+				textPrompt.visible = textPrompt.includeInLayout = !hasText;
+				
+				//to show project Name highlighted while creating new Project
+				if(setting.name=="projectName") text.selectionHighlighting="always";*/
+			}
+			
+			protected function onInitialized(event:FlexEvent):void
+			{
+				cmbOption.dataProvider = setting.dataProvider;
+				if (setting.labelField) cmbOption.labelField = setting.labelField;
+			}
+			
+			protected function onOptionChanged(event:IndexChangeEvent):void
+			{
+				setting.stringValue = setting.labelField ? cmbOption.selectedItem[setting.labelField] : cmbOption.selectedItem.toString();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label id="lbl"
+		styleName="uiTextSettingsLabel"
+		text="{setting.label}"/>
+	<s:ComboBox id="cmbOption"
+				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
+				selectedIndex="0" change="onOptionChanged(event)"/>
+</s:VGroup>

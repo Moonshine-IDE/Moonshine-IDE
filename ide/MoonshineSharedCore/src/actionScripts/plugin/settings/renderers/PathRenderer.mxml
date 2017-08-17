@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%"
+	paddingLeft="15"
+	paddingTop="15"
+	paddingRight="15"
+	paddingBottom="15"
+	creationComplete="onCreationCompletes(event)"
+	removedFromStage="onRemovedFromStage(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.core.IVisualElement;
+			import mx.core.IVisualElementContainer;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.MenuEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.VGroup;
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.events.AddTabEvent;
+			import actionScripts.events.FileChangeEvent;
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
+			import actionScripts.plugin.settings.vo.PathSetting;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.ui.ScrollableMenu;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
+			
+			[Bindable] public var setting:PathSetting;
+			[Bindable] public var isSDKPath:Boolean;
+			[Bindable] public var isDropDown:Boolean;
+			
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			[Bindable] private var historyPaths:ArrayCollection;
+			
+			private var file:FileLocation;
+			private var sdkPopup:SDKSelectorPopup;
+			private var sdkPathPopup:SDKDefinePopup;
+			private var pathMenu: ScrollableMenu = new ScrollableMenu();
+			
+			private function selectPath():void
+			{
+				// opens only if sdkpop not opens already
+				if (isSDKPath)
+				{
+					if (!sdkPopup)
+					{
+						sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
+						sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+						sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+						PopUpManager.centerPopUp(sdkPopup);
+					}
+				}
+				else
+				{
+					file = new FileLocation();
+					if (setting.directory) file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+					else file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled,["*.xml","*.bmml"]); // for Balsmiq project we need only .xml file to get selected.
+				}
+			}
+			
+			private function clearPath():void
+			{
+				setting.stringValue = "";
+			}
+			
+			private function onDownloadNewSDK():void
+			{
+				if (!model.sdkInstallerView)
+				{
+					model.sdkInstallerView = model.flexCore.getSDKInstallerView();
+					model.sdkInstallerView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed, false, 0, true);
+				}
+				else
+				{
+					model.activeEditor = (model.sdkInstallerView as IContentWindow);
+					return;
+				}
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(model.sdkInstallerView as IContentWindow)
+				);
+			}
+			
+			private function onDefineSDKClosed(event:CloseTabEvent):void
+			{
+				model.sdkInstallerView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
+				model.sdkInstallerView = null;
+			}
+			
+			private function onFlexSDKUpdated(event:ProjectEvent):void
+			{
+				// in case user deleted the entry
+				setting.stringValue = event.anObject.path;
+				lblValue.text = event.anObject.name;
+				if (event.anObject.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
+				hideDefineSDKLink(event.anObject.name);
+				onSDKPopupClosed(null);
+			}
+			
+			private function onSDKPopupClosed(event:CloseEvent):void
+			{
+				sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+				sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+				sdkPopup = null;
+			}
+			
+			private function openFile(fileDir:Object):void
+			{
+				//openFileCancelled(event);
+				setting.stringValue = (fileDir is FileLocation) ? file.fileBridge.nativePath : fileDir.nativePath;
+				historyPaths.addItem(setting.stringValue);
+				cmbPath.selectedItem = setting.stringValue;
+				file = null;
+				
+				setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
+			}
+			
+			private function openFileCancelled():void
+			{
+				/*event.target.removeEventListener(Event.SELECT, openFile);
+				event.target.removeEventListener(Event.CANCEL, openFileCancelled);*/
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				// process this following only in case of project's custom SDK 
+				if (isSDKPath && setting.stringValue)
+				{
+					// check if sdk is available to the user
+					var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(setting.stringValue, "path");
+					if (!isFound) 
+					{
+						hgUndefinedSDK.visible = hgUndefinedSDK.includeInLayout = true;
+					}
+					else
+					{
+						hideDefineSDKLink(isFound.name);
+						lblValue.text = isFound.name;
+						if (isFound.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
+					}
+				}
+				else
+				{
+					historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+					cmbPath.callLater(function():void
+					{
+						cmbPath.selectedItem = setting.provider[setting.name];
+					});
+				}
+				
+				if (isDropDown)
+				{
+					cmbPath.textInput.editable=false;
+					cmbPath.setStyle("contentBackgroundColor","#FFFFFF");
+				}
+			}
+			
+			private function hideDefineSDKLink(withSDKName:String):void
+			{
+				if (hgUndefinedSDK.visible)
+				{
+					hgUndefinedSDK.visible = hgUndefinedSDK.includeInLayout = false;
+					
+					// updates to project custom SDK values
+					if (setting.provider.hasOwnProperty("buildOptions"))
+					{
+						setting.provider.buildOptions.customSDKPath = withSDKName;
+						setting.provider.swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion(withSDKName);
+					}
+						// application default sdk
+					else
+					{
+						setting.provider.hasOwnProperty(setting.name)
+						{
+							setting.provider[setting.name] = withSDKName;
+						}
+					}
+				}
+			}
+			
+			protected function onSDKAddition(event:MouseEvent):void
+			{
+				if (!sdkPathPopup)
+				{
+					sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, false) as SDKDefinePopup;
+					sdkPathPopup.addEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
+					sdkPathPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKPathUpdated);
+					PopUpManager.centerPopUp(sdkPathPopup);
+				}
+				else
+				{
+					PopUpManager.bringToFront(sdkPathPopup);
+				}
+			}
+			
+			protected function onSDKPathPopupClosed(event:CloseEvent):void
+			{
+				if (!sdkPathPopup) return;
+				sdkPathPopup.removeEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
+				sdkPathPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKPathUpdated);
+				sdkPathPopup = null;
+			}
+			
+			protected function onFlexSDKPathUpdated(event:ProjectEvent):void
+			{
+				onSDKPathPopupClosed(null);
+				// add sdk
+				// don't add if said sdk already added
+				var isAlreadyAdded:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(event.anObject.path, "path");
+				if (!isAlreadyAdded)
+				{
+					var tmp:ProjectReferenceVO = new ProjectReferenceVO();
+					tmp.name = event.anObject.label;
+					tmp.path = event.anObject.path;
+					IDEModel.getInstance().userSavedSDKs.addItem(tmp);
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+				}
+				// check if newly added matches with customSDKpath
+				// in a project's environment case
+				if (setting.stringValue)
+				{
+					if (event.anObject.label != setting.stringValue)
+					{
+						Alert.show("New SDK is different than the defined one. Use it anyway?", "Confirm!", Alert.YES | Alert.NO, null, onSDKChooseConfirmed);
+					}
+					else
+					{
+						onSDKChooseConfirmed(null);
+					}
+				}
+				
+				/*
+				* @local
+				* we need this to be local
+				*/
+				function onSDKChooseConfirmed(evnt:CloseEvent):void
+				{
+					if (!evnt || evnt.detail == Alert.YES)
+					{
+						setting.stringValue = event.anObject.label;
+						hideDefineSDKLink(setting.stringValue);
+					}
+				}
+			}
+			private function onFocusIn( event:FocusEvent ) : void {
+				event.currentTarget.text = "";
+			}
+			
+			private function onPathDropdown() : void {
+				/* pathMenu = ScrollableMenu.createMenu( this, model.recentSaveProjectPath, false );
+				pathMenu.variableRowHeight = true;
+				pathMenu.width = cmbPath.width;
+				pathMenu.height = this.height;
+				var p:Point = new Point(this.parent.x,this.parent.y);
+				var p1:Point = localToGlobal(p);
+				pathMenu.show(p1.x+hgp_path.x,p1.y+hgp_path.y+hgp_path.height);
+				pathMenu.verticalScrollPolicy = "auto";
+				pathMenu.addEventListener( MenuEvent.ITEM_CLICK, onPathSelected, false, 0, true ); */
+			}
+			
+			private function onPathSelected( event:MenuEvent ) : void {
+				setting.stringValue = event.label;
+				cmbPath.selectedItem = event.label;
+			}
+			
+			protected function cmbPath_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				setting.stringValue = cmbPath.selectedItem;
+			}
+			
+			protected function onRemovedFromStage(event:Event):void
+			{
+				// in case of MXMLC Compiler Plugin
+				onSDKPathPopupClosed(null);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="{setting.label}" />
+		
+		<mx:Spacer width="100%"/>
+		
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"
+				  click="clearPath()" />	
+		
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"
+				  click="selectPath()" />
+		
+		<s:Button label="Download a New SDK"
+				  skinClass="{LinkButtonSkin}"
+				  click="onDownloadNewSDK()"
+				  includeInLayout="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}" visible="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}"/>
+	</s:HGroup>
+	
+	<!--<s:Label 
+	styleName="uiTextSettingsValue"
+	paddingTop="10"
+	text="{setting.stringValue? setting.stringValue : 'Not Set' }" />-->
+		<s:Label id="lblValue"
+			styleName="uiTextSettingsValue"
+			paddingTop="10" width="98%"
+			text="{setting.stringValue? setting.stringValue : 'Not Set' }" visible="{!isDropDown}" includeInLayout="{!isDropDown}"  />
+		<s:ComboBox  width="100%" dataProvider="{historyPaths}" id="cmbPath" visible="{isDropDown}" 
+					 alternatingItemColors="[#FFFFFF, #FFFFFF]"  selectionColor="#cccccc" rollOverColor="#eeeeee"
+					 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
+		<!--<mx:Button width="23" height="24" upSkin="@Embed('/elements/images/btnDropDown_UP.png')" overSkin="@Embed('/elements/images/btnDropDown_UP.png')"
+				   downSkin="@Embed('/elements/images/btnDropDown_DOWN.png')"  focusAlpha="0" 
+				   click="onPathDropdown()" id="btn_ProjectPath" visible="{isDropDown}" includeInLayout="{isDropDown}" />-->
+	<s:HGroup id="hgUndefinedSDK" 
+			  width="100%" verticalAlign="middle" gap="4"
+			  visible="false" includeInLayout="false">
+		<s:Label text="This SDK is not defined."
+				 styleName="uiTextSettingsLabel" color="#ff0000"/>
+		<s:Button label="Define it now"
+				  skinClass="{LinkButtonSkin}" useHandCursor="true" buttonMode="true"
+				  click="onSDKAddition(event)"/>	
+	</s:HGroup>
+</s:VGroup>

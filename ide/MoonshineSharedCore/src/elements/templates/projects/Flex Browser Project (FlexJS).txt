@@ -1,0 +1,1 @@
+Create a Apache® FlexJS project that will generate an SWF and HTML files, to run on browser.

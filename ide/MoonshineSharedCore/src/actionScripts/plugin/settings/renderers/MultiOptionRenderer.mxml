@@ -1,0 +1,103 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:HGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+ 	xmlns:s="library://ns.adobe.com/flex/spark"
+ 	xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%"
+	paddingLeft="15"
+	paddingTop="15"
+	paddingRight="15"
+	paddingBottom="15">
+	
+    <fx:Declarations>
+        <s:RadioButtonGroup id="radioButtonGroup"
+                             change="commitValue()">
+        </s:RadioButtonGroup>
+    </fx:Declarations>
+    
+    <fx:Script>
+        <![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import spark.components.RadioButton;
+			
+			import actionScripts.plugin.settings.vo.MultiOptionSetting;
+			import actionScripts.plugin.settings.vo.NameValuePair;
+			
+			[Bindable]
+			public var setting:MultiOptionSetting;
+			
+			[Bindable]
+			private var _options:ArrayCollection
+			
+			public function set options(v:Vector.<NameValuePair>):void
+			{
+				var opts:ArrayCollection = new ArrayCollection();
+				
+				var nvp:NameValuePair
+				
+				for each(nvp in v){
+					opts.addItem(nvp);
+				} 
+				_options = opts;
+			}
+			
+			private function itemRendererFunction_handler(item:Object):ClassFactory
+			{	
+				var nvp:NameValuePair = item as NameValuePair;
+				if(!nvp) return null;
+				
+				var props:Object = {
+						label : nvp.name,
+						value : nvp.value,
+						group : radioButtonGroup,
+						selected : setting.value == nvp.value
+				};
+				var factory:ClassFactory = new ClassFactory(RadioButton);
+				factory.properties = props;
+				return factory;
+			}
+			
+			private function commitValue():void
+			{
+				setting.value = radioButtonGroup.selectedValue;
+			}
+			
+		]]>
+    </fx:Script>
+
+    <s:Label styleName="uiTextSettingsLabel"
+              text="{setting.label}"/>
+
+    <mx:Spacer width = "100%"/>
+    
+    <s:DataGroup
+    	styleName="uiTextSettingsValue"
+    	itemRendererFunction="itemRendererFunction_handler"
+        dataProvider="{_options}">
+        <s:layout>
+            <s:VerticalLayout/>
+        </s:layout>
+    </s:DataGroup>
+
+</s:HGroup>

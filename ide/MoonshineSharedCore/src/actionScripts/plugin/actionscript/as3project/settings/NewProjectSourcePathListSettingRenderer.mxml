@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+  	width="100%"
+  	gap="0"
+  	paddingTop="15"
+  	paddingBottom="5"
+  	paddingLeft="15"
+  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.factory.FileLocation;
+			
+			import components.popup.NewProjectFilePathPopup;
+			import components.popup.NewProjectSourcePathPopup;
+		
+			[Bindable] public var setting:NewProjectSourcePathListSetting;
+			
+			private var fileBrowsing:PathListItemVO;
+			private var isPresentFileBrowseIsLocale:Boolean = false;
+			private var newProjectSourcePathPopup:NewProjectSourcePathPopup;
+			private var newProjectFilePathPopup:NewProjectFilePathPopup;
+			private var sourceFolderLocation:FileLocation;
+			private var sourceFileLocation:FileLocation;
+			
+			public function resetAllProjectPaths():void
+			{
+				sourceFolderLocation = sourceFileLocation = null;
+				pathFolder.text = pathFile.text = "";
+				setting.stringValue = "";
+			}
+			
+			protected function onBrowseSourceDir():void
+			{
+				if (!newProjectSourcePathPopup)
+				{
+					newProjectSourcePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectSourcePathPopup, true) as NewProjectSourcePathPopup;
+					newProjectSourcePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
+					newProjectSourcePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
+					
+					newProjectSourcePathPopup.wrapperBelongToProject = setting.project;
+					PopUpManager.centerPopUp(newProjectSourcePathPopup);
+				}
+			}
+			
+			protected function handleSourceFolderPopupClose(event:CloseEvent):void
+			{
+				newProjectSourcePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
+				newProjectSourcePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
+				newProjectSourcePathPopup = null;
+			}
+			
+			
+			protected function onSourceFolderSelected(event:NewFileEvent):void
+			{
+				pathFolder.text = getLabelFor(event.insideLocation.file);
+				sourceFolderLocation = event.insideLocation.file;
+				
+				updateToSettings();
+			}
+			
+			private function getLabelFor(file:Object):String
+			{
+				var tmpFL: FileLocation = (file is FileLocation) ? file as FileLocation : new FileLocation(file.nativePath);
+				var lbl:String = setting.project.folderLocation.fileBridge.getRelativePath(tmpFL, true);
+				
+				return lbl;
+			}    
+			
+			protected function onBrowseSourceFile():void
+			{
+				if (!newProjectFilePathPopup)
+				{
+					newProjectFilePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectFilePathPopup, true) as NewProjectFilePathPopup;
+					newProjectFilePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
+					newProjectFilePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
+					
+					newProjectFilePathPopup.folderLocation = sourceFolderLocation;
+					PopUpManager.centerPopUp(newProjectFilePathPopup);
+				}
+			}
+			
+			protected function handleSourceFilePopupClose(event:CloseEvent):void
+			{
+				newProjectFilePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
+				newProjectFilePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
+				newProjectFilePathPopup = null;
+			}
+			
+			
+			protected function onSourceFileSelected(event:NewFileEvent):void
+			{
+				pathFile.text = event.filePath.split(sourceFolderLocation.fileBridge.separator).pop();
+				sourceFileLocation = new FileLocation(event.filePath);
+				
+				updateToSettings();
+			}
+			
+			private function updateToSettings():void
+			{
+				if (sourceFolderLocation && sourceFileLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath +","+ sourceFileLocation.fileBridge.nativePath;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label 
+		text="{setting.label}"
+		styleName="uiTextSettingsLabel"/>
+		
+	<s:HGroup 
+		width="100%" 
+		paddingLeft="15" paddingBottom="10"
+		verticalAlign="middle">
+		<s:TextInput id="pathFolder"
+					 width="100%"
+					 styleName="uiTextSettingsValue"
+					 height="100%"
+					 borderVisible="false"
+					 contentBackgroundAlpha="0"
+					 focusAlpha="0"
+					 buttonMode="true" editable="false" mouseChildren="false"/>
+		<s:Spacer width="10"/>
+		<s:Button 
+			label="Browse dir"
+			styleName="lightButton"
+			click="onBrowseSourceDir()"/>
+	</s:HGroup>
+	
+	<s:Rect width="100%"
+			alpha="1">
+		<s:stroke>
+			<s:SolidColorStroke weight="1" color="0xdadada"/>
+		</s:stroke>
+	</s:Rect>
+	
+	<s:Label 
+		text="Main application file"
+		styleName="uiTextSettingsLabel" paddingTop="19"/>
+	
+	<s:HGroup 
+		width="100%" 
+		paddingLeft="15" paddingBottom="4"
+		verticalAlign="middle">
+		<s:TextInput id="pathFile"
+					 width="100%"
+					 styleName="uiTextSettingsValue"
+					 height="100%"
+					 borderVisible="false"
+					 contentBackgroundAlpha="0"
+					 focusAlpha="0"
+					 buttonMode="true" editable="false" mouseChildren="false"/>
+		<s:Spacer width="10"/>
+		<s:Button 
+			label="Browse file"
+			styleName="lightButton"
+			click="onBrowseSourceFile()"
+			/>
+	</s:HGroup>
+</s:VGroup>

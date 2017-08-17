@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark"  
+    alpha.disabled="0.5"> 
+ 
+ 
+  	<fx:Metadata>
+        [HostComponent("spark.components.CheckBox")]
+    </fx:Metadata> 
+  
+  
+    <s:states> 
+        <s:State name="up" /> 
+        <s:State name="over" /> 
+        <s:State name="down" /> 
+        <s:State name="disabled" />
+        <s:State name="selected" />
+        <s:State name="overAndSelected" />
+        <s:State name="upAndSelected" />
+        <s:State name="downAndSelected" />
+        <s:State name="disabledAndSelected" />
+    </s:states>  
+ 
+ 	<fx:Script> 
+        <![CDATA[         
+            static private const exclusions:Array = ["labelElement"]; 
+            override public function get colorizeExclusions():Array
+            {
+            	return exclusions;
+            } 
+        ]]>        
+    </fx:Script>
+	
+	<s:Rect 
+		width="13" height="13">
+		
+		<s:filters>
+			<s:GlowFilter 
+				alpha="0.4" 
+				color="0x0"
+				blurX="4" blurY="4"
+				strength="1"
+				inner="true" />
+		</s:filters>
+		
+		<s:fill>
+			<s:SolidColor 
+				color="0x333333" 
+				alpha="1" />
+		</s:fill>
+	</s:Rect>
+
+	<s:Rect
+		top="2"
+		left="2"
+		width="9"
+		height="9">
+		
+		<s:fill>
+			<s:SolidColor 
+				color="0xf5f5f5"
+				alpha.up="0"
+				alpha.over="0.2"
+				alpha.down="1"
+				alpha.selected="1"
+				alpha.upAndSelected="1"
+				alpha.overAndSelected="1" />
+		</s:fill>
+		
+	</s:Rect>
+
+    <s:Label id="labelElement"
+    	left="17"
+    	top="2"
+    	right="2"
+    	
+    	fontFamily="DejaVuSans"
+    	text="{hostComponent.label}" /> 
+ 
+</s:SparkSkin >

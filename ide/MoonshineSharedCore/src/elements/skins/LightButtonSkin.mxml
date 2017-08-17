@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark"  
+    alpha.disabled="0.5"> 
+ 
+     <fx:Metadata> 
+        [HostComponent("spark.components.Button")] 
+    </fx:Metadata> 
+  
+    <s:states> 
+        <s:State name="up" /> 
+        <s:State name="over" /> 
+        <s:State name="down" /> 
+        <s:State name="disabled" /> 
+    </s:states>  
+ 
+ 	<fx:Script> 
+        <![CDATA[         
+            static private const exclusions:Array = ["labelElement"]; 
+            override public function get colorizeExclusions():Array
+            {
+            	return exclusions;
+            } 
+        ]]>        
+    </fx:Script>
+	
+	<s:Rect 
+		width="100%" height="100%"
+		radiusX="7" radiusY="7">
+		
+		<s:filters>
+			<s:GlowFilter 
+				alpha="1" 
+				color="0xe5e5e5"
+				blurX="2" blurY="2"
+				strength="3" />
+		</s:filters>
+		
+		<s:fill>
+			<s:SolidColor color="0xFcFcFc" alpha="1" />
+		</s:fill>
+	</s:Rect>
+
+	<s:Rect
+		top="3" bottom="3"
+		left="3" right="3"
+		verticalCenter="0" horizontalCenter="0"
+		radiusX="3" radiusY="3">
+		
+		<s:stroke>
+			<s:SolidColorStroke
+				pixelHinting="true"
+				color="0xe5e5e5" 
+				color.down="0xdddddd"
+				weight="1" />
+		</s:stroke>
+		
+			
+		<s:filters>
+			<s:DropShadowFilter
+				angle="-90"
+				blurX="0"
+				blurY="0"
+				inner="true"
+				distance="{(height/2)-4}"
+				color="0x0"
+				alpha="0.04"
+				alpha.over="0.06"
+				alpha.down="0.04"/>
+			
+			<s:DropShadowFilter
+				angle="-90"
+				blurX="0"
+				blurY="2"
+				inner="true"
+				distance="2"
+				color="0x888888"
+				alpha="0.1"/>
+				
+			<s:DropShadowFilter
+				angle="90"
+				blurX="0"
+				blurY="1"
+				inner="true"
+				distance="1"
+				color="0xFFFFFF"
+				alpha="0.3"/>
+			
+			<s:GlowFilter
+				color="0x0"
+				alpha="0"
+				blurX="4" blurY="4"
+				alpha.over="0.05"
+				alpha.down="0"
+				inner.down="true" />
+				
+		</s:filters>
+			
+		
+		<s:fill>
+			<s:SolidColor 
+				color="0xf9f9f7"
+				color.down="0xf1f1f1" 
+				alpha="1" />
+		</s:fill>
+		
+	</s:Rect>
+
+    <s:Label id="labelElement"
+    	width="100%" height="100%"
+    	paddingLeft="{getStyle('paddingLeft')}" 
+    	paddingRight="{getStyle('paddingRight')}"
+    	paddingTop="10" paddingBottom="9"
+    	color="0x555555"
+    	useHandCursor="true"
+    	fontFamily="DejaVuSans"
+    	text="{hostComponent.label}" /> 
+ 
+</s:SparkSkin >

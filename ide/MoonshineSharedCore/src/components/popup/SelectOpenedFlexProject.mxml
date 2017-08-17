@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   backgroundColor="0xf5f5f5"
+				   width="500" height="230"
+				   creationComplete="onCreationCompletes(event)"
+				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			import mx.events.FlexEvent;
+			
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectVO;
+			
+			public static const PROJECT_SELECTED: String = "PROJECT_SELECTED";
+			public static const PROJECT_SELECTION_CANCELLED: String = "PROJECT_SELECTION_CANCELLED";
+			public static const TYPE_FLEX: String = "TYPE_FLEX";
+			public static const TYPE_FLEXJS: String = "TYPE_FLEXJS";
+			
+			public var selectedProject:ProjectVO;
+			public var type: String = TYPE_FLEX;
+			
+			[Bindable] private var projects:ArrayCollection = new ArrayCollection();
+
+			private var model:IDEModel = IDEModel.getInstance();
+			private var loaderIcon: Image;
+			
+			override protected function closeByCrossSign(event:Event):void
+			{
+				dispatchEvent(new Event(PROJECT_SELECTION_CANCELLED));
+				super.closeByCrossSign(event);
+			}
+			
+			protected function onProjectBuildRequest(event:MouseEvent):void
+			{
+				if (!lst_projects.selectedItem)
+				{
+					Alert.show("Please, selet a Project to Build.", "Error!");
+				}
+				else
+				{
+					selectedProject = lst_projects.selectedItem as ProjectVO;
+					dispatchEvent(new Event(PROJECT_SELECTED));
+					closeThis();
+				}
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (ConstantsCoreVO.IS_AIR)
+				{
+					for each (var i:AS3ProjectVO in model.projects)
+					{
+						var applicationFileString: String = i.targets[0].fileBridge.read().toString();
+						if (type == TYPE_FLEXJS && (applicationFileString.indexOf("<js:Application") != -1)) projects.addItem(i);
+						else if (type == TYPE_FLEX) projects.addItem(i);
+					}
+				}
+				else
+				{
+					projects = model.projects;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+	</fx:Declarations>
+
+	<s:VGroup id="vgProjects" 
+			  height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="13" paddingTop="9" paddingRight="13"
+			  addedToStage="title='Select Project to Build'"
+			  horizontalAlign="center">
+		<s:List id="lst_projects" dataProvider="{projects}" width="100%" height="100%" color="0xEEEEEE"
+				contentBackgroundColor="0x0"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+				borderVisible="false"
+				doubleClickEnabled="true" doubleClick="onProjectBuildRequest(event)"
+				labelField="projectName">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer height="25">
+						<s:Label id="labelDisplay" width="100%" height="100%"
+								 verticalCenter="0" paddingLeft="15" verticalAlign="middle" textAlign="justify" />
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:List>
+		<s:Button label=" Select &amp; Continue" id="btn_load" 
+				  styleName="lightButtonTight" width="150"
+				  click="onProjectBuildRequest(event)" />
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>

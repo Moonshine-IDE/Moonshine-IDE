@@ -1,0 +1,799 @@
+<project name="MoonshineBuildScriptLibrary" basedir="." default="checkOS" >
+	<description>
+		This is a library shared ANT tasks to be used for building Moonshine.  This should be included and called from an ANT script in the WEB or DESKTOP projects.
+	</description>
+ 	
+	<tstamp>
+		<format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss" />
+	</tstamp>
+	
+	<!--
+	//==========================================================================
+	//
+	//  PROPERTIES
+	//
+	//==========================================================================
+	-->
+	
+	<!-- Compilers and Flex SDK configuration -->
+	<xmlproperty file="ApplicationProperties.xml" keeproot="false" semanticattributes="true" prefix="APP_PROPERTIES"/>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="ant-contrib-0.6.jar"/>
+	<property name="keepDebugFiles" value="${APP_PROPERTIES.keepDebugFiles}" />
+	<property name="deploy_dir" value="DEPLOY"/>
+	<property name="debug_dir" value="bin-debug"/>
+	
+	<!-- Determining the run at local system or cloud -->
+	<property name="localOrCloud" value="${svn.revision}"/>
+	<if>
+		<equals arg1="${localOrCloud}" arg2="&#36;&#123;svn.revision}"/>
+		<then>
+			<property name="MOONSHINE_IS_DESKTOP" value="MOONSHINE_IS_DESKTOP"/>
+		</then>
+		<else>
+			<property name="MOONSHINE_IS_DESKTOP" value="${MOONSHINE_IS_DESKTOP}"/>
+		</else>
+	</if>
+
+	<if>
+		<!-- This expected value means its not running on Bamboo -->
+		<equals arg1="${MOONSHINE_IS_DESKTOP}" arg2="MOONSHINE_IS_DESKTOP"/>
+		<then>
+			<echo>Reading properties from local ApplicationProperties</echo>
+			<property name="IsDesktopBuild" value="${APP_PROPERTIES.isDesktop}"/>
+			<property name="IsDevelopmentBuild" value="${APP_PROPERTIES.isDevelopmentVersion}"/>
+			<property name="BuildVersion" value="${APP_PROPERTIES.buildVersion}"/>
+			<property name="Is.Signed.Build" value="${APP_PROPERTIES.isSignedBuild}"/>
+			<property name="certSignedAIR" value="${APP_PROPERTIES.certSignedAIR}" />
+			<property name="certSignedAIRPassword" value="${APP_PROPERTIES.certSignedAIRPass}" />
+			<property name="certSignedWindowsBinary" value="${APP_PROPERTIES.certSignedWindowsBinary}" />
+			<property name="certSignedWindowsBinaryPassword" value="${APP_PROPERTIES.certSignedWindowsBinaryPass}" />
+			<property name="certSignedDevIDKeychainName" value="${APP_PROPERTIES.certSignedDevIDKeychainName}" />
+			<property name="certSignedMacOSKeychainName" value="${APP_PROPERTIES.certSignedMacOSKeychainName}" />
+			<property name="certSignedMacOSKeychainInstallerName" value="${APP_PROPERTIES.certSignedMacOSKeychainInstallerName}" />
+			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
+			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
+			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
+			<property name="svn.revision" value="4899"/>
+		</then>
+		<else>
+			<echo>Reading properties from Bamboo Variables</echo>
+			<property name="IsDesktopBuild" value="${MOONSHINE_IS_DESKTOP}"/>
+			<property name="IsDevelopmentBuild" value="${MOONSHINE_IS_DEVELOPMENT_VERSION}"/>
+			<property name="BuildVersion" value="${MOONSHINE_VERSION}"/>
+			<property name="Is.Signed.Build" value="${IS_SIGNED_BUILD}"/>
+			<property name="certSignedAIR" value="${CERT_WIN_AIR}" />
+			<property name="certSignedAIRPassword" value="${CERT_WIN_AIR_PASS}" />
+			<property name="certSignedWindowsBinary" value="${CERT_WIN_INSTALLER}" />
+			<property name="certSignedWindowsBinaryPassword" value="${CERT_WIN_INSTALLER_PASS}" />
+			<property name="certSignedDevIDKeychainName" value="${CERT_DEV_ID_KEYCHAIN}" />
+			<property name="certSignedMacOSKeychainName" value="${CERT_OSX_KEYCHAIN}" />
+			<property name="certSignedMacOSKeychainInstallerName" value="${CERT_OSX_KEYCHAIN_INSTALLER}" />
+			<property name="certSignedMacOSKeychainPass" value="${CERT_OSX_KEYCHAIN_PASS}" />
+			<property name="bundledFlexSDK" value="${BUNDLED_FLEX_SDK}" />
+			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
+			<property name="svn.revision" value="${svn.revision}" />
+		</else>
+	</if>
+	
+	<echo>OS BIT : ${os.arch}</echo>
+	<echo>Is.Signed.Build : ${Is.Signed.Build}</echo>
+	<if>
+		<os family="windows"/>
+		<then>
+			<if>
+				<os arch="x86"/>
+				<then>
+					<propertycopy property="FLEX_HOME" from="APP_PROPERTIES.winSDKPath" silent="true" />
+				</then>
+				<else>
+					<propertycopy property="FLEX_HOME" from="APP_PROPERTIES.winSDKPath64" silent="true" />
+				</else>
+			</if>
+		</then>
+		<else>
+			<propertycopy property="FLEX_HOME" from="APP_PROPERTIES.unixSDKPath" silent="true" />
+		</else>
+	</if>
+	
+	<condition property="Is.FLEX_HOME.Not.Exists" else="false">
+		<or>
+			<and>
+				<equals arg1="${FLEX_HOME}" arg2=""/>
+			</and>
+			<not>
+				<available file="${FLEX_HOME}"/>
+			</not>
+		</or>
+	</condition>
+	
+	<condition property="Is.Bundled.SDK.Available" else="false">
+		<not>
+			<equals arg1="${bundledFlexSDK}" arg2=""/>
+		</not>
+	</condition>
+	<echo>Is.Bundled.SDK.Available : ${Is.Bundled.SDK.Available}</echo>
+	
+	<!-- Read all environment properties -->
+	<property environment="env"/>
+	<!-- Check and set if Flex SDK already setup as environment variable -->
+	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
+	<echo>SDK : ${FLEX_HOME}</echo>
+	
+    <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+	<echo>flexTasks.tasks : ${FLEX_HOME}/ant/lib/flexTasks.jar</echo>
+    <property name="mxmlc_path" value="${FLEX_HOME}/lib/mxmlc.jar" />
+    <property name="adt_path" value="${FLEX_HOME}/lib/adt.jar" />
+ 
+    <!-- Application configuration -->
+	<property name="assets_dir" value="../src/assets"/>
+	<property name="background_dir" value="../src/backgrounds"/>
+    <property name="swfFilename" value="${debug_dir}/Moonshine.swf" />
+	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
+	<property name="applicationSourceDirectory" value="../src"/>
+	<property name="LibraryApacheFlexSDK" value="../../ApacheFlexSDKInstaller/ApacheFlexSDKInstallerLib"/>
+	<property name="LibraryApacheFlexSDKHelperSourceA" value="../../ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0-src"/>
+	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
+	<property name="webMainSource" value="${applicationSourceDirectory}/MoonshineWEB.mxml" />
+	<property name="desktopApplicationDescriptor" value="${debug_dir}/MoonshineDESKTOP-app.xml" />
+	<property name="desktopApplicationDescriptorOriginal" value="${applicationSourceDirectory}/MoonshineDESKTOP-app.xml" />
+	
+	<!-- Desktop configuration -->
+	<if>
+		<equals arg1="${APP_PROPERTIES.certSelfSigned}" arg2=""/>
+		<then>
+			<property name="certSelfSignedNameOnly" value="MoonshineSelfSignedCertificate" />
+			<property name="certSelfSigned" value="MoonshineSelfSignedCertificate.p12" />
+			<property name="certSelfSignedPassword" value="moonshine" />
+		</then>
+		<else>
+			<property name="certSelfSignedNameOnly" value="${APP_PROPERTIES.certSelfSignedNameOnly}" />
+			<property name="certSelfSigned" value="${APP_PROPERTIES.certSelfSigned}" />
+			<property name="certSelfSignedPassword" value="${APP_PROPERTIES.certSelfSignedPass}" />
+		</else>
+	</if>
+	
+	<condition property="Is.Keychain.Certificate.Defined">
+		<and>
+			<not>
+				<equals arg1="${certSignedMacOSKeychainInstallerName}" arg2=""/>
+			</not>
+			<not>
+				<equals arg1="${certSignedMacOSKeychainInstallerName}" arg2="CERT_OSX_KEYCHAIN_INSTALLER"/>
+			</not>
+			<not>
+				<equals arg1="${certSignedMacOSKeychainPass}" arg2=""/>
+			</not>
+			<not>
+				<equals arg1="${certSignedMacOSKeychainPass}" arg2="CERT_OSX_KEYCHAIN_PASS"/>
+			</not>
+		</and>
+	</condition>
+	<echo>Is.Keychain.Certificate.Defined: ${Is.Keychain.Certificate.Defined}</echo>
+
+	<!-- Locale properties -->
+	<!-- The list of supported locales -->
+	<property name="locale.list" value="en_US,ja_JP" />
+	<!-- The path to the locale files.  Includes "{locale}", which will be
+		 replaced with the individual locales -->
+	<property name="locale.path" value="${LibraryMoonshineCore}/src/locale/{locale}" />
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  TASKS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- OS Check and decision on opening Task -->
+	<target name="checkOS">
+		<if>
+			<equals arg1="${IsDesktopBuild}" arg2="true"/>
+			<!-- consider a desktop build -->
+			<then>
+				<if>
+					<os family="windows"/>
+					<then>
+						<property name="isOSX" value="false"/>
+						<antcall target="disposeTempWindows"></antcall>
+					</then>
+					<elseif>
+						<os family="unix"/>
+						<then>
+							<property name="isOSX" value="true"/>
+							<antcall target="disposeTempUNIX"></antcall>
+						</then>
+					</elseif>
+				</if>
+			</then>
+			<!-- consider a web build -->
+			<else>
+				<property name="isOSX" value="false"/>
+				<antcall target="disposeTempWindowsWeb"></antcall>
+			</else>
+		</if>
+	</target>
+
+	<!-- Create a certificate if it doesn't exist already -->
+	<target name="createCertificate" unless="certSelfSigned.exists">
+		<echo>Self-signed .p12 certificate generation</echo>
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-certificate" />
+			<arg line="-cn '${certSelfSignedNameOnly}'" />
+			<arg line="2048-RSA" />
+	   		<arg line="${certSelfSigned}" />
+	   		<arg line="${certSelfSignedPassword}"/>
+		</java>
+		<copy file="${certSelfSigned}" todir="${debug_dir}" overwrite="true"/>
+	 </target>
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  WINDOWS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- Windows signed packaging initiator -->
+	<target name="signedSigningBuild" if="${Is.Signed.Build}">
+		<antcall target="CompileSWFWindowsSignedPackage"></antcall>
+	</target>
+
+	<!-- Windows packaging/signing Task -->
+	<target name="CompileSWFWindowsSignedPackage" depends="CompileSWFOSX,CompileSWFWindows">
+		<echo>Signed Process Running: ${certSelfSigned} : ${certSignedWindowsBinary} : ${desktopApplicationDescriptor} : ${swfFilename}</echo>
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
+	   		<arg line="-storepass '${certSelfSignedPassword}'" />
+			<arg line="-tsa 'http://timestamp.comodoca.com/rfc3161'" />
+	   		<arg line="-target native"/>
+	   		<arg line="-storetype pkcs12" />
+	   		<arg line="-keystore '${certSignedWindowsBinary}'" />
+	   		<arg line="-storepass '${certSignedWindowsBinaryPassword}'" />
+	   		<arg line="${desktopBinaryFilename}" />
+	   		<arg line="'${desktopApplicationDescriptor}'" />
+	   		<arg line="'${swfFilename}'" />
+			<arg line="elements" />
+			<arg line="tourDeFlex" />
+			<arg line="defaultSDKs"/>
+	   		<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	 </target>
+	
+	<!-- Windows self-signed packaging initiator -->
+	<target name="normalSigningBuild" unless="${Is.Signed.Build}">
+		<antcall target="CompileSWFWindowsSelfSignedPackage"></antcall>
+	</target>
+
+	 <!-- Windows packaging/signing Task -->
+	<target name="CompileSWFWindowsSelfSignedPackage" depends="CompileSWFOSX,CompileSWFWindows">
+		<echo>Self-signed Process Running</echo>
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
+	   		<arg line="-storepass '${certSelfSignedPassword}'" />
+			<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+	   		<arg line="-target native"/>
+	   		<arg line="${desktopBinaryFilename}" />
+	   		<arg line="'${desktopApplicationDescriptor}'" />
+	   		<arg line="'${swfFilename}'" />
+			<arg line="elements" />
+			<arg line="tourDeFlex" />
+			<arg line="defaultSDKs"/>
+	   		<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	 </target>
+	 
+	 <!-- AIR Task -->
+	 <target name="compileAIR" depends="CompileSWFOSX,CompileSWFWindows">
+		<echo>AIR build process</echo>
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${debug_dir}/${certSelfSigned}' " />
+			<arg line="-storepass '${certSelfSignedPassword}'" />
+			<arg line="${deploy_dir}/${installerName}.air" />
+			<arg line="${desktopApplicationDescriptor}" />
+			<arg line="${swfFilename}" />
+			<!-- AIR doesn't support ANE -->
+			<!--arg line="-extdir"/>
+			<arg line="../extensions"/-->
+			<arg line="elements" />
+			<arg line="tourDeFlex" />
+		</java>
+	</target>
+	
+	<!--
+	//==========================================================================
+	//
+	//  MACOS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- Compile DMG -->
+	<target name="compile dmg project" depends="CompileSWFOSX,CompileSWFWindows">
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${debug_dir}/${certSelfSigned}' " />
+			<arg line="-storepass '${certSelfSignedPassword}'" />
+			<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line="-target native"/>
+			<arg line="${deploy_dir}/${installerName}.dmg" />
+			<arg line="${desktopApplicationDescriptor}" />
+			<arg line="${swfFilename}" />
+			<arg line="-extdir"/>
+			<arg line="../extensions"/>
+			<arg line="elements" />
+			<arg line="tourDeFlex" />
+			<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	</target>
+	
+	<!-- Compile .app to next use in .pkg building -->
+	<!--target name="compile app project" depends="compile dmg project"-->
+	<target name="compile app project" depends="CompileSWFOSX,CompileSWFWindows">
+		<java jar="${adt_path}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
+			<arg line="-storepass '${certSelfSignedPassword}'" />
+			<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line="-target bundle"/>
+			<arg line="'${desktopBinaryFilename}'" />
+			<arg line="'${desktopApplicationDescriptor}'" />
+			<arg line="'${swfFilename}'" />
+			<arg line="-extdir"/>
+			<arg line="../extensions"/>
+			<arg line="elements" />
+			<arg line="tourDeFlex" />
+			<arg line="appScripts" />
+			<arg line="defaultSDKs"/>
+			<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	</target>
+	
+	<!-- Compile .pkg to distribute through app store -->
+	<target name="buildAppStorePKG" depends="compile app project" if="${Is.Keychain.Certificate.Defined}">
+		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${basedir}/elements/images/moonshineIcons.icns" overwrite="true"/>
+		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
+			I need to make a conditional statement -->
+		<if>
+			<equals arg1="${IsDevelopmentBuild}" arg2="true"/>
+			<then>
+				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
+					<replacevalue><![CDATA[<string>Icon.icns</string>
+			<key>CFBundleName</key>
+			<string>MoonshineDevelopment</string>
+			<key>LSApplicationCategoryType</key>
+			<string>public.app-category.developer-tools</string>
+			<key>CFBundleVersion</key>
+			<string>23.0</string>]]></replacevalue>
+				</replace>
+			</then>
+			<else>
+				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
+					<replacevalue><![CDATA[<string>Icon.icns</string>
+			<key>CFBundleName</key>
+			<string>Moonshine</string>
+			<key>LSApplicationCategoryType</key>
+			<string>public.app-category.developer-tools</string>
+			<key>CFBundleVersion</key>
+			<string>23.0</string>]]></replacevalue>
+				</replace>
+			</else>			
+		</if>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='security unlock-keychain -p "${certSignedMacOSKeychainPass}"'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/WebKit.dylib"/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="chmod -R 777 ${desktopBinaryFilename}"/>
+		</exec>
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/Info.plist"/>
+		</exec-->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Info.plist"/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64\ Helper"/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64"/>
+		</exec>
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/MacOS/AdobeCP'/>
+		</exec-->
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin'/>
+		</exec-->
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin'/>
+		</exec-->
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Resources/FlashPlayer-10.6.rsrc'/>
+		</exec-->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/MacOS/FlashPlayer-10.6'/>
+		</exec>
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64\ Helper'/>
+		</exec-->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Adobe\ AIR.vch'/>
+		</exec>
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
+		</exec-->
+		<!--exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/adobecp.plugin'/>
+		</exec-->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A/SecurityScopeBookmark'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+		</exec>
+		<!-- @devsena; We shall going to maintain a flag for non-App-Store version to determine when app starts, by adding certain value to a certain XML file and re-package as a "DONOTUSE" pkg -->
+		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" token="$isAppStoreVersion" value="false" />
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+		</exec>
+		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing -->
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_OffAppStore_Distribution.pkg'/>
+		</exec>
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='rm ${deploy_dir}/${installerName}_DONOTUSE.pkg'/>
+		</exec>
+	</target>
+	
+	<!--
+	//==========================================================================
+	//
+	//  GLOBAL
+	//
+	//==========================================================================
+	-->
+	
+	<!-- delete and recreate the DEPLOY dir -->
+	<target name="init">
+		<delete dir="${deploy_dir}"/>
+		<delete dir="${debug_dir}" />
+		<mkdir dir="${deploy_dir}" />
+		<mkdir dir="${debug_dir}" />
+	</target>
+	
+	<!-- modify in the descriptor file -->
+	<target name="modifyDescriptor" depends="init" if="${IsDesktopBuild}">
+		<!-- copy SDK folders if available -->
+		<mkdir dir="${basedir}/defaultSDKs" />
+		<if>
+			<equals arg1="${Is.Bundled.SDK.Available}" arg2="true"/>
+			<then>
+				<copy file="${bundledFlexSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
+				<copy file="${bundledFlexJSSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
+			</then>
+		</if>
+		
+		<copy file="${desktopApplicationDescriptorOriginal}" todir="${debug_dir}" overwrite="true"/>
+		
+		<!-- modify field values based upon isDevelopment tag -->
+		<if>
+			<equals arg1="${IsDevelopmentBuild}" arg2="true"/>
+			<then>
+				<property name="applicationID" value="com.moonshine-ide.development"/>
+				<property name="applicationName" value="MoonshineDevelopment"/>
+				<property name="executableName" value="MoonshineDevelopment" />
+				<property name="installerName" value="MoonshineDevelopment" />
+			</then>
+			<else>
+				<property name="applicationID" value="com.moonshine-ide"/>
+				<property name="applicationName" value="Moonshine"/>
+				<property name="executableName" value="Moonshine" />
+				<property name="installerName" value="Moonshine" />
+			</else>			
+		</if>
+		
+		<copy todir="${basedir}/tourDeFlex" overwrite="true">
+			<fileset dir="../tourDeFlex"/>
+		</copy>
+		<copy todir="${basedir}/appScripts" overwrite="true">
+			<fileset dir="${applicationSourceDirectory}/appScripts"/>
+		</copy>
+		<copy todir="${basedir}/elements" overwrite="true">
+			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
+		</copy>
+
+		<!-- Check if the self-signed certificate exists -->
+		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
+		<if>
+			<equals arg1="${certSelfSigned.exists}" arg2="true"/>
+			<then>
+				<copy file="${certSelfSigned}" todir="${debug_dir}" overwrite="true"/>
+			</then>
+			<else>
+				<antcall target="createCertificate"></antcall>
+			</else>
+		</if>
+
+		<if>
+			<os family="unix"/>
+			<then>
+				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.app"/>
+				<copy file="entitlement.plist" todir="${debug_dir}" overwrite="true"/>
+				<copy file="../extensions/SSB.ane" todir="${debug_dir}" overwrite="true"/>
+			</then>
+			<else>
+				<if>
+					<equals arg1="${Is.Signed.Build}" arg2="true"/>
+					<then>
+						<copy file="${certSignedAIR}" todir="${debug_dir}" overwrite="true"/>
+						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
+						 <script language="javascript">
+						  	arr = project.getProperty('certSignedWindowsBinary').split('/');
+						  	project.setProperty('certSignedWindowsBinary', project.getProperty('debug_dir') + '/' + arr[arr.length - 1]);
+						 </script>
+						<property name="certSignedWindowsBinary" value="${deploy_dir}/${installerName}.app"/>
+					</then>
+				</if>
+				<replace file="${desktopApplicationDescriptor}">
+				    <replacetoken><![CDATA[<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>]]></replacetoken>  
+				    <replacevalue><![CDATA[]]></replacevalue>
+				</replace>
+				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.exe" />
+			</else>
+		</if>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="nameToBeReplacedByANT" replace="${applicationName} ${BuildVersion}" encoding="utf-8" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="idToBeReplacedByANT" replace="${applicationID}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="0.0.0" replace="${BuildVersion}" />
+		<replace file="${desktopApplicationDescriptor}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${swfFilename}" />
+		<!-- More robust replacing technique than above one (commented) -->
+        <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
+	</target>
+	
+	<!-- Compile SWF to build directory for desktop packaging -->
+	<target name="CompileSWFWindows" depends="compileLibrary" unless="${isOSX}">
+		<mxmlc file="${desktopMainSource}" 
+			   output="${swfFilename}" 
+			   swf-version="33" 
+			   configname="air" 
+			   locale="${locale.list}" 
+			   fork="true" 
+			   optimize="true" 
+			   debug="false" 
+			   actionscript-file-encoding="UTF-8" 
+			   incremental="false"
+			   keep-generated-actionscript="false"
+			   allow-source-path-overlap="true"
+			 	maxmemory="2048m">
+			<define name="CONFIG::OSX" value="false"/>
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+			<source-path path-element="${LibraryMoonshineCore}/src"/>
+			<!-- Locale paths -->
+			<source-path path-element="${LibraryMoonshineCore}/src/locale/{locale}"/>
+			<source-path path-element="${applicationSourceDirectory}"/>
+			<compiler.library-path dir="../libs" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
+			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+		</mxmlc>
+	</target>
+	<target name="CompileSWFOSX" depends="compileLibrary" if="${isOSX}">
+		<copy todir="${basedir}/assets" overwrite="true">
+			<fileset dir="${assets_dir}"/>
+		</copy>
+		<mxmlc file="${desktopMainSource}" 
+			   output="${swfFilename}" 
+			   swf-version="33" 
+			   configname="air" 
+			   locale="${locale.list}" 
+			   fork="true" 
+			   optimize="true" 
+			   debug="false" 
+			   actionscript-file-encoding="UTF-8" 
+			   incremental="false"
+			   keep-generated-actionscript="false"
+			   allow-source-path-overlap="true"
+			 	maxmemory="2048m">
+			<define name="CONFIG::OSX" value="true"/> 
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+			<source-path path-element="${LibraryMoonshineCore}/src"/>
+			<!-- Locale paths -->
+			<source-path path-element="${LibraryMoonshineCore}/src/locale/{locale}"/>
+			<source-path path-element="${applicationSourceDirectory}"/>
+			<compiler.library-path dir="../libs" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
+			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+			<compiler.external-library-path dir="${debug_dir}" append="true">
+			   <include name="SSB.ane" />
+			</compiler.external-library-path>
+		</mxmlc>
+	</target>
+	
+	<!-- Compile web SWF to build directory for desktop packaging -->
+	<target name="CompileWeb" depends="compileLibrary">
+		<copy todir="${debug_dir}/elements" overwrite="true">
+			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
+		</copy>
+		<echo message="${FLEX_HOME}" />
+		<echo message="${LibraryMoonshineCore}" />
+		<echo message="${locale.path}" />
+		<echo message="${applicationSourceDirectory}" />
+		<mxmlc fork="true" 
+			   file="${webMainSource}" 
+			   output="${deploy_dir}/Moonshine.swf" 
+			   swf-version="33" 
+			   locale="${locale.list}" 
+			   static-rsls="true" 
+			   optimize="true" 
+			   actionscript-file-encoding="UTF-8" 
+			   incremental="false" 
+			   keep-generated-actionscript="false"
+			   allow-source-path-overlap="true">
+			<define name="CONFIG::OSX" value="false"/>
+			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+			<source-path path-element="${FLEX_HOME}/frameworks" />
+			<source-path path-element="${LibraryMoonshineCore}/src"/>
+			<!-- Locale paths -->
+			<source-path path-element="${locale.path}"/>
+			<source-path path-element="${applicationSourceDirectory}"/>
+			<compiler.debug>false</compiler.debug>
+			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+		</mxmlc>
+	</target>
+	
+	<target name="copyRSLs">
+		<copy todir="${debug_dir}" overwrite="true">
+			<fileset dir="${FLEX_HOME}/frameworks/rsls"></fileset>
+		</copy>
+	</target>
+	
+	<target name="createBuildInfoFile" depends="modifyDescriptor">
+		<echo file="${basedir}/elements/appProperties.txt" append="false">${svn.revision}</echo>
+	</target>
+	
+	<!-- Compile library project to SWC -->
+	<target name="compileLibrary" description="compiles the Library" depends="createBuildInfoFile">
+		<echo>Compiling MoonshineSharedCore Library SWC To Deploy SWC Folder</echo>
+		<compc debug="false" output="${debug_dir}/MoonshineSharedCore.swc" incremental="true" maxmemory="2048m">
+			<define name="CONFIG::OSX" value="${isOSX}"/>
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+			<source-path path-element="${LibraryMoonshineCore}/src"/>
+			<include-sources dir="${LibraryMoonshineCore}/src" includes="*"/>
+			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
+				<include name="**/*.swc" />
+			</compiler.library-path>
+			<metadata>
+				<creator>Santanu.K</creator>
+				<publisher>Prominic.Inc</publisher>
+				<language>EN</language>
+			</metadata>
+		</compc>
+	</target>
+	
+	<!-- Determine the SVN revision of the current project
+            The revision is set to the "svn.revision" property
+            If this property is already set, the task will not run.
+            This requires the "svnversion" command. 
+    -->
+    <target name="svn-revision" unless="svn.revision">
+        <echo message="Original revision number:  ${svn.revision}" />
+        <!-- live version -->
+        <exec executable="svnversion">
+            <redirector outputproperty="svn.revision">
+                <outputfilterchain>
+                    <tokenfilter>
+                        <stringtokenizer />
+                        <replaceregex pattern="(.*)\:" replace="" />
+                        <trim />
+                    </tokenfilter>
+                </outputfilterchain>
+            </redirector>
+        </exec>
+        <!-- for debugging on a system where svn.revision does not work
+        <property name="svn.revision" value="3329" /> -->
+        
+        <echo>SVN Revision: ${svn.revision}</echo>
+        
+        <!-- ensure that the revision is in the correct format -->
+        <condition property="svn-valid">
+			<matches pattern="^[0-9]*(M)?$" string="${svn.revision}"/>
+        </condition>
+        <fail message="Invalid format for SVN revision '${svn.revision}'."
+              unless="svn-valid" />
+    </target>
+	
+	<!-- Deletes temporary files for Windows -->
+	<target name="disposeTempWindows" depends="normalSigningBuild,signedSigningBuild">
+		<if>
+			<equals arg1="${keepDebugFiles}" arg2="false"/>
+			<then>
+				<delete dir="${debug_dir}" />
+				<delete dir="elements" />
+				<delete dir="tourDeFlex" />
+				<delete dir="defaultSDKs"/>
+			</then>
+		</if>
+	</target>
+	<target name="disposeTempWindowsWeb" depends="CompileWeb">
+		<if>
+			<equals arg1="${keepDebugFiles}" arg2="false"/>
+			<then>
+				<delete dir="${debug_dir}" />
+				<delete dir="elements" />
+			</then>
+		</if>
+	</target>
+	<target name="disposeTempUNIX" depends="buildAppStorePKG">
+		<if>
+			<equals arg1="${keepDebugFiles}" arg2="false"/>
+			<then>
+				<delete dir="${debug_dir}" />
+				<delete dir="elements" />
+				<delete dir="tourDeFlex" />
+				<delete dir="defaultSDKs"/>
+			</then>
+		</if>
+	</target>
+</project>

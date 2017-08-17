@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   backgroundColor="0xf5f5f5"
+			   width="600" height="240" minWidth="300" minHeight="150" title="Select SDK" skinClass="components.skins.ResizableTitleWindowSkin"
+			   creationComplete="onCreateionCompletes()" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			import components.renderers.GeneralListRenderer;
+			
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			
+			private var sdkPathPopup:SDKDefinePopup;
+			
+			protected function onCreateionCompletes():void
+			{
+				dgSDKs.itemRenderer = new ClassFactory(GeneralListRenderer);
+			}
+			
+			protected function onSDKAddition(event:MouseEvent, isNew:Boolean=true):void
+			{
+				if (!sdkPathPopup)
+				{
+					sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, false) as SDKDefinePopup;
+					sdkPathPopup.addEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
+					sdkPathPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+					if (!isNew) sdkPathPopup.editedSDKPath = dgSDKs.selectedItem as ProjectReferenceVO;
+					PopUpManager.centerPopUp(sdkPathPopup);
+				}
+				else
+				{
+					PopUpManager.bringToFront(sdkPathPopup);
+				}
+			}
+			
+			protected function onSDKPathPopupClosed(event:CloseEvent):void
+			{
+				sdkPathPopup.removeEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
+				sdkPathPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+				sdkPathPopup = null;
+			}
+			
+			protected function onFlexSDKUpdated(event:ProjectEvent):void
+			{
+				onSDKPathPopupClosed(null);
+				
+				// detects been new or edit situation
+				if (event.anObject is ProjectReferenceVO)
+				{
+					// edit sdk
+					model.userSavedSDKs.refresh();
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+				}
+				else
+				{
+					// add sdk
+					// don't add if said sdk already added
+					var tmp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved(event.anObject);
+					if (tmp)
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+						dgSDKs.callLater(function():void
+						{
+							dgSDKs.selectedItem = tmp;
+						});
+					}
+					else
+					{
+						Alert.show("SDK is already added in the list.", "Note!");
+					}
+				}
+			}
+			
+			protected function onSDKDeletion(event:MouseEvent):void
+			{
+				model.userSavedSDKs.removeItem(dgSDKs.selectedItem);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+			}
+			
+			protected function onEntryDoubleClicked(event:MouseEvent):void
+			{
+				dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, dgSDKs.selectedItem));
+				super.closeThis();
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:VGroup width="100%" height="100%">
+		<s:DataGrid id="dgSDKs" 
+					dataProvider="{model.userSavedSDKs}"
+					width="100%" height="100%"
+					sortableColumns="false" borderVisible="false"
+					contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6" doubleClickEnabled="true"
+					rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"/>
+					<s:GridColumn headerText="Path" dataField="path" width="300"/>
+					<s:GridColumn headerText="" dataField="status" minWidth="100"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		<s:HGroup width="100%"
+				  paddingBottom="6" paddingRight="6" paddingLeft="6" paddingTop="4">
+			<s:Button label="+"
+					  click="onSDKAddition(event, true)"
+					  width="30"/>
+			<s:Button label="-"
+					  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}" width="30"
+					  click="onSDKDeletion(event)"/>
+			<s:Button label="Edit"
+					  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}" 
+					  click="onSDKAddition(event, false)"/>
+			<s:Spacer width="100%"/>
+			<s:Button label="Select"
+					  enabled="{dgSDKs.selectedItem}" click="onEntryDoubleClicked(event)"/>
+		</s:HGroup>
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>

@@ -1,0 +1,7 @@
+package $packageName
+{
+	$modifierA interface $fileName
+	{
+		
+	}
+}

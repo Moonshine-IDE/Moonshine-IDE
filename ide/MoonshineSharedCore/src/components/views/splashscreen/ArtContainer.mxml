@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%" 
+	height="100%"
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off"
+	resize="updateSize()">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			[Embed(source="/elements/images/background.jpg")]
+			[Bindable] protected var art:Class;
+			
+			private var orgWidth:int;
+			private var orgHeight:int;
+			private var isNoSDKMessageShown:Boolean;
+			
+			private function loaded():void
+			{
+				orgWidth = artImg['content'].measuredWidth-4;
+				orgHeight = artImg['content'].measuredHeight-2;
+				
+				updateSize();
+			}
+			
+			private function updateSize():void
+			{
+				if (orgWidth == 0 || orgHeight == 0) return;
+				
+				var imgScaleX:Number = width/orgWidth;
+				var imgScaleY:Number = height/orgHeight;
+				
+				var scale:Number = Math.max(imgScaleX, imgScaleY);
+				
+				var newWidth:int = int((orgWidth*scale)+0.5);
+				var newHeight:int = int((orgHeight*scale)+0.5);
+				
+				artImg.width = newWidth;
+				artImg.height = newHeight;
+				
+				artImg.x = (width-newWidth)/2;
+				artImg.y = (height-newHeight)/2;
+			}
+			
+		]]>
+	</fx:Script>
+		
+	<mx:Image id="artImg"
+		creationComplete="loaded()"
+		source="{art}">
+		
+	</mx:Image>
+	
+	<mx:Label text="Photo © Cristian Fattinnanzi"
+			  bottom="6" right="10"
+			  color="#cccccc" fontSize="14"/>
+</mx:Canvas>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<ns:HGroup 
+	xmlns:ns="library://ns.adobe.com/flex/spark"
+	visible="true"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns="http://ns.adobe.com/mxml/2009"
+	
+	width="100%"
+	verticalAlign="middle"
+	paddingLeft="15"
+	paddingTop="15"
+	paddingRight="15"
+	paddingBottom="15"
+	creationComplete="onCreationCompletes(event)">
+	
+	<Script>
+		<![CDATA[
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ShortcutEvent;
+			import actionScripts.valueObjects.Settings;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+		 	private var highlighter:UIHighlighter;
+			
+			
+			[Bindable]
+			public var setting:SpecialKeySetting;
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				//setting.getKeyAsChar();
+				keyButton.label = setting.setLabel(setting.stringValue);
+				
+			}
+			private function addListener():void
+			{
+				keyButton.label = "";
+			
+				instructionText.visible = true;
+			   if (highlighter) return;
+				setting.alt = false;
+				setting.cmd = false;
+				setting.ctrl = false;
+				
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				
+				highlighter = new UIHighlighter();
+				highlighter.comp = instructionBox;
+				highlighter.show();
+				highlighter.addEventListener(MouseEvent.MOUSE_DOWN, closeHighlighter);
+				GlobalEventDispatcher.getInstance().addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
+				
+			}
+			private function handleShortcutPreFired(evt:ShortcutEvent):void{
+				if( highlighter)
+				{
+					setting.alt = false;
+					setting.cmd = false;
+					setting.ctrl = false;
+				}
+			}
+			private function closeHighlighter(event:Event=null):void
+			{
+				highlighter.remove();
+				highlighter = null;
+				
+				instructionText.visible = false;
+				
+				stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				
+				keyButton.label = setting.getKeyAsChar();
+				setting.stringValue = setting.keyValue;
+			}
+			
+			private function handleKeyDown(event:KeyboardEvent):void
+			{
+				//Alert.show("1");
+				if (event.charCode != 0)
+				{
+				//	Alert.show("2");
+					setting.eventPropName = 'charCode';
+					setting.eventValue = event.charCode;
+					closeHighlighter();
+				}
+				else if (event.keyCode != 0)
+				{
+				//	Alert.show("3");
+					if(event.keyCode == Keyboard.COMMAND)// for cmd key
+					{
+						setting.eventPropName = 'keyCode';
+						setting.eventValue = event.keyCode;
+						setting.cmd = true;
+					}
+					else if (event.keyCode == Keyboard.CONTROL) // for Ctrl key
+					{	
+						setting.eventPropName = 'keyCode';
+						setting.eventValue = event.keyCode;
+						setting.ctrl = true;
+					}
+					else if (event.altKey) //For alt key
+					{	
+						setting.eventPropName = 'keyCode';
+						setting.eventValue = event.keyCode;
+						setting.alt = true;
+					}
+					else if(!setting.alt && !setting.ctrl && !setting.cmd)//For function key
+				    {
+					   setting.eventPropName = 'keyCode';
+					   setting.eventValue = event.keyCode;
+					   setting.alt = false;
+					   setting.ctrl = false;
+					   setting.cmd = false;
+					   closeHighlighter();
+				   }
+				  else
+				  {
+					  setting.eventPropName = 'charCode';
+					  setting.eventValue = 27;
+					  setting.alt = false;
+					  setting.ctrl = false;
+					  setting.cmd = false;
+					  closeHighlighter();
+				  }
+				 
+				}
+				else
+				{
+					trace("4");
+				}
+			}
+			
+		]]>
+	</Script>
+	
+	<ns:Label 
+		styleName="uiTextSettingsLabel"
+		paddingTop="1"
+		text="{setting.label}" />
+		
+	<mx:Spacer width="100%"/>
+	
+	<ns:HGroup id="instructionBox"
+		verticalAlign="middle"
+		contentBackgroundAlpha="1"
+		contentBackgroundColor="0xfdfdfd">
+	
+		<ns:Label id="instructionText"
+			styleName="uiTextSettingsValue"
+			paddingTop="1"
+			paddingLeft="15"
+			paddingRight="15"
+			visible="false"
+			text="Press new key" />
+				
+		<ns:Button id="keyButton"
+			skinClass="{KeySelectSkin}"
+			click="addListener()"  />
+							
+	</ns:HGroup>
+	
+</ns:HGroup>

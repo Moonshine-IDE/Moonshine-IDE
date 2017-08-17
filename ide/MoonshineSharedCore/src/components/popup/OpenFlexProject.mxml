@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   backgroundColor="0xf5f5f5"
+			   width="400" height="160"
+			   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+			   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			
+			import spark.effects.Move;
+			import spark.effects.Resize;
+			
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			public static const PROJECT_ADDED: String = "PROJECT_ADDED";
+			public static const PROJECT_CANCELED: String = "PROJECT_CANCELED";
+			
+			public var jumptToLoadProject:Object;
+			protected var loader: DataAgent;
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			private var effectMove: Move;
+			private var effectResize: Resize;
+			private var loaderIcon: Image;
+			
+			override protected function closeByCrossSign(event:Event):void
+			{
+				doBeforeExit();
+				super.closeByCrossSign(event);
+			}
+			
+			private function doBeforeExit():void
+			{
+				if (lst_projects && lst_projects.selectedItem)
+				{
+					lst_projects.selectedItem.loading = false;
+					ConstantsCoreVO.FLEX_PROJECTS.itemUpdated(lst_projects.selectedItem);
+				}
+			}
+			
+			private function getProjectListFromServer():void
+			{
+				ConstantsCoreVO.FLEX_PROJECTS = new ArrayList();
+				loaderIcon = new Image();
+				loaderIcon.source = new ConstantsCoreVO.loaderIcon();
+				loaderIcon.width = loaderIcon.height = 10;
+				this.addElement(loaderIcon);
+				loaderIcon.y = ((this.height - loaderIcon.height) / 2)-10;
+				loaderIcon.x = ((this.width - loaderIcon.width) / 2)+50;
+				
+				loader = new DataAgent(URLDescriptorVO.PROJECT_DIR, onDirectoriesLoaded, onDirectoryLoadFault);
+			}
+			
+			private function onDirectoriesLoaded(value:Object, message:String=null):void
+			{
+				loader = null;
+				if (loaderIcon)
+				{
+					this.removeElement(loaderIcon);
+					loaderIcon = null;
+				}
+				
+				// probable termination
+				if (!value) return;
+				
+				var jsonString: String = String(value);
+				var jsonObj:Object;
+				try
+				{
+					jsonObj = JSON.parse(jsonString);
+				}
+				catch(e:Error)
+				{
+					if (jsonString) Alert.show(jsonString, "Error!");
+					return;
+				}
+				
+				var tmpReference: ProjectReferenceVO;
+				for each (var i:Object in jsonObj.children)
+				{
+					if (i.isDirectory.toString() == "true")
+					{
+						tmpReference = new ProjectReferenceVO();
+						tmpReference.name = i.name.toString();
+						tmpReference.path = i.nativePath.toString();
+						
+						ConstantsCoreVO.FLEX_PROJECTS.addItem(tmpReference);
+					}
+				}
+			}
+			
+			private function onDirectoryLoadFault(message:String):void
+			{
+				loader = null;
+				if (loaderIcon)
+				{
+					this.removeElement(loaderIcon);
+					loaderIcon = null;
+				}
+			}
+			
+			protected function onProjectLoadRequest(event:MouseEvent):void
+			{
+				if (!lst_projects.selectedItem)
+				{
+					Alert.show("Please, selet a Project to Open.", "Error!");
+				}
+				else
+				{
+					// don't open a project twice
+					for each (var pr:ProjectVO in model.projects)
+					{
+						if (pr.folderLocation.fileBridge.nativePath == URLDescriptorVO.PROJECT_DIR)
+						{
+							Alert.show("Project already opened. Ignoring.", "Note!");
+							return;
+						}
+					}
+					
+					btn_load.enabled = false;
+					lst_projects.selectedItem.loading = true;
+					ConstantsCoreVO.FLEX_PROJECTS.itemUpdated(lst_projects.selectedItem);
+					
+					if (ConstantsCoreVO.IS_AUTH_REQUIRED) sendRequestToLoad();
+					else loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onProjectLoadSuccess, onLoginTestFault, null);
+				}
+			}
+			
+			private function onProjectLoadSuccess(value:Object):void
+			{
+				loader = null;
+				lst_projects.selectedItem.loading = false;
+				ConstantsCoreVO.FLEX_PROJECTS.itemUpdated(lst_projects.selectedItem);
+				
+				var xData:XML = XML(String(value));
+				if (!xData) return;
+				if (xData.status == Authentication.SESSION_UNAUTHENTICATED || xData.username == "null" || xData.username == "anonymous")
+				{
+					title = "Login to Proceed";
+					vgLogin.visible = vgLogin.includeInLayout = true;
+					vgProjects.visible = vgProjects.includeInLayout = false;
+					return;
+				}
+				
+				sendRequestToLoad();
+			}
+			
+			private function sendRequestToLoad():void
+			{
+				var projectPath:String = jumptToLoadProject ? jumptToLoadProject.path : URLDescriptorVO.PROJECT_DIR + lst_projects.selectedItem.path + lst_projects.selectedItem.startIn;
+				
+				// do not open an already opened project
+				if (UtilsCore.checkProjectIfAlreadyOpened(projectPath)) 
+				{
+					btn_load.enabled = true;
+					return;
+				}
+				
+				var activeProj:MXMLProjectVO = new MXMLProjectVO(projectPath, jumptToLoadProject ? jumptToLoadProject.name : lst_projects.selectedItem.name);
+				activeProj.projectName = jumptToLoadProject ? jumptToLoadProject.name : lst_projects.selectedItem.name;
+				activeProj.projectRemotePath = "";
+				model.activeProject = activeProj;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.ADD_PROJECT, model.activeProject)
+				);
+				
+				// just to makeup some visual distruaction
+				super.closeThis();
+			}
+			
+			private function onLoginTestFault(result:Object):void
+			{
+				onAuthTestFault(null);
+			}
+			
+			private function onUserLoginSuccess(event:Event):void
+			{
+				// don't increase the window size again when
+				// returned from project selection window -
+				// usually when session expired found in project
+				// selection window and login state again loaded
+				if (!lst_projects)
+				{
+					effectMove = new Move();
+					effectResize = new Resize();
+					
+					effectMove.yTo = (this.stage.stageHeight - (this.height + 50))/2;
+					effectMove.xTo = (this.stage.stageWidth - (this.width + 100))/2;
+					
+					effectResize.heightTo = this.height + 50;
+					effectResize.widthTo = this.width + 100;
+					
+					effectResize.play([this]);
+					effectMove.play([this]);
+				}
+				
+				// if we need to load any project immediately by injected parameter
+				if (jumptToLoadProject)
+				{
+					sendRequestToLoad();
+				}
+				else
+				{
+					vgLogin.visible = vgLogin.includeInLayout = false;
+					vgProjects.visible = vgProjects.includeInLayout = true;
+					getProjectListFromServer();
+				}
+			}
+			
+			protected function onLoginScreenLoads(event:Event):void
+			{
+				title = "Login to Proceed";
+				effectMove = new Move();
+				effectResize = new Resize();
+				
+				effectMove.yTo = (this.stage.stageHeight - (this.height + 20))/2;
+				effectResize.heightTo = this.height + 20;
+				
+				effectResize.play([this]);
+				effectMove.play([this]);
+			}
+			
+			protected function onAuthTestFault(event:Event):void
+			{
+				// for project list
+				if (lst_projects)
+				{
+					lst_projects.selectedItem.loading = false;
+					ConstantsCoreVO.FLEX_PROJECTS.itemUpdated(lst_projects.selectedItem);
+					btn_load.enabled = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<s:VGroup id="vgLogin" 
+			  width="100%" verticalCenter="0" autoLayout="true"
+			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+			  addedToStage="title='Select a Server'"
+			  horizontalAlign="center">
+		<popup:Authentication id="login" 
+							  width="100%" height="100%"
+							  isCancelShow="false"
+							  SUCCESS="onUserLoginSuccess(event)" CANCEL="doBeforeExit();super.closeThis()"
+							  LOADING_LOGIN="onLoginScreenLoads(event)" AUTH_TEST_FAULT="onAuthTestFault(event)"/>
+	</s:VGroup>
+	
+	<s:VGroup id="vgProjects" 
+			  height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="13" paddingTop="9" paddingRight="13"
+			  addedToStage="title='Select Project to Open'"
+			  horizontalAlign="center" visible="false" includeInLayout="false">
+		<s:List id="lst_projects" dataProvider="{ConstantsCoreVO.FLEX_PROJECTS}" width="100%" height="100%" color="0xEEEEEE"
+				borderVisible="false"
+				doubleClickEnabled="true" doubleClick="onProjectLoadRequest(event)"
+				labelField="name" itemRenderer="components.views.project.ProjectListItemRenderer">
+			<s:layout>
+				<s:VerticalLayout gap="0" rowHeight="18" 
+								  horizontalAlign="contentJustify"
+								  requestedRowCount="10" />
+			</s:layout>
+		</s:List>
+		<s:Button label="Load" id="btn_load" 
+				  styleName="lightButtonTight" width="80"
+				  click="onProjectLoadRequest(event)" />
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>

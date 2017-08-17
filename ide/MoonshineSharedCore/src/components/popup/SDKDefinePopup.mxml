@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="500" autoLayout="true" title="Define a SDK Path"
+			   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			public var editedSDKPath:ProjectReferenceVO;
+			private var file:FileLocation;
+			
+			/**
+			 * On this close button clicked
+			 */
+			protected function onCloseWindow(event:CloseEvent):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function onBrowserPath(event:MouseEvent):void
+			{
+				file = new FileLocation();
+				file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+			}
+			
+			private function openFile(dir:Object):void
+			{
+				//openFileCancelled(event);
+				btnCreate.enabled = false;
+				file = new FileLocation(dir.nativePath);
+				
+				var tmpXML:Object = SDKUtils.isSDKDirectoy(file);
+				if (tmpXML)
+				{
+					txtPath.text = tmpXML.nativePath;
+					txtLabel.text = String(tmpXML.xml.name);
+					btnCreate.enabled = true;
+				}
+				else
+				{
+					txtLabel.text = "Not a valid SDK directory.";
+				}
+			}
+			
+			private function openFileCancelled():void
+			{
+			}
+			
+			protected function onCreate(event:MouseEvent):void
+			{
+				if (editedSDKPath)
+				{
+					editedSDKPath.path = txtPath.text;
+					editedSDKPath.name = txtLabel.text;
+				}
+				
+				dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, editedSDKPath ? editedSDKPath : {label:txtLabel.text, path:txtPath.text}));
+				onCloseWindow(null);
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (editedSDKPath)
+				{
+					txtLabel.text = editedSDKPath.name;
+					txtPath.text = editedSDKPath.path;
+					btnCreate.label = "Update";
+					btnCreate.enabled = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:BorderContainer width="100%" height="100%" borderVisible="false">
+		<s:layout>
+			<s:VerticalLayout/>
+		</s:layout>
+		<s:backgroundFill>
+			<s:SolidColor color="0xe0e0e0"/>
+		</s:backgroundFill>
+		<s:Form width="100%" height="100%">
+			<s:layout>
+				<s:FormLayout gap="-12"/>
+			</s:layout>
+			<s:FormItem label="Label">
+				<s:TextInput id="txtLabel"
+							 width="100%" editable="false"/>
+			</s:FormItem>
+			<s:FormItem label="Path">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:TextInput id="txtPath"
+								 width="100%" editable="false"/>
+					<s:Button label="Browse"
+							  click="onBrowserPath(event)"/>
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem>
+				<s:Button id="btnCreate" 
+						  label="Create" enabled="false"
+						  click="onCreate(event)"/>
+			</s:FormItem>
+		</s:Form>
+		<s:Group width="100%" height="50"
+				 includeInLayout="{ConstantsCoreVO.IS_MACOS}" visible="{ConstantsCoreVO.IS_MACOS}">
+			<s:Rect width="100%" height="100%">
+				<s:fill>
+					<s:SolidColor color="0xf5f5f5"/>
+				</s:fill>
+			</s:Rect>
+			<s:Label text="Because of restrictions with the Apple Sandbox, you will only be able to use  external SDKs if they are installed within your Downloads directory."
+					 horizontalCenter="0" verticalCenter="0"
+					 textAlign="center" maxDisplayedLines="2" width="90%" fontSize="11" color="0x333333"/>
+		</s:Group>
+	</s:BorderContainer>
+</s:TitleWindow>

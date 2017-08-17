@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	backgroundAlpha="0.2"
+	backgroundColor="0x0"
+	creationComplete="init()">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			
+			public var comp:UIComponent;
+			public var considerAlphaWhoWasOnceAsHandsomeAsYou:Boolean = true;
+			
+			public function show():void
+			{
+				FlexGlobals.topLevelApplication.addElement(this);	
+			}
+			
+			public function remove():void
+			{
+				FlexGlobals.topLevelApplication.removeElement(this);
+				comp = null;
+			}
+			
+			private function init():void
+			{
+				this.cacheAsBitmap = true;
+				masker.cacheAsBitmap = true;
+
+				
+				var upperLeft:Point = comp.parent.localToGlobal( new Point(comp.x, comp.y) );
+				var lowerRight:Point = comp.parent.localToGlobal( new Point(comp.x+comp.width, comp.y+comp.height) );
+				
+				maskerMask.x = upperLeft.x;
+				maskerMask.y = upperLeft.y;
+				maskerMask.width = lowerRight.x - upperLeft.x;
+				maskerMask.height = lowerRight.y - upperLeft.y;
+				
+				maskerMask.graphics.clear();
+				
+				if (considerAlphaWhoWasOnceAsHandsomeAsYou)
+				{
+					var bmp:BitmapData = new BitmapData(comp.width, comp.height, true, 0x00000000);
+					bmp.draw(comp);
+									
+					maskerMask.graphics.beginBitmapFill(bmp);
+					maskerMask.graphics.drawRect(0, 0, bmp.width, bmp.height);
+					maskerMask.graphics.endFill();
+				}
+				else
+				{
+					maskerMask.graphics.beginFill(0x0, 1);
+					maskerMask.graphics.drawRect(0, 0, comp.width, comp.height);
+					maskerMask.graphics.endFill();
+				}				
+				this.mask = masker;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<!-- BRING ON THE CANVAS! -->
+	
+	<mx:Canvas id="masker"
+		width="100%" height="100%"
+		backgroundAlpha="1"
+		backgroundColor="0xFF0000"
+		blendMode="layer">
+		
+			<mx:Canvas id="maskerMask"
+				backgroundAlpha="1"
+				blendMode="erase">
+				
+				<mx:filters>
+					<mx:GlowFilter alpha="1"  blurX="8" blurY="8" color="0x0" quality="2" />
+					<mx:GlowFilter alpha="1"  blurX="24" blurY="24" color="0x0" quality="2" />
+				</mx:filters>
+				
+			</mx:Canvas>
+				
+			
+	</mx:Canvas>
+	
+</mx:Canvas>

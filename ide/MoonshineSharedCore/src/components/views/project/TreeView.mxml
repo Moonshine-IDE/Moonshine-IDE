@@ -1,0 +1,844 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+		 implements="actionScripts.ui.IPanelWindow"
+		 width="100%"
+		 height="100%" 
+		 backgroundColor="0x444444"
+		 verticalGap="0" xmlns:project="actionScripts.ui.project.*"
+		 preinitialize="onCreationCompletes()" remove="onRemoval()" xmlns:utils="actionScripts.utils.*">
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.AddFolderEvent;
+			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.RenameFileFolderEvent;
+			import actionScripts.events.RunANTScriptEvent;
+			import actionScripts.events.ShowSettingsEvent;
+			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.ui.tabview.TabViewTab;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.NewFolderPopup;
+			import components.popup.RenamePopup;
+			
+			private var renameWindow:RenamePopup;
+			private var newFolderWindow:NewFolderPopup;
+			
+			// Renaming
+			private var currentEditedItem:FTETreeItemRenderer;
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			// Creating new file
+			private var creatingItemIn:FileWrapper;
+			private var templateToCreate:FileLocation;
+			
+			//For sorting
+			private var dataSortField:SortField = new SortField();
+			private var DataSort:Sort = new Sort();
+			private var deleteFileWrapper:FileWrapper;
+			private var fileCollection:Array;
+			
+			private var _projects:ArrayCollection;
+			
+			[Bindable] 
+			public var projectFolders:ArrayCollection;
+			
+			[Bindable]
+			public function get projects():ArrayCollection
+			{
+				return _projects;
+			}
+			public function set projects(v:ArrayCollection):void
+			{
+				if (projects)
+				{
+					projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
+				}
+				
+				_projects = v;
+				_projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
+				
+				// Scrape up all .projectFolders in here
+				var pdirs:Array = [];
+				for (var i:int = 0; i < v.length; i++)
+				{
+					var p:ProjectVO = v[i];
+					pdirs.push(p.projectFolder);
+				}
+				
+				projectFolders = new ArrayCollection(pdirs);
+				
+				dataSortField.name = "name";
+				dataSortField.numeric = false;
+				DataSort.fields = [dataSortField];
+				projectFolders.sort = DataSort;
+				projectFolders.refresh();
+				IDEModel.getInstance().selectedprojectFolders = projectFolders;
+			}
+			
+			private function refreshByWrapperItem(fileWrapper:FileWrapper):void
+			{
+				if (!fileWrapper.file.fileBridge.isDirectory) refresh(fileWrapper.file.fileBridge.parent);
+				else refreshItem(fileWrapper);
+				if (fileWrapper.sourceController) fileWrapper.sourceController.refresh(fileWrapper.file);
+			}
+			
+			public function refresh(dir:FileLocation):void
+			{
+				for each (var fw:FileWrapper in projectFolders)
+				{
+					if (ConstantsCoreVO.IS_AIR)
+					{
+						if (dir.fileBridge.nativePath.indexOf(fw.nativePath) != -1)
+						{
+							refreshItem( UtilsCore.findFileWrapperAgainstFileLocation(fw, dir) );
+							return;
+						}
+					}
+					else
+					{
+						refreshItem( UtilsCore.findFileWrapperAgainstFileLocation(fw, dir) );	
+					}
+				}
+			}
+			
+			private function onCreationCompletes():void
+			{
+				GlobalEventDispatcher.getInstance().addEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates, false, 0, true);
+				GlobalEventDispatcher.getInstance().addEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates, false, 0, true);
+				GlobalEventDispatcher.getInstance().addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileBeingCreated, false, 0, true);
+			}
+			
+			private function onRemoval():void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates);
+				GlobalEventDispatcher.getInstance().removeEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates);
+				GlobalEventDispatcher.getInstance().removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileBeingCreated);
+			}
+			
+			private function refreshProjectFromServer(fw:FileWrapper, project:ProjectVO):void
+			{
+				// determine to which project fileWrapper is belongs to
+				var projectIndex:int = -1;
+				if (projectFolders.length > 1)
+				{
+					for (var i:int = 0; i < projectFolders.length; i++)
+					{
+						if (projectFolders[i] == fw)
+						{
+							projectIndex = i;
+							break;
+						}
+					}
+				}
+				else
+				{
+					projectIndex = 0;
+				}
+				
+				projectFolders[projectIndex].isWorking = true;
+				var projectPath:String = project.projectFolder.nativePath;
+				var tmpProjectVO: ProjectVO = new ProjectVO(new FileLocation(URLDescriptorVO.PROJECT_DIR + projectPath), projectFolders[projectIndex].name, false);
+				tmpProjectVO.projectRemotePath = project.projectFolder.nativePath;
+				tmpProjectVO.addEventListener(ProjectVO.PROJECTS_DATA_UPDATED, onTmpProjectUpdated, false, 0, true);
+				tmpProjectVO.addEventListener(ProjectVO.PROJECTS_DATA_FAULT, onTmpProjectUpdateFault, false, 0, true);
+				
+				function onTmpProjectUpdated(event:Event):void
+				{
+					onTmpProjectUpdateFault(null);
+					
+					projects[projectIndex] = tmpProjectVO;
+					projectFolders[projectIndex] = tmpProjectVO.projectFolder;
+					IDEModel.getInstance().selectedprojectFolders = projectFolders;
+					refreshItem(projectFolders[projectIndex]);
+				}
+				
+				function onTmpProjectUpdateFault(event:Event):void
+				{
+					tmpProjectVO.removeEventListener(ProjectVO.PROJECTS_DATA_UPDATED, onTmpProjectUpdated);
+					tmpProjectVO.removeEventListener(ProjectVO.PROJECTS_DATA_FAULT, onTmpProjectUpdateFault);
+					projectFolders[projectIndex].isWorking = false;
+				}
+			}
+			
+			private function refreshItem(fw:FileWrapper):void
+			{
+				var previousSelectedItem:Object = tree.selectedItem;
+				var openItems:Object = tree.openItems;
+				fw.updateChildren();
+				tree.openItems = openItems;
+				tree.invalidateList();
+				tree.callLater(function():void
+				{
+					tree.selectedItem = previousSelectedItem;
+				});
+			}
+			
+			private function setSelectedItem(fw:FileWrapper):void
+			{
+				var filew:FileWrapper;
+				if (projectFolders.length > 1)
+				{
+					for (var i:int = 0; i < projectFolders.length; i++)
+					{
+						if (fw.nativePath.indexOf((projectFolders[i] as FileWrapper).nativePath) >=0)
+						{
+							filew = projectFolders[i] as FileWrapper;
+							break;
+						}
+					}
+				}
+				else
+				{
+					filew = projectFolders[0] as FileWrapper;
+				}
+				
+				tree.selectedItem = filew;
+			}
+			
+			public function handleProjectsChange(event:CollectionEvent):void
+			{
+				var previousCount:int = projectFolders.length;
+				switch (event.kind)
+				{
+					case 'remove':
+					{
+						var project:ProjectVO = event.items[0] as ProjectVO;
+						projectFolders.removeItemAt(projectFolders.getItemIndex(project.projectFolder));
+						break;
+					}
+					case 'add':
+					{
+						project = projects.getItemAt(event.location) as ProjectVO;
+						projectFolders.addItemAt(project.projectFolder, 0)
+						break;
+					}
+				}
+				
+				IDEModel.getInstance().selectedprojectFolders = projectFolders;
+				
+				// enable-disable File/New menus
+				if ((previousCount == 0) && (projectFolders.length > 0)) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_ENABLE_STATE));
+				if ((previousCount > 0) && (projectFolders.length == 0)) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_DISABLE_STATE));
+			}
+			
+			private function onProjectTreeUpdates(event:ProjectEvent):void
+			{
+				projectFolders.addItemAt(event.project.projectFolder, 0);
+				
+				// I don't know why the heck projectFolders having null value from where
+				// is a fix to the probelm for now
+				if (!ConstantsCoreVO.IS_AIR)
+				{
+					for (var i:int=0; i < projectFolders.length; i ++)
+					{
+						if (projectFolders[i] == null)
+						{
+							projectFolders.removeItemAt(i);
+							i--;
+						}
+					}
+				}
+				
+				IDEModel.getInstance().selectedprojectFolders = projectFolders;
+			}
+			
+			private function onProjectFilesUpdates(event:ProjectEvent):void
+			{
+				refreshItem(event.anObject as FileWrapper);
+			}
+			
+			private function initHeader():void
+			{
+				header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+			}
+			
+			private function initTree():void
+			{
+				tree.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
+			}
+			
+			private function handleClose(event:Event):void
+			{
+				if (stage) IDEModel.getInstance().mainView.removePanel(this);
+			}
+			
+			private function handleNativeMenuItemClick(event:TreeMenuItemEvent):void
+			{
+				// Might be some sub-menu provider we're dealing with
+				if (!(event.data is FileWrapper)) return;
+				
+				var project:ProjectVO;
+				var fileWrapper:FileWrapper = FileWrapper(event.data);
+				
+				var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+				
+				switch (event.menuLabel)
+				{
+					case FTETreeItemRenderer.SETTINGS:
+					case FTETreeItemRenderer.PROJECT_SETUP:
+					{
+						project = getProjectFromProjectFolder(fileWrapper);
+						dispatcher.dispatchEvent(
+							new ShowSettingsEvent(project)
+						)
+						break;
+					}
+					case FTETreeItemRenderer.OPEN:
+					case FTETreeItemRenderer.OPEN_FILE_FOLDER:
+					{
+						if (fileWrapper.file.fileBridge.isDirectory)
+						{
+							if ( tree.dataDescriptor.isBranch(fileWrapper) )
+							{
+								tree.expandItem(fileWrapper, !tree.isItemOpen(fileWrapper), true);
+							}
+							return;
+						}
+						
+						if (fileWrapper.isWorking) return;
+						
+						dispatcher.dispatchEvent( 
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileWrapper.file, -1, fileWrapper) 
+						);
+						break;
+					}
+					case FTETreeItemRenderer.CLOSE:
+					{
+						project = getProjectFromProjectFolder(fileWrapper);
+						dispatcher.dispatchEvent(
+							new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project)
+						);
+						break;
+					}
+					case FTETreeItemRenderer.DELETE:
+					case FTETreeItemRenderer.DELETE_PROJECT:
+					case FTETreeItemRenderer.DELETE_FILE_FOLDER:
+					{
+						if (fileWrapper.isWorking) return;
+						
+						dispatcher.dispatchEvent(
+							new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer)
+						);
+						
+						if (ConstantsCoreVO.IS_AIR)
+						{
+							//tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, "Refresh", fileWrapper));
+							refreshFileFolder();
+						}
+						
+						break;
+					}
+					case FTETreeItemRenderer.RENAME:
+					{
+						renameFileFolder(event.renderer as FTETreeItemRenderer);
+						break;
+					}
+					case FTETreeItemRenderer.REFRESH:
+					{
+						refreshFileFolder();
+						break;
+					}
+					case FTETreeItemRenderer.NEW:
+					{
+						// Right-clicking a directory creates the file in the dir, 
+						// otherwise create in same dir as clicked file
+						creatingItemIn = (fileWrapper.file.fileBridge.isDirectory) ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
+						
+						// for new file type creation
+						if (event.extra != FTETreeItemRenderer.NEW_FOLDER) dispatcher.dispatchEvent(new NewFileEvent(event.extra, creatingItemIn.file.fileBridge.nativePath, null, creatingItemIn));
+						else
+						{
+							if (!newFolderWindow)
+							{
+								newFolderWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewFolderPopup, true) as NewFolderPopup;
+								newFolderWindow.addEventListener(CloseEvent.CLOSE, handleNewFolderPopupClose);
+								newFolderWindow.addEventListener(NewFileEvent.EVENT_NEW_FOLDER, onNewFolderCreationRequested);
+								newFolderWindow.wrapperOfFolderLocation = creatingItemIn;
+								newFolderWindow.wrapperBelongToProject = getProjectFromProjectFolder(fileWrapper);
+								
+								PopUpManager.centerPopUp(newFolderWindow);
+							}
+						}
+						
+						break;
+					}
+					case FTETreeItemRenderer.RUN_ANT_SCRIPT:
+					{
+						model.antScriptFile = new FileLocation(fileWrapper.file.fileBridge.nativePath);
+						GlobalEventDispatcher.getInstance().dispatchEvent(new RunANTScriptEvent(RunANTScriptEvent.ANT_BUILD));
+						break;
+					}
+				}
+				
+				/*
+				 * @local
+				 * Refresh file/folder
+				 */
+				function refreshFileFolder():void
+				{
+					if (!ConstantsCoreVO.IS_AIR)
+					{
+						refreshProjectFromServer(fileWrapper, getProjectFromProjectFolder(fileWrapper));
+						return;
+					}
+					
+					refreshByWrapperItem(fileWrapper);
+				}
+				
+				/*
+				 * @local
+				 * Rename file/folder
+				 */
+				function renameFileFolder(rendererObject:FTETreeItemRenderer):void
+				{
+					if (!renameWindow)
+					{
+						renameWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RenamePopup, true) as RenamePopup;
+						renameWindow.addEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
+						renameWindow.addEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
+						renameWindow.wrapperOfFolderLocation = rendererObject.data as FileWrapper;
+						
+						PopUpManager.centerPopUp(renameWindow);
+					}
+				}
+			}
+			
+			protected function handleNewFolderPopupClose(event:CloseEvent):void
+			{
+				newFolderWindow.removeEventListener(CloseEvent.CLOSE, handleNewFolderPopupClose);
+				newFolderWindow.removeEventListener(NewFileEvent.EVENT_NEW_FOLDER, onNewFolderCreationRequested);
+				newFolderWindow = null;
+			}
+			
+			protected function onNewFolderCreationRequested(event:NewFileEvent):void
+			{
+				var newFileLocation:FileLocation = event.insideLocation.file.fileBridge.resolvePath(event.fileName);
+				if (!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
+				
+				var newFile:FileWrapper = new FileWrapper(newFileLocation, false, event.insideLocation.projectReference);
+				newFile.defaultName = event.fileName;
+				newFile.children = [];
+				event.insideLocation.children.push(newFile);
+				
+				// Make sure item is open before adding
+				tree.expandItem(event.ofProject.projectFolder, true);
+				tree.callLater(tree.expandItem, [event.insideLocation, true]);
+				
+				// refresh the folder section and select
+				refreshByWrapperItem(event.insideLocation);
+				setTimeout(function():void
+				{
+					// after a refresh new fileWrapper being created,
+					// so we need new instance of the wrapper so we can
+					// select and scroll-to-index
+					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(newFile, null, event.insideLocation);
+					tree.selectedItem = tmpFileW;
+					
+					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				}, 300);
+			}
+			
+			protected function handleRenamePopupClose(event:CloseEvent):void
+			{
+				renameWindow.removeEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
+				renameWindow.removeEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
+				renameWindow = null;
+			}
+			
+			protected function onFileRenamedRequest(event:NewFileEvent):void
+			{
+				var newFile:FileLocation = event.insideLocation.file.fileBridge.parent.resolvePath(event.fileName);
+				
+				event.insideLocation.file.fileBridge.moveTo(newFile, false);
+				event.insideLocation.file = newFile;
+				
+				var tmpParent:FileWrapper = tree.getParentItem(event.insideLocation);
+				refreshByWrapperItem(tmpParent);
+				
+				setTimeout(function():void
+				{
+					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
+					tree.selectedItem = tmpFileW;
+					
+					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				}, 300);
+			}
+			
+			private function onNewFileBeingCreated(event:TreeMenuItemEvent):void
+			{
+				// Make sure item is open before adding
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(event.data);
+				tree.expandItem(project.projectFolder, true);
+				tree.callLater(tree.expandItem, [event.data, true]);
+				
+				// refresh
+				refreshByWrapperItem(event.data);
+				
+				// selection
+				setTimeout(function():void
+				{
+					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperInDepth(event.data, event.menuLabel);
+					tree.selectedItem = tmpFileW;
+					
+					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				}, 300);
+			}
+			
+			public function getProjectBySelection(orByProjectPath:String=null):AS3ProjectVO
+			{
+				if (!tree.selectedItem && !orByProjectPath) return null;
+				
+				for (var i:int; i < projects.length; i++)
+				{
+					if (!orByProjectPath)
+					{
+						if (FileWrapper(tree.selectedItem).projectReference.path == projects[i].folderPath) return projects[i];
+					}
+					else
+					{
+						if (orByProjectPath == projects[i].folderPath) return projects[i];
+					}
+				}
+				
+				return null;
+			}
+	
+			private function onFileDeletedOnServer(value:FileWrapper):void
+			{
+				if (!value) return;
+				deleteFileWrapper = value;
+				
+				var openItems:Object = tree.openItems;
+				var parentCollection:Array;
+				var project:FileWrapper;
+				
+				// if the file/folder is a project root
+				if (value.isRoot)
+				{
+					for each (var as3Project:AS3ProjectVO in projects)
+					{
+						if (as3Project.projectFolder == value)
+						{
+							projects.removeItem(as3Project);
+							break;
+						}
+					}
+				}
+				else
+				{
+					// search through open projects as we don't know
+					// which project the FileWrapper is belongs to
+					for each (project in projectFolders)
+					{
+						parentCollection = findFilePosition(project);
+						if (parentCollection) break;
+					}
+					
+					parentCollection.splice(parentCollection.indexOf(value), 1);
+					fileCollection = null;
+					
+					var parent:FileWrapper = FileWrapper(tree.getParentItem(value));
+					if (parent) parent.updateChildren();
+				}
+				
+				projectFolders.refresh();
+				tree.openItems = openItems;
+				tree.invalidateList();
+			}
+			
+			private function findFilePosition(value:FileWrapper):Array
+			{
+				var tmpChildren:Array = value.children;
+				
+				for (var i:int=0; i < tmpChildren.length; i++)
+				{
+					if (tmpChildren[i] == deleteFileWrapper) 
+					{
+						fileCollection = tmpChildren;
+						return tmpChildren;
+					}
+					
+					if (fileCollection) return fileCollection;
+					if (tmpChildren[i].children && (tmpChildren[i].children as Array).length > 0)
+					{
+						findFilePosition(tmpChildren[i]);
+					}
+				}
+				
+				return (fileCollection) ? fileCollection : null;
+			}
+			
+			private function handleItemCreateCancel(event:TreeMenuItemEvent):void
+			{
+				var isNewFolder:Boolean;
+				var tmpCurrentEditWrapper: FileWrapper = currentEditedItem.data as FileWrapper;
+				isNewFolder = tmpCurrentEditWrapper.file ? false : true;
+				
+				var openItems:Object = tree.openItems;
+				
+				// remove newly created folder if Escape pressed
+				if (isNewFolder)
+				{
+					var tmpIndexToDelete:int = creatingItemIn.children.indexOf(tmpCurrentEditWrapper);
+					if (tmpIndexToDelete != -1)
+					{
+						creatingItemIn.children.splice(tmpIndexToDelete, 1);
+					}
+				}
+				
+				creatingItemIn.updateChildren();
+				tree.openItems = openItems;
+				cleanupAfterCreate();
+			}
+			
+			private function handleItemCreateEnd(event:TreeMenuItemEvent):void
+			{
+				var isNewFolder:Boolean;
+				var tmpCurrentEditWrapper: FileWrapper = currentEditedItem.data as FileWrapper;
+				isNewFolder = tmpCurrentEditWrapper.file ? false : true;
+				
+				if (isNewFolder)
+				{
+					tmpCurrentEditWrapper.file = new FileLocation();
+					tmpCurrentEditWrapper.file.fileBridge.name = event.menuLabel;
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new AddFolderEvent(AddFolderEvent.ADD_NEW_FOLDER, tmpCurrentEditWrapper, creatingItemIn)
+					);
+				}
+				
+				/*var newFile:File = creatingItemIn.fileBridge.resolvePath(event.menuLabel);
+				if (newFile.exists)
+				{
+				// Can't create file here
+				creatingItemIn.updateChildren();
+				return;
+				}
+				
+				if (templateToCreate)
+				{
+				// Dispatch event to create the file
+				var e:TemplateEvent = new TemplateEvent(TemplateEvent.CREATE_NEW_FILE, templateToCreate, newFile);
+				GlobalEventDispatcher.getInstance().dispatchEvent(e);
+				}
+				else
+				{
+				// Create directory
+				FileUtil.createFile(newFile, true);
+				}
+				
+				// Display it
+				creatingItemIn.updateChildren();
+				
+				cleanupAfterCreate();*/
+			}
+			
+			private function cleanupAfterCreate():void
+			{
+				creatingItemIn = null;
+				templateToCreate = null;
+				tree.invalidateList();
+				
+				currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_END, handleItemCreateEnd);
+				currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_CANCEL, handleItemCreateCancel);
+			}
+			
+			/*
+			Custom implementation of editing, instead of using mx:Trees builtin capabilities
+			*/
+			
+			private function handleItemRenameCancel(event:TreeMenuItemEvent):void
+			{
+				cleanupAfterRename();
+			}
+			
+			private function handleItemRenameEnd(event:TreeMenuItemEvent):void
+			{
+				if (ConstantsCoreVO.IS_AIR)
+				{
+					performRename(event.data, event.menuLabel);
+				}
+				else
+				{
+					var tmpCurrentEditWrapper: FileWrapper = currentEditedItem.data as FileWrapper;
+					var oldName: String = tmpCurrentEditWrapper.file.fileBridge.name;
+					tmpCurrentEditWrapper.file.fileBridge.name = event.menuLabel;
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new RenameFileFolderEvent(RenameFileFolderEvent.RENAME_FILE_FOLDER, tmpCurrentEditWrapper, oldName)
+					);
+					
+					cleanupAfterRename();
+				}
+			}
+			
+			private function cleanupAfterRename():void
+			{
+				tree.keyNav = true;
+				currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_END, handleItemRenameEnd);
+				currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_CANCEL, handleItemRenameCancel);
+				currentEditedItem = null;
+			}
+			
+			private function performRename(item:FileWrapper, newName:String):void
+			{
+				var newFile:FileLocation = item.file.fileBridge.parent.resolvePath(newName);
+				
+				// in case of no modification of a currently edited item
+				if (FileWrapper(currentEditedItem.data).file.fileBridge.nativePath == newFile.fileBridge.nativePath)
+				{
+					cleanupAfterRename();
+					return;
+				}
+				
+				if (newFile.fileBridge.exists) 
+				{
+					// re-do edit
+					if (currentEditedItem)
+					{
+						tree.keyNav = false;
+						tree.callLater(currentEditedItem.startEdit, [newName]);
+						currentEditedItem.setErrorInEdit("Same package name is not allowed");
+						return;
+					}
+				}
+				else
+					cleanupAfterRename();
+				
+				item.file.fileBridge.moveTo(newFile, false);
+				item.file = newFile;
+				
+				refreshByWrapperItem(item);
+			}
+			
+			private function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO
+			{
+				for each (var p:ProjectVO in projects)
+				{
+					if (p.folderPath == projectFolder.projectReference.path)
+						return p;
+				}
+				
+				return null;
+			}
+			
+			private function fileClickedInTree(event:ListEvent):void
+			{
+				var item:Object = tree.selectedItem;
+				if ( tree.dataDescriptor.isBranch(item) )
+				{
+					tree.expandItem(item, !tree.isItemOpen(item), true);
+				}
+			}
+			
+			private function fileDoubleClickedInTree(event:ListEvent):void
+			{
+				var fw:FileWrapper = event.itemRenderer.data as FileWrapper;
+				if (fw.file.fileBridge.isDirectory || fw.isWorking) return;
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent( 
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fw.file, -1, fw) 
+				);
+			}
+			
+			private function getIconForFile(object:Object):Class
+			{
+				return null;
+			}
+				
+			protected function vbox1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				focusManager.setFocus(tree);
+			}
+			
+			private function getTreeTooltip(item:Object):String 
+			{
+				if (!FileWrapper(item).isRoot) return null;
+				return FileWrapper(item).file.fileBridge.nativePath;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<project:ProjectViewHeader
+		id="header"
+		label="Projects" 
+		width="100%"
+		creationComplete="initHeader()" />
+	
+	<utils:CustomTree
+		id="tree"
+		width="100%" height="100%"
+		dataProvider="{projectFolders}"
+		color="0xEEEEEE"
+		contentBackgroundColor="0x0"
+		rollOverColor="0x393939"
+		selectionColor="0xc165b8"
+		alternatingItemColors="[0x444444, 0x4d4c4c]"
+		verticalScrollBarStyleName="black"
+		
+		showDataTips="true"
+		dataTipFunction="getTreeTooltip"
+		keyNav="true"
+		
+		borderVisible="false"
+		rowHeight="18"
+		useRollOver="true"
+		doubleClickEnabled="true"
+		labelField="name"
+	
+		iconFunction="{getIconForFile}"
+		itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
+		itemDoubleClick="fileDoubleClickedInTree(event)"
+		itemClick="fileClickedInTree(event)"
+		
+		creationComplete="initTree()"/>
+	
+</mx:VBox>

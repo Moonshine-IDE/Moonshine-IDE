@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   width="100%" height="100%" xmlns:view="actionScripts.plugin.findreplace.view.*"
+				   creationComplete="onCreationCompletes()">
+	<fx:Metadata>
+		[Event(name="SUCCESS", type="flash.events.Event")]
+		[Event(name="CANCEL", type="flash.events.Event")]
+		[Event(name="LOADING_LOGIN", type="flash.events.Event")]
+		[Event(name="AUTH_TEST_FAULT", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			import mx.core.FlexGlobals;
+			import mx.core.IVisualElementContainer;
+			import mx.utils.URLUtil;
+			import mx.validators.Validator;
+			
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugin.console.ConsoleOutputEvent;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			public static const SESSION_UNAUTHENTICATED   : String = "session-not-authenticated";
+			public static const SESSION_AUTHLIMITEDACCESS : String = "authenticated-with-insufficient-access";
+			public static const SUCCESS: String = "SUCCESS";
+			public static const CANCEL: String = "CANCEL";
+			
+			[Bindable] public var isCancelShow: Boolean = true;
+			
+			private const LOADING_LOGIN: String = "LOADING_LOGIN";
+			private const AUTH_TEST_FAULT: String = "AUTH_TEST_FAULT";
+			protected var loader: DataAgent;
+			private var loaderIcon: Image;
+			private var userMessageServerSelection: String = "(Note: Above domain will be use for all data calls)";
+			
+			/**
+			 * On creation completes
+			 */
+			private function onCreationCompletes():void
+			{
+				var serverWithPort: String = URLUtil.getServerNameWithPort(FlexGlobals.topLevelApplication.loaderInfo.url);
+				txtDomainMess.text = userMessageServerSelection;
+				
+				// set with server:port value if found, else show default prompt only
+				if (serverWithPort != "") 
+				{
+					var fullURL: String = URLUtil.getFullURL("", FlexGlobals.topLevelApplication.loaderInfo.url);
+					// probable url value
+					// localhost/subfolder/appname/app.htm(l)-php-anyextension, 
+					// localhost/subfolder/appname/app (in case server tech dont show running page extension)
+					var urlAfterServerWithPort:String = fullURL.substr(fullURL.indexOf(serverWithPort) + serverWithPort.length + 1, fullURL.length); // +1 to count "/"
+					var afterServerWithPortSplit:Array = urlAfterServerWithPort.split("/");
+					// we don't take last indexed item which can be a swf or wrapper html page
+					// so, the array count should be more than 1
+					if (afterServerWithPortSplit.length > 1)
+					{
+						afterServerWithPortSplit.pop();
+						serverWithPort += "/"+ afterServerWithPortSplit.join("/");
+					}
+					
+					txtDomain.text = serverWithPort;
+				}
+				// sets protocol upon any previously selected
+				if (URLDescriptorVO.BASE_URL_PROTOCOL != "") ddlProtocol.selectedItem = URLDescriptorVO.BASE_URL_PROTOCOL;
+				
+				txtDomain.setFocus();
+			}
+			
+			/**
+			 * On domain value selected
+			 */
+			private function onDomainSelected():void
+			{
+				// validation 1 to check blank entry
+				var tmpArr: Array = new Array(sValidator);
+				if (Validator.validateAll(tmpArr).length == 0)
+				{
+					// validation 2 to check double http/s insertion
+					if ((txtDomain.text.indexOf("http:") != -1) || (txtDomain.text.indexOf("https:") != -1))
+					{
+						txtDomainMess.setStyle("color", 0xff0000);
+						txtDomainMess.text = "* Remove HTTP/S in server address and re-try.";
+						return;
+					}
+					
+					// validation 3 to check existance of (probable) application name
+					var domArray: Array = txtDomain.text.split("/");
+					if (domArray.length < 2 || domArray[domArray.length - 1] == "")
+					{
+						txtDomainMess.setStyle("color", 0xff0000);
+						txtDomainMess.text = "* Missing application name. Expected format is test.com/TestApp";
+						return;
+					}
+					// validation 4 to check address integrity
+					else if (validateURLEmptySubFolders(domArray))
+					{
+						txtDomainMess.setStyle("color", 0xff0000);
+						txtDomainMess.text = "* Server address is invalid. Please, check.";
+						return;
+					}
+					// validation 5 to confirm application name
+					else if ((URLDescriptorVO.BASE_URL_MIRROR == "") || (txtDomain.text != URLDescriptorVO.BASE_URL_MIRROR))
+					{
+						/*var domArray: Array = txtDomain.text.split("/");
+						Alert.show("Confirm your application name, is: "+ domArray[domArray.length - 1], "Application Name", Alert.YES | Alert.NO, null, onApplicationNameConfirmed);*/
+						
+						onApplicationNameConfirmed();
+						txtDomainMess.setStyle("color", 0x666666);
+						txtDomainMess.text = userMessageServerSelection;
+					}
+					else
+					{
+						onApplicationNameConfirmed();
+					}
+					
+					/*
+					 *@local
+					 */
+					function onApplicationNameConfirmed():void
+					{
+						URLDescriptorVO.BASE_URL_MIRROR = txtDomain.text;
+						URLDescriptorVO.BASE_URL = ddlProtocol.selectedItem + URLDescriptorVO.BASE_URL_MIRROR +"/";
+						URLDescriptorVO.BASE_URL_PROTOCOL = ddlProtocol.selectedItem.toString();
+						URLDescriptorVO.updateURLs();
+						
+						loaderIcon = new Image();
+						loaderIcon.source = new ConstantsCoreVO.loaderIcon();
+						loaderIcon.width = loaderIcon.height = 10;
+						loaderIcon.y = (txtDomain.height - loaderIcon.height)/2;
+						loaderIcon.right = 6;
+						grpTxtDomain.addElement(loaderIcon);
+						
+						// test if application requires authentication or not
+						btnDomainSubmit.enabled = false;
+						loader = new DataAgent(URLDescriptorVO.CONFIG, onConfigLoads, onConfigLoadsFault, null);
+					}
+					/*
+					 *@local
+					 */
+					function validateURLEmptySubFolders(value:Array):Boolean
+					{
+						for each (var i:String in value)
+						{
+							if (i == "") return true;
+						}
+						
+						// if all is fine
+						return false;
+					}
+				}
+			}
+			
+			/**
+			 * Remove loader icon from its parent
+			 */
+			private function removeLoaderIcon():void
+			{
+				// safe termination
+				if (!loaderIcon) return;
+				
+				IVisualElementContainer(loaderIcon.owner).removeElement(loaderIcon);
+				loaderIcon = null;
+			}
+			
+			/**
+			 * Determines plugin type - MoonshineOpenSourced or else
+			 * Should get return if MoonshineServerPluginOpenSource
+			 */
+			private function onConfigLoads(value:Object, status:Boolean=true):void
+			{
+				loader = null;
+				
+				// expected to be MoonshinePluginOpenSource
+				if (value && status)
+				{
+					removeLoaderIcon();
+					var jsonObj:Object = JSON.parse(String(value));
+					
+					// MSPOS (MoonshineServerPluginOpenSource) is type of plugin
+					// where authentication NOT required
+					if (jsonObj.authRequired is String) ConstantsCoreVO.IS_AUTH_REQUIRED = (jsonObj.authRequired == "true") ? true : false;
+					else ConstantsCoreVO.IS_AUTH_REQUIRED = jsonObj.authRequired;
+
+					// don't continue if we don't need authentication
+					if (ConstantsCoreVO.IS_AUTH_REQUIRED)
+					{
+						URLDescriptorVO.LOGIN_TEST = URLDescriptorVO.BASE_URL + jsonObj.statusURL;
+						URLDescriptorVO.LOGIN_USER = URLDescriptorVO.BASE_URL + jsonObj.authURL;
+						URLDescriptorVO.LOGIN_USER_FIELD_2SEND2_SERVER = jsonObj.usernameField;
+						URLDescriptorVO.LOGIN_PASSWORD_FIELD_2SEND2_SERVER = jsonObj.passwordField;	
+					}
+					else
+					{
+						dispatchEvent(new Event(SUCCESS));
+						return;
+					}
+				}
+				
+				// where authentication needs
+				loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onStatusSuccess, onAuthTestFault, null);
+			}
+			
+			/**
+			 * On plugin type call fault
+			 * Happens when it's not MoonshineServerPluginOpenSource
+			 */
+			private function onConfigLoadsFault(result:Object):void
+			{
+				// since it is non-MSPLOS we can proceed
+				// to test authentication status
+				loader = null;
+				removeLoaderIcon();
+				btnDomainSubmit.enabled = true;
+			}
+			
+			private function onStatusSuccess(value:Object, status:Boolean=true):void
+			{
+				removeLoaderIcon();
+				
+				var xData:XML = XML(String(value));
+				if (!xData) return;
+				if (xData.status == SESSION_UNAUTHENTICATED || xData.username == "null" || xData.username == "anonymous")
+				{
+					dispatchEvent(new Event(LOADING_LOGIN));
+					currentState = "login";
+				}
+				else if (xData.status == SESSION_AUTHLIMITEDACCESS)
+				{
+					removeLoaderIcon();
+					btnDomainSubmit.enabled = true;
+					Alert.show( "You do not have sufficient rights to performn this operation. If you feel this is in error please contact the Administrator.", "Error!" );
+				}
+				else
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Successfully authenticated as: "+xData.username));
+					dispatchEvent(new Event(SUCCESS));
+					loader = null;
+				}
+			}
+			
+			private function onAuthTestFault(result:Object):void
+			{
+				removeLoaderIcon();
+				btnDomainSubmit.enabled = true;
+				
+				dispatchEvent(new Event(AUTH_TEST_FAULT));
+			}
+			
+			protected function onLoginRequest(event:MouseEvent):void
+			{
+				var tmpArr : Array = new Array( eValidator, pValidator );
+				if ( Validator.validateAll(tmpArr).length == 0 )
+				{
+					loaderIcon = new Image();
+					loaderIcon.source = new ConstantsCoreVO.loaderIcon();
+					loaderIcon.width = loaderIcon.height = 10;
+					loaderIcon.y = (txtPassword.height - loaderIcon.height)/2;
+					loaderIcon.right = 6;
+					grpTxtPassword.addElement(loaderIcon);
+					
+					btnLogin.enabled = false;
+					
+					var objectToSend:Object = new Object();
+					objectToSend[URLDescriptorVO.LOGIN_USER_FIELD_2SEND2_SERVER] = txtUsername.text;
+					objectToSend[URLDescriptorVO.LOGIN_PASSWORD_FIELD_2SEND2_SERVER] = txtPassword.text;
+					loader = new DataAgent(URLDescriptorVO.LOGIN_USER, onLoginSuccess, onSaveFault, objectToSend);
+				}
+			}
+			
+			private function releaseBusyView():void
+			{
+				IVisualElementContainer(loaderIcon.owner).removeElement(loaderIcon);
+				loaderIcon = null;
+			}
+			
+			private function onLoginSuccess(event:Object, status:Boolean=true):void
+			{
+				releaseBusyView();
+				loader = null;
+				btnLogin.enabled = true;
+				
+				var result:String = String(event);
+				if (status)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Successfully authenticated as: "+txtUsername.text));
+					dispatchEvent(new Event(SUCCESS));
+				}
+				else
+				{
+					Alert.show(result, "Error!");
+					btnLogin.enabled = true;
+				}
+			}
+			
+			private function onSaveFault(result:Object):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Login error!"));
+				btnLogin.enabled = true;
+				releaseBusyView();
+				loader = null;
+			}
+			
+			protected function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				loader = null;
+				dispatchEvent(new Event(CANCEL));
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SolidColorStroke id="hLine" color="0xcccccc"/>
+		<mx:StringValidator id="sValidator" source="{txtDomain}" property="text" trigger="{btnDomainSubmit}" triggerEvent="click"/>
+		<mx:EmailValidator id="eValidator" source="{txtUsername}" property="text" trigger="{btnLogin}" triggerEvent="click"/>
+		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnLogin}" triggerEvent="click"/>
+	</fx:Declarations>
+	<s:states>
+		<s:State name="domain"/>
+		<s:State name="login"/>
+	</s:states>
+	
+	<s:VGroup width="100%" height="100%" gap="10"
+			  autoLayout="true"
+			  includeIn="domain" horizontalAlign="center">
+		<s:HGroup width="100%"
+				  verticalAlign="middle">
+			<s:DropDownList id="ddlProtocol"
+							width="80" height="{txtDomain.height}" 
+							requireSelection="true">
+				<s:ArrayList>
+					<fx:String>https://</fx:String>
+					<fx:String>http://</fx:String>
+				</s:ArrayList>
+			</s:DropDownList>
+			<s:Group id="grpTxtDomain"
+					 width="100%">
+				<view:PromptTextInput id="txtDomain"
+									  prompt="Server" restrict="0-9a-zA-Z.:\-/"
+									  width="100%" styleName="textInput" 
+									  enter="onDomainSelected()"
+									  text="{URLDescriptorVO.BASE_URL_MIRROR}"/>
+			</s:Group>
+			<s:Label text="/MoonShineServer/"/>
+		</s:HGroup>
+		<s:Label id="txtDomainMess" 
+				 fontStyle="italic" color="0x666666"/>
+		<mx:HRule width="100%"/>
+		<s:Button id="btnDomainSubmit" 
+				  label="Submit"
+				  styleName="lightButtonTight" width="80"
+				  click="onDomainSelected()" />
+	</s:VGroup>
+	
+	<s:VGroup width="100%" height="100%" gap="10"
+			  autoLayout="true"
+			  includeIn="login">
+		<view:PromptTextInput id="txtUsername" 
+							  prompt="User Name"
+							  width="100%" styleName="textInput"/>
+		
+		<s:Group id="grpTxtPassword"
+				 width="100%">
+			<view:PromptTextInput id="txtPassword" 
+								  prompt="Password" change="txtPassword.displayAsPassword=true"
+								  width="100%" styleName="textInput"
+								  enter="onLoginRequest(null)"/>
+		</s:Group>
+		
+		<mx:HRule width="100%"/>
+		
+		<s:HGroup width="100%" horizontalAlign="center">
+			<s:Button id="btnLogin" 
+					  label="Submit"
+					  styleName="lightButtonTight" width="80"
+					  click="onLoginRequest(event)" />
+			<s:Button label="Cancel"
+					  styleName="lightButtonTight" width="80"
+					  click="btnCancel_clickHandler(event)"
+					  includeInLayout="{isCancelShow}" visible="{isCancelShow}"/>
+		</s:HGroup>
+	</s:VGroup>
+</s:Group>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- http://blog.flexexamples.com/2009/11/04/setting-a-custom-horizontal-scroll-bar-skin-on-a-spark-list-control-in-flex-4/ -->
+<s:SparkSkin name="TrackThumbOnlyVSBSkin"
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+        minWidth="15" 
+        minHeight="15"
+        height="15"
+        alpha.disabled="0.5"
+        alpha.inactive="0">
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="disabled" />
+        <s:State name="inactive" />
+    </s:states>
+ 
+    <fx:Metadata>
+        <![CDATA[ 
+            [HostComponent("spark.components.HScrollBar")]
+        ]]>
+    </fx:Metadata> 
+ 
+    <fx:Script fb:purpose="styling">
+        <![CDATA[
+            static private const exclusions:Array = ["track", "thumb"];
+ 
+            override public function get colorizeExclusions():Array {
+                return exclusions;
+            }
+
+        ]]>
+    </fx:Script>
+ 
+    <s:Button id="track" 
+    	left="0" right="0"
+    	height="15" 
+		focusEnabled="false"
+		skinClass="elements.skins.SparkHScrollBarTrackSkin"/>
+ 
+     <s:Button id="thumb" 
+     	height="15"
+		focusEnabled="false" visible.inactive="false"
+		skinClass="elements.skins.SparkHScrollBarThumbSkin"/>
+ 
+</s:SparkSkin>

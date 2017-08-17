@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   implements="actionScripts.ui.IContentWindow"
+		   label="Home"
+		   width="100%"
+		   height="100%" xmlns:splashscreen="components.views.splashscreen.*"
+		   creationComplete="onCreationCompletes(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IDataRenderer;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.effects.Move;
+			
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.LayoutEvent;
+			import actionScripts.events.MenuEvent;
+			import actionScripts.events.NewProjectEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
+			import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+			import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.TemplateVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.Authentication;
+			import components.popup.AuthenticationPopUp;
+			import components.renderers.TemplateItemRenderer;
+			
+			import flashx.textLayout.events.FlowElementMouseEvent;
+			
+			public var plugin: SplashScreenPlugin;
+			
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			
+			protected var loader: DataAgent;
+			protected var recentOpenedProjectObject:Object;
+			protected var authPopup:AuthenticationPopUp;
+			protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			
+			private var renderedCount:int;
+			private var doAtOnce:Boolean;
+			private var isNoSDKMessageShown:Boolean;
+			
+			public function get longLabel():String
+			{
+				return "But what is it good for?";
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return true;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			public function setProjectTemplates(value:ArrayCollection):void
+			{
+				var projectTemplateCollection:ArrayCollection = new ArrayCollection();
+				var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
+				for each (var i:FileLocation in value)
+				{ 	
+					var tmpDescripFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".txt");
+					if (tmpDescripFile.exists)
+					{
+						var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
+						var template:TemplateVO = new TemplateVO();
+						template.title = i.fileBridge.name ;
+						template.file = i;
+						var tmpImageFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".png");
+						template.description = String(tmpDescripFileLocation.fileBridge.read());
+						if (tmpImageFile.exists) template.logoImagePath = tmpImageFile.url;
+						
+						if (template.title.indexOf("Feathers") == -1) projectTemplateCollection.addItem(template);
+						else feathersProjectTemplates.addItem(template);
+					}
+				}
+				
+				ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
+				ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
+			}
+			
+			private function loadRecentProject():void
+			{
+				// we need another check here, too
+				if (UtilsCore.checkProjectIfAlreadyOpened(recentOpenedProjectObject.path)) return;
+				
+				var activeProj:MXMLProjectVO = new MXMLProjectVO(recentOpenedProjectObject.path, recentOpenedProjectObject.name);
+				activeProj.projectName = recentOpenedProjectObject.name;
+				activeProj.projectRemotePath = "";
+				model.activeProject = activeProj;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.ADD_PROJECT, activeProj)
+				);
+				
+				// just to makeup some visual distruaction
+				if (authPopup && authPopup.isPopUp) 
+				{
+					PopUpManager.removePopUp(authPopup);
+					authPopup = null;
+				}
+			}
+			
+			private function handleProjectOpen(event:Event):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT)
+				);
+			}
+			
+			private function handleTemplateClick(event:Event):void
+			{
+				var rdr:TemplateItemRenderer = event.target as TemplateItemRenderer;
+				var fl:Object = ConstantsCoreVO.IS_AIR ? rdr.data as TemplateVO : rdr.data as FileLocation;
+				
+				if (ConstantsCoreVO.IS_AIR)
+				{
+					if (fl.file.fileBridge.isDirectory)
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new Event("eventNewProjectFromTemplate"+ TemplatingHelper.getTemplateLabel(fl.file))
+						);
+					}
+					else
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new Event("eventNewFileFromTemplate"+ TemplatingHelper.getTemplateLabel(fl.file))
+						);
+					}
+				}
+				else
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, FileLocation(fl).fileBridge.name, null, null)
+					);
+				}
+			}
+			
+			private function handleRecentClick(event:Event):void
+			{
+				var rdr:IDataRenderer = event.target as IDataRenderer;
+				// do not open an already opened project
+				if (model.mainView.getTreeViewPanel() &&  UtilsCore.checkProjectIfAlreadyOpened(rdr.data.path)) return;
+				
+				// desktop
+				if (ConstantsCoreVO.IS_AIR)
+				{
+					var projectName:String = rdr.data.name;
+					recentOpenedProjectObject = new FileLocation(rdr.data.path);
+					if (recentOpenedProjectObject.fileBridge.isDirectory)
+					{
+						var p:AS3ProjectVO;
+						var lastOpenedOption:String;
+						var flashDevelopProjectFile: FileLocation;
+						
+						// check if any last opend option is associated with the project
+						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
+						{
+							if (i.path == recentOpenedProjectObject.fileBridge.nativePath)
+							{
+								lastOpenedOption = i.option;
+								break;
+							}
+						}
+						
+						switch(lastOpenedOption)
+						{
+							case "":
+							case null:
+							case undefined:
+							case ProjectEvent.LAST_OPENED_AS_FB_PROJECT:
+							{
+								// @santanu
+								// check change log in AS3ProjectVO.as against
+								// commenting the following process
+								
+								/*if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+								else
+								{
+									flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
+									if (flashDevelopProjectFile) p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile);
+								}*/
+								
+								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
+								if (flashDevelopProjectFile) 
+								{
+									p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
+									break;
+								}
+								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+								break;
+							}
+							case ProjectEvent.LAST_OPENED_AS_FD_PROJECT:
+							{
+								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile)
+								if (flashDevelopProjectFile) p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
+								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+								break;
+							}
+						}
+						
+						if (!p)
+						{
+							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
+							return;
+						}
+						
+						// save old sdk details to the project
+						p.buildOptions.oldDefaultSDKPath = rdr.data.sdk;
+						
+						// trigger the project to open
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ProjectEvent(ProjectEvent.ADD_PROJECT, p, lastOpenedOption));
+					}
+					else
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
+						);
+					}
+				}
+				// web
+				else
+				{
+					recentOpenedProjectObject = rdr.data;
+					// check if there is no login or not
+					if (URLDescriptorVO.BASE_URL_MIRROR == "")
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {path: recentOpenedProjectObject.path, name: recentOpenedProjectObject.name})
+						);
+					}
+					else if (ConstantsCoreVO.IS_AUTH_REQUIRED)
+					{
+						loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onProjectLoadSuccess, onLoginTestFault, null);
+					}
+					else
+					{
+						loadRecentProject();
+					}
+				}
+			}
+			
+			private function onProjectLoadSuccess(value:Object):void
+			{
+				loader = null;
+				
+				var xData:XML = XML(String(value));
+				if (!xData) return;
+				if (xData.status == Authentication.SESSION_UNAUTHENTICATED)
+				{
+					authPopup = new AuthenticationPopUp();
+					PopUpManager.addPopUp(authPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
+					PopUpManager.centerPopUp(authPopup);
+					authPopup.addEventListener(Authentication.SUCCESS, authSuccessHandler);
+					authPopup.addEventListener(Authentication.CANCEL, authCancelHandler);
+				}
+				else if (xData.status == Authentication.SESSION_AUTHLIMITEDACCESS)
+				{
+					Alert.show( "You do not have sufficient rights to performn this operation. If you feel this is in error please contact the Administrator.", "Error!" );
+				}
+				else
+				{
+					loadRecentProject();
+				}
+			}
+			
+			private function onLoginTestFault(result:Object):void
+			{
+				loader = null;
+			}
+			
+			private function authSuccessHandler(evt:Event):void
+			{
+				loadRecentProject();
+			}
+			
+			private function authCancelHandler(evt:Event):void
+			{
+				authPopup.removeEventListener(Authentication.SUCCESS,authSuccessHandler);
+				authPopup.removeEventListener(Authentication.CANCEL,authCancelHandler);
+				PopUpManager.removePopUp(authPopup);
+				authPopup = null;
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				addEventListener(ResizeEvent.RESIZE, onStageResized);
+				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, function(e:Event):void { scProjects.callLater(onStageResized, [null]); });
+				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, function(e:Event):void { scFiles.callLater(onStageResized, [null]); });
+				dispatcher.addEventListener(LayoutEvent.WINDOW_MAXIMIZED, onWindowMaximised);
+				dispatcher.addEventListener(LayoutEvent.WINDOW_NORMAL, onWindowRestoredToNormal);
+				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
+				
+				grpNoSDKMess.y = this.height;
+				vgProjects.y = vgLeftList.y;
+				vgProjects.height = height - vgProjects.y - 40;
+			}
+			
+			private function onStageResized(event:ResizeEvent):void
+			{
+				if (scFiles.verticalScrollBar.visible || scProjects.verticalScrollBar.visible)
+				{
+					if (vgProjects.verticalCenter != null) 
+					{
+						if (vgProjects.height > (height - 80)) vgProjects.percentHeight = 100;
+						else {
+							vgProjects.percentHeight = NaN;
+							vgProjects.height = height - vgProjects.y - 40;
+						}
+						return;
+					}
+					
+					var acceptableBottom:Number = height - 40;
+					while ((vgProjects.y - 1) >= 40 && (vgProjects.y + vgProjects.height) >= acceptableBottom)
+					{
+						vgProjects.y -= 1;
+						vgProjects.height += 1;
+					}
+					
+					vgProjects.callLater(function():void
+					{
+						if (!doAtOnce && (vgProjects.height + vgProjects.y) > (height - 40))
+						{
+							if (vgProjects.y == 40)
+							{
+								vgProjects.height = height - vgProjects.y - 40;
+								return;
+							}
+							
+							while ((vgProjects.y - 1) >= 40 && (vgProjects.y + vgProjects.height) >= (height - 40))
+							{
+								vgProjects.y -= 1;
+								vgProjects.height += 1;
+							}
+						}
+						else if (vgProjects.y == 40)
+						{
+							vgProjects.verticalCenter = 0;
+						}
+					});
+				}
+				else
+				{
+					if (!doAtOnce)
+					{
+						vgLeftList.callLater(function():void
+						{
+							if (vgProjects.y > vgLeftList.y)
+							{
+								while (vgProjects.y != vgLeftList.y)
+								{
+									vgProjects.y -= 1;
+									vgProjects.height += 1;
+								}
+								
+								if ((vgProjects.height + vgProjects.y) > (height - 40))
+								{
+									vgProjects.height = height - vgProjects.y - 40;
+									vgProjects.callLater(onStageResized, [null]);
+								}
+							}
+						});
+						
+						doAtOnce = true;
+					}
+					else
+					{
+						//vgProjects.y = (height - vgProjects.height) / 2;
+					}
+					//vgProjects.height = height - vgProjects.y - 40;
+				}
+				
+				if (isNoSDKMessageShown) grpNoSDKMess.y = this.height - grpNoSDKMess.height;
+			}
+			
+			private function onWindowMaximised(event:LayoutEvent):void
+			{
+				callLater(function():void
+				{
+					vgProjects.y = (height - vgProjects.height) / 2;
+				});
+			}
+			
+			private function onWindowRestoredToNormal(event:LayoutEvent):void
+			{
+				if (vgProjects.verticalCenter == null && vgProjects.y >= 40 && (vgProjects.height + vgProjects.y) < (height - 40))
+				{
+					callLater(function():void
+					{
+						vgProjects.y = vgLeftList.y;
+					});
+				}
+			}
+			
+			private function onDefaultSDKStateChanged(event:Event):void
+			{
+				var isSDKAvailable:Boolean = IDEModel.getInstance().defaultSDK ? true : false;
+				var tmpMove:Move;
+				if (!isSDKAvailable && !isNoSDKMessageShown)
+				{
+					tmpMove = new Move(grpNoSDKMess);
+					tmpMove.yFrom = this.height;
+					tmpMove.yTo = height - grpNoSDKMess.height;
+					grpNoSDKMess.visible = true;
+					isNoSDKMessageShown = true;
+					tmpMove.play();
+				}
+				else if (isSDKAvailable && isNoSDKMessageShown)
+				{
+					tmpMove = new Move(grpNoSDKMess);
+					tmpMove.yFrom = grpNoSDKMess.y;
+					tmpMove.yTo = height;
+					tmpMove.addEventListener(EffectEvent.EFFECT_END, onEffectEnds);
+					tmpMove.play();
+					isNoSDKMessageShown = false;
+				}
+				
+				function onEffectEnds(effEvent:EffectEvent):void
+				{
+					effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
+					grpNoSDKMess.visible = false;
+				}
+			}
+			
+			/**
+			 * On agreement link clicked
+			 */
+			private function handleLinkEvent(event:FlowElementMouseEvent):void
+			{
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<splashscreen:ArtContainer/>
+	
+	<s:VGroup id="vgLeftList"
+		left="20" verticalCenter="0"
+		gap="20" width="60%">
+		<s:Label 
+			text="OPEN"
+			color="0XFFFFFF"
+			paddingTop="3"
+			paddingLeft="3"
+			paddingRight="3"
+			paddingBottom="0"
+			fontFamily="DejaVuSerif"
+			fontStyle="italic"
+			fontSize="18" />
+		<s:DataGroup id="projectOpenList" dataProvider="{ConstantsCoreVO.TEMPLATES_OPEN_PROJECTS}"
+					 itemRenderer="components.renderers.TemplateItemRenderer"
+					 color="0xFFFFFF" width="100%"
+					 creationComplete="projectOpenList.addEventListener('itemClick', handleProjectOpen)">
+			<s:layout>
+				<s:VerticalLayout
+					gap="10" 
+					clipAndEnableScrolling="false" />
+			</s:layout>
+		</s:DataGroup>
+		<s:Label 
+			text="CREATE"
+			color="0XD6D6D6"
+			paddingTop="3"
+			paddingLeft="3"
+			paddingRight="3"
+			paddingBottom="0"
+			fontFamily="DejaVuSerif"
+			fontStyle="italic"
+			fontSize="18"
+			/>
+		<s:DataGroup id="projectTemplateList"
+					 dataProvider="{ConstantsCoreVO.TEMPLATES_PROJECTS}"
+					 itemRenderer="components.renderers.TemplateItemRenderer"
+					 color="0xFFFFFF" width="100%"
+					 creationComplete="projectTemplateList.addEventListener('itemClick', handleTemplateClick)">
+			<s:layout>
+				<s:VerticalLayout
+					gap="10" 
+					clipAndEnableScrolling="false" />
+			</s:layout>
+		</s:DataGroup>
+		<s:Label 
+			text="MORE"
+			color="0XD6D6D6"
+			paddingTop="3"
+			paddingLeft="3"
+			paddingRight="3"
+			paddingBottom="0"
+			fontFamily="DejaVuSerif"
+			fontStyle="italic"
+			fontSize="18"
+			/>
+		<s:DataGroup id="projectTemplateListMore"
+					 dataProvider="{ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS}"
+					 itemRenderer="components.renderers.TemplateItemRenderer"
+					 color="0xFFFFFF" width="100%"
+					 creationComplete="projectTemplateListMore.addEventListener('itemClick', handleTemplateClick)">
+			<s:layout>
+				<s:VerticalLayout
+					gap="10" 
+					clipAndEnableScrolling="false" />
+			</s:layout>
+		</s:DataGroup>
+	</s:VGroup>
+	
+	<s:VGroup id="vgProjects" 
+			  width="40%" right="0"
+			  gap="20"
+			  horizontalAlign="right">
+		<s:Label 
+			text="RECENT"
+			color="0XFFFFFF"
+			paddingTop="3"
+			paddingLeft="3"
+			paddingRight="23"
+			paddingBottom="0"
+			fontFamily="DejaVuSerif"
+			fontStyle="italic"
+			fontSize="18" />
+		<s:Scroller id="scProjects" 
+					width="100%" height="50%">
+			<s:DataGroup id="recentProjects"
+						 dataProvider="{model.recentlyOpenedProjects}"
+						 itemRenderer="components.renderers.RecentProjectRenderer"
+						 color="0xFFFFFF" width="100%"
+						 creationComplete="{recentProjects.addEventListener('itemClick', handleRecentClick)}">
+				<s:layout>
+					<s:VerticalLayout
+						horizontalAlign="right"
+						gap="5" 
+						clipAndEnableScrolling="false" paddingRight="20" />
+				</s:layout>
+			</s:DataGroup>
+		</s:Scroller>
+		<s:Scroller id="scFiles" 
+					width="100%" height="50%">
+			<s:DataGroup id="recentFiles"
+						 dataProvider="{model.recentlyOpenedFiles}" 
+						 itemRenderer="components.renderers.RecentProjectRenderer"
+						 color="0xFFFFFF" width="100%"
+						 contentBackgroundColor="0x0"
+						 creationComplete="{recentFiles.addEventListener('itemClick', handleRecentClick)}"
+						 includeInLayout="{ConstantsCoreVO.IS_AIR}" visible="{ConstantsCoreVO.IS_AIR}">
+				<s:layout>
+					<s:VerticalLayout
+						horizontalAlign="right"
+						gap="5" 
+						clipAndEnableScrolling="false" paddingRight="20" />
+				</s:layout>
+			</s:DataGroup>
+		</s:Scroller>
+	</s:VGroup>
+	
+	<s:Group id="grpNoSDKMess" 
+			 width="100%" height="24" visible="false">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="0xffffcc"/>
+			</s:fill>
+		</s:Rect>
+		<s:RichEditableText editable="false" focusEnabled="false"
+							width="100%" color="0x333333" textAlign="center" verticalCenter="0" fontSize="11">
+			<s:textFlow>
+				<s:TextFlow>
+					<s:p>Some options may unavailable until default SDK set. You can set by clicking <s:a click="handleLinkEvent(event)">here</s:a>.</s:p>
+				</s:TextFlow>
+			</s:textFlow>
+		</s:RichEditableText>
+	</s:Group>
+</mx:Canvas>

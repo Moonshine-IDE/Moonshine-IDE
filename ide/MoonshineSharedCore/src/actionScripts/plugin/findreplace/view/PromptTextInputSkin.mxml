@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabled="0.5" blendMode="normal">
+
+    <fx:Metadata>
+    <![CDATA[ 
+        [HostComponent("actionScripts.plugin.findreplace.view.PromptTextInput")]
+    ]]>
+    </fx:Metadata> 
+    
+ 
+    
+    <fx:Script>
+        <![CDATA[
+        override public function get focusSkinExclusions():Array { return [ textDisplay ] };            
+        ]]>
+    </fx:Script>
+    
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="normalWithPrompt"/>
+        <s:State name="disabled"/>
+        <s:State name="disabledWithPrompt"/>
+    </s:states>
+
+    <!-- fill -->
+    <!--- Defines the appearance of the TextInput component's background. -->
+    <s:Rect id="background" left="0" right="0" top="0" bottom="0" height="18">
+		<s:stroke>     
+			<s:SolidColorStroke id="borderStroke" color="0x666666" weight="1" />
+		</s:stroke>
+        <s:fill>
+        <!--- Defines the background fill color. -->
+            <s:SolidColor id="bgFill" color="0x464646" />
+        </s:fill>
+    </s:Rect>
+    
+    <!-- text -->
+    <s:RichEditableText id="textDisplay"
+              lineBreak="explicit"
+			  textAlign="left"
+			  selectable="true"
+              verticalAlign="middle"
+              widthInChars="10"
+              left="6" right="4" top="7" bottom="6" />
+    
+    <s:RichText id="promptView"
+    		verticalAlign="middle"
+    		mouseEnabled="false"
+    		mouseChildren="false"
+    		fontStyle="italic"
+    		color="{getStyle('promptColor')}"
+    		left="6" right="4" top="0" bottom="0" />
+
+</s:Skin>

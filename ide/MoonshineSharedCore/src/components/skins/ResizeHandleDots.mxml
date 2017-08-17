@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	height="13"
+	width="13">
+
+	<!-- fill a rectangle:
+		 <s:Rect height="100%"
+		 width="100%">
+		 <s:fill>
+		 <s:SolidColor color="#ffffff"
+		 alpha="0.2"/>
+		 </s:fill>
+		 </s:Rect>
+	-->
+	<!-- fill a triangle: -->
+	<s:Path data="M 0 {height} L {width} 0 V {height} H {0} Z">
+		<s:fill>
+			<s:SolidColor color="#ffffff"
+				alpha="0.2"/>
+		</s:fill>
+	</s:Path>
+
+	<!-- draw the resize dots handle 12x12 -->
+	<!--   .  -->
+	<!--  ..  -->
+	<!-- ...  -->
+	<s:Rect height="2"
+		width="2"
+		bottom="2"
+		right="2">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		bottom="6"
+		right="2">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		bottom="10"
+		right="2">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		bottom="2"
+		right="6">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		bottom="6"
+		right="6">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect height="2"
+		width="2"
+		bottom="2"
+		right="10">
+		<s:fill>
+			<s:SolidColor color="#8B8B8B"/>
+		</s:fill>
+	</s:Rect>
+
+
+</s:Group>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"  width="400" height="160" autoLayout="true" 
+			   close="closeWindowHandler(null)" title="Save &amp; Launch">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugin.core.compiler.CompilerEventBase;
+			
+			import mx.managers.PopUpManager;
+			
+			public static const SAVE_SELECTED: String = "SAVE_SELECTED";
+			public static const CONTINUE: String = "CONTINUE";
+			public static const CANCELLED: String = "CANCELLED";
+			
+			protected function closeWindowHandler(event:MouseEvent):void
+			{
+				dispatchEvent(new Event(CANCELLED));
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function btn_Save_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				dispatchEvent(new Event(SAVE_SELECTED));
+				PopUpManager.removePopUp(this);
+			}
+			protected function btn_Continue_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				dispatchEvent(new Event(CONTINUE));
+				PopUpManager.removePopUp(this);
+			}
+			protected function chk_enablePrompt_changeHandler(event:Event):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.SAVE_BEFORE_BUILD,false,true));
+			}
+			
+		]]>
+	</fx:Script>
+	
+<s:VGroup height="100%" width="100%" autoLayout="true"
+		  gap="10" paddingLeft="12" paddingTop="9" paddingRight="13" verticalAlign="middle" horizontalAlign="center" >
+	<s:Label text="You have a least one unsaved file" />
+	<s:CheckBox label="Do not prompt me again." id="chk_enablePrompt" change="chk_enablePrompt_changeHandler(event)"/>
+	<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center" paddingTop="9">
+		<s:Button id="btn_Save" label="Save &amp; Continue" click="btn_Save_clickHandler(event)"/>
+		<s:Button id="btn_Continue" label="Continue Without Saving" click="btn_Continue_clickHandler(event)"/>
+		<s:Button id="btn_Cancel" label="Cancel"  click="closeWindowHandler(event)"/>
+	</s:HGroup>
+</s:VGroup>
+
+</s:TitleWindow>

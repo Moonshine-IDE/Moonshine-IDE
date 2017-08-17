@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	implements="actionScripts.ui.IPanelWindow"
+	width="100%"
+	height="100%" 
+	backgroundColor="0x444444"
+	verticalGap="0" xmlns:ns="library://ns.adobe.com/flex/spark" xmlns:project="actionScripts.ui.project.*">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.ListEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.plugin.project.ProjectPlugin;
+			import actionScripts.valueObjects.FileWrapper;
+
+
+			protected var filterString:String = "";
+			
+			
+			[Bindable]
+			protected var files:ArrayCollection;
+			
+			override public function setFocus():void
+			{
+				super.setFocus();
+				
+				textInput.setFocus();
+				textInput.selectRange(textInput.text.length, textInput.text.length);
+				updateFilter();
+			}
+			
+			public function setFileList(wrappers:ArrayCollection):void
+			{
+				files = new ArrayCollection();
+				for each (var fw:FileWrapper in wrappers)
+				{
+					iterateTree(fw);
+				}
+				
+				files.filterFunction = filterFunction;
+			} 
+			
+			protected function iterateTree(fw:FileWrapper):void
+			{
+				if (fw.children)
+				{
+					for (var i:int = 0; i < fw.children.length; i++)
+					{
+						iterateTree(fw.children[i]);
+					}	
+				}
+				else
+				{
+					files.addItem(fw);
+				}
+			}
+			
+			protected function updateFilter():void
+			{
+				filterString = textInput.text.toLowerCase();
+				files.refresh();
+				
+				list.selectedIndex = 0;
+			}
+			
+			protected function filterFunction(obj:Object):Boolean
+			{
+				return obj.name.toLowerCase().indexOf(filterString) == 0;
+			}
+			
+			protected function handleItemDoubleClick(event:ListEvent):void
+			{
+				var fw:FileWrapper = event.itemRenderer.data as FileWrapper;
+				if (fw.file.fileBridge.isDirectory) return;
+				
+				launch(fw.file);
+			}
+			
+			
+			// Give the list certain keyboard navigation commands
+			private function handleTextKeydown(event:KeyboardEvent):void
+			{
+				if (event.keyCode == Keyboard.DOWN
+					|| event.keyCode == Keyboard.UP)
+				{
+					list.dispatchEvent(event);
+				}
+				else if (event.keyCode == Keyboard.ENTER)
+				{
+					// List seem to have an old selectedItem value sometimes, so we guard against that
+					if (files.length == 0) return;
+					
+					var item:FileWrapper = list.selectedItem as FileWrapper;
+					if (item) launch(item.file);
+				}
+			}
+			
+			// Open the selected item
+			protected function launch(file:FileLocation):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new Event(ProjectPlugin.EVENT_SHOW_OPEN_RESOURCE, false, false)
+				);
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent( 
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, file) 
+				);
+			}
+			
+			private function getIconForFile(object:Object):Class
+			{
+				return null;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<project:ProjectViewHeader
+		id="header"
+		label="Open resource" 
+		width="100%"
+		/>
+	
+	<mx:VBox
+		backgroundColor="0x353535"
+		width="100%"
+		height="35"
+		verticalAlign="middle"
+		horizontalAlign="center">
+		
+		<ns:TextInput 
+			id="textInput"
+			paddingLeft="8"
+			paddingBottom="0"
+			
+			width="100%"
+			focusThickness="0"
+			borderVisible="false"
+			contentBackgroundAlpha="0"
+			
+			fontFamily="DejaVuSans"
+			fontSize="12"
+			color="0xb6b6b6"
+			
+			creationComplete="{textInput.setFocus()}"
+			change="updateFilter()"
+			keyDown="handleTextKeydown(event)">
+			
+			<ns:filters>
+				<ns:DropShadowFilter alpha="0.3" blurX="1" blurY="1" distance="1" angle="90"/>
+			</ns:filters>
+			
+		</ns:TextInput>
+		
+	</mx:VBox>
+	
+	<mx:HRule strokeColor="0x2d2d2d" width="100%" height="1" />
+	<mx:HRule strokeColor="0x5a5a5a" width="100%" height="1" />
+	
+	<mx:List
+		id="list"
+		width="100%"
+		height="100%"
+		
+		doubleClickEnabled="true"
+		borderVisible="false"
+		rowHeight="18"
+		
+		selectedIndex="0"
+		
+		color="0xEEEEEE"
+		contentBackgroundColor="0x0"
+		rollOverColor="0x393939"
+		selectionColor="0x393939"
+		alternatingItemColors="[0x444444, 0x4d4c4c]"
+		
+		dataProvider="{files}"
+
+		itemRenderer="{new ClassFactory(ListItemRenderer)}"		
+		iconFunction="{getIconForFile}"
+		
+		itemDoubleClick="handleItemDoubleClick(event)"
+		/>
+	
+</mx:VBox>

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   backgroundColor="0xf5f5f5"
+				   width="600" minWidth="400" title="New MXML Component"
+				   creationComplete="onCreationCompletes(event)" 
+				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Metadata>
+		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.DropDownEvent;
+			import spark.events.TextOperationEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.extResources.com.validator.ValidatorType;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.utils.SimpleValidator;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			
+			import components.renderers.DividerRenderer;
+			import components.renderers.FileTypeRenderer;
+			
+			[Bindable] public var wrapperBelongToProject:ProjectVO;
+			
+			public var wrapperOfFolderLocation:FileWrapper;
+			public var folderLocation:FileLocation;
+			
+			[Bindable] private var modifiedName:String = "";
+			[Bindable] private var projectFolders:ArrayCollection;
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			[Bindable] private var warningMessage:String = "Class files allowed to create inside source folder only."; 
+			
+			private var lastSelectedItem:Object;
+			private var projectSelectionWindow:NewFileProjectSelectionPopup;
+			
+			private var _isDestinationValid:Boolean;
+			
+			[Bindable] private function set isDestinationValid(value:Boolean):void
+			{
+				_isDestinationValid = value;
+				if (!value) warningMessage = "Class files allowed to create inside source folder only."; 
+			}
+			private function get isDestinationValid():Boolean
+			{
+				return _isDestinationValid;
+			}
+			
+			override protected function closeByCrossSign(event:Event):void
+			{
+				doBeforeExit();
+				super.closeByCrossSign(event);
+			}
+			
+			override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
+			{
+				doBeforeExit();
+				super.onResizeKeyDownEvent(event);
+			}
+			
+			protected function doBeforeExit():void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
+			}
+			
+			protected function onBrowseButton(event:MouseEvent):void
+			{
+				if (!projectSelectionWindow)
+				{
+					projectSelectionWindow = PopUpManager.createPopUp(this, NewFileProjectSelectionPopup, true) as NewFileProjectSelectionPopup;
+					projectSelectionWindow.addEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
+					projectSelectionWindow.addEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
+					
+					projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
+					PopUpManager.centerPopUp(projectSelectionWindow);
+				}
+			}
+			
+			private function handleProjectSelectionPopupClose(event:CloseEvent):void
+			{
+				projectSelectionWindow.removeEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
+				projectSelectionWindow.removeEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
+				projectSelectionWindow = null;
+			}
+			
+			private function onProjectSelectionChanged(event:NewFileEvent):void
+			{
+				wrapperBelongToProject = event.ofProject;
+				wrapperOfFolderLocation = wrapperBelongToProject.projectFolder;
+				txtDestination.text = wrapperBelongToProject.projectName;
+				projectFolders = new ArrayCollection();
+				setTimeout(parseFolders, 100);
+			}
+			
+			private function getTemplateLabel(item:Object): String 
+			{
+				return (!(item is String) ? item.name.split(".")[0] : "");
+			}
+			
+			protected function onCreateButton(event:MouseEvent):void
+			{
+				// validation check for Enter key
+				if (!btnCreate.enabled) return;
+				
+				// validation 2
+				var validateArr: Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+				if (SimpleValidator.validate(validateArr))
+				{
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_CSS, wrapperOfFolderLocation);
+					tmpEvent.fileName = txtFileName.text;
+					dispatchEvent(tmpEvent);
+					
+					doBeforeExit();
+					super.closeThis();
+				}
+			}
+			
+			private function getItemRenderer(item:*):IFactory 
+			{
+				var renderer:Class = item is String ? DividerRenderer : FileTypeRenderer;
+				return new ClassFactory(renderer);
+			}
+			
+			protected function onDropDownClosed(event:DropDownEvent):void
+			{
+				if (event.target.selectedItem is String) event.target.selectedItem = lastSelectedItem;
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				minHeight = height;
+				if (folderLocation)
+				{
+					txtDestination.text = wrapperBelongToProject.projectName;
+					txtFileName.setFocus();
+				}
+				
+				// check if the file creation requested in the
+				// 'source folder' or not
+				isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
+				if (isDestinationValid) hgExistingWarning.visible = false;
+				
+				tree.callLater(parseFolders);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+			}
+			
+			protected function parseFolders():void
+			{
+				tree.expandItem(wrapperBelongToProject.projectFolder, true);
+				
+				// 1. expand all items to our fileWrapper object
+				// 2. select the fileWrapper object
+				// 3. scroll to the fileWrapper object
+				UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+				UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+				tree.callLater(function():void
+				{
+					var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					for (var j:int=0; j < (wrappers.length - 1); j++)
+					{
+						tree.expandItem(wrappers[j], true);
+					}
+					
+					// selection
+					tree.selectedItem = wrapperOfFolderLocation;
+					// scroll-to
+					tree.callLater(function():void
+					{
+						tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+					});
+				});
+			}
+			
+			protected function onNameChanged(event:TextOperationEvent):void
+			{
+				// @note
+				// for some reason PromptTextInput.text is not binding properly
+				// to other Flex UI component, i.e. Label
+				// it shows only the origianl set text to PromptTextInput.text if
+				// binded to a label component, thus:
+				modifiedName = txtFileName.text;
+				if (isDestinationValid) warningMessage = modifiedName + ".css is already exists.";
+				
+				if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
+				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css").fileBridge.exists;
+			}
+			
+			protected function onTreeItemClicked(event:ListEvent):void
+			{
+				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(tree.selectedItem.projectReference.path, tree.selectedItem.nativePath);
+				
+				// re-validate upon folder location change
+				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+				isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
+				onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="sValidator" property="text"/>
+	</fx:Declarations>
+	
+	<s:VGroup height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+			  horizontalAlign="center">
+		<s:VGroup width="100%">
+			<s:Label text="Source Folder:"/>
+			<s:HGroup width="100%" verticalAlign="middle">
+				<view:PromptTextInput id="txtDestination"
+									  prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
+				<s:Button label="Change"
+						  styleName="lightButtonTight" width="70"
+						  click="onBrowseButton(event)"
+						  enabled="{model.projects.length > 1}"/>
+			</s:HGroup>
+			<utils:CustomTreeFoldersOnly id="tree"
+					 width="100%" height="100%"
+					 dataProvider="{wrapperBelongToProject.projectFolder}"
+					 color="0xEEEEEE"
+					 contentBackgroundColor="0x0"
+					 rollOverColor="0x393939"
+					 selectionColor="0xc165b8"
+					 alternatingItemColors="[0x444444, 0x4d4c4c]"
+					 verticalScrollBarStyleName="black"
+					 borderVisible="false"
+					 rowHeight="18"
+					 useRollOver="true"
+					 doubleClickEnabled="true"
+					 labelField="name"
+					 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+					 itemClick="onTreeItemClicked(event)"/>
+		</s:VGroup>
+		<s:VGroup width="100%">
+			<s:Label text="Name:"/>
+			<view:PromptTextInput id="txtFileName"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+								  change="onNameChanged(event)" enter="onCreateButton(null)"/>
+			<s:HGroup id="hgExistingWarning" 
+					  width="100%" verticalAlign="middle"
+					  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
+				<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+				<s:Label text="{warningMessage}" width="100%"/>
+			</s:HGroup>
+		</s:VGroup>
+		<mx:HRule width="100%" height="1" strokeColor="0xdadada"
+				  horizontalCenter="0"/>
+		<s:Button id="btnCreate" label="Create"
+				  styleName="lightButtonTight" width="80"
+				  click="onCreateButton(event)"
+				  enabled="false"/>
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>

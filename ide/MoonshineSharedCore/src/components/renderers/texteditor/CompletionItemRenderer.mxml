@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer name="CustomListSkin"
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        autoDrawBackground="true"
+        mouseChildren="false"
+        width="100%"
+        height="16">
+
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="hovered" />
+        <s:State name="selected" />
+    </s:states>
+    
+    <fx:Script>
+    	<![CDATA[
+			import flash.text.engine.ContentElement;
+			import flash.text.engine.ElementFormat;
+			import flash.text.engine.GroupElement;
+			import flash.text.engine.TextBlock;
+			import flash.text.engine.TextElement;
+			import flash.text.engine.TextLine;
+			
+			import actionScripts.ui.editor.text.vo.CompletionResult;
+			import actionScripts.valueObjects.Settings;
+			
+    		protected var styles:Array = [new ElementFormat(Settings.font.defaultFontDescription, 13, 0x444444)];
+    		
+    		protected var textBlock:TextBlock = new TextBlock();
+    		protected var textLine:TextLine;
+    		
+    		protected var textChanged:Boolean;
+    		
+    		override public function set data(value:Object):void
+    		{
+    			if (value == super.data) return;
+    			super.data = value;
+    			if (value != null) 
+    			{
+    				textChanged = true;
+    				invalidateDisplayList();
+    			}
+    			
+    		}
+    		
+    		protected function drawText():void
+    		{
+	    		var text:String = (data as CompletionResult).label;
+				var meta:Vector.<int> = (data as CompletionResult).colors;
+	            var groupElement:GroupElement = new GroupElement();
+	            var e:Vector.<ContentElement> = new Vector.<ContentElement>();
+	            
+	            if (textLine) { container.removeChild(textLine); }
+	            
+	            if (meta)
+	            {
+	            	var style:int, start:int, end:int;
+	            	for (var i:int = 0; i < meta.length; i+=2) 
+	            	{
+	            		
+		            	start = meta[i];
+		            	end = (i+2 < meta.length) ? meta[i+2] : text.length;
+		            	style = meta[i+1];
+		            	var textElement:TextElement = new TextElement(text.substring(start, end), styles[style]);
+	
+		            	e.push(textElement);
+	            	}
+	            } 
+	            else
+	            {
+	            	e.push( new TextElement(text, styles[0]) );
+	            }
+	            
+	            groupElement.setElements(e);
+	   			
+	            textBlock.content = groupElement; 
+	            textLine = textBlock.createTextLine();
+	            
+	            //trace("text to show: " + text + ": " + textLine);
+	            
+	            if (textLine) 
+	            {
+					container.addChild( textLine );
+	            	
+	            	textLine.x = 4;
+	            	textLine.y = 12;
+	            }
+    		}
+    		
+    		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+    		{
+    			super.updateDisplayList(unscaledWidth, unscaledHeight);
+    			if (textChanged) 
+    			{
+    				drawText();
+    				textChanged = false;
+    			}
+    		}
+    		
+    	]]>
+    </fx:Script>
+    
+    
+    <mx:Canvas id="hitArea" width="100%" height="16" backgroundColor="0x0" backgroundAlpha="0" />
+    <mx:UIComponent id="container" 
+    		mouseEnabled="false" 
+    		mouseChildren="false"
+    		includeInLayout="false"/>
+    
+</s:ItemRenderer>

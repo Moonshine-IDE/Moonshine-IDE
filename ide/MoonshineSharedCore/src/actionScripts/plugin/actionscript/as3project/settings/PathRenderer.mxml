@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+  	width="100%"
+  	autoDrawBackground="false">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.utils.OSXBookmarkerNotifiers;
+			
+			public static const EVENT_BROWSE_FILE:String = "browseFile"
+			public static const EVENT_BROWSE_DIR:String = "browseDir";
+			public static const EVENT_REMOVE_ITEM:String = "removeItem";
+			public static const EVENT_MANUAL_UPDATE:String = "manualUpdate";
+			
+			[Bindable] public var allowFiles:Boolean;
+			[Bindable] public var allowFolders:Boolean;
+			[Bindable] public var showRemove:Boolean = true;
+
+			public var fileMustExist:Boolean;
+			
+			[Bindable] private var isFileExists:Boolean = false;
+			
+			override public function set data(value:Object):void
+			{
+				if (value)
+				{
+					super.data = value;
+					path.buttonMode = false;
+					path.editable = path.mouseChildren = true;
+					onCreationCompletes(null);
+				}
+			}
+						
+			protected function onPathManualChange(event:TextOperationEvent):void
+			{
+				if (data)
+				{
+					dispatchEvent(new Event(EVENT_MANUAL_UPDATE, true));
+				}
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				var tmpLocalCheckPath:String;
+				if (data && (data.file.fileBridge.nativePath.indexOf("{locale}") != -1))
+				{
+					tmpLocalCheckPath = OSXBookmarkerNotifiers.isValidLocalePath(data.file as FileLocation);
+					if (tmpLocalCheckPath != null)
+					{
+						isFileExists = (new FileLocation(tmpLocalCheckPath)).fileBridge.exists;
+					}
+				}
+				else if (data && data.file.fileBridge.exists)
+				{
+					isFileExists = true;
+				}
+				else
+				{
+					isFileExists = false;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:HGroup 
+		width="100%" 
+		paddingLeft="15"
+		verticalAlign="middle">
+		<s:TextInput id="path"
+					 width="100%"
+					 styleName="uiTextSettingsValue"
+					 height="100%"
+					 borderVisible="false"
+					 contentBackgroundAlpha="0"
+					 focusAlpha="0"
+					 text="{data ? data.label : 'Click to add'}"
+					 change="onPathManualChange(event)"
+					 buttonMode="true" editable="false" mouseChildren="false"/>
+		<!--<s:Label id="path"
+			width="100%"
+			text="{data ? data.label : 'Click to add'}"
+			styleName="uiTextSettingsValue" />	-->
+		
+		<s:Spacer width="10"/>
+		<s:Button 
+			label="Browse file"
+			styleName="lightButton"
+			visible="{allowFiles}"
+			includeInLayout="{allowFiles}"
+			click="{dispatchEvent(new Event(EVENT_BROWSE_FILE, true))}"
+			/>
+	
+		<s:Button 
+			label="Browse dir"
+			styleName="lightButton"
+			visible="{allowFolders}"
+			includeInLayout="{allowFolders}"
+			click="{dispatchEvent(new Event(EVENT_BROWSE_DIR, true))}"                    
+			/>
+	
+		<s:Button 
+			width="20"
+			label="–"
+			styleName="lightButtonTight"
+			visible="{showRemove}"
+			click="{dispatchEvent(new Event(EVENT_REMOVE_ITEM, true))}"
+			/>
+		<s:Image source="@Embed('/elements/images/tick_circle_frame.png')"
+				 visible="{isFileExists}"/>
+	</s:HGroup>
+	
+</s:ItemRenderer>

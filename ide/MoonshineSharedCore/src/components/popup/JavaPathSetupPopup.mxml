@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" autoLayout="true"
+		 creationComplete="addCloseButton()"
+		 horizontalCenter="0" verticalCenter="0">
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import spark.utils.TextFlowUtil;
+			
+			import actionScripts.events.FilePluginEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			
+			import flashx.textLayout.elements.TextFlow;
+			
+			[Bindable] public var showAsHelperDownloader:Boolean;
+			
+			public var showAsRequiresSDKNotification:Boolean;
+			public var isSDKSetupShowing:Boolean;
+			public var isDiscarded:Boolean;
+			
+			[Bindable] private var userNotes:String;
+			[Bindable] private var autoDetectedJavaPath:String;
+			
+			private var foundAndAccessNote:String = "<p>Code completion requires the Java Development Kit 1.8. Follow the instructions below to set up access,<br/></p><list listStyleType='decimal'><li>Copy the path given below to clipboard</li><li>click on <span fontWeight='bold'>Allow Access</span> button below</li><li>Press CMD-Shift-G. This will open a prompt where you can specify a path to navigate to</li><li>Right click in the text field and select Paste</li><li>Click <span fontWeight='bold'>Open</span></li></list>";
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			private function addCloseButton():void
+			{
+				if (showAsRequiresSDKNotification) onPermittedOSX();
+				
+				var closeButtonUIC:UIComponent = new UIComponent();
+				closeButtonUIC.width = closeButtonUIC.height = 27;
+				closeButtonUIC.right = 0;
+				
+				var closeButton:Sprite = new Sprite();
+				// Circle
+				closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.8);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawCircle(14, 12, 6);
+				closeButton.graphics.endFill();
+				// X (\)
+				closeButton.graphics.lineStyle(2, 0xFFFFFF, 0.8, true);
+				closeButton.graphics.moveTo(12, 10);
+				closeButton.graphics.lineTo(16, 14);
+				// X (/)
+				closeButton.graphics.moveTo(16, 10);
+				closeButton.graphics.lineTo(12, 14);
+				// Hit area
+				closeButton.graphics.lineStyle(0, 0x0, 0);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawRect(0, 0, 27, 25);
+				closeButton.graphics.endFill();
+				
+				closeButton.addEventListener(MouseEvent.CLICK, closeButtonClickedRequest, false, 0, true);
+				closeButtonUIC.addChild(closeButton);
+				
+				addElement(closeButtonUIC);
+			}
+			
+			private function prepareNotifications():void
+			{
+				// when opend as required SDK not present window
+				if (showAsRequiresSDKNotification)
+				{
+					var flow:TextFlow = TextFlowUtil.importFromString("<p>Code completion requires Apache Flex® or FlexJS® SDK.<br/><br/>Make sure you have it defined in SDK list by clicking on <span fontWeight='bold'>Fix Now</span> button. In case of MacOS, your SDK location needs to be in your <span fontWeight='bold'>Downloads</span> folder.</p>");
+					currentState = "noRequiredSDK";
+					body.alpha = 1;
+					callLater(function():void
+					{
+						retAutoDetectedNotif.textFlow = flow;
+					});
+				}
+				else if (ConstantsCoreVO.IS_MACOS)
+				{
+					model.flexCore.getJavaPath(onJavaPathDetectedInOSX);
+				}
+				else if (!ConstantsCoreVO.IS_MACOS)
+				{
+					// let user manually set Java path once
+					onJavaPathDetectedInOSX(null);
+				}
+			}
+			
+			private function onPermittedOSX():void
+			{
+				ConstantsCoreVO.IS_OSX_JAVA_SDK_PROMPT = true;
+				currentState = "default";
+				prepareNotifications();
+			}
+			
+			private function closeButtonClickedRequest(event:MouseEvent):void
+			{
+				closeButtonClicked(event, true);
+			}
+			
+			private function closeButtonClicked(event:MouseEvent, isDiscarded:Boolean=false):void
+			{
+				this.isDiscarded = isDiscarded;
+				if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
+				dispatchEvent(new Event(Event.CLOSE));
+			}
+			
+			protected function onAllowAccess(event:MouseEvent):void
+			{
+				var javaLocation:FileLocation = new FileLocation(autoDetectedJavaPath);
+				javaLocation.fileBridge.browseForDirectory("Select Java Path", onJavaDirectorySelected);
+			}
+			
+			protected function onJavaDirectorySelected(dir:Object):void
+			{
+				model.javaPathForTypeAhead = (dir is FileLocation) ? dir as FileLocation : new FileLocation(dir.nativePath);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
+				
+				// close this
+				closeButtonClicked(null);
+			}
+			
+			protected function openJavaDownloadPage(event:MouseEvent):void
+			{
+				navigateToURL(new URLRequest("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html"), "_blank");
+			}
+			
+			protected function fixRequiredSDK(event:MouseEvent):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				isSDKSetupShowing = true;
+				
+				// close this
+				closeButtonClicked(null, true);
+			}
+			
+			private function onJavaPathDetectedInOSX(path:String):void
+			{
+				// in case java 1.8 found
+				var flow:TextFlow;
+				if (path)
+				{
+					autoDetectedJavaPath = path;
+					
+					var pattern:RegExp = new RegExp(/(\n)/g);
+					autoDetectedJavaPath = autoDetectedJavaPath.replace(pattern, "");
+					
+					// for OSX we'll need the user to select the folder
+					// to let sandbox app access it
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						flow = TextFlowUtil.importFromString(foundAndAccessNote);
+						txtAutoDetectedPath.includeInLayout = txtAutoDetectedPath.visible = true;
+						body.alpha = 1;
+						callLater(function():void
+						{
+							retAutoDetectedNotif.textFlow = flow;
+						});
+					}
+					else
+					{
+						onJavaDirectorySelected(new FileLocation(autoDetectedJavaPath));
+					}
+				}
+				else
+				{
+					body.alpha = 1;
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						retAutoDetectedNotif.includeInLayout = retAutoDetectedNotif.visible = false;
+						// since link to ActionScript not worked in AS textFlow conversion
+						retManualNotif.includeInLayout = retManualNotif.visible = true;
+					}
+					else
+					{
+						flow = TextFlowUtil.importFromString("<p>Code completion requires the Java Development Kit 1.8. To select the path click on <span fontWeight='bold'>Allow Access</span> button</p>");
+						callLater(function():void
+						{
+							retAutoDetectedNotif.textFlow = flow;
+						});
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="permissionRequestOSX"/>
+		<s:State name="default"/>
+		<s:State name="noRequiredSDK"/>
+	</s:states>
+	
+	<s:BorderContainer id="body" 
+					   width="450" minHeight="200" autoLayout="true"
+					   cornerRadius="6" borderColor="0x2d2d2d"
+					   alpha="1">
+		<s:backgroundFill>
+			<s:SolidColor color="0xa0a0a0"/>
+		</s:backgroundFill>
+		<s:VGroup width="100%" height="100%"
+				  gap="0">
+			<s:HGroup width="100%" height="100%"
+					  verticalAlign="middle"
+					  gap="0">
+				<s:Group width="98">
+					<s:Image source="@Embed('/elements/images/icoJava.png')"
+							 horizontalCenter="0" verticalCenter="0"
+							 includeIn="default"/>
+					<s:Image source="@Embed('/elements/images/icoSDKExclamation.png')"
+							 horizontalCenter="0" verticalCenter="0"
+							 includeIn="noRequiredSDK"/>
+					<s:Image source="@Embed('/elements/images/icoCodeCompletion.png')"
+							 horizontalCenter="0" verticalCenter="0"
+							 includeIn="permissionRequestOSX"/>
+				</s:Group>
+				<s:VGroup width="100%" autoLayout="true" paddingRight="20" paddingTop="20" paddingBottom="20"
+						  includeIn="default, noRequiredSDK">
+					<s:RichEditableText id="retAutoDetectedNotif" 
+										editable="false" focusEnabled="false" selectable="false"
+										width="100%" fontSize="13"/>
+					<s:RichEditableText id="retManualNotif" 
+										editable="false" focusEnabled="false"
+										width="100%" fontSize="13"
+										includeInLayout="false" visible="false">
+						<s:textFlow>
+							<s:TextFlow>
+								<s:p>Code completion requires the Java Development Kit 1.8. You can find and submit the path using the instructions below:<s:br/></s:p><s:list listStyleType='decimal'><s:li>If you have not installed Java 8 yet, you can do it here: <s:a click='openJavaDownloadPage(null)'>http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</s:a></s:li><s:li>Open a Terminal window</s:li><s:li>Enter this command to get the Java path:<s:br/><s:span fontWeight='bold'>/usr/libexec/java_home -v 1.8</s:span></s:li><s:li>Copy the result to the clipboard</s:li><s:li>Click on <s:span fontWeight='bold'>Allow Access</s:span> button below</s:li><s:li>Press CMD-Shift-G. This will open a prompt where you can specify a path to navigate to</s:li><s:li>Right click in the text field and select Paste</s:li><s:li>Click <s:span fontWeight='bold'>Open</s:span></s:li></s:list>
+							</s:TextFlow>
+						</s:textFlow>
+					</s:RichEditableText>
+					<s:TextInput id="txtAutoDetectedPath"
+								 width="100%" styleName="textInput" editable="false"
+								 text="{autoDetectedJavaPath}"
+								 includeInLayout="false" visible="false"/>
+				</s:VGroup>
+				<s:VGroup width="100%" autoLayout="true" paddingRight="20"
+						  includeIn="permissionRequestOSX">
+					<s:Label text="Moonshine optionally supports code completion for ActionScript(.as) files. Would you like to enable this now?"
+							 maxDisplayedLines="5" width="100%" fontSize="13"/>
+				</s:VGroup>
+			</s:HGroup>
+			<!-- Button bar -->
+			<mx:HRule id="buttonBarLine"
+					  width="100%"
+					  bottom="41"
+					  strokeWidth="1"
+					  strokeColor="0x303030" />
+			<mx:HBox id="buttonBar"
+					 width="100%"
+					 height="41"
+					 bottom="0"
+					 backgroundColor="0x444444"
+					 paddingRight="10"
+					 paddingTop="0"
+					 horizontalAlign="center"
+					 verticalAlign="middle"
+					 ><mx:filters>
+						  <mx:DropShadowFilter 
+							  alpha=".5" 
+							  angle="90" 
+							  blurX="0" 
+							  blurY="7" 
+							  strength="1"
+							  distance="1"
+							  inner="true" />
+					  </mx:filters>
+				<mx:HBox autoLayout="true"
+						 includeIn="default, noRequiredSDK">
+					<s:Button id="btnAllowAccess" 
+							  label="Allow Access" styleName="darkButton"
+							  click="onAllowAccess(event)"
+							  includeIn="default"/>
+					<s:Button label="Skip For Now" styleName="darkButton"
+							  click="closeButtonClicked(null, true)"
+							  includeIn="default"/>
+					<s:Button label="Fix Now" styleName="darkButton"
+							  includeIn="noRequiredSDK"
+							  click="fixRequiredSDK(event)"/>
+					<s:Button label="Continue Without Code Completion" styleName="darkButton"
+							  click="closeButtonClicked(event, true)"
+							  includeIn="noRequiredSDK"/>
+				</mx:HBox>
+				<mx:HBox autoLayout="true"
+						 includeIn="permissionRequestOSX">
+					<s:Button label="Configure &amp; Enable" styleName="darkButton"
+							  click="onPermittedOSX()"/>
+					<s:Button label="No Thanks" styleName="darkButton"
+							  click="closeButtonClicked(event, true)"/>
+				</mx:HBox>
+			</mx:HBox>
+		</s:VGroup>
+	</s:BorderContainer>
+</s:Group>

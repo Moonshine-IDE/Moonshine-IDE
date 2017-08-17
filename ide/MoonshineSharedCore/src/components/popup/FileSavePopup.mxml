@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   backgroundColor="0xf5f5f5"
+				   width="500" height="500" title="Save/As"
+				   creationComplete="init()"
+				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			import mx.core.IVisualElementContainer;
+			import mx.events.ListEvent;
+			
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.console.ConsoleOutputEvent;
+			import actionScripts.ui.editor.BasicTextEditor;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.skins.ResizableTitleWindowSkin;
+			
+			public var file: FileLocation;
+			public var extension:String="";
+			protected var loader: DataAgent;
+			
+			[Bindable]
+			private var projectFolders:ArrayCollection;
+			private var path:String;
+			private var model:IDEModel = IDEModel.getInstance();
+			private var editor:BasicTextEditor;
+			private var lastSelectedNode:FileWrapper;
+			private var loaderIcon: Image;
+			
+			override protected function closeByCrossSign(event:Event):void
+			{
+				loader = null;
+				super.closeByCrossSign(event);
+			}
+			
+			private function init():void
+			{
+				editor = model.activeEditor as BasicTextEditor;
+				
+				if (editor.currentFile) 
+				{
+					extension = editor.currentFile.fileBridge.name;
+					txt_fileName.text = "CopyOf"+extension.split(".")[0];
+				}
+				else extension = editor.defaultLabel;
+				var extArr:Array = extension.split(".");
+				lbl_ext.text = "."+extArr[extArr.length-1];
+				
+				var pdirs:Array = [];
+				projectFolders = new ArrayCollection();
+				for(var i:int=0;i<model.selectedprojectFolders.length;i++)
+				{
+					projectFolders.addItem(parseChildrens(model.selectedprojectFolders[i]));
+				}
+			}
+			
+			/**
+			 * Remove loader icon from its parent
+			 */
+			private function removeLoaderIcon():void
+			{
+				IVisualElementContainer(loaderIcon.owner).removeElement(loaderIcon);
+				loaderIcon = null;
+			}
+			
+			private function parseChildrens(value:Object):FileWrapper
+			{
+				if (!value) return null;
+				
+				var tmpLocation: FileLocation = new FileLocation(value.file.fileBridge.nativePath);
+				tmpLocation.fileBridge.isDirectory = (value.file.fileBridge.isDirectory.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.isHidden = (value.file.fileBridge.isHidden.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.name = String(value.file.fileBridge.name);
+				tmpLocation.fileBridge.extension = String(value.file.fileBridge.extension);
+				tmpLocation.fileBridge.exists = true;
+				
+				var tmpFW: FileWrapper = new FileWrapper(tmpLocation, false, value.projectReference);
+				tmpFW.isRoot = value.isRoot;
+				tmpFW.originalReference = value; // we'll need this to update children in saveFileHandler()
+				
+				if ((value.children is Array) && (value.children as Array).length > 0) 
+				{
+					var tmpSubChildren:Array = [];
+					for each (var c:Object in value.children)
+					{
+						if (c.file.fileBridge.isDirectory) tmpSubChildren.push(parseChildrens(c));
+					}
+					
+					tmpFW.children = tmpSubChildren;
+				}
+				
+				if (tmpFW.children.length == 0 && !tmpFW.file.fileBridge.isDirectory) tmpFW.children = null;
+				return tmpFW;
+			}
+			
+			//set selected item name in textinput
+			private function fileClickedInTree(event:ListEvent):void
+			{
+				var item:Object = tree.selectedItem;
+				if ( tree.dataDescriptor.isBranch(item) )
+				{
+					tree.expandItem(item, !tree.isItemOpen(item), true);
+				}
+				
+				// we don't let select project name node as save location
+				if (item.isRoot) tree.selectedIndex = -1;
+			}
+			
+			protected function saveFileHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(!tree.selectedItem)
+				{
+					Alert.show("Please select folder location to save!");
+					return;
+				}
+				else if(txt_fileName.text =="")
+				{
+					txt_fileName.errorString ="File name is required ";
+					return;
+				}
+				
+				loaderIcon = new Image();
+				loaderIcon.source = new ConstantsCoreVO.loaderIcon();
+				loaderIcon.width = loaderIcon.height = 10;
+				loaderIcon.y = (txt_fileName.height - loaderIcon.height)/2;
+				loaderIcon.right = 6;
+				grpFileName.addElement(loaderIcon);
+				btn_save.enabled = false;
+				
+				file = new FileLocation();
+				file.fileBridge.name = txt_fileName.text+lbl_ext.text;
+				file.fileBridge.nativePath = tree.selectedItem.file.fileBridge.nativePath;
+				lastSelectedNode = tree.selectedItem as FileWrapper;
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving in process..."));
+				loader = new DataAgent(URLDescriptorVO.FILE_NEW, onSaveSuccess, onSaveFault, {path:file.fileBridge.nativePath,name:file.fileBridge.name,type:(file.fileBridge.isDirectory?"folder":"file"),text:editor.text});
+			}
+			
+			private function onSaveSuccess(value:Object, message:String=null):void
+			{
+				removeLoaderIcon();
+				
+				var jsonObj:Object = JSON.parse(String(value));
+				if (!jsonObj || jsonObj.nativePath == "") return;
+				
+				// create new object to update in tree view
+				var tmpLocation: FileLocation = new FileLocation(jsonObj.nativePath);
+				tmpLocation.fileBridge.isDirectory = (jsonObj.isDirectory.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.isHidden = (jsonObj.isHidden.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.name = String(jsonObj.name);
+				tmpLocation.fileBridge.extension = String(jsonObj.extension);
+				tmpLocation.fileBridge.exists = true;
+				
+				var tmpFW: FileWrapper = new FileWrapper(tmpLocation, false, FileWrapper(lastSelectedNode.originalReference).projectReference);
+				tmpFW.children = null;
+				FileWrapper(lastSelectedNode.originalReference).children.push(tmpFW);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saved successfully."));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, tmpFW));
+				editor.onFileSaveSuccess(tmpLocation);
+				
+				loader = null;
+				super.closeThis();
+			}
+			
+			private function onSaveFault(message:String):void
+			{
+				removeLoaderIcon();
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Save error!"));
+				btn_save.enabled = true;
+				loader = null;
+				super.closeThis();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+			  horizontalAlign="center">
+		<mx:Tree
+			id="tree"
+			width="100%" height="100%"
+			dataProvider="{projectFolders}"
+			color="0xEEEEEE"
+			contentBackgroundColor="0x0"
+			rollOverColor="0x393939"
+			selectionColor="0xc165b8"
+			alternatingItemColors="[0x444444, 0x4d4c4c]"
+			verticalScrollBarStyleName="black"
+			itemClick="fileClickedInTree(event)"
+			borderVisible="false"
+			rowHeight="18"
+			useRollOver="true"
+			doubleClickEnabled="true"
+			labelField="name"
+			itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"/>
+		<s:HGroup width="100%" >
+			<s:Group id="grpFileName"
+					 width="100%">
+				<view:PromptTextInput id="txt_fileName"
+									  prompt="File Name" width="100%" styleName="textInput"
+									  restrict="0-9a-zA-z_^\^\\" maxChars="129"/>
+			</s:Group>
+			<s:Label id="lbl_ext" 
+					 height="100%" verticalAlign="middle"/>
+		</s:HGroup>
+		<mx:HRule width="100%"/>
+		<s:Button label="Save" id="btn_save"
+				  styleName="lightButtonTight" width="80"
+				  click="saveFileHandler(event)"/>
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>
