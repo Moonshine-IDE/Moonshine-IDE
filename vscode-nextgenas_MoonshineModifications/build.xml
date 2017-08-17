@@ -1,0 +1,123 @@
+<project name="vscode-nextgenas_MoonshineModifications" default="dist" basedir=".">
+    <description>
+    	Build script for Bamboo
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+    <property name="lib" location="target"/>
+	<property name="jar.name" value="codecompletion.jar" />
+	<property name="jar.path" value="${dist}/${jar.name}" />
+	<!-- define the parameter name, to avoid reproducing the name. -->
+	<property name="target.property" value="target.path" />
+	
+	<!-- classpath -->
+    <path id="default.classpath">
+      <fileset dir="target">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement location="${build}"/>
+    </path>
+	
+	<!-- debugging code for the classpath -->
+	<pathconvert property="classpath.string" refid="default.classpath" pathsep=" "/>
+	<echo>Classpath is ${classpath.string}</echo>
+	<!--
+	-->
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <delete dir="${build}"/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="init"
+            description="compile the source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac  srcdir="${src}" 
+        	    destdir="${build}"
+        	   	includeAntRuntime="false"
+        	    debug="true">
+        	<classpath>
+        		<path refid="default.classpath" />
+        	</classpath>
+    	</javac>
+    </target>
+
+    <target name="dist" depends="compile">
+        <jar destfile="${jar.path}" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="moonshine.Main"/>
+                <attribute name="Class-Path" value="."/>
+                <!--
+                    Moonshine packages JARs from FlexJS instead of loading
+                    separate JARs from a real SDK. The language server tries to
+                    read the FlexJS version, so we need a valid value.
+                -->
+                <attribute name="Implementation-Version" value="0.7.0"/> 
+            </manifest>
+            <fileset dir="${build}"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-2.7.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-3.3.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-complete-3.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-runtime-3.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/args4j-2.0.28.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/closure-compiler-v20161201.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-beanutils-1.9.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-cli-1.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-collections-3.2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-digester-1.8.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-io-2.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-logging-1.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-validator-1.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-0.8.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jburg-types-1.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-0.8.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/flex-tool-api-1.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-0.0-20150902-b129bb9e.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-third-party-0.0-20150902-b129bb9e.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/gson-2.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/guava-18.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/gunit-3.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/hamcrest-core-1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/jackson-core-2.8.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/jackson-databind-2.8.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/jburg-1.10.3.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/jflex-1.6.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/json-schema-validator-0.1.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/jsr305-3.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/lzma-sdk-4j-9.22.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.2.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.2.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.2.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.12.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.12.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.12.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/stringtemplate-3.2.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/xSocket-2.8.15.jar"/>
+        </jar>
+    </target>
+	
+	<target name="deploy" depends="check-target-path, dist" 
+			description="Deploy the jar to the path specified by the user-specified ${target.property} property." >
+		<copy file="${jar.path}" toDir="${target.path}" overwrite="true" failonerror="true" />
+	</target>
+	
+	
+	<target name="check-target-path" depends="" unless="${target.property}"
+		    description="If the ${target.property} property does not exist, report an error and terminate the build." >
+		<fail message="Property ${target.property} is required." />
+	</target>
+
+
+    <target name="clean"
+            description="clean up">
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+</project>

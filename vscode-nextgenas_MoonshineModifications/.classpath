@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="target/antlr-2.7.7.jar"/>
+	<classpathentry kind="lib" path="target/antlr-3.3.jar"/>
+	<classpathentry kind="lib" path="target/antlr-complete-3.5.2.jar"/>
+	<classpathentry kind="lib" path="target/antlr-runtime-3.5.2.jar"/>
+	<classpathentry kind="lib" path="target/args4j-2.0.28.jar"/>
+	<classpathentry kind="lib" path="target/closure-compiler-v20151015.jar"/>
+	<classpathentry kind="lib" path="target/commons-beanutils-1.9.2.jar"/>
+	<classpathentry kind="lib" path="target/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="target/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="target/commons-digester-1.8.1.jar"/>
+	<classpathentry kind="lib" path="target/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="target/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="target/commons-validator-1.5.0.jar"/>
+	<classpathentry kind="lib" path="target/compiler-0.7.0.jar"/>
+	<classpathentry kind="lib" path="target/compiler-jburg-types-1.0.0.jar"/>
+	<classpathentry kind="lib" path="target/compiler-jx-0.7.0.jar"/>
+	<classpathentry kind="lib" path="target/flex-tool-api-1.0.0.jar"/>
+	<classpathentry kind="lib" path="target/google-closure-library-0.0-20150902-b129bb9e.jar"/>
+	<classpathentry kind="lib" path="target/google-closure-library-third-party-0.0-20150902-b129bb9e.jar"/>
+	<classpathentry kind="lib" path="target/gson-2.5.jar"/>
+	<classpathentry kind="lib" path="target/guava-18.0.jar"/>
+	<classpathentry kind="lib" path="target/gunit-3.5.2.jar"/>
+	<classpathentry kind="lib" path="target/hamcrest-core-1.1.jar"/>
+	<classpathentry kind="lib" path="target/io.typefox.lsapi-0.3.0.jar"/>
+	<classpathentry kind="lib" path="target/io.typefox.lsapi.annotations-0.3.0.jar"/>
+	<classpathentry kind="lib" path="target/io.typefox.lsapi.services-0.3.0.jar"/>
+	<classpathentry kind="lib" path="target/jburg-1.10.3.jar"/>
+	<classpathentry kind="lib" path="target/jflex-1.6.0.jar"/>
+	<classpathentry kind="lib" path="target/json-20160212.jar"/>
+	<classpathentry kind="lib" path="target/jsr305-3.0.1.jar"/>
+	<classpathentry kind="lib" path="target/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="target/lzma-sdk-4j-9.22.0.jar"/>
+	<classpathentry kind="lib" path="target/org.eclipse.xtend.lib-2.10.0.jar"/>
+	<classpathentry kind="lib" path="target/org.eclipse.xtend.lib.macro-2.10.0.jar"/>
+	<classpathentry kind="lib" path="target/org.eclipse.xtext.xbase.lib-2.10.0.jar"/>
+	<classpathentry kind="lib" path="target/org.everit.json.schema-1.3.0.jar"/>
+	<classpathentry kind="lib" path="target/org.json-20131017.jar"/>
+	<classpathentry kind="lib" path="target/stringtemplate-3.2.1.jar"/>
+	<classpathentry kind="lib" path="target/xSocket-2.8.15.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/JDK 1.8.x"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
