@@ -18,9 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
+    import actionScripts.events.ChangeEvent;
     import actionScripts.plugins.help.view.VisualEditorView;
     import actionScripts.ui.editor.*;
-    import actionScripts.events.ChangeEvent;
     import actionScripts.ui.editor.text.TextEditor;
 
     public class VisualEditorViewer extends BasicTextEditor
@@ -38,15 +38,15 @@ package actionScripts.plugins.ui.editor
             
             visualEditorView = new VisualEditorView();
             visualEditorView.percentWidth = 100;
+            visualEditorView.percentHeight = 100;
 
             editor = new TextEditor(true);
             editor.percentHeight = 100;
             editor.percentWidth = 100;
             editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);
+            editor.dataProvider = "";
 
-            visualEditorView.addCodeView(editor);
-            
-            text = "";
+            visualEditorView.codeEditor = editor;
         }
 
         override protected function createChildren():void
