@@ -33,7 +33,7 @@ package actionScripts.plugins.as3project.importer
 			var listing:Array = file.getDirectoryListing();
 			for each (var i:File in listing)
 			{
-				if (i.extension == "as3proj") {
+				if (i.extension == "as3proj" || i.extension == "veditorproj") {
 					return (new FileLocation(i.nativePath));
 				}
 			}

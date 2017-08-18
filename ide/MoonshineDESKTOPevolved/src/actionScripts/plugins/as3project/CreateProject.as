@@ -469,12 +469,12 @@ package actionScripts.plugins.as3project
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 
-			var isVisualEditorProject:Boolean = pvo.isVisualEditorProject;
+			var isVEProject:Boolean = pvo.isVisualEditorProject;
 
 			// Set some stuff to get the paths right
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
-			pvo.isVisualEditorProject = isVisualEditorProject;
+			pvo.isVisualEditorProject = isVEProject;
 			
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
