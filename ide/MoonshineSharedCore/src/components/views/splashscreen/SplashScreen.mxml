@@ -197,7 +197,6 @@
 				{
 					var project:AS3ProjectVO;
 					var lastOpenedOption:String;
-					var projectFileLocation:FileLocation;
 
 					// check if any last opend option is associated with the project
 					for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
@@ -209,55 +208,7 @@
 						}
 					}
 
-					switch (lastOpenedOption)
-					{
-						case "":
-						case null:
-						case undefined:
-						case ProjectEvent.LAST_OPENED_AS_FB_PROJECT:
-						{
-							// @santanu
-							// check change log in AS3ProjectVO.as against
-							// commenting the following process
-
-							/*if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-                            else
-                            {
-                                flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
-                                if (flashDevelopProjectFile) p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile);
-                            }*/
-
-							projectFileLocation = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
-							if (projectFileLocation)
-							{
-								project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
-								break;
-							}
-
-							projectFileLocation = model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile);
-							if (projectFileLocation)
-							{
-								project = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-							}
-							break;
-						}
-						case ProjectEvent.LAST_OPENED_AS_FD_PROJECT:
-						{
-							projectFileLocation = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
-							if (projectFileLocation)
-							{
-								project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
-								break;
-							}
-
-							projectFileLocation = model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile);
-							if (projectFileLocation)
-							{
-								project = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-							}
-							break;
-						}
-					}
+					project = getProjectBasedOnFileOption(lastOpenedOption, projectName);
 
 					if (!project)
 					{
@@ -302,6 +253,31 @@
 					loadRecentProject();
 				}
 			}
+		}
+
+		private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):AS3ProjectVO
+		{
+			var projectFile:File = recentOpenedProjectObject.fileBridge.getFile;
+			var projectFileLocation:FileLocation;
+
+			if (!lastOpenedOption ||
+				 lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
+			     lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
+			{
+				projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
+				if (projectFileLocation)
+				{
+					return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
+				}
+
+				projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
+				if (projectFileLocation)
+				{
+					return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+				}
+			}
+
+			return null;
 		}
 
 		private function onProjectLoadSuccess(value:Object):void

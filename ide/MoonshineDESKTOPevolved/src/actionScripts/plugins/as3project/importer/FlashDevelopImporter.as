@@ -45,20 +45,22 @@ package actionScripts.plugins.as3project.importer
 		{
 			var folder:File = (file.fileBridge.getFile as File).parent;
 			
-			var p:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
-			p.projectFile = file;
+			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
+			project.isVisualEditorProject = file.fileBridge.extension == "veditorproj";
+
+			project.projectFile = file;
 			
-			p.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
-			p.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+p.projectName+"Config.xml").nativePath));
-			p.projectFolder.name = p.projectName;
+			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
+			project.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+project.projectName+"Config.xml").nativePath));
+			project.projectFolder.name = project.projectName;
 			
 			if (!descriptorFile) descriptorFile = folder.resolvePath("application.xml");
 			if (!descriptorFile.exists)
 			{
-				descriptorFile = folder.resolvePath("src/"+p.projectName+"-app.xml");
+				descriptorFile = folder.resolvePath("src/"+project.projectName+"-app.xml");
 				if (!descriptorFile.exists)
 				{
-					var projectConfig:File = folder.resolvePath("obj/"+p.projectName+"Config.xml");
+					var projectConfig:File = folder.resolvePath("obj/"+project.projectName+"Config.xml");
 					if (projectConfig.exists)
 					{
 						stream = new FileStream();
@@ -68,7 +70,7 @@ package actionScripts.plugins.as3project.importer
 						
 						projectConfig = new File(configData["file-specs"]["path-element"]);
 						projectConfig = projectConfig.parent;
-						descriptorFile = projectConfig.resolvePath(p.projectName+"-app.xml");
+						descriptorFile = projectConfig.resolvePath(project.projectName+"-app.xml");
 					}
 					
 					//descriptorFile = folder.resolvePath(p.projectName+".template");
@@ -90,10 +92,10 @@ package actionScripts.plugins.as3project.importer
 					tmpNameSearchString += i.localName()+" ";
 				}
 				
-				p.isMobile = (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1) ? true : false;
+				project.isMobile = (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1) ? true : false;
 			}
 			
-			p.air = isAIR;
+			project.air = isAIR;
 			
 			stream = new FileStream();
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
@@ -101,56 +103,56 @@ package actionScripts.plugins.as3project.importer
 			stream.close();
 
 			// Parse XML file
-			p.classpaths.length = 0;
-			p.resourcePaths.length = 0;
-			p.targets.length = 0;
+			project.classpaths.length = 0;
+			project.resourcePaths.length = 0;
+			project.targets.length = 0;
 
-			p.buildOptions.parse(data.build);
-			p.swfOutput.parse(data.output, p);
+			project.buildOptions.parse(data.build);
+			project.swfOutput.parse(data.output, project);
 			
-			parsePaths(data.classpaths["class"], p.classpaths, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.moonshineResourcePaths["class"], p.resourcePaths, p, "path", p.buildOptions.customSDKPath);
-			if (!p.buildOptions.additional) p.buildOptions.additional = "";
-			if (isAIR && (p.buildOptions.additional.indexOf("configname") == -1))
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
+			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+			if (isAIR && (project.buildOptions.additional.indexOf("configname") == -1))
 			{
-				if (p.isMobile) p.buildOptions.additional += " +configname=airmobile";
-				else p.buildOptions.additional += " +configname=air";
+				if (project.isMobile) project.buildOptions.additional += " +configname=airmobile";
+				else project.buildOptions.additional += " +configname=air";
 			}
 			
-			parsePaths(data.includeLibraries.element, p.includeLibraries, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.libraryPaths.element, p.libraries, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.externalLibraryPaths.element, p.externalLibraries, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.rslPaths.element, p.runtimeSharedLibraries, p, "path", p.buildOptions.customSDKPath);
+			parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
 
-			p.assetLibrary = data.library;
-			parsePaths(data.intrinsics.element, p.intrinsicLibraries, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.compileTargets.compile, p.targets, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.hiddenPaths.hidden, p.hiddenPaths, p, "path", p.buildOptions.customSDKPath);
+			project.assetLibrary = data.library;
+			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
 
-			p.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
-			p.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
-			p.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
+			project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
+			project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
 			
-			p.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
+			project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
 			
-			p.defaultBuildTargets = data.options.option.@defaultBuildTargets;
-			p.testMovie = data.options.option.@testMovie;
-			if (p.air) p.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
-			if (p.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || p.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
+			project.testMovie = data.options.option.@testMovie;
+			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
+			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
 			{
-				p.testMovieCommand = data.options.option.@testMovieCommand;
+				project.testMovieCommand = data.options.option.@testMovieCommand;
 			}
-			if (p.targets.length > 0)
+			if (project.targets.length > 0)
 			{
-				var target:FileLocation = p.targets[0];
-				checkProjectType(target, p);
+				var target:FileLocation = project.targets[0];
+				checkProjectType(target, project);
 				
 				// determine source folder path
-				var substrPath:String = target.fileBridge.nativePath.replace(p.folderLocation.fileBridge.nativePath + File.separator, "");
+				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + File.separator, "");
 				var pathSplit:Array = substrPath.split(File.separator);
 				// remove the last class file name
 				pathSplit.pop();
-				var finalPath:String = p.folderLocation.fileBridge.nativePath;
+				var finalPath:String = project.folderLocation.fileBridge.nativePath;
 				// loop through array if source folder level is
 				// deeper more than 1 level
 				for (var j:int=0; j < pathSplit.length; j++)
@@ -158,16 +160,16 @@ package actionScripts.plugins.as3project.importer
 					finalPath += File.separator + pathSplit[j];
 				}
 				
-				p.sourceFolder = new FileLocation(finalPath);
+				project.sourceFolder = new FileLocation(finalPath);
 			}
 
 			// add output folder path to flash trust content list
-			if (!isAIR && !p.isMobile)
+			if (!isAIR && !project.isMobile)
 			{
 				//IDEModel.getInstance().flexCore.updateFlashPlayerTrustContent(p.folderLocation.resolvePath("bin-debug"));
 			}
 
-			return p;
+			return project;
 		}
 	}
 }
