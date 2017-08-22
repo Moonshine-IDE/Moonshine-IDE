@@ -19,11 +19,12 @@
 package actionScripts.plugins.ui.editor
 {
     import actionScripts.events.ChangeEvent;
+    import actionScripts.interfaces.IVisualEditorViewer;
     import actionScripts.plugins.help.view.VisualEditorView;
     import actionScripts.ui.editor.*;
     import actionScripts.ui.editor.text.TextEditor;
 
-    public class VisualEditorViewer extends BasicTextEditor
+    public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
         

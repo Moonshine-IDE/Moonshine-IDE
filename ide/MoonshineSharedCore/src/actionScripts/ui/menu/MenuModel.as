@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import flash.display.DisplayObject;
+    import actionScripts.interfaces.IVisualEditorViewer;
+
+    import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -149,7 +151,7 @@ package actionScripts.ui.menu
 			var renderer:MenuItemRenderer
 			while (container.numChildren > startIndex)
 			{
-				renderer = container.getChildAt(startIndex) as MenuItemRenderer
+				renderer = container.getChildAt(startIndex) as MenuItemRenderer;
 
 				if (!renderer)
 					continue;
@@ -167,8 +169,10 @@ package actionScripts.ui.menu
 		public function getMenuItemRenderers(howMany:int):Vector.<MenuItemRenderer>
 		{
 			var rtn:Vector.<MenuItemRenderer> = new Vector.<MenuItemRenderer>();
-
-			var rdr:MenuItemRenderer
+			var rdr:MenuItemRenderer;
+			var ideModel:IDEModel = IDEModel.getInstance();
+			var isVisualeEditorViewerOpened:Boolean = ideModel.activeEditor is IVisualEditorViewer;
+			
 			for (var i:int = 0; i < howMany; i++)
 			{
 				if (freeMenuItemRenderers.length > 0)
@@ -183,6 +187,9 @@ package actionScripts.ui.menu
 					rdr.addEventListener(MouseEvent.ROLL_OUT, menuItemRenderRollOutHandler);
 					rdr.addEventListener(MouseEvent.MOUSE_DOWN, menuItemRenderClickHandler);
 				}
+
+				rdr.enabled = !isVisualeEditorViewerOpened;
+				
 				rtn.push(rdr);
 			}
 			return rtn;
@@ -259,7 +266,7 @@ package actionScripts.ui.menu
 
 		private function positionMenu(menuItems:Vector.<ICustomMenuItem>, base:DisplayObjectContainer, position:Point):MenuRenderer
 		{
-			var menu:MenuRenderer = getMenuOrSubMenu()
+			var menu:MenuRenderer = getMenuOrSubMenu();
 			menu.items = menuItems;
 			menu.x = position.x
 			menu.y = position.y
@@ -326,7 +333,7 @@ package actionScripts.ui.menu
 		{
 			registerForMouseClicks(false);
 			cleanUpAfterMenu(topLevelMenu);
-			setTopLevelMenu(null)
+			setTopLevelMenu(null);
 			cancelHysteresisTimer();
 			previousMenuItemRenderer = null;
 			supressMouseClick = false;
@@ -427,7 +434,7 @@ package actionScripts.ui.menu
 		{
 			var rdr:MenuItemRenderer = e.target as MenuItemRenderer;
 
-			if (!rdr)
+			if (!rdr || !rdr.enabled)
 				return;
 			cancelHysteresisTimer(); // go ahead and stop the autotimer passing null to clean up previous 
 

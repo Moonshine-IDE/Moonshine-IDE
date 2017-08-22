@@ -34,9 +34,9 @@ package actionScripts.ui.menu.renderers
 	public class MenuRenderer extends Canvas
 	{
 		private var needsRedrawing:Boolean = false;
-		private var background:Shape
-		private var itemContainer:VBox
-		private var needsShadow:Boolean
+		private var background:Shape;
+		private var itemContainer:VBox;
+		private var needsShadow:Boolean;
 		private var needsRendererLayout:Boolean = false;
 		private var startTime:Number;
 

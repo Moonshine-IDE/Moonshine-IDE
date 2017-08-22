@@ -19,30 +19,8 @@
 package actionScripts.impls
 {
     import actionScripts.interfaces.IVisualEditorBridge;
-    import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
-    import actionScripts.plugin.findreplace.FindReplacePlugin;
-    import actionScripts.plugin.fullscreen.FullscreenPlugin;
-    import actionScripts.plugin.help.HelpPlugin;
-    import actionScripts.plugin.project.ProjectPlugin;
-    import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-    import actionScripts.plugin.settings.SettingsPlugin;
-    import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
-    import actionScripts.plugin.syntax.AS3SyntaxPlugin;
-    import actionScripts.plugin.syntax.CSSSyntaxPlugin;
-    import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.JSSyntaxPlugin;
-    import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.XMLSyntaxPlugin;
-    import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
-    import actionScripts.plugins.ant.AntBuildPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
-    import actionScripts.plugins.problems.ProblemsPlugin;
-    import actionScripts.plugins.references.ReferencesPlugin;
-    import actionScripts.plugins.rename.RenamePlugin;
-    import actionScripts.plugins.svn.SVNPlugin;
-    import actionScripts.plugins.symbols.SymbolsPlugin;
     import actionScripts.plugins.ui.editor.VisualEditorViewer;
     import actionScripts.ui.editor.BasicTextEditor;
 
