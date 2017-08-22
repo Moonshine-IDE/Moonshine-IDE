@@ -16,7 +16,7 @@
             </s:Scroller>
         </s:NavigatorContent>
     </mx:ViewStack>
-    <s:TabBar dataProvider="{viewStack}"/>
+    <s:TabBar dataProvider="{viewStack}" skinClass="components.skins.EditorTabBarSkin" cornerRadius="1"/>
     <fx:Script><![CDATA[
         import actionScripts.ui.editor.text.TextEditor;
 
