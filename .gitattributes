@@ -1155,6 +1155,7 @@ ide/MoonshineSharedCore/src/actionScripts/ui/editor/BasicTextEditor.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/CodeCompletionMenu.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/ColorManager.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/CompletionManager.as -text
+ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/DebugHighlightManager.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/DiagnosticsManager.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/EditManager.as -text
 ide/MoonshineSharedCore/src/actionScripts/ui/editor/text/EditorToolTipManager.as -text
@@ -1350,6 +1351,8 @@ ide/MoonshineSharedCore/src/elements/images/debug-step-into-icon.png -text
 ide/MoonshineSharedCore/src/elements/images/debug-step-out-icon.png -text
 ide/MoonshineSharedCore/src/elements/images/debug-step-over-icon.png -text
 ide/MoonshineSharedCore/src/elements/images/debug-stop-icon.png -text
+ide/MoonshineSharedCore/src/elements/images/debugLeaf.png -text
+ide/MoonshineSharedCore/src/elements/images/debugOpenFolder.png -text
 ide/MoonshineSharedCore/src/elements/images/exclamation.png -text
 ide/MoonshineSharedCore/src/elements/images/icoApache.png -text
 ide/MoonshineSharedCore/src/elements/images/icoBigClose.png -text

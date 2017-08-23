@@ -500,7 +500,7 @@
 					 creationComplete="projectOpenList.addEventListener('itemClick', handleProjectOpen)">
 			<s:layout>
 				<s:VerticalLayout
-					gap="10" 
+					gap="10"
 					clipAndEnableScrolling="false" />
 			</s:layout>
 		</s:DataGroup>

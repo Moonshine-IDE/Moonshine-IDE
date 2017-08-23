@@ -19,20 +19,14 @@
 package actionScripts.ui.editor.text
 {
 	import flash.display.Sprite;
-	import flash.events.ContextMenuEvent;
-	import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.ui.ContextMenu;
-	import flash.ui.ContextMenuItem;
 	import flash.utils.Timer;
 	import flash.utils.getTimer;
 	
-	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	import mx.controls.HScrollBar;
 	import mx.controls.scrollClasses.ScrollBar;
 	import mx.core.UIComponent;
@@ -614,7 +608,8 @@ package actionScripts.ui.editor.text
 			lineIndex = Math.max(0, Math.min(model.lines.length-1, lineIndex));
 			model.removeTraceSelection();
 			model.selectedTraceLineIndex = lineIndex;
-			
+			model.hasTraceSelection = true;
+			DebugHighlightManager.verifyNewFileOpen(model);
 			
 			invalidateTraceSelection();
 		}
@@ -841,6 +836,7 @@ package actionScripts.ui.editor.text
 			
 			invalidateFlag(INVALID_LAYOUT);
 			invalidateSelection(true);
+			if (model.hasTraceSelection) invalidateTraceSelection();
 		}
 		
 		private function updateSize():void
@@ -1041,7 +1037,6 @@ package actionScripts.ui.editor.text
 			}
 		}
 		
-		private var lastSelectedTracedLine:TextLineModel;
 		public function updateTraceSelection():void
 		{
 			var rdr:TextLineRenderer;
@@ -1051,8 +1046,9 @@ package actionScripts.ui.editor.text
 				rdr = model.itemRenderersInUse[i];
 				if (i+model.scrollPosition == model.selectedTraceLineIndex)
 				{
-					if (lastSelectedTracedLine) lastSelectedTracedLine.debuggerLineSelection = false;
-					lastSelectedTracedLine = rdr.model;
+					if (DebugHighlightManager.LAST_DEBUG_LINE_OBJECT) DebugHighlightManager.LAST_DEBUG_LINE_OBJECT.debuggerLineSelection = false;
+					DebugHighlightManager.LAST_DEBUG_LINE_OBJECT = rdr.model;
+					DebugHighlightManager.LAST_DEBUG_LINE_RENDERER = rdr;
 					
 					//rdr.focus = hasFocus;
 					rdr.caretTracePosition = model.caretTraceIndex;

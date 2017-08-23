@@ -126,6 +126,8 @@ s|CheckBox
 	color: #444444;
 }
 
+
+
 .settingsGroup
 {
 	paddingLeft: 15px;
@@ -262,6 +264,13 @@ mx|ScrollBar
 	track-skin: 		ClassReference('elements.skins.VScrollBarTrackSkin');
 	up-arrow-skin: 		ClassReference(null);
 	down-arrow-skin: 	ClassReference(null);
+}
+
+mx|AdvancedDataGrid
+{
+	defaultLeafIcon:Embed(source='/elements/images/debugLeaf.png'); 
+	folderOpenIcon:Embed(source='/elements/images/debugOpenFolder.png'); 
+	folderClosedIcon:Embed(source='/elements/images/debugOpenFolder.png');
 }
 
 mx|ScrollBar.black

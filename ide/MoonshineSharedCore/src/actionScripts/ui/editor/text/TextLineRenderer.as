@@ -232,11 +232,11 @@ package actionScripts.ui.editor.text
 			lineSelection = new Sprite();
 			addChild(lineSelection);
 			
-			selection = new Sprite();
-			addChild(selection);
-			
 			traceSelection = new Sprite();
 			addChild(traceSelection);
+			
+			selection = new Sprite();
+			addChild(selection);
 			
 			marker = new Sprite();
 			marker.graphics.beginFill(0x0, 0.5);

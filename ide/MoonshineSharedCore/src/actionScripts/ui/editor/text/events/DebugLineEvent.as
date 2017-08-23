@@ -23,6 +23,7 @@ package actionScripts.ui.editor.text.events
 	public class DebugLineEvent extends Event 
 	{
 		public static const SET_DEBUG_LINE:String = "setDebugLineEvent";
+		public static const SET_DEBUG_FINISH:String = "setDebugFinishEvent";
 
 		public var breakPointLine:int;
 		public var breakPoint:Boolean;

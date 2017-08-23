@@ -245,7 +245,7 @@
 
 	<!-- Windows packaging/signing Task -->
 	<target name="CompileSWFWindowsSignedPackage" depends="CompileSWFOSX,CompileSWFWindows">
-		<echo>Signed Process Running: ${certSelfSigned} : ${certSignedWindowsBinary} : ${desktopApplicationDescriptor} : ${swfFilename}</echo>
+		<echo>Signed Process Running</echo>
 		<java jar="${adt_path}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
