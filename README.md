@@ -1,6 +1,6 @@
 ## Synopsis
 
-Moonshine is a free IDE built with Adobe AIR. You can create ActionScript 3, Apache Flex®, Apache FlexJS® and AIR projects from Moonshine. It also provides cloud support.
+Moonshine-IDE is a free IDE built with Adobe AIR. You can create ActionScript 3, Apache Flex®, Apache FlexJS® and AIR projects from Moonshine-IDE. It also provides cloud support.
 ## Motivation
 
 We want to provide a free IDE to our community for ActionScript projects. An IDE which is cross platform and provides Apache Flex®, Apache FlexJS®, and cloud support.
@@ -28,7 +28,7 @@ Find the generated artifacts in ide/MoonshineDESKTOPevolved/build/DEPLOY
 
 ### Web Version
 
-To compile the SWF for the web version of Moonshine, run:
+To compile the SWF for the web version of Moonshine-IDE, run:
 
     cd ide/MoonshineWEBevolved/build
     ant 
@@ -40,5 +40,5 @@ NOTE:  this part of the project is out of date.  The server-side logic needs to 
 
 ## License
 
-Moonshine is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+Moonshine-IDE is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
 
