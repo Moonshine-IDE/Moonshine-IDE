@@ -9,7 +9,7 @@ We want to provide a free IDE to our community for ActionScript projects. An IDE
 
 ### Prerequisites
 
-We build Moonshine-IDE with Apache Flex SDK 4.15.0, using AIR and Flash 23.0.
+We build Moonshine-IDE with Apache Flex® SDK 4.15.0, using AIR and Flash 23.0.
 
 ### Desktop Version
 
