@@ -54,12 +54,9 @@
 		</s:fill>    		
 	</s:Rect>
 	
-	<s:Image source="@Embed('/elements/images/icoBigClose.png')"
-			 top="10" right="24"
-			 click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"/>
-	
-	<s:BorderContainer width="96%" height="90%"
-						bottom="10" horizontalCenter="0"
+	<s:BorderContainer id="bodyContainer" 
+					   width="80%" height="80%"
+						verticalCenter="0" horizontalCenter="0"
 						borderVisible="false" backgroundColor="#e1e1e1">
 		<s:layout>
 			<s:VerticalLayout verticalAlign="middle"/>
@@ -77,10 +74,10 @@
 				<s:HGroup width="100%">
 					<s:Button label="YES" 
 							  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
-							  width="30%"/>
+							  width="60" emphasized="true"/>
 					<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
 							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
-							  width="30%"/>
+							  width="60"/>
 				</s:HGroup>
 			</s:VGroup>
 		</s:HGroup>

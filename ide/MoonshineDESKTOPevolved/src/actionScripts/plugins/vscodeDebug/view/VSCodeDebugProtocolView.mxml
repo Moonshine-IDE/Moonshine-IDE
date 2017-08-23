@@ -97,6 +97,7 @@
 			var stackFrame:StackFrame = StackFrame(event.itemRenderer.data);
 			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, stackFrame));
 		}
+		
 		]]></mx:Script>
 	
 	<mx:Style>
@@ -143,6 +144,7 @@
 		sortableColumns="false"
 		color="0xe0e0e0"
 		fontSize="11"
+		verticalScrollBarStyleName="black"
 		contentBackgroundColor="0x0"
 		textRollOverColor="0xFFFFFF"
 		rollOverColor="0x393939"
@@ -189,6 +191,7 @@
 		borderVisible="false"
 		useRollOver="true"
 		chromeColor="#393939"
+		verticalScrollBarStyleName="black"
 		dataProvider="{stackFrames}"
 		itemClick="callStackList_itemClickHandler(event)">
 		<mx:columns>

@@ -55,6 +55,7 @@ package actionScripts.plugins.vscodeDebug
 	import actionScripts.plugins.vscodeDebug.vo.VariablesReferenceHierarchicalData;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -140,6 +141,8 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION,terminateExecutionHandler);*/
 			dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, dispatcher_quitHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
+			
+			DebugHighlightManager.init();
 		}
 		
 		override public function deactivate():void
@@ -1001,6 +1004,7 @@ package actionScripts.plugins.vscodeDebug
 		protected function stopButton_clickHandler(event:MouseEvent):void
 		{
 			this.sendRequest(COMMAND_DISCONNECT);
+			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 		}
 		
 		protected function pauseButton_clickHandler(event:MouseEvent):void
@@ -1011,6 +1015,7 @@ package actionScripts.plugins.vscodeDebug
 		protected function playButton_clickHandler(event:MouseEvent):void
 		{
 			this.sendRequest(COMMAND_CONTINUE);
+			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 		}
 		
 		protected function stepOverButton_clickHandler(event:MouseEvent):void
