@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <output>
+    <movie disabled="False"/>
+    <movie version="25"/>
+    <movie fps="24"/>
+    <movie width="100"/>
+    <movie height="100"/>
+    <movie path="bin-debug/MoonshineDESKTOP.swf"/>
+    <movie background="#000000"/>
+    <movie input=""/>
+  </output>
+  &lt;!-- Other classes to be compiled into your SWF --&gt;
+  <classpaths>
+    <class path="../MoonshineSharedCore/src"/>
+    <class path="../MoonshineSharedCore/src/locale/{locale}"/>
+    <class path="src"/>
+  </classpaths>
+  <moonshineResourcePaths>
+    <class path="\Users\santanu\Documents\Adobe Flash Builder 4.7\ProminicSVNBranch\MoonshineMultiCodeBase\Balsamiq2FlexJSConverterLib\templates"/>
+    <class path="\Users\santanu\Documents\Adobe Flash Builder 4.7\ProminicSVNBranch\MoonshineMultiCodeBase\MoonshineSharedCore\src\elements"/>
+  </moonshineResourcePaths>
+  <build>
+    <option customSDK=""/>
+    <option useNetwork="True"/>
+    <option accessible="True"/>
+    <option showBindingWarnings="True"/>
+    <option es="False"/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 33 -define+=CONFIG::OSX,false  +configname=air"/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+    <option showDeprecationWarnings="True"/>
+    <option optimize="True"/>
+    <option staticLinkRSL="False"/>
+    <option linkReport=""/>
+    <option allowSourcePathOverlap="False"/>
+    <option verboseStackTraces="False"/>
+    <option benchmark="False"/>
+    <option warnings="True"/>
+    <option useResourceBundleMetadata="True"/>
+    <option loadConfig=""/>
+    <option strict="True"/>
+    <option locale=""/>
+    <option antBuildPath=""/>
+    <option compilerConstants=""/>
+    <option showActionScriptWarnings="True"/>
+  </build>
+  <includeLibraries></includeLibraries>
+  <libraryPaths>
+    <element path="libs/ApacheFlexSDKInstallerLib.swc"/>
+    <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
+    <element path="../MoonshineSharedCore/libs/Global.swc"/>
+  </libraryPaths>
+  <externalLibraryPaths></externalLibraryPaths>
+  <rslPaths></rslPaths>
+  <intrinsics></intrinsics>
+  <library></library>
+  <compileTargets>
+    <compile path="src/MoonshineDESKTOP.mxml"/>
+  </compileTargets>
+  <hiddenPaths></hiddenPaths>
+  <preBuildCommand>null</preBuildCommand>
+  <postBuildCommand alwaysRun="False">null</postBuildCommand>
+  <options>
+    <option testMovieCommand=""/>
+    <option testMovie="AIR"/>
+    <option defaultBuildTargets=""/>
+    <option showHiddenPaths="False"/>
+  </options>
+</project>
