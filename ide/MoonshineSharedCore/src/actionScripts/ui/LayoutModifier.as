@@ -20,6 +20,8 @@ package actionScripts.ui
 {
 	import flash.net.SharedObject;
 	
+	import mx.core.FlexGlobals;
+	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 
@@ -32,6 +34,7 @@ package actionScripts.ui
 		public static const PROBLEMS_VIEW_FIELD:String = "isProblemsWindow";
 		public static const DEBUG_FIELD:String = "isDebugWindow";
 		public static const CONSOLE_HEIGHT:String = "consoleHeight";
+		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
@@ -43,6 +46,9 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(DEBUG_FIELD)) isDebugWindow = value.data[DEBUG_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
+			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
+			
+			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
 		}
 		
 		public static function setButNotSaveValue(type:String, value:Boolean):void
@@ -134,6 +140,18 @@ package actionScripts.ui
 		{
 			_consoleHeight = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_HEIGHT, value:value}));
+		}
+		
+		private static var _isAppMaximized:Boolean;
+		
+		public static function get isAppMaximized():Boolean
+		{
+			return _isAppMaximized;
+		}
+		public static function set isAppMaximized(value:Boolean):void
+		{
+			_isAppMaximized = value;
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:IS_MAIN_WINDOW_MAXIMIZED, value:value}));
 		}
 	}
 }

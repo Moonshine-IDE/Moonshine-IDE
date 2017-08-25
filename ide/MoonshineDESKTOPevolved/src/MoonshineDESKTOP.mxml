@@ -45,6 +45,7 @@
 			import actionScripts.impls.IFlexCoreBridgeImp;
 			import actionScripts.impls.INativeMenuItemBridgeImp;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
 			import actionScripts.utils.SDKUtils;
@@ -134,6 +135,8 @@
 			 */
 			private function onComplete() : void
 			{
+				nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
+				
 				//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
 				// opens scope bookmarked urls
 				CONFIG::OSX
@@ -265,6 +268,14 @@
 				removeEventListener(Event.ADDED_TO_STAGE, initStage);
 				ConsoleUtil.setKeyStroke([117]);
 				stage.addChild(ConsoleUtil.getInstance());
+			}
+			
+			/**
+			 * On maximize/restore etc.
+			 */
+			private function onNativeWindowDisplayChanged(event:NativeWindowDisplayStateEvent):void
+			{
+				LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
 			}
 			
 			protected function onApplicationClosing(event:Event):void
