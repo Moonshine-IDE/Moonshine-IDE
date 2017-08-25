@@ -41,13 +41,14 @@ package actionScripts.ui
 	public class MainView extends VBox
 	{
 		public var isProjectViewAdded:Boolean;
-		
 		public var bodyPanel:IDEVDividedBox;
+		public var mainPanel:IDEHDividedBox;
+		public var sidebar:IDEVDividedBox;
+		
 		private var mainContent:TabView;
-		private var mainPanel:IDEHDividedBox;
 		private var model:IDEModel;
-		private var sidebar:IDEVDividedBox;
 		private var childIndex:int=0;
+		
 		public function MainView()
 		{
 			super();

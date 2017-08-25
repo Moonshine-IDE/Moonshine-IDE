@@ -24,6 +24,7 @@ package actionScripts.ui
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.locator.IDEModel;
 
 	public class LayoutModifier
 	{
@@ -34,6 +35,7 @@ package actionScripts.ui
 		public static const PROBLEMS_VIEW_FIELD:String = "isProblemsWindow";
 		public static const DEBUG_FIELD:String = "isDebugWindow";
 		public static const CONSOLE_HEIGHT:String = "consoleHeight";
+		public static const SIDEBAR_WIDTH:String = "sidebarWidth";
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -47,8 +49,10 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
 			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
+			if (value.data.hasOwnProperty(SIDEBAR_WIDTH)) sidebarWidth = value.data[SIDEBAR_WIDTH];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
+			if (sidebarWidth != -1) IDEModel.getInstance().mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
 		}
 		
 		public static function setButNotSaveValue(type:String, value:Boolean):void
@@ -140,6 +144,18 @@ package actionScripts.ui
 		{
 			_consoleHeight = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_HEIGHT, value:value}));
+		}
+		
+		private static var _sidebarWidth:int = -1;
+		
+		public static function get sidebarWidth():int
+		{
+			return _sidebarWidth;
+		}
+		public static function set sidebarWidth(value:int):void
+		{
+			_sidebarWidth = value;
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_WIDTH, value:value}));
 		}
 		
 		private static var _isAppMaximized:Boolean;
