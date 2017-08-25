@@ -111,6 +111,7 @@ package actionScripts.plugin.console
 			if (IDEModel.getInstance().mainView)
 			{
 				setConsoleHidden(LayoutModifier.isConsoleCollapsed);
+				
 				IDEModel.getInstance().mainView.bodyPanel.addChild(consoleView);
 				IDEModel.getInstance().mainView.bodyPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onConsoleDividerReleased, false, 0, true);
 				
@@ -217,14 +218,30 @@ package actionScripts.plugin.console
 			if (isOverTheExpandCollapseButton)
 			{
 				setConsoleHidden(!_isConsoleHidden);
-				if (!_isConsoleHidden) consoleView.setOutputHeightByLines(10);
-				else consoleView.setOutputHeight(0);
+				if (!_isConsoleHidden) 
+				{
+					if (LayoutModifier.consoleHeight != -1) consoleView.setOutputHeight(LayoutModifier.consoleHeight);
+					else consoleView.setOutputHeightByLines(10);
+				}
+				else 
+				{
+					consoleView.setOutputHeight(0);
+				}
+				
 				return;
 			}
 			
 			var tmpHeight:int = consoleView.parent.height-consoleView.parent.mouseY-consoleView.minHeight;
-			if (tmpHeight <= 2) setConsoleHidden(true);
-			else setConsoleHidden(false);
+			if (tmpHeight <= 2) 
+			{
+				setConsoleHidden(true);
+				LayoutModifier.consoleHeight = -1;
+			}
+			else 
+			{
+				setConsoleHidden(false);
+				LayoutModifier.consoleHeight = tmpHeight;
+			}
 		}
 		
 		private function setConsoleHidden(value:Boolean):void
@@ -362,8 +379,12 @@ package actionScripts.plugin.console
 				{ 
 					//consoleView.history.dataProvider = "";
 				}
-				
-				if (loadedFirstTime && consoleView.history.numVisibleLines < numNewLines)
+				if (!LayoutModifier.isConsoleCollapsed && LayoutModifier.consoleHeight != -1) 
+				{
+					consoleView.setOutputHeight(LayoutModifier.consoleHeight);
+					loadedFirstTime = false;
+				}
+				else if (loadedFirstTime && consoleView.history.numVisibleLines < numNewLines)
 				{
 					consoleView.setOutputHeightByLines(numNewLines);
 					loadedFirstTime = false;

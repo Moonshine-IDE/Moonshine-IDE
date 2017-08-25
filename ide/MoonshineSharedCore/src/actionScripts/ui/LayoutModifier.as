@@ -31,6 +31,7 @@ package actionScripts.ui
 		public static const CONSOLE_COLLAPSED_FIELD:String = "isConsoleCollapsed";
 		public static const PROBLEMS_VIEW_FIELD:String = "isProblemsWindow";
 		public static const DEBUG_FIELD:String = "isDebugWindow";
+		public static const CONSOLE_HEIGHT:String = "consoleHeight";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
@@ -41,6 +42,7 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(PROBLEMS_VIEW_FIELD)) isProblemsWindow = value.data[PROBLEMS_VIEW_FIELD];
 			if (value.data.hasOwnProperty(DEBUG_FIELD)) isDebugWindow = value.data[DEBUG_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
+			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
 		}
 		
 		public static function setButNotSaveValue(type:String, value:Boolean):void
@@ -120,6 +122,18 @@ package actionScripts.ui
 		{
 			_isConsoleCollapsed = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_COLLAPSED_FIELD, value:value}));
+		}
+		
+		private static var _consoleHeight:int = -1;
+		
+		public static function get consoleHeight():int
+		{
+			return _consoleHeight;
+		}
+		public static function set consoleHeight(value:int):void
+		{
+			_consoleHeight = value;
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_HEIGHT, value:value}));
 		}
 	}
 }
