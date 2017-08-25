@@ -48,8 +48,6 @@ package actionScripts.ui
 		private var model:IDEModel;
 		private var sidebar:IDEVDividedBox;
 		private var childIndex:int=0;
-		[Embed("/elements/images/Divider.png")]
-		private const customDividerSkin:Class;
 		public function MainView()
 		{
 			super();
@@ -72,7 +70,6 @@ package actionScripts.ui
 			bodyPanel.setStyle('dividerThickness', 6);
 			bodyPanel.setStyle('dividerAffordance', 2);
 			bodyPanel.setStyle('verticalGap', 6);
-			bodyPanel.setStyle('dividerSkin',customDividerSkin);
 			addChild(bodyPanel);
 			
 			mainPanel = new IDEHDividedBox();

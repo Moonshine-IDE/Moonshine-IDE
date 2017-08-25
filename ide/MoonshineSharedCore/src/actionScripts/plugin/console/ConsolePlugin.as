@@ -18,13 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console
 {
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
+	import flash.events.MouseEvent;
 	import flash.text.engine.Kerning;
 	import flash.ui.Keyboard;
 	import flash.utils.setTimeout;
 	
+	import mx.containers.DividedBox;
+	import mx.containers.DividerState;
+	import mx.containers.dividedBoxClasses.BoxDivider;
+	import mx.core.mx_internal;
 	import mx.events.DividerEvent;
+	import mx.managers.CursorManager;
+	import mx.managers.CursorManagerPriority;
 	import mx.resources.ResourceManager;
 	import mx.states.AddChild;
 	
@@ -37,11 +45,24 @@ package actionScripts.plugin.console
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	/**
+	 *  @private
+	 *  Version string for this class.
+	 */
+	
 	public class ConsolePlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
+		[Embed("/elements/images/Divider_collapse.png")]
+		private const customDividerSkinCollapse:Class;
+		[Embed("/elements/images/Divider_expand.png")]
+		private const customDividerSkinExpand:Class;
+		/*[Embed(source="Assets.swf", symbol="mx.skins.cursor.HandCursor")]
+		private var cursor:Class;*/
+		
 		private var consoleView:ConsoleView;
 		private var tempObj:Object;		
 		private var _consolePopsOver:Boolean = false;
@@ -50,6 +71,8 @@ package actionScripts.plugin.console
 		private var consoleCtrl:Boolean = false;
 		private var mode:String = "";
 		private var _consoleTriggerKey:String;
+		private var cursorID:int = CursorManager.NO_CURSOR;
+		private var _isConsoleHidden:Boolean = false;
 		
 		public var consoleTriggerKeyPropertyName:String = "charCode";
 		public var consoleTriggerKeyValue:int = 27; // Escape
@@ -87,8 +110,13 @@ package actionScripts.plugin.console
 			
 			if (IDEModel.getInstance().mainView)
 			{
+				setConsoleHidden(LayoutModifier.isConsoleCollapsed);
 				IDEModel.getInstance().mainView.bodyPanel.addChild(consoleView);
 				IDEModel.getInstance().mainView.bodyPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onConsoleDividerReleased, false, 0, true);
+				
+				var divider:BoxDivider = IDEModel.getInstance().mainView.bodyPanel.getDividerAt(0);
+				divider.addEventListener(MouseEvent.MOUSE_MOVE, onDividerMouseOver);
+				divider.addEventListener(MouseEvent.MOUSE_OUT, onDividerMouseOut);
 			}
 			if (consoleView.stage)
 			{
@@ -157,11 +185,53 @@ package actionScripts.plugin.console
 			return (consoleView != null);
 		}
 		
+		private var isOverTheExpandCollapseButton:Boolean;
+		private function onDividerMouseOver(event:MouseEvent):void
+		{
+			onDividerMouseOut(null);
+			
+			var dividerWidth:Number = event.target.width;
+			// divider skin width is 67
+			var parts:Number = (dividerWidth - 67)/2;
+			if (event.localX < parts || event.localX > parts+67)
+			{
+				var cursorClass:Class = event.target.getStyle("verticalDividerCursor") as Class;
+				cursorID = IDEModel.getInstance().mainView.bodyPanel.cursorManager.setCursor(cursorClass, CursorManagerPriority.HIGH, 0, 0);
+				isOverTheExpandCollapseButton = false;
+			}
+			else
+			{
+				isOverTheExpandCollapseButton = true;
+			}
+		}
+		
+		private function onDividerMouseOut(event:MouseEvent):void
+		{
+			IDEModel.getInstance().mainView.bodyPanel.cursorManager.removeCursor(cursorID);
+			IDEModel.getInstance().mainView.bodyPanel.cursorManager.removeCursor(IDEModel.getInstance().mainView.bodyPanel.cursorManager.currentCursorID);
+		}
+		
 		private function onConsoleDividerReleased(event:DividerEvent):void
 		{
+			// consider an expand/collapse click
+			if (isOverTheExpandCollapseButton)
+			{
+				setConsoleHidden(!_isConsoleHidden);
+				if (!_isConsoleHidden) consoleView.setOutputHeightByLines(10);
+				else consoleView.setOutputHeight(0);
+				return;
+			}
+			
 			var tmpHeight:int = consoleView.parent.height-consoleView.parent.mouseY-consoleView.minHeight;
-			if (tmpHeight <= 2) consoleView.setConsoleHidden(true);
-			else consoleView.setConsoleHidden(false);
+			if (tmpHeight <= 2) setConsoleHidden(true);
+			else setConsoleHidden(false);
+		}
+		
+		private function setConsoleHidden(value:Boolean):void
+		{
+			LayoutModifier.isConsoleCollapsed = value;
+			_isConsoleHidden = value;
+			IDEModel.getInstance().mainView.bodyPanel.setStyle('dividerSkin', !_isConsoleHidden ? customDividerSkinCollapse : customDividerSkinExpand);
 		}
 		
 		private function addKeyListener(event:Event=null):void
@@ -317,7 +387,7 @@ package actionScripts.plugin.console
 			/*consoleView.setOutputHeight(0);
 			var model:IDEModel = IDEModel.getInstance();
 			if (model.activeEditor) model.activeEditor.setFocus();*/
-			consoleView.setConsoleHidden(true);
+			setConsoleHidden(true);
 		}
 		
 		public function helpCommand(args:Array):void
