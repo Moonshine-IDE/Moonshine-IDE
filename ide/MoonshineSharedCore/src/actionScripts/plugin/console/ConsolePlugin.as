@@ -18,25 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console
 {
-	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
-	import flash.text.engine.Kerning;
-	import flash.ui.Keyboard;
 	import flash.utils.setTimeout;
-	
-	import mx.containers.DividedBox;
-	import mx.containers.DividerState;
+
 	import mx.containers.dividedBoxClasses.BoxDivider;
-	import mx.core.mx_internal;
 	import mx.events.DividerEvent;
 	import mx.managers.CursorManager;
 	import mx.managers.CursorManagerPriority;
 	import mx.resources.ResourceManager;
-	import mx.states.AddChild;
-	
-	import actionScripts.locator.IDEModel;
+
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.setting.SpecialKeySetting;
@@ -53,7 +45,6 @@ package actionScripts.plugin.console
 	 *  @private
 	 *  Version string for this class.
 	 */
-	
 	public class ConsolePlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		[Embed("/elements/images/Divider_collapse.png")]
@@ -64,7 +55,6 @@ package actionScripts.plugin.console
 		private var cursor:Class;*/
 		
 		private var consoleView:ConsoleView;
-		private var tempObj:Object;		
 		private var _consolePopsOver:Boolean = false;
 		private var loadedFirstTime:Boolean = true;
 		private var consoleCmd:Boolean  =false;
@@ -104,66 +94,66 @@ package actionScripts.plugin.console
 		override public function get description():String { return ResourceManager.getInstance().getString('resources','plugin.desc.console'); }
 		
 		override public function activate():void
-		{
-			consoleView = new ConsoleView();
-			consoleView.consolePopOver = consolePopsOver;
-			
-			if (model.mainView)
-			{
-				setConsoleHidden(LayoutModifier.isConsoleCollapsed);
-				
-				model.mainView.bodyPanel.addChild(consoleView);
-				model.mainView.bodyPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onConsoleDividerReleased, false, 0, true);
-				model.mainView.mainPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onSidebarDividerReleased, false, 0, true);
-				
-				var divider:BoxDivider = model.mainView.bodyPanel.getDividerAt(0);
-				divider.addEventListener(MouseEvent.MOUSE_MOVE, onDividerMouseOver, false, 0, true);
-				divider.addEventListener(MouseEvent.MOUSE_OUT, onDividerMouseOut, false, 0, true);
-			}
-			if (consoleView.stage)
-			{
-				addKeyListener();
-			}
-			else
-			{
-				consoleView.addEventListener(Event.ADDED_TO_STAGE, addKeyListener);
-			}
-			
-			dispatcher.addEventListener(ConsoleOutputEvent.EVENT_CONSOLE_OUTPUT, addOutput);
-			dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
-			
-			tempObj = new Object();
-			tempObj.callback = clearCommand;
-			tempObj.commandDesc = "Clear all text from the console.";
-			registerCommand("clear", tempObj);
-			
-			tempObj = new Object();
-			tempObj.callback = helpCommand;
-			tempObj.commandDesc = "List the available console commands.";
-			registerCommand("help", tempObj);
-			
-			tempObj = new Object();
-			tempObj.callback = hideCommand;
-			tempObj.commandDesc = "Minimize the console frame.  Click and drag to expand it againMinimize the console frame.  Click and drag to expand it again..";
-			registerCommand("hide", tempObj);
-			
-			tempObj = new Object();
-			tempObj.callback = exitCommand;
-			tempObj.commandDesc = "Close Moonshine.  You will be prompted to save any unsaved files.";
-			registerCommand("exit", tempObj);
-			
-			tempObj = new Object();
-			tempObj.callback = aboutCommand;
-			tempObj.commandDesc = "Display version and license information for Moonshine."
-			registerCommand("about", tempObj);
-			
-			// Get commands from view
-			consoleView.commandLine.addEventListener(ConsoleCommandEvent.EVENT_COMMAND, execCommand);
-			
-			// just a demo output
-			//About.onCreationCompletes();
-			setTimeout(aboutCommand, 3000, null);
-		}
+        {
+            consoleView = new ConsoleView();
+            consoleView.consolePopOver = consolePopsOver;
+
+            if (model.mainView)
+            {
+                setConsoleHidden(LayoutModifier.isConsoleCollapsed);
+
+                model.mainView.bodyPanel.addChild(consoleView);
+                model.mainView.bodyPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onConsoleDividerReleased, false, 0, true);
+                model.mainView.mainPanel.addEventListener(DividerEvent.DIVIDER_RELEASE, onSidebarDividerReleased, false, 0, true);
+
+                var divider:BoxDivider = model.mainView.bodyPanel.getDividerAt(0);
+                divider.addEventListener(MouseEvent.MOUSE_MOVE, onDividerMouseOver, false, 0, true);
+                divider.addEventListener(MouseEvent.MOUSE_OUT, onDividerMouseOut, false, 0, true);
+            }
+            if (consoleView.stage)
+            {
+                addKeyListener();
+            }
+            else
+            {
+                consoleView.addEventListener(Event.ADDED_TO_STAGE, addKeyListener);
+            }
+
+            dispatcher.addEventListener(ConsoleOutputEvent.EVENT_CONSOLE_OUTPUT, addOutput);
+            dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
+
+            var tempObj:Object = {};
+            tempObj.callback = clearCommand;
+            tempObj.commandDesc = "Clear all text from the console.";
+            registerCommand("clear", tempObj);
+
+            tempObj = {};
+            tempObj.callback = helpCommand;
+            tempObj.commandDesc = "List the available console commands.";
+            registerCommand("help", tempObj);
+
+            tempObj = {};
+            tempObj.callback = hideCommand;
+            tempObj.commandDesc = "Minimize the console frame.  Click and drag to expand it againMinimize the console frame.  Click and drag to expand it again..";
+            registerCommand("hide", tempObj);
+
+            tempObj = {};
+            tempObj.callback = exitCommand;
+            tempObj.commandDesc = "Close Moonshine.  You will be prompted to save any unsaved files.";
+            registerCommand("exit", tempObj);
+
+            tempObj = {};
+            tempObj.callback = aboutCommand;
+            tempObj.commandDesc = "Display version and license information for Moonshine.";
+            registerCommand("about", tempObj);
+
+            // Get commands from view
+            consoleView.commandLine.addEventListener(ConsoleCommandEvent.EVENT_COMMAND, execCommand);
+
+            // just a demo output
+            //About.onCreationCompletes();
+            setTimeout(aboutCommand, 3000, null);
+        }
 		
 		override public function deactivate():void
 		{
@@ -441,7 +431,7 @@ package actionScripts.plugin.console
 		{
 			var ntc:String = "Moonshine IDE "+ model.flexCore.version +"\n";
 			ntc += "Source is under Apache License, Version 2.0\n";
-			ntc += "http://code.google.com/p/moonshineproject/\n";
+			ntc += "https://github.com/prominic/Moonshine-IDE\n";
 			ntc += "Uses as3abc (LGPL), as3swf (MIT), fzip (ZLIB), asblocks (Apache 2), NativeApplicationUpdater (LGPL)\n";
 			
 			if (ConstantsCoreVO.IS_AIR) ntc += "Running on Adobe AIR " + model.flexCore.runtimeVersion;
