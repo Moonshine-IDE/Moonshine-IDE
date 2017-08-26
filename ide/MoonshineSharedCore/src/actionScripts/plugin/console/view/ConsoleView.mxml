@@ -50,8 +50,6 @@
 			private var cm:ContextMenu;
 			protected var model:IDEModel = IDEModel.getInstance();
 			
-			private var _isConsoleHidden:Boolean = true;
-			
 			public function get consolePopOver():Boolean
 			{
 				return _consolePopOver;
@@ -175,7 +173,6 @@
 				{
 					setOutputHeight(newTargetHeight);
 				}
-				_isConsoleHidden = false;
 			}
 			
 			public function setOutputHeight(newTargetHeight:int):void
@@ -231,21 +228,6 @@
 				// TODO Auto-generated method stub
 				if(!_consolePopOver)
 				    historyContainerHeight =  this.height ;
-			}
-			
-			public function onExpandCollapse(event:MouseEvent):void
-			{
-				setConsoleHidden(!_isConsoleHidden);
-				if (!_isConsoleHidden) setOutputHeightByLines(10);
-				else setOutputHeight(0);
-			}
-			
-			public function setConsoleHidden(value:Boolean):void
-			{
-				LayoutModifier.isConsoleCollapsed = value;
-				_isConsoleHidden = value;
-				
-				imgCollapse.source = _isConsoleHidden ? "/elements/images/icoConsoleArrowUp.png" : "/elements/images/icoConsoleArrowDown.png"
 			}
 			
 		]]>
@@ -327,9 +309,4 @@
 		borderSkin="{HDividerSkin}"
 		/>-->
   <!--</s:BorderContainer>-->
-	
-	<s:Image id="imgCollapse" 
-			 source="/elements/images/icoConsoleArrowUp.png"
-			 horizontalCenter="0" bottom="4"
-			 click="onExpandCollapse(event)"/>
 </mx:Canvas>
