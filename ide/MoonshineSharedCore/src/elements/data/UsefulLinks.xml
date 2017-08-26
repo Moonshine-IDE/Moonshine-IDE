@@ -25,7 +25,7 @@
 		<node label="Flash iOS Apps Cookbook" link="http://www.yeahbutisitflash.com/?page_id=3371"/>
 		<node label="Adobe Forums List" link="https://forums.adobe.com/welcome"/>
 		<node label="Monster Debugger" link="http://demonsters.nl/nl/projects/monsterdebugger/"/>
-		<node label="Monster Debugger Client Library" link="https://github.com/joshtynjala/monsterdebugger-client-starling"/>
+		<node label="Monster Debugger for Starling Framework" link="https://github.com/joshtynjala/monsterdebugger-client-starling"/>
 	</node>
 	<node label="Native Extensions">
 		<node label="My Flash Labs" link="http://www.myflashlabs.com/"/>
