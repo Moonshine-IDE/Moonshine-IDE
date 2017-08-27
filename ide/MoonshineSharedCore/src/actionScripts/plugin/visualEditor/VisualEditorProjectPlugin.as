@@ -23,11 +23,7 @@ package actionScripts.plugin.visualEditor
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.event.TemplateEvent;
-    import actionScripts.utils.FileCoreUtil;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectVO;
 
     public class VisualEditorProjectPlugin extends PluginBase
     {

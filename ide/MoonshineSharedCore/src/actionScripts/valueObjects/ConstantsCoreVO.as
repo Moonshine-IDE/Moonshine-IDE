@@ -19,14 +19,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-	import flash.system.Security;
+    import flash.net.dns.ResourceRecord;
+    import flash.system.Security;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
 	
 	import actionScripts.factory.FileLocation;
-	
-	/**
+
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+
+    /**
 	 * ConstantsCoreVO
 	 * 
 	 * @date 10.28.2015
@@ -197,6 +201,8 @@ package actionScripts.valueObjects
 		
 		public static function generate():void
 		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			
 			TEMPLATE_AS3CLASS = new FileLocation("TEMPLATE");
 			TEMPLATE_AS3CLASS.fileBridge.name = "AS3 Class.as";
 			TEMPLATE_AS3CLASS.fileBridge.isDirectory = false;
@@ -281,8 +287,8 @@ package actionScripts.valueObjects
 			HAXESWF_PROJECT.fileBridge.isDirectory = true;
 			HAXESWF_PROJECT.fileBridge.data = "Create a HaXe-based project that will generate a SWF file only.";
 
-			VISUALEDITOR_FLEX_PROJECT = new FileLocation("Visual Editor Project (Flex)");
-			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = "Visual Editor Project (Flex)";
+			VISUALEDITOR_FLEX_PROJECT = new FileLocation(resourceManager.getString('resources', 'VE_PROJECT'));
+			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = resourceManager.getString('resources', 'VE_PROJECT');
             VISUALEDITOR_FLEX_PROJECT.fileBridge.isDirectory = true;
             VISUALEDITOR_FLEX_PROJECT.fileBridge.data = "Create a Flex project using visual editor.";
 

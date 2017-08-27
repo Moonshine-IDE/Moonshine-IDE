@@ -38,7 +38,6 @@ package actionScripts.impls
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
 	import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
@@ -68,8 +67,6 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
-	import actionScripts.plugins.fdb.FDBPlugin;
-	import actionScripts.plugins.fdb.event.FDBEvent;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.problems.ProblemsPlugin;
 	import actionScripts.plugins.references.ReferencesPlugin;
@@ -94,8 +91,12 @@ package actionScripts.impls
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
 	import components.popup.SoftwareInformation;
-	
-	public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
+
+    import mx.resources.IResourceManager;
+
+    import mx.resources.ResourceManager;
+
+    public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -204,114 +205,117 @@ package actionScripts.impls
 		
 		public function getQuitMenuItem():MenuItem
 		{
-			return (new MenuItem("Quit", null, MenuPlugin.MENU_QUIT_EVENT, "q", [Keyboard.COMMAND], "f4", [Keyboard.ALTERNATE]));
+			return (new MenuItem(ResourceManager.getInstance().getString('resources', 'QUIT'), null, MenuPlugin.MENU_QUIT_EVENT, "q", [Keyboard.COMMAND], "f4", [Keyboard.ALTERNATE]));
 		}
 		
 		public function getSettingsMenuItem():MenuItem
 		{
-			return (new MenuItem("Settings", null, SettingsEvent.EVENT_OPEN_SETTINGS, ",", [Keyboard.COMMAND]));
+			return (new MenuItem(ResourceManager.getInstance().getString('resources', 'SETTINGS'), null, SettingsEvent.EVENT_OPEN_SETTINGS, ",", [Keyboard.COMMAND]));
 		}
 		
 		public function getAboutMenuItem():MenuItem
 		{
-			return (new MenuItem("About", null, MenuPlugin.EVENT_ABOUT));
+			return (new MenuItem(ResourceManager.getInstance().getString('resources', 'ABOUT'), null, MenuPlugin.EVENT_ABOUT));
 		}
 		
 		public function getWindowsMenu():Vector.<MenuItem>
 		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			var close:String = resourceManager.getString('resources','CLOSE');
+
 			var wmn:Vector.<MenuItem> = Vector.<MenuItem>([
-				new MenuItem("File", [
-					new MenuItem("New",[]),
-					new MenuItem("Open", null, OpenFileEvent.OPEN_FILE,
+				new MenuItem(resourceManager.getString('resources','FILE'), [
+					new MenuItem(resourceManager.getString('resources','NEW'),[]),
+					new MenuItem(resourceManager.getString('resources','OPEN'), null, OpenFileEvent.OPEN_FILE,
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(null),
-					new MenuItem("Save", null, MenuPlugin.MENU_SAVE_EVENT,
+					new MenuItem(resourceManager.getString('resources','SAVE'), null, MenuPlugin.MENU_SAVE_EVENT,
 						's', [Keyboard.COMMAND],
 						's', [Keyboard.CONTROL]),
-					new MenuItem("Save As", null, MenuPlugin.MENU_SAVE_AS_EVENT,
+					new MenuItem(resourceManager.getString('resources','SAVE_AS'), null, MenuPlugin.MENU_SAVE_AS_EVENT,
 						's', [Keyboard.COMMAND, Keyboard.SHIFT],
 						's', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem("Close", null, CloseTabEvent.EVENT_CLOSE_TAB,
+					new MenuItem(close, null, CloseTabEvent.EVENT_CLOSE_TAB,
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
 					new MenuItem(null),
-					new MenuItem("Line Endings", [
-						new MenuItem("Windows (CRLF - \\r\\n)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
-						new MenuItem("UNIX (LF - \\n)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_UNIX),
-						new MenuItem("OS9 (CR - \\r)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_OS9)
+					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [
+						new MenuItem(resourceManager.getString('resources','WINDOWS_LINE_ENDINGS'), null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
+						new MenuItem(resourceManager.getString('resources','UNIX_LINE_ENDINGS'), null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_UNIX),
+						new MenuItem(resourceManager.getString('resources','OS9_LINE_ENDINGS'), null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_OS9)
 					])
 				]),
-				new MenuItem("Edit", [
-					new MenuItem("Find", null, FindReplacePlugin.EVENT_FIND_NEXT,
+				new MenuItem(resourceManager.getString('resources','EDIT'), [
+					new MenuItem(resourceManager.getString('resources','FIND'), null, FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
-					new MenuItem("Find previous", null, FindReplacePlugin.EVENT_FIND_PREV,
+					new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, FindReplacePlugin.EVENT_FIND_PREV,
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem("Find Resource", null, FindReplacePlugin.EVENT_FIND_RESOURCE,
+					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, FindReplacePlugin.EVENT_FIND_RESOURCE,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem('Rename symbol', null, RenamePlugin.EVENT_OPEN_RENAME_VIEW),
+					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenamePlugin.EVENT_OPEN_RENAME_VIEW),
 				]),
-				new MenuItem("View", [
-					new MenuItem('Project view', null, ProjectEvent.SHOW_PROJECT_VIEW),
-					new MenuItem('Fullscreen', null, FullscreenPlugin.EVENT_FULLSCREEN),
-					new MenuItem('Problems view', null, ProblemsPlugin.EVENT_PROBLEMS),
-					new MenuItem('Debug view', null, VSCodeDebugProtocolPlugin.EVENT_SHOW_DEBUG_VIEW),
-					new MenuItem('Home', null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
+				new MenuItem(resourceManager.getString('resources','VIEW'), [
+					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, ProjectEvent.SHOW_PROJECT_VIEW),
+					new MenuItem(resourceManager.getString('resources','FULLSCREEN'), null, FullscreenPlugin.EVENT_FULLSCREEN),
+					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, ProblemsPlugin.EVENT_PROBLEMS),
+					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, VSCodeDebugProtocolPlugin.EVENT_SHOW_DEBUG_VIEW),
+					new MenuItem(resourceManager.getString('resources','HOME'), null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
-					new MenuItem('Document symbols', null, SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
-					new MenuItem('Workspace symbols', null, SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
-					new MenuItem('Find References', null, ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW),
+					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
+					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW),
 				]),
-				new MenuItem("Project",[
-					new MenuItem('Open/Import Flex Project', null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
+				new MenuItem(resourceManager.getString('resources','PROJECT'),[
+					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
 					new MenuItem(null),
-					new MenuItem("Build Project", null, CompilerEventBase.BUILD,
+					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
-					new MenuItem("Build & Run", null, CompilerEventBase.BUILD_AND_RUN, 
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN'), null, CompilerEventBase.BUILD_AND_RUN,
 						"\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
-					new MenuItem("Build as JavaScript", null, CompilerEventBase.BUILD_AS_JAVASCRIPT,
+					new MenuItem(resourceManager.getString('resources','BUILD_AS_JS'), null, CompilerEventBase.BUILD_AS_JAVASCRIPT,
 						'j', [Keyboard.COMMAND],
 						'j', [Keyboard.CONTROL]),
-					new MenuItem("Build & Run as JavaScript",null,CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
-					new MenuItem("Build Release", null, CompilerEventBase.BUILD_RELEASE),
-					new MenuItem("Clean Project", null,  CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem("Build with Apache® Ant", null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'),null,CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
+					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, CompilerEventBase.BUILD_RELEASE),
+					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  CompilerEventBase.CLEAN_PROJECT),
+					new MenuItem(resourceManager.getString('resources','BUILD_WITH_ANT'), null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
 				]),
-				new MenuItem("Debug",[
-					new MenuItem("Build & Debug", null, CompilerEventBase.BUILD_AND_DEBUG, 
+				new MenuItem(resourceManager.getString('resources','DEBUG'),[
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, CompilerEventBase.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),
-					new MenuItem("Step Over", null, CompilerEventBase.DEBUG_STEPOVER, 
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, CompilerEventBase.DEBUG_STEPOVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem("Resume", null, CompilerEventBase.CONTINUE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, CompilerEventBase.CONTINUE_EXECUTION,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem("Stop", null, CompilerEventBase.TERMINATE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, CompilerEventBase.TERMINATE_EXECUTION,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),
-				new MenuItem("Ant", [
-					new MenuItem('Build Apache® Ant File', null, AntBuildPlugin.EVENT_ANTBUILD)
+				new MenuItem(resourceManager.getString('resources','ANT'), [
+					new MenuItem(resourceManager.getString('resources','BUILD_ANT_FILE'), null, AntBuildPlugin.EVENT_ANTBUILD)
 					/*	new MenuItem('Configure', null, AntConfigurePlugin.EVENT_ANTCONFIGURE)*/
 				]),
-				new MenuItem("Subversion", [
-					new MenuItem("Checkout", null, SVNPlugin.CHECKOUT_REQUEST)
+				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
+					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, SVNPlugin.CHECKOUT_REQUEST)
 				]),
-				new MenuItem("Help", Settings.os == "win"? [ 
-					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT),
-					new MenuItem('Useful Link(s)', null, HelpPlugin.EVENT_AS3DOCS),
-					new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)]:
-					[new MenuItem('Useful Link(s)', null, HelpPlugin.EVENT_AS3DOCS),
-						new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)
+				new MenuItem(resourceManager.getString('resources','HELP'), Settings.os == "win"? [
+					new MenuItem(resourceManager.getString('resources','ABOUT'), null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem(resourceManager.getString('resources','USEFUL_LINKS'), null, HelpPlugin.EVENT_AS3DOCS),
+					new MenuItem(resourceManager.getString('resources','TOUR_DE_FLEX'), null, HelpPlugin.EVENT_TOURDEFLEX)]:
+					[new MenuItem(resourceManager.getString('resources','USEFUL_LINKS'), null, HelpPlugin.EVENT_AS3DOCS),
+						new MenuItem(resourceManager.getString('resources','TOUR_DE_FLEX'), null, HelpPlugin.EVENT_TOURDEFLEX)
 					])
 			]);
 			
@@ -322,11 +326,19 @@ package actionScripts.impls
 					var firstMenuItems:Vector.<MenuItem> = wmn[0].items;
 					for (var i:int; i < firstMenuItems.length; i++)
 					{
-						if (firstMenuItems[i].label == "Close")
+						if (firstMenuItems[i].label == close)
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
-							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, ProjectEvent.ACCESS_MANAGER)));
-							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST : StartupHelperPlugin.EVENT_SDK_HELPER_DOWNLOAD_REQUEST)));
+							firstMenuItems.splice(i+2, 0, (new MenuItem(resourceManager.getString('resources','ACCESS_MANAGER'), null, ProjectEvent.ACCESS_MANAGER)));
+
+                            var bundledSdkLabel:String = ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ?
+                                    resourceManager.getString('resources','EXTRACT_BUNDLED_SDK'):
+                                    resourceManager.getString('resources','MOONSHINE_HELPER_APP');
+							var eventTypeBundledSdk:String = ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ?
+									StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST :
+									StartupHelperPlugin.EVENT_SDK_HELPER_DOWNLOAD_REQUEST;
+
+							firstMenuItems.splice(i+3, 0, (new MenuItem(bundledSdkLabel, null, eventTypeBundledSdk)));
 							break;
 						}
 					}

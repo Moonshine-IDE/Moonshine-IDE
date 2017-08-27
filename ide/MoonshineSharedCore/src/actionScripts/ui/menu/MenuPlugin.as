@@ -219,7 +219,7 @@ package actionScripts.ui.menu
 							m.items = new Vector.<MenuItem>;
 							for each (file in ConstantsCoreVO.TEMPLATES_FILES)
 							{
-								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."))
+								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."));
 								menuitem = new MenuItem(fileName,null,fileName);
 								m.items.push(menuitem);
 							}

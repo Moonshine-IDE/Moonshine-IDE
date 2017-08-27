@@ -73,8 +73,6 @@ package actionScripts.ui.menu.renderers
 		
 		private var _tooltip:String;
 
-		private var updateChildrenLayoutFlag:Boolean = false;
-
 		public function set label(v:String):void
 		{
 			_label = v;
@@ -97,7 +95,7 @@ package actionScripts.ui.menu.renderers
 			return _tooltip;
 		}
 
-		private var _data:ICustomMenuItem
+		private var _data:ICustomMenuItem;
 
 		public function set data(v:ICustomMenuItem):void
 		{
@@ -305,7 +303,10 @@ package actionScripts.ui.menu.renderers
 			labelView = createLabel(_label);
 			labelView.setStyle("paddingRight", 25);
 
-			if (data && !data.enabled) labelView.setStyle("color", 0x999999);
+			if (data && !data.enabled)
+			{
+				labelView.setStyle("color", 0x999999);
+            }
 			container.addChild(labelView);
 			
 			shortcutView = createLabel(_shortcut);
@@ -322,7 +323,7 @@ package actionScripts.ui.menu.renderers
 			g.beginFill(0x333333);
 			g.moveTo(0, yStartPos);
 			g.lineTo(SUBMENU_ARROW_WIDTH, yStartPos + (SUBMENU_ARROW_HEIGHT / 2));
-			g.lineTo(0, yStartPos + SUBMENU_ARROW_HEIGHT)
+			g.lineTo(0, yStartPos + SUBMENU_ARROW_HEIGHT);
 			g.lineTo(0, yStartPos);
 			g.endFill();
 
