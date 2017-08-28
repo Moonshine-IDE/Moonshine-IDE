@@ -90,6 +90,7 @@ package actionScripts.ui
 			mainPanel.addChild(mainContent);
 			
 			sidebar = new IDEVDividedBox();
+			sidebar.verticalScrollPolicy = "off";
 			sidebar.percentHeight = 100;
 			sidebar.width = 300;
 			sidebar.setStyle('backgroundColor', 0xCFCFCF);
@@ -177,7 +178,7 @@ package actionScripts.ui
 			else
 				childIndex = mainPanel.numChildren-1;
 		   if (!sidebar.stage) mainPanel.addChildAt(sidebar,childIndex);
-			sidebar.addChildAt(panel as DisplayObject,childIndex);
+			sidebar.addChild(panel as DisplayObject);
 			isProjectViewAdded = true;
 			/*if (!sidebar.stage) mainPanel.addChild(sidebar);
 			sidebar.addChild(panel as DisplayObject);

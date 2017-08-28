@@ -20,9 +20,12 @@ package actionScripts.plugin.project
 {
 	import flash.events.Event;
 	
+	import mx.utils.ObjectUtil;
+	
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.ShowSettingsEvent;
@@ -35,6 +38,7 @@ package actionScripts.plugin.project
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -100,9 +104,44 @@ package actionScripts.plugin.project
 			if (!treeView.stage) 
 			{
 				IDEModel.getInstance().mainView.addPanel(treeView);
+				
+				// if restarted for next time
+				if (LayoutModifier.sidebarChildren)
+				{
+					for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
+					{
+						// we want last section/block should acquire 100% height
+						// so we would not set any height to the last item in sidebar
+						var isLastIndex:Boolean = ((LayoutModifier.sidebarChildren.length-1) == i);
+						switch (LayoutModifier.sidebarChildren[i].className)
+						{
+							case "TreeView":
+								treeView.height = LayoutModifier.sidebarChildren[i].height;
+								break;
+							case "VSCodeDebugProtocolView":
+								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								break;
+							case "AS3DocsView":
+								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height : -1));
+								isAS3DocOnceOpened = true;
+								break;
+							case "TourDeFlexContentsView":
+								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								isTourDeOnceOpened = true;
+								break;
+							case "ProblemsView":
+								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								break;
+						}
+					}
+					
+					return;
+				}
+				
+				// if starts for the first time
 				if (!isTourDeOnceOpened) 
 				{
-					dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_TOURDEFLEX));
+					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
 					isTourDeOnceOpened = true;
 				}
 				if (!isAS3DocOnceOpened)

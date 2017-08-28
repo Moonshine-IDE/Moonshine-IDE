@@ -21,6 +21,7 @@ package actionScripts.ui
 	import flash.net.SharedObject;
 	
 	import mx.core.FlexGlobals;
+	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -37,8 +38,12 @@ package actionScripts.ui
 		public static const CONSOLE_HEIGHT:String = "consoleHeight";
 		public static const SIDEBAR_WIDTH:String = "sidebarWidth";
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
+		public static const SIDEBAR_CHILDREN:String = "sidebarChildren";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private static const model:IDEModel = IDEModel.getInstance();
+		
+		public static var sidebarChildren:Array;
 		
 		public static function parseCookie(value:SharedObject):void
 		{
@@ -50,9 +55,10 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
 			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
 			if (value.data.hasOwnProperty(SIDEBAR_WIDTH)) sidebarWidth = value.data[SIDEBAR_WIDTH];
+			if (value.data.hasOwnProperty(SIDEBAR_CHILDREN)) sidebarChildren = value.data[SIDEBAR_CHILDREN];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
-			if (sidebarWidth != -1) IDEModel.getInstance().mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
+			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
 		}
 		
 		public static function setButNotSaveValue(type:String, value:Boolean):void
@@ -72,6 +78,24 @@ package actionScripts.ui
 					_isDebugWindow = value;
 					break;
 			}
+		}
+		
+		public static function saveLastSidebarState():void
+		{
+			var numChildren:int = model.mainView.sidebar.numChildren;
+			if (numChildren == 0) return;
+			
+			var ordering:Array = [];
+			for (var i:int=0; i < numChildren; i ++)
+			{
+				var tmpSection:Object = model.mainView.sidebar.getChildAt(i);
+				ordering.push({className: tmpSection.className, height: tmpSection.height});
+			}
+			
+			trace(" >>>>> " +ObjectUtil.toString(ordering));
+			
+			// saving sidebar last state
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
 		}
 		
 		private static var _isTourDeFlex:Boolean = true;
