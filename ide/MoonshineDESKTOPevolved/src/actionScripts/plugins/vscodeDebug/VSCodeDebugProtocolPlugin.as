@@ -37,6 +37,7 @@ package actionScripts.plugins.vscodeDebug
 	import mx.controls.Alert;
 	
 	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
@@ -755,9 +756,11 @@ package actionScripts.plugins.vscodeDebug
 			}
 		}
 		
-		private function showDebugView():void
+		private function showDebugView(event:Event):void
 		{
 			IDEModel.getInstance().mainView.addPanel(this._debugPanel);
+			if (event is GeneralEvent && GeneralEvent(event).value != -1) _debugPanel.height = int(GeneralEvent(event).value);
+			
 			_debugPanel.validateNow();
 			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
 			_debugPanel.pauseButton.addEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
@@ -807,14 +810,14 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
 		{
-			if (!LayoutModifier.isDebugWindow && isStartupCall)		
+			/*if (!LayoutModifier.isDebugWindow && isStartupCall)		
 			{		
 				LayoutModifier.setButNotSaveValue(LayoutModifier.DEBUG_FIELD, true);		
 				isStartupCall = false;		
 				return;
-			}
+			}*/
 			
-			showDebugView();
+			showDebugView(event);
 			
 			LayoutModifier.isDebugWindow = true;		
 			isStartupCall = false;
@@ -915,7 +918,7 @@ package actionScripts.plugins.vscodeDebug
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, socket_socketDataHandler);
 			_socket.addEventListener(Event.CLOSE, socket_closeHandler);
 			
-			showDebugView();
+			showDebugView(event);
 			clearOutput();
 			
 			sendRequest(COMMAND_INITIALIZE,

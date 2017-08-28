@@ -135,6 +135,7 @@
 			 */
 			private function onComplete() : void
 			{
+				// listening to maximi/restore state
 				nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
 				
 				//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
@@ -285,6 +286,7 @@
 				
 				event.stopImmediatePropagation();
 				event.preventDefault();
+				LayoutModifier.saveLastSidebarState();
 				
 				// @devsena
 				// in PKG version checking internalClosingEvent.isPreventDefault
