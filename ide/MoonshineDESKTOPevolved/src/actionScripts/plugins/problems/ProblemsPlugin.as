@@ -25,6 +25,7 @@ package actionScripts.plugins.problems
 	import mx.events.ListEvent;
 	
 	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
@@ -65,14 +66,16 @@ package actionScripts.plugins.problems
 
 		private function handleProblemsShow(event:Event):void
 		{
-			if (!LayoutModifier.isProblemsWindow && isStartupCall)
+			/*if (!LayoutModifier.isProblemsWindow && isStartupCall)
 			{
 				LayoutModifier.setButNotSaveValue(LayoutModifier.PROBLEMS_VIEW_FIELD, true);
 				isStartupCall = false;
 				return;
-			}
+			}*/
 			
 			IDEModel.getInstance().mainView.addPanel(problemsPanel);
+			if (event is GeneralEvent && GeneralEvent(event).value != -1) problemsPanel.height = int(GeneralEvent(event).value);
+			
 			problemsPanel.validateNow();
 			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
 			LayoutModifier.isProblemsWindow = true;
