@@ -126,13 +126,15 @@
 		 */
 		private function onComplete():void
 		{
+			// listening to maximi/restore state
 			nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
 
 			//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
 			// opens scope bookmarked urls
 			CONFIG::OSX
 			{
-				setTimeout(function ():void {
+				setTimeout(function():void
+				{
 					OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
 					//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
 				}, 1000);
@@ -165,23 +167,6 @@
 				{
 					var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
 					if (String(tmpXML.isAppStoreVersion) == "false")
-					IDEModel.getInstance().build = String(revisionInfoFile.fileBridge.read()).split("\n")[0];
-				}
-			}
-			
-			/**
-			 * On creation completes
-			 */
-			private function onComplete() : void
-			{
-				// listening to maximi/restore state
-				nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
-				
-				//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
-				// opens scope bookmarked urls
-				CONFIG::OSX
-				{
-					setTimeout(function():void
 					{
 						initAutoUpdater();
 					}
@@ -266,26 +251,12 @@
 			//this.stage.nativeWindow.maximize();
 			if (Screen.mainScreen.bounds.height >= 768 && Screen.mainScreen.bounds.height <= 800)
 			{
-				var internalClosingEvent:Event = new Event(MenuPlugin.MENU_QUIT_EVENT, false, true);
-				GlobalEventDispatcher.getInstance().dispatchEvent(internalClosingEvent);
-				
-				event.stopImmediatePropagation();
-				event.preventDefault();
-				LayoutModifier.saveLastSidebarState();
-				
-				// @devsena
-				// in PKG version checking internalClosingEvent.isPreventDefault
-				// always was coming false due to it's slight delay in processing in QuitPlugin,
-				// and caused application to close immediately 
-				// thus a slight time delayed in checking the value and therefore take
-				// necessary action
-				setTimeout(function():void
 				// subtract the taskbar height
 				stage.nativeWindow.height = Screen.mainScreen.visibleBounds.height;
 			}
 
-			stage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - stage.nativeWindow.width) / 2;
-			stage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - stage.nativeWindow.height) / 2;
+			stage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - stage.nativeWindow.width)/2;
+			stage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - stage.nativeWindow.height)/2;
 			removeEventListener(Event.ADDED_TO_STAGE, initStage);
 			ConsoleUtil.setKeyStroke([117]);
 			stage.addChild(ConsoleUtil.getInstance());
