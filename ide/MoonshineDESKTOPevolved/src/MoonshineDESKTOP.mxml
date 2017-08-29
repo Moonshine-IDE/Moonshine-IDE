@@ -21,8 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
-					   xmlns:s="library://ns.adobe.com/flex/spark" 
-					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   height="768" minWidth="1024" applicationDPI="120"
 					  preinitialize="onPreinit(event)" initialize="onInitialized()" creationComplete="onComplete()" addedToStage="onAddedToStage(event)" xmlns:containers="components.containers.*" closing="onApplicationClosing(event)" xmlns:nativeApplicationUpdater="actionScripts.extResources.riaspace.nativeApplicationUpdater.*">
 	<fx:Metadata>
@@ -30,315 +29,304 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.setTimeout;
-			
-			import mx.core.FlexGlobals;
-			import mx.events.FlexEvent;
-			
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.LayoutEvent;
-			import actionScripts.events.OpenFileEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.impls.IAboutBridgeImp;
-			import actionScripts.impls.IContextMenuBridgeImp;
-			import actionScripts.impls.IFileBridgeImp;
-			import actionScripts.impls.IFlexCoreBridgeImp;
-			import actionScripts.impls.INativeMenuItemBridgeImp;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.utils.OSXBookmarkerNotifiers;
-			import actionScripts.utils.SDKUtils;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			
-			import components.MainEntryPoint;
-			
-			import no.doomsday.console.ConsoleUtil;
-			
-			//--------------------------------------------------------------------------
-			//
-			//  PRIVATE STATIC
-			//
-			//--------------------------------------------------------------------------
-			
-			private static const NEEDED_FOR_COMPILATION: IFileBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION2: IContextMenuBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION3: IFlexCoreBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION4: INativeMenuItemBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION5: IAboutBridgeImp = null;
-			
-			//--------------------------------------------------------------------------
-			//
-			//  PUBLIC API
-			//
-			//--------------------------------------------------------------------------
-			
-			/**
-			 * Returns MainEntryPoint to caller
-			 */
-			public function getMainElement(): MainEntryPoint 
+		import mx.core.FlexGlobals;
+		import mx.events.FlexEvent;
+
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.LayoutEvent;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.impls.IAboutBridgeImp;
+		import actionScripts.impls.IContextMenuBridgeImp;
+		import actionScripts.impls.IFileBridgeImp;
+		import actionScripts.impls.IFlexCoreBridgeImp;
+		import actionScripts.impls.INativeMenuItemBridgeImp;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.ui.LayoutModifier;
+		import actionScripts.ui.menu.MenuPlugin;
+		import actionScripts.utils.OSXBookmarkerNotifiers;
+		import actionScripts.utils.SDKUtils;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import components.MainEntryPoint;
+
+		import no.doomsday.console.ConsoleUtil;
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE STATIC
+		//
+		//--------------------------------------------------------------------------
+
+		private static const NEEDED_FOR_COMPILATION:IFileBridgeImp = null;
+		private static const NEEDED_FOR_COMPILATION2:IContextMenuBridgeImp = null;
+		private static const NEEDED_FOR_COMPILATION3:IFlexCoreBridgeImp = null;
+		private static const NEEDED_FOR_COMPILATION4:INativeMenuItemBridgeImp = null;
+		private static const NEEDED_FOR_COMPILATION5:IAboutBridgeImp = null;
+
+		//--------------------------------------------------------------------------
+		//
+		//  PUBLIC API
+		//
+		//--------------------------------------------------------------------------
+
+		/**
+		 * Returns MainEntryPoint to caller
+		 */
+		public function getMainElement():MainEntryPoint
+		{
+			return getElementAt(0) as MainEntryPoint;
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE API
+		//
+		//--------------------------------------------------------------------------
+
+		/**
+		 * On preinitialilzation
+		 */
+		private function onPreinit(event:FlexEvent):void
+		{
+			// application version
+			var appDescriptor:XML = nativeApplication.applicationDescriptor;
+			var xmlns:Namespace = new Namespace(appDescriptor.namespace());
+			IDEModel.getInstance().version = appDescriptor.xmlns::versionNumber;
+			ConstantsCoreVO.IS_DEVELOPMENT_MODE = (appDescriptor.xmlns::id == ConstantsCoreVO.MOONSHINE_PROD_ID) ? false : true;
+		}
+
+		/**
+		 * On initialization
+		 */
+		private function onInitialized():void
+		{
+			// sets the application runs in which platform
+			ConstantsCoreVO.IS_MACOS = !NativeApplication.supportsSystemTrayIcon;
+
+			// attach main view
+			var mCore:MainEntryPoint = new MainEntryPoint();
+			addElementAt(mCore, 0);
+
+			// check if it's osx and packaged with bundled sdk
+			SDKUtils.checkBundledSDKPresence();
+			if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
+
+			// did we start with any args?
+			nativeApplication.addEventListener(InvokeEvent.INVOKE, handleInitializationArgs, false, 0, true);
+
+			// addedToStage
+			addEventListener(Event.ADDED_TO_STAGE, initStage);
+
+			IDEModel.getInstance().refreshIdeBuildVersion();
+		}
+
+		/**
+		 * On creation completes
+		 */
+		private function onComplete():void
+		{
+			// listening to maximi/restore state
+			nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
+
+			//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
+			// opens scope bookmarked urls
+			CONFIG::OSX
 			{
-				return getElementAt(0) as MainEntryPoint;
-			}
-			
-			//--------------------------------------------------------------------------
-			//
-			//  PRIVATE API
-			//
-			//--------------------------------------------------------------------------
-			
-			/**
-			 * On preinitialilzation
-			 */
-			private function onPreinit(event:FlexEvent):void
-			{
-				// application version
-				var appDescriptor:XML = nativeApplication.applicationDescriptor;
-				var xmlns:Namespace = new Namespace(appDescriptor.namespace());
-				
-				IDEModel.getInstance().version = appDescriptor.xmlns::versionNumber;
-				ConstantsCoreVO.IS_DEVELOPMENT_MODE = (appDescriptor.xmlns::id == ConstantsCoreVO.MOONSHINE_PROD_ID) ? false : true;
-			}
-			
-			/**
-			 * On initialization
-			 */
-			private function onInitialized():void
-			{
-				// sets the application runs in which platform
-				ConstantsCoreVO.IS_MACOS = !NativeApplication.supportsSystemTrayIcon;
-				
-				// attach main view
-				var mCore: MainEntryPoint = new MainEntryPoint();
-				addElementAt(mCore, 0);
-				
-				// check if it's osx and packaged with bundled sdk
-				SDKUtils.checkBundledSDKPresence();
-				if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
-				
-				// did we start with any args?
-				nativeApplication.addEventListener(InvokeEvent.INVOKE, handleInitializationArgs, false, 0, true);
-				
-				// addedToStage
-				addEventListener(Event.ADDED_TO_STAGE, initStage);
-				
-				// revision version
-				var revisionInfoFile: FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/appProperties.txt");
-				if (revisionInfoFile.fileBridge.exists)
+				setTimeout(function():void
 				{
-					IDEModel.getInstance().build = String(revisionInfoFile.fileBridge.read()).split("\n")[0];
+					OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
+					//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
+				}, 1000);
+			}
+
+			/*if (fileFrom.exists)
+            {
+                Alert.show(fileFrom.nativePath);
+                var fileTo:File = new File("/Users/<userName>/Desktop/testSomething");
+
+                var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+                var processArgs:Vector.<String> = new Vector.<String>;
+                processArgs.push("-c");
+                processArgs.push("unzip '"+fileFrom.nativePath+"' -d '"+fileTo.nativePath+"'");
+                shellInfo.arguments = processArgs;
+                shellInfo.executable = new File("/bin/bash");
+                var fcsh:NativeProcess = new NativeProcess();
+                fcsh.start(shellInfo);
+            }*/
+
+			// for Windows only at this moment
+			if (!ConstantsCoreVO.IS_MACOS || ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			{
+				initAutoUpdater();
+			}
+			else if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			{
+				var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/InstallConfig.xml");
+				if (tmpConfiguration.fileBridge.exists)
+				{
+					var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
+					if (String(tmpXML.isAppStoreVersion) == "false")
+					{
+						initAutoUpdater();
+					}
 				}
 			}
-			
-			/**
-			 * On creation completes
-			 */
-			private function onComplete() : void
+
+			// workspace define
+			/*if (ConstantsCoreVO.IS_MACOS)
+            {
+            setTimeout(function():void
+            {
+            if (!OSXBookmarkerNotifiers.isWorkspaceAcknowledged) GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.SET_WORKSPACE));
+            }, 3600);
+            }*/
+
+			/*
+             * @local
+             */
+			function initAutoUpdater():void
 			{
-				// listening to maximi/restore state
-				nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
-				
-				//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
-				// opens scope bookmarked urls
+				updater.updateURL = "http://moonshine-ide.com/wp-content/uploads/updater.xml";
+				updater.initialize();
+			}
+		}
+
+		public function onHelperAppInstallationCompletes():void
+		{
+			Alert.show("download completed");
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  LISTENERS API
+		//
+		//--------------------------------------------------------------------------
+
+		/**
+		 * On invoke handler
+		 */
+		private function handleInitializationArgs(event:InvokeEvent):void
+		{
+			nativeApplication.removeEventListener(InvokeEvent.INVOKE, handleInitializationArgs);
+			var args:Array = event.arguments as Array;
+			if (args.length)
+			{
+				var path:String = String(args[0]);
+				var f:FileLocation = new FileLocation(path);
+
+				if (!f.fileBridge.exists) return;
+
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, f)
+				);
+			}
+		}
+
+		private function uncaughtErrorHandler(event:UncaughtErrorEvent):void
+		{
+			Alert.show(event.text);
+			if (event.error is Error)
+			{
+				var error:Error = event.error as Error;
+				Alert.show(error.message);
+			}
+			else if (event.error is ErrorEvent)
+			{
+				var errorEvent:ErrorEvent = event.error as ErrorEvent;
+				Alert.show(errorEvent.text);
+			}
+			else
+			{
+				// a non-Error, non-ErrorEvent type was thrown and uncaught
+				Alert.show(event.toString());
+			}
+		}
+
+		/**
+		 * On added to stage
+		 */
+		private function initStage(e:Event):void
+		{
+			//this.stage.nativeWindow.maximize();
+			if (Screen.mainScreen.bounds.height >= 768 && Screen.mainScreen.bounds.height <= 800)
+			{
+				// subtract the taskbar height
+				stage.nativeWindow.height = Screen.mainScreen.visibleBounds.height;
+			}
+
+			stage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - stage.nativeWindow.width)/2;
+			stage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - stage.nativeWindow.height)/2;
+			removeEventListener(Event.ADDED_TO_STAGE, initStage);
+			ConsoleUtil.setKeyStroke([117]);
+			stage.addChild(ConsoleUtil.getInstance());
+		}
+
+		/**
+		 * On maximize/restore etc.
+		 */
+		private function onNativeWindowDisplayChanged(event:NativeWindowDisplayStateEvent):void
+		{
+			LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
+		}
+
+		protected function onApplicationClosing(event:Event):void
+		{
+			var internalClosingEvent:Event = new Event(MenuPlugin.MENU_QUIT_EVENT, false, true);
+			GlobalEventDispatcher.getInstance().dispatchEvent(internalClosingEvent);
+
+			event.stopImmediatePropagation();
+			event.preventDefault();
+
+			// @devsena
+			// in PKG version checking internalClosingEvent.isPreventDefault
+			// always was coming false due to it's slight delay in processing in QuitPlugin,
+			// and caused application to close immediately
+			// thus a slight time delayed in checking the value and therefore take
+			// necessary action
+			setTimeout(function ():void {
+				if (internalClosingEvent.isDefaultPrevented())
+				{
+					return;
+				}
+
+				// we also needs to close any scope bookmarked opened
 				CONFIG::OSX
 				{
-					setTimeout(function():void
+					event.preventDefault();
+
+					var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
+					if (tmpText == "Closed Scoped Paths.")
 					{
-						OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
-						//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
-					}, 1000);
-				}
-				
-				/*if (fileFrom.exists)
-				{
-					Alert.show(fileFrom.nativePath);
-					var fileTo:File = new File("/Users/<userName>/Desktop/testSomething");
-					
-					var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-					var processArgs:Vector.<String> = new Vector.<String>;
-					processArgs.push("-c");
-					processArgs.push("unzip '"+fileFrom.nativePath+"' -d '"+fileTo.nativePath+"'");
-					shellInfo.arguments = processArgs;
-					shellInfo.executable = new File("/bin/bash");
-					var fcsh:NativeProcess = new NativeProcess();
-					fcsh.start(shellInfo);
-				}*/
-				
-				// for Windows only at this moment
-				if (!ConstantsCoreVO.IS_MACOS || ConstantsCoreVO.IS_DEVELOPMENT_MODE)
-				{
-					initAutoUpdater();
-				}
-				else if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
-				{
-					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/InstallConfig.xml");
-					if (tmpConfiguration.fileBridge.exists)
-					{
-						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
-						if (String(tmpXML.isAppStoreVersion) == "false")
-						{
-							initAutoUpdater();
-						}
+						IDEModel.getInstance().fileCore.getSSBInterface().dispose();
+						FlexGlobals.topLevelApplication.stage.nativeWindow.close();
 					}
 				}
-				
-				// workspace define
-				/*if (ConstantsCoreVO.IS_MACOS)
-				{
-				setTimeout(function():void
-				{
-				if (!OSXBookmarkerNotifiers.isWorkspaceAcknowledged) GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.SET_WORKSPACE));
-				}, 3600);
-				}*/
-				
-				/*
-				 * @local
-				 */
-				function initAutoUpdater():void
-				{
-					updater.updateURL = "http://moonshine-ide.com/wp-content/uploads/updater.xml";
-					updater.initialize();
-				}
-			}
-			
-			public function onHelperAppInstallationCompletes():void
+			}, 300);
+		}
+
+		/**
+		 * On stage get available
+		 */
+		protected function onAddedToStage(event:Event):void
+		{
+			stage.nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onStageDisplayChanged);
+		}
+
+		/**
+		 * To detect maxim/minim events
+		 */
+		private function onStageDisplayChanged(event:NativeWindowDisplayStateEvent):void
+		{
+			if (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
 			{
-				Alert.show("download completed");
+				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_MAXIMIZED));
 			}
-			
-			//--------------------------------------------------------------------------
-			//
-			//  LISTENERS API
-			//
-			//--------------------------------------------------------------------------
-			
-			/**
-			 * On invoke handler 
-			 */
-			private function handleInitializationArgs(event:InvokeEvent):void 
+			else if (event.afterDisplayState == NativeWindowDisplayState.NORMAL && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
 			{
-				nativeApplication.removeEventListener(InvokeEvent.INVOKE, handleInitializationArgs);
-				var args:Array = event.arguments as Array;
-				if (args.length)
-				{
-					var path:String = String(args[0]);
-					var f:FileLocation = new FileLocation(path);
-					
-					if (!f.fileBridge.exists) return;
-					
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-						new OpenFileEvent(OpenFileEvent.OPEN_FILE, f)
-					);
-				}
+				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_NORMAL));
 			}
-			
-			private function uncaughtErrorHandler(event:UncaughtErrorEvent):void
-			{
-				Alert.show(event.text);
-				if (event.error is Error)
-				{
-					var error:Error = event.error as Error;
-					Alert.show(error.message);
-				}
-				else if (event.error is ErrorEvent)
-				{
-					var errorEvent:ErrorEvent = event.error as ErrorEvent;
-					Alert.show(errorEvent.text);
-				}
-				else
-				{
-					// a non-Error, non-ErrorEvent type was thrown and uncaught
-					Alert.show(event.toString());
-				}
-			}
-			
-			/**
-			 * On added to stage
-			 */
-			private function initStage(e:Event):void
-			{
-				//this.stage.nativeWindow.maximize();
-				if (Screen.mainScreen.bounds.height >= 768 && Screen.mainScreen.bounds.height <= 800)
-				{
-					// subtract the taskbar height
-					stage.nativeWindow.height = Screen.mainScreen.visibleBounds.height;
-				}
-				
-				stage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - stage.nativeWindow.width)/2;
-				stage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - stage.nativeWindow.height)/2;
-				removeEventListener(Event.ADDED_TO_STAGE, initStage);
-				ConsoleUtil.setKeyStroke([117]);
-				stage.addChild(ConsoleUtil.getInstance());
-			}
-			
-			/**
-			 * On maximize/restore etc.
-			 */
-			private function onNativeWindowDisplayChanged(event:NativeWindowDisplayStateEvent):void
-			{
-				LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
-			}
-			
-			protected function onApplicationClosing(event:Event):void
-			{
-				var internalClosingEvent:Event = new Event(MenuPlugin.MENU_QUIT_EVENT, false, true);
-				GlobalEventDispatcher.getInstance().dispatchEvent(internalClosingEvent);
-				
-				event.stopImmediatePropagation();
-				event.preventDefault();
-				LayoutModifier.saveLastSidebarState();
-				
-				// @devsena
-				// in PKG version checking internalClosingEvent.isPreventDefault
-				// always was coming false due to it's slight delay in processing in QuitPlugin,
-				// and caused application to close immediately 
-				// thus a slight time delayed in checking the value and therefore take
-				// necessary action
-				setTimeout(function():void
-				{
-					if (internalClosingEvent.isDefaultPrevented()) 
-					{
-						return;
-					}
-					
-					// we also needs to close any scope bookmarked opened
-					CONFIG::OSX
-					{
-						event.preventDefault();
-						
-						var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
-						if (tmpText == "Closed Scoped Paths.")
-						{
-							IDEModel.getInstance().fileCore.getSSBInterface().dispose();
-							FlexGlobals.topLevelApplication.stage.nativeWindow.close();
-						}
-					}
-				}, 300);
-			}
-			
-			/**
-			 * On stage get available
-			 */
-			protected function onAddedToStage(event:Event):void
-			{
-				stage.nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onStageDisplayChanged);	
-			}
-			
-			/**
-			 * To detect maxim/minim events
-			 */
-			private function onStageDisplayChanged(event:NativeWindowDisplayStateEvent):void
-			{
-				if (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
-				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_MAXIMIZED));
-				}
-				else if (event.afterDisplayState == NativeWindowDisplayState.NORMAL && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
-				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_NORMAL));
-				}
-			}
-			
+		}
 		]]>
 	</fx:Script>
 	<fx:Declarations>
