@@ -226,34 +226,27 @@
 									if (flashDevelopProjectFile) p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile);
 								}*/
 								
-								Alert.show("First");
 								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
 								if (flashDevelopProjectFile) 
 								{
 									p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
-									Alert.show("as flashDevelopProjectFile"+ p);
-									break;
 								}
 								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) 
 								{
 									p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-									Alert.show("as flashBuilderProjectFile"+ p);
 								}
 								break;
 							}
 							case ProjectEvent.LAST_OPENED_AS_FD_PROJECT:
 							{
-								Alert.show("2nd");
 								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile)
 								if (flashDevelopProjectFile) 
 								{
 									p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
-									Alert.show("as flashDevelopProjectFile"+ p);
 								}
 								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) 
 								{
 									p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-									Alert.show("as flashBuilderProjectFile"+ p);
 								}
 								break;
 							}
