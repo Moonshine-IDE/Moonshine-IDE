@@ -88,7 +88,6 @@ package actionScripts.ui
 			for (var i:int=0; i < numChildren; i ++)
 			{
 				var tmpSection:Object = model.mainView.sidebar.getChildAt(i);
-				trace(" >>>>> " + tmpSection.height + "//"+tmpSection.percentHeight);
 				ordering.push({className: tmpSection.className, height: tmpSection.height});
 			}
 			
