@@ -287,33 +287,6 @@
 
 			event.stopImmediatePropagation();
 			event.preventDefault();
-			LayoutModifier.saveLastSidebarState();
-
-			// @devsena
-			// in PKG version checking internalClosingEvent.isPreventDefault
-			// always was coming false due to it's slight delay in processing in QuitPlugin,
-			// and caused application to close immediately
-			// thus a slight time delayed in checking the value and therefore take
-			// necessary action
-			setTimeout(function ():void {
-				if (internalClosingEvent.isDefaultPrevented())
-				{
-					return;
-				}
-
-				// we also needs to close any scope bookmarked opened
-				CONFIG::OSX
-				{
-					event.preventDefault();
-
-					var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
-					if (tmpText == "Closed Scoped Paths.")
-					{
-						IDEModel.getInstance().fileCore.getSSBInterface().dispose();
-						FlexGlobals.topLevelApplication.stage.nativeWindow.close();
-					}
-				}
-			}, 300);
 		}
 		]]>
 	</fx:Script>
