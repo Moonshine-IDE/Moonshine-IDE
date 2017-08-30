@@ -94,8 +94,6 @@ package actionScripts.controllers
 			// we also needs to close any scope bookmarked opened
 			CONFIG::OSX
 			{
-				event.preventDefault();
-				
 				var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
 				if (tmpText == "Closed Scoped Paths.")
 				{
