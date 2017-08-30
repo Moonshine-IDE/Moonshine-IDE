@@ -26,107 +26,112 @@
 	backgroundColor="0x444444"
 	verticalGap="0"
 	implements="actionScripts.ui.IPanelWindow"
-	initialize="onInitialized(event)" xmlns:view="actionScripts.plugins.fdb.view.*"
+	initialize="onInitialized(event)"
 	verticalScrollPolicy="off" xmlns:project="actionScripts.ui.project.*">
 	<mx:Script>
 		<![CDATA[
-			import flash.events.Event;
-			import flash.net.navigateToURL;
-			
-			import mx.controls.Alert;
-			import mx.events.FlexEvent;
-			import mx.events.ListEvent;
-			
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.help.GenericTreeItemRenderer;
-			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.tabview.TabViewTab;
-			
-			private var httpService:URLLoader;
-			
-			public function refresh():void
+		import mx.controls.Alert;
+		import mx.events.FlexEvent;
+		import mx.events.ListEvent;
+
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.help.GenericTreeItemRenderer;
+		import actionScripts.ui.LayoutModifier;
+		import actionScripts.ui.tabview.TabViewTab;
+
+		private var httpService:URLLoader;
+
+		public function refresh():void
+		{
+			compLibTree.invalidateList();
+		}
+
+		private function getIconForObject(object:Object):Class
+		{
+			return null;
+		}
+
+		private function initHeader():void
+		{
+			header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+		}
+
+		private function handleClose(event:Event):void
+		{
+			if (stage)
 			{
-				compLibTree.invalidateList();
+				LayoutModifier.isUsefulLinks = false;
+				IDEModel.getInstance().mainView.removePanel(this);
 			}
-			
-			private function getIconForObject(object:Object):Class
+		}
+
+		protected function onInitialized(event:FlexEvent):void
+		{
+			compLibTree.itemRenderer = new ClassFactory(GenericTreeItemRenderer);
+
+			var request:URLRequest = new URLRequest();
+			request.url = "/elements/data/UsefulLinks.xml";
+			request.method = "GET";
+
+			httpService = new URLLoader();
+			httpService.addEventListener(Event.COMPLETE, onSuccess);
+			httpService.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			httpService.load(request);
+		}
+
+		/**
+		 * On success callback
+		 */
+		private function onSuccess(event:Event):void
+		{
+			var rex:RegExp = /^\s*|\s*$/gim;
+			var tmpString:String = String(event.target.data).replace(rex, '');
+			compLibTree.dataProvider = new XML(tmpString);
+
+			// finally clear the event
+			dispose();
+		}
+
+		/**
+		 * On error callback
+		 */
+		private function onIOError(event:IOErrorEvent, customMessage:String = null):void
+		{
+			Alert.show(event.text, event.type);
+
+			// finally clear the event
+			dispose();
+		}
+
+		protected function dispose():void
+		{
+			// probable termination
+			if (!httpService) return;
+
+			httpService.close();
+			httpService.removeEventListener(Event.COMPLETE, onSuccess);
+			httpService.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			httpService = null;
+		}
+
+		private function getIconForFile(object:Object):Class
+		{
+			return null;
+		}
+
+		protected function treeItemClick(event:ListEvent):void
+		{
+			var selectedItem:Object = compLibTree.selectedItem;
+			var link:String = String(selectedItem.@link);
+			if (link)
 			{
-				return null;
+				navigateToURL(new URLRequest(link), "_blank");
 			}
-			
-			private function initHeader():void 
+			else
 			{
-				header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+				compLibTree.expandItem(selectedItem, !compLibTree.isItemOpen(selectedItem));
 			}
-			
-			private function handleClose(event:Event):void
-			{
-				if (stage) 
-				{
-					LayoutModifier.isUsefulLinks = false;
-					IDEModel.getInstance().mainView.removePanel(this);
-				}
-			}
-		
-			protected function onInitialized(event:FlexEvent):void
-			{
-				compLibTree.itemRenderer = new ClassFactory(GenericTreeItemRenderer);
-				
-				var request : URLRequest = new URLRequest();
-				request.url = "/elements/data/UsefulLinks.xml";
-				request.method = "GET";
-				
-				httpService = new URLLoader();
-				httpService.addEventListener(Event.COMPLETE, onSuccess);
-				httpService.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
-				httpService.load(request);
-			}
-			
-			/**
-			 * On success callback
-			 */
-			private function onSuccess(event:Event):void
-			{
-				var rex:RegExp = /^\s*|\s*$/gim;
-				var tmpString:String = String(event.target.data).replace(rex,'')
-				compLibTree.dataProvider = new XML(tmpString);
-				
-				// finally clear the event
-				dispose();
-			}
-			
-			/**
-			 * On error callback
-			 */
-			private function onIOError( event:IOErrorEvent, customMessage:String=null ) : void
-			{
-				Alert.show(event.text, event.type);
-				
-				// finally clear the event
-				dispose();
-			}
-			
-			protected function dispose() : void
-			{
-				// probable termination
-				if ( !httpService ) return;
-				
-				httpService.close();
-				httpService.removeEventListener(Event.COMPLETE, onSuccess);
-				httpService.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
-				httpService = null;
-			}
-			
-			private function getIconForFile(object:Object):Class
-			{
-				return null;
-			}
-			
-			protected function treeChanged(event:ListEvent):void
-			{
-				navigateToURL(new URLRequest(String(compLibTree.selectedItem.@link)), "_blank");
-			}
-			
+		}
 		]]>
 	</mx:Script>
 	
@@ -155,5 +160,5 @@
 			 width="100%" height="100%" 
 			 showRoot="false" labelField="@label" 
 			 borderStyle="none"
-			 itemClick="treeChanged(event)"/>
+			 itemClick="treeItemClick(event)"/>
 </mx:VBox>

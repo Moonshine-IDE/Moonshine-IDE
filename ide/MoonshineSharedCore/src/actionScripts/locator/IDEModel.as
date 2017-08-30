@@ -19,7 +19,7 @@
 package actionScripts.locator
 {
 	import mx.collections.ArrayCollection;
-	import mx.core.IFlexDisplayObject;
+    import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IAboutBridge;
@@ -89,6 +89,31 @@ package actionScripts.locator
 			}
 			
 			return false;
+		}
+
+		public function refreshIdeBuildVersion():void
+		{
+            build = "";
+
+            var revisionInfoFile: FileLocation = fileCore.resolveApplicationDirectoryPath("elements/appProperties.txt");
+            if (revisionInfoFile.fileBridge.exists)
+            {
+				var buildNumber:String = String(revisionInfoFile.fileBridge.read()).split("\n")[0];
+				if (buildNumber && buildNumber.indexOf("bamboo") == -1)
+                {
+                    build = buildNumber;
+                }
+            }
+		}
+
+		public function getVersionWithBuildNumber():String
+		{
+			if (build)
+			{
+				return "Version " + version + ", Build" + build;
+			}
+
+			return "Version " + version;
 		}
 	}
 }
