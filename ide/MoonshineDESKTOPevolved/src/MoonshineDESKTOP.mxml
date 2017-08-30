@@ -23,7 +23,7 @@
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   height="768" minWidth="1024" applicationDPI="120"
-					  preinitialize="onPreinit(event)" initialize="onInitialized()" creationComplete="onComplete()" addedToStage="onAddedToStage(event)" xmlns:containers="components.containers.*" closing="onApplicationClosing(event)" xmlns:nativeApplicationUpdater="actionScripts.extResources.riaspace.nativeApplicationUpdater.*">
+					  preinitialize="onPreinit(event)" initialize="onInitialized()" creationComplete="onComplete()" xmlns:containers="components.containers.*" xmlns:nativeApplicationUpdater="actionScripts.extResources.riaspace.nativeApplicationUpdater.*">
 	<fx:Metadata>
 		[ResourceBundle("resources")]
 	</fx:Metadata>
@@ -117,6 +117,7 @@
 
 			// addedToStage
 			addEventListener(Event.ADDED_TO_STAGE, initStage);
+			nativeWindow.addEventListener(Event.CLOSING, onApplicationClosing);
 
 			IDEModel.getInstance().refreshIdeBuildVersion();
 		}
@@ -126,9 +127,6 @@
 		 */
 		private function onComplete():void
 		{
-			// listening to maximi/restore state
-			nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
-
 			//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
 			// opens scope bookmarked urls
 			CONFIG::OSX
@@ -260,6 +258,9 @@
 			removeEventListener(Event.ADDED_TO_STAGE, initStage);
 			ConsoleUtil.setKeyStroke([117]);
 			stage.addChild(ConsoleUtil.getInstance());
+			
+			// listening to maximi/restore state
+			nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onNativeWindowDisplayChanged, false, 0, true);
 		}
 
 		/**
@@ -268,6 +269,15 @@
 		private function onNativeWindowDisplayChanged(event:NativeWindowDisplayStateEvent):void
 		{
 			LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
+			
+			if (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_MAXIMIZED));
+			}
+			else if (event.afterDisplayState == NativeWindowDisplayState.NORMAL && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_NORMAL));
+			}
 		}
 
 		protected function onApplicationClosing(event:Event):void
@@ -304,29 +314,6 @@
 					}
 				}
 			}, 300);
-		}
-
-		/**
-		 * On stage get available
-		 */
-		protected function onAddedToStage(event:Event):void
-		{
-			stage.nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGE, onStageDisplayChanged);
-		}
-
-		/**
-		 * To detect maxim/minim events
-		 */
-		private function onStageDisplayChanged(event:NativeWindowDisplayStateEvent):void
-		{
-			if (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_MAXIMIZED));
-			}
-			else if (event.afterDisplayState == NativeWindowDisplayState.NORMAL && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_NORMAL));
-			}
 		}
 		]]>
 	</fx:Script>
