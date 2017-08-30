@@ -31,7 +31,7 @@
 		<![CDATA[
 		import mx.core.FlexGlobals;
 		import mx.events.FlexEvent;
-
+		
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.LayoutEvent;
 		import actionScripts.events.OpenFileEvent;
@@ -47,9 +47,9 @@
 		import actionScripts.utils.OSXBookmarkerNotifiers;
 		import actionScripts.utils.SDKUtils;
 		import actionScripts.valueObjects.ConstantsCoreVO;
-
+		
 		import components.MainEntryPoint;
-
+		
 		import no.doomsday.console.ConsoleUtil;
 
 		//--------------------------------------------------------------------------
@@ -277,6 +277,7 @@
 
 			event.stopImmediatePropagation();
 			event.preventDefault();
+			LayoutModifier.saveLastSidebarState();
 
 			// @devsena
 			// in PKG version checking internalClosingEvent.isPreventDefault
