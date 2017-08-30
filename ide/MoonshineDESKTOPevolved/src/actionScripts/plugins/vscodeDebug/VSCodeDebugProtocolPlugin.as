@@ -759,7 +759,7 @@ package actionScripts.plugins.vscodeDebug
 		private function showDebugView(event:Event):void
 		{
 			IDEModel.getInstance().mainView.addPanel(this._debugPanel);
-			if (event is GeneralEvent && GeneralEvent(event).value != -1) _debugPanel.height = int(GeneralEvent(event).value);
+			if (event is GeneralEvent && (GeneralEvent(event).value != -1 && GeneralEvent(event).value)) _debugPanel.height = int(GeneralEvent(event).value);
 			
 			_debugPanel.validateNow();
 			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);

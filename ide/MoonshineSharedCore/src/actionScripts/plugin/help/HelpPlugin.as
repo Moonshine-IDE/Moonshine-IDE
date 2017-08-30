@@ -19,6 +19,7 @@
 package actionScripts.plugin.help
 {
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	import mx.core.IFlexDisplayObject;
 	
@@ -81,7 +82,7 @@ package actionScripts.plugin.help
 			}*/
 			
 			tourdeContentView = idemodel.flexCore.getTourDeView();
-			if (event is GeneralEvent && GeneralEvent(event).value != -1) tourdeContentView.height = int(GeneralEvent(event).value);
+			if (event is GeneralEvent && (GeneralEvent(event).value != -1 && GeneralEvent(event).value)) tourdeContentView.height = int(GeneralEvent(event).value);
 			IDEModel.getInstance().mainView.addPanel(tourdeContentView);
 			LayoutModifier.isTourDeFlex = true;
 		}
@@ -95,7 +96,7 @@ package actionScripts.plugin.help
 				return;
 			}*/
 			
-			as3DocsPanel.height = (event is GeneralEvent && GeneralEvent(event).value != -1) ? int(GeneralEvent(event).value) : 110;
+			as3DocsPanel.height = (event is GeneralEvent && (GeneralEvent(event).value != -1 && GeneralEvent(event).value)) ? int(GeneralEvent(event).value) : 110;
 			IDEModel.getInstance().mainView.addPanel(as3DocsPanel);
 			LayoutModifier.isUsefulLinks = true;
 		}

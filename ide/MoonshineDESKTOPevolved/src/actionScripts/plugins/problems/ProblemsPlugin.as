@@ -74,7 +74,7 @@ package actionScripts.plugins.problems
 			}*/
 			
 			IDEModel.getInstance().mainView.addPanel(problemsPanel);
-			if (event is GeneralEvent && GeneralEvent(event).value != -1) problemsPanel.height = int(GeneralEvent(event).value);
+			if (event is GeneralEvent && (GeneralEvent(event).value != -1 && GeneralEvent(event).value)) problemsPanel.height = int(GeneralEvent(event).value);
 			
 			problemsPanel.validateNow();
 			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);

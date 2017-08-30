@@ -139,19 +139,19 @@ package actionScripts.plugin.project
 				}
 				
 				// if starts for the first time
-				if (!isTourDeOnceOpened) 
-				{
-					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
-					isTourDeOnceOpened = true;
-				}
 				if (!isAS3DocOnceOpened)
 				{
 					dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_AS3DOCS));
 					isAS3DocOnceOpened = true;
 				}
-				
+				if (!isTourDeOnceOpened) 
+				{
+					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
+					isTourDeOnceOpened = true;
+				}
+/*				
 				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_PROBLEMS));
-				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW));
+				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW));*/
 			}
 		}
 		

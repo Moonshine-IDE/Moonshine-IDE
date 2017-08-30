@@ -21,7 +21,6 @@ package actionScripts.ui
 	import flash.net.SharedObject;
 	
 	import mx.core.FlexGlobals;
-	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -89,10 +88,9 @@ package actionScripts.ui
 			for (var i:int=0; i < numChildren; i ++)
 			{
 				var tmpSection:Object = model.mainView.sidebar.getChildAt(i);
+				trace(" >>>>> " + tmpSection.height + "//"+tmpSection.percentHeight);
 				ordering.push({className: tmpSection.className, height: tmpSection.height});
 			}
-			
-			trace(" >>>>> " +ObjectUtil.toString(ordering));
 			
 			// saving sidebar last state
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
