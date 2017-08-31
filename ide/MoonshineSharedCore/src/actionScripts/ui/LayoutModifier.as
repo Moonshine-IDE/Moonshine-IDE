@@ -26,6 +26,10 @@ package actionScripts.ui
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.views.project.TreeView;
 
 	public class LayoutModifier
 	{
@@ -38,8 +42,11 @@ package actionScripts.ui
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private static const model:IDEModel = IDEModel.getInstance();
-
-		public static var isSidebarCreated:Boolean;
+		
+		private static var isTourDeOnceOpened: Boolean;
+		private static var isAS3DocOnceOpened: Boolean;
+		private static var isSidebarCreated:Boolean;
+		
 		public static var sidebarChildren:Array;
 		
 		public static function parseCookie(value:SharedObject):void
@@ -52,6 +59,56 @@ package actionScripts.ui
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
+		}
+		
+		public static function attachSidebarSections(treeView:TreeView):void
+		{
+			model.mainView.addPanel(treeView);
+			
+			// if restarted for next time
+			if (sidebarChildren)
+			{
+				for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
+				{
+					switch (LayoutModifier.sidebarChildren[i].className)
+					{
+						case "TreeView":
+							treeView.percentHeight = LayoutModifier.sidebarChildren[i].height;
+							break;
+						case "VSCodeDebugProtocolView":
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, LayoutModifier.sidebarChildren[i].height));
+							break;
+						case "AS3DocsView":
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, LayoutModifier.sidebarChildren[i].height));
+							isAS3DocOnceOpened = true;
+							break;
+						case "TourDeFlexContentsView":
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, LayoutModifier.sidebarChildren[i].height));
+							isTourDeOnceOpened = true;
+							break;
+						case "ProblemsView":
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, LayoutModifier.sidebarChildren[i].height));
+							break;
+					}
+				}
+				
+				isSidebarCreated = true;
+				return;
+			}
+			
+			// if starts for the first time
+			if (!isAS3DocOnceOpened)
+			{
+				dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_AS3DOCS));
+				isAS3DocOnceOpened = true;
+			}
+			if (!isTourDeOnceOpened) 
+			{
+				dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
+				isTourDeOnceOpened = true;
+			}
+			
+			isSidebarCreated = true;
 		}
 		
 		public static function saveLastSidebarState():void

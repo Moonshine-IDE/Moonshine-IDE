@@ -56,9 +56,6 @@ package actionScripts.plugin.project
 		override public function get author():String 		{return "Moonshine Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
 		
-		private static var isTourDeOnceOpened: Boolean;
-		private static var isAS3DocOnceOpened: Boolean;
-		
 		private var treeView:TreeView;
 		private var openResourceView:OpenResourceView;
 		
@@ -103,56 +100,7 @@ package actionScripts.plugin.project
 		{
 			if (!treeView.stage) 
 			{
-				IDEModel.getInstance().mainView.addPanel(treeView);
-				
-				// if restarted for next time
-				if (LayoutModifier.sidebarChildren)
-				{
-					for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
-					{
-						switch (LayoutModifier.sidebarChildren[i].className)
-						{
-							case "TreeView":
-								treeView.percentHeight = LayoutModifier.sidebarChildren[i].height;
-								break;
-							case "VSCodeDebugProtocolView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, LayoutModifier.sidebarChildren[i].height));
-								break;
-							case "AS3DocsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, LayoutModifier.sidebarChildren[i].height));
-								isAS3DocOnceOpened = true;
-								break;
-							case "TourDeFlexContentsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, LayoutModifier.sidebarChildren[i].height));
-								isTourDeOnceOpened = true;
-								break;
-							case "ProblemsView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, LayoutModifier.sidebarChildren[i].height));
-								break;
-						}
-					}
-					
-					LayoutModifier.isSidebarCreated = true;
-					return;
-				}
-				
-				// if starts for the first time
-				if (!isAS3DocOnceOpened)
-				{
-					dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_AS3DOCS));
-					isAS3DocOnceOpened = true;
-				}
-				if (!isTourDeOnceOpened) 
-				{
-					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
-					isTourDeOnceOpened = true;
-				}
-				
-				LayoutModifier.isSidebarCreated = true;
-				
-				/*				
-				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_PROBLEMS));
-				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW));*/
+				LayoutModifier.attachSidebarSections(treeView);
 			}
 		}
 		
