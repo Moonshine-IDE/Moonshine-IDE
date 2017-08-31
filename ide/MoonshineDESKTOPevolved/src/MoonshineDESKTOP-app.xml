@@ -85,7 +85,7 @@
 		<!-- <minSize></minSize> -->
 
 		<!-- The window's initial maximum size, specified as a width/height pair in pixels, such as "1600 1200". Optional. -->
-		<!-- <maxSize>   </maxSize> -->
+		<!-- <maxSize></maxSize> -->
 
         <!-- The aspect ratio of the app ("portrait" or "landscape" or "any"). Optional. Mobile only. Default is the natural orientation of the device -->
 

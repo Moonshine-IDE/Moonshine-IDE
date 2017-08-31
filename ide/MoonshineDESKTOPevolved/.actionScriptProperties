@@ -17,7 +17,6 @@
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
       <libraryPathEntry kind="3" linkType="1" path="libs/ApacheFlexSDKInstallerLib.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="1" linkType="1" path="E:/DevareaLocal/Prominic/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/libs"/>
-      <libraryPathEntry kind="5" linkType="2" path="extensions/SSB.ane"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
@@ -34,9 +33,7 @@
     <buildTarget buildTargetName="default" platformId="default">
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes/>
-        <anePaths>
-          <anePathEntry path="extensions/SSB.ane"/>
-        </anePaths>
+        <anePaths/>
         <newLaunchParams/>
         <modifiedLaunchParams/>
         <newPackagingParams/>
