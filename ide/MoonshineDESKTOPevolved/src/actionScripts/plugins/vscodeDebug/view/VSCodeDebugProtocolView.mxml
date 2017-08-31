@@ -63,7 +63,6 @@
 		{
 			if(stage)
 			{
-				LayoutModifier.isDebugWindow = false;
 				IDEModel.getInstance().mainView.removePanel(this);
 			}
 		}

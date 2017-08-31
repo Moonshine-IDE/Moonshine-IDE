@@ -110,31 +110,29 @@ package actionScripts.plugin.project
 				{
 					for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
 					{
-						// we want last section/block should acquire 100% height
-						// so we would not set any height to the last item in sidebar
-						var isLastIndex:Boolean = ((LayoutModifier.sidebarChildren.length-1) == i);
 						switch (LayoutModifier.sidebarChildren[i].className)
 						{
 							case "TreeView":
-								treeView.height = LayoutModifier.sidebarChildren[i].height;
+								treeView.percentHeight = LayoutModifier.sidebarChildren[i].height;
 								break;
 							case "VSCodeDebugProtocolView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, LayoutModifier.sidebarChildren[i].height));
 								break;
 							case "AS3DocsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height : -1));
+								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, LayoutModifier.sidebarChildren[i].height));
 								isAS3DocOnceOpened = true;
 								break;
 							case "TourDeFlexContentsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, LayoutModifier.sidebarChildren[i].height));
 								isTourDeOnceOpened = true;
 								break;
 							case "ProblemsView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
+								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, LayoutModifier.sidebarChildren[i].height));
 								break;
 						}
 					}
 					
+					LayoutModifier.isSidebarCreated = true;
 					return;
 				}
 				
@@ -149,7 +147,10 @@ package actionScripts.plugin.project
 					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
 					isTourDeOnceOpened = true;
 				}
-/*				
+				
+				LayoutModifier.isSidebarCreated = true;
+				
+				/*				
 				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_PROBLEMS));
 				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW));*/
 			}

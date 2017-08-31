@@ -66,19 +66,10 @@ package actionScripts.plugins.problems
 
 		private function handleProblemsShow(event:Event):void
 		{
-			/*if (!LayoutModifier.isProblemsWindow && isStartupCall)
-			{
-				LayoutModifier.setButNotSaveValue(LayoutModifier.PROBLEMS_VIEW_FIELD, true);
-				isStartupCall = false;
-				return;
-			}*/
-			
-			IDEModel.getInstance().mainView.addPanel(problemsPanel);
-			if (event is GeneralEvent && (GeneralEvent(event).value != -1 && GeneralEvent(event).value)) problemsPanel.height = int(GeneralEvent(event).value);
+			LayoutModifier.addToSidebar(problemsPanel, event);
 			
 			problemsPanel.validateNow();
 			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
-			LayoutModifier.isProblemsWindow = true;
 			isStartupCall = false;
 		}
 

@@ -60,7 +60,6 @@
 		{
 			if (stage)
 			{
-				LayoutModifier.isUsefulLinks = false;
 				IDEModel.getInstance().mainView.removePanel(this);
 			}
 		}

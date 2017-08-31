@@ -67,7 +67,6 @@
 			{
 				if (stage) 
 				{
-					LayoutModifier.isTourDeFlex = false;
 					IDEModel.getInstance().mainView.removePanel(this);
 				}
 			}
