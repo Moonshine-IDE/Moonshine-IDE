@@ -56,9 +56,6 @@ package actionScripts.plugin.project
 		override public function get author():String 		{return "Moonshine Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
 		
-		private static var isTourDeOnceOpened: Boolean;
-		private static var isAS3DocOnceOpened: Boolean;
-		
 		private var treeView:TreeView;
 		private var openResourceView:OpenResourceView;
 		
@@ -103,55 +100,7 @@ package actionScripts.plugin.project
 		{
 			if (!treeView.stage) 
 			{
-				IDEModel.getInstance().mainView.addPanel(treeView);
-				
-				// if restarted for next time
-				if (LayoutModifier.sidebarChildren)
-				{
-					for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
-					{
-						// we want last section/block should acquire 100% height
-						// so we would not set any height to the last item in sidebar
-						var isLastIndex:Boolean = ((LayoutModifier.sidebarChildren.length-1) == i);
-						switch (LayoutModifier.sidebarChildren[i].className)
-						{
-							case "TreeView":
-								treeView.height = LayoutModifier.sidebarChildren[i].height;
-								break;
-							case "VSCodeDebugProtocolView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
-								break;
-							case "AS3DocsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height : -1));
-								isAS3DocOnceOpened = true;
-								break;
-							case "TourDeFlexContentsView":
-								dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
-								isTourDeOnceOpened = true;
-								break;
-							case "ProblemsView":
-								dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, !isLastIndex ? LayoutModifier.sidebarChildren[i].height: -1));
-								break;
-						}
-					}
-					
-					return;
-				}
-				
-				// if starts for the first time
-				if (!isTourDeOnceOpened) 
-				{
-					dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
-					isTourDeOnceOpened = true;
-				}
-				if (!isAS3DocOnceOpened)
-				{
-					dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_AS3DOCS));
-					isAS3DocOnceOpened = true;
-				}
-				
-				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_PROBLEMS));
-				dispatcher.dispatchEvent(new Event(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW));
+				LayoutModifier.attachSidebarSections(treeView);
 			}
 		}
 		

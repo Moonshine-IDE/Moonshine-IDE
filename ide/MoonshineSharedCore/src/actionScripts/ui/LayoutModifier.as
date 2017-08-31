@@ -18,23 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+	import flash.events.Event;
 	import flash.net.SharedObject;
 	
 	import mx.core.FlexGlobals;
-	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.views.project.TreeView;
 
 	public class LayoutModifier
 	{
 		public static const SAVE_LAYOUT_CHANGE_EVENT:String = "SAVE_LAYOUT_CHANGE_EVENT";
-		public static const TOURDE_FLEX_FIELD:String = "isTourDeWindow";
-		public static const USEFULLINKS_FIELD:String = "isUsefulLinksWindow";
 		public static const CONSOLE_COLLAPSED_FIELD:String = "isConsoleCollapsed";
-		public static const PROBLEMS_VIEW_FIELD:String = "isProblemsWindow";
-		public static const DEBUG_FIELD:String = "isDebugWindow";
 		public static const CONSOLE_HEIGHT:String = "consoleHeight";
 		public static const SIDEBAR_WIDTH:String = "sidebarWidth";
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
@@ -43,14 +43,14 @@ package actionScripts.ui
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private static const model:IDEModel = IDEModel.getInstance();
 		
+		private static var isTourDeOnceOpened: Boolean;
+		private static var isAS3DocOnceOpened: Boolean;
+		private static var isSidebarCreated:Boolean;
+		
 		public static var sidebarChildren:Array;
 		
 		public static function parseCookie(value:SharedObject):void
 		{
-			if (value.data.hasOwnProperty(TOURDE_FLEX_FIELD)) isTourDeFlex = value.data[TOURDE_FLEX_FIELD];
-			if (value.data.hasOwnProperty(USEFULLINKS_FIELD)) isUsefulLinks = value.data[USEFULLINKS_FIELD];
-			if (value.data.hasOwnProperty(PROBLEMS_VIEW_FIELD)) isProblemsWindow = value.data[PROBLEMS_VIEW_FIELD];
-			if (value.data.hasOwnProperty(DEBUG_FIELD)) isDebugWindow = value.data[DEBUG_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
 			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
@@ -61,23 +61,54 @@ package actionScripts.ui
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
 		}
 		
-		public static function setButNotSaveValue(type:String, value:Boolean):void
+		public static function attachSidebarSections(treeView:TreeView):void
 		{
-			switch (type)
+			model.mainView.addPanel(treeView);
+			
+			// if restarted for next time
+			if (sidebarChildren)
 			{
-				case TOURDE_FLEX_FIELD:
-					_isTourDeFlex = value;
-					break;
-				case USEFULLINKS_FIELD:
-					_isUsefulLinks = value;
-					break;
-				case PROBLEMS_VIEW_FIELD:
-					_isProblemsWindow = value;
-					break;
-				case DEBUG_FIELD:
-					_isDebugWindow = value;
-					break;
+				for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
+				{
+					switch (LayoutModifier.sidebarChildren[i].className)
+					{
+						case "TreeView":
+							treeView.percentHeight = LayoutModifier.sidebarChildren[i].height;
+							break;
+						case "VSCodeDebugProtocolView":
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, LayoutModifier.sidebarChildren[i].height));
+							break;
+						case "AS3DocsView":
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, LayoutModifier.sidebarChildren[i].height));
+							isAS3DocOnceOpened = true;
+							break;
+						case "TourDeFlexContentsView":
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, LayoutModifier.sidebarChildren[i].height));
+							isTourDeOnceOpened = true;
+							break;
+						case "ProblemsView":
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, LayoutModifier.sidebarChildren[i].height));
+							break;
+					}
+				}
+				
+				isSidebarCreated = true;
+				return;
 			}
+			
+			// if starts for the first time
+			if (!isAS3DocOnceOpened)
+			{
+				dispatcher.dispatchEvent(new Event(HelpPlugin.EVENT_AS3DOCS));
+				isAS3DocOnceOpened = true;
+			}
+			if (!isTourDeOnceOpened) 
+			{
+				dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX));
+				isTourDeOnceOpened = true;
+			}
+			
+			isSidebarCreated = true;
 		}
 		
 		public static function saveLastSidebarState():void
@@ -89,61 +120,40 @@ package actionScripts.ui
 			for (var i:int=0; i < numChildren; i ++)
 			{
 				var tmpSection:Object = model.mainView.sidebar.getChildAt(i);
-				ordering.push({className: tmpSection.className, height: tmpSection.height});
+				ordering.push({className: tmpSection.className, height: tmpSection.percentHeight});
 			}
-			
-			trace(" >>>>> " +ObjectUtil.toString(ordering));
 			
 			// saving sidebar last state
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
 		}
 		
-		private static var _isTourDeFlex:Boolean = true;
-		
-		public static function get isTourDeFlex():Boolean
+		public static function addToSidebar(section:IPanelWindow, event:Event = null):void
 		{
-			return _isTourDeFlex;
-		}
-		public static function set isTourDeFlex(value:Boolean):void
-		{
-			_isTourDeFlex = value;
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:TOURDE_FLEX_FIELD, value:value}));
+			model.mainView.addPanel(section);
+			if (event is GeneralEvent && GeneralEvent(event).value) section.percentHeight = int(GeneralEvent(event).value);
+			else LayoutModifier.justifyHeights(section);
 		}
 		
-		private static var _isUsefulLinks:Boolean = true;
-		
-		public static function get isUsefulLinks():Boolean
+		public static function justifyHeights(section:IPanelWindow):void
 		{
-			return _isUsefulLinks;
-		}
-		public static function set isUsefulLinks(value:Boolean):void
-		{
-			_isUsefulLinks = value;
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:USEFULLINKS_FIELD, value:value}));
-		}
-		
-		private static var _isProblemsWindow:Boolean = true;
-		
-		public static function get isProblemsWindow():Boolean
-		{
-			return _isProblemsWindow;
-		}
-		public static function set isProblemsWindow(value:Boolean):void
-		{
-			_isProblemsWindow = value;
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:PROBLEMS_VIEW_FIELD, value:value}));
-		}
-		
-		private static var _isDebugWindow:Boolean = true;
-		
-		public static function get isDebugWindow():Boolean
-		{
-			return _isDebugWindow;
-		}
-		public static function set isDebugWindow(value:Boolean):void
-		{
-			_isDebugWindow = value;
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:DEBUG_FIELD, value:value}));
+			if (!isSidebarCreated) return;
+			
+			var numChildren:int = model.mainView.sidebar.numChildren;
+			if (numChildren == 0) return;
+			
+			var childWithLargestHeight:IPanelWindow;
+			for (var i:int=0; i < numChildren; i ++)
+			{
+				var tmpSection:IPanelWindow = model.mainView.sidebar.getChildAt(i) as IPanelWindow;
+				if (!childWithLargestHeight) childWithLargestHeight = tmpSection;
+				else if (section != tmpSection && tmpSection.height > childWithLargestHeight.height) childWithLargestHeight = tmpSection;
+			}
+			
+			if (childWithLargestHeight) 
+			{
+				childWithLargestHeight.percentHeight = childWithLargestHeight.percentHeight / 2;
+				section.percentHeight = childWithLargestHeight.percentHeight;
+			}
 		}
 		
 		private static var _isConsoleCollapsed:Boolean;

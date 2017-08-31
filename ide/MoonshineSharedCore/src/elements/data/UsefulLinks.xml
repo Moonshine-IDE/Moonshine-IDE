@@ -1,5 +1,5 @@
 <root>
-	<node label="IMPORTANT Annoucement(s)">
+	<node label="IMPORTANT Announcement(s)">
 		<node label="Flash Player EOL announcement" link="https://blogs.adobe.com/conversations/2017/07/adobe-flash-update.html"/>
 		<node label="Adobe on above development and AIR" link="https://forums.adobe.com/thread/2362234"/>
 	</node>

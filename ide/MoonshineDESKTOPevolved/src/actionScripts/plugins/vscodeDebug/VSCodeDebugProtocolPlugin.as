@@ -758,8 +758,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function showDebugView(event:Event):void
 		{
-			IDEModel.getInstance().mainView.addPanel(this._debugPanel);
-			if (event is GeneralEvent && GeneralEvent(event).value != -1) _debugPanel.height = int(GeneralEvent(event).value);
+			LayoutModifier.addToSidebar(_debugPanel, event);
 			
 			_debugPanel.validateNow();
 			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
@@ -810,16 +809,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
 		{
-			/*if (!LayoutModifier.isDebugWindow && isStartupCall)		
-			{		
-				LayoutModifier.setButNotSaveValue(LayoutModifier.DEBUG_FIELD, true);		
-				isStartupCall = false;		
-				return;
-			}*/
-			
 			showDebugView(event);
-			
-			LayoutModifier.isDebugWindow = true;		
 			isStartupCall = false;
 		}
 		

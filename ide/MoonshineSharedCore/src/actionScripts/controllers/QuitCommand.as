@@ -21,6 +21,7 @@ package actionScripts.controllers
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -32,6 +33,7 @@ package actionScripts.controllers
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -69,13 +71,41 @@ package actionScripts.controllers
 			if (editors.length == 1 
 				&& editors.getItemAt(0).isChanged() == false)
 			{
-				IDEModel.getInstance().flexCore.exitApplication();
+				onApplicationClosing();
 			}
 			else
 			{
 				event.preventDefault();
 				askToSave(editors.length);
 			}
+		}
+		
+		/**
+		 * Moved from application file to this file
+		 * as unknown reason demonstrated Event.CLOSING never fired
+		 * in macOSX; it's hard to found which newer component/plugin
+		 * integration creates the problem thus
+		 * an alternative way to determine the exit situation
+		 */
+		protected function onApplicationClosing():void
+		{
+			LayoutModifier.saveLastSidebarState();
+			
+			// we also needs to close any scope bookmarked opened
+			CONFIG::OSX
+			{
+				var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
+				if (tmpText == "Closed Scoped Paths.")
+				{
+					IDEModel.getInstance().fileCore.getSSBInterface().dispose();
+					FlexGlobals.topLevelApplication.stage.nativeWindow.close();
+				}
+				
+				return;
+			}
+			
+			// for non-CONFIG:OSX
+			FlexGlobals.topLevelApplication.stage.nativeWindow.close();
 		}
 		
 		private function askToSave(num:int):void

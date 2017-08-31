@@ -65,7 +65,6 @@
 		{
 			if(stage)
 			{
-				LayoutModifier.isProblemsWindow = false;
 				IDEModel.getInstance().mainView.removePanel(this);
 			}
 		}
