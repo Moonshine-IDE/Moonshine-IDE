@@ -20,11 +20,9 @@ package actionScripts.ui
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.getDefinitionByName;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.containers.VBox;
-	import mx.controls.Alert;
 	import mx.events.CollectionEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -183,12 +181,6 @@ package actionScripts.ui
 			/*if (!sidebar.stage) mainPanel.addChild(sidebar);
 			sidebar.addChild(panel as DisplayObject);
 			isProjectViewAdded = true*/
-		}
-		
-		public function removePanel(panel:IPanelWindow):void
-		{
-			if (sidebar) sidebar.removeChild(panel as DisplayObject);
-			if (sidebar.numChildren == 0) mainPanel.removeChild(sidebar);
 		}
 		
 		public function getTreeViewPanel():TreeView

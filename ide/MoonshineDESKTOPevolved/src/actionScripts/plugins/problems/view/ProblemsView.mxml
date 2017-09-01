@@ -65,7 +65,7 @@
 		{
 			if(stage)
 			{
-				IDEModel.getInstance().mainView.removePanel(this);
+				LayoutModifier.removeFromSidebar(this);
 			}
 		}
 

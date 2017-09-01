@@ -33,8 +33,7 @@
 		import mx.controls.Alert;
 		import mx.events.FlexEvent;
 		import mx.events.ListEvent;
-
-		import actionScripts.locator.IDEModel;
+		
 		import actionScripts.plugin.help.GenericTreeItemRenderer;
 		import actionScripts.ui.LayoutModifier;
 		import actionScripts.ui.tabview.TabViewTab;
@@ -60,7 +59,7 @@
 		{
 			if (stage)
 			{
-				IDEModel.getInstance().mainView.removePanel(this);
+				LayoutModifier.removeFromSidebar(this);
 			}
 		}
 

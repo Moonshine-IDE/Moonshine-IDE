@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
+	import flash.utils.Dictionary;
 	
 	import mx.core.FlexGlobals;
 	
@@ -43,11 +45,12 @@ package actionScripts.ui
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private static const model:IDEModel = IDEModel.getInstance();
 		
+		public static var sidebarChildren:Array;
+		
+		private static var sectionStatesDict:Dictionary = new Dictionary();
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
 		private static var isSidebarCreated:Boolean;
-		
-		public static var sidebarChildren:Array;
 		
 		public static function parseCookie(value:SharedObject):void
 		{
@@ -68,28 +71,54 @@ package actionScripts.ui
 			// if restarted for next time
 			if (sidebarChildren)
 			{
-				for (var i:int=0; i < LayoutModifier.sidebarChildren.length; i++)
+				var isTreeViewAttempted:Boolean;
+				for (var i:int=0; i < sidebarChildren.length; i++)
 				{
-					switch (LayoutModifier.sidebarChildren[i].className)
+					switch (sidebarChildren[i].className)
 					{
 						case "TreeView":
-							treeView.percentHeight = LayoutModifier.sidebarChildren[i].height;
+							isTreeViewAttempted = true;
+							treeView.percentHeight = sidebarChildren[i].height;
 							break;
 						case "VSCodeDebugProtocolView":
-							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, LayoutModifier.sidebarChildren[i].height));
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, sidebarChildren[i].height));
 							break;
 						case "AS3DocsView":
-							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, LayoutModifier.sidebarChildren[i].height));
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_AS3DOCS, sidebarChildren[i].height));
 							isAS3DocOnceOpened = true;
 							break;
 						case "TourDeFlexContentsView":
-							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, LayoutModifier.sidebarChildren[i].height));
+							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, sidebarChildren[i].height));
 							isTourDeOnceOpened = true;
 							break;
 						case "ProblemsView":
-							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, LayoutModifier.sidebarChildren[i].height));
+							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, sidebarChildren[i].height));
 							break;
 					}
+				}
+				
+				// in case user closed the project treeview component previously,
+				// we'll force to set the treeview acquire an height in next Moonshine start
+				// reducing the largest component in the row
+				if (!isTreeViewAttempted && model.mainView.sidebar.numChildren > 1) 
+				{
+					var childWithLargestHeight:IPanelWindow;
+					for (var i:int=0; i < model.mainView.sidebar.numChildren; i ++)
+					{
+						var tmpSection:IPanelWindow = model.mainView.sidebar.getChildAt(i) as IPanelWindow;
+						if (!childWithLargestHeight) childWithLargestHeight = tmpSection;
+						else if (tmpSection.percentHeight > childWithLargestHeight.percentHeight) childWithLargestHeight = tmpSection;
+					}
+					
+					if (childWithLargestHeight) 
+					{
+						childWithLargestHeight.percentHeight = childWithLargestHeight.percentHeight / 2;
+						treeView.percentHeight = childWithLargestHeight.percentHeight;
+					}
+				}
+				else if (!isTreeViewAttempted && model.mainView.sidebar.numChildren == 1) 
+				{
+					treeView.percentHeight = 100;
 				}
 				
 				isSidebarCreated = true;
@@ -114,7 +143,6 @@ package actionScripts.ui
 		public static function saveLastSidebarState():void
 		{
 			var numChildren:int = model.mainView.sidebar.numChildren;
-			if (numChildren == 0) return;
 			
 			var ordering:Array = [];
 			for (var i:int=0; i < numChildren; i ++)
@@ -132,6 +160,22 @@ package actionScripts.ui
 			model.mainView.addPanel(section);
 			if (event is GeneralEvent && GeneralEvent(event).value) section.percentHeight = int(GeneralEvent(event).value);
 			else LayoutModifier.justifyHeights(section);
+		}
+		
+		public static function removeFromSidebar(section:IPanelWindow):void
+		{
+			var sectionIndex:int = model.mainView.sidebar.getChildIndex(section as DisplayObject);
+			var sectionPercentageHeight:int = section.percentHeight + 1;
+			var sectionGoingToAcquireNewHeight:IPanelWindow;
+			if (model.mainView.sidebar.numChildren > 1)
+			{
+				sectionGoingToAcquireNewHeight = (sectionIndex == 0) ? model.mainView.sidebar.getChildAt(1) as IPanelWindow : model.mainView.sidebar.getChildAt(sectionIndex - 1) as IPanelWindow;
+			}
+			
+			if (model.mainView.sidebar) model.mainView.sidebar.removeChild(section as DisplayObject);
+			if (model.mainView.sidebar.numChildren == 0) model.mainView.mainPanel.removeChild(model.mainView.sidebar);
+			
+			if (sectionGoingToAcquireNewHeight) sectionGoingToAcquireNewHeight.percentHeight += sectionPercentageHeight;
 		}
 		
 		public static function justifyHeights(section:IPanelWindow):void

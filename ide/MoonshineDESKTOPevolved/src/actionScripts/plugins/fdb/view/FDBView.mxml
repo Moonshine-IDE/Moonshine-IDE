@@ -44,6 +44,7 @@
 			import mx.events.ListEvent;
 			
 			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.tabview.TabViewTab;
 			
 		
@@ -61,7 +62,7 @@
 		}
 		private function handleClose(event:Event):void
 		{
-			if (stage) IDEModel.getInstance().mainView.removePanel(this);
+			if (stage) LayoutModifier.removeFromSidebar(this);
 		}
 		
 		private function objectOpened(event:AdvancedDataGridEvent):void {
