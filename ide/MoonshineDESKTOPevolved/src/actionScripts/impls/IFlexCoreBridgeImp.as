@@ -336,9 +336,9 @@ package actionScripts.impls
 				]),
 				new MenuItem("Help", Settings.os == "win"? [ 
 					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT),
-					new MenuItem('Useful Link(s)', null, HelpPlugin.EVENT_AS3DOCS),
+					new MenuItem('Useful Links', null, HelpPlugin.EVENT_AS3DOCS),
 					new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)]:
-					[new MenuItem('Useful Link(s)', null, HelpPlugin.EVENT_AS3DOCS),
+					[new MenuItem('Useful Links', null, HelpPlugin.EVENT_AS3DOCS),
 						new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)
 					])
 			]);

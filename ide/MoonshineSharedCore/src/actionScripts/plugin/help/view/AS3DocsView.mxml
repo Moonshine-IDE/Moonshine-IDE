@@ -135,7 +135,7 @@
 	
 	<project:ProjectViewHeader
 		id="header"
-		label="Useful Link(s)" 
+		label="Useful Links" 
 		width="100%"
 		creationComplete="initHeader()" />
 	
