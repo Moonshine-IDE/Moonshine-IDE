@@ -72,7 +72,9 @@ package actionScripts.ui
 			if (sidebarChildren)
 			{
 				var isTreeViewAttempted:Boolean;
-				for (var i:int=0; i < sidebarChildren.length; i++)
+				var i:int;
+
+				for (i = 0; i < sidebarChildren.length; i++)
 				{
 					switch (sidebarChildren[i].className)
 					{
@@ -103,7 +105,7 @@ package actionScripts.ui
 				if (!isTreeViewAttempted && model.mainView.sidebar.numChildren > 1) 
 				{
 					var childWithLargestHeight:IPanelWindow;
-					for (var i:int=0; i < model.mainView.sidebar.numChildren; i ++)
+					for (i = 0; i < model.mainView.sidebar.numChildren; i ++)
 					{
 						var tmpSection:IPanelWindow = model.mainView.sidebar.getChildAt(i) as IPanelWindow;
 						if (!childWithLargestHeight) childWithLargestHeight = tmpSection;
