@@ -29,7 +29,7 @@
 	</node>
 	<node label="Native Extensions">
 		<node label="My Flash Labs" link="http://www.myflashlabs.com/"/>
-		<node label="Distriqt" link="https://airnativeextensions.com/"/>
+		<node label="Distriqt" link="http://distriqt.com/native-extensions"/>
 		<node label="Adobe" link="http://www.adobe.com/devnet/air/native-extensions-for-air.html"/>
 		<node label="Milkman Plugins" link="https://www.milkmanplugins.com/air-native-extensions"/>
 		<node label="Easy Native Extensions" link="http://easynativeextensions.com/tutorials-category/"/>

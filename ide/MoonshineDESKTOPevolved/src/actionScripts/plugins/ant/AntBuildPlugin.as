@@ -22,22 +22,25 @@ package actionScripts.plugins.ant
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.events.NativeProcessExitEvent;
+    import flash.errors.IOError;
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
-	import flash.filesystem.File;
-	import flash.utils.IDataInput;
-	import flash.utils.setTimeout;
-	
+    import flash.filesystem.File;
+    import flash.filesystem.File;
+    import flash.filesystem.FileMode;
+    import flash.filesystem.FileStream;
+    import flash.net.FileReference;
+    import flash.utils.ByteArray;
+    import flash.utils.IDataInput;
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-	import mx.utils.ObjectUtil;
-	
-	import spark.components.supportClasses.DisplayLayer;
+    import mx.managers.PopUpManager;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -58,17 +61,17 @@ package actionScripts.plugins.ant
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.HtmlFormatter;
-	import actionScripts.utils.TaskListManager;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.SelectAntFile;
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
-	
-	public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
+
+    import org.apache.flex.ant.tags.filesetClasses.exceptions.IOException;
+
+    public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const EVENT_ANTBUILD:String = "antbuildEvent";
 		public static const SELECTED_PROJECT_ANTBUILD:String = "selectedProjectAntBuild";
@@ -402,43 +405,77 @@ package actionScripts.plugins.ant
 				startAntProcess(workingDir);
 		  }
 		}
+
 		protected function selectBuildFile(fileSelected:Object):void
 		{ 
 			// If file is open already, just focus that editor.
 			startAntProcess(new FileLocation(fileSelected.nativePath));
 		}
+
 		private function getCurrentSDK(pvo:AS3ProjectVO):FileLocation
 		{
 			return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (IDEModel.getInstance().defaultSDK ? new FileLocation(IDEModel.getInstance().defaultSDK.fileBridge.getFile.nativePath) : null);
 		}
+
 		private function startAntProcess(buildDir:FileLocation):void{
-			var SDKstr:String;
 			var processArgs:Vector.<String> = new Vector.<String>;
 			shellInfo = new NativeProcessStartupInfo();
-			var antFile:FileLocation = model.antHomePath.resolvePath(antPath);
-			if (!antFile.fileBridge.exists) antFile = model.antHomePath.resolvePath("bin/"+ antPath);
-			var ANTstr:String = antFile.fileBridge.nativePath;
-			ANTstr = UtilsCore.convertString(ANTstr);
-			SDKstr =  UtilsCore.convertString(currentSDK.fileBridge.nativePath);
-			
+			var antBatPath:String = getAntBatPath();
+            var SDKstr:String =  UtilsCore.convertString(currentSDK.fileBridge.nativePath);
+			var buildDirPath:String = buildDir.fileBridge.nativePath;
+            shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
+
 			if (Settings.os == "win")
 			{
-				processArgs.push("/C");
-				processArgs.push("set FLEX_HOME="+SDKstr+"&&"+ANTstr+" -file "+ UtilsCore.convertString(buildDir.fileBridge.nativePath) );
-				shellInfo.arguments = processArgs;
-				shellInfo.executable = cmdFile;
+				//Create file with following content:
+                var antBuildRunnerPath:String = prepareAntBuildRunnerFile(buildDirPath);
+				//Created file is being run
+                processArgs.push("/C");
+                processArgs.push("set FLEX_HOME=" + SDKstr + " && " + antBuildRunnerPath);
+
+                shellInfo.arguments = processArgs;
+                shellInfo.executable = cmdFile;
 			}
 			else 
 			{
 				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME="+SDKstr+"&&"+ANTstr+" -file "+ UtilsCore.convertString(buildDir.fileBridge.nativePath) );
+				processArgs.push("export FLEX_HOME="+SDKstr+"&&"+antBatPath+" -file "+ UtilsCore.convertString(buildDirPath) );
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 			}
-			
-			shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File; //pvo.folder;
-			initShell();
+
+            initShell();
 		}
+
+        private function prepareAntBuildRunnerFile(buildDirPath:String):String
+        {
+			var antBatPath:String = getAntBatPath();
+            var buildRunnerFileName:String = "AntBuildRunner.bat";
+
+			if (buildDirPath.indexOf(" ") > -1)
+            {
+                try
+                {
+                    var fileContent:String = antBatPath + " -f \"" + buildDirPath + "\"";
+                    var antBuildRunnerFile:File = new File(File.cacheDirectory.nativePath).resolvePath(buildRunnerFileName);
+                    var fileContentArray:ByteArray = new ByteArray();
+                    fileContentArray.writeUTFBytes(fileContent);
+                    var fileRef:FileStream = new FileStream();
+                    fileRef.open(antBuildRunnerFile, FileMode.WRITE);
+                    fileRef.writeBytes(fileContentArray);
+                    fileRef.close();
+
+                    return antBuildRunnerFile.nativePath;
+                }
+                catch (e:Error)
+                {
+
+                }
+            }
+
+			return antBatPath + " -f " + buildDirPath;
+        }
+
 		private function initShell():void 
 		{
 			if (nativeProcess) {
@@ -524,7 +561,6 @@ package actionScripts.plugins.ant
 			
 			var syntaxMatch:Array;
 			var generalMatch:Array;
-			var initMatch:Array;
 			print(data);
 			syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
 			if (syntaxMatch) {
@@ -579,6 +615,16 @@ package actionScripts.plugins.ant
 			}
 			outputMsg(lines);
 		}
-		
+
+		private function getAntBatPath():String
+		{
+            var antFile:FileLocation = model.antHomePath.resolvePath(antPath);
+            if (!antFile.fileBridge.exists)
+            {
+                antFile = model.antHomePath.resolvePath("bin/"+ antPath);
+            }
+
+            return UtilsCore.convertString(antFile.fileBridge.nativePath);
+		}
 	}
 }

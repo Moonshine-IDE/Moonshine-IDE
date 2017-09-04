@@ -154,7 +154,7 @@ package actionScripts.plugins.vscodeDebug
 			{
 				if(this._debugPanel.parent)
 				{
-					IDEModel.getInstance().mainView.removePanel(this._debugPanel);
+					LayoutModifier.removeFromSidebar(this._debugPanel);
 				}
 				this._debugPanel = null;
 			}
