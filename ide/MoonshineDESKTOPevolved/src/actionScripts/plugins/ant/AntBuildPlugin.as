@@ -421,7 +421,7 @@ package actionScripts.plugins.ant
 			var processArgs:Vector.<String> = new Vector.<String>;
 			shellInfo = new NativeProcessStartupInfo();
 			var antBatPath:String = getAntBatPath();
-            var SDKstr:String =  UtilsCore.convertString(currentSDK.fileBridge.nativePath);
+            var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
 			var buildDirPath:String = buildDir.fileBridge.nativePath;
             shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
 
@@ -431,7 +431,7 @@ package actionScripts.plugins.ant
                 var antBuildRunnerPath:String = prepareAntBuildRunnerFile(buildDirPath);
 				//Created file is being run
                 processArgs.push("/C");
-                processArgs.push("set FLEX_HOME=" + SDKstr + " && " + antBuildRunnerPath);
+                processArgs.push("set FLEX_HOME=" + sdkPath + "&& " + antBuildRunnerPath);
 
                 shellInfo.arguments = processArgs;
                 shellInfo.executable = cmdFile;
@@ -439,7 +439,7 @@ package actionScripts.plugins.ant
 			else 
 			{
 				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME="+SDKstr+"&&"+antBatPath+" -file "+ UtilsCore.convertString(buildDirPath) );
+				processArgs.push("export FLEX_HOME=" + sdkPath + "&&" + antBatPath + " -file "+ UtilsCore.convertString(buildDirPath));
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 			}
