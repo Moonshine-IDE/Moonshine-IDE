@@ -5,7 +5,7 @@
     <mx:ViewStack id="viewStack" width="100%" height="100%">
         <s:NavigatorContent label="Visual">
            <s:Scroller width="100%" height="100%">
-                <view:VisualEditor right="0" left="0"/>
+                <view:VisualEditor id="visualEditor" right="0" left="0"/>
            </s:Scroller>
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
@@ -16,11 +16,14 @@
             </s:Scroller>
         </s:NavigatorContent>
     </mx:ViewStack>
-    <s:TabBar dataProvider="{viewStack}" skinClass="components.skins.EditorTabBarSkin" cornerRadius="1"/>
+    <s:TabBar id="tabBar" dataProvider="{viewStack}" skinClass="components.skins.EditorTabBarSkin" cornerRadius="1"
+              change="onTabBarChange(event)"/>
     <fx:Script><![CDATA[
         import actionScripts.ui.editor.text.TextEditor;
 
         import mx.events.FlexEvent;
+
+        import spark.events.IndexChangeEvent;
 
         private var _codeEditor:TextEditor;
 
@@ -32,6 +35,14 @@
         private function onContentGroupCreationComplete(event:FlexEvent):void
         {
             codeContentGroup.addElement(_codeEditor);
+        }
+
+        private function onTabBarChange(event:IndexChangeEvent):void
+        {
+            if (event.newIndex == 1)
+            {
+                visualEditor.editingSurface.selectedItem = null;
+            }
         }
         ]]></fx:Script>
 </s:VGroup>
