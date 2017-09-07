@@ -37,7 +37,7 @@ package actionScripts.plugin.settings.vo
 		private var rdr:PathRenderer;
 		private var myBlurFilter:BlurFilter = new BlurFilter();
 		
-		private var _isEditable:Boolean;
+		private var _isEditable:Boolean = true;
 		
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
 		{
@@ -57,6 +57,7 @@ package actionScripts.plugin.settings.vo
 			rdr.setting = this;
 			rdr.isSDKPath = isSDKPath;
 			rdr.isDropDown = isDropDown;
+			rdr.enabled = _isEditable;
 			return rdr;
 		}
 		
@@ -65,7 +66,7 @@ package actionScripts.plugin.settings.vo
 			_isEditable = value;
 			if (rdr) 
 			{
-				rdr.mouseChildren = _isEditable;
+				rdr.enabled = _isEditable;
 				//rdr.filters = _isEditable ? [] : [myBlurFilter];
 			}
 		}

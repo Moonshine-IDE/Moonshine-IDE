@@ -77,7 +77,7 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	public class MXMLCPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
-		override public function get name():String			{ return "MXMLC Compiler Plugin"; }
+		override public function get name():String			{ return "Default SDK"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlc'); }
 		

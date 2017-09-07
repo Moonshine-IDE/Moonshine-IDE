@@ -20,15 +20,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
 	import flash.events.Event;
 	
+	import mx.collections.ArrayCollection;
+	
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+	import actionScripts.plugin.run.RunMobileSetting;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ColorSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.IntSetting;
+	import actionScripts.plugin.settings.vo.ListSetting;
 	import actionScripts.plugin.settings.vo.MultiOptionSetting;
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -84,6 +89,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var flashDevelopObjConfig:XML;
 		public var isFlashBuilderProject:Boolean;
 		public var flashBuilderDOCUMENTSPath:String;
+
+		private var additional:StringSetting;
+		private var htmlFilePath:PathSetting;
+		private var mobileRunSettings:RunMobileSetting;
 		
 		public function get air():Boolean
 		{
@@ -139,7 +148,65 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		protected var configInvalid:Boolean = true;
 		
+		private var _projectPlatform:String;
+		public function set projectPlatform(value:String):void
+		{
+			_projectPlatform = value;
+		}
+		public function get projectPlatform():String
+		{
+			return _projectPlatform;
+		}
 		
+		private var _isMobileRunOnSimulator:Boolean;
+		public function set isMobileRunOnSimulator(value:Boolean):void
+		{
+			_isMobileRunOnSimulator = value;
+		}
+		public function get isMobileRunOnSimulator():Boolean
+		{
+			return _isMobileRunOnSimulator;
+		}
+		
+		private var _isMobileHasSimulatedDevice:String;
+		public function set isMobileHasSimulatedDevice(value:String):void
+		{
+			_isMobileHasSimulatedDevice = value;
+		}
+		public function get isMobileHasSimulatedDevice():String
+		{
+			return _isMobileHasSimulatedDevice;
+		}
+		
+		public function get platformTypes():ArrayCollection
+		{
+			var tmpCollection:ArrayCollection;
+			additional.isEditable = air;
+			htmlFilePath.isEditable = !air;
+			mobileRunSettings.visible = isMobile;
+			
+			if (!air)
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("Web", AS3ProjectPlugin.AS3PROJ_AS_WEB)
+				]);
+			}
+			else if (isMobile)
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("Android", AS3ProjectPlugin.AS3PROJ_AS_ANDROID),
+					new NameValuePair("iOS", AS3ProjectPlugin.AS3PROJ_AS_IOS)
+				]);
+			}
+			else
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("AIR", AS3ProjectPlugin.AS3PROJ_AS_AIR)
+				]);
+			}
+			
+			return tmpCollection;
+		}
 		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
@@ -156,6 +223,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
+			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+			htmlFilePath = new PathSetting(this, "AntBuildPath", "URL to Launch", false, buildOptions.antBuildPath, false);
+			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "Launch Method");
+			
 			if (!isFlashBuilderProject)
 			{
 				settings = Vector.<SettingsWrapper>([
@@ -164,7 +235,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 						Vector.<ISetting>([
 							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
 							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							new StringSetting(buildOptions, "additional", "Additional compiler options"),
+							additional,
 							
 							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
 							
@@ -204,14 +275,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new MultiOptionSetting(this, 'testMovie', 							"Launch", 
-								Vector.<NameValuePair>([
-									new NameValuePair("AIR", TEST_MOVIE_AIR),
-									new NameValuePair("Custom", TEST_MOVIE_CUSTOM),
-									new NameValuePair("Open with default application", TEST_MOVIE_OPEN_DOCUMENT)
-								])
-							),
-							new StringSetting(this, 'testMovieCommand', 						"Custom launch command")
+							new ListSetting(this, "projectPlatform", "Platform", platformTypes, "name"),
+							htmlFilePath,
+							additional,
+							mobileRunSettings
 						])
 					)
 				]);
@@ -237,7 +304,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 						Vector.<ISetting>([
 							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
 							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							new StringSetting(buildOptions, "additional", "Additional compiler options"),
+							additional,
 							
 							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
 							
@@ -272,14 +339,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new MultiOptionSetting(this, 'testMovie', 							"Launch", 
-								Vector.<NameValuePair>([
-									new NameValuePair("AIR", TEST_MOVIE_AIR),
-									new NameValuePair("Custom", TEST_MOVIE_CUSTOM),
-									new NameValuePair("Open with default application", TEST_MOVIE_OPEN_DOCUMENT)
-								])
-							),
-							new StringSetting(this, 'testMovieCommand', 						"Custom launch command")
+							new ListSetting(this, "projectPlatform", "Platform", platformTypes, "name"),
+							htmlFilePath,
+							additional,
+							mobileRunSettings
 						])
 					)
 				]);

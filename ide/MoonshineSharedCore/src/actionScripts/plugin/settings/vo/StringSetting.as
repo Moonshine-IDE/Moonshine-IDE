@@ -30,7 +30,7 @@ package actionScripts.plugin.settings.vo
 		private var rdr:StringRenderer;
 		private var myBlurFilter:BlurFilter = new BlurFilter();
 		
-		private var _isEditable:Boolean;
+		private var _isEditable:Boolean = true;
 		
 		public function StringSetting(provider:Object, name:String, label:String, restrict:String=null)
 		{
@@ -48,6 +48,7 @@ package actionScripts.plugin.settings.vo
 			if (restrict) rdr.text.restrict = restrict;
 			//rdr.text.setStyle("backgroundColor","")
 			rdr.setting = this;
+			rdr.enabled = _isEditable;
 			return rdr;
 		}
 		
@@ -56,7 +57,7 @@ package actionScripts.plugin.settings.vo
 			_isEditable = value;
 			if (rdr) 
 			{
-				rdr.mouseChildren = _isEditable;
+				rdr.enabled = _isEditable;
 				//rdr.filters = _isEditable ? [] : [myBlurFilter];
 			}
 		}
