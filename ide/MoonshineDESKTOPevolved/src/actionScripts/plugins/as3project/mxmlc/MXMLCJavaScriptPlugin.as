@@ -125,8 +125,6 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private var cmdLine:CommandLine;
 		private var _instance:MXMLCJavaScriptPlugin;
-		private var binDebugPath:String;
-		private var binReleasePath:String;
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -637,8 +635,6 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						if (event) event.target.removeEventListener(Event.COMPLETE, onBinFolderMoveComplete);
 						
-						binDebugPath = "bin/js-debug/index.html";
-						binReleasePath = "bin/js-release";
 						print("Project Build Successfully");
 						dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
 					    if(runAfterBuild)
@@ -647,7 +643,7 @@ package actionScripts.plugins.as3project.mxmlc
 					    }
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
-							var swfFile:File = currentProject.folderLocation.resolvePath(binDebugPath).fileBridge.getFile as File;
+							var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
 							resourceCopiedIndex = 0;
 							getResourceCopied(currentProject as AS3ProjectVO, swfFile);
 						}
@@ -674,7 +670,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function testMovie():void 
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(binDebugPath).fileBridge.getFile as File;
+			var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
@@ -705,9 +701,10 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
+				if (!pvo.htmlPath) pvo.getHTMLPath;
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo) 
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo)
 				);
 			}
 			currentProject = null;
@@ -733,7 +730,7 @@ package actionScripts.plugins.as3project.mxmlc
 				event.target.removeEventListener(Event.COMPLETE, onFileCopiedHandler);
 				
 				// copying to bin/bin-release
-				var releaseDestination:File = pvo.folderLocation.resolvePath(binReleasePath).fileBridge.getFile as File;
+				var releaseDestination:File = pvo.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_RELEASE_PATH).fileBridge.getFile as File;
 				(fl.fileBridge.getFile as File).copyToAsync(releaseDestination.resolvePath(fl.fileBridge.name), true);
 				
 				if (resourceCopiedIndex < pvo.resourcePaths.length) getResourceCopied(pvo, swfFile);

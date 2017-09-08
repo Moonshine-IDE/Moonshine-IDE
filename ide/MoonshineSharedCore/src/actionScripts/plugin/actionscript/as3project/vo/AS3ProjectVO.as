@@ -34,7 +34,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.IntSetting;
 	import actionScripts.plugin.settings.vo.ListSetting;
-	import actionScripts.plugin.settings.vo.MultiOptionSetting;
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -51,11 +50,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const TEST_MOVIE_OPEN_DOCUMENT:String = "OpenDocument";
 		public static const TEST_MOVIE_AIR:String = "AIR";
 		
+		public static const FLEXJS_DEBUG_PATH:String = "bin/js-debug/index.html";
+		public static const FLEXJS_RELEASE_PATH:String = "bin/js-release";
+		
 		public var fromTemplate:FileLocation;
 		public var sourceFolder:FileLocation;
 		
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
+		public var htmlPath:FileLocation;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var resourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -148,17 +151,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		protected var configInvalid:Boolean = true;
 		
-		private var _projectPlatform:String;
-		public function set projectPlatform(value:String):void
+		private var _targetPlatform:String;
+		public function set targetPlatform(value:String):void
 		{
-			_projectPlatform = value;
+			_targetPlatform = value;
 		}
-		public function get projectPlatform():String
+		public function get targetPlatform():String
 		{
-			return _projectPlatform;
+			return _targetPlatform;
 		}
 		
-		private var _isMobileRunOnSimulator:Boolean;
+		private var _isMobileRunOnSimulator:Boolean = true;
 		public function set isMobileRunOnSimulator(value:Boolean):void
 		{
 			_isMobileRunOnSimulator = value;
@@ -208,6 +211,24 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return tmpCollection;
 		}
 		
+		public function get getHTMLPath():String
+		{
+			if (!air)
+			{
+				var html:FileLocation = !FlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
+				if (html.fileBridge.exists) htmlPath = html;
+				else htmlPath = swfOutput.path;
+				
+				return html.fileBridge.nativePath;
+			}
+			
+			return "";
+		}
+		public function set getHTMLPath(value:String):void
+		{
+			if (value) htmlPath = new FileLocation(value);
+		}
+		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
 			super(folder, projectName, updateToTreeView);
@@ -224,7 +245,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var settings:Vector.<SettingsWrapper>;
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			htmlFilePath = new PathSetting(this, "AntBuildPath", "URL to Launch", false, buildOptions.antBuildPath, false);
+			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
 			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "Launch Method");
 			
 			if (!isFlashBuilderProject)
@@ -275,7 +296,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new ListSetting(this, "projectPlatform", "Platform", platformTypes, "name"),
+							new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
 							htmlFilePath,
 							additional,
 							mobileRunSettings
@@ -339,7 +360,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new ListSetting(this, "projectPlatform", "Platform", platformTypes, "name"),
+							new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
 							htmlFilePath,
 							additional,
 							mobileRunSettings

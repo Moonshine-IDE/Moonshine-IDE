@@ -830,19 +830,10 @@ package actionScripts.plugins.as3project.mxmlc
 			else 
 			{
 				// Let SWFLauncher runs the HTML file instead
-				var htmlFile:File = pvo.folderLocation.resolvePath("bin-debug/"+ pvo.swfOutput.path.fileBridge.name.split(".")[0] +".html").fileBridge.getFile as File;
-				if (htmlFile.exists)
-				{
-					dispatcher.dispatchEvent(
-						new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlFile, pvo) 
-					);
-				}
-				else
-				{
-					dispatcher.dispatchEvent(
-						new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo) 
-					);
-				}
+				if (!pvo.htmlPath) pvo.getHTMLPath;
+				dispatcher.dispatchEvent(
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo) 
+				);
 			}
 			
 			currentProject = null;

@@ -21,6 +21,7 @@ package actionScripts.plugins.as3project.exporter
 	import flash.filesystem.FileStream;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.utils.UtilsCore;
 	
@@ -102,6 +103,23 @@ package actionScripts.plugins.as3project.exporter
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{
 				optionPairs.testMovieCommand = p.testMovieCommand;
+			}
+			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
+			project.appendChild(options);
+			
+			var projType:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
+			if (p.isMobile) projType = AS3ProjectPlugin.AS3PROJ_AS_ANDROID;
+			
+			var platform:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
+			if (p.isMobile) platform = (p.targetPlatform == "Android") ? AS3ProjectPlugin.AS3PROJ_AS_ANDROID : AS3ProjectPlugin.AS3PROJ_AS_IOS;
+			
+			options = <moonshineRunCustomization />;
+			optionPairs = {
+				projectType		:	projType,
+				targetPlatform	:	platform,
+				urlToLaunch		:	p.htmlPath ? p.htmlPath.fileBridge.nativePath : "",
+				launchMethod	:	p.isMobileRunOnSimulator ? "Simulator" : "Device",
+				deviceSimulator	:	p.isMobileHasSimulatedDevice
 			}
 			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
 			project.appendChild(options);

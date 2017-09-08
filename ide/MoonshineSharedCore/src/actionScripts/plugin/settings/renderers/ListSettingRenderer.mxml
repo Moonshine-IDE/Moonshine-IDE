@@ -44,9 +44,6 @@
 				cmbOption.textInput.editable = false;
 				cmbOption.setStyle("contentBackgroundColor","#FFFFFF");
 				
-				// default value
-				setting.stringValue = setting.labelField ? setting.dataProvider[0][setting.labelField] : setting.dataProvider[0];
-				
 				updatePrompt();
 			}
 			
@@ -65,6 +62,28 @@
 			{
 				cmbOption.dataProvider = setting.dataProvider;
 				if (setting.labelField) cmbOption.labelField = setting.labelField;
+				
+				if (cmbOption.dataProvider.length > 0)
+				{
+					cmbOption.callLater(function():void
+					{
+						if (cmbOption.dataProvider.getItemAt(0) is String) cmbOption.selectedItem = setting.provider[setting.name];
+						else
+						{
+							for (var i:int = 0; i < setting.dataProvider.length; i++)
+							{
+								if (setting.provider[setting.name] == setting.dataProvider[i][setting.labelField])
+								{
+									cmbOption.selectedIndex = i;
+									break;
+								}
+							}
+						}
+						
+						// default value
+						setting.stringValue = setting.labelField ? setting.dataProvider[cmbOption.selectedIndex][setting.labelField] : setting.dataProvider[cmbOption.selectedIndex];
+					});
+				}
 			}
 			
 			protected function onOptionChanged(event:IndexChangeEvent):void

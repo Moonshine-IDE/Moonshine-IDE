@@ -36,6 +36,8 @@ package actionScripts.plugin.actionscript.as3project.settings
 		public var fileMustExist:Boolean;
 		public var relativeRoot:FileLocation;
 		
+		private var rdr:PathListSettingRenderer;
+		
 		public function PathListSetting(provider:Object, name:String, label:String, 
 										relativeRoot:FileLocation=null,
 										allowFiles:Boolean=true,
@@ -69,8 +71,9 @@ package actionScripts.plugin.actionscript.as3project.settings
 		
 		override public function get renderer():IVisualElement
 		{
-			var rdr:PathListSettingRenderer = new PathListSettingRenderer();
+			rdr = new PathListSettingRenderer();
 			rdr.setting = this;
+			rdr.enabled = _isEditable;
 			return rdr;
 		}
 		
@@ -141,6 +144,17 @@ package actionScripts.plugin.actionscript.as3project.settings
 			
 			provider[name] = pending;
 			hasPendingChanges = false;
+		}
+		
+		private var _isEditable:Boolean = true;
+		public function set isEditable(value:Boolean):void
+		{
+			_isEditable = value;
+			if (rdr) rdr.enabled = _isEditable;
+		}
+		public function get isEditable():Boolean
+		{
+			return _isEditable;
 		}
         
 		// Helper function
