@@ -89,6 +89,7 @@
 			protected function onOptionChanged(event:IndexChangeEvent):void
 			{
 				setting.stringValue = setting.labelField ? cmbOption.selectedItem[setting.labelField] : cmbOption.selectedItem.toString();
+				setting.dispatchEvent(new Event(Event.CHANGE));
 			}
 			
 		]]>

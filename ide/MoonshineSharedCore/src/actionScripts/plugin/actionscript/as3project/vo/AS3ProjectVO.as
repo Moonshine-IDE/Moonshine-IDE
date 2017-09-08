@@ -96,6 +96,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
 		private var mobileRunSettings:RunMobileSetting;
+		private var targetPlatformSettings:ListSetting;
 		
 		public function get air():Boolean
 		{
@@ -229,6 +230,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (value) htmlPath = new FileLocation(value);
 		}
 		
+		private function onTargetPlatformChanged(event:Event):void
+		{
+			if (mobileRunSettings) mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+		}
+		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
 			super(folder, projectName, updateToTreeView);
@@ -244,9 +250,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
+			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
+			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
-			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "Launch Method");
+			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+			targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
+			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			
 			if (!isFlashBuilderProject)
 			{
@@ -296,7 +306,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
+							targetPlatformSettings,
 							htmlFilePath,
 							additional,
 							mobileRunSettings

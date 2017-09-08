@@ -35,13 +35,14 @@ package actionScripts.plugin.run
 		
 		public var relativeRoot:FileLocation;
 		public var isSimulatorRun:String;
+		public var targetPlatform:String;
 		
 		private var rdr:RunMobileSettingRenderer;
 		
 		private var _project:AS3ProjectVO;
 		private var _visible:Boolean = true;
 		
-		public function RunMobileSetting(provider:Object, isSimulator:String, name:String, label:String, 
+		public function RunMobileSetting(provider:Object, isSimulator:String, name:String, platform:String, label:String, 
 										relativeRoot:FileLocation=null)
 		{
 			super();
@@ -50,6 +51,7 @@ package actionScripts.plugin.run
 			this.label = label;
 			this.relativeRoot = relativeRoot;
 			this.isSimulatorRun = isSimulator;
+			this.targetPlatform = platform;
 			defaultValue = "";
 		}
 		
@@ -114,6 +116,10 @@ package actionScripts.plugin.run
 			
 			return lbl;
 		}        
-
+		
+		public function updateDevices(forPlatform:String):void
+		{
+			if (rdr) rdr.updateDevices(forPlatform);
+		}
 	}
 }
