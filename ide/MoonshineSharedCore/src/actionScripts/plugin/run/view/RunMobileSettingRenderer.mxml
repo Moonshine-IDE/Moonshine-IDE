@@ -68,9 +68,12 @@
 			
 			public function updateDevices(forPlatform:String):void
 			{
-				if (forPlatform == "Android") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+				if (!forPlatform || forPlatform == "Android") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
 				else if (forPlatform == "iOS") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_IOS_DEVICES;
-				cmbModelOption.selectedIndex = 0;
+				cmbModelOption.callLater(function():void
+				{
+					cmbModelOption.selectedIndex = 0;
+				});
 			}
 			
 			protected function cmbOption_changeHandler(event:IndexChangeEvent):void
