@@ -244,27 +244,37 @@
 			public function handleProjectsChange(event:CollectionEvent):void
 			{
 				var previousCount:int = projectFolders.length;
+				var project:ProjectVO = null;
+
 				switch (event.kind)
 				{
 					case 'remove':
 					{
-						var project:ProjectVO = event.items[0] as ProjectVO;
+						project = event.items[0] as ProjectVO;
 						projectFolders.removeItemAt(projectFolders.getItemIndex(project.projectFolder));
 						break;
 					}
 					case 'add':
 					{
 						project = projects.getItemAt(event.location) as ProjectVO;
-						projectFolders.addItemAt(project.projectFolder, 0)
+						projectFolders.addItemAt(project.projectFolder, 0);
 						break;
 					}
 				}
 				
 				IDEModel.getInstance().selectedprojectFolders = projectFolders;
-				
+				var globalEventDispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
 				// enable-disable File/New menus
-				if ((previousCount == 0) && (projectFolders.length > 0)) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_ENABLE_STATE));
-				if ((previousCount > 0) && (projectFolders.length == 0)) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_DISABLE_STATE));
+				if ((previousCount == 0) && (projectFolders.length > 0))
+				{
+					globalEventDispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_ENABLE_STATE));
+				}
+				
+				if ((previousCount > 0) && (projectFolders.length == 0))
+				{
+					globalEventDispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_DISABLE_STATE));
+				}
 			}
 			
 			private function onProjectTreeUpdates(event:ProjectEvent):void
