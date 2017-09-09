@@ -89,7 +89,7 @@ package actionScripts.plugin.console
 			ConsoleOutputter.DEBUG = v;
 		} 
 		
-		override public function get name():String { return "Console Plugin"; }
+		override public function get name():String { return "Console"; }
 		override public function get author():String { return "Erik Pettersson & Moonshine Project Team"; }
 		override public function get description():String { return ResourceManager.getInstance().getString('resources','plugin.desc.console'); }
 		

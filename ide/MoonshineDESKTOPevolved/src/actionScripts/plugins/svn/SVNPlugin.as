@@ -42,7 +42,7 @@ package actionScripts.plugins.svn
 	{
 		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
 		
-		override public function get name():String			{ return "Subversion Plugin"; }
+		override public function get name():String			{ return "Subversion"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		

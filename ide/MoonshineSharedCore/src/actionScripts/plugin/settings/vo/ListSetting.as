@@ -25,8 +25,8 @@ package actionScripts.plugin.settings.vo
 	
 	public class ListSetting extends AbstractSetting
 	{
+		[Bindable] public var dataProvider:IList;
 		public var labelField:String;
-		public var dataProvider:IList;
 		
 		private var rdr:ListSettingRenderer;
 		

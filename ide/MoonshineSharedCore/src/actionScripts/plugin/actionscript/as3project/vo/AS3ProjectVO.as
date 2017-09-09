@@ -20,16 +20,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
 	import flash.events.Event;
 	
+	import mx.collections.ArrayCollection;
+	
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+	import actionScripts.plugin.run.RunMobileSetting;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ColorSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.IntSetting;
-	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.ListSetting;
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -46,11 +50,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const TEST_MOVIE_OPEN_DOCUMENT:String = "OpenDocument";
 		public static const TEST_MOVIE_AIR:String = "AIR";
 		
+		public static const FLEXJS_DEBUG_PATH:String = "bin/js-debug/index.html";
+		public static const FLEXJS_RELEASE_PATH:String = "bin/js-release";
+		
 		public var fromTemplate:FileLocation;
 		public var sourceFolder:FileLocation;
 		
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
+		public var htmlPath:FileLocation;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var resourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -87,6 +95,11 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isMobile:Boolean;
         public var isProjectFromExistingSource:Boolean;
 		public var isVisualEditorProject:Boolean;
+
+		private var additional:StringSetting;
+		private var htmlFilePath:PathSetting;
+		private var mobileRunSettings:RunMobileSetting;
+		private var targetPlatformSettings:ListSetting;
 		
 		public function get air():Boolean
 		{
@@ -142,7 +155,88 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		protected var configInvalid:Boolean = true;
 		
+		private var _targetPlatform:String;
+		public function set targetPlatform(value:String):void
+		{
+			_targetPlatform = value;
+		}
+		public function get targetPlatform():String
+		{
+			return _targetPlatform;
+		}
 		
+		private var _isMobileRunOnSimulator:Boolean = true;
+		public function set isMobileRunOnSimulator(value:Boolean):void
+		{
+			_isMobileRunOnSimulator = value;
+		}
+		public function get isMobileRunOnSimulator():Boolean
+		{
+			return _isMobileRunOnSimulator;
+		}
+		
+		private var _isMobileHasSimulatedDevice:String;
+		public function set isMobileHasSimulatedDevice(value:String):void
+		{
+			_isMobileHasSimulatedDevice = value;
+		}
+		public function get isMobileHasSimulatedDevice():String
+		{
+			return _isMobileHasSimulatedDevice;
+		}
+		
+		public function get platformTypes():ArrayCollection
+		{
+			var tmpCollection:ArrayCollection;
+			additional.isEditable = air;
+			htmlFilePath.isEditable = !air;
+			mobileRunSettings.visible = isMobile;
+			
+			if (!air)
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("Web", AS3ProjectPlugin.AS3PROJ_AS_WEB)
+				]);
+			}
+			else if (isMobile)
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("Android", AS3ProjectPlugin.AS3PROJ_AS_ANDROID),
+					new NameValuePair("iOS", AS3ProjectPlugin.AS3PROJ_AS_IOS)
+				]);
+			}
+			else
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("AIR", AS3ProjectPlugin.AS3PROJ_AS_AIR)
+				]);
+			}
+			
+			return tmpCollection;
+		}
+		
+		public function get getHTMLPath():String
+		{
+			if (!air)
+			{
+				var html:FileLocation = !FlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
+				if (html.fileBridge.exists) htmlPath = html;
+				else htmlPath = swfOutput.path;
+				
+				return html.fileBridge.nativePath;
+			}
+			
+			return "";
+		}
+		public function set getHTMLPath(value:String):void
+		{
+			if (value) htmlPath = new FileLocation(value);
+		}
+		
+		private function onTargetPlatformChanged(event:Event):void
+		{
+			if (mobileRunSettings) mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+		}
 		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
@@ -159,6 +253,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
+			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
+			
+			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+			targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
+			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			
 			if (!isFlashBuilderProject)
 			{
 				settings = Vector.<SettingsWrapper>([
@@ -167,7 +269,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 						Vector.<ISetting>([
 							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
 							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							new StringSetting(buildOptions, "additional", "Additional compiler options"),
+							additional,
 							
 							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
 							
@@ -207,14 +309,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new MultiOptionSetting(this, 'testMovie', 							"Launch", 
-								Vector.<NameValuePair>([
-									new NameValuePair("AIR", TEST_MOVIE_AIR),
-									new NameValuePair("Custom", TEST_MOVIE_CUSTOM),
-									new NameValuePair("Open with default application", TEST_MOVIE_OPEN_DOCUMENT)
-								])
-							),
-							new StringSetting(this, 'testMovieCommand', 						"Custom launch command")
+							targetPlatformSettings,
+							htmlFilePath,
+							additional,
+							mobileRunSettings
 						])
 					)
 				]);
@@ -240,7 +338,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 						Vector.<ISetting>([
 							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
 							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							new StringSetting(buildOptions, "additional", "Additional compiler options"),
+							additional,
 							
 							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
 							
@@ -275,14 +373,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 					),
 					new SettingsWrapper("Run",
 						Vector.<ISetting>([
-							new MultiOptionSetting(this, 'testMovie', 							"Launch", 
-								Vector.<NameValuePair>([
-									new NameValuePair("AIR", TEST_MOVIE_AIR),
-									new NameValuePair("Custom", TEST_MOVIE_CUSTOM),
-									new NameValuePair("Open with default application", TEST_MOVIE_OPEN_DOCUMENT)
-								])
-							),
-							new StringSetting(this, 'testMovieCommand', 						"Custom launch command")
+							new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
+							htmlFilePath,
+							additional,
+							mobileRunSettings
 						])
 					)
 				]);

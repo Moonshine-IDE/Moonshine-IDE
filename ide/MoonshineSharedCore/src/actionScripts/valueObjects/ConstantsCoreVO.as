@@ -68,6 +68,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
+		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
+		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
 		public static var ACTIONSCRIPT_PROJECT:FileLocation;
 		public static var FLEXBROWSER_PROJECT:FileLocation;
 		public static var FLEXDESKTOP_PROJECT:FileLocation;

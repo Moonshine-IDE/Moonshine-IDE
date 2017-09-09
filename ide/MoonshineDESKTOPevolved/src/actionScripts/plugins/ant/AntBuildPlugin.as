@@ -69,14 +69,12 @@ package actionScripts.plugins.ant
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
 
-    import org.apache.flex.ant.tags.filesetClasses.exceptions.IOException;
-
     public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const EVENT_ANTBUILD:String = "antbuildEvent";
 		public static const SELECTED_PROJECT_ANTBUILD:String = "selectedProjectAntBuild";
 		
-		override public function get name():String			{ return "Ant Build Plugin"; }
+		override public function get name():String			{ return "Ant Build Setup"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "Apache® Ant Build Plugin. Esc exits."; }
 		

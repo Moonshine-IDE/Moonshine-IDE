@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	xmlns:mx="library://ns.adobe.com/flex/mx"
+  	width="100%"
+  	paddingTop="15"
+  	paddingBottom="5"
+  	paddingLeft="15"
+  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" initialize="onInitialized(event)" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.run.RunMobileSetting;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			
+			[Bindable] public var setting:RunMobileSetting;
+			
+			private function init():void
+			{
+				cmbOption.textInput.editable = cmbModelOption.textInput.editable = false;
+				cmbOption.setStyle("contentBackgroundColor","#FFFFFF");
+				cmbModelOption.setStyle("contentBackgroundColor","#FFFFFF");
+				
+				cmbModelOption.callLater(function():void
+				{
+					cmbOption.selectedIndex = setting.provider[setting.isSimulatorRun] ? 0 : 1;
+					if (setting.provider[setting.name] != "null")
+					{
+						for (var i:int=0; i < cmbModelOption.dataProvider.length; i++)
+						{
+							if (setting.provider[setting.name] == cmbModelOption.dataProvider[i].name)
+							{
+								cmbModelOption.selectedIndex = i;
+								break;
+							}
+						}
+					}
+				});
+			}
+			
+			public function updateDevices(forPlatform:String):void
+			{
+				if (!forPlatform || forPlatform == "Android") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+				else if (forPlatform == "iOS") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_IOS_DEVICES;
+				cmbModelOption.callLater(function():void
+				{
+					cmbModelOption.selectedIndex = 0;
+				});
+			}
+			
+			protected function cmbOption_changeHandler(event:IndexChangeEvent):void
+			{
+				setting.provider[setting.isSimulatorRun] = (cmbOption.selectedIndex == 0);
+				setting.provider[setting.name] = cmbModelOption.selectedItem.name;
+			}
+			
+			protected function onInitialized(event:FlexEvent):void
+			{
+				if (!ConstantsCoreVO.TEMPLATES_IOS_DEVICES)
+				{
+					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/Config.xml");
+					if (tmpConfiguration.fileBridge.exists)
+					{
+						ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
+						ConstantsCoreVO.TEMPLATES_IOS_DEVICES = new ArrayCollection();
+						
+						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
+						for each (var i:XML in tmpXML..device)
+						{
+							if (String(i.@type) == "AND") ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
+							else ConstantsCoreVO.TEMPLATES_IOS_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
+						}
+						
+						updateDevices(setting.provider[setting.targetPlatform]);
+					}
+				}
+				else
+					updateDevices(setting.provider[setting.targetPlatform]);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label 
+		text="{setting.label}"
+		styleName="uiTextSettingsLabel"/>
+	<s:ComboBox id="cmbOption"
+				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
+				selectedIndex="0" change="cmbOption_changeHandler(event)">
+		<s:dataProvider>
+			<s:ArrayList>
+				<fx:String>AIR Simulator</fx:String>
+				<fx:String>Device</fx:String>
+			</s:ArrayList>
+		</s:dataProvider>
+	</s:ComboBox>
+	<s:Spacer height="3"/>
+	<s:Rect width="100%"
+			alpha="1">
+		<s:stroke>
+			<s:SolidColorStroke weight="1" color="0xdadada"/>
+		</s:stroke>
+	</s:Rect>
+	<s:Label 
+		text="Device Model"
+		styleName="uiTextSettingsLabel" paddingTop="13"/>
+	<s:ComboBox id="cmbModelOption"
+				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
+				selectedIndex="0" change="cmbOption_changeHandler(event)" labelField="name"/>
+	<s:Spacer height="3"/>
+</s:VGroup>

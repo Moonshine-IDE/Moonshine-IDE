@@ -21,6 +21,7 @@ package actionScripts.plugins.as3project.importer
 	import flash.filesystem.FileStream;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.MXMLCConfigVO;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
@@ -162,12 +163,18 @@ package actionScripts.plugins.as3project.importer
 				
 				project.sourceFolder = new FileLocation(finalPath);
 			}
+			
+			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
+			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) project.targetPlatform = "Android";
+			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) project.targetPlatform = "iOS";
+			
+			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
+			if (html) project.htmlPath = new FileLocation(html);
 
-			// add output folder path to flash trust content list
-			if (!isAIR && !project.isMobile)
-			{
-				//IDEModel.getInstance().flexCore.updateFlashPlayerTrustContent(p.folderLocation.resolvePath("bin-debug"));
-			}
+            project.isMobileHasSimulatedDevice = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator);
+			
+			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
+            project.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
 
 			return project;
 		}

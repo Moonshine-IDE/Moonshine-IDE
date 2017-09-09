@@ -98,7 +98,7 @@
 				{
 					file = new FileLocation();
 					if (setting.directory) file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
-					else file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled,["*.xml","*.bmml"]); // for Balsmiq project we need only .xml file to get selected.
+					else file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled); // for Balsmiq project we need only .xml file to get selected.
 				}
 			}
 			

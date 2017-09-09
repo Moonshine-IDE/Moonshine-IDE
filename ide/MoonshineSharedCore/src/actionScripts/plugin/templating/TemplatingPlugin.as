@@ -74,7 +74,7 @@ package actionScripts.plugin.templating
 	
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
 	{
-		override public function get name():String 			{return "Templating Plugin";}
+		override public function get name():String 			{return "Templating";}
 		override public function get author():String 		{return "Moonshine Project Team";}
 		override public function get description():String 	{return ResourceManager.getInstance().getString('resources','plugin.desc.templating');}
 		
