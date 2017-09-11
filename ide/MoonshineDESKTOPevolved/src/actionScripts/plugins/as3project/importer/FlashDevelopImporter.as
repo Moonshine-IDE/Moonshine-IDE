@@ -169,7 +169,7 @@ package actionScripts.plugins.as3project.importer
 			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
 			if (html) p.htmlPath = new FileLocation(html);
 			
-			p.isMobileHasSimulatedDevice = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator);
+			p.isMobileHasSimulatedDevice = {name: UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator)};
 			
 			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
 			p.isMobileRunOnSimulator = (simulator != "Device") ? true : false;

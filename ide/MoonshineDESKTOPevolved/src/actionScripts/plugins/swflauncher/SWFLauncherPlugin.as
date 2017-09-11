@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.swflauncher
 {
-	import actionScripts.utils.findAndCopyApplicationDescriptor;
-	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -30,6 +28,8 @@ package actionScripts.plugins.swflauncher
 	import flash.net.navigateToURL;
 	import flash.utils.IDataInput;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.PluginBase;
@@ -38,6 +38,8 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.utils.findAndCopyApplicationDescriptor;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
@@ -168,15 +170,33 @@ package actionScripts.plugins.swflauncher
 			var isFlashDevelopProject: Boolean = (project.projectFile && project.projectFile.fileBridge.nativePath.indexOf(".as3proj") != -1) ? true : false;
 			if (project.isMobile)
 			{
+				var device:Object;
+				if (project.isMobileHasSimulatedDevice.name && !project.isMobileHasSimulatedDevice.key)
+				{
+					var deviceCollection:ArrayCollection = project.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+					for (var i:int=0; i < deviceCollection.length; i++)
+					{
+						if (project.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
+						{
+							device = deviceCollection[i];
+							break;
+						}
+					}
+				}
+				else if (!project.isMobileHasSimulatedDevice.name)
+					device = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0];
+				else 
+					device = project.isMobileHasSimulatedDevice;
+				
 				// @note
 				// https://feathersui.com/help/faq/display-density.html
 				
 				processArgs.push("-screensize");
-				processArgs.push("NexusOne"); // NexusOne
+				processArgs.push(device.key); // NexusOne
 				processArgs.push("-XscreenDPI");
-				processArgs.push("252");
+				processArgs.push(device.screenDPI);
 				processArgs.push("-XversionPlatform");
-				processArgs.push("AND");
+				processArgs.push(project.targetPlatform == "iOS" ? "IOS" : "AND");
 				processArgs.push("-profile");
 				processArgs.push("mobileDevice");
 			}

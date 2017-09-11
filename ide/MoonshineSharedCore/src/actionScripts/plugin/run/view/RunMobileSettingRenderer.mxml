@@ -31,13 +31,10 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
 			
 			import spark.events.IndexChangeEvent;
 			
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.run.RunMobileSetting;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
@@ -56,7 +53,7 @@
 					{
 						for (var i:int=0; i < cmbModelOption.dataProvider.length; i++)
 						{
-							if (setting.provider[setting.name] == cmbModelOption.dataProvider[i].name)
+							if (setting.provider[setting.name].name == cmbModelOption.dataProvider[i].name)
 							{
 								cmbModelOption.selectedIndex = i;
 								break;
@@ -79,31 +76,12 @@
 			protected function cmbOption_changeHandler(event:IndexChangeEvent):void
 			{
 				setting.provider[setting.isSimulatorRun] = (cmbOption.selectedIndex == 0);
-				setting.provider[setting.name] = cmbModelOption.selectedItem.name;
+				setting.provider[setting.name] = cmbModelOption.selectedItem;
 			}
 			
 			protected function onInitialized(event:FlexEvent):void
 			{
-				if (!ConstantsCoreVO.TEMPLATES_IOS_DEVICES)
-				{
-					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/Config.xml");
-					if (tmpConfiguration.fileBridge.exists)
-					{
-						ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
-						ConstantsCoreVO.TEMPLATES_IOS_DEVICES = new ArrayCollection();
-						
-						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
-						for each (var i:XML in tmpXML..device)
-						{
-							if (String(i.@type) == "AND") ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
-							else ConstantsCoreVO.TEMPLATES_IOS_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
-						}
-						
-						updateDevices(setting.provider[setting.targetPlatform]);
-					}
-				}
-				else
-					updateDevices(setting.provider[setting.targetPlatform]);
+				updateDevices(setting.provider[setting.targetPlatform]);
 			}
 			
 		]]>

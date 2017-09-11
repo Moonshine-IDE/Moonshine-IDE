@@ -25,6 +25,7 @@ package actionScripts.valueObjects
 	import mx.collections.ArrayList;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
 	
 	/**
 	 * ConstantsCoreVO
@@ -299,6 +300,20 @@ package actionScripts.valueObjects
 				{label:"Build and Run as Javascript",tooltip:"Create JS/HTML files from AS/MXML files using FlexJS SDK"},{label:"Build Release",tooltip:"Build & Release of Project"},{label:"Clean Project",tooltip:"Clean Project"},
 				{label:"Build & Debug",tooltip:"Build & Debug Project"},{label:"Step Over",tooltip:"Step to next line"},{label:"Resume",tooltip:"Continue execution till next breakpoint"},{label:"Stop",tooltip:"Terminate debug execution"},
 				{label:"Ant Build",tooltip:"Build Project through Ant script"},{label:"Configure",tooltip:"Select xml file for Ant build"}]);
+			
+			var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/Config.xml");
+			if (tmpConfiguration.fileBridge.exists)
+			{
+				TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
+				TEMPLATES_IOS_DEVICES = new ArrayCollection();
+				
+				var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
+				for each (var i:XML in tmpXML..device)
+				{
+					if (String(i.@type) == "AND") TEMPLATES_ANDROID_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
+					else TEMPLATES_IOS_DEVICES.addItem({name:String(i.@name), key:String(i.@key), screenDPI:String(i.@screenDPI)});
+				}
+			}
 		}
 		
 		//--------------------------------------------------------------------------

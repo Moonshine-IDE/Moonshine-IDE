@@ -172,12 +172,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return _isMobileRunOnSimulator;
 		}
 		
-		private var _isMobileHasSimulatedDevice:String;
-		public function set isMobileHasSimulatedDevice(value:String):void
+		private var _isMobileHasSimulatedDevice:Object;
+		public function set isMobileHasSimulatedDevice(value:Object):void
 		{
 			_isMobileHasSimulatedDevice = value;
 		}
-		public function get isMobileHasSimulatedDevice():String
+		public function get isMobileHasSimulatedDevice():Object
 		{
 			return _isMobileHasSimulatedDevice;
 		}
@@ -250,13 +250,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
-			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
-			
-			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
-			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
-			targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
-			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			if (!additional) additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+			if (!htmlFilePath) htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			if (!mobileRunSettings) mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+			if (!targetPlatformSettings) 
+			{
+				targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
+				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			}
 			
 			if (!isFlashBuilderProject)
 			{
@@ -416,6 +417,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 					IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
 			}
+			
+			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 		
 		public function updateConfig():void 
