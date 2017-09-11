@@ -258,6 +258,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 				targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
 				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			}
+			else if (!targetPlatformSettings.hasEventListener(Event.CHANGE))
+			{
+				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			}
 			
 			if (!isFlashBuilderProject)
 			{
