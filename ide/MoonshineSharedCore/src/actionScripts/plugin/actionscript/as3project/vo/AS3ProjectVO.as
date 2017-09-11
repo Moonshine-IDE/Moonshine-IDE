@@ -232,7 +232,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onTargetPlatformChanged(event:Event):void
 		{
-			if (mobileRunSettings) mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+			if (mobileRunSettings) 
+			{
+				mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+				isMobileHasSimulatedDevice = (!targetPlatformSettings.stringValue || targetPlatformSettings.stringValue == "Android") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0] : ConstantsCoreVO.TEMPLATES_IOS_DEVICES[0];
+			}
 		}
 		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
