@@ -135,7 +135,7 @@
 		<s:dataProvider>
 			<s:ArrayList>
 				<fx:String>AIR Simulator</fx:String>
-				<fx:String>Device</fx:String>
+				<!--<fx:String>Device</fx:String>-->
 			</s:ArrayList>
 		</s:dataProvider>
 	</s:ComboBox>
