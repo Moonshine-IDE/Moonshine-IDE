@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="500" autoLayout="true" title="Define a Device"
+			   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.StringUtil;
+			import mx.validators.Validator;
+			
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.valueObjects.MobileDeviceVO;
+			
+			public var editedDevice:MobileDeviceVO;
+			
+			/**
+			 * On this close button clicked
+			 */
+			protected function onCloseWindow(event:CloseEvent):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function onCreate(event:MouseEvent):void
+			{
+				var tmpArr: Array = new Array(nValidator, wValidator, hValidator);
+				if (Validator.validateAll(tmpArr).length == 0)
+				{
+					if (!editedDevice) editedDevice = new MobileDeviceVO(null);
+					
+					editedDevice.name = txtLabel.text;
+					editedDevice.type = (cmbType.selectedIndex == 0) ? MobileDeviceVO.AND : MobileDeviceVO.IOS;
+					editedDevice.dpi = String(txtDPI.text);
+					
+					var normalSize:String = txtNWidth.text +"x"+ txtNHeight.text;
+					normalSize += ":"+ ((StringUtil.trim(txtFWidth.text).length != 0 && StringUtil.trim(txtFHeight.text).length != 0) ? txtFWidth.text +"x"+ txtFHeight.text : normalSize);
+					editedDevice.key = normalSize;
+					
+					dispatchEvent(new GeneralEvent(GeneralEvent.DONE, editedDevice));
+					onCloseWindow(null);
+				}
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (editedDevice)
+				{
+					var splitSize:Array = editedDevice.key.split(":");
+					
+					txtNWidth.text = splitSize[0].split("x")[0];
+					txtNHeight.text = splitSize[0].split("x")[1];
+					txtFWidth.text = splitSize[1].split("x")[0];
+					txtFHeight.text = splitSize[1].split("x")[1];
+					
+					txtLabel.text = editedDevice.name;
+					cmbType.selectedIndex = (editedDevice.type == MobileDeviceVO.AND) ? 0 : 1;
+					txtDPI.text = editedDevice.dpi;
+					btnCreate.label = "Update";
+					btnCreate.enabled = true;
+				}
+			}
+			
+			protected function onTypesCompletes(event:FlexEvent):void
+			{
+				cmbType.textInput.editable = cmbType.textInput.editable = false;
+				cmbType.selectedIndex = 0;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="nValidator" source="{txtLabel}" property="text" trigger="{btnCreate}" triggerEvent="click"/>
+		<mx:StringValidator id="wValidator" source="{txtNWidth}" property="text" trigger="{btnCreate}" triggerEvent="click"/>
+		<mx:StringValidator id="hValidator" source="{txtNHeight}" property="text" trigger="{btnCreate}" triggerEvent="click"/>
+	</fx:Declarations>
+	
+	<s:BorderContainer width="100%" height="100%" borderVisible="false">
+		<s:layout>
+			<s:VerticalLayout/>
+		</s:layout>
+		<s:backgroundFill>
+			<s:SolidColor color="0xe0e0e0"/>
+		</s:backgroundFill>
+		<s:Form width="100%" height="100%">
+			<s:layout>
+				<s:FormLayout gap="-12"/>
+			</s:layout>
+			<s:FormItem label="Name" required="true">
+				<s:TextInput id="txtLabel"
+							 width="100%"/>
+			</s:FormItem>
+			<s:FormItem label="Type">
+				<s:ComboBox id="cmbType"
+							width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
+							selectedIndex="0" creationComplete="onTypesCompletes(event)">
+					<s:dataProvider>
+						<s:ArrayList>
+							<fx:String>Android</fx:String>
+							<fx:String>iOS</fx:String>
+						</s:ArrayList>
+					</s:dataProvider>
+				</s:ComboBox>
+			</s:FormItem>
+			<s:FormItem label="Normal width:height" required="true">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:TextInput id="txtNWidth"
+								 width="100%" restrict="0-9"/>
+					<s:Label text=":"/>
+					<s:TextInput id="txtNHeight"
+								 width="100%" restrict="0-9"/>
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem label="Fullscreen width:height">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:TextInput id="txtFWidth"
+								 width="100%" restrict="0-9"/>
+					<s:Label text=":"/>
+					<s:TextInput id="txtFHeight"
+								 width="100%" restrict="0-9"/>
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem label="Dots Per Inch">
+				<s:TextInput id="txtDPI"
+							 width="100%" text="72" restrict="0-9"/>
+			</s:FormItem>
+			<s:FormItem>
+				<s:Button id="btnCreate" 
+						  label="Create"
+						  click="onCreate(event)"/>
+			</s:FormItem>
+		</s:Form>
+	</s:BorderContainer>
+</s:TitleWindow>

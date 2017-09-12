@@ -31,14 +31,23 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
 			
 			import spark.events.IndexChangeEvent;
 			
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.plugin.run.RunMobileSetting;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			[Bindable] public var setting:RunMobileSetting;
+			
+			private var deviceConfiguration:DeviceConfiguration;
+			private var lastSelectedItem:Object;
 			
 			private function init():void
 			{
@@ -70,6 +79,7 @@
 				cmbModelOption.callLater(function():void
 				{
 					cmbModelOption.selectedIndex = 0;
+					lastSelectedItem = cmbModelOption.selectedItem;
 				});
 			}
 			
@@ -77,11 +87,40 @@
 			{
 				setting.provider[setting.isSimulatorRun] = (cmbOption.selectedIndex == 0);
 				setting.provider[setting.name] = cmbModelOption.selectedItem;
+				
+				lastSelectedItem = cmbModelOption.selectedItem;
 			}
 			
 			protected function onInitialized(event:FlexEvent):void
 			{
 				updateDevices(setting.provider[setting.targetPlatform]);
+			}
+			
+			protected function onConfigureDevices(event:MouseEvent):void
+			{
+				if (!deviceConfiguration)
+				{
+					deviceConfiguration = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeviceConfiguration, true) as DeviceConfiguration;
+					//deviceConfiguration.devices = cmbModelOption.dataProvider as ArrayCollection;
+					deviceConfiguration.addEventListener(Event.CHANGE, onDeviceUpdated);
+					deviceConfiguration.addEventListener(CloseEvent.CLOSE, onConfigurationPopupClosed);
+					PopUpManager.centerPopUp(deviceConfiguration);
+				}
+			}
+			
+			private function onConfigurationPopupClosed(event:CloseEvent):void
+			{
+				deviceConfiguration.removeEventListener(CloseEvent.CLOSE, onConfigurationPopupClosed);
+				deviceConfiguration.removeEventListener(Event.CHANGE, onDeviceUpdated);
+				deviceConfiguration = null;
+			}
+			
+			private function onDeviceUpdated(event:Event):void
+			{
+				if (cmbModelOption.dataProvider.getItemIndex(lastSelectedItem) != -1) cmbModelOption.selectedItem = lastSelectedItem;
+				else cmbModelOption.selectedIndex = 0;
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new GeneralEvent(GeneralEvent.DEVICE_UPDATED));
 			}
 			
 		]]>
@@ -110,8 +149,12 @@
 	<s:Label 
 		text="Device Model"
 		styleName="uiTextSettingsLabel" paddingTop="13"/>
-	<s:ComboBox id="cmbModelOption"
-				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
-				selectedIndex="0" change="cmbOption_changeHandler(event)" labelField="name"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:ComboBox id="cmbModelOption"
+					width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
+					selectedIndex="0" change="cmbOption_changeHandler(event)" labelField="name"/>
+		<s:Button label="Configure"
+				  click="onConfigureDevices(event)"/>
+	</s:HGroup>
 	<s:Spacer height="3"/>
 </s:VGroup>

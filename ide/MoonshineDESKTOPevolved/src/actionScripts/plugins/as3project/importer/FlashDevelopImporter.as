@@ -26,6 +26,7 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.actionscript.as3project.vo.MXMLCConfigVO;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -169,7 +170,7 @@ package actionScripts.plugins.as3project.importer
 			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
 			if (html) p.htmlPath = new FileLocation(html);
 			
-			p.isMobileHasSimulatedDevice = {name: UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator)};
+			p.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
 			
 			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
 			p.isMobileRunOnSimulator = (simulator != "Device") ? true : false;

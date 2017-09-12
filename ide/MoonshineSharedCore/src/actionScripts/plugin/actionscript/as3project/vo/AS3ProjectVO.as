@@ -39,6 +39,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	public class AS3ProjectVO extends ProjectVO
@@ -172,12 +173,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return _isMobileRunOnSimulator;
 		}
 		
-		private var _isMobileHasSimulatedDevice:Object;
-		public function set isMobileHasSimulatedDevice(value:Object):void
+		private var _isMobileHasSimulatedDevice:MobileDeviceVO;
+		public function set isMobileHasSimulatedDevice(value:MobileDeviceVO):void
 		{
 			_isMobileHasSimulatedDevice = value;
 		}
-		public function get isMobileHasSimulatedDevice():Object
+		public function get isMobileHasSimulatedDevice():MobileDeviceVO
 		{
 			return _isMobileHasSimulatedDevice;
 		}

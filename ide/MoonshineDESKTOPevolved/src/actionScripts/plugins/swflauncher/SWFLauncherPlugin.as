@@ -40,6 +40,7 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
@@ -170,7 +171,7 @@ package actionScripts.plugins.swflauncher
 			var isFlashDevelopProject: Boolean = (project.projectFile && project.projectFile.fileBridge.nativePath.indexOf(".as3proj") != -1) ? true : false;
 			if (project.isMobile)
 			{
-				var device:Object;
+				var device:MobileDeviceVO;
 				if (project.isMobileHasSimulatedDevice.name && !project.isMobileHasSimulatedDevice.key)
 				{
 					var deviceCollection:ArrayCollection = project.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
@@ -193,10 +194,13 @@ package actionScripts.plugins.swflauncher
 				
 				processArgs.push("-screensize");
 				processArgs.push(device.key); // NexusOne
-				processArgs.push("-XscreenDPI");
-				processArgs.push(device.screenDPI);
+				if (device.dpi != "")
+				{
+					processArgs.push("-XscreenDPI");
+					processArgs.push(device.dpi);
+				}
 				processArgs.push("-XversionPlatform");
-				processArgs.push(project.targetPlatform == "iOS" ? "IOS" : "AND");
+				processArgs.push(device.type);
 				processArgs.push("-profile");
 				processArgs.push("mobileDevice");
 			}
