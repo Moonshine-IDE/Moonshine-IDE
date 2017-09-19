@@ -19,14 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
-	
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
+	import flash.display.Screen;
+	import flash.display.Stage;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
 	
 	import mx.controls.HTML;
+	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.core.IVisualElement;
 	
@@ -78,6 +79,7 @@ package actionScripts.impls
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.symbols.SymbolsPlugin;
 	import actionScripts.plugins.ui.editor.TourDeTextEditor;
+	import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -394,6 +396,16 @@ package actionScripts.impls
 		public function startTypeAheadWithJavaPath(path:String):void
 		{
 			new TypeAheadProcess(path);
+		}
+		
+		public function reAdjustApplicationSize(width:Number, height:Number):void
+		{
+			var tmpStage:Stage = FlexGlobals.topLevelApplication.stage as Stage;
+			tmpStage.nativeWindow.width = width;
+			tmpStage.nativeWindow.height = height;
+			
+			tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
+			tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
 		}
 		
 		public function getNewAntBuild():IFlexDisplayObject

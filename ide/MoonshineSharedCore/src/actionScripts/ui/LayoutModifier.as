@@ -19,6 +19,7 @@
 package actionScripts.ui
 {
 	import flash.display.DisplayObject;
+	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
@@ -40,6 +41,7 @@ package actionScripts.ui
 		public static const CONSOLE_HEIGHT:String = "consoleHeight";
 		public static const SIDEBAR_WIDTH:String = "sidebarWidth";
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
+		public static const MAIN_WINDOW_WIDTH_HEIGHT:String = "MAIN_WINDOW_WIDTH_HEIGHT";
 		public static const SIDEBAR_CHILDREN:String = "sidebarChildren";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -48,6 +50,7 @@ package actionScripts.ui
 		public static var sidebarChildren:Array;
 		
 		private static var sectionStatesDict:Dictionary = new Dictionary();
+		private static var applicationSize:String;
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
 		private static var isSidebarCreated:Boolean;
@@ -57,10 +60,20 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
 			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
 			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
+			if (value.data.hasOwnProperty(MAIN_WINDOW_WIDTH_HEIGHT)) applicationSize = value.data[MAIN_WINDOW_WIDTH_HEIGHT];
 			if (value.data.hasOwnProperty(SIDEBAR_WIDTH)) sidebarWidth = value.data[SIDEBAR_WIDTH];
 			if (value.data.hasOwnProperty(SIDEBAR_CHILDREN)) sidebarChildren = value.data[SIDEBAR_CHILDREN];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
+			else if (applicationSize)
+			{
+				var tmpStage:Object = FlexGlobals.topLevelApplication.stage;
+				var widthHeight:Array = applicationSize.split(":");
+				if (tmpStage.nativeWindow.width != widthHeight[0] || tmpStage.nativeWindow.height != widthHeight[1])
+				{
+					model.flexCore.reAdjustApplicationSize(Number(widthHeight[0]), Number(widthHeight[1]));
+				}
+			}
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
 		}
 		
@@ -155,6 +168,9 @@ package actionScripts.ui
 			
 			// saving sidebar last state
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
+			
+			// saving application window width height
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:MAIN_WINDOW_WIDTH_HEIGHT, value:FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height}));
 		}
 		
 		public static function addToSidebar(section:IPanelWindow, event:Event = null):void

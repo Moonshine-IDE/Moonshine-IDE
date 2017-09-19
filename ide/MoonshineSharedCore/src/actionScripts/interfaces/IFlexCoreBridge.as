@@ -78,6 +78,7 @@ package actionScripts.interfaces
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
 		function startTypeAheadWithJavaPath(path:String):void;
+		function reAdjustApplicationSize(width:Number, height:Number):void;
 		
 		function get runtimeVersion():String;
 		function get version():String;
