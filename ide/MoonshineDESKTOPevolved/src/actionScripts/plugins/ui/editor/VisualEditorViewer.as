@@ -21,6 +21,7 @@ package actionScripts.plugins.ui.editor
     import actionScripts.events.ChangeEvent;
     import actionScripts.interfaces.IVisualEditorViewer;
     import actionScripts.plugins.help.view.VisualEditorView;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
     import actionScripts.ui.editor.*;
     import actionScripts.ui.editor.text.TextEditor;
 
@@ -40,6 +41,8 @@ package actionScripts.plugins.ui.editor
             visualEditorView = new VisualEditorView();
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
+            visualEditorView.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
+            visualEditorView.addEventListener(VisualEditorViewChangeEvent.VISUAL_CHANGE, onVisualEditorViewVisualChange);
 
             editor = new TextEditor(true);
             editor.percentHeight = 100;
@@ -48,6 +51,17 @@ package actionScripts.plugins.ui.editor
             editor.dataProvider = "";
 
             visualEditorView.codeEditor = editor;
+        }
+
+        private function onVisualEditorViewVisualChange(event:VisualEditorViewChangeEvent):void
+        {
+            
+        }
+
+        private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
+        {
+            var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
+            var mxmlString:String = mxmlCode.toString();
         }
 
         override protected function createChildren():void
