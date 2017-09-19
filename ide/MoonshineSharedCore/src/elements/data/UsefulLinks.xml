@@ -1,7 +1,7 @@
 <root>
 	<node label="IMPORTANT Announcement(s)">
 		<node label="Flash Player EOL announcement" link="https://blogs.adobe.com/conversations/2017/07/adobe-flash-update.html"/>
-		<node label="Adobe on above development and AIR" link="https://forums.adobe.com/thread/2362234"/>
+		<node label="Adobe on Flash EOL and AIR Roadmap" link="https://forums.adobe.com/thread/2362234"/>
 	</node>
 	<node label="API Docs">
 		<node label="Apache Flex API Docs" link="https://flex.apache.org/asdoc"/>
