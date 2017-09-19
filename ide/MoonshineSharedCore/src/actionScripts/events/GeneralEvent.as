@@ -22,6 +22,9 @@ package actionScripts.events
 	
 	public class GeneralEvent extends Event
 	{
+		public static const DONE:String = "DONE";
+		public static const DEVICE_UPDATED:String = "DEVICE_UPDATED";
+		
 		public var value:Object;
 		
 		public function GeneralEvent(type:String, value:Object=null, _bubble:Boolean=false, _cancelable:Boolean=true)

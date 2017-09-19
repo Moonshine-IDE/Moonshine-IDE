@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 	<devices>
-		<device name="Google Nexus One" key="NexusOne" screenDPI="252" type="AND"/>
+		<device name="Google Nexus One" key="480x762:480x800" screenDPI="252" type="AND"/>
+		<device name="Samsung Galaxy S" key="480x762:480x800" screenDPI="233" type="AND"/>
 		<device name="Samsung Galaxy Tab" key="600x986:600x1024" screenDPI="168" type="AND"/>
-		<device name="Apple iPad" key="iPad" screenDPI="132" type="IOS"/>
-		<device name="Apple iPhone 4" key="iPhone" screenDPI="326" type="IOS"/>
-		<device name="Apple iPhone 6/6S/7" key="750x1294:750×1334" screenDPI="326" type="IOS"/>
+		<device name="Apple iPad" key="768x1004:768x1024" screenDPI="132" type="IOS"/>
+		<device name="Apple iPad Retina" key="1536x2008:1536x2048" screenDPI="264" type="IOS"/>
+		<device name="Apple iPhone 4" key="320x460:320x480" screenDPI="326" type="IOS"/>
+		<device name="Apple iPhone 5 Retina" key="640x1096:640x1136" screenDPI="326" type="IOS"/>
+		<device name="Apple iPhone 6" key="750x1294:750x1334" screenDPI="326" type="IOS"/>
+		<device name="Apple iPhone 6 Plus" key="1242x2148:1242x2208" screenDPI="401" type="IOS"/>
 	</devices>
 </root>

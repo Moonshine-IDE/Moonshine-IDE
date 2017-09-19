@@ -19,7 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import flash.display.DisplayObject;
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.valueObjects.FileWrapper;
+
+    import flash.display.DisplayObject;
 	
 	import mx.core.IFlexDisplayObject;
 	import mx.core.IVisualElement;
@@ -40,7 +43,7 @@ package actionScripts.interfaces
 	 * All methods those particularly useful
 	 * in multiple projects (AIR or Web)
 	 */
-	public interface IFlexCoreBridge extends IProject
+	public interface IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
 		//
@@ -70,5 +73,23 @@ package actionScripts.interfaces
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
 		function startTypeAheadWithJavaPath(path:String):void;
+		function reAdjustApplicationSize(width:Number, height:Number):void;
+
+        function createProject(event:NewProjectEvent):void;
+
+        /**
+         *
+         * @param projectWrapper
+         * @param finishHandler - handler must return FileWrapper object
+         */
+        function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void;
+
+        function getCorePlugins():Array;
+        function getDefaultPlugins():Array;
+        function getPluginsNotToShowInSettings():Array;
+        function exitApplication():void;
+
+		function get runtimeVersion():String;
+		function get version():String;
 	}
 }

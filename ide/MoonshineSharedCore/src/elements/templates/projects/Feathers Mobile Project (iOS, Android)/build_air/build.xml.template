@@ -142,7 +142,7 @@
 	//==========================================================================
 	-->
 	
-	<!-- Compile DMG -->
+	<!-- Compile APK -->
 	<target name="compileAPKProject" depends="compileSWF">
 		<java jar="${ADT_PATH}" fork="true" failonerror="true">
 			<arg line="-package" />

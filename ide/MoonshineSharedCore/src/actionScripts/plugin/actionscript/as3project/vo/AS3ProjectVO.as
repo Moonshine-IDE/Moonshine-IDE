@@ -39,6 +39,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	public class AS3ProjectVO extends ProjectVO
@@ -175,12 +176,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return _isMobileRunOnSimulator;
 		}
 		
-		private var _isMobileHasSimulatedDevice:String;
-		public function set isMobileHasSimulatedDevice(value:String):void
+		private var _isMobileHasSimulatedDevice:MobileDeviceVO;
+		public function set isMobileHasSimulatedDevice(value:MobileDeviceVO):void
 		{
 			_isMobileHasSimulatedDevice = value;
 		}
-		public function get isMobileHasSimulatedDevice():String
+		public function get isMobileHasSimulatedDevice():MobileDeviceVO
 		{
 			return _isMobileHasSimulatedDevice;
 		}
@@ -235,7 +236,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onTargetPlatformChanged(event:Event):void
 		{
-			if (mobileRunSettings) mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+			if (mobileRunSettings) 
+			{
+				mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
+				isMobileHasSimulatedDevice = (!targetPlatformSettings.stringValue || targetPlatformSettings.stringValue == "Android") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0] : ConstantsCoreVO.TEMPLATES_IOS_DEVICES[0];
+			}
 		}
 		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
@@ -253,13 +258,18 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
-			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
-			
-			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
-			mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
-			targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
-			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			if (!additional) additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+			if (!htmlFilePath) htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			if (!mobileRunSettings) mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+			if (!targetPlatformSettings) 
+			{
+				targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
+				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			}
+			else if (!targetPlatformSettings.hasEventListener(Event.CHANGE))
+			{
+				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			}
 			
 			if (!isFlashBuilderProject)
 			{
@@ -419,6 +429,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 					IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
 			}
+			
+			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 		
 		public function updateConfig():void 

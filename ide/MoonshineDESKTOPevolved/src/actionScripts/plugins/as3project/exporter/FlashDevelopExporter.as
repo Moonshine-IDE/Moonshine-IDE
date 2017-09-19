@@ -119,7 +119,7 @@ package actionScripts.plugins.as3project.exporter
 				targetPlatform	:	platform,
 				urlToLaunch		:	p.htmlPath ? p.htmlPath.fileBridge.nativePath : "",
 				launchMethod	:	p.isMobileRunOnSimulator ? "Simulator" : "Device",
-				deviceSimulator	:	p.isMobileHasSimulatedDevice
+				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null
 			}
 			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
 			project.appendChild(options);

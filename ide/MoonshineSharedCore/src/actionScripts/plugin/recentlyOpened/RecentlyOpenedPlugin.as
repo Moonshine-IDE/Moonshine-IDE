@@ -22,6 +22,8 @@ package actionScripts.plugin.recentlyOpened
 	import flash.net.SharedObject;
 	import flash.utils.setTimeout;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
@@ -33,6 +35,7 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.utils.ObjectTranslator;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	
 	import components.views.project.TreeView;
@@ -65,6 +68,7 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(SDKUtils.EVENT_SDK_PROMPT_DNS, onSDKExtractDNSUpdated);
 			dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, onJavaPathForTypeaheadSave);
 			dispatcher.addEventListener(LayoutModifier.SAVE_LAYOUT_CHANGE_EVENT, onSaveLayoutChangeEvent);
+			dispatcher.addEventListener(GeneralEvent.DEVICE_UPDATED, onDeviceListUpdated, false, 0, true);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
 		}
@@ -153,6 +157,24 @@ package actionScripts.plugin.recentlyOpened
 			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS')) ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
+			if (cookie.data.hasOwnProperty('devicesAndroid'))
+			{
+				ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
+				ConstantsCoreVO.TEMPLATES_IOS_DEVICES = new ArrayCollection();
+				
+				for each (object in cookie.data.devicesAndroid)
+				{
+					ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.addItem(ObjectTranslator.objectToInstance(object, MobileDeviceVO));
+				}
+				for each (object in cookie.data.devicesIOS)
+				{
+					ConstantsCoreVO.TEMPLATES_IOS_DEVICES.addItem(ObjectTranslator.objectToInstance(object, MobileDeviceVO));
+				}
+			}
+			else
+			{
+				ConstantsCoreVO.generateDevices();
+			}
 			
 			LayoutModifier.parseCookie(cookie);
 			
@@ -280,6 +302,13 @@ package actionScripts.plugin.recentlyOpened
 		private function onSaveLayoutChangeEvent(event:GeneralEvent):void
 		{
 			cookie.data[event.value.label] = event.value.value;
+			cookie.flush();
+		}
+		
+		private function onDeviceListUpdated(event:GeneralEvent):void
+		{
+			cookie.data["devicesAndroid"] = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.source;
+			cookie.data["devicesIOS"] = ConstantsCoreVO.TEMPLATES_IOS_DEVICES.source;
 			cookie.flush();
 		}
 		
