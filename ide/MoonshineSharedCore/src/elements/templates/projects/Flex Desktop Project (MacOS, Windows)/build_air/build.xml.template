@@ -184,11 +184,11 @@
 		<echo>Normal Signed Process Running</echo>
 		<java jar="${ADT_PATH}" fork="true" failonerror="true">
 			<arg line="-package" />
-	   		<arg line="-target native"/>
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}'" />
 	   		<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
-	   		<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+	   		<arg line="-tsa 'http://timestamp.comodoca.com/rfc3161'" />
+	   		<arg line="-target native"/>
 	   		<arg line="${DESKTOP_PACKAGE_PATH}" />
 	   		<arg line="'${DESKTOP_DESCRIPTOR}'" />
 	   		<arg line="'${SWF_FILE_PATH}'" />
@@ -209,11 +209,11 @@
 	<target name="compileDMGProject" depends="compileAIR">
 		<java jar="${ADT_PATH}" fork="true" failonerror="true">
 			<arg line="-package" />
-			<arg line="-target native"/>
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}' " />
 			<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
-			<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line="-tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line="-target native"/>
 			<arg line="${DEPLOY_DIR}/${DESKTOP_PACKAGE_NAME}.dmg" />
 			<arg line="${DESKTOP_DESCRIPTOR}" />
 			<arg line="${SWF_FILE_PATH}" />
