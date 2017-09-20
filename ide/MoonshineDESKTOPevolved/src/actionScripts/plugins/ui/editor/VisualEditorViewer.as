@@ -61,7 +61,15 @@ package actionScripts.plugins.ui.editor
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
         {
             var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
-            var mxmlString:String = mxmlCode.toString();
+            var mxmlCodeList:XMLList = mxmlCode.children();
+            var mxmlEditor:XML = new XML(editor.dataProvider);
+
+            for each (var child:XML in mxmlCodeList)
+            {
+                mxmlEditor.appendChild(child);
+            }
+
+            editor.dataProvider = mxmlEditor.toString();
         }
 
         override protected function createChildren():void
