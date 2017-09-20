@@ -398,6 +398,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function reAdjustApplicationSize(width:Number, height:Number):void
+		{
+			
+		}
+		
 		public function get runtimeVersion():String
 		{
 			return "0";
