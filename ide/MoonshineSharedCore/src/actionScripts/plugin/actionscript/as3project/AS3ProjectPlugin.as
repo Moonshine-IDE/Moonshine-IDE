@@ -92,7 +92,7 @@ package actionScripts.plugin.actionscript.as3project
 			// Is file in an already opened project?
 			for each (var p:ProjectVO in model.projects)
 			{
-				if ( projectFile.fileBridge.nativePath.indexOf(p.folderLocation.fileBridge.nativePath) == 0 )
+				if (projectFile.fileBridge.parent.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
 				{
 					warning("Project already opened. Ignoring.");
 					return;
