@@ -110,7 +110,7 @@ package actionScripts.locator
 		{
 			if (build)
 			{
-				return "Version " + version + ", Build" + build;
+				return "Version " + version + ", Build " + build;
 			}
 
 			return "Version " + version;
