@@ -75,7 +75,7 @@
 		paddingBottom="3"
 		verticalAlign="middle" horizontalAlign="center" styleName="uiTextSettingsLabel">
 		<components:Label text="Moonshine" color="0x8a2a2a"/>
-		<components:Label text="Version {IDEModel.getInstance().version}, Build {IDEModel.getInstance().build}"/>
+		<components:Label text="Version {IDEModel.getInstance().version}, Build {IDEModel.getInstance().build}" textAlign="center" width="100%"/>
 		<mx:HRule width="96%"/>
 		<mx:Spacer/>
 	</components:VGroup>
