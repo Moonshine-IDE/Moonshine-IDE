@@ -217,11 +217,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (!air)
 			{
-				var html:FileLocation = !FlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
-				if (html.fileBridge.exists) htmlPath = html;
-				else htmlPath = swfOutput.path;
+				var html:FileLocation = !FlexJS ?
+						folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") :
+						folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
+
+				if (html.fileBridge.exists)
+				{
+					htmlPath = html;
+                }
+				else
+				{
+					htmlPath = swfOutput.path;
+                }
 				
-				return html.fileBridge.nativePath;
+				return htmlPath.fileBridge.nativePath;
 			}
 			
 			return "";
