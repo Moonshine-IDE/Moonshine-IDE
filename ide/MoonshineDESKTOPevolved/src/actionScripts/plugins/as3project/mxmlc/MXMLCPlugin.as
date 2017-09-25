@@ -727,6 +727,7 @@ package actionScripts.plugins.as3project.mxmlc
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				var match:Array;
+				var isSuccessBuild:Boolean;
 				
 				match = data.match(/fcsh: Target \d not found/);
 				if (match)
@@ -746,7 +747,11 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				match = data.match(/.* bytes.*/);
-				if (match) 
+				if (match) isSuccessBuild = true;
+				else match = data.match(/.*successfully compiled and optimized.*/);
+				if (match) isSuccessBuild = true;
+				
+				if (isSuccessBuild) 
 				{ // Successful compile
 					// swfPath = match[1];
 					
