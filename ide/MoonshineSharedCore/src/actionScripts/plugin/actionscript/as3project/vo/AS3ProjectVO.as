@@ -223,7 +223,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				if (FlexJS) htmlPath = html;
 				else htmlPath = swfOutput.path;
 				
-				return html.fileBridge.nativePath;
+				return htmlPath.fileBridge.nativePath;
 			}
 			
 			return "";
