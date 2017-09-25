@@ -831,7 +831,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				// Let SWFLauncher runs SWF file
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.swfOutput.path.fileBridge.getFile as File, pvo) 
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo) 
 				);
 			}
 			
