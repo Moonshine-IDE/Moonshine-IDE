@@ -40,5 +40,5 @@ NOTE:  this part of the project is out of date.  The server-side logic needs to 
 
 ## License
 
-Moonshine-IDE is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+Moonshine-IDE is licensed under the Apache License 2.0 - see the [LICENSE.md](https://github.com/prominic/Moonshine-IDE/blob/master/LICENSE.MD) file for details
 
