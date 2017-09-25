@@ -829,10 +829,9 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
-				// Let SWFLauncher runs the HTML file instead
-				if (!pvo.htmlPath) pvo.getHTMLPath;
+				// Let SWFLauncher runs SWF file
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo) 
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.swfOutput.path.fileBridge.getFile as File, pvo) 
 				);
 			}
 			
