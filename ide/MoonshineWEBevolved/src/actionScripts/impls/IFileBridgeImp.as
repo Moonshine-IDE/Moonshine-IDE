@@ -139,6 +139,11 @@ package actionScripts.impls
 			//TODO: implement function
 		}
 		
+		public function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation
+		{
+			return null;
+		}
+		
 		public function resolveUserDirectoryPath(pathWith:String=null):FileLocation
 		{
 			return null;
