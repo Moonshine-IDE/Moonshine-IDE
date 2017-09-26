@@ -399,7 +399,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				// @santanu
+				// @devsena
 				// 02/08/2017 (mm/dd/yyyy)
 				// since .actionScriptProperties file do not accept any
 				// unrelated or unknown tags to be include in it's file

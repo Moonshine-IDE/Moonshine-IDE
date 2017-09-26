@@ -215,7 +215,7 @@
 							case undefined:
 							case ProjectEvent.LAST_OPENED_AS_FB_PROJECT:
 							{
-								// @santanu
+								// @devsena
 								// check change log in AS3ProjectVO.as against
 								// commenting the following process
 								
