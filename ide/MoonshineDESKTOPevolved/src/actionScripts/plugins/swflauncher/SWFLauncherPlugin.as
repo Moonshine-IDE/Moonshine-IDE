@@ -310,7 +310,6 @@ package actionScripts.plugins.swflauncher
 			// Start with systems default handler for .swf filetype
 			//file.openWithDefaultApplication();
 			var request: URLRequest = new URLRequest(file.url);
-			Alert.show(file.url);
 			try 
 			{
 				navigateToURL(request, '_blank'); // second argument is target
