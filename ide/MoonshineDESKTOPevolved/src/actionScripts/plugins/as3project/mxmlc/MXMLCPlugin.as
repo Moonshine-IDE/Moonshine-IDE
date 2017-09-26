@@ -55,6 +55,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.ui.editor.text.TextLineModel;
@@ -837,9 +838,12 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
+				var htmlWrapperFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] +".html");
+				getHTMLTemplatesCopied(pvo, htmlWrapperFile);
+				
 				// Let SWFLauncher runs SWF file
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo) 
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile ? htmlWrapperFile : swfFile, pvo) 
 				);
 			}
 			
@@ -870,6 +874,26 @@ package actionScripts.plugins.as3project.mxmlc
 				else
 				{
 					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
+				}
+			}
+		}
+		
+		private function getHTMLTemplatesCopied(pvo:AS3ProjectVO, htmlFile:File):void
+		{
+			if (!htmlFile.exists)
+			{
+				var htmlTemplateFolder:FileLocation = pvo.folderLocation.resolvePath("html-template");
+				var fileName:String = htmlFile.name.split(".")[0];
+				if (htmlTemplateFolder.fileBridge.exists)
+				{
+					var th:TemplatingHelper = new TemplatingHelper();
+					th.templatingData["$Wrapper"] = fileName;
+					th.projectTemplate(htmlTemplateFolder, pvo.folderLocation.resolvePath("bin-debug"));
+					dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin-debug")));
+				}
+				else
+				{
+					Alert.show("Missing \"html-template\" folder.\nMoonshine is trying to open the "+ fileName +".swf file.\n(Note: This may not work in MacOS Sandbox.)", "Note!");
 				}
 			}
 		}
