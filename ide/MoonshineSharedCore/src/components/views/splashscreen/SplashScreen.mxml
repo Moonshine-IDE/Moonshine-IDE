@@ -399,6 +399,8 @@
 					{
 						vgLeftList.callLater(function():void
 						{
+							vgProjects.y = Math.round(vgProjects.y);
+							vgLeftList.y = Math.round(vgLeftList.y);
 							if (vgProjects.y > vgLeftList.y)
 							{
 								while (vgProjects.y != vgLeftList.y)
