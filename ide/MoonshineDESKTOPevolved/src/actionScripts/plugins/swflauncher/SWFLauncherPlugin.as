@@ -29,6 +29,7 @@ package actionScripts.plugins.swflauncher
 	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -309,6 +310,7 @@ package actionScripts.plugins.swflauncher
 			// Start with systems default handler for .swf filetype
 			//file.openWithDefaultApplication();
 			var request: URLRequest = new URLRequest(file.url);
+			Alert.show(file.url);
 			try 
 			{
 				navigateToURL(request, '_blank'); // second argument is target

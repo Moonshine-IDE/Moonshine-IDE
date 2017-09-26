@@ -748,8 +748,11 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				match = data.match(/.* bytes.*/);
 				if (match) isSuccessBuild = true;
-				else match = data.match(/.*successfully compiled and optimized.*/);
-				if (match) isSuccessBuild = true;
+				else 
+				{
+					match = data.match(/.*successfully compiled and optimized.*/);
+					if (match) isSuccessBuild = true;
+				}
 				
 				if (isSuccessBuild) 
 				{ // Successful compile
