@@ -843,7 +843,7 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// Let SWFLauncher runs SWF file
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile ? htmlWrapperFile : swfFile, pvo) 
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo) 
 				);
 			}
 			
