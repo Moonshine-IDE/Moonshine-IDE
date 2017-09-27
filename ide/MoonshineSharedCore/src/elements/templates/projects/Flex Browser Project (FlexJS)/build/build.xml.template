@@ -27,7 +27,7 @@
     <property name="SOURCE_PATH" value="${basedir}/../$SourcePath"/>
     <property name="MAIN_FILE_NAME" value="${SOURCE_PATH}/$ProjectFile"/>
 
-    <!-- SWF COMPILER PATH -->
+    <!-- JS COMPILER PATH -->
     <condition property="MXMLC_PATH" value="${FALCON_HOME}/js/bin/mxmlc.bat">
         <os family="windows"/>
     </condition>
