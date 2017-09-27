@@ -17,7 +17,8 @@ package actionScripts.ui.editor.text
 		private static const DELAY_MS:int = 350;
 
 		private var tooltip:VBox;
-		private var tooltipData:Object = {};
+		private var idToRichText:Object = {};
+		private var idToValue:Object = {};
 		private var tooltipTimeoutHandle:int = -1;
 
 		protected var editor:TextEditor;
@@ -39,15 +40,17 @@ package actionScripts.ui.editor.text
 		{
 			if(value === null)
 			{
-				if(!(id in tooltipData))
+				if(!(id in idToValue))
 				{
+					//there's nothing to clear
 					return;
 				}
-				var text:RichText = tooltipData[id];
-				tooltip.removeElement(text);
-				delete tooltipData[id];
+				var richText:RichText = idToRichText[id];
+				tooltip.removeElement(richText);
+				delete idToRichText[id];
+				delete idToValue[id];
 				var stillHasData:Boolean = false;
-				for(var key:String in tooltipData)
+				for(var key:String in idToValue)
 				{
 					stillHasData = true;
 					break;
@@ -60,17 +63,24 @@ package actionScripts.ui.editor.text
 			}
 			else
 			{
-				if(id in tooltipData)
+				var oldValue:String = idToValue[id];
+				if(oldValue === value)
 				{
-					text = tooltipData[id];
+					//the value has not changed, so ignore it
+					return;
+				}
+				idToValue[id] = value;
+				if(id in idToRichText)
+				{
+					richText = idToRichText[id];
 				}
 				else
 				{
-					text = new RichText();
-					tooltip.addElement(text);
-					tooltipData[id] = text;
+					richText = new RichText();
+					tooltip.addElement(richText);
+					idToRichText[id] = richText;
 				}
-				text.textFlow = TextConverter.importToFlow(value, TextConverter.PLAIN_TEXT_FORMAT);
+				richText.textFlow = TextConverter.importToFlow(value, TextConverter.PLAIN_TEXT_FORMAT);
 			}
 			if(tooltip.isPopUp)
 			{
@@ -85,6 +95,14 @@ package actionScripts.ui.editor.text
 				clearTimeout(tooltipTimeoutHandle);
 			}
 			tooltipTimeoutHandle = setTimeout(showTooltipAfterDelay, DELAY_MS);
+			
+			//previously, we listened for these events after the timeout, but
+			//it's actually better to listen immediately so that we can clear
+			//the timeout because it's possible for the mouse to move away or
+			//a key to be pressed before the timeout and that could show the
+			//tooltip unexpectedly
+			editor.addEventListener(KeyboardEvent.KEY_DOWN, editor_onKeyDown);
+			editor.addEventListener(MouseEvent.ROLL_OUT, editor_onRollOut);
 		}
 
 		public function showTooltipAfterDelay():void
@@ -93,8 +111,6 @@ package actionScripts.ui.editor.text
 			if(!tooltip.isPopUp)
 			{
 				PopUpManager.addPopUp(tooltip, editor, false);
-				editor.addEventListener(KeyboardEvent.KEY_DOWN, editor_onKeyDown);
-				editor.addEventListener(MouseEvent.ROLL_OUT, editor_onRollOut);
 			}
 			tooltip.validateNow();
 			var tooltipX:Number = tooltip.stage.mouseX;
@@ -118,13 +134,24 @@ package actionScripts.ui.editor.text
 				clearTimeout(tooltipTimeoutHandle);
 				tooltipTimeoutHandle = -1;
 			}
+			for(var id:String in idToValue)
+			{
+				delete idToValue[id];
+
+				var text:RichText = idToRichText[id];
+				tooltip.removeElement(text);
+				delete idToRichText[id];
+			}
+			//previously, these listeners were only removed if the tooltip was a
+			//popup, but now they are added before the tooltip is displayed, so
+			//they always need to be removed
+			editor.removeEventListener(KeyboardEvent.KEY_DOWN, editor_onKeyDown);
+			editor.removeEventListener(MouseEvent.ROLL_OUT, editor_onRollOut);
 			if(!tooltip.isPopUp)
 			{
 				return;
 			}
 			PopUpManager.removePopUp(tooltip);
-			editor.removeEventListener(KeyboardEvent.KEY_DOWN, editor_onKeyDown);
-			editor.removeEventListener(MouseEvent.ROLL_OUT, editor_onRollOut);
 		}
 
 		private function editor_onRollOut(event:MouseEvent):void
