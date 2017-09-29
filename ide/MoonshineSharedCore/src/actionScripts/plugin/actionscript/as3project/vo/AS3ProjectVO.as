@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var flashDevelopObjConfig:XML;
 		public var isFlashBuilderProject:Boolean;
 		public var flashBuilderDOCUMENTSPath:String;
-
+		
         public var FlexJS:Boolean = false;
         public var isMDLFlexJS:Boolean;
         public var isMobile:Boolean;
@@ -220,11 +220,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (!air)
 			{
+				if (htmlPath) return htmlPath.fileBridge.nativePath;
+				
 				var html:FileLocation = !FlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
-				if (html.fileBridge.exists) htmlPath = html;
+				
+				if (FlexJS) htmlPath = html;
 				else htmlPath = swfOutput.path;
 				
-				return html.fileBridge.nativePath;
+				return htmlPath.fileBridge.nativePath;
 			}
 			
 			return "";
@@ -399,7 +402,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				// @santanu
+				// @devsena
 				// 02/08/2017 (mm/dd/yyyy)
 				// since .actionScriptProperties file do not accept any
 				// unrelated or unknown tags to be include in it's file
@@ -418,15 +421,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 				var settingsFile:FileLocation;
 				/*if (isFlashBuilderProject)
 				{
-					settingsFile = folderLocation.resolvePath(".actionScriptProperties");
-					// Write settings
-					IDEModel.getInstance().flexCore.exportFlashBuilder(this, settingsFile);
+				settingsFile = folderLocation.resolvePath(".actionScriptProperties");
+				// Write settings
+				IDEModel.getInstance().flexCore.exportFlashBuilder(this, settingsFile);
 				}
 				else
 				{*/
-					settingsFile = folderLocation.resolvePath(projectName+".as3proj");
-					// Write settings
-					IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
+				settingsFile = folderLocation.resolvePath(projectName+".as3proj");
+				// Write settings
+				IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
 			}
 			
@@ -437,8 +440,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			/*if (configInvalid)
 			{*/
-				config.write(this);
-				configInvalid = false;
+			config.write(this);
+			configInvalid = false;
 			//}
 		}
 	}

@@ -408,7 +408,35 @@
 				}
 				else
 				{
-					//vgProjects.y = (height - vgProjects.height) / 2;
+					if (!doAtOnce)
+					{
+						vgLeftList.callLater(function():void
+						{
+							vgProjects.y = Math.round(vgProjects.y);
+							vgLeftList.y = Math.round(vgLeftList.y);
+							if (vgProjects.y > vgLeftList.y)
+							{
+								while (vgProjects.y != vgLeftList.y)
+								{
+									vgProjects.y -= 1;
+									vgProjects.height += 1;
+								}
+								
+								if ((vgProjects.height + vgProjects.y) > (height - 40))
+								{
+									vgProjects.height = height - vgProjects.y - 40;
+									vgProjects.callLater(onStageResized, [null]);
+								}
+							}
+						});
+						
+						doAtOnce = true;
+					}
+					else
+					{
+						//vgProjects.y = (height - vgProjects.height) / 2;
+					}
+					//vgProjects.height = height - vgProjects.y - 40;
 				}
 				//vgProjects.height = height - vgProjects.y - 40;
 			}

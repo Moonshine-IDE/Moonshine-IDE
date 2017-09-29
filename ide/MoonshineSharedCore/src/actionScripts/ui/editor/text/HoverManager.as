@@ -25,8 +25,6 @@ package actionScripts.ui.editor.text
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 
-		private var lastTooltipText:String;
-
 		public function HoverManager(editor:TextEditor, model:TextEditorModel)
 		{
 			this.editor = editor;
@@ -53,18 +51,11 @@ package actionScripts.ui.editor.text
 				var content:String = contents[i];
 				hoverText += content;
 			}
-			if(lastTooltipText === hoverText)
-			{
-				//it's the same one so do nothing!
-				return;
-			}
-			lastTooltipText = hoverText;
 			editor.setTooltip(TOOL_TIP_ID, hoverText);
 		}
 
 		public function closeHover():void
 		{
-			lastTooltipText = null;
 			editor.setTooltip(TOOL_TIP_ID, null);
 		}
 	}

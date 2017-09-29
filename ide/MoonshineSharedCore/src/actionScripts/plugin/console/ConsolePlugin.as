@@ -22,13 +22,13 @@ package actionScripts.plugin.console
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.utils.setTimeout;
-
+	
 	import mx.containers.dividedBoxClasses.BoxDivider;
 	import mx.events.DividerEvent;
 	import mx.managers.CursorManager;
 	import mx.managers.CursorManagerPriority;
 	import mx.resources.ResourceManager;
-
+	
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.setting.SpecialKeySetting;

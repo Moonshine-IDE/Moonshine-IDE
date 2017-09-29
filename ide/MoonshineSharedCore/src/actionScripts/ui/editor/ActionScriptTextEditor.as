@@ -44,11 +44,13 @@ package actionScripts.ui.editor
 	{
 		private var dispatchTypeAheadPending:Boolean;
 		private var dispatchSignatureHelpPending:Boolean;
+		private var mouseOverForHover:Boolean = false;
 
 		public function ActionScriptTextEditor()
 		{
 			super();
 			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
@@ -304,6 +306,7 @@ package actionScripts.ui.editor
 		
 		private function onMouseMove(event:MouseEvent):void
 		{
+			mouseOverForHover = true;
 			var globalXY:Point = new Point(event.stageX, event.stageY);
 			var charAndLine:Point = editor.getCharAndLineForXY(globalXY, true);
 			if(charAndLine !== null)
@@ -324,6 +327,11 @@ package actionScripts.ui.editor
 				editor.showHover(new <String>[]);
 			}
 		}
+		
+		private function onRollOut(event:MouseEvent):void
+		{
+			mouseOverForHover = false;
+		}
 
 		private function showCompletionListHandler(event:CompletionItemsEvent):void
 		{
@@ -340,6 +348,11 @@ package actionScripts.ui.editor
 		private function showHoverHandler(event:HoverEvent):void
 		{
 			GlobalEventDispatcher.getInstance().removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			if(!mouseOverForHover)
+			{
+				//ignore because the mouse is no longer over the editor
+				return;
+			}
 			editor.showHover(event.contents);
 		}
 

@@ -161,7 +161,7 @@ package actionScripts.plugin.actionscript.as3project
 			}
 			else if (isFBProject && isFDProject)
 			{
-				// @santanu
+				// @devsena
 				// check change log in AS3ProjectVO.as against
 				// commenting the following process
 				

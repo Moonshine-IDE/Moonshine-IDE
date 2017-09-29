@@ -412,12 +412,14 @@ package actionScripts.plugins.as3project
 				{
 					th.projectTemplate(templateDir.resolvePath("build_web"), targetFolder.resolvePath("build"));
 					th.projectTemplate(templateDir.resolvePath("bin-debug_web"), targetFolder.resolvePath("bin-debug"));
+					th.projectTemplate(templateDir.resolvePath("html-template_web"), targetFolder.resolvePath("html-template"));
 				}
 				
 				// we also needs to delete unnecessary folders
 				var folderToDelete1:FileLocation = targetFolder.resolvePath("build_air");
 				var folderToDelete2:FileLocation = targetFolder.resolvePath("build_web");
 				var folderToDelete3:FileLocation = targetFolder.resolvePath("bin-debug_web");
+				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
 				try
 				{
 					folderToDelete1.fileBridge.deleteDirectory(true);
@@ -425,6 +427,7 @@ package actionScripts.plugins.as3project
 					{
 						folderToDelete2.fileBridge.deleteDirectory(true);
 						folderToDelete3.fileBridge.deleteDirectory(true);
+						folderToDelete4.fileBridge.deleteDirectory(true);
 					}
 				} catch (e:Error)
 				{
@@ -433,6 +436,7 @@ package actionScripts.plugins.as3project
 					{
 						folderToDelete2.fileBridge.deleteDirectoryAsync(true);
 						folderToDelete3.fileBridge.deleteDirectoryAsync(true);
+						folderToDelete4.fileBridge.deleteDirectoryAsync(true);
 					}
 				}
 			}
