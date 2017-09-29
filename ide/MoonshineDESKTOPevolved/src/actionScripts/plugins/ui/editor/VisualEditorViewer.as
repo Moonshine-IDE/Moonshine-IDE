@@ -62,14 +62,19 @@ package actionScripts.plugins.ui.editor
         {
             var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
             var mxmlCodeList:XMLList = mxmlCode.children();
+
             var mxmlEditor:XML = new XML(editor.dataProvider);
+            mxmlEditor.setChildren("");
 
             for each (var child:XML in mxmlCodeList)
             {
                 mxmlEditor.appendChild(child);
             }
 
-            editor.dataProvider = mxmlEditor.toString();
+            var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+            var xmlString:String = markAsXml + mxmlEditor.toXMLString();
+
+            editor.dataProvider = xmlString;
         }
 
         override protected function createChildren():void

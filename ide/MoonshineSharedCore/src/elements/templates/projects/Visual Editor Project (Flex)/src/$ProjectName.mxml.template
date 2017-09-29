@@ -2,5 +2,4 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
-	<s:Button x="257" y="113" width="100" height="30" label="Text"/>
 </s:Application>
