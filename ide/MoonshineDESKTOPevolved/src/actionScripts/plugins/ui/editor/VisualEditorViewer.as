@@ -75,6 +75,8 @@ package actionScripts.plugins.ui.editor
             var xmlString:String = markAsXml + mxmlEditor.toXMLString();
 
             editor.dataProvider = xmlString;
+
+            _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
         }
 
         override protected function createChildren():void
