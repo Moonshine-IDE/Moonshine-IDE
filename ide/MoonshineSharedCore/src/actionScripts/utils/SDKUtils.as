@@ -149,7 +149,7 @@ package actionScripts.utils
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:Object = isSDKDirectoy(targetDir);
+					var bundledFlexSDK:Object = isSDKDirectory(targetDir);
 					if (bundledFlexSDK)
 					{
 						addSDKDirectory(bundledFlexSDK);
@@ -162,7 +162,7 @@ package actionScripts.utils
 						{
 							if (j.isDirectory && (j.name.indexOf("Flex") != -1))
 							{
-								bundledFlexSDK = isSDKDirectoy(new FileLocation(j.nativePath));
+								bundledFlexSDK = isSDKDirectory(new FileLocation(j.nativePath));
 								if (bundledFlexSDK)
 								{
 									addSDKDirectory(bundledFlexSDK);
@@ -256,7 +256,7 @@ package actionScripts.utils
 				// Thus we're closing <version> field parsing as it'll come always wrong in FlexJS case
 				// replaced with manual **bad** way of version parsing by substr it's name value
 				
-				var sdkDirDescription:Object = isSDKDirectoy(new FileLocation(i.path));
+				var sdkDirDescription:Object = isSDKDirectory(new FileLocation(i.path));
 				// continue only if the saved path is still valid
 				if (sdkDirDescription)
 				{
@@ -315,7 +315,7 @@ package actionScripts.utils
 			model.defaultSDK = new FileLocation(model.userSavedSDKs[0].path);
 		}
 		
-		public static function isSDKDirectoy(location:FileLocation):Object
+		public static function isSDKDirectory(location:FileLocation):Object
 		{
 			// lets load flex-sdk-description.xml to get it's label
 			var description:FileLocation = location.fileBridge.resolvePath("flex-sdk-description.xml");
@@ -386,6 +386,75 @@ package actionScripts.utils
 			return extractionDir;
 		}
 		
+        public static function getSdkSwfMajorVersion(sdkPath:String=null, providerToUpdateAsync:Object=null, fieldToUpdateAsync:String=null):int
+        {
+            var currentSDKVersion: int = 10;
+            var sdk:FileLocation;
+            if (sdkPath)
+            {
+                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                if (isFound) sdk = new FileLocation(isFound.path);
+            }
+            else
+            {
+                sdk = IDEModel.getInstance().defaultSDK;
+            }
+
+            if (sdk && sdk.fileBridge.exists)
+            {
+                var configFile: FileLocation = sdk.resolvePath("frameworks/flex-config.xml");
+                if (configFile.fileBridge.exists)
+                {
+                    // for async type of read and update to specific object's field
+                    if (providerToUpdateAsync)
+                    {
+                        providerToUpdateAsync[fieldToUpdateAsync] = currentSDKVersion;
+                        configFile.fileBridge.readAsync(providerToUpdateAsync, XML, int, fieldToUpdateAsync, "target-player");
+                    }
+                    // non-async direct return only
+                    else
+                    {
+                        var tmpConfigXML: XML = XML(configFile.fileBridge.read());
+                        currentSDKVersion = int(tmpConfigXML["target-player"]);
+                    }
+                }
+            }
+
+            return currentSDKVersion;
+        }
+
+        public static function getSdkSwfMinorVersion(sdkPath:String=null):int
+        {
+            var currentSdkMinorVersion: int = 0;
+            var sdk:FileLocation;
+            if (sdkPath)
+            {
+                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                if (isFound) sdk = new FileLocation(isFound.path);
+            }
+            else
+            {
+                sdk = IDEModel.getInstance().defaultSDK;
+            }
+
+            if (sdk && sdk.fileBridge.exists)
+            {
+                var configFile: FileLocation = sdk.resolvePath("frameworks/flex-config.xml");
+                if (configFile.fileBridge.exists)
+                {
+					var tmpConfigXML: XML = XML(configFile.fileBridge.read());
+					var targetPlayerVersion:String = tmpConfigXML["target-player"].toString();
+					var versionParts:Array = targetPlayerVersion.split(".");
+					if (versionParts.length > 1)
+					{
+                        currentSdkMinorVersion = int(versionParts[1]);
+					}
+                }
+            }
+
+            return currentSdkMinorVersion;
+        }
+
 		private static function onExtractionFailed(event:Event):void
 		{
 			isSDKExtractionFailed = true;

@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-	import flash.events.Event;
+    import actionScripts.utils.SDKUtils;
+
+    import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -132,7 +134,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				return;
 			}
 			buildOptions.customSDKPath = value;
-			swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion(value);
+			swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(value);
 			this.dispatchEvent(new Event(CHANGE_CUSTOM_SDK));
 		}
 		

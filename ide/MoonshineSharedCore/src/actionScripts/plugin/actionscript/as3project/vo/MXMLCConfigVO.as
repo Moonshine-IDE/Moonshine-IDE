@@ -22,7 +22,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
 	
 	public class MXMLCConfigVO extends FileWrapper
@@ -50,10 +51,19 @@ package actionScripts.plugin.actionscript.as3project.vo
 			XML.ignoreComments = oldIC;
 			
 			// re-verify SWF version - crucial part
-			if (!pvo.buildOptions.customSDK && IDEModel.getInstance().defaultSDK) pvo.swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion(null);
-			else if (pvo.buildOptions.customSDK) pvo.swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion(pvo.buildOptions.customSDKPath);
+			if (!pvo.buildOptions.customSDK && IDEModel.getInstance().defaultSDK)
+			{
+				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion();
+				pvo.swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion();
+            }
+			else if (pvo.buildOptions.customSDK)
+			{
+				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(pvo.buildOptions.customSDKPath);
+                pvo.swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion(pvo.buildOptions.customSDKPath);
+            }
+
 			data.appendChild(
-				<target-player>{pvo.swfOutput.swfVersion}.0.0</target-player>
+				<target-player>{pvo.swfOutput.swfVersion}.{pvo.swfOutput.swfMinorVersion}.0</target-player>
 			);
 
 			data.appendChild(

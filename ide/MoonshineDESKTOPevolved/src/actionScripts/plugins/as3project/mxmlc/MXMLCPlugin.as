@@ -308,7 +308,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			sdkSelectionCancelled(null);
 			// update swf version if a newer SDK now saved than previously saved one
-			AS3ProjectVO(currentProject).swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion();
+			AS3ProjectVO(currentProject).swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion();
 			// continue with waiting build process again
 			proceedWithBuild(currentProject);
 		}

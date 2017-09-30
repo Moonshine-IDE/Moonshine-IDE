@@ -16,7 +16,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
-	import flash.filesystem.File;
+    import actionScripts.utils.SDKUtils;
+
+    import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
@@ -151,7 +153,7 @@ package actionScripts.plugins.as3project.importer
 			// FB doesn't seem to have a notion of output filename, so we guesstimate it
 			p.swfOutput.path = p.folderLocation.resolvePath(data.compiler.@outputFolderPath + "/" + p.targets[0].fileBridge.name.split(".")[0] + ".swf");
 			// lets update SWF version too per current SDK version (if setup a default SDK)
-			p.swfOutput.swfVersion = SWFOutputVO.getSDKSWFVersion(p.buildOptions.customSDKPath);
+			p.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(p.buildOptions.customSDKPath);
 			
 			var classPath:FileLocation = p.folderLocation.resolvePath(data.compiler.@sourceFolderPath);
 			p.classpaths.push(classPath);

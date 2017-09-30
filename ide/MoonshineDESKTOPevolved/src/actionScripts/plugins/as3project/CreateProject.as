@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-	import flash.display.DisplayObject;
+    import actionScripts.utils.SDKUtils;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
 	import flash.net.SharedObject;
@@ -340,7 +342,7 @@ package actionScripts.plugins.as3project
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
-			movieVersion = SWFOutputVO.getSDKSWFVersion().toString()+".0";
+			movieVersion = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
 			
 			// Create project root directory
 			if (!_isProjectFromExistingSource)

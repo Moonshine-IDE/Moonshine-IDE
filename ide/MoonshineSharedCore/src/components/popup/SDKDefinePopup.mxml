@@ -27,80 +27,82 @@
 			   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.CloseEvent;
-			import mx.events.FlexEvent;
-			import mx.managers.PopUpManager;
-			
-			import actionScripts.events.ProjectEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.utils.SDKUtils;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.ProjectReferenceVO;
-			
-			public var editedSDKPath:ProjectReferenceVO;
-			private var file:FileLocation;
-			
-			/**
-			 * On this close button clicked
-			 */
-			protected function onCloseWindow(event:CloseEvent):void
-			{
-				PopUpManager.removePopUp(this);
-			}
-			
-			protected function onBrowserPath(event:MouseEvent):void
-			{
-				file = new FileLocation();
-				file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
-			}
-			
-			private function openFile(dir:Object):void
-			{
-				//openFileCancelled(event);
-				btnCreate.enabled = false;
-				file = new FileLocation(dir.nativePath);
-				
-				var tmpXML:Object = SDKUtils.isSDKDirectoy(file);
-				if (tmpXML)
-				{
-					txtPath.text = tmpXML.nativePath;
-					txtLabel.text = String(tmpXML.xml.name);
-					btnCreate.enabled = true;
-				}
-				else
-				{
-					txtLabel.text = "Not a valid SDK directory.";
-				}
-			}
-			
-			private function openFileCancelled():void
-			{
-			}
-			
-			protected function onCreate(event:MouseEvent):void
-			{
-				if (editedSDKPath)
-				{
-					editedSDKPath.path = txtPath.text;
-					editedSDKPath.name = txtLabel.text;
-				}
-				
-				dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, editedSDKPath ? editedSDKPath : {label:txtLabel.text, path:txtPath.text}));
-				onCloseWindow(null);
-			}
-			
-			protected function onCreationCompletes(event:FlexEvent):void
-			{
-				if (editedSDKPath)
-				{
-					txtLabel.text = editedSDKPath.name;
-					txtPath.text = editedSDKPath.path;
-					btnCreate.label = "Update";
-					btnCreate.enabled = true;
-				}
-			}
-			
-		]]>
+        import mx.events.CloseEvent;
+        import mx.events.FlexEvent;
+        import mx.managers.PopUpManager;
+
+        import actionScripts.events.ProjectEvent;
+        import actionScripts.factory.FileLocation;
+        import actionScripts.utils.SDKUtils;
+        import actionScripts.valueObjects.ConstantsCoreVO;
+        import actionScripts.valueObjects.ProjectReferenceVO;
+
+        public var editedSDKPath:ProjectReferenceVO;
+        private var file:FileLocation;
+
+        /**
+         * On this close button clicked
+         */
+        protected function onCloseWindow(event:CloseEvent):void
+        {
+            PopUpManager.removePopUp(this);
+        }
+
+        protected function onBrowserPath(event:MouseEvent):void
+        {
+            file = new FileLocation();
+            file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+        }
+
+        private function openFile(dir:Object):void
+        {
+            //openFileCancelled(event);
+            btnCreate.enabled = false;
+            file = new FileLocation(dir.nativePath);
+
+            var tmpXML:Object = SDKUtils.isSDKDirectory(file);
+            if (tmpXML)
+            {
+                txtPath.text = tmpXML.nativePath;
+                txtLabel.text = String(tmpXML.xml.name);
+                btnCreate.enabled = true;
+            }
+            else
+            {
+                txtLabel.text = "Not a valid SDK directory.";
+            }
+        }
+
+        private function openFileCancelled():void
+        {
+        }
+
+        protected function onCreate(event:MouseEvent):void
+        {
+            if (editedSDKPath)
+            {
+                editedSDKPath.path = txtPath.text;
+                editedSDKPath.name = txtLabel.text;
+            }
+
+            dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, editedSDKPath ? editedSDKPath : {
+                label: txtLabel.text,
+                path: txtPath.text
+            }));
+            onCloseWindow(null);
+        }
+
+        protected function onCreationCompletes(event:FlexEvent):void
+        {
+            if (editedSDKPath)
+            {
+                txtLabel.text = editedSDKPath.name;
+                txtPath.text = editedSDKPath.path;
+                btnCreate.label = "Update";
+                btnCreate.enabled = true;
+            }
+        }
+        ]]>
 	</fx:Script>
 	
 	<s:BorderContainer width="100%" height="100%" borderVisible="false">
