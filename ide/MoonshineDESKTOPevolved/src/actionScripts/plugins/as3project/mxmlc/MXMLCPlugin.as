@@ -470,6 +470,14 @@ package actionScripts.plugins.as3project.mxmlc
 					error("Invalid SDK - Please configure a FlexJS SDK instead");
 					return;
 				}
+				
+				// @fix
+				// https://github.com/prominic/Moonshine-IDE/issues/26
+				// We've found js/bin/mxmlc compiletion do not produce
+				// valid swf with prior 0.8 version; we shall need following
+				// executable for version less than 0.8
+				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc");
+				
 				//If application is flexJS and sdk is flex sdk then error popup alert
 				var fcshFile:File = currentSDK.resolvePath(fcshPath);
 				if (fcshFile.exists)
