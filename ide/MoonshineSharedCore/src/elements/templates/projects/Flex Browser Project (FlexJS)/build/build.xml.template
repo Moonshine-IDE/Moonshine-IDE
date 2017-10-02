@@ -62,13 +62,28 @@
 
     <!-- Compile web FlexJS application -->
     <target name="compileJavascript" depends="init">
-       <exec executable="${MXMLC_PATH}" failonerror="true">
-            <arg value="-source-path+=${SOURCE_PATH}" />
-            <arg value="-external-library-path+=${FALCON_HOME}/js/libs/js.swc" />
-            <arg value="-compiler.targets=JSFlex" />
-            <arg value="-compiler.debug=false" />
-            <arg value="-output=${DEPLOY_DIR}" />
-            <arg value="${MAIN_FILE_NAME}" />
-        </exec>
+	    <if>
+			<!-- Command with special argument for FlexJS versions after 0.7  -->
+			<equals arg1="${IS_FLEXJS_AFTER_7}" arg2="true"/>
+			<then>
+				<exec executable="${MXMLC_PATH}" failonerror="true">
+		            <arg value="-source-path+=${SOURCE_PATH}" />
+		            <arg value="-external-library-path+=${FALCON_HOME}/js/libs/js.swc" />
+		        	<arg value="-compiler.targets=JSFlex" />
+		            <arg value="-compiler.debug=false" />
+		            <arg value="-output=${DEPLOY_DIR}" />
+		            <arg value="${MAIN_FILE_NAME}" />
+	        	</exec>
+			</then>
+			<else>
+				<exec executable="${MXMLC_PATH}" failonerror="true">
+		            <arg value="-source-path+=${SOURCE_PATH}" />
+		            <arg value="-external-library-path+=${FALCON_HOME}/js/libs/js.swc" />
+		            <arg value="-compiler.debug=false" />
+		            <arg value="-output=${DEPLOY_DIR}" />
+		            <arg value="${MAIN_FILE_NAME}" />
+	        	</exec>
+			</else>
+		</if>
     </target>
 </project>

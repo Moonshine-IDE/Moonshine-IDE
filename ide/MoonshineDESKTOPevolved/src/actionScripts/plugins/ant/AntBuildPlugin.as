@@ -44,6 +44,7 @@ package actionScripts.plugins.ant
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
+	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RunANTScriptEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
@@ -95,6 +96,7 @@ package actionScripts.plugins.ant
 		private var _buildWithAnt:Boolean;
 		private var selectedProject:AS3ProjectVO;
 		private var  antBuildScreen:IFlexDisplayObject
+		private var isASuccessBuild:Boolean;
 		//private var antConfigureVo:AntConfigureVo;
 		
 		public function AntBuildPlugin() 
@@ -170,6 +172,7 @@ package actionScripts.plugins.ant
 		
 		private function reset():void 
 		{
+			isASuccessBuild = false;
 			nativeProcess = null;
 			selectedProject = null;
 			IDEModel.getInstance().antScriptFile = null;
@@ -234,7 +237,8 @@ package actionScripts.plugins.ant
 			  antBuildSelected(null);// Start Ant Process
 		}
 		// For projec Menu
-		private function antBuildForSelectedProject(event:Event):void{
+		private function antBuildForSelectedProject(event:Event):void
+		{
 			_buildWithAnt = true;
 		
 			if (model.mainView.isProjectViewAdded)
@@ -378,6 +382,7 @@ package actionScripts.plugins.ant
 			selectAntPopup = null;
 		}
 	  }
+		
 	   private function antBuildSelected(e:AntBuildEvent):void{
 		   if(e)
 		   {
@@ -530,7 +535,6 @@ package actionScripts.plugins.ant
 			}
 			
 			match = data.match(/nativeProcess: Assigned (\d) as the compile target id/);
-			
 			if (data)
 			{
 				
@@ -549,6 +553,12 @@ package actionScripts.plugins.ant
 					compilerError(errors);
 					errors = "";
 				}
+			}
+			
+			match = data.match(/BUILD SUCCESSFUL/);
+			if (data)
+			{
+				isASuccessBuild = true;
 			}
 			
 			if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
@@ -595,6 +605,14 @@ package actionScripts.plugins.ant
 				exiting = false;
 				startShell();
 			}
+			
+			if (isASuccessBuild && selectedProject)
+			{
+				print("Files produced under DEPLOY folder.");
+				// refresh the build folder
+				dispatcher.dispatchEvent(new RefreshTreeEvent(selectedProject.folderLocation.resolvePath("build")));
+			}
+			
 			reset();
 			
 		}
