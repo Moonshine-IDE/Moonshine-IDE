@@ -20,6 +20,7 @@
     <echo>SDK : ${FALCON_HOME}</echo>
 
     <!-- GENERAL PROPERTIES -->
+    <property name="IS_FLEXJS_AFTER_7" value="false"/>
     <property name="DEPLOY_DIR" value="DEPLOY"/>
     <taskdef resource="flexTasks.tasks" classpath="${FALCON_HOME}/js/lib/falcon-flexTasks.jar"/>
 

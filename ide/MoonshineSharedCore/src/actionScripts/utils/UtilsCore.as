@@ -545,15 +545,28 @@ package actionScripts.utils
 		 * 0.8.0 added new compiler argument which do not works
 		 * in older versions
 		 */
-		public static function isNewerVersionSDKThan(olderVersion:int, sdkName:String):Boolean
+		public static function isNewerVersionSDKThan(olderVersion:int, sdkPath:String):Boolean
 		{
-			if (!sdkName) return false;
+			if (!sdkPath) return false;
+			
+			// we need some extra work to determine if FlexJS version is lower than 0.8.0
+			// to ensure addition of new compiler argument '-compiler.targets' 
+			// which do not works with SDK < 0.8.0
+			var sdkFullName:String;
+			for each (var i:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+			{
+				if (sdkPath == i.path)
+				{
+					sdkFullName = i.name;
+					break;
+				}
+			}
 			
 			var FLEXJS_NAME_PREFIX:String = "Apache Flex (FlexJS) ";
 			
-			if (sdkName.indexOf(FLEXJS_NAME_PREFIX) != -1)
+			if (sdkFullName.indexOf(FLEXJS_NAME_PREFIX) != -1)
 			{
-				var sdkVersion:String = sdkName.substr(FLEXJS_NAME_PREFIX.length, sdkName.indexOf(" ", FLEXJS_NAME_PREFIX.length) - FLEXJS_NAME_PREFIX.length);
+				var sdkVersion:String = sdkFullName.substr(FLEXJS_NAME_PREFIX.length, sdkFullName.indexOf(" ", FLEXJS_NAME_PREFIX.length) - FLEXJS_NAME_PREFIX.length);
 				var versionParts:Array = sdkVersion.split("-")[0].split(".");
 				var major:int = 0;
 				var minor:int = 0;
