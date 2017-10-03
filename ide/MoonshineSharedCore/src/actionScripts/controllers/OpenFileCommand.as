@@ -104,9 +104,16 @@ package actionScripts.controllers
 					model.activeEditor = ed;
 					if (atLine > -1)
 					{
-						ed.getEditorComponent().scrollTo(atLine);
-						if (!openType || openType == OpenFileEvent.OPEN_FILE) ed.getEditorComponent().selectLine(atLine);
-						else if (openType == OpenFileEvent.TRACE_LINE) ed.getEditorComponent().selectTraceLine(atLine);
+						ed.getEditorComponent().scrollTo(atLine, openType);
+						if (!openType || openType == OpenFileEvent.OPEN_FILE)
+						{
+							ed.getEditorComponent().selectLine(atLine);
+                        }
+						else if (openType == OpenFileEvent.TRACE_LINE)
+						{
+							ed.getEditorComponent().selectTraceLine(atLine);
+                        }
+
 						if (atChar > -1)
 						{
 							ed.getEditorComponent().model.caretIndex = atChar;

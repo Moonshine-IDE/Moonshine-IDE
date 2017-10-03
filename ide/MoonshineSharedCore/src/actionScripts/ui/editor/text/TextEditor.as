@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import flash.display.Sprite;
+    import actionScripts.events.OpenFileEvent;
+
+    import flash.display.Sprite;
 	import flash.events.FocusEvent;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
@@ -661,16 +663,27 @@ package actionScripts.ui.editor.text
 			}
 			return new Point(charIndex, itemRenderer.dataIndex);
 		}
-		public function scrollTo(lineIndex:int, xPixel:int=0):void
+		public function scrollTo(lineIndex:int, eventType:String = null):void
 		{
-			verticalScrollBar.scrollPosition = Math.min(Math.max(lineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
+			if (!canScroll(lineIndex, eventType))
+			{
+				return;
+            }
+
+            var verticalOffsetLineIndex:int = lineIndex;
+			if (eventType ==  OpenFileEvent.TRACE_LINE)
+			{
+				verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
+			}
+
+			verticalScrollBar.scrollPosition = Math.min(Math.max(verticalOffsetLineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
 			if (horizontalScrollBar.visible)
 			{
 				horizontalScrollBar.scrollPosition = Math.min(Math.max(x, horizontalScrollBar.minScrollPosition), horizontalScrollBar.maxScrollPosition);
 			}
 			invalidateFlag(INVALID_SCROLL);
 		}
-		
+
 		// Search may be RegExp or String
 		public function search(search:*, backwards:Boolean):SearchResult
 		{
@@ -825,8 +838,7 @@ package actionScripts.ui.editor.text
 		{
 			freeItemRenderers(0, model.itemRenderersInUse.length);
 		}
-		
-		
+
 		private function updateDataProvider():void
 		{
 			clearAllRenderers();
@@ -1206,5 +1218,26 @@ package actionScripts.ui.editor.text
 			return (flags & flag) > 0;
 		}
 		
-	}
+        private function canScroll(lineIndex:int, eventType:String):Boolean
+        {
+            if (eventType == null) return true;
+
+            var hasTracedItem:Boolean = true;
+            if (eventType == OpenFileEvent.TRACE_LINE)
+            {
+                hasTracedItem = isLineVisible(lineIndex);
+            }
+
+            return hasTracedItem;
+        }
+
+        private function isLineVisible(lineIndex:int):Boolean
+        {
+            return model.itemRenderersInUse.every(
+                    function(item:TextLineRenderer, index:int, vector:Vector.<TextLineRenderer>):Boolean
+                    {
+                        return item.dataIndex != lineIndex && !item.model.traceLine;
+                    });
+        }
+    }
 }
