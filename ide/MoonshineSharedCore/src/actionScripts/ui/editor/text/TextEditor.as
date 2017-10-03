@@ -1225,13 +1225,13 @@ package actionScripts.ui.editor.text
             var hasTracedItem:Boolean = true;
             if (eventType == OpenFileEvent.TRACE_LINE)
             {
-                hasTracedItem = isLineVisible(lineIndex);
+                hasTracedItem = isDebuggerLineVisible(lineIndex);
             }
 
             return hasTracedItem;
         }
 
-        private function isLineVisible(lineIndex:int):Boolean
+        private function isDebuggerLineVisible(lineIndex:int):Boolean
         {
             return model.itemRenderersInUse.every(
                     function(item:TextLineRenderer, index:int, vector:Vector.<TextLineRenderer>):Boolean
