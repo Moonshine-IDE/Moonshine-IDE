@@ -98,6 +98,7 @@ package actionScripts.plugins.ant
 		private var  antBuildScreen:IFlexDisplayObject
 		private var isASuccessBuild:Boolean;
 		//private var antConfigureVo:AntConfigureVo;
+		// test at master added
 		
 		public function AntBuildPlugin() 
 		{
