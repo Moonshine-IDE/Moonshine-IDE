@@ -20,7 +20,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.utils.TextUtil;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectReferenceVO;
 
@@ -30,6 +31,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var path:FileLocation;
 		public var frameRate:Number = 24;
 		public var swfVersion:uint = 10;
+		public var swfMinorVersion:uint = 0;
 		public var width:int = 100;
 		public var height:int = 100;
 		
@@ -70,7 +72,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// If no global SDK exists, then just copy the config.xml value
 			if (!project.buildOptions.customSDK && IDEModel.getInstance().defaultSDK)
 			{
-				swfVersion = getSDKSWFVersion(null);
+				swfVersion = SDKUtils.getSdkSwfMajorVersion(null);
 			}
 			else
 			{
@@ -105,43 +107,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 			output.appendChild(UtilsCore.serializePairs(outputPairs, <movie/>));
 				
 			return output;
-		}
-		
-		public static function getSDKSWFVersion(sdkPath:String=null, providerToUpdateAsync:Object=null, fieldToUpdateAsync:String=null):int
-		{
-			var currentSDKVersion: int = 10;
-			var sdk:FileLocation;
-			if (sdkPath)
-			{
-				var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
-				if (isFound) sdk = new FileLocation(isFound.path);
-			}
-			else
-			{
-				sdk = IDEModel.getInstance().defaultSDK;
-			}
-			
-			if (sdk && sdk.fileBridge.exists)
-			{
-				var configFile: FileLocation = sdk.resolvePath("frameworks/flex-config.xml");
-				if (configFile.fileBridge.exists)
-				{
-					// for async type of read and update to specific object's field
-					if (providerToUpdateAsync) 
-					{
-						providerToUpdateAsync[fieldToUpdateAsync] = currentSDKVersion;
-						configFile.fileBridge.readAsync(providerToUpdateAsync, XML, int, fieldToUpdateAsync, "target-player");
-					}
-					// non-async direct return only
-					else
-					{
-						var tmpConfigXML: XML = XML(configFile.fileBridge.read());
-						currentSDKVersion = int(tmpConfigXML["target-player"]);
-					}
-				}
-			}
-			
-			return currentSDKVersion;
 		}
 	}
 }

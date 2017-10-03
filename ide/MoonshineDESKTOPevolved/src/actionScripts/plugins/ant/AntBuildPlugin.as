@@ -22,29 +22,29 @@ package actionScripts.plugins.ant
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
-    import flash.errors.IOError;
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.NativeProcessExitEvent;
+	import flash.errors.IOError;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.filesystem.File;
-    import flash.filesystem.FileMode;
-    import flash.filesystem.FileStream;
-    import flash.net.FileReference;
-    import flash.utils.ByteArray;
-    import flash.utils.IDataInput;
-
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+	import flash.net.FileReference;
+	import flash.utils.ByteArray;
+	import flash.utils.IDataInput;
+	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
+	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
+	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RunANTScriptEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
@@ -96,7 +96,9 @@ package actionScripts.plugins.ant
 		private var _buildWithAnt:Boolean;
 		private var selectedProject:AS3ProjectVO;
 		private var  antBuildScreen:IFlexDisplayObject
+		private var isASuccessBuild:Boolean;
 		//private var antConfigureVo:AntConfigureVo;
+		// test at master added
 		
 		public function AntBuildPlugin() 
 		{
@@ -171,6 +173,7 @@ package actionScripts.plugins.ant
 		
 		private function reset():void 
 		{
+			isASuccessBuild = false;
 			nativeProcess = null;
 			selectedProject = null;
 			IDEModel.getInstance().antScriptFile = null;
@@ -235,7 +238,8 @@ package actionScripts.plugins.ant
 			  antBuildSelected(null);// Start Ant Process
 		}
 		// For projec Menu
-		private function antBuildForSelectedProject(event:Event):void{
+		private function antBuildForSelectedProject(event:Event):void
+		{
 			_buildWithAnt = true;
 		
 			if (model.mainView.isProjectViewAdded)
@@ -379,6 +383,7 @@ package actionScripts.plugins.ant
 			selectAntPopup = null;
 		}
 	  }
+		
 	   private function antBuildSelected(e:AntBuildEvent):void{
 		   if(e)
 		   {
@@ -415,21 +420,26 @@ package actionScripts.plugins.ant
 			return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (IDEModel.getInstance().defaultSDK ? new FileLocation(IDEModel.getInstance().defaultSDK.fileBridge.getFile.nativePath) : null);
 		}
 
-		private function startAntProcess(buildDir:FileLocation):void{
+		private function startAntProcess(buildDir:FileLocation):void
+		{
 			var processArgs:Vector.<String> = new Vector.<String>;
-			shellInfo = new NativeProcessStartupInfo();
 			var antBatPath:String = getAntBatPath();
             var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
 			var buildDirPath:String = buildDir.fileBridge.nativePath;
-            shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
 
+			shellInfo = new NativeProcessStartupInfo();
+            shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
+			
+			var isFlexJSProject:Boolean = currentSDK.resolvePath("js/bin/mxmlc").fileBridge.exists;
+			var isFlexJSAfter7:Boolean = isFlexJSProject ? UtilsCore.isNewerVersionSDKThan(7, currentSDK.fileBridge.nativePath) : false;
+			
 			if (Settings.os == "win")
 			{
 				//Create file with following content:
                 var antBuildRunnerPath:String = prepareAntBuildRunnerFile(buildDirPath);
 				//Created file is being run
                 processArgs.push("/C");
-                processArgs.push("set FLEX_HOME=" + sdkPath + "&& " + antBuildRunnerPath);
+                processArgs.push("set FLEX_HOME=" + sdkPath + "&& " + antBuildRunnerPath +" -DIS_FLEXJS_AFTER_7="+ isFlexJSAfter7);
 
                 shellInfo.arguments = processArgs;
                 shellInfo.executable = cmdFile;
@@ -437,7 +447,7 @@ package actionScripts.plugins.ant
 			else 
 			{
 				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME=" + sdkPath + "&&" + antBatPath + " -file "+ UtilsCore.convertString(buildDirPath));
+				processArgs.push("export FLEX_HOME=" + sdkPath + "&&" + antBatPath + " -file "+ UtilsCore.convertString(buildDirPath) +" -DIS_FLEXJS_AFTER_7="+ isFlexJSAfter7);
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 			}
@@ -526,7 +536,6 @@ package actionScripts.plugins.ant
 			}
 			
 			match = data.match(/nativeProcess: Assigned (\d) as the compile target id/);
-			
 			if (data)
 			{
 				
@@ -545,6 +554,12 @@ package actionScripts.plugins.ant
 					compilerError(errors);
 					errors = "";
 				}
+			}
+			
+			match = data.match(/BUILD SUCCESSFUL/);
+			if (data)
+			{
+				isASuccessBuild = true;
 			}
 			
 			if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
@@ -591,6 +606,14 @@ package actionScripts.plugins.ant
 				exiting = false;
 				startShell();
 			}
+			
+			if (isASuccessBuild && selectedProject)
+			{
+				print("Files produced under DEPLOY folder.");
+				// refresh the build folder
+				dispatcher.dispatchEvent(new RefreshTreeEvent(selectedProject.folderLocation.resolvePath("build")));
+			}
+			
 			reset();
 			
 		}

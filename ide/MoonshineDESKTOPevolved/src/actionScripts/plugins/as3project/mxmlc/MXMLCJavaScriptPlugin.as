@@ -305,21 +305,8 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 				
-				// we need some extra work to determine if FlexJS version is lower than 0.8.0
-				// to ensure addition of new compiler argument '-compiler.targets' 
-				// which do not works with SDK < 0.8.0
-				var sdkFullName:String;
-				for each (var i:ProjectReferenceVO in model.userSavedSDKs)
-				{
-					if (currentSDK.nativePath == i.path)
-					{
-						sdkFullName = i.name;
-						break;
-					}
-				}
-				
 				// determine if the sdk version is lower than 0.8.0 or not
-				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, sdkFullName);
+				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
 				
 				var fschFile:File = currentSDK.resolvePath(fcshPath);
 				if (!fschFile.exists)

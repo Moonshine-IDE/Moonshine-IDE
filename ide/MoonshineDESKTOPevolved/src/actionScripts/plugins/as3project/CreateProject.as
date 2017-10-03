@@ -20,6 +20,7 @@ package actionScripts.plugins.as3project
 {
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
+    import actionScripts.utils.SDKUtils;
 
     import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -35,10 +36,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -360,7 +359,7 @@ package actionScripts.plugins.as3project
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
-			movieVersion = SWFOutputVO.getSDKSWFVersion().toString()+".0";
+			movieVersion = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
 			
 			// Create project root directory
 			if (!_isProjectFromExistingSource)
