@@ -664,7 +664,6 @@ package actionScripts.ui.editor.text
 		public function scrollTo(lineIndex:int, xPixel:int=0):void
 		{
 			verticalScrollBar.scrollPosition = Math.min(Math.max(lineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
-			
 			if (horizontalScrollBar.visible)
 			{
 				horizontalScrollBar.scrollPosition = Math.min(Math.max(x, horizontalScrollBar.minScrollPosition), horizontalScrollBar.maxScrollPosition);
