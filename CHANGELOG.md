@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Options to customize the display for the AIR simulator for mobile projects.  See the Run tab in the project settings
 * Window:  The window size and maximized status will be preserved when restarting Moonshine
 * Panels:  The panel size will be preserved when restarting Moonshine
+* HTML-template:  Web (Flash) projects now accompanied with set of wrapper HTML files, to run the Flash in browser(s)
+* Auto-update:  Application auto-update feature added in Windows and non-App-Store version of OSX, when Moonshine will have new release
 
 ### Changed
 * Console:  Updated the source code links
@@ -20,4 +22,5 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ** Fixed issue where ANT build was failing if path to build.xml contains spaces
 ** Fixed ANT script for FlexJS project template
 * Project build: Fixed issue where FlexJS project build was failing if target player version has minor number (ex. `<target-player>11.7</target-player>`)
+* Project build: Fixed issue when producing blank SWF with FlexJS SDK version less than 0.8
 * Tooltips:  Fixed some cases where the tooltips didn't disappear properly.
