@@ -18,6 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	
+	import mx.containers.Canvas;
+	import mx.core.FlexGlobals;
+	import mx.events.FlexEvent;
+	import mx.managers.IFocusManagerComponent;
+	import mx.managers.PopUpManager;
+	
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -28,6 +37,7 @@ package actionScripts.ui.editor
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.editor.text.vo.SearchResult;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -37,15 +47,6 @@ package actionScripts.ui.editor
 	import components.popup.FileSavePopup;
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
-	
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	
-	import mx.containers.Canvas;
-	import mx.core.FlexGlobals;
-	import mx.events.FlexEvent;
-	import mx.managers.IFocusManagerComponent;
-	import mx.managers.PopUpManager;
 	
 	public class BasicTextEditor extends Canvas implements IContentWindow, IFocusManagerComponent
 	{
@@ -154,6 +155,15 @@ package actionScripts.ui.editor
 		{
 			addChild(editor);
 			super.createChildren();
+			
+			// @note
+			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// to ensure if the file has a pending debug/breakpoint call
+			// call extended from OpenFileCommand/openFile(..)
+			if (currentFile.fileBridge.nativePath == DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH) 
+			{
+				editor.isNeedToBeTracedAfterOpening = true;
+			}
 		}
 
 		protected function createdHandler(e:Event):void

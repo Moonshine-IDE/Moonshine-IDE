@@ -18,37 +18,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-    import actionScripts.events.OpenFileEvent;
-
     import flash.display.Sprite;
-	import flash.events.FocusEvent;
-	import flash.events.MouseEvent;
-	import flash.events.TimerEvent;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.utils.Timer;
-	import flash.utils.getTimer;
-	
-	import mx.controls.HScrollBar;
-	import mx.controls.scrollClasses.ScrollBar;
-	import mx.core.UIComponent;
-	import mx.events.ResizeEvent;
-	import mx.events.ScrollEvent;
-	import mx.managers.IFocusManagerComponent;
-	
-	import __AS3__.vec.Vector;
-	
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.LayoutEvent;
-	import actionScripts.events.LineEvent;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.vo.SearchResult;
-	import actionScripts.ui.parser.ILineParser;
-	import actionScripts.utils.TextUtil;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.SignatureHelp;
+    import flash.events.FocusEvent;
+    import flash.events.MouseEvent;
+    import flash.events.TimerEvent;
+    import flash.geom.Point;
+    import flash.geom.Rectangle;
+    import flash.utils.Timer;
+    import flash.utils.getTimer;
+    
+    import mx.controls.HScrollBar;
+    import mx.controls.scrollClasses.ScrollBar;
+    import mx.core.UIComponent;
+    import mx.events.ResizeEvent;
+    import mx.events.ScrollEvent;
+    import mx.managers.IFocusManagerComponent;
+    
+    import __AS3__.vec.Vector;
+    
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.events.LayoutEvent;
+    import actionScripts.events.LineEvent;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.ui.editor.text.change.TextChangeInsert;
+    import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.ui.parser.ILineParser;
+    import actionScripts.utils.TextUtil;
+    import actionScripts.valueObjects.Diagnostic;
+    import actionScripts.valueObjects.Location;
+    import actionScripts.valueObjects.Position;
+    import actionScripts.valueObjects.SignatureHelp;
 	
 	
 	
@@ -124,6 +123,7 @@ package actionScripts.ui.editor.text
 		private var invalidFlags:uint = 0;
 		public var horizontalScrollBar:HScrollBar;
 		public  var startPos:Number=0;
+		public var isNeedToBeTracedAfterOpening:Boolean;
 		// Getters/Setters
 		public function get dataProvider():String
 		{
@@ -172,6 +172,8 @@ package actionScripts.ui.editor.text
 			// Set invalidation flags for render
 			invalidateFlag(INVALID_RESIZE);
 			invalidateFlag(INVALID_FULL);
+			
+			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
 		}
 		
 		private var _lineDelim:String = "\n";
@@ -1063,15 +1065,13 @@ package actionScripts.ui.editor.text
 					
 					//rdr.focus = hasFocus;
 					rdr.caretTracePosition = model.caretTraceIndex;
-					rdr.showTraceLines = true;
-					rdr.traceFocus = true;
+					rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = true;
 					//rdr.drawTraceSelection(model.selectionStartTraceCharIndex, model.caretTraceIndex);
 				}
 				else
 				{
 					//rdr.focus = false;
-					rdr.showTraceLines = false;
-					rdr.traceFocus = false;
+					rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = false;
 					//rdr.removeTraceSelection();
 				}
 			}
@@ -1083,9 +1083,8 @@ package actionScripts.ui.editor.text
 			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
-				rdr.traceFocus = false;
+				rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = false;
 				//rdr.focus = false;
-				rdr.showTraceLines = false;
 				rdr.removeTraceSelection();
 			}
 		}

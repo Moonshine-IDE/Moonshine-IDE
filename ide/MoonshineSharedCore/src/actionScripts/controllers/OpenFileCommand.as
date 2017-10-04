@@ -32,6 +32,7 @@ package actionScripts.controllers
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicHTMLViewer;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.notifier.ActionNotifier;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
@@ -93,6 +94,9 @@ package actionScripts.controllers
 		protected function openFile(fileDir:Object=null, openType:String=null):void
 		{
 			if (fileDir) file = new FileLocation(fileDir.nativePath);
+			
+			var isFileOpen:Boolean = false;
+			
 			// If file is open already, just focus that editor.
 			for each (var contentWindow:IContentWindow in model.editors)
 			{
@@ -101,6 +105,7 @@ package actionScripts.controllers
 					&& ed.currentFile
 					&& ed.currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
 				{
+					isFileOpen = true;
 					model.activeEditor = ed;
 					if (atLine > -1)
 					{
@@ -121,6 +126,19 @@ package actionScripts.controllers
 					}
 					return;
 				}
+			}
+			
+			// @note
+			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// when file is not open and a debug-trace call happens
+			// it never goes through the selectTraceLine(..) command for the
+			// particular file, because its yet to be open. 
+			// thus we need some way to determine if a file needs to focus
+			// to its breakpoint once it opens.
+			if (!isFileOpen && openType == OpenFileEvent.TRACE_LINE)
+			{
+				DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH = file.fileBridge.nativePath;
+				DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE = atLine;
 			}
 			
 			// Let plugins know that we're opening a file & abort it if they want to render it themselves
