@@ -62,7 +62,9 @@ package actionScripts.controllers
 				var e:OpenFileEvent = event as OpenFileEvent;
 				if (e.file)
 				{
-					openAsTourDe = e.openAsTourDe;
+                    if (!canOpenFile(e.file)) return;
+
+                    openAsTourDe = e.openAsTourDe;
 					tourDeSWFSource = e.tourDeSWFSource;
 					wrapper = e.wrapper;
 					file = e.file;
@@ -95,7 +97,7 @@ package actionScripts.controllers
 		protected function openFile(fileDir:Object=null, openType:String=null):void
 		{
 			if (fileDir) file = new FileLocation(fileDir.nativePath);
-			
+
 			var isFileOpen:Boolean = false;
 			
 			// If file is open already, just focus that editor.
@@ -268,5 +270,14 @@ package actionScripts.controllers
 			);
 		}
 
+		private function canOpenFile(openFile:FileLocation):Boolean
+		{
+			if (openFile.fileBridge.isDirectory) return true;
+			
+            var veProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+            return (veProject != null &&
+					veProject.isVisualEditorProject) &&
+					openFile.fileBridge.extension == "mxml";
+		}
 	}
 }
