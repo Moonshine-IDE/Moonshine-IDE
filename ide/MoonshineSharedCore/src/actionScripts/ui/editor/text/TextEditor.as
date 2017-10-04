@@ -173,7 +173,14 @@ package actionScripts.ui.editor.text
 			invalidateFlag(INVALID_RESIZE);
 			invalidateFlag(INVALID_FULL);
 			
-			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
+			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) 
+			{
+				this.callLater(function():void
+				{
+					scrollTo(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE, OpenFileEvent.TRACE_LINE);
+					selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
+				});
+			}
 		}
 		
 		private var _lineDelim:String = "\n";
