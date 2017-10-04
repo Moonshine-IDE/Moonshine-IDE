@@ -18,35 +18,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import flash.display.Sprite;
-	import flash.events.FocusEvent;
-	import flash.events.MouseEvent;
-	import flash.events.TimerEvent;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.utils.Timer;
-	import flash.utils.getTimer;
-	
-	import mx.controls.HScrollBar;
-	import mx.controls.scrollClasses.ScrollBar;
-	import mx.core.UIComponent;
-	import mx.events.ResizeEvent;
-	import mx.events.ScrollEvent;
-	import mx.managers.IFocusManagerComponent;
-	
-	import __AS3__.vec.Vector;
-	
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.LayoutEvent;
-	import actionScripts.events.LineEvent;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.vo.SearchResult;
-	import actionScripts.ui.parser.ILineParser;
-	import actionScripts.utils.TextUtil;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.SignatureHelp;
+    import flash.display.Sprite;
+    import flash.events.FocusEvent;
+    import flash.events.MouseEvent;
+    import flash.events.TimerEvent;
+    import flash.geom.Point;
+    import flash.geom.Rectangle;
+    import flash.utils.Timer;
+    import flash.utils.getTimer;
+    
+    import mx.controls.HScrollBar;
+    import mx.controls.scrollClasses.ScrollBar;
+    import mx.core.UIComponent;
+    import mx.events.ResizeEvent;
+    import mx.events.ScrollEvent;
+    import mx.managers.IFocusManagerComponent;
+    
+    import __AS3__.vec.Vector;
+    
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.events.LayoutEvent;
+    import actionScripts.events.LineEvent;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.ui.editor.text.change.TextChangeInsert;
+    import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.ui.parser.ILineParser;
+    import actionScripts.utils.TextUtil;
+    import actionScripts.valueObjects.Diagnostic;
+    import actionScripts.valueObjects.Location;
+    import actionScripts.valueObjects.Position;
+    import actionScripts.valueObjects.SignatureHelp;
 	
 	
 	
@@ -122,6 +123,7 @@ package actionScripts.ui.editor.text
 		private var invalidFlags:uint = 0;
 		public var horizontalScrollBar:HScrollBar;
 		public  var startPos:Number=0;
+		public var isNeedToBeTracedAfterOpening:Boolean;
 		// Getters/Setters
 		public function get dataProvider():String
 		{
@@ -170,6 +172,15 @@ package actionScripts.ui.editor.text
 			// Set invalidation flags for render
 			invalidateFlag(INVALID_RESIZE);
 			invalidateFlag(INVALID_FULL);
+			
+			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) 
+			{
+				this.callLater(function():void
+				{
+					scrollTo(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE, OpenFileEvent.TRACE_LINE);
+					selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
+				});
+			}
 		}
 		
 		private var _lineDelim:String = "\n";
@@ -661,17 +672,27 @@ package actionScripts.ui.editor.text
 			}
 			return new Point(charIndex, itemRenderer.dataIndex);
 		}
-		public function scrollTo(lineIndex:int, xPixel:int=0):void
+		public function scrollTo(lineIndex:int, eventType:String = null):void
 		{
-			verticalScrollBar.scrollPosition = Math.min(Math.max(lineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
-			
+			if (!canScroll(lineIndex, eventType))
+			{
+				return;
+            }
+
+            var verticalOffsetLineIndex:int = lineIndex;
+			if (eventType ==  OpenFileEvent.TRACE_LINE)
+			{
+				verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
+			}
+
+			verticalScrollBar.scrollPosition = Math.min(Math.max(verticalOffsetLineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
 			if (horizontalScrollBar.visible)
 			{
 				horizontalScrollBar.scrollPosition = Math.min(Math.max(x, horizontalScrollBar.minScrollPosition), horizontalScrollBar.maxScrollPosition);
 			}
 			invalidateFlag(INVALID_SCROLL);
 		}
-		
+
 		// Search may be RegExp or String
 		public function search(search:*, backwards:Boolean):SearchResult
 		{
@@ -826,8 +847,7 @@ package actionScripts.ui.editor.text
 		{
 			freeItemRenderers(0, model.itemRenderersInUse.length);
 		}
-		
-		
+
 		private function updateDataProvider():void
 		{
 			clearAllRenderers();
@@ -1052,15 +1072,13 @@ package actionScripts.ui.editor.text
 					
 					//rdr.focus = hasFocus;
 					rdr.caretTracePosition = model.caretTraceIndex;
-					rdr.showTraceLines = true;
-					rdr.traceFocus = true;
+					rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = true;
 					//rdr.drawTraceSelection(model.selectionStartTraceCharIndex, model.caretTraceIndex);
 				}
 				else
 				{
 					//rdr.focus = false;
-					rdr.showTraceLines = false;
-					rdr.traceFocus = false;
+					rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = false;
 					//rdr.removeTraceSelection();
 				}
 			}
@@ -1072,9 +1090,8 @@ package actionScripts.ui.editor.text
 			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
-				rdr.traceFocus = false;
+				rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = false;
 				//rdr.focus = false;
-				rdr.showTraceLines = false;
 				rdr.removeTraceSelection();
 			}
 		}
@@ -1207,5 +1224,26 @@ package actionScripts.ui.editor.text
 			return (flags & flag) > 0;
 		}
 		
-	}
+        private function canScroll(lineIndex:int, eventType:String):Boolean
+        {
+            if (eventType == null) return true;
+
+            var hasTracedItem:Boolean = true;
+            if (eventType == OpenFileEvent.TRACE_LINE)
+            {
+                hasTracedItem = isDebuggerLineVisible(lineIndex);
+            }
+
+            return hasTracedItem;
+        }
+
+        private function isDebuggerLineVisible(lineIndex:int):Boolean
+        {
+            return model.itemRenderersInUse.every(
+                    function(item:TextLineRenderer, index:int, vector:Vector.<TextLineRenderer>):Boolean
+                    {
+                        return item.dataIndex != lineIndex || !item.model.traceLine;
+                    });
+        }
+    }
 }

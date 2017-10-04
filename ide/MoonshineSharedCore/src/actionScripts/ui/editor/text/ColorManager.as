@@ -63,7 +63,7 @@ package actionScripts.ui.editor.text
 									 		Settings.font.defaultFontSize,
 									 		0xffffff),
 									 breakPointBackground: 0xdea5dd,
-									 tracingLineColor:0xc165b8
+									 tracingLineColor:0xc6dbae
 									};
 		
 		public function ColorManager(editor:TextEditor, model:TextEditorModel)

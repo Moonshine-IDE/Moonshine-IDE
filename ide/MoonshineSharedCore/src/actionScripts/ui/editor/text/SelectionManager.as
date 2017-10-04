@@ -137,6 +137,12 @@ package actionScripts.ui.editor.text
 			}
 			else if (localPoint.x < editor.lineNumberWidth && localPoint.x > 16)
 			{
+				// set breakpoint when click on line number sprite
+				if(localPoint.x <= 41)
+				{
+					toggleBreakpoint(rdr.dataIndex);
+					return;
+				}
 				
 				startLine = event.shiftKey ? model.hasSelection ? model.selectionStartLineIndex : model.selectedLineIndex : rdr.dataIndex;
 				startChar = event.shiftKey ? model.hasSelection ? model.selectionStartCharIndex : model.caretIndex : 0;
@@ -148,11 +154,6 @@ package actionScripts.ui.editor.text
 				{
 					endLine = model.lines.length - 1;
 					endChar = model.lines[endLine].text.length;
-				}
-				// set breakpoint when click on line number sprite
-				if(localPoint.x <= 41)
-				{
-					toggleBreakpoint(rdr.dataIndex);
 				}
 			}
 			else if (localPoint.x >= 0 && localPoint.x <= 16)

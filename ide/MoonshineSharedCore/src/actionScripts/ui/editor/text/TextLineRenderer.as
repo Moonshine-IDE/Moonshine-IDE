@@ -99,6 +99,7 @@ package actionScripts.ui.editor.text
 			_model = v;
 			drawText();
 			traceFocus = _model.debuggerLineSelection;
+			trace(_model.debuggerLineSelection);
 		}
 		
 		private var _horizontalOffset:int = 0;
@@ -227,11 +228,11 @@ package actionScripts.ui.editor.text
 			lineSelection = new Sprite();
 			addChild(lineSelection);
 			
-			traceSelection = new Sprite();
-			addChild(traceSelection);
-			
 			selection = new Sprite();
 			addChild(selection);
+
+			traceSelection = new Sprite();
+			addChild(traceSelection);
 			
 			marker = new Sprite();
 			marker.graphics.beginFill(0x0, 0.5);
@@ -445,7 +446,7 @@ package actionScripts.ui.editor.text
 				if(_showTraceLines)textLine.x = lineNumberWidth + horizontalTraceOffset;
 				else textLine.x = lineNumberWidth + horizontalOffset;
 				textLine.y = 12;
-				addChildAt(textLine,this.getChildIndex(selection)+1);
+				addChildAt(textLine,this.getChildIndex(selection)+2);
 				//addChild(textLine);
 			}
 			drawDiagnostics();
