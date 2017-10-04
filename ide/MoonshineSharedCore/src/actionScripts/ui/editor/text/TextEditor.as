@@ -173,7 +173,7 @@ package actionScripts.ui.editor.text
 			invalidateFlag(INVALID_RESIZE);
 			invalidateFlag(INVALID_FULL);
 			
-			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) 
+			if (isNeedToBeTracedAfterOpening) 
 			{
 				this.callLater(function():void
 				{
