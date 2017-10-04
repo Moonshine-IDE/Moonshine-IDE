@@ -1236,7 +1236,7 @@ package actionScripts.ui.editor.text
             return model.itemRenderersInUse.every(
                     function(item:TextLineRenderer, index:int, vector:Vector.<TextLineRenderer>):Boolean
                     {
-                        return item.dataIndex != lineIndex && !item.model.traceLine;
+                        return item.dataIndex != lineIndex || !item.model.traceLine;
                     });
         }
     }
