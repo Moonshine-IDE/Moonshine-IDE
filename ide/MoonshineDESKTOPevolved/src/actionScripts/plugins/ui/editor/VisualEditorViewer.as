@@ -20,10 +20,15 @@ package actionScripts.plugins.ui.editor
 {
     import actionScripts.events.ChangeEvent;
     import actionScripts.interfaces.IVisualEditorViewer;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugins.help.view.VisualEditorView;
     import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
     import actionScripts.ui.editor.*;
     import actionScripts.ui.editor.text.TextEditor;
+
+    import flash.events.Event;
+
+    import flash.filesystem.File;
 
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
@@ -42,7 +47,6 @@ package actionScripts.plugins.ui.editor
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
             visualEditorView.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
-            visualEditorView.addEventListener(VisualEditorViewChangeEvent.VISUAL_CHANGE, onVisualEditorViewVisualChange);
 
             editor = new TextEditor(true);
             editor.percentHeight = 100;
@@ -51,11 +55,6 @@ package actionScripts.plugins.ui.editor
             editor.dataProvider = "";
 
             visualEditorView.codeEditor = editor;
-        }
-
-        private function onVisualEditorViewVisualChange(event:VisualEditorViewChangeEvent):void
-        {
-            
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -84,6 +83,44 @@ package actionScripts.plugins.ui.editor
             addElement(visualEditorView);
             
             super.createChildren();
+        }
+
+        override public function save():void
+        {
+            visualEditorView.visualEditor.saveEditedFile();
+            super.save();
+        }
+
+        override protected function openHandler(event:Event):void
+        {
+            super.openHandler(event);
+
+            createVisualEditorFile();
+        }
+
+        private function createVisualEditorFile():void
+        {
+            var veFilePath:String = getVisualEditorFilePath();
+            if (veFilePath)
+            {
+                visualEditorView.visualEditor.loadFile(veFilePath);
+            }
+        }
+
+        private function getVisualEditorFilePath():String
+        {
+            var splittedFileName:Array = file.fileBridge.name.split(".");
+
+            if (splittedFileName.length == 2)
+            {
+                var cleanFileName:String = splittedFileName[0];
+                var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+                return as3Project.visualEditorSourceFolder
+                        .fileBridge.nativePath
+                        .concat(File.separator, cleanFileName, ".xml");
+            }
+
+            return null;
         }
     }
 }

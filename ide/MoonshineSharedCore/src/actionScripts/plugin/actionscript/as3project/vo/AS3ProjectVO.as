@@ -58,6 +58,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public var fromTemplate:FileLocation;
 		public var sourceFolder:FileLocation;
+		public var visualEditorSourceFolder:FileLocation;
 		
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;

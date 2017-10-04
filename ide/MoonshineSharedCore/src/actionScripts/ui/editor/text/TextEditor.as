@@ -263,11 +263,15 @@ package actionScripts.ui.editor.text
 		
 		public function get hasChanged():Boolean
 		{
+			if (!undoManager) return false;
+			
 			return undoManager.hasChanged;
 		}
 		
 		public function save():void
 		{
+			if (!undoManager) return;
+			
 			// Enables undoManager.hasChanged
 			undoManager.save();
 		}

@@ -164,7 +164,14 @@ package actionScripts.plugins.as3project.importer
 				
 				project.sourceFolder = new FileLocation(finalPath);
 			}
-			
+
+			if (project.isVisualEditorProject)
+			{
+				project.visualEditorSourceFolder = new FileLocation(
+                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src"
+				);
+			}
+
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
 			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) project.targetPlatform = "Android";
 			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) project.targetPlatform = "iOS";
