@@ -443,6 +443,13 @@ package actionScripts.plugins.as3project.mxmlc
 			// Read file content to indentify the project type regular flex application or flexjs applicatino
 			if (as3Pvo.FlexJS)
 			{
+				// terminate if it's a debug call against FlexJS
+				if (debugAfterBuild)
+				{
+					Alert.show("Currently Moonshine not supports FlexJS project debugging.", "Error!");
+					return;
+				}
+				
 				// FlexJS Application
 				compileFlexJSApplication(activeProject, release);
 			}
