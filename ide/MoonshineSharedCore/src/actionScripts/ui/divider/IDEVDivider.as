@@ -37,6 +37,10 @@ package actionScripts.ui.divider
 				So we override & draw like this.
 			*/
 			
+			graphics.beginFill(0xa0a0a0, 1);
+			graphics.drawRect(0, 0, width, height);
+			graphics.endFill();
+			
 			graphics.beginFill(0x2d2d2d);
 			graphics.drawRect(0, 0, width, 1);
 			graphics.endFill();
