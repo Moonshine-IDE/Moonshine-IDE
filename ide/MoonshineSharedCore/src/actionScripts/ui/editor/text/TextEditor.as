@@ -173,7 +173,7 @@ package actionScripts.ui.editor.text
 			invalidateFlag(INVALID_RESIZE);
 			invalidateFlag(INVALID_FULL);
 			
-			if (isNeedToBeTracedAfterOpening && breakpoints && breakpoints.length > 0) 
+			if (isNeedToBeTracedAfterOpening) 
 			{
 				this.callLater(function():void
 				{
@@ -807,13 +807,13 @@ package actionScripts.ui.editor.text
 					rdr.cacheAsBitmap = true;
 					
 					//For masking Right panel
-					var masker:Sprite = new Sprite();
+					/*var masker:Sprite = new Sprite();
 					masker.graphics.beginFill(0XFFFFFF);
 					masker.graphics.drawRect(0 , 0 , this.parentApplication.width+1000 , this.parent.height+1000);
 					masker.graphics.endFill();
 					masker.cacheAsBitmap = true;
 					rdr.mask = masker;
-					itemContainer.addChild(masker);
+					itemContainer.addChild(masker);*/
 					itemContainer.addChild(rdr);
 				}
 				

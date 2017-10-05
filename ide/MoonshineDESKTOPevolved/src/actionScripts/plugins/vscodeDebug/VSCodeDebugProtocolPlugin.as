@@ -37,11 +37,9 @@ package actionScripts.plugins.vscodeDebug
 	import mx.controls.Alert;
 	
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
@@ -106,7 +104,6 @@ package actionScripts.plugins.vscodeDebug
 		private var _byteArray:ByteArray;
 		private var _port:int;
 		private var _retryCount:int;
-		private var _connected:Boolean = false;
 		private var _paused:Boolean = true;
 		private var _seq:int = 0;
 		private var _messageBuffer:String = "";
@@ -115,9 +112,12 @@ package actionScripts.plugins.vscodeDebug
 		private var _stackFrames:ArrayCollection;
 		private var _scopesAndVars:VariablesReferenceHierarchicalData;
 		private var _variablesLookup:Dictionary = new Dictionary();
-		private var _currentProject:AS3ProjectVO;		
-		
+		private var _currentProject:AS3ProjectVO;
 		private var isStartupCall:Boolean = true;
+		
+		private var _connected:Boolean = false;
+		public function set connected(value:Boolean):void {	DebugHighlightManager.IS_DEBUGGER_CONNECTED = _connected = value;	}
+		public function get connected():Boolean {	return _connected;	}
 		
 		public function VSCodeDebugProtocolPlugin()
 		{
@@ -137,9 +137,9 @@ package actionScripts.plugins.vscodeDebug
 			/*dispatcher.addEventListener(MenuPlugin.MENU_SAVE_EVENT, handleEditorSave);
 			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);*/
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
-			/*
-			dispatcher.addEventListener(CompilerEventBase.CONTINUE_EXECUTION,continueExecutionHandler);
-			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION,terminateExecutionHandler);*/
+			dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER, stepOverExecutionHandler);
+			dispatcher.addEventListener(CompilerEventBase.CONTINUE_EXECUTION, continueExecutionHandler);
+			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION, terminateExecutionHandler);
 			dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, dispatcher_quitHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
 			
@@ -595,7 +595,7 @@ package actionScripts.plugins.vscodeDebug
 				this._socket.close();
 			}
 			this.cleanupSocket();
-			_connected = false;
+			connected = false;
 			refreshView();
 		}
 		
@@ -777,12 +777,12 @@ package actionScripts.plugins.vscodeDebug
 			{
 				return;
 			}
-			_debugPanel.playButton.enabled = this._connected && this._paused;
-			_debugPanel.pauseButton.enabled = this._connected && !this._paused;
-			_debugPanel.stepOverButton.enabled = this._connected && this._paused;
-			_debugPanel.stepIntoButton.enabled = this._connected && this._paused;
-			_debugPanel.stepOutButton.enabled = this._connected && this._paused;
-			_debugPanel.stopButton.enabled = this._connected;
+			_debugPanel.playButton.enabled = this.connected && this._paused;
+			_debugPanel.pauseButton.enabled = this.connected && !this._paused;
+			_debugPanel.stepOverButton.enabled = this.connected && this._paused;
+			_debugPanel.stepIntoButton.enabled = this.connected && this._paused;
+			_debugPanel.stepOutButton.enabled = this.connected && this._paused;
+			_debugPanel.stopButton.enabled = this.connected;
 			_debugPanel.stackFrames = this._stackFrames;
 			_debugPanel.scopesAndVars = this._scopesAndVars;
 		}
@@ -813,6 +813,21 @@ package actionScripts.plugins.vscodeDebug
 			isStartupCall = false;
 		}
 		
+		private function stepOverExecutionHandler(event:Event):void
+		{
+			if (_debugPanel.stepOverButton.enabled) stepOverButton_clickHandler(null);
+		}
+		
+		private function continueExecutionHandler(event:Event):void
+		{
+			if (_debugPanel.playButton.enabled) playButton_clickHandler(null);
+		}
+		
+		private function terminateExecutionHandler(event:Event):void
+		{
+			if (_debugPanel.stopButton.enabled) stopButton_clickHandler(null);
+		}
+		
 		private function dispatcher_editorOpenHandler(event:EditorPluginEvent):void
 		{
 			if (event.newFile || !event.file)
@@ -839,7 +854,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 			saveEditorBreakpoints(editor);
-			if(_connected)
+			if(connected)
 			{
 				var path:String = editor.currentFile.fileBridge.nativePath;
 				sendSetBreakpointsRequestForPath(path);
@@ -857,7 +872,7 @@ package actionScripts.plugins.vscodeDebug
 				_nativeProcess.exit(true);
 			}
 			
-			_connected = false;
+			connected = false;
 			refreshView();
 			_port = findOpenPort();
 			
@@ -901,7 +916,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function socket_connectHandler(event:Event):void
 		{
-			_connected = true;
+			connected = true;
 			refreshView();
 			_socket.removeEventListener(IOErrorEvent.IO_ERROR, socketConnect_ioErrorHandler);
 			_socket.addEventListener(IOErrorEvent.IO_ERROR, socket_ioErrorHandler);
@@ -955,7 +970,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function socket_closeHandler(event:Event):void
 		{
-			_connected = false;
+			connected = false;
 			refreshView();
 			cleanupSocket();
 		}

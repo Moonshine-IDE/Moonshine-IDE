@@ -21,6 +21,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
@@ -29,10 +30,12 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	
@@ -58,6 +61,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.HtmlFormatter;
@@ -294,8 +298,28 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildAndRun(e:Event):void
 		{
-			SWFLauncherPlugin.RUN_AS_DEBUGGER = (e.type == CompilerEventBase.BUILD_AND_DEBUG) ? true : false;
-			build(e, true);	
+			// re-check in case of debug call and its already running
+			if (e.type == CompilerEventBase.BUILD_AND_DEBUG && DebugHighlightManager.IS_DEBUGGER_CONNECTED)
+			{
+				Alert.show("You are already debugging an application. Do you wish to terminate the existing debugging session and start a new session?", "Debug Warning", Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite, reDebugConfirmClickHandler);	
+			}
+			else
+				build(e, true);
+			
+			/*
+			 * @local
+			 */
+			function reDebugConfirmClickHandler(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					dispatcher.dispatchEvent(new Event(CompilerEventBase.TERMINATE_EXECUTION));
+					setTimeout(function():void
+					{
+						dispatcher.dispatchEvent(e);
+					}, 500);
+				}
+			}
 		}
 		
 		private function buildRelease(e:Event):void
@@ -321,7 +345,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function build(e:Event, runAfterBuild:Boolean=false, release:Boolean=false):void 
 		{
-			if(e && e.type=="compilerBuildAndDebug")
+			if (e && e.type == CompilerEventBase.BUILD_AND_DEBUG)
 			{
 				this.debugAfterBuild = true;
 				SWFLauncherPlugin.RUN_AS_DEBUGGER = true;
