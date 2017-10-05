@@ -18,42 +18,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import actionScripts.utils.SDKUtils;
-
     import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.filesystem.File;
-	import flash.net.SharedObject;
-	
-	import mx.collections.ArrayCollection;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.NewProjectEvent;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
-	import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
-	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.ListSetting;
-	import actionScripts.plugin.settings.vo.MultiOptionSetting;
-	import actionScripts.plugin.settings.vo.NameValuePair;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.settings.vo.StaticLabelSetting;
-	import actionScripts.plugin.settings.vo.StringSetting;
-	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.TemplateVO;
+    import flash.events.Event;
+    import flash.filesystem.File;
+    import flash.net.SharedObject;
+    
+    import mx.collections.ArrayCollection;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
+    import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
+    import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.ListSetting;
+    import actionScripts.plugin.settings.vo.MultiOptionSetting;
+    import actionScripts.plugin.settings.vo.NameValuePair;
+    import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.settings.vo.SettingsWrapper;
+    import actionScripts.plugin.settings.vo.StaticLabelSetting;
+    import actionScripts.plugin.settings.vo.StringSetting;
+    import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+    import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.TemplateVO;
 	
 	public class CreateProject
 	{
@@ -75,6 +74,7 @@ package actionScripts.plugins.as3project
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
+		private var _customFlexSDK:String;
 		
 		public function CreateProject(event:NewProjectEvent)
 		{
@@ -121,6 +121,15 @@ package actionScripts.plugins.as3project
 		public function get projectTemplateType():String
 		{
 			return _projectTemplateType;
+		}
+		
+		public function get customFlexSDK():String
+		{
+			return _customFlexSDK;
+		}
+		public function set customFlexSDK(value:String):void
+		{
+			_customFlexSDK = value;
 		}
 		
 		private function createAS3Project(event:NewProjectEvent):void
@@ -188,6 +197,7 @@ package actionScripts.plugins.as3project
 				new StaticLabelSetting('New '+ event.templateDir.fileBridge.name),
 				newProjectNameSetting, // No space input either plx
 				newProjectPathSetting,
+				new PathSetting(this,'customFlexSDK', 'Apache Flex® or FlexJS® SDK', true, customFlexSDK, true),
 				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
 				newProjectSourcePathSetting
 			]));
@@ -451,6 +461,8 @@ package actionScripts.plugins.as3project
 			// Set some stuff to get the paths right
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, (isMobileProject || (isActionScriptProject && activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)) ? new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") : null);
 			pvo.projectName = projectName;
+			pvo.buildOptions.customSDKPath = _customFlexSDK;
+			_customFlexSDK = null;
 			
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
