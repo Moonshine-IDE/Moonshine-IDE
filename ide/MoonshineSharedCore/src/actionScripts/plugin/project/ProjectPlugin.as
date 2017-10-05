@@ -19,13 +19,10 @@
 package actionScripts.plugin.project
 {
 	import flash.events.Event;
-	
-	import mx.utils.ObjectUtil;
-	
+
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.ShowSettingsEvent;
@@ -33,7 +30,6 @@ package actionScripts.plugin.project
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -41,7 +37,6 @@ package actionScripts.plugin.project
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.views.project.OpenResourceView;
