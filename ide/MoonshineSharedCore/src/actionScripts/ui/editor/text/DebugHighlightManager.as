@@ -27,6 +27,7 @@ package actionScripts.ui.editor.text
 		public static var LAST_DEBUG_LINE_OBJECT:TextLineModel;
 		public static var NONOPENED_DEBUG_FILE_PATH:String;
 		public static var NONOPENED_DEBUG_FILE_LINE:int;
+		public static var IS_DEBUGGER_CONNECTED:Boolean;
 		
 		private static var LAST_DEBUG_TEXT_EDITOR_OBJECT:TextEditorModel;
 		private static var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
