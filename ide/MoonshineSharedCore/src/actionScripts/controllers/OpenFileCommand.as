@@ -273,11 +273,14 @@ package actionScripts.controllers
 		private function canOpenFile(openFile:FileLocation):Boolean
 		{
 			if (openFile.fileBridge.isDirectory) return true;
-			
+
             var veProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-            return (veProject != null &&
-					veProject.isVisualEditorProject) &&
-					openFile.fileBridge.extension == "mxml";
+			if (veProject == null || !veProject.isVisualEditorProject)
+			{
+				return true;
+			}
+
+            return openFile.fileBridge.extension == "mxml";
 		}
 	}
 }
