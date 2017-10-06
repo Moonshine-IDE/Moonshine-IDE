@@ -207,7 +207,7 @@ package actionScripts.plugins.as3project
 			{
 				isActionScriptProject = true;
 				newProjectTypeSetting = new MultiOptionSetting(this, "activeType", "Select project type", nvps);
-				settings.getSettingsList().splice(3, 0, newProjectTypeSetting);
+				settings.getSettingsList().splice(4, 0, newProjectTypeSetting);
 			}
 			else if (event.templateDir.fileBridge.name.indexOf("Mobile Project") != -1)
 			{

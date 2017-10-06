@@ -30,7 +30,6 @@
 		<![CDATA[
         import mx.controls.Alert;
         import actionScripts.events.GlobalEventDispatcher;
-        import actionScripts.events.SettingsEvent;
         import actionScripts.factory.FileLocation;
         import actionScripts.locator.IDEModel;
         import actionScripts.ui.tabview.CloseTabEvent;
@@ -159,7 +158,7 @@
 
             if (!tmp) tmp = SDKUtils.getSDKFromSavedList(tmpXML.nativePath); // in case of pre-existing SDK item
             IDEModel.getInstance().userSavedTempSDKPath = tmp.path;
-            GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+            //GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 
             // close will close the tab
             GlobalEventDispatcher.getInstance().dispatchEvent(

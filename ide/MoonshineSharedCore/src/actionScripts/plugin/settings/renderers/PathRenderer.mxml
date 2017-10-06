@@ -123,6 +123,14 @@
 
         private function onDefineSDKClosed(event:CloseTabEvent):void
         {
+			if (model.userSavedTempSDKPath)
+			{
+				var sdkVO:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(model.userSavedTempSDKPath, "path");
+				setting.stringValue = sdkVO.name;
+				hideDefineSDKLink(setting.stringValue);
+				model.userSavedTempSDKPath = null;
+			}
+			
             model.sdkInstallerView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
             model.sdkInstallerView = null;
         }
