@@ -52,7 +52,6 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.ui.renderers.FTETreeItemRenderer;
 			import actionScripts.ui.tabview.TabViewTab;
 			import actionScripts.utils.UtilsCore;
@@ -261,18 +260,6 @@
 				}
 				
 				IDEModel.getInstance().selectedprojectFolders = projectFolders;
-				var globalEventDispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-
-				// enable-disable File/New menus
-				if ((previousCount == 0) && (projectFolders.length > 0))
-				{
-					globalEventDispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_ENABLE_STATE));
-				}
-				
-				if ((previousCount > 0) && (projectFolders.length == 0))
-				{
-					globalEventDispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_FILE_NEW_DISABLE_STATE));
-				}
 			}
 			
 			private function onProjectTreeUpdates(event:ProjectEvent):void
@@ -792,9 +779,12 @@
 				if (fw.file.fileBridge.isDirectory || fw.isWorking) return;
 
 				var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
+				var globalDispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
 				if (activeProject)
 				{
 					model.activeProject = activeProject;
+					globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
 				}
 
 				GlobalEventDispatcher.getInstance().dispatchEvent( 

@@ -18,14 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import flash.display.NativeMenu;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+
+    import flash.display.NativeMenu;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.MenuEvent;
 	
-	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.ShortcutEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.factory.NativeMenuItemLocation;
@@ -42,8 +45,12 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.Settings;
-	
-	// This class is a singleton
+
+    import mx.resources.IResourceManager;
+
+    import mx.resources.ResourceManager;
+
+    // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
 		
@@ -56,8 +63,6 @@ package actionScripts.ui.menu
 		public static const CHANGE_MENU_MAC_DISABLE_STATE:String = "CHANGE_MENU_MAC_DISABLE_STATE"; // shows only Quit command with File menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
-		public static const CHANGE_MENU_FILE_NEW_DISABLE_STATE:String = "CHANGE_MENU_FILE_NEW_DISABLE_STATE";
-		public static const CHANGE_MENU_FILE_NEW_ENABLE_STATE:String = "CHANGE_MENU_FILE_NEW_ENABLE_STATE";
 		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
 		
 		private const BUILD_NATIVE_MENU:uint = 1;
@@ -69,8 +74,10 @@ package actionScripts.ui.menu
 		private var eventToMenuMapping:Dictionary = new Dictionary();
 		private var noSDKOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
-		
-		override public function get name():String { return "Application Menu Plugin"; }
+
+        private var menuItemsDisabledInVEProject:Array;
+
+        override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
 		
@@ -137,7 +144,9 @@ package actionScripts.ui.menu
 		}
 		
 		private function init():void
-		{	
+		{
+			initializeMenuOptionsEnabledInVEProject();
+
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				if (Settings.os == "mac") 
@@ -186,8 +195,6 @@ package actionScripts.ui.menu
 			}
 			
 			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
-			dispatcher.addEventListener(CHANGE_MENU_FILE_NEW_DISABLE_STATE, onDisableFileNewMenu);
-			dispatcher.addEventListener(CHANGE_MENU_FILE_NEW_ENABLE_STATE, onEnableFileNewMenu);
 			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
@@ -196,11 +203,53 @@ package actionScripts.ui.menu
 				dispatcher.addEventListener(CHANGE_MENU_MAC_NO_MENU_STATE, onMacNoMenuStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_ENABLE_STATE, onMacEnableStateChange);
 			}
+
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onMenusDisableStateChange);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
 			
 			// disable File-New menu as default
-			onDisableFileNewMenu(null);
+			disableNewFileMenuOptions();
 		}
-		
+
+        private function onMenusDisableStateChange(event:ProjectEvent):void
+        {
+			disableMenuOptionsForVEProject();
+            disableNewFileMenuOptions();
+        }
+
+		private function disableMenuOptionsForVEProject():void
+		{
+			var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+
+            if (ConstantsCoreVO.IS_AIR && Settings.os != "mac")
+            {
+                var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+                recursiveDisabledMenuForVisualEditor(menuBarMenu.items, activeProject);
+            }
+		}
+
+		private function recursiveDisabledMenuForVisualEditor(menuItems:Vector.<ICustomMenuItem>, currentProject:AS3ProjectVO):void
+		{
+            var countMenuItems:int = menuItems.length;
+            for (var i:int = 0; i < countMenuItems; i++)
+            {
+				var menuItem:ICustomMenuItem = menuItems[i];
+				if (!currentProject || !currentProject.isVisualEditorProject)
+				{
+					menuItem.enabled = true;
+				}
+				else
+                {
+                    menuItem.enabled = menuItemsDisabledInVEProject.indexOf(menuItem.label) > -1;
+                }
+				
+				if (menuItem.submenu)
+                {
+                    recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, currentProject);
+                }
+            }
+		}
+
 		// Add submenu under parent
 		private function addSUBMenu(parentItem:Array,windowmenu:Vector.<MenuItem>):void
 		{
@@ -301,7 +350,7 @@ package actionScripts.ui.menu
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
 		
-		private function onDisableFileNewMenu(event:Event):void
+		private function disableNewFileMenuOptions():void
 		{
 			if (!topNativeMenuItemsForFileNew)
 			{
@@ -331,6 +380,8 @@ package actionScripts.ui.menu
 					topNativeMenuItemsForFileNew[j].enabled = false;
 				}
 			}
+
+            //disableMenuOptionsForVEProject();
 		}
 		
 		private function onEnableFileNewMenu(event:Event):void
@@ -399,7 +450,7 @@ package actionScripts.ui.menu
 			}
 			
 			var tmpOptionsArr:Array;
-			var subItemsInTopMenu:Object
+			var subItemsInTopMenu:Object;
 			for (var i:String in noSDKOptionsToMenuMapping)
 			{
 				tmpOptionsArr = noSDKOptionsToMenuMapping[i];
@@ -549,5 +600,39 @@ package actionScripts.ui.menu
 				data.event, false, false,
 				data.eventData))
 		}
+
+
+        private function initializeMenuOptionsEnabledInVEProject():void
+        {
+            if (menuItemsDisabledInVEProject) return;
+
+            var resourceManager:IResourceManager = ResourceManager.getInstance();
+            menuItemsDisabledInVEProject = [
+                resourceManager.getString('resources', 'NEW'),
+                resourceManager.getString('resources', 'OPEN'),
+                resourceManager.getString('resources', 'SAVE'),
+                resourceManager.getString('resources', 'SAVE_AS'),
+                resourceManager.getString('resources', 'CLOSE'),
+                resourceManager.getString('resources', 'QUIT'),
+                resourceManager.getString('resources', 'FIND'),
+                resourceManager.getString('resources', 'FINDE_PREV'),
+                resourceManager.getString('resources', 'PROJECT_VIEW'),
+                resourceManager.getString('resources', 'FULLSCREEN'),
+                resourceManager.getString('resources', 'HOME'),
+                resourceManager.getString('resources', 'CHECKOUT'),
+                resourceManager.getString('resources', 'ABOUT'),
+                resourceManager.getString('resources', 'TOUR_DE_FLEX'),
+                resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
+                resourceManager.getString('resources', 'USEFUL_LINKS'),
+                resourceManager.getString('resources', 'VE_PROJECT'),
+                resourceManager.getString('resources', 'ACTION_SCRIPT_PROJECT'),
+                resourceManager.getString('resources', 'FLEX_MOBILE_PROJECT'),
+                resourceManager.getString('resources', 'FLEX_DESKTOP_PROJECT'),
+                resourceManager.getString('resources', 'FLEX_BROWSER_PROJECT'),
+                resourceManager.getString('resources', 'FLEXJS_BROWSER_PROJECT'),
+                resourceManager.getString('resources', 'FEATHERS_DESKTOP_PROJECT'),
+                resourceManager.getString('resources', 'FEATHERS_MOBILE_PROJECT')
+            ];
+        }
 	}
 }

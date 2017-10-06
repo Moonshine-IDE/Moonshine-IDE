@@ -46,6 +46,7 @@ package actionScripts.events
 		public static const SET_WORKSPACE: String = "SET_WORKSPACE";
 		public static const WORKSPACE_UPDATED: String = "WORKSPACE_UPDATED";
 		public static const ACCESS_MANAGER: String = "ACCESS_MANAGER";
+		public static const ACTIVE_PROJECT_CHANGED:String = "ACTIVE_PROJECT_CHANGED";
 		
 		public var project:ProjectVO;
 		public var anObject:Object;

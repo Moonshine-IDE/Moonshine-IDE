@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-    import actionScripts.interfaces.IVisualEditorViewer;
-
     import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -37,9 +35,6 @@ package actionScripts.ui.menu
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 	import actionScripts.ui.menu.renderers.MenuItemRenderer;
 	import actionScripts.ui.menu.renderers.MenuRenderer;
-
-    import mx.resources.IResourceManager;
-    import mx.resources.ResourceManager;
 
     public class MenuModel extends EventDispatcher
 	{
@@ -71,8 +66,6 @@ package actionScripts.ui.menu
 		// helper flag used to suppress the stage MouseEvent.CLICK listener
 		// when MenuItemRenderer is clicked
 		private var supressMouseClick:Boolean = false;
-
-		private var menuItemsDisabledInVEProject:Array;
 
 		private function setTopLevelMenu(value:MenuRenderer):void
 		{
@@ -246,8 +239,6 @@ package actionScripts.ui.menu
 
 		private function positionMenu(menuItems:Vector.<ICustomMenuItem>, base:DisplayObjectContainer, position:Point):MenuRenderer
 		{
-            disableMenuItemsForVEProject(menuItems);
-
             var menu:MenuRenderer = getMenuOrSubMenu();
 			menu.items = menuItems;
 			menu.x = position.x;
@@ -597,56 +588,6 @@ package actionScripts.ui.menu
 
 			displaySubMenuForRenderer(rdr);
 		}
-
-        private function disableMenuItemsForVEProject(menuItems:Vector.<ICustomMenuItem>):void
-        {
-            var ideModel:IDEModel = IDEModel.getInstance();
-            var isVisualEditorViewerOpened:Boolean = ideModel.activeEditor is IVisualEditorViewer;
-            if (isVisualEditorViewerOpened)
-            {
-                initializeMenuOptionsEnabledInVEProject();
-            }
-
-            var countMenuItems:int = menuItems.length;
-            for (var i:int = 0; i < countMenuItems; i++)
-            {
-                var item:ICustomMenuItem = menuItems[i];
-                if (!isVisualEditorViewerOpened)
-                {
-                    item.enabled = true;
-                }
-                else
-                {
-                    item.enabled = menuItemsDisabledInVEProject.indexOf(item.label) > -1;
-                }
-            }
-        }
-
-        private function initializeMenuOptionsEnabledInVEProject():void
-        {
-            if (menuItemsDisabledInVEProject) return;
-
-            var resourceManager:IResourceManager = ResourceManager.getInstance();
-            menuItemsDisabledInVEProject = [
-                resourceManager.getString('resources', 'NEW'),
-                resourceManager.getString('resources', 'OPEN'),
-                resourceManager.getString('resources', 'SAVE'),
-                resourceManager.getString('resources', 'SAVE_AS'),
-                resourceManager.getString('resources', 'CLOSE'),
-                resourceManager.getString('resources', 'QUIT'),
-                resourceManager.getString('resources', 'FIND'),
-                resourceManager.getString('resources', 'FINDE_PREV'),
-                resourceManager.getString('resources', 'PROJECT_VIEW'),
-                resourceManager.getString('resources', 'FULLSCREEN'),
-                resourceManager.getString('resources', 'HOME'),
-                resourceManager.getString('resources', 'CHECKOUT'),
-                resourceManager.getString('resources', 'ABOUT'),
-                resourceManager.getString('resources', 'TOUR_DE_FLEX'),
-                resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
-                resourceManager.getString('resources', 'USEFUL_LINKS'),
-                resourceManager.getString('resources', 'VE_PROJECT')
-            ];
-        }
     }
 }
 
