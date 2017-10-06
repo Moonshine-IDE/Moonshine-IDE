@@ -126,7 +126,8 @@
 			if (model.userSavedTempSDKPath)
 			{
 				var sdkVO:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(model.userSavedTempSDKPath, "path");
-				setting.stringValue = sdkVO.name;
+				setting.stringValue = sdkVO.path;
+				lblValue.text = sdkVO.name;
 				hideDefineSDKLink(setting.stringValue);
 				model.userSavedTempSDKPath = null;
 			}
