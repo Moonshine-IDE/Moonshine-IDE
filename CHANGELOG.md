@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Console:  Updated the source code links
 * API Docs panel:  merged with Useful Links
 * HTML-template:  Added wrapper HTML files for Web (Flash) project templates, to let them open properly in the browser.
+* New Project Dialog:  Added a field to select the SDK when creating a project.
 
 ### Fixed
 * ANT Build: 
@@ -26,3 +27,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project build: Fixed issue where FlexJS project build was failing if target player version has minor number (ex. `<target-player>11.7</target-player>`)
 * Project build: Fixed issue where Moonshine generated blank SWFs for FlexJS builds using the 0.7.0 SDK or lower.
 * Tooltips:  Fixed some cases where the tooltips didn't disappear properly.
+
+### Notable Known issues
+
+#### https://github.com/prominic/Moonshine-IDE/issues/36
+While testing for this release, we noticed that most browsers were blocking the user from opening SWFs from their local filesystem.  The browsers will show a message like "To view this page ensure that Adobe Flash Player version 16.0.0 or greater is installed." and a "Get ADOBE FLASH PLAYER" button.
+
+For most browsers, if you click the button, the browser will prompt you about whether you would like to allow the SWF to run.  After you allow this, you can run the SWF normally.  However, Firefox will direct you to a download page instead, so you may want to test in other browsers for now..  
+
+Alternatively, you can bypass the above errors by deploying the generated SWF to a local or remote server.
