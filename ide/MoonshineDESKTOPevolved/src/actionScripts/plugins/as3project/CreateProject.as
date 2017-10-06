@@ -379,7 +379,8 @@ package actionScripts.plugins.as3project
 			th.templatingData["$Password"] = projectName +"Certificate";
 			th.templatingData["$FlexHome"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "";
 			th.templatingData["$MovieVersion"] = movieVersion;
-			th.templatingData["${flexlib}"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
+			if (_customFlexSDK) th.templatingData["${flexlib}"] = _customFlexSDK;
+			else th.templatingData["${flexlib}"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
 			th.projectTemplate(templateDir, targetFolder);
 			
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
