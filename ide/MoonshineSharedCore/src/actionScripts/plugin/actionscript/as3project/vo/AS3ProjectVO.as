@@ -264,9 +264,21 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
-			if (!additional) additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			if (!htmlFilePath) htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
-			if (!mobileRunSettings) mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+			if (!additional)
+			{
+				additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+            }
+
+			if (!htmlFilePath)
+			{
+				htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+            }
+
+			if (!mobileRunSettings)
+			{
+				mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+            }
+
 			if (!targetPlatformSettings) 
 			{
 				targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
@@ -276,126 +288,18 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			}
-			
-			if (!isFlashBuilderProject)
+
+			if (isVisualEditorProject)
 			{
-				settings = Vector.<SettingsWrapper>([
-					
-					new SettingsWrapper("Build options",
-						Vector.<ISetting>([
-							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							additional,
-							
-							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
-							
-							new BooleanSetting(buildOptions, "accessible",						"Accessible SWF generation"),
-							new BooleanSetting(buildOptions, "allowSourcePathOverlap",			"Allow source path overlap"),
-							new BooleanSetting(buildOptions, "benchmark",						"Benchmark"),
-							new BooleanSetting(buildOptions, "es",								"ECMAScript edition 3 prototype based object model (es)"),
-							new BooleanSetting(buildOptions, "optimize",						"Optimize"),
-							
-							new BooleanSetting(buildOptions, "useNetwork",						"Enable network access"),
-							new BooleanSetting(buildOptions, "useResourceBundleMetadata",		"Use resource bundle metadata"),
-							new BooleanSetting(buildOptions, "verboseStackTraces",				"Verbose stacktraces"),
-							new BooleanSetting(buildOptions, "staticLinkRSL",					"Static link runtime shared libraries"),
-							
-							new StringSetting(buildOptions, "linkReport",						"Link report XML file"),
-							new StringSetting(buildOptions, "loadConfig",						"Load config")
-						])
-					),
-					new SettingsWrapper("Paths",
-						Vector.<ISetting>([
-							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
-							new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
-							new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
-							new PathListSetting(this, "libraries", "Libraries", folderLocation),
-							new PathListSetting(this, "nativeExtensions", "Native extensions", folderLocation, true, false)
-						])
-					),
-					new SettingsWrapper("Warnings & Errors",
-						Vector.<ISetting>([
-							new BooleanSetting(buildOptions, "showActionScriptWarnings",		"Show actionscript warnings"),
-							new BooleanSetting(buildOptions, "showBindingWarnings",				"Show binding warnings"),
-							new BooleanSetting(buildOptions, "showDeprecationWarnings",			"Show deprecation warnings"),
-							new BooleanSetting(buildOptions, "showUnusedTypeSelectorWarnings",	"Show unused type selector warnings"),
-							new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
-							new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
-						])
-					),
-					new SettingsWrapper("Run",
-						Vector.<ISetting>([
-							targetPlatformSettings,
-							htmlFilePath,
-							additional,
-							mobileRunSettings
-						])
-					)
-				]);
-				
-				if (!isMDLFlexJS)
-				{
-					settings.unshift(new SettingsWrapper("Output", 
-						Vector.<ISetting>([
-							new IntSetting(swfOutput,	"frameRate", 	"Framerate (FPS)"),
-							new IntSetting(swfOutput,	"width", 		"Width"),
-							new IntSetting(swfOutput,	"height",	 	"Height"),
-							new ColorSetting(swfOutput,	"background",	"Background color"),
-							new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
-						])
-					));
-				}
+				settings = getSettingsForVisualEditorTypeOfProjects();
+			}
+			else if (!isFlashBuilderProject)
+			{
+				settings = getSettingsForNonFlashBuilderProject();
 			}
 			else
 			{
-				settings = Vector.<SettingsWrapper>([
-					
-					new SettingsWrapper("Build options",
-						Vector.<ISetting>([
-							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-							new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
-							additional,
-							
-							new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
-							
-							new BooleanSetting(buildOptions, "accessible",						"Accessible SWF generation"),
-							new BooleanSetting(buildOptions, "allowSourcePathOverlap",			"Allow source path overlap"),
-							new BooleanSetting(buildOptions, "benchmark",						"Benchmark"),
-							new BooleanSetting(buildOptions, "es",								"ECMAScript edition 3 prototype based object model (es)"),
-							new BooleanSetting(buildOptions, "optimize",						"Optimize"),
-							
-							new BooleanSetting(buildOptions, "useNetwork",						"Enable network access"),
-							new BooleanSetting(buildOptions, "useResourceBundleMetadata",		"Use resource bundle metadata"),
-							new BooleanSetting(buildOptions, "verboseStackTraces",				"Verbose stacktraces"),
-							new BooleanSetting(buildOptions, "staticLinkRSL",					"Static link runtime shared libraries"),
-							
-							new StringSetting(buildOptions, "linkReport",						"Link report XML file"),
-							new StringSetting(buildOptions, "loadConfig",						"Load config")
-						])
-					),
-					new SettingsWrapper("Paths",
-						Vector.<ISetting>([
-							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
-							new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
-							new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
-							new PathListSetting(this, "libraries", "Libraries", folderLocation)
-						])
-					),
-					new SettingsWrapper("Warnings & Errors",
-						Vector.<ISetting>([
-							new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
-							new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
-						])
-					),
-					new SettingsWrapper("Run",
-						Vector.<ISetting>([
-							new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
-							htmlFilePath,
-							additional,
-							mobileRunSettings
-						])
-					)
-				]);
+				settings = getSettingsForOtherTypeOfProjects();
 			}
 			
 			return settings;
@@ -446,6 +350,149 @@ package actionScripts.plugin.actionscript.as3project.vo
 			config.write(this);
 			configInvalid = false;
 			//}
+		}
+
+		private function getSettingsForNonFlashBuilderProject():Vector.<SettingsWrapper>
+		{
+            var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
+
+                new SettingsWrapper("Build options",
+                        Vector.<ISetting>([
+                            new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
+                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
+                            additional,
+
+                            new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
+
+                            new BooleanSetting(buildOptions, "accessible",						"Accessible SWF generation"),
+                            new BooleanSetting(buildOptions, "allowSourcePathOverlap",			"Allow source path overlap"),
+                            new BooleanSetting(buildOptions, "benchmark",						"Benchmark"),
+                            new BooleanSetting(buildOptions, "es",								"ECMAScript edition 3 prototype based object model (es)"),
+                            new BooleanSetting(buildOptions, "optimize",						"Optimize"),
+
+                            new BooleanSetting(buildOptions, "useNetwork",						"Enable network access"),
+                            new BooleanSetting(buildOptions, "useResourceBundleMetadata",		"Use resource bundle metadata"),
+                            new BooleanSetting(buildOptions, "verboseStackTraces",				"Verbose stacktraces"),
+                            new BooleanSetting(buildOptions, "staticLinkRSL",					"Static link runtime shared libraries"),
+
+                            new StringSetting(buildOptions, "linkReport",						"Link report XML file"),
+                            new StringSetting(buildOptions, "loadConfig",						"Load config")
+                        ])
+                ),
+                new SettingsWrapper("Paths",
+                        Vector.<ISetting>([
+                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
+                            new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
+                            new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
+                            new PathListSetting(this, "libraries", "Libraries", folderLocation),
+                            new PathListSetting(this, "nativeExtensions", "Native extensions", folderLocation, true, false)
+                        ])
+                ),
+                new SettingsWrapper("Warnings & Errors",
+                        Vector.<ISetting>([
+                            new BooleanSetting(buildOptions, "showActionScriptWarnings",		"Show actionscript warnings"),
+                            new BooleanSetting(buildOptions, "showBindingWarnings",				"Show binding warnings"),
+                            new BooleanSetting(buildOptions, "showDeprecationWarnings",			"Show deprecation warnings"),
+                            new BooleanSetting(buildOptions, "showUnusedTypeSelectorWarnings",	"Show unused type selector warnings"),
+                            new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
+                            new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
+                        ])
+                ),
+                new SettingsWrapper("Run",
+                        Vector.<ISetting>([
+                            targetPlatformSettings,
+                            htmlFilePath,
+                            additional,
+                            mobileRunSettings
+                        ])
+                )
+            ]);
+
+            if (!isMDLFlexJS)
+            {
+                settings.unshift(new SettingsWrapper("Output",
+                        Vector.<ISetting>([
+                            new IntSetting(swfOutput,	"frameRate", 	"Framerate (FPS)"),
+                            new IntSetting(swfOutput,	"width", 		"Width"),
+                            new IntSetting(swfOutput,	"height",	 	"Height"),
+                            new ColorSetting(swfOutput,	"background",	"Background color"),
+                            new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
+                        ])
+                ));
+            }
+
+			return settings;
+		}
+
+		private function getSettingsForOtherTypeOfProjects():Vector.<SettingsWrapper>
+		{
+            return Vector.<SettingsWrapper>([
+
+                new SettingsWrapper("Build options",
+                        Vector.<ISetting>([
+                            new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
+                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
+                            additional,
+
+                            new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
+
+                            new BooleanSetting(buildOptions, "accessible",						"Accessible SWF generation"),
+                            new BooleanSetting(buildOptions, "allowSourcePathOverlap",			"Allow source path overlap"),
+                            new BooleanSetting(buildOptions, "benchmark",						"Benchmark"),
+                            new BooleanSetting(buildOptions, "es",								"ECMAScript edition 3 prototype based object model (es)"),
+                            new BooleanSetting(buildOptions, "optimize",						"Optimize"),
+
+                            new BooleanSetting(buildOptions, "useNetwork",						"Enable network access"),
+                            new BooleanSetting(buildOptions, "useResourceBundleMetadata",		"Use resource bundle metadata"),
+                            new BooleanSetting(buildOptions, "verboseStackTraces",				"Verbose stacktraces"),
+                            new BooleanSetting(buildOptions, "staticLinkRSL",					"Static link runtime shared libraries"),
+
+                            new StringSetting(buildOptions, "linkReport",						"Link report XML file"),
+                            new StringSetting(buildOptions, "loadConfig",						"Load config")
+                        ])
+                ),
+                new SettingsWrapper("Paths",
+                        Vector.<ISetting>([
+                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
+                            new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
+                            new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
+                            new PathListSetting(this, "libraries", "Libraries", folderLocation)
+                        ])
+                ),
+                new SettingsWrapper("Warnings & Errors",
+                        Vector.<ISetting>([
+                            new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
+                            new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
+                        ])
+                ),
+                new SettingsWrapper("Run",
+                        Vector.<ISetting>([
+                            new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
+                            htmlFilePath,
+                            additional,
+                            mobileRunSettings
+                        ])
+                )
+            ]);
+		}
+
+		private function getSettingsForVisualEditorTypeOfProjects():Vector.<SettingsWrapper>
+		{
+            return Vector.<SettingsWrapper>([
+					new SettingsWrapper("Output",
+                            Vector.<ISetting>([
+                                new IntSetting(swfOutput,	"frameRate", 	"Framerate (FPS)"),
+                                new IntSetting(swfOutput,	"width", 		"Width"),
+                                new IntSetting(swfOutput,	"height",	 	"Height"),
+                                new ColorSetting(swfOutput,	"background",	"Background color"),
+                                new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
+                            ])),
+					new SettingsWrapper("Paths",
+							Vector.<ISetting>([
+								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false)
+							])
+					)
+				]);
 		}
 	}
 }
