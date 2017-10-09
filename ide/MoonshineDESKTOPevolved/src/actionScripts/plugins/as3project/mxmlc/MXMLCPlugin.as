@@ -446,7 +446,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// terminate if it's a debug call against FlexJS
 				if (debugAfterBuild)
 				{
-					Alert.show("Currently Moonshine not supports FlexJS project debugging.", "Error!");
+					Alert.show("Moonshine does not currently support FlexJS project debugging.", "Note!");
 					return;
 				}
 				
