@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.6.0] (Release pending)
+## Moonshine IDE [1.6.0] 
 
 ### Added
 * Useful Links Panel:  This panel contains links that may be useful for your development work.  More will be added as we find them.
