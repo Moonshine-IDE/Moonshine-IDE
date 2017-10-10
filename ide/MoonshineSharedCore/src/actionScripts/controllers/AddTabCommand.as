@@ -29,9 +29,6 @@ package actionScripts.controllers
 		
 		public function execute(event:Event):void
 		{
-			// test @devsena
-			// somewhere in between tests
-			// new lines
 			var e:AddTabEvent = AddTabEvent(event);
 			// Remove empty 'New' editor or splashscreen
 			// Update - Moon-103 implementation want splash screen to be open so adding one more clause to check if tab is splashscreen 
