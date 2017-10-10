@@ -49,6 +49,7 @@ package actionScripts.interfaces
 		function resolveApplicationStorageDirectoryPath(pathWith:String=null):FileLocation;
 		function resolveApplicationDirectoryPath(pathWith:String=null):FileLocation;
 		function resolvePath(path:String, toRelativePath:String=null):FileLocation;
+		function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation;
 		function read():Object;
 		function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void;
 		function deleteFile():void;

@@ -25,46 +25,56 @@
   	xmlns:mx="library://ns.adobe.com/flex/mx"
   	width="100%"
   	paddingTop="15"
-  	paddingBottom="5"
+  	paddingBottom="15"
   	paddingLeft="15"
-  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" initialize="onInitialized(event)" creationComplete="init()">
+  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" creationComplete="init()">
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
 			
 			import spark.events.IndexChangeEvent;
+			import spark.primitives.Line;
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 			import actionScripts.plugin.run.RunMobileSetting;
+			import actionScripts.plugin.settings.vo.ISetting;
+			import actionScripts.plugin.settings.vo.MultiOptionSetting;
+			import actionScripts.plugin.settings.vo.NameValuePair;
+			import actionScripts.plugin.settings.vo.PathSetting;
+			import actionScripts.plugin.settings.vo.StringSetting;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			[Bindable] public var setting:RunMobileSetting;
 			
+			[Bindable] private var isAndroidDevice:Boolean;
+			
 			private var deviceConfiguration:DeviceConfiguration;
 			private var lastSelectedItem:Object;
+			private var deviceSettings:Vector.<ISetting>;
 			
 			private function init():void
 			{
-				cmbOption.textInput.editable = cmbModelOption.textInput.editable = false;
-				cmbOption.setStyle("contentBackgroundColor","#FFFFFF");
-				cmbModelOption.setStyle("contentBackgroundColor","#FFFFFF");
+				cmbOption.selectedIndex = BuildOptions(setting.provider).isMobileRunOnSimulator ? 0 : 1;
+				updateDevices(BuildOptions(setting.provider).targetPlatform);
+				setting.stringValue = "nil";
 				
 				cmbModelOption.callLater(function():void
 				{
-					cmbOption.selectedIndex = setting.provider[setting.isSimulatorRun] ? 0 : 1;
-					if (setting.provider[setting.name] != "null")
+					if (BuildOptions(setting.provider).isMobileHasSimulatedDevice.name != "null")
 					{
 						for (var i:int=0; i < cmbModelOption.dataProvider.length; i++)
 						{
-							if (setting.provider[setting.name].name == cmbModelOption.dataProvider[i].name)
+							if (BuildOptions(setting.provider).isMobileHasSimulatedDevice.name == cmbModelOption.dataProvider[i].name)
 							{
 								cmbModelOption.selectedIndex = i;
+								lastSelectedItem = cmbModelOption.dataProvider[i];
 								break;
 							}
 						}
@@ -74,26 +84,87 @@
 			
 			public function updateDevices(forPlatform:String):void
 			{
+				currentState = (cmbOption.selectedIndex == 0) ? "simulator" : "device";
+				
 				if (!forPlatform || forPlatform == "Android") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
 				else if (forPlatform == "iOS") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_IOS_DEVICES;
+				isAndroidDevice = (forPlatform == "iOS") ? false : true;
 				cmbModelOption.callLater(function():void
 				{
-					cmbModelOption.selectedIndex = 0;
 					lastSelectedItem = cmbModelOption.selectedItem;
 				});
+				
+				// generate content for device debugging
+				if (deviceContent && currentState == "device")
+				{
+					if (isAndroidDevice)
+					{
+						deviceSettings = Vector.<ISetting>([
+							new PathSetting(setting.provider, "certAndroid", "Certificate", false, setting.provider["certAndroid"], false),
+							new StringSetting(setting.provider, "certAndroidPassword", "Certificate Password")
+						]);
+					}
+					else
+					{
+						deviceSettings = Vector.<ISetting>([
+							new MultiOptionSetting(setting.provider, 'iosPackagingMode', "Packaging Mode", 
+								Vector.<NameValuePair>([
+									new NameValuePair("Standard", BuildOptions.IOS_PACKAGING_STANDARD),
+									new NameValuePair("Fast", BuildOptions.IOS_PACKAGING_FAST)
+								])
+							),
+							new PathSetting(setting.provider, "certIos", "Certificate", false, setting.provider["certIos"], false),
+							new StringSetting(setting.provider, "certIosPassword", "Certificate Password"),
+							new PathSetting(setting.provider, "certIosProvisioning", "Provisioning Profile", false, setting.provider["certIosProvisioning"], false)
+						]);
+					}
+					
+					deviceContent.removeAllElements();
+					
+					var line:Line;
+					var rdr:IVisualElement;
+					var index:int = 1;
+					for each (var value:ISetting in deviceSettings)
+					{	
+						rdr = value.renderer;
+						rdr["paddingLeft"] = rdr["paddingRight"] = 0;
+						deviceContent.addElement(rdr);
+						
+						// don't add the line for last item
+						if (index != deviceSettings.length)
+						{
+							index ++;
+							line = new Line();
+							line.percentWidth = 100;
+							line.height = 1;
+							line.stroke = new SolidColorStroke(0xdadada);
+							deviceContent.addElement(line);
+						}
+					}
+				}
+			}
+			
+			public function commitChanges():void
+			{
+				if (deviceContent && currentState == "device")
+				{
+					for each(var setting:ISetting in deviceSettings)
+					{
+						if (setting.valueChanged())
+						{
+							setting.commitChanges();
+						}
+					}
+				}
 			}
 			
 			protected function cmbOption_changeHandler(event:IndexChangeEvent):void
 			{
-				setting.provider[setting.isSimulatorRun] = (cmbOption.selectedIndex == 0);
-				setting.provider[setting.name] = cmbModelOption.selectedItem;
+				BuildOptions(setting.provider).isMobileRunOnSimulator = (cmbOption.selectedIndex == 0);
+				BuildOptions(setting.provider).isMobileHasSimulatedDevice = cmbModelOption.selectedItem;
 				
 				lastSelectedItem = cmbModelOption.selectedItem;
-			}
-			
-			protected function onInitialized(event:FlexEvent):void
-			{
-				updateDevices(setting.provider[setting.targetPlatform]);
+				updateDevices(isAndroidDevice ? "Android" : "iOS");
 			}
 			
 			protected function onConfigureDevices(event:MouseEvent):void
@@ -101,7 +172,6 @@
 				if (!deviceConfiguration)
 				{
 					deviceConfiguration = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeviceConfiguration, true) as DeviceConfiguration;
-					//deviceConfiguration.devices = cmbModelOption.dataProvider as ArrayCollection;
 					deviceConfiguration.addEventListener(Event.CHANGE, onDeviceUpdated);
 					deviceConfiguration.addEventListener(CloseEvent.CLOSE, onConfigurationPopupClosed);
 					PopUpManager.centerPopUp(deviceConfiguration);
@@ -118,27 +188,34 @@
 			private function onDeviceUpdated(event:Event):void
 			{
 				if (cmbModelOption.dataProvider.getItemIndex(lastSelectedItem) != -1) cmbModelOption.selectedItem = lastSelectedItem;
-				else cmbModelOption.selectedIndex = 0;
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent(new GeneralEvent(GeneralEvent.DEVICE_UPDATED));
 			}
 			
 		]]>
 	</fx:Script>
+	<s:states>
+		<s:State name="simulator"/>
+		<s:State name="device"/>
+	</s:states>
 	
 	<s:Label 
 		text="{setting.label}"
 		styleName="uiTextSettingsLabel"/>
-	<s:ComboBox id="cmbOption"
+	<s:DropDownList id="cmbOption"
+					width="100%" height="24" 
+					change="cmbOption_changeHandler(event)" 
+					requireSelection="true">
+	<!--<s:ComboBox id="cmbOption"
 				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
-				selectedIndex="0" change="cmbOption_changeHandler(event)">
+				selectedIndex="0" change="cmbOption_changeHandler(event)">-->
 		<s:dataProvider>
 			<s:ArrayList>
 				<fx:String>AIR Simulator</fx:String>
-				<!--<fx:String>Device</fx:String>-->
+				<fx:String>Device</fx:String>
 			</s:ArrayList>
 		</s:dataProvider>
-	</s:ComboBox>
+	</s:DropDownList>
 	<s:Spacer height="3"/>
 	<s:Rect width="100%"
 			alpha="1">
@@ -146,15 +223,20 @@
 			<s:SolidColorStroke weight="1" color="0xdadada"/>
 		</s:stroke>
 	</s:Rect>
-	<s:Label 
-		text="Device Model"
-		styleName="uiTextSettingsLabel" paddingTop="13"/>
-	<s:HGroup width="100%" verticalAlign="middle">
-		<s:ComboBox id="cmbModelOption"
-					width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
-					selectedIndex="0" change="cmbOption_changeHandler(event)" labelField="name"/>
-		<s:Button label="Configure"
-				  click="onConfigureDevices(event)"/>
-	</s:HGroup>
-	<s:Spacer height="3"/>
+	<s:VGroup width="100%" includeIn="simulator">
+		<s:Label 
+			text="Device Model"
+			styleName="uiTextSettingsLabel" paddingTop="13"/>
+		<s:HGroup width="100%" verticalAlign="middle">
+			<s:DropDownList id="cmbModelOption"
+							width="100%" height="24" 
+							change="cmbOption_changeHandler(event)" labelField="name" 
+							requireSelection="true"/>
+			<s:Button label="Configure"
+					  click="onConfigureDevices(event)"/>
+		</s:HGroup>
+		<s:Spacer height="3"/>
+	</s:VGroup>
+	<s:VGroup id="deviceContent" 
+			  width="100%" includeIn="device" gap="0"/>
 </s:VGroup>

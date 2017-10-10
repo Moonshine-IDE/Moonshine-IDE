@@ -157,6 +157,7 @@ package actionScripts.utils
 		public static function deserializeString(o:Object):String {
 			var str:String = o.toString();
 			if (str.length == 0) return null;
+			if (str == "null") return null;
 			return str;
 		}
 		

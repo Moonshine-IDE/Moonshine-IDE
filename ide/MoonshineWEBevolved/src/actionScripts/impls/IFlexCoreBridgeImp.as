@@ -137,6 +137,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function reAdjustApplicationSize(width:Number, height:Number):void
+		{
+			
+		}
+		
 		public function createAS3Project(event:NewProjectEvent):void
 		{
 			authPopup = new AuthenticationPopUp();

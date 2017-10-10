@@ -221,6 +221,12 @@ package actionScripts.impls
 			_file.deleteDirectoryAsync(deleteDirectoryContents);
 		}
 		
+		public function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation
+		{
+			if (!pathWith) return (new FileLocation(File.documentsDirectory.nativePath));
+			return (new FileLocation(File.documentsDirectory.resolvePath(pathWith).nativePath));
+		}
+		
 		public function resolveUserDirectoryPath(pathWith:String=null):FileLocation
 		{
 			if (!pathWith) return (new FileLocation(File.userDirectory.nativePath));

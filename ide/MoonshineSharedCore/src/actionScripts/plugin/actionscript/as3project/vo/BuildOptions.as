@@ -22,6 +22,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectReferenceVO;
 
 	public class BuildOptions 
@@ -29,6 +30,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static var defaultOptions:BuildOptions = new BuildOptions();
 		public static const TYPE_FB:String = "TYPE_FB";
 		public static const TYPE_FD:String = "TYPE_FD";
+		public static const IOS_PACKAGING_STANDARD:String = "IOS_PACKAGING_STANDARD";
+		public static const IOS_PACKAGING_FAST:String = "IOS_PACKAGING_FAST";
 		
 		public var accessible:Boolean = false;
 		public var allowSourcePathOverlap:Boolean = false;
@@ -56,6 +59,44 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var currentDefaultSDKPath:String;
 		public var oldDefaultSDKPath:String;
 		public var isCleanRequiresBeforeBuild:Boolean;
+		public var deviceBuildCertificate:FileLocation;
+		public var deviceBuildCertificatePassword:String;
+		public var certAndroid:String;
+		public var certAndroidPassword:String;
+		public var certIos:String;
+		public var certIosPassword:String;
+		public var certIosProvisioning:String;
+		public var iosPackagingMode:String = IOS_PACKAGING_STANDARD;
+		
+		private var _targetPlatform:String;
+		public function set targetPlatform(value:String):void
+		{
+			_targetPlatform = value;
+		}
+		public function get targetPlatform():String
+		{
+			return _targetPlatform;
+		}
+		
+		private var _isMobileRunOnSimulator:Boolean = true;
+		public function set isMobileRunOnSimulator(value:Boolean):void
+		{
+			_isMobileRunOnSimulator = value;
+		}
+		public function get isMobileRunOnSimulator():Boolean
+		{
+			return _isMobileRunOnSimulator;
+		}
+		
+		private var _isMobileHasSimulatedDevice:MobileDeviceVO;
+		public function set isMobileHasSimulatedDevice(value:MobileDeviceVO):void
+		{
+			_isMobileHasSimulatedDevice = value;
+		}
+		public function get isMobileHasSimulatedDevice():MobileDeviceVO
+		{
+			return _isMobileHasSimulatedDevice;
+		}
 		
 		public function get customSDK():FileLocation
 		{ 

@@ -69,6 +69,7 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
+	import actionScripts.plugins.away3d.Away3DPlugin;
 	import actionScripts.plugins.fdb.FDBPlugin;
 	import actionScripts.plugins.fdb.event.FDBEvent;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
@@ -223,7 +224,8 @@ package actionScripts.impls
 				SymbolsPlugin,
 				ReferencesPlugin,
 				StartupHelperPlugin,
-				RenamePlugin
+				RenamePlugin,
+				Away3DPlugin
 			];
 		}
 		
@@ -335,6 +337,9 @@ package actionScripts.impls
 				]),
 				new MenuItem("Subversion", [
 					new MenuItem("Checkout", null, SVNPlugin.CHECKOUT_REQUEST)
+				]),
+				new MenuItem("Others", [
+					new MenuItem("Build an Away3D Model", null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
 				]),
 				new MenuItem("Help", Settings.os == "win"? [ 
 					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT),

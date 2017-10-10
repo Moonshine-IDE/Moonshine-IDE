@@ -898,10 +898,15 @@ package actionScripts.plugin.templating
 					if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
 					{
 						var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
-						if (customTemplate.fileBridge.exists)
-							projectTemplate = customTemplate;
-							
-						findSettingsFile(projectTemplate);
+						if (customTemplate.fileBridge.exists) projectTemplate = customTemplate;
+						
+						if (eventName == "Away3D Project")
+						{
+							dispatcher.dispatchEvent(
+								new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "awd", null, projectTemplate)
+							);
+						}
+						else findSettingsFile(projectTemplate);
 						break;
 					}
 				}	

@@ -36,7 +36,7 @@ package actionScripts.utils
 		// in case /src/app-xml present update to bin-debug folder
 		if (descriptorFile.exists)
 		{
-			appXML = rootPath +"/"+ descriptorName;
+			appXML = rootPath + File.separator + descriptorName;
 			descriptorFile.copyTo(project.folderLocation.resolvePath(appXML).fileBridge.getFile as File, true);
 			descriptorFile =  project.folderLocation.resolvePath(appXML).fileBridge.getFile as File;
 			var stream:FileStream = new FileStream();

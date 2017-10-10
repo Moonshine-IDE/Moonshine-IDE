@@ -164,16 +164,19 @@ package actionScripts.plugins.as3project.importer
 			}
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
-			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) p.targetPlatform = "Android";
-			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) p.targetPlatform = "iOS";
+			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) p.buildOptions.targetPlatform = "Android";
+			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) p.buildOptions.targetPlatform = "iOS";
 			
 			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
 			if (html) p.htmlPath = new FileLocation(html);
 			
-			p.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
-			
 			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
-			p.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
+			p.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
+			
+			p.buildOptions.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.deviceSimulator));
+			p.buildOptions.certAndroid = UtilsCore.deserializeString(data.moonshineRunCustomization.certAndroid);
+			p.buildOptions.certIos = UtilsCore.deserializeString(data.moonshineRunCustomization.certIos);
+			p.buildOptions.certIosProvisioning = UtilsCore.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
 
 			return p;
 		}

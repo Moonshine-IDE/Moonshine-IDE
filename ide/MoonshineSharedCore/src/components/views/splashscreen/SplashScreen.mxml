@@ -116,8 +116,8 @@
 						template.description = String(tmpDescripFileLocation.fileBridge.read());
 						if (tmpImageFile.exists) template.logoImagePath = tmpImageFile.url;
 						
-						if (template.title.indexOf("Feathers") == -1) projectTemplateCollection.addItem(template);
-						else feathersProjectTemplates.addItem(template);
+						if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1) feathersProjectTemplates.addItem(template);
+						else projectTemplateCollection.addItem(template);
 					}
 				}
 				
@@ -192,11 +192,25 @@
 				{
 					var projectName:String = rdr.data.name;
 					recentOpenedProjectObject = new FileLocation(rdr.data.path);
+					
+					// probable termination
+					if (!recentOpenedProjectObject.fileBridge.exists) return;
+					
 					if (recentOpenedProjectObject.fileBridge.isDirectory)
 					{
 						var p:AS3ProjectVO;
 						var lastOpenedOption:String;
 						var flashDevelopProjectFile: FileLocation;
+						
+						// open if away3d project
+						if (rdr.data.isAway3D)
+						{
+							p = new AS3ProjectVO(recentOpenedProjectObject as FileLocation, rdr.data.name);
+							GlobalEventDispatcher.getInstance().dispatchEvent(
+								new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, p)
+							);
+							return;
+						}
 						
 						// check if any last opend option is associated with the project
 						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
