@@ -46,10 +46,6 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.Settings;
 
-    import mx.resources.IResourceManager;
-
-    import mx.resources.ResourceManager;
-
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -74,8 +70,6 @@ package actionScripts.ui.menu
 		private var eventToMenuMapping:Dictionary = new Dictionary();
 		private var noSDKOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
-
-        private var menuItemsDisabledInVEProject:Array;
 
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
@@ -145,8 +139,6 @@ package actionScripts.ui.menu
 		
 		private function init():void
 		{
-			initializeMenuOptionsEnabledInVEProject();
-
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				if (Settings.os == "mac") 
@@ -213,8 +205,8 @@ package actionScripts.ui.menu
 
         private function onMenusDisableStateChange(event:ProjectEvent):void
         {
-			disableMenuOptionsForVEProject();
             disableNewFileMenuOptions();
+			disableMenuOptionsForVEProject();
         }
 
 		private function disableMenuOptionsForVEProject():void
@@ -240,7 +232,7 @@ package actionScripts.ui.menu
 				}
 				else
                 {
-                    menuItem.enabled = menuItemsDisabledInVEProject.indexOf(menuItem.label) > -1;
+                    menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
                 }
 				
 				if (menuItem.submenu)
@@ -368,14 +360,14 @@ package actionScripts.ui.menu
 					topNativeMenuItemsForFileNew = (menuBarMenu.items[0] as CustomMenuItem).data.items[0].data.items;
 				}
 				
-				for (var i:int=0; i < 6; i++)
+				for (var i:int=0; i < 7; i++)
 				{
 					topNativeMenuItemsForFileNew[i].enabled = false;
 				}
 			}
 			else
 			{
-				for (var j:int=0; j < 6; j++)
+				for (var j:int=0; j < 7; j++)
 				{
 					topNativeMenuItemsForFileNew[j].enabled = false;
 				}
@@ -600,39 +592,5 @@ package actionScripts.ui.menu
 				data.event, false, false,
 				data.eventData))
 		}
-
-
-        private function initializeMenuOptionsEnabledInVEProject():void
-        {
-            if (menuItemsDisabledInVEProject) return;
-
-            var resourceManager:IResourceManager = ResourceManager.getInstance();
-            menuItemsDisabledInVEProject = [
-                resourceManager.getString('resources', 'NEW'),
-                resourceManager.getString('resources', 'OPEN'),
-                resourceManager.getString('resources', 'SAVE'),
-                resourceManager.getString('resources', 'SAVE_AS'),
-                resourceManager.getString('resources', 'CLOSE'),
-                resourceManager.getString('resources', 'QUIT'),
-                resourceManager.getString('resources', 'FIND'),
-                resourceManager.getString('resources', 'FINDE_PREV'),
-                resourceManager.getString('resources', 'PROJECT_VIEW'),
-                resourceManager.getString('resources', 'FULLSCREEN'),
-                resourceManager.getString('resources', 'HOME'),
-                resourceManager.getString('resources', 'CHECKOUT'),
-                resourceManager.getString('resources', 'ABOUT'),
-                resourceManager.getString('resources', 'TOUR_DE_FLEX'),
-                resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
-                resourceManager.getString('resources', 'USEFUL_LINKS'),
-                resourceManager.getString('resources', 'VE_PROJECT'),
-                resourceManager.getString('resources', 'ACTION_SCRIPT_PROJECT'),
-                resourceManager.getString('resources', 'FLEX_MOBILE_PROJECT'),
-                resourceManager.getString('resources', 'FLEX_DESKTOP_PROJECT'),
-                resourceManager.getString('resources', 'FLEX_BROWSER_PROJECT'),
-                resourceManager.getString('resources', 'FLEXJS_BROWSER_PROJECT'),
-                resourceManager.getString('resources', 'FEATHERS_DESKTOP_PROJECT'),
-                resourceManager.getString('resources', 'FEATHERS_MOBILE_PROJECT')
-            ];
-        }
 	}
 }

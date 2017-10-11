@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-    import flash.display.Sprite;
     import flash.events.FocusEvent;
     import flash.events.MouseEvent;
     import flash.events.TimerEvent;

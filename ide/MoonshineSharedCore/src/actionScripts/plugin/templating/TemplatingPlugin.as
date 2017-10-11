@@ -117,7 +117,7 @@ package actionScripts.plugin.templating
 			{
 				for each (var m:FileLocation in ConstantsCoreVO.TEMPLATES_FILES)
 				{
-					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."))
+					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."));
 					dispatcher.addEventListener(fileName, handleNewTemplateFile);
 				}
 				
@@ -146,7 +146,15 @@ package actionScripts.plugin.templating
 				if (!file.isHidden && !file.isDirectory)
 					ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem(file);
 			}
-			
+
+            files = templatesDir.resolvePath("files/visualeditor/flex");
+            list = files.fileBridge.getDirectoryListing();
+            for each (file in list)
+            {
+                if (!file.isHidden && !file.isDirectory)
+                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS.addItem(file);
+            }
+
 			files = templatesDir.resolvePath("files/AS3 Class.as.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_AS3CLASS = files;
@@ -291,7 +299,7 @@ package actionScripts.plugin.templating
 				
 				eventType = "eventNewProjectFromTemplate"+lbl;
 				
-				dispatcher.addEventListener(eventType, handleNewProjectFile)
+				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
 				menuItem = new MenuItem(lbl, null, eventType);
 				menuItem.data = projectTemplate;
@@ -422,7 +430,6 @@ package actionScripts.plugin.templating
 		
 		protected function getOriginalFileForCustom(template:FileLocation):FileLocation
 		{
-			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
 			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
 
 			var originalTemplatePath:String = template.fileBridge.nativePath.substr(appStorageDirPath.length+1);
@@ -481,6 +488,7 @@ package actionScripts.plugin.templating
 			var eventName:String;
 			var i:int;
 			var fileTemplate:FileLocation;
+
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				eventName = event.type.substr(24);
@@ -488,6 +496,7 @@ package actionScripts.plugin.templating
 				// MXML type choose
 				switch (eventName)
 				{
+                    case "Visual Editor Flex File":
 					case "MXML File":
 						openMXMLComponentTypeChoose(event);
 						return;
@@ -518,7 +527,7 @@ package actionScripts.plugin.templating
 						{
 							fileTemplate = customTemplate;
 						}
-							
+
 						createFile(fileTemplate);
 						return;
 					}
@@ -539,7 +548,7 @@ package actionScripts.plugin.templating
 				}
 			}
 		}
-		
+
 		protected function createFile(template:FileLocation):void
 		{
 			var editor:BasicTextEditor = new BasicTextEditor();
@@ -576,8 +585,8 @@ package actionScripts.plugin.templating
 				new AddTabEvent(editor)
 			);
 		}
-		
-		protected function openMXMLComponentTypeChoose(event:Event):void
+
+        protected function openMXMLComponentTypeChoose(event:Event):void
 		{
 			if (!newMXMLComponentPopup)
 			{
