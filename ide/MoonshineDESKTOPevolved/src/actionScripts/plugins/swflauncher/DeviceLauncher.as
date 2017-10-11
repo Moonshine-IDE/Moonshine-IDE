@@ -28,8 +28,11 @@ package actionScripts.plugins.swflauncher
 	import flash.utils.IDataOutput;
 	
 	import mx.controls.Alert;
+	import mx.events.CloseEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
@@ -54,6 +57,9 @@ package actionScripts.plugins.swflauncher
 		{
 			isAndroid = (project.buildOptions.targetPlatform == "Android");
 			isRunAsDebugger = runAsDebugger;
+			
+			// checks if the credentials are present
+			if (!ensureCredentialsPresent(project)) return;
 			
 			// We need the application ID; without pre-guessing any
 			// lets read and find it
@@ -105,6 +111,31 @@ package actionScripts.plugins.swflauncher
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
+		}
+		
+		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
+		{
+			if (isAndroid && (project.buildOptions.certAndroid && project.buildOptions.certAndroid != "") && (project.buildOptions.certAndroidPassword && project.buildOptions.certAndroidPassword != ""))
+			{
+				return true;
+			}
+			else if (!isAndroid && (project.buildOptions.certIos && project.buildOptions.certIos != "") && (project.buildOptions.certIosPassword && project.buildOptions.certIosPassword != "") && (project.buildOptions.certIosProvisioning && project.buildOptions.certIosProvisioning != ""))
+			{
+				return true;
+			}
+			
+			Alert.show("Insufficient information. Process terminates.", "Error!", Alert.OK, null, onProcessTerminatesDueToCredentials);
+			return false;
+			
+			/*
+			 * @local
+			 */
+			function onProcessTerminatesDueToCredentials(event:CloseEvent):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ShowSettingsEvent(project, "run")
+				);
+			}
 		}
 		
 		private function addToQueue(value:Object):void

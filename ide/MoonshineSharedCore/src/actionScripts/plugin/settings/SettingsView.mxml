@@ -67,7 +67,7 @@
 			public var defaultSaveLabel:String = "Save";
 			public var defaultCancelLabel:String = "Cancel";
 			public var defaultCloseLabel:String = "Close";
-			public var currentRequestedSelectedItem:PluginSettingsWrapper;
+			public var currentRequestedSelectedItem:IHasSettings;
 			public var isSaved:Boolean;
 			
 			private var currentSelectedItem:IHasSettings;
