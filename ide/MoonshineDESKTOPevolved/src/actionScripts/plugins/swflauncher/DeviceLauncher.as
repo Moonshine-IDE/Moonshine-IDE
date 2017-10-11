@@ -31,7 +31,6 @@ package actionScripts.plugins.swflauncher
 	import mx.events.CloseEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
