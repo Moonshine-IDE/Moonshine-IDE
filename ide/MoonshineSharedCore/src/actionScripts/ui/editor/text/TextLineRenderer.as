@@ -248,12 +248,12 @@ package actionScripts.ui.editor.text
 			
 			markerBlinkTimer = new Timer(600);
 			markerBlinkTimer.addEventListener(TimerEvent.TIMER, markerBlink);
-			
-			lineNumberBackground = new Sprite();
-			addChild(lineNumberBackground);
 
 			diagnosticsShape = new Shape();
 			addChild(diagnosticsShape);
+			
+			lineNumberBackground = new Sprite();
+			addChild(lineNumberBackground);
 		}
 		
 		public function drawCaret(beforeCharAtIndex:int):void
