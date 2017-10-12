@@ -107,14 +107,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function get air():Boolean
 		{
-			/*if (buildOptions && buildOptions.additional)
-			{
-				var isBool: Boolean = (buildOptions.additional.indexOf("+configname=air") != -1) || (buildOptions.additional.indexOf("+configname=airmobile") != -1);
-				return isBool;
-			}
-			
-			return false;*/	
-			
 			return UtilsCore.isAIR(this);
 		}
 		
