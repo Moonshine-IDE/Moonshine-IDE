@@ -78,16 +78,16 @@
 				tabIndex="1"
 				text="{initialSearchString}"/>
 			<s:Button
-				width="100"
+				width="204"
 				label="Find"
 				styleName="lightButtonTight"
 				click="find()" />
-			<s:Button
+			<!--<s:Button
 				width="100"
 				label="Replace/Find"
 				height="100%" 
 				styleName="lightButtonTight"
-				click="replaceOne(true)" />
+				click="replaceOne(true)" />-->
 		</s:HGroup>
 		<s:HGroup width="100%"
 				  verticalAlign="middle" gap="4">
@@ -96,13 +96,13 @@
 				prompt="Replace"
 				width="100%"
 				styleName="textInput"
-				enter="replaceOne()"
+				enter="replaceOne(true)"
 				tabIndex="2"/>
 			<s:Button
 				width="100"
-				label="Replace"
+				label="Replace/Find"
 				styleName="lightButtonTight"
-				click="replaceOne()" />
+				click="replaceOne(true)" />
 			<s:Button
 				width="100"
 				label="Replace All" 
