@@ -116,6 +116,7 @@ package actionScripts.ui.editor.text
 		{
 			_horizontalOffset = v;
 			if (textLine)textLine.x = lineNumberWidth + _horizontalOffset;
+			if (diagnosticsShape) diagnosticsShape.x = lineNumberWidth + _horizontalOffset;
 			selection.x = lineNumberWidth + _horizontalOffset;
 			drawMarkerAtPosition(lastMarkerPosition, 0);
 		}
