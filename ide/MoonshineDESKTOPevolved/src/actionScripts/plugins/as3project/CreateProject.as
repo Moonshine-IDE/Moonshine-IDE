@@ -32,10 +32,8 @@ package actionScripts.plugins.as3project
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -150,7 +148,7 @@ package actionScripts.plugins.as3project
 			// Only template for those we can handle
 			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
 
-            SetProjectType(event.templateDir.fileBridge.name);
+            setProjectType(event.templateDir.fileBridge.name);
 
             cookie = SharedObject.getLocal("moonshine-ide-local");
 			//Read recent project path from shared object
@@ -220,14 +218,22 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
 			
-			var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
-				new StaticLabelSetting('New '+ event.templateDir.fileBridge.name),
-				newProjectNameSetting, // No space input either plx
-				newProjectPathSetting,
-				new PathSetting(this,'customFlexSDK', 'Apache Flex® or FlexJS® SDK', true, customFlexSDK, true),
-				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
-				newProjectSourcePathSetting
-			]));
+			var settings:SettingsWrapper = project.isVisualEditorProject ?
+					new SettingsWrapper("Name & Location", Vector.<ISetting>([
+						new StaticLabelSetting('New '+ event.templateDir.fileBridge.name),
+						newProjectNameSetting, // No space input either plx
+						newProjectPathSetting,
+						new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
+						newProjectSourcePathSetting
+					])) :
+                    new SettingsWrapper("Name & Location", Vector.<ISetting>([
+                        new StaticLabelSetting('New '+ event.templateDir.fileBridge.name),
+                        newProjectNameSetting, // No space input either plx
+                        newProjectPathSetting,
+                        new PathSetting(this,'customFlexSDK', 'Apache Flex® or FlexJS® SDK', true, customFlexSDK, true),
+                        new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
+                        newProjectSourcePathSetting
+                    ]));
 
 			if (isActionScriptProject)
 			{
@@ -302,14 +308,7 @@ package actionScripts.plugins.as3project
         {
             return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj";
         }
-		
-		private function swap(fromIndex:int, toIndex:int,myArray:Array):void
-		{
-			var temp:* = myArray[toIndex];
-			myArray[toIndex] = myArray[fromIndex];
-			myArray[fromIndex] = temp;	
-		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS
@@ -403,7 +402,7 @@ package actionScripts.plugins.as3project
 				{
 					if (i.title == projectTemplateType)
 					{
-						SetProjectType(i.title);
+						setProjectType(i.title);
 
 						var templateSettingsName:String = isVisualEditorProject ?
 								"$Settings.veditorproj.template" :
@@ -570,7 +569,7 @@ package actionScripts.plugins.as3project
 			return pvo;
 		}
 
-        private function SetProjectType(templateName:String):void
+        private function setProjectType(templateName:String):void
         {
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
