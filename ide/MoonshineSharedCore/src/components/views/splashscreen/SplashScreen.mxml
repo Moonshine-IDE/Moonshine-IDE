@@ -191,11 +191,9 @@
 			// desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				var projectName:String = rdr.data.name;
 				recentOpenedProjectObject = new FileLocation(rdr.data.path);
 				if (recentOpenedProjectObject.fileBridge.isDirectory)
 				{
-					var projectName:String = rdr.data.name;
 					recentOpenedProjectObject = new FileLocation(rdr.data.path);
 					
 					// probable termination
@@ -205,8 +203,7 @@
 					{
 						var project:AS3ProjectVO;
 						var lastOpenedOption:String;
-						var flashDevelopProjectFile: FileLocation;
-						
+
 						// open if away3d project
 						if (rdr.data.isAway3D)
 						{
@@ -226,7 +223,7 @@
 						}
 					}
 
-					project = getProjectBasedOnFileOption(lastOpenedOption, projectName);
+					project = getProjectBasedOnFileOption(lastOpenedOption, rdr.data.name);
 
 					if (!project)
 					{

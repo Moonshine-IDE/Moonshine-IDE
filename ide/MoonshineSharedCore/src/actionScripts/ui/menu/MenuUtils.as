@@ -53,6 +53,7 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'FLEXJS_BROWSER_PROJECT'),
             resourceManager.getString('resources', 'FEATHERS_DESKTOP_PROJECT'),
             resourceManager.getString('resources', 'FEATHERS_MOBILE_PROJECT'),
+            resourceManager.getString('resources', 'AWAY3D_PROJECT'),
             resourceManager.getString('resources', 'REFRESH'),
             resourceManager.getString('resources', 'SETTINGS'),
             resourceManager.getString('resources', 'DELETE'),
