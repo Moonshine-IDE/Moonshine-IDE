@@ -56,13 +56,43 @@ package actionScripts.plugins.as3project.importer
 			project.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+project.projectName+"Config.xml").nativePath));
 			project.projectFolder.name = project.projectName;
 			
+			var stream:FileStream;
+			stream = new FileStream();
+			stream.open(file.fileBridge.getFile as File, FileMode.READ);
+			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
+			stream.close();
+			
+			// Parse XML file
+            project.classpaths.length = 0;
+            project.resourcePaths.length = 0;
+            project.targets.length = 0;
+			
+			parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
+
+            project.assetLibrary = data.library;
+			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
+
+            project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
+            project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
+            project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+
+            project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
+
+            project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
+            project.testMovie = data.options.option.@testMovie;
+			
 			if (!descriptorFile) descriptorFile = folder.resolvePath("application.xml");
 			if (!descriptorFile.exists)
 			{
 				descriptorFile = folder.resolvePath("src/"+project.projectName+"-app.xml");
 				if (!descriptorFile.exists)
 				{
-					var projectConfig:File = folder.resolvePath("obj/"+project.projectName+"Config.xml");
+					/*var projectConfig:File = folder.resolvePath("obj/"+p.projectName+"Config.xml");
 					if (projectConfig.exists)
 					{
 						stream = new FileStream();
@@ -73,12 +103,13 @@ package actionScripts.plugins.as3project.importer
 						projectConfig = new File(configData["file-specs"]["path-element"]);
 						projectConfig = projectConfig.parent;
 						descriptorFile = projectConfig.resolvePath(project.projectName+"-app.xml");
-					}
+					}*/
 					
-					//descriptorFile = folder.resolvePath(p.projectName+".template");
+					var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
+					descriptorFile = project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.getFile as File;
 				}
 			}
-			var stream:FileStream;
+			
 			var isAIR:Boolean;
 			if (descriptorFile.exists)
 			{
@@ -99,16 +130,6 @@ package actionScripts.plugins.as3project.importer
 			
 			project.air = isAIR;
 			
-			stream = new FileStream();
-			stream.open(file.fileBridge.getFile as File, FileMode.READ);
-			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
-			stream.close();
-
-			// Parse XML file
-			project.classpaths.length = 0;
-			project.resourcePaths.length = 0;
-			project.targets.length = 0;
-
 			project.buildOptions.parse(data.build);
 			project.swfOutput.parse(data.output, project);
 			
@@ -121,24 +142,6 @@ package actionScripts.plugins.as3project.importer
 				else project.buildOptions.additional += " +configname=air";
 			}
 			
-			parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
-
-			project.assetLibrary = data.library;
-			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
-
-			project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
-			project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
-			project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
-			
-			project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
-			
-			project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
-			project.testMovie = data.options.option.@testMovie;
 			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
 			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
 			{
