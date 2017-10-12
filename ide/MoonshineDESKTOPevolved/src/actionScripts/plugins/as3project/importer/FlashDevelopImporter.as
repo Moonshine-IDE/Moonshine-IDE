@@ -90,19 +90,6 @@ package actionScripts.plugins.as3project.importer
 				descriptorFile = folder.resolvePath("src/"+p.projectName+"-app.xml");
 				if (!descriptorFile.exists)
 				{
-					/*var projectConfig:File = folder.resolvePath("obj/"+p.projectName+"Config.xml");
-					if (projectConfig.exists)
-					{
-						stream = new FileStream();
-						stream.open(projectConfig, FileMode.READ);
-						var configData:XML = XML(stream.readUTFBytes(projectConfig.size).toString());
-						stream.close();
-						
-						projectConfig = new File(configData["file-specs"]["path-element"]);
-						projectConfig = projectConfig.parent;
-						descriptorFile = projectConfig.resolvePath(p.projectName+"-app.xml");
-					}*/
-					
 					var appFileName:String = p.targets[0].fileBridge.name.split(".")[0];
 					descriptorFile = p.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.getFile as File;
 				}
