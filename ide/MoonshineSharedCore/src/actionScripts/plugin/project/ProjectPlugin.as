@@ -105,10 +105,10 @@ package actionScripts.plugin.project
 		
 		private function handleMenuShowSettings(event:Event):void
 		{
-			var project:ProjectVO = IDEModel.getInstance().activeProject;
+			var project:ProjectVO = model.activeProject;
 			if (project)
 			{
-				showSettings(IDEModel.getInstance().activeProject);
+				showSettings(model.activeProject);
 			} 
 		}
 		

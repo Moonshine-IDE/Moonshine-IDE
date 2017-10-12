@@ -82,7 +82,7 @@
 				// Allow tab to be closed without asking to save
 				if (forceClose) return false;
 				
-				var setting:IHasSettings
+				var setting:IHasSettings;
 				for each(var categoryItems:Array in categories)
 				{
 					for each(setting in categoryItems)

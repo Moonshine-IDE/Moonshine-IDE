@@ -21,13 +21,11 @@ package actionScripts.plugin.settings.vo
     import flash.events.EventDispatcher;
     
     import mx.core.IVisualElement;
-    
-    import actionScripts.plugin.settings.vo.ISetting;
 
     public class AbstractSetting extends EventDispatcher implements ISetting
     {
 		protected var hasPendingChanges:Boolean = false;
-		protected var pendingChanges:*
+		protected var pendingChanges:*;
     	
         private var _name:String;
         [Bindable]
