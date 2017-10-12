@@ -907,7 +907,10 @@ package actionScripts.plugin.templating
 					if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
 					{
 						var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
-						if (customTemplate.fileBridge.exists) projectTemplate = customTemplate;
+						if (customTemplate.fileBridge.exists)
+						{
+							projectTemplate = customTemplate;
+                        }
 						
 						if (eventName == "Away3D Project")
 						{
@@ -915,7 +918,10 @@ package actionScripts.plugin.templating
 								new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "awd", null, projectTemplate)
 							);
 						}
-						else findSettingsFile(projectTemplate);
+						else
+						{
+							findSettingsFile(projectTemplate);
+                        }
 						break;
 					}
 				}	

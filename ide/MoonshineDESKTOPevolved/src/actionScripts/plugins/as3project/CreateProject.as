@@ -90,8 +90,14 @@ package actionScripts.plugins.as3project
 				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 			}
 			
-			if (event.projectFileEnding == "as3proj") createAS3Project(event);
-			else if (event.projectFileEnding == "awd") createAway3DProject(event);
+			if (isAllowedTemplateFile(event.projectFileEnding))
+			{
+				createAS3Project(event);
+            }
+			else if (event.projectFileEnding == "awd")
+			{
+				createAway3DProject(event);
+            }
 		}
 		
 		public function get isProjectFromExistingSource():Boolean
