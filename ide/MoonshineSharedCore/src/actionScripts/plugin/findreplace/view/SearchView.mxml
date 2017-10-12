@@ -23,30 +23,28 @@
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
 			   xmlns:view="actionScripts.plugin.findreplace.view.*"
-			   width="400" height="150"
+			   width="500" autoLayout="true" minWidth="500"
 			   backgroundColor="0xf5f5f5"
 			   title="Find/Replace" skinClass="components.skins.ResizableTitleWindowSkin"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
 	<fx:Script>
 		<![CDATA[
+			import mx.events.FlexEvent;
 			
 			import actionScripts.plugin.findreplace.FindReplacePlugin;
 			
 			[Bindable] public var initialSearchString:String = "";
 			
-			private function findNext():void
+			private function find():void
 			{
-				dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_NEXT) );
+				if (rbDirection.selectedIndex == 0) dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_NEXT) );
+				else dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_PREV) );
 			}
 			
-			private function findPrev():void
-			{
-				dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_PREV) );
-			}
-			
-			private function replaceOne():void
+			private function replaceOne(isFindNext:Boolean=false):void
 			{
 				dispatchEvent( new Event(FindReplacePlugin.EVENT_REPLACE_ONE) );
+				if (isFindNext) find();
 			}
 			
 			private function replaceAll():void
@@ -62,9 +60,12 @@
 			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="rbDirection"/>
+	</fx:Declarations>
 	
 	<s:VGroup width="100%" height="100%"
-			  paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
 		<s:HGroup width="100%"
 				  verticalAlign="middle" gap="4">
 			<view:StatusTextInput
@@ -73,20 +74,20 @@
 				width="100%"
 				styleName="textInputStatus"
 				creationComplete="{focusInput()}"
-				enter="findNext()"
+				enter="find()"
 				tabIndex="1"
 				text="{initialSearchString}"/>
 			<s:Button
-				width="45"
-				label="Next"
+				width="204"
+				label="Find"
 				styleName="lightButtonTight"
-				click="findNext()" />
-			<s:Button
-				width="45"
-				label="Prev"
+				click="find()" />
+			<!--<s:Button
+				width="100"
+				label="Replace/Find"
 				height="100%" 
 				styleName="lightButtonTight"
-				click="findPrev()" />
+				click="replaceOne(true)" />-->
 		</s:HGroup>
 		<s:HGroup width="100%"
 				  verticalAlign="middle" gap="4">
@@ -95,16 +96,16 @@
 				prompt="Replace"
 				width="100%"
 				styleName="textInput"
-				enter="replaceOne()"
+				enter="replaceOne(true)"
 				tabIndex="2"/>
 			<s:Button
-				width="45"
-				label="One"
+				width="100"
+				label="Replace/Find"
 				styleName="lightButtonTight"
-				click="replaceOne()" />
+				click="replaceOne(true)" />
 			<s:Button
-				width="45"
-				label="All" 
+				width="100"
+				label="Replace All" 
 				styleName="lightButtonTight"
 				click="replaceAll()" />
 		</s:HGroup>
@@ -119,6 +120,13 @@
 			<s:CheckBox
 				id="optionEscapeChars" 
 				label="Escape chars"/>
+		</s:HGroup>
+		<s:HGroup width="100%"
+				  verticalAlign="middle" gap="4">
+			<s:RadioButton group="{rbDirection}"
+						   label="Forward" selected="true"/>
+			<s:RadioButton group="{rbDirection}"
+						   label="Backward"/>
 		</s:HGroup>
 	</s:VGroup>
 </resizableTitleWindow:ResizableTitleWindow>

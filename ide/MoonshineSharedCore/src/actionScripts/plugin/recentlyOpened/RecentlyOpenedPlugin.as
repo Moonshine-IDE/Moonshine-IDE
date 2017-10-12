@@ -63,6 +63,7 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
 			dispatcher.addEventListener(SDKUtils.EVENT_SDK_PROMPT_DNS, onSDKExtractDNSUpdated);
@@ -210,6 +211,8 @@ package actionScripts.plugin.recentlyOpened
 			tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
+			tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
+			
 			model.recentlyOpenedProjects.addItemAt(tmpSOReference, 0);
 			model.recentlyOpenedProjectOpenedOption.addItemAt({path:f.fileBridge.nativePath, option:(event.extras ? event.extras[0] : "")}, 0);
 			
@@ -217,8 +220,10 @@ package actionScripts.plugin.recentlyOpened
 			/*var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 			tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;*/
 			
-			setTimeout(function():void{var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-				tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;}, 200);
+			setTimeout(function():void{
+				var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
+				if (model.activeProject) tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;
+			}, 200);
 			
 			save(model.recentlyOpenedProjects.source, 'recentProjects');
 			save(model.recentlyOpenedProjectOpenedOption.source, 'recentProjectsOpenedOption');

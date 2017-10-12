@@ -31,6 +31,8 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import mx.utils.StringUtil;
+			
 			import actionScripts.plugin.settings.vo.StringSetting;
 			
 			[Bindable]
@@ -57,7 +59,7 @@
 			
 			private function updatePrompt():void
 			{
-				var hasText:Boolean = (text.text != "");
+				var hasText:Boolean = (StringUtil.trim(text.text).length != 0);
 				
 				text.visible = text.includeInLayout = hasText;
 				textPrompt.visible = textPrompt.includeInLayout = !hasText;

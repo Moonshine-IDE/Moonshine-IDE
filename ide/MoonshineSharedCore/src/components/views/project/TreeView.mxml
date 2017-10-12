@@ -31,6 +31,7 @@
 			import mx.collections.ArrayCollection;
 			import mx.collections.Sort;
 			import mx.collections.SortField;
+			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.events.CollectionEvent;
@@ -357,16 +358,7 @@
 					{
 						if (fileWrapper.isWorking) return;
 						
-						dispatcher.dispatchEvent(
-							new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer)
-						);
-						
-						if (ConstantsCoreVO.IS_AIR)
-						{
-							//tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, "Refresh", fileWrapper));
-							refreshFileFolder();
-						}
-						
+						Alert.show("Are you sure you want to delete '"+ fileWrapper.file.fileBridge.name +"' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
 						break;
 					}
 					case FTETreeItemRenderer.RENAME:
@@ -424,6 +416,26 @@
 					}
 					
 					refreshByWrapperItem(fileWrapper);
+				}
+				
+				/*
+				 * @local
+				 * file delete
+				 */
+				function onFileDeleteConfirm(event:CloseEvent):void
+				{
+					if (event.detail == Alert.YES)
+					{
+						dispatcher.dispatchEvent(
+							new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer)
+						);
+						
+						if (ConstantsCoreVO.IS_AIR)
+						{
+							//tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, "Refresh", fileWrapper));
+							refreshFileFolder();
+						}
+					}
 				}
 				
 				/*

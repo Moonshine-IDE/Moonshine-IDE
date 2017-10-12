@@ -75,6 +75,7 @@ package actionScripts.plugins.as3project
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
 		private var isVisualEditorProject:Boolean;
+		private var isAway3DProject:Boolean;
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
@@ -89,13 +90,15 @@ package actionScripts.plugins.as3project
 				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 			}
 			
-			createAS3Project(event);
+			if (event.projectFileEnding == "as3proj") createAS3Project(event);
+			else if (event.projectFileEnding == "awd") createAway3DProject(event);
 		}
 		
 		public function get isProjectFromExistingSource():Boolean
 		{
 			return _isProjectFromExistingSource;
 		}
+		
 		public function set isProjectFromExistingSource(value:Boolean):void
 		{
 			_isProjectFromExistingSource = project.isProjectFromExistingSource = value;
@@ -245,13 +248,56 @@ package actionScripts.plugins.as3project
 			
 			templateLookup[project] = event.templateDir;
 		}
+		
+		private function createAway3DProject(event:NewProjectEvent):void
+		{
+			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), null, false);
+			cookie = SharedObject.getLocal("moonshine-ide-local");
+			
+			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			{
+				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+			}
+			else
+			{
+				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
+			}
+			
+			project.folderLocation = new FileLocation(model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1]);
+			
+			var settingsView:SettingsView = new SettingsView();
+			settingsView.Width = 150;
+			settingsView.defaultSaveLabel = "Create";
+			settingsView.isNewProjectSettings = true;
+			
+			settingsView.addCategory("");
+			
+			var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
+				new StaticLabelSetting('New Away3D Project'),
+				new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._'),
+				new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true)
+			]));
+			
+			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
+			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+			settingsView.addSetting(settings, "");
+			
+			settingsView.label = "New Project";
+			settingsView.associatedData = project;
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new AddTabEvent(settingsView)
+			);
+			
+			templateLookup[project] = event.templateDir;
+		}
 
         private function isAllowedTemplateFile(projectFileExtension:String):Boolean
         {
             return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj";
         }
-
-        private function swap(fromIndex:int, toIndex:int,myArray:Array):void
+		
+		private function swap(fromIndex:int, toIndex:int,myArray:Array):void
 		{
 			var temp:* = myArray[toIndex];
 			myArray[toIndex] = myArray[fromIndex];
@@ -277,7 +323,7 @@ package actionScripts.plugins.as3project
 			
 			settings.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
 			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
-			newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+			if (newProjectPathSetting) newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
 			
 			delete templateLookup[settings.associatedData];
 			
@@ -318,16 +364,27 @@ package actionScripts.plugins.as3project
 			
 			if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(pvo.projectName);
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, pvo)
-			);
-			
 			// Close settings view
 			createClose(event);
+			
 			// Open main file for editing
-			GlobalEventDispatcher.getInstance().dispatchEvent( 
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, pvo.targets[0])
-			);
+			if (isAway3DProject)
+			{
+				pvo.folderLocation = targetFolder;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, pvo)
+				);
+			}
+			else
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.ADD_PROJECT, pvo)
+				);
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent( 
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, pvo.targets[0])
+				);
+			}
 		}
 		
 		private function createFileSystemBeforeSave(pvo:AS3ProjectVO):AS3ProjectVO
@@ -402,6 +459,13 @@ package actionScripts.plugins.as3project
 			if (_customFlexSDK) th.templatingData["${flexlib}"] = _customFlexSDK;
 			else th.templatingData["${flexlib}"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
 			th.projectTemplate(templateDir, targetFolder);
+			
+			// we do not needs any further proceeding for non-flex projects, i.e away3d
+			if (templateDir.fileBridge.name.indexOf("Away3D") != -1) isAway3DProject = true;
+			if (isAway3DProject)
+			{
+				return pvo;
+			}
 			
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
 			var descriptorFileLocation:FileLocation;

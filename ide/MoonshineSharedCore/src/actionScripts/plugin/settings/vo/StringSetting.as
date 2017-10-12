@@ -39,7 +39,7 @@ package actionScripts.plugin.settings.vo
 			this.name = name;
 			this.label = label;
 			this.restrict = restrict;
-			defaultValue = "";
+			defaultValue = stringValue;
 		}
 		
 		override public function get renderer():IVisualElement

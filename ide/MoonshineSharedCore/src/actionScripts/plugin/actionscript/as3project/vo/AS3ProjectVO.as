@@ -245,7 +245,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (mobileRunSettings) 
 			{
 				mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
-				isMobileHasSimulatedDevice = (!targetPlatformSettings.stringValue || targetPlatformSettings.stringValue == "Android") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0] : ConstantsCoreVO.TEMPLATES_IOS_DEVICES[0];
+				buildOptions.isMobileHasSimulatedDevice = (!targetPlatformSettings.stringValue || targetPlatformSettings.stringValue == "Android") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0] : ConstantsCoreVO.TEMPLATES_IOS_DEVICES[0];
 			}
 		}
 		
@@ -276,12 +276,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			if (!mobileRunSettings)
 			{
-				mobileRunSettings = new RunMobileSetting(this, "isMobileRunOnSimulator", "isMobileHasSimulatedDevice", "targetPlatform", "Launch Method");
+				mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
             }
 
 			if (!targetPlatformSettings) 
 			{
-				targetPlatformSettings = new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name");
+				targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
 				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			}
 			else if (!targetPlatformSettings.hasEventListener(Event.CHANGE))

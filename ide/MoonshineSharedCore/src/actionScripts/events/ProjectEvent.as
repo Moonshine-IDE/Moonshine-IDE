@@ -28,6 +28,7 @@ package actionScripts.events
 		public static const HIDE_PROJECT_VIEW:String = "hideProjectViewEvent";
 		
 		public static const ADD_PROJECT:String = "addProjectEvent";
+		public static const ADD_PROJECT_AWAY3D:String = "addProjectEventAway3D";
 		public static const REMOVE_PROJECT:String = "removeProjectEvent";
 		
 		public static const TREE_DATA_UPDATES: String = "TREE_DATA_UPDATES";

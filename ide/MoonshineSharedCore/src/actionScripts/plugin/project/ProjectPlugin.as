@@ -100,7 +100,7 @@ package actionScripts.plugin.project
 
 		private function handleShowSettings(event:ShowSettingsEvent):void
 		{
-			showSettings(event.project);
+			showSettings(event.project, event.jumpToSection);
 		}
 		
 		private function handleMenuShowSettings(event:Event):void
@@ -112,7 +112,7 @@ package actionScripts.plugin.project
 			} 
 		}
 		
-		private function showSettings(project:ProjectVO):void
+		private function showSettings(project:ProjectVO, jumpToSection:String=null):void
 		{
 			// Don't spawn two identical settings views.
 			for (var i:int = 0; i < model.editors.length; i++)
@@ -135,6 +135,7 @@ package actionScripts.plugin.project
 			for each (var category:SettingsWrapper in categories)
 			{
 				settingsView.addSetting(category, settingsLabel);
+				if (jumpToSection && jumpToSection.toLowerCase() == category.name.toLowerCase()) settingsView.currentRequestedSelectedItem = category;
 			}
 			
 			settingsView.label = settingsLabel;

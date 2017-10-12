@@ -55,6 +55,7 @@ package actionScripts.plugins.swflauncher
 		
 		private var customProcess:NativeProcess ;
 		private var currentAIRNamespaceVersion:String;
+		private var deviceLauncher:DeviceLauncher = new DeviceLauncher();
 		
 		override public function activate():void 
 		{
@@ -131,8 +132,11 @@ package actionScripts.plugins.swflauncher
 				customProcess.exit(true);
 				addRemoveShellListeners(false);
 				customProcess= null;
-				
 			}
+			
+			// Need project opened to run
+			if (!project) return;
+			
 			// Can't open files without an SDK set
 			if (!sdk && !project.buildOptions.customSDK)
 			{
@@ -146,10 +150,15 @@ package actionScripts.plugins.swflauncher
 				sdk = new File(event.value.toString());
 			}
 			
-			// Need project opened to run
-			if (!project) return;
-			
 			var currentSDK:File = (project.buildOptions.customSDK) ? project.buildOptions.customSDK.fileBridge.getFile as File : sdk;
+			var appXML:String = findAndCopyApplicationDescriptor(file, project, file.parent);
+			
+			// In case of mobile project and device-run, lets divert
+			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
+			{
+				deviceLauncher.runOnDevice(project, sdk, file, appXML);
+				return;
+			}
 			
 			var customInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			
@@ -163,8 +172,6 @@ package actionScripts.plugins.swflauncher
 			// Find air debug launcher
 			print("Launch Applcation");
 			
-			var appXML:String = findAndCopyApplicationDescriptor(file, project, file.parent);
-			
 			//var executableFile: File = new File("C:\\Program Files\\Adobe\\Adobe Flash Builder 4.6\\sdks\\4.14\\bin\\adl.exe");
 			customInfo.executable = executableFile;
 			var processArgs:Vector.<String> = new Vector.<String>;               
@@ -173,22 +180,22 @@ package actionScripts.plugins.swflauncher
 			if (project.isMobile)
 			{
 				var device:MobileDeviceVO;
-				if (project.isMobileHasSimulatedDevice.name && !project.isMobileHasSimulatedDevice.key)
+				if (project.buildOptions.isMobileHasSimulatedDevice.name && !project.buildOptions.isMobileHasSimulatedDevice.key)
 				{
-					var deviceCollection:ArrayCollection = project.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+					var deviceCollection:ArrayCollection = project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
 					for (var i:int=0; i < deviceCollection.length; i++)
 					{
-						if (project.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
+						if (project.buildOptions.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
 						{
 							device = deviceCollection[i];
 							break;
 						}
 					}
 				}
-				else if (!project.isMobileHasSimulatedDevice.name)
+				else if (!project.buildOptions.isMobileHasSimulatedDevice.name)
 					device = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0];
 				else 
-					device = project.isMobileHasSimulatedDevice;
+					device = project.buildOptions.isMobileHasSimulatedDevice;
 				
 				// @note
 				// https://feathersui.com/help/faq/display-density.html

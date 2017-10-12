@@ -47,6 +47,7 @@ package actionScripts.plugins.as3project.exporter
 		private static function toXML(p:AS3ProjectVO):XML
 		{
 			var project:XML = <project></project>;
+			var tmpXML:XML;
 			
 			// Get output node with relative paths		
 			var outputXML: XML = p.swfOutput.toXML(p.folderLocation);
@@ -67,7 +68,7 @@ package actionScripts.plugins.as3project.exporter
 			if (p.assetLibrary && p.assetLibrary.children().length() == 0)
 			{
 				var libXML:XMLList = p.assetLibrary;
-				var tmpXML:XML = <!-- <empty/> -->
+				tmpXML = <!-- <empty/> -->
 				libXML.child[0] = tmpXML;
 				project.appendChild(libXML);
 			}
@@ -111,17 +112,30 @@ package actionScripts.plugins.as3project.exporter
 			if (p.isMobile) projType = AS3ProjectPlugin.AS3PROJ_AS_ANDROID;
 			
 			var platform:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
-			if (p.isMobile) platform = (p.targetPlatform == "Android") ? AS3ProjectPlugin.AS3PROJ_AS_ANDROID : AS3ProjectPlugin.AS3PROJ_AS_IOS;
+			if (p.isMobile) platform = (p.buildOptions.targetPlatform == "Android") ? AS3ProjectPlugin.AS3PROJ_AS_ANDROID : AS3ProjectPlugin.AS3PROJ_AS_IOS;
 			
 			options = <moonshineRunCustomization />;
 			optionPairs = {
 				projectType		:	projType,
 				targetPlatform	:	platform,
 				urlToLaunch		:	p.htmlPath ? p.htmlPath.fileBridge.nativePath : "",
-				launchMethod	:	p.isMobileRunOnSimulator ? "Simulator" : "Device",
+				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
 				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null
 			}
 			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
+			
+			tmpXML = <deviceSimulator/>;
+			tmpXML.appendChild(p.buildOptions.isMobileHasSimulatedDevice ? p.buildOptions.isMobileHasSimulatedDevice.name : null);
+			options.appendChild(tmpXML);
+			tmpXML = <certAndroid/>;
+			tmpXML.appendChild(p.buildOptions.certAndroid);
+			options.appendChild(tmpXML);
+			tmpXML = <certIos/>;
+			tmpXML.appendChild(p.buildOptions.certIos);
+			options.appendChild(tmpXML);
+			tmpXML = <certIosProvisioning/>;
+			tmpXML.appendChild(p.buildOptions.certIosProvisioning);
+			options.appendChild(tmpXML);
 			project.appendChild(options);
 			
 			// update obj/*config.xml

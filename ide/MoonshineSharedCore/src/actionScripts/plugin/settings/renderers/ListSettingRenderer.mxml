@@ -41,9 +41,6 @@
 			
 			private function init():void
 			{
-				cmbOption.textInput.editable = false;
-				cmbOption.setStyle("contentBackgroundColor","#FFFFFF");
-				
 				updatePrompt();
 			}
 			
@@ -98,7 +95,8 @@
 	<s:Label id="lbl"
 		styleName="uiTextSettingsLabel"
 		text="{setting.label}"/>
-	<s:ComboBox id="cmbOption"
-				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
-				selectedIndex="0" change="onOptionChanged(event)"/>
+	<s:DropDownList id="cmbOption"
+					width="100%" height="24" 
+					change="onOptionChanged(event)" 
+					requireSelection="true"/>
 </s:VGroup>

@@ -69,6 +69,9 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
+	import actionScripts.plugins.away3d.Away3DPlugin;
+	import actionScripts.plugins.fdb.FDBPlugin;
+	import actionScripts.plugins.fdb.event.FDBEvent;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.problems.ProblemsPlugin;
 	import actionScripts.plugins.references.ReferencesPlugin;
@@ -197,7 +200,8 @@ package actionScripts.impls
 				SymbolsPlugin,
 				ReferencesPlugin,
 				StartupHelperPlugin,
-				RenamePlugin
+				RenamePlugin,
+				Away3DPlugin
 			];
 		}
 		
@@ -313,12 +317,15 @@ package actionScripts.impls
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, SVNPlugin.CHECKOUT_REQUEST)
 				]),
-				new MenuItem(resourceManager.getString('resources','HELP'), Settings.os == "win"? [
-					new MenuItem(resourceManager.getString('resources','ABOUT'), null, MenuPlugin.EVENT_ABOUT),
-					new MenuItem(resourceManager.getString('resources','USEFUL_LINKS'), null, HelpPlugin.EVENT_AS3DOCS),
-					new MenuItem(resourceManager.getString('resources','TOUR_DE_FLEX'), null, HelpPlugin.EVENT_TOURDEFLEX)]:
-					[new MenuItem(resourceManager.getString('resources','USEFUL_LINKS'), null, HelpPlugin.EVENT_AS3DOCS),
-						new MenuItem(resourceManager.getString('resources','TOUR_DE_FLEX'), null, HelpPlugin.EVENT_TOURDEFLEX)
+				new MenuItem("Others", [
+					new MenuItem("Build an Away3D Model", null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
+				]),
+				new MenuItem("Help", Settings.os == "win"? [ 
+					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem('Useful Links', null, HelpPlugin.EVENT_AS3DOCS),
+					new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)]:
+					[new MenuItem('Useful Links', null, HelpPlugin.EVENT_AS3DOCS),
+						new MenuItem('Tour De Flex', null, HelpPlugin.EVENT_TOURDEFLEX)
 					])
 			]);
 			

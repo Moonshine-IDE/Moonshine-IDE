@@ -27,6 +27,7 @@ package actionScripts.valueObjects
 		public var status:String = "";
 		public var loading: Boolean;
 		public var sdk:String;
+		public var isAway3D:Boolean;
 		
 		public function ProjectReferenceVO()
 		{
@@ -53,6 +54,7 @@ package actionScripts.valueObjects
 			if ( value.hasOwnProperty("status") ) tmpVO.status = value.status;
 			if ( value.hasOwnProperty("loading") ) tmpVO.loading = value.loading;
 			if ( value.hasOwnProperty("sdk") ) tmpVO.sdk = value.sdk;
+			if ( value.hasOwnProperty("isAway3D") ) tmpVO.isAway3D = value.isAway3D;
 			
 			// finally
 			return tmpVO;

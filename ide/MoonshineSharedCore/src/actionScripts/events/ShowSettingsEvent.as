@@ -27,10 +27,12 @@ package actionScripts.events
 		public static const EVENT_SHOW_SETTINGS:String = "showSettingsEvent";
 		
 		public var project:ProjectVO;
+		public var jumpToSection:String;
 		
-		public function ShowSettingsEvent(project:ProjectVO)
+		public function ShowSettingsEvent(project:ProjectVO, jumpToSection:String=null)
 		{
 			this.project = project;
+			this.jumpToSection = jumpToSection;
 			
 			super(EVENT_SHOW_SETTINGS, false, true);
 		}
