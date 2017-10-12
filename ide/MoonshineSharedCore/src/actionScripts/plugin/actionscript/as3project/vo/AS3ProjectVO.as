@@ -18,31 +18,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.utils.SDKUtils;
-
     import flash.events.Event;
-	
-	import mx.collections.ArrayCollection;
-	
-	import __AS3__.vec.Vector;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
-	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
-	import actionScripts.plugin.run.RunMobileSetting;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ColorSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.IntSetting;
-	import actionScripts.plugin.settings.vo.ListSetting;
-	import actionScripts.plugin.settings.vo.NameValuePair;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.settings.vo.StringSetting;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.MobileDeviceVO;
-	import actionScripts.valueObjects.ProjectVO;
+    
+    import mx.collections.ArrayCollection;
+    
+    import __AS3__.vec.Vector;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
+    import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+    import actionScripts.plugin.run.RunMobileSetting;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ColorSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.IntSetting;
+    import actionScripts.plugin.settings.vo.ListSetting;
+    import actionScripts.plugin.settings.vo.NameValuePair;
+    import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.settings.vo.SettingsWrapper;
+    import actionScripts.plugin.settings.vo.StringSetting;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.MobileDeviceVO;
+    import actionScripts.valueObjects.ProjectVO;
 	
 	public class AS3ProjectVO extends ProjectVO
 	{
@@ -103,12 +103,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function get air():Boolean
 		{
-			if (buildOptions && buildOptions.additional)
+			/*if (buildOptions && buildOptions.additional)
 			{
 				var isBool: Boolean = (buildOptions.additional.indexOf("+configname=air") != -1) || (buildOptions.additional.indexOf("+configname=airmobile") != -1);
 				return isBool;
 			}
-			return false;	
+			
+			return false;*/	
+			
+			return UtilsCore.isAIR(this);
 		}
 		
 		public function set air(v:Boolean):void
@@ -260,18 +263,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
 			
-			if (!additional) additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			if (!htmlFilePath) htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
-			if (!mobileRunSettings) mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
-			if (!targetPlatformSettings) 
-			{
-				targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
-				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
-			}
-			else if (!targetPlatformSettings.hasEventListener(Event.CHANGE))
-			{
-				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
-			}
+			if (additional) additional = null;
+			if (htmlFilePath) htmlFilePath = null;
+			if (mobileRunSettings) mobileRunSettings = null;
+			if (targetPlatformSettings) targetPlatformSettings = null;
+			
+			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
+			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
+			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			
 			if (!isFlashBuilderProject)
 			{

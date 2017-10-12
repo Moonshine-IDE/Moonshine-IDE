@@ -127,6 +127,20 @@ package actionScripts.utils
 		}
 		
 		/**
+		 * Determines if a project is AIR type
+		 */
+		public static function isAIR(project:AS3ProjectVO):Boolean
+		{
+			if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
+			{
+				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
+				return project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
+			}
+			
+			return false;
+		}
+		
+		/**
 		 * Getting a component co-ordinate
 		 * in respect of global stage
 		 */
