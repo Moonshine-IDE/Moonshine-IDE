@@ -20,6 +20,8 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	import flash.geom.Point;
 	
 	import mx.collections.ArrayCollection;
@@ -134,7 +136,37 @@ package actionScripts.utils
 			if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
 			{
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
-				return project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
+				var descriptorFile:FileLocation = project.sourceFolder.resolvePath("application.xml");
+				if (descriptorFile.fileBridge.exists) return true;
+				else
+				{
+					return project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
+				}
+			}
+			
+			return false;
+		}
+		
+		/**
+		 * Determines if a project is mobile type
+		 */
+		public static function isMobile(project:AS3ProjectVO):Boolean
+		{
+			if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
+			{
+				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
+				var descriptor:FileLocation = project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml");
+				if (descriptor.fileBridge.exists)
+				{
+					var descriptorData:XML = XML(descriptor.fileBridge.read());
+					var tmpNameSearchString:String = "";
+					for each (var i:XML in descriptorData.children())
+					{
+						tmpNameSearchString += i.localName()+" ";
+					}
+					
+					return (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1);
+				}
 			}
 			
 			return false;

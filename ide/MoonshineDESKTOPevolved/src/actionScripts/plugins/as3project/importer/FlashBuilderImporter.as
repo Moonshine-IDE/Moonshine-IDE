@@ -16,18 +16,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
-    import actionScripts.utils.SDKUtils;
-
     import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
-	import actionScripts.plugin.core.importer.FlashBuilderImporterBase;
-	import actionScripts.utils.UtilsCore;
+    import flash.filesystem.FileMode;
+    import flash.filesystem.FileStream;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
+    import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
+    import actionScripts.plugin.core.importer.FlashBuilderImporterBase;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.UtilsCore;
 	
 	public class FlashBuilderImporter extends FlashBuilderImporterBase
 	{
@@ -161,6 +160,7 @@ package actionScripts.plugins.as3project.importer
 			p.isFlashBuilderProject = true;
 			
 			p.sourceFolder = p.folderLocation.fileBridge.resolvePath(data.compiler.@sourceFolderPath);
+			p.isMobile = UtilsCore.isMobile(p);
 			
 			// add output folder path to flash trust content list
 			if (!p.air && !p.isMobile)
@@ -174,21 +174,14 @@ package actionScripts.plugins.as3project.importer
 			var stream:FileStream = new FileStream();
 			stream.open(file, FileMode.READ);
 			var data:String = stream.readUTFBytes(file.size).toString();
-			var dataToXML:XML = XML(data);
 			stream.close();
 			
 			var replacement:String = p.projectName + ".swf";
 			
 			var flashBuilder:String = "[This value will be overwritten by Flash Builder in the output app.xml]";
 			var flexBuilder:String = "[This value will be overwritten by Flex Builder in the output app.xml]";
-
-			var tmpNameSearchString:String = "";
-			for each (var i:XML in dataToXML.children())
-			{
-				tmpNameSearchString += i.localName()+" ";
-			}
 			
-			p.isMobile = (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1) ? true : false;
+			p.isMobile = UtilsCore.isMobile(p);
 			
 			if (p.targets.length > 0)
 			{

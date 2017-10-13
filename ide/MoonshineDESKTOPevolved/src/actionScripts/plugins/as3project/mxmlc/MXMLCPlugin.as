@@ -635,6 +635,19 @@ package actionScripts.plugins.as3project.mxmlc
 				var optFlag:Boolean = pvo.buildOptions.optimize;
 				if (release) pvo.buildOptions.optimize = true;
 				var buildArgs:String = pvo.buildOptions.getArguments();
+				
+				if (pvo.air)
+				{
+					// option for manipulating swf launch through additional arg
+					// in case of project user wants to run it in a mobile simulator by adding certain
+					// commands in Additional Compiler Arguments, we need to make the swf launching
+					// behaves as a mobile or air
+					if (buildArgs.indexOf("+configname=air") == -1) pvo.isMobile = UtilsCore.isMobile(pvo);
+					else pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
+					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=airmobile";
+					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=air";
+				}
+				
 				pvo.buildOptions.optimize = optFlag;
 				
 				var dbg:String;

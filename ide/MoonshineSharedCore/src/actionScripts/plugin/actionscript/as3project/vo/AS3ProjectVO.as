@@ -108,13 +108,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function set air(v:Boolean):void
 		{
-			if (v && buildOptions && buildOptions.additional)
+			/*if (v && buildOptions && buildOptions.additional)
 			{
 				if (buildOptions.additional.length > 0) buildOptions.additional += " ";
 				if (!isMobile && (buildOptions.additional.indexOf("+configname=air") == -1)) buildOptions.additional += " +configname=air";
 				else if (isMobile && (buildOptions.additional.indexOf("+configname=airmobile") == -1)) buildOptions.additional += " +configname=airmobile";
 				this.testMovie = TEST_MOVIE_AIR;
-			}
+			}*/
+			this.testMovie = TEST_MOVIE_AIR;
 		}
 		
 		public function get customSDKPath():String

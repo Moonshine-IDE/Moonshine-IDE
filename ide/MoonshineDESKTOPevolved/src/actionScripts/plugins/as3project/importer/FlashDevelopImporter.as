@@ -81,57 +81,6 @@ package actionScripts.plugins.as3project.importer
 			
 			p.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
 			
-			p.defaultBuildTargets = data.options.option.@defaultBuildTargets;
-			p.testMovie = data.options.option.@testMovie;
-			
-			if (!descriptorFile) descriptorFile = folder.resolvePath("application.xml");
-			if (!descriptorFile.exists)
-			{
-				descriptorFile = folder.resolvePath("src/"+p.projectName+"-app.xml");
-				if (!descriptorFile.exists)
-				{
-					var appFileName:String = p.targets[0].fileBridge.name.split(".")[0];
-					descriptorFile = p.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.getFile as File;
-				}
-			}
-			
-			var isAIR:Boolean;
-			if (descriptorFile.exists)
-			{
-				isAIR = true;
-				stream = new FileStream();
-				stream.open(descriptorFile, FileMode.READ);
-				var descriptorData:XML = XML(stream.readUTFBytes(descriptorFile.size).toString());
-				stream.close();
-
-				var tmpNameSearchString:String = "";
-				for each (var i:XML in descriptorData.children())
-				{
-					tmpNameSearchString += i.localName()+" ";
-				}
-				
-				p.isMobile = (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1) ? true : false;
-			}
-			
-			p.air = isAIR;
-			
-			p.buildOptions.parse(data.build);
-			p.swfOutput.parse(data.output, p);
-			
-			parsePaths(data.classpaths["class"], p.classpaths, p, "path", p.buildOptions.customSDKPath);
-			parsePaths(data.moonshineResourcePaths["class"], p.resourcePaths, p, "path", p.buildOptions.customSDKPath);
-			if (!p.buildOptions.additional) p.buildOptions.additional = "";
-			if (isAIR && (p.buildOptions.additional.indexOf("configname") == -1))
-			{
-				if (p.isMobile) p.buildOptions.additional += " +configname=airmobile";
-				else p.buildOptions.additional += " +configname=air";
-			}
-			
-			if (p.air) p.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
-			if (p.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || p.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
-			{
-				p.testMovieCommand = data.options.option.@testMovieCommand;
-			}
 			if (p.targets.length > 0)
 			{
 				var target:FileLocation = p.targets[0];
@@ -151,6 +100,25 @@ package actionScripts.plugins.as3project.importer
 				}
 				
 				p.sourceFolder = new FileLocation(finalPath);
+			}
+			
+			p.defaultBuildTargets = data.options.option.@defaultBuildTargets;
+			p.testMovie = data.options.option.@testMovie;
+			
+			p.air = UtilsCore.isAIR(p);
+			p.isMobile = UtilsCore.isMobile(p);
+			
+			p.buildOptions.parse(data.build);
+			p.swfOutput.parse(data.output, p);
+			
+			parsePaths(data.classpaths["class"], p.classpaths, p, "path", p.buildOptions.customSDKPath);
+			parsePaths(data.moonshineResourcePaths["class"], p.resourcePaths, p, "path", p.buildOptions.customSDKPath);
+			if (!p.buildOptions.additional) p.buildOptions.additional = "";
+			
+			if (p.air) p.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
+			if (p.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || p.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			{
+				p.testMovieCommand = data.options.option.@testMovieCommand;
 			}
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
