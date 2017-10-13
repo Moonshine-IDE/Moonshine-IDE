@@ -213,14 +213,26 @@ package actionScripts.ui.menu
 		{
 			var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
 
-            if (ConstantsCoreVO.IS_AIR && Settings.os != "mac")
+			if (ConstantsCoreVO.IS_AIR)
             {
-                var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-                recursiveDisabledMenuForVisualEditor(menuBarMenu.items, activeProject);
+				var menu:Object = null;
+                if (Settings.os == "win")
+                {
+                    menu = (model.mainView.getChildAt(0) as MenuBar).menu;
+                }
+				else if (Settings.os == "mac")
+				{
+                    menu = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				}
+
+				if (menu)
+                {
+                    recursiveDisabledMenuForVisualEditor(menu.items, activeProject);
+                }
             }
 		}
 
-		private function recursiveDisabledMenuForVisualEditor(menuItems:Vector.<ICustomMenuItem>, currentProject:AS3ProjectVO):void
+		private function recursiveDisabledMenuForVisualEditor(menuItems:Object, currentProject:AS3ProjectVO):void
 		{
             var countMenuItems:int = menuItems.length;
             for (var i:int = 0; i < countMenuItems; i++)
