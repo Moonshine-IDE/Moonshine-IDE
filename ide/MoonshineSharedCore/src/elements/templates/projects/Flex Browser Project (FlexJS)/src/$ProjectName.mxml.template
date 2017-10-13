@@ -2,7 +2,7 @@
 <js:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
 				xmlns:js="library://ns.apache.org/flexjs/basic" 
 				xmlns:local="*"
-				pageTitle="HelloWorld" xmlns:ns="library://ns.apache.org/flexjs/html5">
+				pageTitle="HelloWorld">
 			   
 	<fx:Declarations>
 	</fx:Declarations>
