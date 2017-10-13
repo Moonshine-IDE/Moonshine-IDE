@@ -85,55 +85,18 @@ package actionScripts.plugins.as3project.importer
 
             project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
             project.testMovie = data.options.option.@testMovie;
-			
-			if (!descriptorFile) descriptorFile = folder.resolvePath("application.xml");
-			if (!descriptorFile.exists)
-			{
-				descriptorFile = folder.resolvePath("src/"+project.projectName+"-app.xml");
-				if (!descriptorFile.exists)
-				{
-					var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
-					descriptorFile = project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.getFile as File;
-				}
-			}
-			
-			var isAIR:Boolean;
-			if (descriptorFile.exists)
-			{
-				isAIR = true;
-				stream = new FileStream();
-				stream.open(descriptorFile, FileMode.READ);
-				var descriptorData:XML = XML(stream.readUTFBytes(descriptorFile.size).toString());
-				stream.close();
 
-				var tmpNameSearchString:String = "";
-				for each (var i:XML in descriptorData.children())
-				{
-					tmpNameSearchString += i.localName()+" ";
-				}
-				
-				project.isMobile = (tmpNameSearchString.indexOf("android") != -1) || (tmpNameSearchString.indexOf("iPhone") != -1) ? true : false;
-			}
+            project.assetLibrary = data.library;
+			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
+
+            project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
+            project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
+            project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+
+            project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
 			
-			project.air = isAIR;
-			
-			project.buildOptions.parse(data.build);
-			project.swfOutput.parse(data.output, project);
-			
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
-			if (!project.buildOptions.additional) project.buildOptions.additional = "";
-			if (isAIR && (project.buildOptions.additional.indexOf("configname") == -1))
-			{
-				if (project.isMobile) project.buildOptions.additional += " +configname=airmobile";
-				else project.buildOptions.additional += " +configname=air";
-			}
-			
-			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
-			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
-			{
-				project.testMovieCommand = data.options.option.@testMovieCommand;
-			}
 			if (project.targets.length > 0)
 			{
 				var target:FileLocation = project.targets[0];
@@ -162,6 +125,25 @@ package actionScripts.plugins.as3project.importer
 				);
 			}
 
+            project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
+            project.testMovie = data.options.option.@testMovie;
+
+            project.air = UtilsCore.isAIR(project);
+            project.isMobile = UtilsCore.isMobile(project);
+
+            project.buildOptions.parse(data.build);
+            project.swfOutput.parse(data.output, project);
+			
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
+			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+			
+			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
+			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			{
+                project.testMovieCommand = data.options.option.@testMovieCommand;
+			}
+			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
 			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) project.buildOptions.targetPlatform = "Android";
 			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) project.buildOptions.targetPlatform = "iOS";

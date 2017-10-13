@@ -116,7 +116,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		/**
 		 * @return mxmlc arguments with defaults removed
 		 */
-		public function getArguments():String {
+		public function getArguments():String 
+		{
 			var pairs:Object = getArgumentPairs();
 			var dpairs:Object = defaultOptions.getArgumentPairs();
 			var args:String = "";
@@ -125,7 +126,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					args += " -"+p+"="+pairs[p];
 				}
 			}
-			if (additional) args += " "+additional.replace("\n", " ");
+			if (additional && (StringUtil.trim(additional).length > 0)) args += " "+additional.replace("\n", " ");
 			if (args.indexOf("-locale ") != -1)
 			{
 				var tmpSplit:Array = args.split(" ");

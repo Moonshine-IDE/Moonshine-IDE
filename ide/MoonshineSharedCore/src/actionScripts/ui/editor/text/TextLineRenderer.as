@@ -111,6 +111,7 @@ package actionScripts.ui.editor.text
 		{
 			_horizontalOffset = v;
 			if (textLine)textLine.x = lineNumberWidth + _horizontalOffset;
+			if (diagnosticsShape) diagnosticsShape.x = lineNumberWidth + _horizontalOffset;
 			selection.x = lineNumberWidth + _horizontalOffset;
 			drawMarkerAtPosition(lastMarkerPosition, 0);
 		}
@@ -242,12 +243,12 @@ package actionScripts.ui.editor.text
 			
 			markerBlinkTimer = new Timer(600);
 			markerBlinkTimer.addEventListener(TimerEvent.TIMER, markerBlink);
-			
-			lineNumberBackground = new Sprite();
-			addChild(lineNumberBackground);
 
 			diagnosticsShape = new Shape();
 			addChild(diagnosticsShape);
+			
+			lineNumberBackground = new Sprite();
+			addChild(lineNumberBackground);
 		}
 		
 		public function drawCaret(beforeCharAtIndex:int):void
