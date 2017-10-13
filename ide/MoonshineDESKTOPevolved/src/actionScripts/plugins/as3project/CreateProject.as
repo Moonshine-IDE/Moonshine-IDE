@@ -449,7 +449,8 @@ package actionScripts.plugins.as3project
 			
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
 			var descriptorFile:FileLocation;
-			if (isActionScriptProject || pvo.air || isMobileProject)
+			var isAIR:Boolean = templateDir.resolvePath("build_air").fileBridge.exists;
+			if (isActionScriptProject || isAIR || isMobileProject)
 			{
 				if (activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)
 				{
