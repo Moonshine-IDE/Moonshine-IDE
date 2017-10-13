@@ -360,8 +360,8 @@
 					case FTETreeItemRenderer.DELETE_FILE_FOLDER:
 					{
 						if (fileWrapper.isWorking) return;
-						
-						Alert.show("Are you sure you want to delete '"+ fileWrapper.file.fileBridge.name +"' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+						if (!fileWrapper.isRoot) Alert.show("Are you sure you want to delete '"+ fileWrapper.file.fileBridge.name +"' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+						else onFileDeleteConfirm(new CloseEvent("", false, false, Alert.YES));
 						break;
 					}
 					case FTETreeItemRenderer.RENAME:
