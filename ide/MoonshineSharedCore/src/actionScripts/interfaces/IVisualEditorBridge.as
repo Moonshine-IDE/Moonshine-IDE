@@ -22,6 +22,7 @@ package actionScripts.interfaces
 
     public interface IVisualEditorBridge extends IProject
     {
-        function getVisualEditor():BasicTextEditor
+        function getVisualEditor():BasicTextEditor;
+        function exportVisualEditorProject():void;
     }
 }

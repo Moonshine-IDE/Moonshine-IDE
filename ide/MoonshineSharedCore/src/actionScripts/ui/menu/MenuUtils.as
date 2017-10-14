@@ -44,6 +44,7 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'ABOUT'),
             resourceManager.getString('resources', 'TOUR_DE_FLEX'),
             resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
             resourceManager.getString('resources', 'USEFUL_LINKS'),
             resourceManager.getString('resources', 'VE_PROJECT'),
             resourceManager.getString('resources', 'ACTION_SCRIPT_PROJECT'),
@@ -58,6 +59,11 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'SETTINGS'),
             resourceManager.getString('resources', 'DELETE'),
             resourceManager.getString('resources', 'RENAME'),
+            "Visual Editor Flex File"
+        ];
+
+        private static var menuItemsDisabledNoneVEProject:Array = [
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
             "Visual Editor Flex File"
         ];
 
@@ -76,6 +82,23 @@ package actionScripts.ui.menu
             }
 
             return true;
+        }
+
+        public static function isMenuItemDisabledNoneVisualEditorProject(label:String, project:ProjectVO = null):Boolean
+        {
+            var currentProject:AS3ProjectVO = project as AS3ProjectVO;
+            if (!currentProject)
+            {
+                var model:IDEModel = IDEModel.getInstance();
+                currentProject = model.activeProject as AS3ProjectVO;
+            }
+
+            if (currentProject && !currentProject.isVisualEditorProject)
+            {
+                return menuItemsDisabledNoneVEProject.indexOf(label) > -1;
+            }
+
+            return false;
         }
     }
 }

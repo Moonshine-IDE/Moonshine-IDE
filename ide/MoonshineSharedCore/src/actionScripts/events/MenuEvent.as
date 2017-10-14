@@ -22,7 +22,7 @@ package actionScripts.events
 
 	public class MenuEvent extends Event
 	{
-		private var _data:Object
+		private var _data:Object;
 
 		public static const ITEM_SELECTED:String = "itemSelected";
 

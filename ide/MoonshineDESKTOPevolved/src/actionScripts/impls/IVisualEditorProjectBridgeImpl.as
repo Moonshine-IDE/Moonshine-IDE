@@ -64,5 +64,10 @@ package actionScripts.impls
         {
             return "";
         }
+
+        public function exportVisualEditorProject():void
+        {
+
+        }
     }
 }

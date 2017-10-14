@@ -19,8 +19,11 @@
 package actionScripts.plugin.visualEditor
 {
     import actionScripts.events.NewProjectEvent;
+    import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
+
+    import flash.events.Event;
 
     public class VisualEditorProjectPlugin extends PluginBase
     {
@@ -35,19 +38,21 @@ package actionScripts.plugin.visualEditor
 
         override public function activate():void
         {
-            dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, onVisualEditorCreateNewProject);
+            dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, visualEditorCreateNewProjectHandler);
+            dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
 
             super.activate();
         }
 
         override public function deactivate():void
         {
-            dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, onVisualEditorCreateNewProject);
+            dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, visualEditorCreateNewProjectHandler);
+            dispatcher.removeEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
 
             super.deactivate();
         }
 
-        private function onVisualEditorCreateNewProject(event:NewProjectEvent):void
+        private function visualEditorCreateNewProjectHandler(event:NewProjectEvent):void
         {
             if (!canCreateProject(event)) return;
 
@@ -58,6 +63,11 @@ package actionScripts.plugin.visualEditor
         {
             var projectTemplateName:String = event.templateDir.fileBridge.name;
             return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) > -1;
+        }
+
+        private function visualEditorExportVisualEditorProjectHandler(event:Event):void
+        {
+
         }
     }
 }

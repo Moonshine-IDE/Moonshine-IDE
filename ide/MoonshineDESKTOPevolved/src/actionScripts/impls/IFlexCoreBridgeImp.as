@@ -281,6 +281,8 @@ package actionScripts.impls
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
 					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), null, ProjectEvent.EXPORT_VISUALEDITOR_PROJECT),
+                    new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),

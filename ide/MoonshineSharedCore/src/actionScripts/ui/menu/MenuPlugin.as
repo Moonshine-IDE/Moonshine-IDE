@@ -121,10 +121,6 @@ package actionScripts.ui.menu
 		{
 		}
 		
-		public function addMenu(menu:MenuItem):void
-		{
-		}
-		
 		public function addPluginMenu(menu:MenuItem):void
 		{
 			if (!menu)
@@ -240,7 +236,7 @@ package actionScripts.ui.menu
 				var menuItem:ICustomMenuItem = menuItems[i];
 				if (!currentProject || !currentProject.isVisualEditorProject)
 				{
-					menuItem.enabled = true;
+					menuItem.enabled = MenuUtils.isMenuItemDisabledNoneVisualEditorProject(menuItem.label) ? false : true;
 				}
 				else
                 {
