@@ -112,7 +112,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function set air(v:Boolean):void
 		{
-			this.testMovie = TEST_MOVIE_AIR;
+			this.testMovie = v ? TEST_MOVIE_AIR : "";
 		}
 		
 		public function get customSDKPath():String
