@@ -608,7 +608,7 @@ package actionScripts.plugins.as3project
 			_customFlexSDK = null;
 			
 			// Write settings
-			FlashDevelopExporter.export(pvo, settingsFile, exportProject);
+			FlashDevelopExporter.export(pvo, settingsFile);
 			
 			return pvo;
 		}
