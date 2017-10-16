@@ -18,26 +18,42 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import flash.events.Event;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
+    import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
 
 	public class NewProjectEvent extends Event
 	{
 		public static const CREATE_NEW_PROJECT:String = "createNewProjectEvent";
+
+		private var _exportProject:AS3ProjectVO;
 		
 		public var settingsFile:FileLocation;
 		public var templateDir:FileLocation;
 		public var projectFileEnding:String;
-		
-		public function NewProjectEvent(type:String, projectFileEnding:String, settingsFile:FileLocation, templateDir:FileLocation)
+
+		public function NewProjectEvent(type:String, projectFileEnding:String,
+										settingsFile:FileLocation, templateDir:FileLocation,
+										project:AS3ProjectVO = null)
 		{
 			this.projectFileEnding = projectFileEnding;
 			this.settingsFile = settingsFile;
 			this.templateDir = templateDir;
-			
+			_exportProject = project;
+
 			super(type, false, true);
 		}
-		
+
+		public function get isExport():Boolean
+		{
+			return _exportProject != null;
+		}
+
+		public function get exportProject():AS3ProjectVO
+		{
+			return _exportProject;
+		}
 	}
 }

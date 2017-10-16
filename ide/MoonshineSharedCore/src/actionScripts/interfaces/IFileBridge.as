@@ -35,7 +35,7 @@ package actionScripts.interfaces
 		function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null):void;
 		function createFile(forceIsDirectory:Boolean=false):void;
 		function createDirectory():void;
-		function copyTo(value:FileLocation):void;
+		function copyTo(value:FileLocation, overwrite:Boolean = false):void;
 		function copyFileTemplate(dst:FileLocation, data:Object=null):void;
 		function getRelativePath(ref:FileLocation, useDotDot:Boolean=false):String;
 		function load():void;

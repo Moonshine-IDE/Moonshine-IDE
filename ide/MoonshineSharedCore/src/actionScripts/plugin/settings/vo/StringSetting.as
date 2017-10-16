@@ -19,17 +19,14 @@
 package actionScripts.plugin.settings.vo
 {
 	import mx.core.IVisualElement;
-	
-	import spark.filters.BlurFilter;
-	
+
 	import actionScripts.plugin.settings.renderers.StringRenderer;
 	
 	public class StringSetting extends AbstractSetting
 	{
 		private var restrict:String;
 		private var rdr:StringRenderer;
-		private var myBlurFilter:BlurFilter = new BlurFilter();
-		
+
 		private var _isEditable:Boolean = true;
 		
 		public function StringSetting(provider:Object, name:String, label:String, restrict:String=null)

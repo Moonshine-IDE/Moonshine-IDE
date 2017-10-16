@@ -39,7 +39,7 @@ package actionScripts.plugin.visualEditor
         override public function activate():void
         {
             dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, visualEditorCreateNewProjectHandler);
-            dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
+            dispatcher.addEventListener(ProjectEvent.INIT_EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
 
             super.activate();
         }
@@ -47,7 +47,7 @@ package actionScripts.plugin.visualEditor
         override public function deactivate():void
         {
             dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, visualEditorCreateNewProjectHandler);
-            dispatcher.removeEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
+            dispatcher.removeEventListener(ProjectEvent.INIT_EXPORT_VISUALEDITOR_PROJECT, visualEditorExportVisualEditorProjectHandler);
 
             super.deactivate();
         }
@@ -67,7 +67,7 @@ package actionScripts.plugin.visualEditor
 
         private function visualEditorExportVisualEditorProjectHandler(event:Event):void
         {
-
+            dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, model.activeProject));
         }
     }
 }

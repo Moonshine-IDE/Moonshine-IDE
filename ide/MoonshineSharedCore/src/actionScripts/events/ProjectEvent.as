@@ -38,7 +38,8 @@ package actionScripts.events
 		public static const PROJECT_REFRESH: String = "PROJECT_REFRESH";
 		public static const PROJECT_OPEN_REQUEST: String = "PROJECT_OPEN_REQUEST";
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
-		public static const EXPORT_VISUALEDITOR_PROJECT:String = "EXPORT_VISUALEDITOR_PROJECT";
+		public static const INIT_EXPORT_VISUALEDITOR_PROJECT:String = "INIT_EXPORT_VISUALEDITOR_PROJECT";
+		public static const EXPORT_VISUALEDITOR_PROJECT:String = "EXPORT_VISUAL_EDITOR_PROJECT";
 		
 		public static const LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 		public static const LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
@@ -57,8 +58,15 @@ package actionScripts.events
 		
 		public function ProjectEvent(type:String, project:Object=null, ...args)
 		{
-			if (project is ProjectVO) this.project = project as ProjectVO;
-			else anObject = project;
+			if (project is ProjectVO)
+			{
+				this.project = project as ProjectVO;
+            }
+			else
+			{
+				anObject = project;
+            }
+
 			extras = args;
 			super(type, false, false);
 		}
