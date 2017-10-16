@@ -20,10 +20,12 @@ package actionScripts.ui
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.containers.VBox;
 	import mx.events.CollectionEvent;
+	import mx.events.FlexEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
@@ -124,7 +126,6 @@ package actionScripts.ui
 					}
 					break;
 				}
-					
 			} 
 		}
 		
@@ -175,12 +176,10 @@ package actionScripts.ui
 				childIndex = 0;
 			else
 				childIndex = mainPanel.numChildren-1;
-		   if (!sidebar.stage) mainPanel.addChildAt(sidebar,childIndex);
+			
+			if (!sidebar.stage) mainPanel.addChildAt(sidebar,childIndex);
 			sidebar.addChild(panel as DisplayObject);
 			isProjectViewAdded = true;
-			/*if (!sidebar.stage) mainPanel.addChild(sidebar);
-			sidebar.addChild(panel as DisplayObject);
-			isProjectViewAdded = true*/
 		}
 		
 		public function getTreeViewPanel():TreeView

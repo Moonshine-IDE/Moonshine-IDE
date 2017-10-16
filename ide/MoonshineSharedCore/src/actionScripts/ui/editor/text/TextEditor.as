@@ -338,6 +338,7 @@ package actionScripts.ui.editor.text
 		{
 			model = new TextEditorModel();
 			
+			
 			widthUpdateDelayer = new Timer(0, 0);
 			widthUpdateDelayer.addEventListener(TimerEvent.TIMER_COMPLETE, calculateTextWidth);
 			
@@ -749,6 +750,7 @@ package actionScripts.ui.editor.text
 			super.createChildren();
 			
 			addChild(itemContainer);
+			updateScrollRect();
 			
 			verticalScrollBar = new ScrollBar();
 			verticalScrollBar.minScrollPosition = 0;
@@ -775,6 +777,11 @@ package actionScripts.ui.editor.text
 			} 
 			
 			addEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
+		}
+		
+		private function updateScrollRect():void
+		{
+			itemContainer.scrollRect = new Rectangle(0, 0, this.width, this.height);
 		}
 		
 		private function handleMouseWheel(event:MouseEvent):void
@@ -1169,6 +1176,7 @@ package actionScripts.ui.editor.text
 				if (checkFlag(INVALID_RESIZE, curInvalidFlags))
 				{
 					updateSize();
+					updateScrollRect();
 				}
 				if (checkFlag(INVALID_WIDTH, curInvalidFlags))
 				{
@@ -1176,6 +1184,7 @@ package actionScripts.ui.editor.text
 					updateHorizontalScrollbar();
 					
 					if (old != horizontalScrollBar.visible) invalidateFlag(INVALID_RESIZE);
+					else updateScrollRect();
 				}
 				if (checkFlag(INVALID_SCROLL, curInvalidFlags))
 				{
