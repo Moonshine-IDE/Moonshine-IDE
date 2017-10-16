@@ -177,7 +177,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function get platformTypes():ArrayCollection
 		{
 			var tmpCollection:ArrayCollection;
-			additional.isEditable = air;
+			//additional.isEditable = air;
 			htmlFilePath.isEditable = !air;
 			mobileRunSettings.visible = isMobile;
 			
