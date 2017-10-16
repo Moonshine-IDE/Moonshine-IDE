@@ -778,7 +778,7 @@ package actionScripts.ui.editor.text
 		
 		private function updateScrollRect():void
 		{
-			itemContainer.scrollRect = new Rectangle(0, 0, this.parentApplication.width, this.parentApplication.height);
+			itemContainer.scrollRect = new Rectangle(0, 0, this.width, this.height);
 		}
 		
 		private function handleMouseWheel(event:MouseEvent):void
