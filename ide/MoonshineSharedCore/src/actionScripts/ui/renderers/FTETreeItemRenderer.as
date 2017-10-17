@@ -272,6 +272,8 @@ package actionScripts.ui.renderers
 						if ((str.search("<project ")!=-1) || (str.search("<project>")!=-1))
 							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
 					}
+					
+					label2.setStyle("color", 0xe0e0e0);
 				}
 				
 				if (fw.isRoot || ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
@@ -298,6 +300,8 @@ package actionScripts.ui.renderers
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_PROJECT, redispatch, Event.SELECT, true));
 					}
+					
+					label2.setStyle("color", 0xffffcc);
 				}
 				
 				if (fw.isWorking && !loadingIcon) 
