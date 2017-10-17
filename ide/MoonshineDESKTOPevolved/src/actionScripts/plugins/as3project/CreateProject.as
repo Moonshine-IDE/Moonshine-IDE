@@ -156,10 +156,15 @@ package actionScripts.plugins.as3project
 			// if opened by Open project, event.settingsFile will be false
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
-			
-			project = isOpenProjectCall ?
-					new AS3ProjectVO(event.templateDir, null, false) :
-					FlashDevelopImporter.parse(event.settingsFile, null, null, false);
+
+			if (isOpenProjectCall)
+			{
+				project = new AS3ProjectVO(event.templateDir, null, false);
+			}
+			else
+			{
+				project = FlashDevelopImporter.parse(event.settingsFile, null, null, false);
+			}
 			
 			project.isVisualEditorProject = isVisualEditorProject;
 
@@ -181,7 +186,10 @@ package actionScripts.plugins.as3project
 				{
 					project.projectName = "NewFlexJSBrowserProject";
                 }
-				else project.projectName = "New"+tempName;
+				else
+				{
+					project.projectName = event.exportProject ? event.exportProject.name : "New"+tempName;
+                }
 			}
 			
 			if (isOpenProjectCall)
@@ -301,6 +309,7 @@ package actionScripts.plugins.as3project
 
 			if (eventObject.isExport)
 			{
+				newProjectNameSetting.isEditable = false;
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
@@ -505,10 +514,11 @@ package actionScripts.plugins.as3project
             if (exportProject)
             {
                 exportProject.sourceFolder.fileBridge.copyTo(targetFolder.resolvePath("src"));
+				th.isProjectFromExistingSource = true;
             }
 
             th.projectTemplate(templateDir, targetFolder);
-			
+
 			// we do not needs any further proceeding for non-flex projects, i.e away3d
 			if (templateDir.fileBridge.name.indexOf("Away3D") != -1)
 			{
@@ -609,7 +619,7 @@ package actionScripts.plugins.as3project
 			
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
-			
+
 			return pvo;
 		}
 
