@@ -81,7 +81,7 @@ package actionScripts.ui.menu
                 return menuItemsDisabledInVEProject.indexOf(label) > -1;
             }
 
-            return true;
+            return !isMenuItemDisabledNoneVisualEditorProject(label, project);
         }
 
         public static function isMenuItemDisabledNoneVisualEditorProject(label:String, project:ProjectVO = null):Boolean
@@ -93,7 +93,7 @@ package actionScripts.ui.menu
                 currentProject = model.activeProject as AS3ProjectVO;
             }
 
-            if (currentProject && !currentProject.isVisualEditorProject)
+            if (!currentProject || !currentProject.isVisualEditorProject)
             {
                 return menuItemsDisabledNoneVEProject.indexOf(label) > -1;
             }

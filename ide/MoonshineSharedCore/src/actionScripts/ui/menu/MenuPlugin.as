@@ -49,10 +49,8 @@ package actionScripts.ui.menu
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
-		
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
 		public static const MENU_QUIT_EVENT:String = "menuQuitEvent";
-		public static const MENU_OPEN_EVENT:String = "menuOpenEvent";
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
 		public static const MENU_SAVE_AS_EVENT:String = "menuSaveAsEvent";
 		public static const EVENT_ABOUT:String = "EVENT_ABOUT";
@@ -164,7 +162,7 @@ package actionScripts.ui.menu
 				windowMenus[0].items.push(settingsMenuItem);
 				
 				// this will populate template items inside File -> New
-				var parentArray:Array = new Array('File','New');
+				var parentArray:Array = ['File','New'];
 				addSUBMenu(parentArray,windowMenus);
 			}
 			
@@ -196,6 +194,7 @@ package actionScripts.ui.menu
 			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
 			
 			// disable File-New menu as default
+            disableMenuOptionsForVEProject();
 			disableNewFileMenuOptions();
 		}
 
@@ -234,14 +233,7 @@ package actionScripts.ui.menu
             for (var i:int = 0; i < countMenuItems; i++)
             {
 				var menuItem:ICustomMenuItem = menuItems[i];
-				if (!currentProject || !currentProject.isVisualEditorProject)
-				{
-					menuItem.enabled = MenuUtils.isMenuItemDisabledNoneVisualEditorProject(menuItem.label) ? false : true;
-				}
-				else
-                {
-                    menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
-                }
+				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
 				
 				if (menuItem.submenu)
                 {
@@ -380,21 +372,8 @@ package actionScripts.ui.menu
 					topNativeMenuItemsForFileNew[j].enabled = false;
 				}
 			}
+		}
 
-            //disableMenuOptionsForVEProject();
-		}
-		
-		private function onEnableFileNewMenu(event:Event):void
-		{
-			if (topNativeMenuItemsForFileNew)
-			{
-				for (var i:int=0; i < 6; i++)
-				{
-					topNativeMenuItemsForFileNew[i].enabled = true;
-				}
-			}
-		}
-		
 		private function onMacDisableStateChange(event:Event):void
 		{
 			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
@@ -518,7 +497,7 @@ package actionScripts.ui.menu
 					menuItem.data = {
 						eventData:item.data,
 							event:item.event
-					}
+					};
 					eventToMenuMapping[item.event] = menuItem;
 				}
 				
