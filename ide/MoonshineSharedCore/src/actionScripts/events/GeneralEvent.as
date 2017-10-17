@@ -24,6 +24,7 @@ package actionScripts.events
 	{
 		public static const DONE:String = "DONE";
 		public static const DEVICE_UPDATED:String = "DEVICE_UPDATED";
+		public static const RESET_ALL_SETTINGS:String = "RESET_ALL_SETTINGS";
 		
 		public var value:Object;
 		

@@ -20,8 +20,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.save
 {
+	import flash.display.DisplayObject;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
@@ -29,8 +36,10 @@ package actionScripts.plugin.actionscript.as3project.save
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
+	import actionScripts.plugin.settings.vo.ButtonSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	
 	public class SaveFilesPlugin extends PluginBase implements IPlugin, ISettingsProvider
@@ -39,9 +48,11 @@ package actionScripts.plugin.actionscript.as3project.save
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "General options to Moonshine"; }
 		
+		public var resetLabel:String = "Reset Everything";
+		
 		private var _workspacePath:String;
 		private var _isSaveFiles:Boolean = false;
-
+		
 		public function SaveFilesPlugin()
 		{
 			super();
@@ -67,6 +78,14 @@ package actionScripts.plugin.actionscript.as3project.save
 			OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(_workspacePath);
 		}
 		
+		public function get isResetCalled():Boolean {	return false;	}
+		public function set isResetCalled(value:Boolean):void
+		{
+			Alert.yesLabel = "Reset everything";
+			Alert.buttonWidth = 120;
+			Alert.show("Are you sure you want to reset all Moonshine settings?", "Warning!", Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite, onResetHandler, null, Alert.CANCEL);
+		}
+		
 		override public function activate():void 
 		{
 			super.activate();
@@ -90,7 +109,8 @@ package actionScripts.plugin.actionscript.as3project.save
 			
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
-				new BooleanSetting(this,'isSaveFiles', 'Save automatically Before Build')
+				new BooleanSetting(this,'isSaveFiles', 'Save automatically Before Build'),
+				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "isResetCalled", ButtonSetting.STYLE_DANGER)
 			])
 		}
 		
@@ -107,6 +127,20 @@ package actionScripts.plugin.actionscript.as3project.save
 		private function openAccessManager(event:Event):void
 		{
 			OSXBookmarkerNotifiers.checkAccessDependencies(model.projects, "Access Manager", true);
+		}
+		
+		private function onResetHandler(event:CloseEvent):void
+		{
+			Alert.yesLabel = "Yes";
+			Alert.buttonWidth = 65;
+			if (event.detail == Alert.YES)
+			{
+				if (model.activeEditor)
+				{
+					dispatcher.dispatchEvent(new GeneralEvent(GeneralEvent.RESET_ALL_SETTINGS));
+					dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, model.activeEditor as DisplayObject));
+				}
+			}
 		}
 	}
 }

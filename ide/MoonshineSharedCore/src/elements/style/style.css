@@ -108,6 +108,15 @@
 	fontSize: 12;
 }
 
+.redButton
+{
+	skinClass: ClassReference("elements.skins.RedButtonSkin");
+	fontFamily: 'DejaVuSans';
+	paddingLeft: 20px;
+	paddingRight: 20px;
+	fontSize: 12;
+}
+
 .lightButtonTight
 {
 	skinClass: ClassReference("elements.skins.LightButtonSkin");

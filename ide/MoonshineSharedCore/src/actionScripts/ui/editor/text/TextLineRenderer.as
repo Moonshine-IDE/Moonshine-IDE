@@ -41,7 +41,7 @@ package actionScripts.ui.editor.text
 	public class TextLineRenderer extends Sprite
 	{	
 		// TODO: These need to derive from the font metrics
-		public static var lineHeight:Number = 16;
+		public static var lineHeight:int = 16;
 		public static var charWidth:Number = 7.82666015625;
 		
 		private static var numTabstops:int = 100;
@@ -50,8 +50,9 @@ package actionScripts.ui.editor.text
 		classInit(); // Do static init once & once only.
 		static private function classInit():void {
 			tabStops = new Vector.<TabStop>(numTabstops);
+			var charWidthWithTabWidth:Number = charWidth * Settings.font.tabWidth;
 			for (var i:int = 0; i < numTabstops; i++) {
-				tabStops[i] = new TabStop(TabAlignment.START, Math.round((i+1) * charWidth * Settings.font.tabWidth));
+				tabStops[i] = new TabStop(TabAlignment.START, Math.round((i+1) * charWidthWithTabWidth));
 			}
 		}
 		
@@ -60,7 +61,6 @@ package actionScripts.ui.editor.text
 		
 		private var textBlock:TextBlock = new TextBlock();
 		private var textLine:TextLine;
-	
 		
 		private var lineNumberTextBlock:TextBlock = new TextBlock();
 		private var lineNumberText:TextLine;
@@ -107,66 +107,46 @@ package actionScripts.ui.editor.text
 		{
 			return _horizontalOffset;
 		}
-		public function set horizontalOffset(v:int):void
+		public function set horizontalOffset(value:int):void
 		{
-			_horizontalOffset = v;
-			if (textLine)textLine.x = lineNumberWidth + _horizontalOffset;
+			_horizontalOffset = value;
+			if (textLine) textLine.x = lineNumberWidth + _horizontalOffset;
 			if (diagnosticsShape) diagnosticsShape.x = lineNumberWidth + _horizontalOffset;
 			selection.x = lineNumberWidth + _horizontalOffset;
 			drawMarkerAtPosition(lastMarkerPosition, 0);
 		}
-		
-		private var _horizontalTraceOffset:int = 0;
-		public function get horizontalTraceOffset():int
-		{
-			return _horizontalOffset;
-		}
-		public function set horizontalTraceOffset(v:int):void
-		{
-			_horizontalTraceOffset = v;
-			
-			if (textLine) textLine.x = lineNumberWidth + Math.abs( _horizontalTraceOffset);
-			traceSelection.x = lineNumberWidth +  _horizontalTraceOffset;
-			//drawMarkerAtPosition(lastMarkerPosition, 0);
-		}
-		
+
 		private var _caretPosition:int;
-		public function get caretPosition():int
+
+		public function set caretPosition(value:int):void
 		{
-			return _caretPosition;
-		}
-		public function set caretPosition(charIndex:int):void
-		{
-			_caretPosition = charIndex;
-			drawCaret(charIndex);
+			_caretPosition = value;
+			drawCaret(value);
 		}
 		
 		private var _caretTracePosition:int;
-		public function get caretTracePosition():int
+
+		public function set caretTracePosition(value:int):void
 		{
-			return _caretTracePosition;
-		}
-		public function set caretTracePosition(charIndex:int):void
-		{
-			_caretTracePosition = charIndex;
-			drawCaret(charIndex);
+			_caretTracePosition = value;
+			drawCaret(value);
 		}
 		
-		private var _showTraceLines:Boolean= false;
-		public function get showTraceLines():Boolean
+		private var _showTraceLines:Boolean;
+
+		public function set showTraceLines(value:Boolean):void
 		{
-			return _showTraceLines;
+			_showTraceLines = value;
+			_model.debuggerLineSelection = value;
 		}
-		public function set showTraceLines(v:Boolean):void
-		{
-			_showTraceLines = v;
-			_model.debuggerLineSelection = v;
-		}
-		private var _focus:Boolean = false;
+
+		private var _focus:Boolean;
+
 		public function get focus():Boolean
 		{
 			return _focus;
 		}
+
 		public function set focus(v:Boolean):void
 		{
 			_focus = v;
@@ -187,43 +167,28 @@ package actionScripts.ui.editor.text
 				marker.visible = false;
 			}
 		}
+
 		private var _traceFocus:Boolean = false;
-		public function get traceFocus():Boolean
+
+		public function set traceFocus(value:Boolean):void
 		{
-			return _traceFocus;
-		}
-		public function set traceFocus(v:Boolean):void
-		{
-			_traceFocus = v;
+			_traceFocus = value;
 			var g:Graphics = traceSelection.graphics;
 			g.clear();
-			if(v)
+			if(value)
 			{
 				g.beginFill(styles['tracingLineColor'], styles['selectedLineColorAlpha']);
 				g.drawRect(lineNumberWidth, 0, 2000, lineHeight); 
 				g.endFill();
 			}
-			else
-			{
-				/*markerBlinkTimer.reset();
-				marker.visible = false;*/
-			}
 		}
+
 		public function TextLineRenderer()
 		{
 			super();
 			init();
 		}
-		
-		public function drawTraceLineRect():void
-		{
-			var g:Graphics = traceSelection.graphics;
-			g.clear();
-			g.beginFill(styles['tracingLineColor'], styles['selectedLineColorAlpha']);
-			g.drawRect(lineNumberWidth, 0, 2000, lineHeight); 
-			g.endFill();
-		}
-		
+
 		private function init():void 
 		{
 			lineSelection = new Sprite();
@@ -336,13 +301,13 @@ package actionScripts.ui.editor.text
 		}
 		public function getCharIndexFromPoint(globalX:int, returnNextAfterCenter:Boolean=true):int
 		{
-			var pt:Point = this.globalToLocal(new Point(globalX,0));
+			var localPoint:Point = this.globalToLocal(new Point(globalX,0));
 			
 			if (model.text.length == 0)
 			{
-				return pt.x >= lineNumberWidth ? 0 : -1;
+				return localPoint.x >= lineNumberWidth ? 0 : -1;
 			}
-			else if (pt.x >= textLine.x+textLine.width) // After text 
+			else if (localPoint.x >= textLine.x+textLine.width) // After text
 			{
 				return model.text.length;
 			}
@@ -350,38 +315,38 @@ package actionScripts.ui.editor.text
 			{
 				// Get a line through the middle of the text field for y
 				var mid:Point = this.localToGlobal(new Point(0, lineHeight/2));
-				var i:int = textLine.getAtomIndexAtPoint(globalX, mid.y);
+				var atomIndexAtPoint:int = textLine.getAtomIndexAtPoint(globalX, mid.y);
 				
-				if (i > -1 && returnNextAfterCenter)
+				if (atomIndexAtPoint > -1 && returnNextAfterCenter)
 				{
-					var bounds:Rectangle = textLine.getAtomBounds(i);
+					var bounds:Rectangle = textLine.getAtomBounds(atomIndexAtPoint);
 					var center:Number = lineNumberWidth + bounds.x + bounds.width/2;
 					// If point falls after the center of the character, move to next one
-					if (pt.x >= center) i++;
+					if (localPoint.x >= center) atomIndexAtPoint++;
 				}
 				
-				return i;
+				return atomIndexAtPoint;
 			}
 		}
 		
 		// Will give you the char bounds, or if charIdx is out-of-bounds, the lines xy, or the last chars right-side xy
 		// Uses the renderers height instead of the chars height
-		public function getCharBounds(charIdx:int):Rectangle
+		public function getCharBounds(charIndex:int):Rectangle
 		{
 			var addCharWidth:Boolean;
-			
+
 			// Sanity checks
-			if (charIdx >= model.text.length)
+			if (charIndex >= model.text.length)
 			{
-				charIdx = model.text.length-1;
+				charIndex = model.text.length - 1;
 				addCharWidth = true;
 			}
-			if (charIdx < 0)
+			if (charIndex < 0)
 			{
 				return new Rectangle(lineNumberWidth, 0, 0, lineHeight);
 			}
 			
-			var bounds:Rectangle = textLine.getAtomBounds(charIdx);
+			var bounds:Rectangle = textLine.getAtomBounds(charIndex);
 			bounds.x += lineNumberWidth;
 			
 			if (addCharWidth)
@@ -402,35 +367,41 @@ package actionScripts.ui.editor.text
 			if (textLine)
 			{
 				removeChild(textLine);
+				textLine = null;
 			}
 			
 			var text:String = model.text;
 			var meta:Vector.<int> = model.meta;
 			var groupElement:GroupElement = new GroupElement();
-			var e:Vector.<ContentElement> = new Vector.<ContentElement>();
+			var contentElements:Vector.<ContentElement> = new Vector.<ContentElement>();
 			
 			if (meta)
 			{
 				var style:int, start:int, end:int;
-				for (var i:int = 0; i < meta.length; i+=2) 
+				var metaCount:int = meta.length;
+				var textLenght:int = text.length;
+				
+				for (var i:int = 0; i < metaCount; i+=2)
 				{
 					start = meta[i];
-					end = (i+2 < meta.length) ? meta[i+2] : text.length;
+					var plusTwoLine:int = i + 2;
+					end = (plusTwoLine < metaCount) ? meta[plusTwoLine] : textLenght;
 					style = meta[i+1];
 					var textElement:TextElement = new TextElement(text.substring(start, end), styles[style]);
-					e.push(textElement);
+					contentElements.push(textElement);
 				}
 			} 
 			else
 			{
-				e.push( new TextElement(text, styles[0]) );
+				contentElements.push( new TextElement(text, styles[0]) );
 			}
 			
-			groupElement.setElements(e);
-			
-			if (e.length >= 2 && e[e.length-2].elementFormat.color == 0xca2323) 
+			groupElement.setElements(contentElements);
+
+			var contentElementsCount:int = contentElements.length;
+			if (contentElementsCount >= 2 && contentElements[contentElementsCount-2].elementFormat.color == 0xca2323)
 			{
-				var textToElement:String = e[e.length-2].text;
+				var textToElement:String = contentElements[contentElementsCount-2].text;
 				var startChar:String = textToElement.charAt(0);
 				model.isQuoteTextOpen = textToElement.length == 1 || textToElement.charAt(textToElement.length - 1) != startChar;
 				model.lastQuoteText = startChar;
@@ -444,11 +415,9 @@ package actionScripts.ui.editor.text
 			{
 				textLine.mouseEnabled = false;
 				textLine.cacheAsBitmap = true;
-				if(_showTraceLines)textLine.x = lineNumberWidth + horizontalTraceOffset;
-				else textLine.x = lineNumberWidth + horizontalOffset;
+				textLine.x = lineNumberWidth + horizontalOffset;
 				textLine.y = 12;
 				addChildAt(textLine,this.getChildIndex(selection)+2);
-				//addChild(textLine);
 			}
 			drawDiagnostics();
 		 }
@@ -502,17 +471,20 @@ package actionScripts.ui.editor.text
 					diagnosticsShape.graphics.moveTo(startBounds.x, 0);
 					var upDirection:Boolean = false;
 					var offset:int = 0;
+					var startBoundsOffset:int = 0;
 					var lineLength:Number = endBounds.x + endBounds.width - startBounds.x;
 					while(offset <= lineLength)
 					{
 						offset = offset + stepLength;
+                        startBoundsOffset = startBounds.x + offset;
+						
 						if (upDirection)
 						{
-							diagnosticsShape.graphics.lineTo(startBounds.x + offset, 0);
+							diagnosticsShape.graphics.lineTo(startBoundsOffset, 0);
 						}
 						else
 						{
-							diagnosticsShape.graphics.lineTo(startBounds.x + offset, stepLength);
+							diagnosticsShape.graphics.lineTo(startBoundsOffset, stepLength);
 						}
 						upDirection = !upDirection;
 					}
@@ -525,6 +497,7 @@ package actionScripts.ui.editor.text
 			if (lineNumberText)
 			{
 				removeChild(lineNumberText);
+                lineNumberText = null;
 			}
 			
 			if (lineNumberWidth > 0)
@@ -547,8 +520,7 @@ package actionScripts.ui.editor.text
 				
 				var style:ElementFormat = (model.breakPoint) ? styles['breakPointLineNumber'] : styles['lineNumber'];
 				//style = (model.traceLine) ? styles['tracingLineColor'] : styles['lineNumber'];
-				var t:TextElement = new TextElement((_dataIndex+1).toString(), style);
-				lineNumberTextBlock.content = t;
+				lineNumberTextBlock.content = new TextElement((_dataIndex+1).toString(), style);
 				lineNumberText = lineNumberTextBlock.createTextLine(null, lineNumberWidth);
 				
 				if (lineNumberText) 

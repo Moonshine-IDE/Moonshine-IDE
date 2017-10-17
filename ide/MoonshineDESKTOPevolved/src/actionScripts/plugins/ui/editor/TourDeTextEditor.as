@@ -125,7 +125,11 @@ package actionScripts.plugins.ui.editor
 		private function onDividerRelease(event:DividerEvent):void
 		{
 			if (event.delta == 0 || isNaN(event.delta)) return;
-			var newHeight:Number = (event.delta < 0) ? swfLoader.height - Math.abs(event.delta) : swfLoader.height + Math.abs(event.delta);
+			var positiveDelta:Number = event.delta > 0 ? event.delta : -event.delta;
+			var newHeight:Number = (event.delta < 0) ?
+					swfLoader.height - positiveDelta :
+					swfLoader.height + positiveDelta;
+
 			Object(swfLoader.content).setActualSize(swfLoader.width, newHeight);
 		}
 		

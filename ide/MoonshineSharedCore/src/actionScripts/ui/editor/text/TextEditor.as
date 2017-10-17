@@ -82,9 +82,7 @@ package actionScripts.ui.editor.text
 		private var verticalScrollBar:ScrollBar;
 		// The square connecting dual scrollbars
 		private var scrollbarConnector:UIComponent;
-		
-		protected var lineHeight:int = TextLineRenderer.lineHeight;
-		
+
 		protected var selectionManager:SelectionManager;
 		protected var editManager:EditManager;
 		protected var colorManager:ColorManager;
@@ -875,7 +873,7 @@ package actionScripts.ui.editor.text
 			// as showing/hiding one scrollbar can change the need for the other
 			model.viewWidth = width - lineNumberWidth;
 			model.viewHeight = height - (horizontalScrollBar.visible ? 15 : 0);
-			model.renderersNeeded = Math.ceil(model.viewHeight/lineHeight);
+			model.renderersNeeded = Math.ceil(model.viewHeight / TextLineRenderer.lineHeight);
 			
 			if (model.renderersNeeded < model.itemRenderersInUse.length)
 			{
@@ -1040,7 +1038,7 @@ package actionScripts.ui.editor.text
 				rdr.y = yStart;
 				rdr.x = 0;
 				rdr.horizontalOffset = -model.horizontalScrollPosition;
-				yStart += lineHeight;
+				yStart += TextLineRenderer.lineHeight;
 			}
 			
 			dispatchEvent(new LayoutEvent(LayoutEvent.LAYOUT));
