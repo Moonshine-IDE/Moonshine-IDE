@@ -232,7 +232,7 @@ package actionScripts.ui.menu
             var countMenuItems:int = menuItems.length;
             for (var i:int = 0; i < countMenuItems; i++)
             {
-				var menuItem:ICustomMenuItem = menuItems[i];
+				var menuItem:Object = menuItems[i];
 				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
 				
 				if (menuItem.submenu)
