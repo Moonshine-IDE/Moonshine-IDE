@@ -23,7 +23,6 @@ package actionScripts.plugins.as3project.importer
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-    import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
     import actionScripts.plugin.core.importer.FlashBuilderImporterBase;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
@@ -147,7 +146,6 @@ package actionScripts.plugins.as3project.importer
 			p.targets.push(target);
 			
 			p.air = UtilsCore.deserializeBoolean(data.compiler.@useApolloConfig); 
-			checkProjectType(target, p);
 
 			// FB doesn't seem to have a notion of output filename, so we guesstimate it
 			p.swfOutput.path = p.folderLocation.resolvePath(data.compiler.@outputFolderPath + "/" + p.targets[0].fileBridge.name.split(".")[0] + ".swf");
@@ -182,12 +180,6 @@ package actionScripts.plugins.as3project.importer
 			var flexBuilder:String = "[This value will be overwritten by Flex Builder in the output app.xml]";
 			
 			p.isMobile = UtilsCore.isMobile(p);
-			
-			if (p.targets.length > 0)
-			{
-				var target:FileLocation = p.targets[0];
-				checkProjectType(target, p);
-			}
 			
 			// Try to not mess up the formatting of the XML first
 			//  by just string replacing

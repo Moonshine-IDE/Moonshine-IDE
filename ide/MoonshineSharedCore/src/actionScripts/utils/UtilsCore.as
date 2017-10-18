@@ -633,5 +633,25 @@ package actionScripts.utils
 			
 			return false;
 		}
+		
+		/**
+		 * Sets requisite flags based on application file's tag
+		 * Required - AS3ProjectVO
+		 */
+		public static function checkIfFlexJSApplication(project:AS3ProjectVO):void
+		{
+			var tmpContent:String = project.targets[0].fileBridge.read() as String;
+			if ((tmpContent.indexOf("js:Application") > -1 || tmpContent.indexOf("mdl:Application") > -1) && tmpContent.indexOf("library://ns.apache.org/flexjs/basic") > -1)
+			{
+				// FlexJS Application
+				project.FlexJS  = true;
+				// FlexJS MDL applicaiton
+				if (tmpContent.indexOf("mdl:Application") > -1) project.isMDLFlexJS = true;
+			}
+			else
+			{
+				project.FlexJS = project.isMDLFlexJS = false;
+			}
+		}
 	}
 }

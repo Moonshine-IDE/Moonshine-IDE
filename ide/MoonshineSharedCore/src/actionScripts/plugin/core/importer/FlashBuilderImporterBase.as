@@ -18,13 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.importer
 {
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.valueObjects.ProjectVO;
 	
-	public class FlashBuilderImporterBase extends ProjectImporterBase
+	public class FlashBuilderImporterBase extends EventDispatcher
 	{
 		private static const SEARCH_BACK_COUNT:int = 5;
+		
+		public function FlashBuilderImporterBase(target:IEventDispatcher=null)
+		{
+			super(target);
+		}
 		
 		protected static function parsePaths(paths:XMLList, v:Vector.<FileLocation>, p:ProjectVO, attrName:String="path", documentPath:String=null):void 
 		{

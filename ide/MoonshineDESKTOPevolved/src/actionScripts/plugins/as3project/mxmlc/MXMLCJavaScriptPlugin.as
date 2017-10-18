@@ -329,7 +329,9 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 				var buildArgs:String = as3Pvo.buildOptions.getArguments();
-				if(as3Pvo.FlexJS)
+				
+				UtilsCore.checkIfFlexJSApplication(as3Pvo);
+				if (as3Pvo.FlexJS)
 				{
 					// FlexJS Application
 					var processArgs:Vector.<String> = new Vector.<String>;
