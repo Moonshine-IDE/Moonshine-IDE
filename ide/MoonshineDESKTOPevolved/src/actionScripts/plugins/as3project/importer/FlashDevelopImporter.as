@@ -84,7 +84,6 @@ package actionScripts.plugins.as3project.importer
 			if (p.targets.length > 0)
 			{
 				var target:FileLocation = p.targets[0];
-				checkProjectType(target, p);
 				
 				// determine source folder path
 				var substrPath:String = target.fileBridge.nativePath.replace(p.folderLocation.fileBridge.nativePath + File.separator, "");

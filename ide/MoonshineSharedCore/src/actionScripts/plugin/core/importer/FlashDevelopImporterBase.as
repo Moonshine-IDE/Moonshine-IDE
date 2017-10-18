@@ -18,13 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.importer
 {
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
-	public class FlashDevelopImporterBase extends ProjectImporterBase
+	public class FlashDevelopImporterBase extends EventDispatcher
 	{
+		public function FlashDevelopImporterBase(target:IEventDispatcher=null)
+		{
+			super(target);
+		}
+		
 		protected static function parsePaths(paths:XMLList, v:Vector.<FileLocation>, p:ProjectVO, attrName:String="path", customSDKPath:String=null):void 
 		{
 			for each (var pathXML:XML in paths)
