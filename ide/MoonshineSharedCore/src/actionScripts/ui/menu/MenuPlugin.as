@@ -222,7 +222,17 @@ package actionScripts.ui.menu
 
 				if (menu)
                 {
-                    recursiveDisabledMenuForVisualEditor(menu.items, activeProject);
+                    var countMenuItems:int = menu.items.length;
+					var menuItem:Object;
+                    for (var i:int = 0; i < countMenuItems; i++)
+                    {
+						menuItem = menu.items[i];
+						if (menuItem.submenu)
+                        {
+                            recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, activeProject);
+                        }
+                    }
+
                 }
             }
 		}
