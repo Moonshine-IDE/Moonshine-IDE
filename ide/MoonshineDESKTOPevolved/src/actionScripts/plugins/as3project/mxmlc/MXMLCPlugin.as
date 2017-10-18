@@ -39,6 +39,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
@@ -247,6 +248,13 @@ package actionScripts.plugins.as3project.mxmlc
 			reset();
 			shellInfo = null;
 			cmdLine = null;
+		}
+		
+		override public function resetSettings():void
+		{
+			model.userSavedSDKs = new ArrayCollection();
+			defaultFlexSDK = "";
+			currentSDK = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

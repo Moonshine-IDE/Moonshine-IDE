@@ -66,6 +66,11 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);
 		}
 		
+		override public function resetSettings():void
+		{
+			svnBinaryPath = null;
+		}
+		
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([

@@ -25,6 +25,7 @@ package actionScripts.plugin
 		function get description():String;
 		function activate():void
 		function deactivate():void
+		function resetSettings():void
 		function get activated():Boolean
 		function get activatedByDefault():Boolean
 		

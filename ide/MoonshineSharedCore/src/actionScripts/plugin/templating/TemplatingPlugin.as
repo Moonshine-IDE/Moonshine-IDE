@@ -128,6 +128,11 @@ package actionScripts.plugin.templating
 			}
 		}
 
+		override public function resetSettings():void
+		{
+			
+		}
+		
 		protected function readTemplates():void
 		{
 			// Find default templates

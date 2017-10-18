@@ -177,6 +177,13 @@ package actionScripts.plugin.console
 			return (consoleView != null);
 		}
 		
+		override public function resetSettings():void
+		{
+			consoleTriggerKey = null;
+			consolePopsOver = false;
+			showDebugMessages = true;
+		}
+		
 		private var isOverTheExpandCollapseButton:Boolean;
 		private function onDividerMouseOver(event:MouseEvent):void
 		{
