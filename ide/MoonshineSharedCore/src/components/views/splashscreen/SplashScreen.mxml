@@ -482,36 +482,22 @@
 			var tmpMove:Move;
 			if (!isSDKAvailable && !isNoSDKMessageShown)
 			{
+				grpNoSDKMess.visible = true;
+				isNoSDKMessageShown = true;
+
 				tmpMove = new Move(grpNoSDKMess);
 				tmpMove.yFrom = this.height;
 				tmpMove.yTo = height - grpNoSDKMess.height;
-				grpNoSDKMess.visible = true;
-				isNoSDKMessageShown = true;
 				tmpMove.play();
 			}
 			else if (isSDKAvailable && isNoSDKMessageShown)
 			{
-				var isSDKAvailable:Boolean = IDEModel.getInstance().defaultSDK ? true : false;
-				var tmpMove:Move;
-				if (!isSDKAvailable && !isNoSDKMessageShown)
-				{
-					grpNoSDKMess.visible = true;
-					isNoSDKMessageShown = true;
-					
-					tmpMove = new Move(grpNoSDKMess);
-					tmpMove.yFrom = this.height;
-					tmpMove.yTo = height - grpNoSDKMess.height;
-					tmpMove.play();
-				}
-				else if (isSDKAvailable && isNoSDKMessageShown)
-				{
-					tmpMove = new Move(grpNoSDKMess);
-					tmpMove.yFrom = grpNoSDKMess.y;
-					tmpMove.yTo = height;
-					tmpMove.addEventListener(EffectEvent.EFFECT_END, onEffectEnds);
-					tmpMove.play();
-					isNoSDKMessageShown = false;
-				}
+				tmpMove = new Move(grpNoSDKMess);
+				tmpMove.yFrom = grpNoSDKMess.y;
+				tmpMove.yTo = height;
+				tmpMove.addEventListener(EffectEvent.EFFECT_END, onEffectEnds);
+				tmpMove.play();
+				isNoSDKMessageShown = false;
 			}
 		}
 
