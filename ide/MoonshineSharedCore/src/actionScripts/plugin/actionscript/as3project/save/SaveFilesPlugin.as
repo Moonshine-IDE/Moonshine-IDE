@@ -75,7 +75,7 @@ package actionScripts.plugin.actionscript.as3project.save
 		public function set workspacePath(value:String):void
 		{
 			_workspacePath = value;
-			OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(_workspacePath);
+			OSXBookmarkerNotifiers.workspaceLocation = value ? new FileLocation(_workspacePath) : null;
 		}
 		
 		public function get isResetCalled():Boolean {	return false;	}
@@ -100,6 +100,14 @@ package actionScripts.plugin.actionscript.as3project.save
 			dispatcher.removeEventListener(CompilerEventBase.SAVE_BEFORE_BUILD, saveBeforeBuild);
 			//dispatcher.removeEventListener(ProjectEvent.SET_WORKSPACE, setWorkspace);
 			dispatcher.removeEventListener(ProjectEvent.ACCESS_MANAGER, openAccessManager);
+		}
+		
+		override public function resetSettings():void
+		{
+			workspacePath = null;
+			isSaveFiles = false;
+			OSXBookmarkerNotifiers.isWorkspaceAcknowledged = false;
+			model.saveFilesBeforeBuild = false;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

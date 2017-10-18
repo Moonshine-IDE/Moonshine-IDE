@@ -468,11 +468,12 @@
 				var tmpMove:Move;
 				if (!isSDKAvailable && !isNoSDKMessageShown)
 				{
+					grpNoSDKMess.visible = true;
+					isNoSDKMessageShown = true;
+					
 					tmpMove = new Move(grpNoSDKMess);
 					tmpMove.yFrom = this.height;
 					tmpMove.yTo = height - grpNoSDKMess.height;
-					grpNoSDKMess.visible = true;
-					isNoSDKMessageShown = true;
 					tmpMove.play();
 				}
 				else if (isSDKAvailable && isNoSDKMessageShown)

@@ -73,6 +73,11 @@ package actionScripts.plugins.away3d
 			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, onAway3DProjectCreated);
 		}
 		
+		override public function resetSettings():void
+		{
+			awdFileObject = null;
+		}
+		
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([

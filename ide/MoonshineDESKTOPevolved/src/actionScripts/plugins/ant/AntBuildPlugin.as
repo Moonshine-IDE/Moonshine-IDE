@@ -171,12 +171,18 @@ package actionScripts.plugins.ant
 			
 		}
 		
+		override public function resetSettings():void
+		{
+			model.antScriptFile = null;
+			antHomePath = "";
+		}
+		
 		private function reset():void 
 		{
 			isASuccessBuild = false;
 			nativeProcess = null;
 			selectedProject = null;
-			IDEModel.getInstance().antScriptFile = null;
+			model.antScriptFile = null;
 		}
 		
 		private function onAntURLSet(event:NewFileEvent):void

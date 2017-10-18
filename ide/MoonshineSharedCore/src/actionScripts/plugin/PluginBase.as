@@ -60,6 +60,10 @@ package actionScripts.plugin
 		{
 			_activated = false;
 		}
+		public function resetSettings():void
+		{
+			
+		}
 		
 		
 		public function PluginBase() {}

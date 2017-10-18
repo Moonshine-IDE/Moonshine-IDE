@@ -72,6 +72,7 @@ package actionScripts.plugin.settings
 	import flash.utils.getQualifiedClassName;
 	
 	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
@@ -131,6 +132,7 @@ package actionScripts.plugin.settings
 			dispatcher.addEventListener(SetSettingsEvent.SET_SETTING, handleSetSettings);
 			dispatcher.addEventListener(RequestSettingEvent.REQUEST_SETTING, handleRequestSetting);
 			dispatcher.addEventListener(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, handleSpecificPluginSave);
+			dispatcher.addEventListener(GeneralEvent.RESET_ALL_SETTINGS, onResetApplicationSettings, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -148,7 +150,19 @@ package actionScripts.plugin.settings
 			registerCommand("debug-clear-app-settings",tempObj);
 		}
 
-
+		private function onResetApplicationSettings(event:GeneralEvent):void
+		{
+			// removing plugin-local values
+			var plugins:Vector.<IPlugin> = pluginManager.moonshine_internal::getPlugins();
+			for each (var plug:IPlugin in plugins)
+			{
+				plug.resetSettings();
+			}
+			
+			// removing plugin-storage values
+			clearAllSettings();
+		}
+		
 		private function getClassName(instance:*):String
 		{
 			return getQualifiedClassName(instance).split("::").pop();

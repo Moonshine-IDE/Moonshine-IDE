@@ -194,31 +194,21 @@ package actionScripts.plugin.recentlyOpened
 			// fields those limited to Settings
 			
 			delete cookie.data["javaPathForTypeahead"];
-			model.javaPathForTypeAhead = null;
-			model.isCodeCompletionJavaPresent = false;
-			
 			delete cookie.data["userSDKs"];
-			model.userSavedSDKs = new ArrayCollection();
-			
 			delete cookie.data["moonshineWorkspace"];
-			OSXBookmarkerNotifiers.workspaceLocation = null;
-			
 			delete cookie.data["isWorkspaceAcknowledged"];
-			OSXBookmarkerNotifiers.isWorkspaceAcknowledged = false;
-			
 			delete cookie.data["isBundledSDKpromptDNS"];
-			ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
-			
 			delete cookie.data["isSDKhelperPromptDNS"];
-			ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;
-			
 			delete cookie.data["devicesAndroid"];
 			delete cookie.data["devicesIOS"];
+			
+			model.javaPathForTypeAhead = null;
+			model.isCodeCompletionJavaPresent = false;
+			ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
+			ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;
 			ConstantsCoreVO.generateDevices();
 			
-			model.defaultSDK = null;
-			model.antHomePath = null;
-			model.saveFilesBeforeBuild = false;
+			cookie.flush();
 		}
 		
 		private function handleAddProject(event:ProjectEvent):void
