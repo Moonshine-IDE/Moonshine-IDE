@@ -62,8 +62,6 @@ package actionScripts.ui.editor
 		protected var loader: DataAgent;
 
 		private var pop:FileSavePopup;
-		private var path:String;
-		private var textData:String;
 		protected var model:IDEModel = IDEModel.getInstance();
 		private var selectProjectPopup:SelectOpenedFlexProject;
 		
@@ -71,7 +69,10 @@ package actionScripts.ui.editor
 		{
 			var ch:String = (_isChanged) ? "*":"";
 			if (!file)
-				return ch+defaultLabel;
+            {
+                return ch + defaultLabel;
+            }
+
 			return ch + file.fileBridge.name;
 		}
 

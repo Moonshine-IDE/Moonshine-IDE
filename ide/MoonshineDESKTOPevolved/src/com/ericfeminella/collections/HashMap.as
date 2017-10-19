@@ -604,7 +604,7 @@ public class HashMap implements IMap
 	 */        
 	public function getEntries() : Array
 	{
-		var list:Array = new Array();
+		var list:Array = [];
 		
 		for ( var key:* in map )
 		{
