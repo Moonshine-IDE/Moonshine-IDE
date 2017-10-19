@@ -36,9 +36,11 @@ package actionScripts.ui.editor.text
 
 	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.Settings;
-	
-	
-	public class TextLineRenderer extends Sprite
+
+    import no.doomsday.utilities.math.MathUtils;
+
+
+    public class TextLineRenderer extends Sprite
 	{	
 		// TODO: These need to derive from the font metrics
 		public static var lineHeight:int = 16;
@@ -92,11 +94,11 @@ package actionScripts.ui.editor.text
 		{
 			return _model;
 		}
-		public function set model(v:TextLineModel):void 
+		public function set model(value:TextLineModel):void
 		{
 			focus = false;
 			
-			_model = v;
+			_model = value;
 			drawText();
 			traceFocus = _model.debuggerLineSelection;
 			trace(_model.debuggerLineSelection);
@@ -147,12 +149,12 @@ package actionScripts.ui.editor.text
 			return _focus;
 		}
 
-		public function set focus(v:Boolean):void
+		public function set focus(value:Boolean):void
 		{
-			_focus = v;
+			_focus = value;
 			var g:Graphics = lineSelection.graphics;
 			g.clear();
-			if (v)
+			if (value)
 			{
 				markerBlinkTimer.start();
 				marker.visible = true;
@@ -199,7 +201,7 @@ package actionScripts.ui.editor.text
 
 			traceSelection = new Sprite();
 			addChild(traceSelection);
-			
+
 			marker = new Sprite();
 			marker.graphics.beginFill(0x0, 0.5);
 			marker.graphics.drawRect(0, 0, 3, lineHeight);
@@ -256,7 +258,7 @@ package actionScripts.ui.editor.text
 		
 			var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
 			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
-			var selWidth:int = Math.ceil(endBounds.x + endBounds.width) - selStart;
+			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
 			
 			drawSelectionRect(selStart, selWidth);
 		}
@@ -275,7 +277,7 @@ package actionScripts.ui.editor.text
 				end = tmp;
 				var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
 				var endBounds:Rectangle = textLine.getAtomBounds(end-1);
-				var selWidth:int = Math.ceil(endBounds.x + endBounds.width) - selStart;
+				var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
 				drawTraceSelectionRect(selStart, selWidth);
 			}
 			
@@ -299,17 +301,20 @@ package actionScripts.ui.editor.text
 		{
 			traceSelection.graphics.clear();
 		}
+		
 		public function getCharIndexFromPoint(globalX:int, returnNextAfterCenter:Boolean=true):int
 		{
 			var localPoint:Point = this.globalToLocal(new Point(globalX,0));
+			var localPointX:Number = localPoint.x;
+			var modelTextLength:int = model.text.length;
 			
-			if (model.text.length == 0)
+			if (modelTextLength == 0)
 			{
-				return localPoint.x >= lineNumberWidth ? 0 : -1;
+				return localPointX >= lineNumberWidth ? 0 : -1;
 			}
-			else if (localPoint.x >= textLine.x+textLine.width) // After text
+			else if (localPointX >= textLine.x + textLine.width) // After text
 			{
-				return model.text.length;
+				return modelTextLength;
 			}
 			else
 			{
@@ -322,7 +327,7 @@ package actionScripts.ui.editor.text
 					var bounds:Rectangle = textLine.getAtomBounds(atomIndexAtPoint);
 					var center:Number = lineNumberWidth + bounds.x + bounds.width/2;
 					// If point falls after the center of the character, move to next one
-					if (localPoint.x >= center) atomIndexAtPoint++;
+					if (localPointX >= center) atomIndexAtPoint++;
 				}
 				
 				return atomIndexAtPoint;
@@ -334,11 +339,12 @@ package actionScripts.ui.editor.text
 		public function getCharBounds(charIndex:int):Rectangle
 		{
 			var addCharWidth:Boolean;
+            var modelTextLength:int = model.text.length;
 
 			// Sanity checks
-			if (charIndex >= model.text.length)
+			if (charIndex >= modelTextLength)
 			{
-				charIndex = model.text.length - 1;
+				charIndex = modelTextLength - 1;
 				addCharWidth = true;
 			}
 			if (charIndex < 0)
@@ -402,8 +408,9 @@ package actionScripts.ui.editor.text
 			if (contentElementsCount >= 2 && contentElements[contentElementsCount-2].elementFormat.color == 0xca2323)
 			{
 				var textToElement:String = contentElements[contentElementsCount-2].text;
+				var textToElementLength:int = textToElement.length;
 				var startChar:String = textToElement.charAt(0);
-				model.isQuoteTextOpen = textToElement.length == 1 || textToElement.charAt(textToElement.length - 1) != startChar;
+				model.isQuoteTextOpen = textToElementLength == 1 || textToElement.charAt(textToElementLength - 1) != startChar;
 				model.lastQuoteText = startChar;
 			}
 			
@@ -433,9 +440,9 @@ package actionScripts.ui.editor.text
 			diagnosticsShape.x = textLine.x;
 			diagnosticsShape.y = textLine.y;
 			var diagnostics:Vector.<Diagnostic> = model.diagnostics;
-			if(diagnostics && diagnostics.length > 0)
+            var diagnosticsCount:int = diagnostics.length;
+			if(diagnostics && diagnosticsCount > 0)
 			{
-				var diagnosticsCount:int = diagnostics.length;
 				for(var i:int = 0; i < diagnosticsCount; i++)
 				{
 					var diagnostic:Diagnostic = diagnostics[i];
@@ -503,7 +510,7 @@ package actionScripts.ui.editor.text
 			if (lineNumberWidth > 0)
 			{
 				lineNumberBackground.graphics.clear();
-				
+
 				if (model.breakPoint)
 				{
 					trace("breakpoint ? "+dataIndex);
