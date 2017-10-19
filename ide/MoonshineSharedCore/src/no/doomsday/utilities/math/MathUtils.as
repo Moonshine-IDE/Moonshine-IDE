@@ -24,11 +24,6 @@ package no.doomsday.utilities.math
 	 */
 	public class MathUtils
 	{
-		
-		public function MathUtils() 
-		{
-			
-		}
 		public static function random(from:Number = 0, to:Number = 1, round:Boolean = false):Number {
 			var v:Number = from + Math.random() * (to - from);
 			return round ? Math.round(v) : v;
@@ -45,7 +40,18 @@ package no.doomsday.utilities.math
 		public static function multiply(a:Number, b:Number):Number {
 			return a * b;
 		}
-		
+
+		public static function ceil(x:Number):int
+		{
+            if(x > 0)
+			{
+				return int(x + 1);
+            }
+            else
+			{
+				return int(x);
+            }
+		}
 	}
 
 }

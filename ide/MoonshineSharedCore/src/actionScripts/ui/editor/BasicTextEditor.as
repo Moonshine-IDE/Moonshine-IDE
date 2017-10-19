@@ -54,17 +54,18 @@ package actionScripts.ui.editor
 		
 		public var editor:TextEditor;
 		protected var file:FileLocation;
-		protected var created:Boolean = false;
-		protected var loadingFile:Boolean = false;
+		protected var created:Boolean;
+		protected var loadingFile:Boolean;
 		protected var tempScrollTo:int = -1;
-		protected var _isChanged:Boolean;
 		protected var tempSaveAs: FileLocation;
 		protected var loader: DataAgent;
 
 		private var pop:FileSavePopup;
 		protected var model:IDEModel = IDEModel.getInstance();
+
 		private var selectProjectPopup:SelectOpenedFlexProject;
-		
+        private var _isChanged:Boolean;
+
 		override public function get label():String
 		{
 			var ch:String = (_isChanged) ? "*":"";
@@ -93,9 +94,9 @@ package actionScripts.ui.editor
 			return editor.dataProvider;
 		}
 
-		public function set text(v:String):void
+		public function set text(value:String):void
 		{
-			editor.dataProvider = v;
+			editor.dataProvider = value;
 		}
 		
 		// Search may be RegExp or String

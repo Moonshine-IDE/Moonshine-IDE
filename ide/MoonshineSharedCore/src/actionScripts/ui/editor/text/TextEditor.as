@@ -127,16 +127,25 @@ package actionScripts.ui.editor.text
 		{
 			return model.lines.join(lineDelim); 
 		}
-		public function set dataProvider(v:String):void 
+		public function set dataProvider(value:String):void
 		{
 			// Detect line ending (for saves)
 			// TODO: take first found line encoding
-			if (v.indexOf("\r\n")>-1) _lineDelim = "\r\n";
-			else if (v.indexOf("\r")>-1) _lineDelim = "\r";
-			else _lineDelim = "\n";
+			if (value.indexOf("\r\n")>-1)
+			{
+				_lineDelim = "\r\n";
+            }
+			else if (value.indexOf("\r")>-1)
+			{
+				_lineDelim = "\r";
+            }
+			else
+			{
+				_lineDelim = "\n";
+            }
 			
 			// Split lines regardless of line encoding
-			var lines:Array = v.split(/\r?\n|\r/);
+			var lines:Array = value.split(/\r?\n|\r/);
 			var count:int = lines.length;
 			
 			// Populate lines into model
@@ -182,9 +191,9 @@ package actionScripts.ui.editor.text
 		}
 		
 		private var _lineDelim:String = "\n";
-		public function set lineDelim(v:String):void
+		public function set lineDelim(value:String):void
 		{
-			_lineDelim = v;
+			_lineDelim = value;
 		}
 		public function get lineDelim():String
 		{
@@ -196,23 +205,23 @@ package actionScripts.ui.editor.text
 		{
 			return _lineNumberWidth;
 		}
-		public function set lineNumberWidth(v:int):void
+		public function set lineNumberWidth(value:int):void
 		{
-			if (v != _lineNumberWidth)
+			if (value != _lineNumberWidth)
 			{
-				var t:TextLineRenderer;
-				
+				var textLineRenderer:TextLineRenderer;
+
 				// Update all item renderers since this value can happen when editing (999->1000, etc)
-				for each (t in model.itemRenderersFree)
+				for each (textLineRenderer in model.itemRenderersFree)
 				{
-					t.lineNumberWidth = v;
+					textLineRenderer.lineNumberWidth = value;
 				}
-				for each (t in model.itemRenderersInUse)
+				for each (textLineRenderer in model.itemRenderersInUse)
 				{
-					t.lineNumberWidth = v;
+					textLineRenderer.lineNumberWidth = value;
 				}
 				
-				_lineNumberWidth = v;
+				_lineNumberWidth = value;
 				invalidateLines();
 			}
 		}
