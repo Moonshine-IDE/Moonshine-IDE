@@ -30,18 +30,20 @@ package actionScripts.factory
 	{
 		public var fileBridge: IFileBridge;
 		
-		public function FileLocation(filePathInString:String=null,isURL:Boolean=false)
+		public function FileLocation(path:String = null, isURL:Boolean = false):void
 		{
 			// ** IMPORTANT **
 			var obj:Object = BridgeFactory.getFileInstanceObject();
 			fileBridge = new obj();
+			if (!path) return;
+
 			if(isURL)
 			{
-				fileBridge.url = filePathInString;
+				fileBridge.url = path;
 			}
 			else
 			{
-				fileBridge.nativePath = filePathInString;
+				fileBridge.nativePath = path;
 			}
 		}
 		
