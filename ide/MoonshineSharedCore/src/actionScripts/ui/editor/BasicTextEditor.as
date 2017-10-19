@@ -54,24 +54,29 @@ package actionScripts.ui.editor
 		
 		public var editor:TextEditor;
 		protected var file:FileLocation;
-		protected var created:Boolean = false;
-		protected var loadingFile:Boolean = false;
+		protected var created:Boolean;
+		protected var loadingFile:Boolean;
 		protected var tempScrollTo:int = -1;
-		protected var _isChanged:Boolean;
 		protected var tempSaveAs: FileLocation;
 		protected var loader: DataAgent;
 
 		private var pop:FileSavePopup;
 		protected var model:IDEModel = IDEModel.getInstance();
+
 		private var selectProjectPopup:SelectOpenedFlexProject;
 
 		protected var isVisualEditor:Boolean;
-		
+
+        protected var _isChanged:Boolean;
+
 		override public function get label():String
 		{
 			var ch:String = (_isChanged) ? "*":"";
 			if (!file)
-				return ch+defaultLabel;
+            {
+                return ch + defaultLabel;
+            }
+
 			return ch + file.fileBridge.name;
 		}
 
@@ -92,9 +97,9 @@ package actionScripts.ui.editor
 			return editor.dataProvider;
 		}
 
-		public function set text(v:String):void
+		public function set text(value:String):void
 		{
-			editor.dataProvider = v;
+			editor.dataProvider = value;
 		}
 		
 		// Search may be RegExp or String

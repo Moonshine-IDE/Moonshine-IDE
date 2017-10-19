@@ -67,27 +67,27 @@ package actionScripts.ui.editor.text
 			return _traceLine;
 		}
 		
-		public function set debuggerLineSelection(v:Boolean):void
+		public function set debuggerLineSelection(value:Boolean):void
 		{
-			_debuggerLineSelection = v;
+			_debuggerLineSelection = value;
 		}
 		public function get debuggerLineSelection():Boolean
 		{
 			return _debuggerLineSelection;
 		}
 
-		public function set diagnostics(v:Vector.<Diagnostic>):void
+		public function set diagnostics(value:Vector.<Diagnostic>):void
 		{
-			_diagnostics = v;
+			_diagnostics = value;
 		}
 		public function get diagnostics():Vector.<Diagnostic>
 		{
 			return _diagnostics;
 		}
 		
-		public function set width(v:Number):void
+		public function set width(value:Number):void
 		{
-			_width = v;
+			_width = value;
 		}
 		public function get width():Number
 		{
