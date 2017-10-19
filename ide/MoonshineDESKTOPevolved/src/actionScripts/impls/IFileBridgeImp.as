@@ -51,7 +51,7 @@ package actionScripts.impls
 	 */
 	public class IFileBridgeImp implements IFileBridge
 	{
-		private var _file: File = new File();
+		private var _file: File = File.documentsDirectory;
 		
 		CONFIG::OSX
 		{
