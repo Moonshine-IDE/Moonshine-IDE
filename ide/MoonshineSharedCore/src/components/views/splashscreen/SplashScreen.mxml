@@ -33,6 +33,7 @@
 			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.core.IDataRenderer;
+			import mx.effects.Fade;
 			import mx.events.EffectEvent;
 			import mx.events.FlexEvent;
 			import mx.events.ResizeEvent;
@@ -465,20 +466,19 @@
 			private function onDefaultSDKStateChanged(event:Event):void
 			{
 				var isSDKAvailable:Boolean = IDEModel.getInstance().defaultSDK ? true : false;
-				var tmpMove:Move;
 				if (!isSDKAvailable && !isNoSDKMessageShown)
 				{
-					grpNoSDKMess.visible = true;
 					isNoSDKMessageShown = true;
+					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
 					
-					tmpMove = new Move(grpNoSDKMess);
-					tmpMove.yFrom = this.height;
-					tmpMove.yTo = height - grpNoSDKMess.height;
-					tmpMove.play();
+					var tmpFade:Fade = new Fade(grpNoSDKMess);
+					tmpFade.alphaFrom = 0;
+					tmpFade.alphaTo = 1;
+					tmpFade.play();
 				}
 				else if (isSDKAvailable && isNoSDKMessageShown)
 				{
-					tmpMove = new Move(grpNoSDKMess);
+					var tmpMove:Move = new Move(grpNoSDKMess);
 					tmpMove.yFrom = grpNoSDKMess.y;
 					tmpMove.yTo = height;
 					tmpMove.addEventListener(EffectEvent.EFFECT_END, onEffectEnds);
@@ -489,7 +489,7 @@
 				function onEffectEnds(effEvent:EffectEvent):void
 				{
 					effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
-					grpNoSDKMess.visible = false;
+					grpNoSDKMess.alpha = 0;
 				}
 			}
 			
@@ -624,7 +624,7 @@
 	</s:VGroup>
 	
 	<s:Group id="grpNoSDKMess" 
-			 width="100%" height="24" visible="false">
+			 width="100%" height="24" alpha="0">
 		<s:Rect width="100%" height="100%">
 			<s:fill>
 				<s:SolidColor color="0xffffcc"/>
