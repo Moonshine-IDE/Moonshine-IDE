@@ -86,6 +86,7 @@ package actionScripts.plugin.settings
 	import actionScripts.plugin.settings.vo.PluginSetting;
 	import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
 	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+	import actionScripts.plugin.startup.StartupHelperPlugin;
 	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
@@ -152,6 +153,9 @@ package actionScripts.plugin.settings
 
 		private function onResetApplicationSettings(event:GeneralEvent):void
 		{
+			// removing plugin-storage values
+			clearAllSettings();
+			
 			// removing plugin-local values
 			var plugins:Vector.<IPlugin> = pluginManager.moonshine_internal::getPlugins();
 			for each (var plug:IPlugin in plugins)
@@ -159,8 +163,8 @@ package actionScripts.plugin.settings
 				plug.resetSettings();
 			}
 			
-			// removing plugin-storage values
-			clearAllSettings();
+			// restarting all startup process again
+			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
 		}
 		
 		private function getClassName(instance:*):String

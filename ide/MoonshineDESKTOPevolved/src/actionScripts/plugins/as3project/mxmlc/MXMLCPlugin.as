@@ -252,7 +252,16 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		override public function resetSettings():void
 		{
-			model.userSavedSDKs = new ArrayCollection();
+			var tmpCount:int = model.userSavedSDKs.length;
+			for (var i:int=0; i < tmpCount; i++)
+			{
+				if (model.userSavedSDKs[i].status != SDKUtils.BUNDLED)
+				{
+					model.userSavedSDKs.removeItemAt(i);
+					tmpCount--;
+				}
+			}
+
 			defaultFlexSDK = "";
 			currentSDK = null;
 		}

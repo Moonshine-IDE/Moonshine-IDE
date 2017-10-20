@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-	import flash.display.DisplayObject;
+    import actionScripts.events.GlobalEventDispatcher;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	
 	import mx.containers.Canvas;
@@ -63,6 +65,7 @@ package actionScripts.ui.editor
 		private var pop:FileSavePopup;
 		protected var model:IDEModel = IDEModel.getInstance();
 
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var selectProjectPopup:SelectOpenedFlexProject;
 
 		protected var isVisualEditor:Boolean;
@@ -223,11 +226,7 @@ package actionScripts.ui.editor
 			loadingFile = false;
 			// Get data from file
 			text = data;
-			if (tempScrollTo > 0)
-			{
-				scrollTo(tempScrollTo);
-				tempScrollTo = -1;
-			}
+			scrollToTempValue();
 		}
 
 		protected function openHandler(event:Event):void
@@ -235,13 +234,9 @@ package actionScripts.ui.editor
 			loadingFile = false;
 			// Get data from file
 			text = file.fileBridge.data.toString();
-			
-			if (tempScrollTo > 0)
-			{
-				scrollTo(tempScrollTo);
-				tempScrollTo = -1;
-			}
-			
+
+			scrollToTempValue();
+
 			file.fileBridge.getFile.removeEventListener(Event.COMPLETE, openHandler);
 		}
 
@@ -261,7 +256,7 @@ package actionScripts.ui.editor
 				updateChangeStatus();
 				
 				// Tell the world we've changed
-				GlobalEventDispatcher.getInstance().dispatchEvent(
+				dispatcher.dispatchEvent(
 					new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
 				);
 			}
@@ -272,21 +267,22 @@ package actionScripts.ui.editor
 				updateChangeStatus();
 				
 				// Tell the world we've changed
-				GlobalEventDispatcher.getInstance().dispatchEvent(
+				dispatcher.dispatchEvent(
 					new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
 				);
 			}
 			else if (!ConstantsCoreVO.IS_AIR)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving in process..."));
-				loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault, {path:file.fileBridge.nativePath,text:text});				
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving in process..."));
+				loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault,
+						{path:file.fileBridge.nativePath,text:text});
 			}
 		}
 		
 		private function onSaveFault(message:String):void
 		{
 			//Alert.show("Save Fault"+message);
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Save error!"));
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Save error!"));
 			loader = null;
 		}
 		
@@ -296,10 +292,8 @@ package actionScripts.ui.editor
 			loader = null;
 			editor.save();
 			updateChangeStatus();
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving successful."));
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
-			);
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving successful."));
+			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
 		}
  
 		public function saveAs(file:FileLocation=null):void
@@ -310,14 +304,16 @@ package actionScripts.ui.editor
 				save();
 				// Update labels
 				dispatchEvent(new Event('labelChanged'));
-				GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(file));
+				dispatcher.dispatchEvent(new RefreshTreeEvent(file));
 			    return;
 			}
 			
 			if (ConstantsCoreVO.IS_AIR)
 			{ 
 				if(this.file)
-					saveAsPath(this.file.fileBridge.parent.fileBridge.nativePath)
+                {
+                    saveAsPath(this.file.fileBridge.parent.fileBridge.nativePath);
+                }
 				else if (model.projects.length > 1 )
 				{
 					if (model.mainView.isProjectViewAdded)
@@ -373,9 +369,7 @@ package actionScripts.ui.editor
 			dispatchEvent(new Event('labelChanged'));
 			editor.save();
 			updateChangeStatus();
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
-			);
+			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
 		}
 		
 		protected function handleTextChange(event:ChangeEvent):void
@@ -405,5 +399,13 @@ package actionScripts.ui.editor
 			tempSaveAs = null;
 		}
 
-	}
+        private function scrollToTempValue():void
+        {
+            if (tempScrollTo > 0)
+            {
+                scrollTo(tempScrollTo);
+                tempScrollTo = -1;
+            }
+        }
+    }
 }

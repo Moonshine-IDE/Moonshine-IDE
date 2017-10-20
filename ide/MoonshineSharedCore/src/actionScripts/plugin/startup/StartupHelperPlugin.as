@@ -44,6 +44,7 @@ package actionScripts.plugin.startup
 		public static const EVENT_TYPEAHEAD_REQUIRES_SDK:String = "EVENT_TYPEAHEAD_REQUIRES_SDK";
 		public static const EVENT_SDK_HELPER_DOWNLOAD_REQUEST:String = "EVENT_SDK_HELPER_DOWNLOAD_REQUEST";
 		public static const EVENT_SDK_UNZIP_REQUEST:String = "EVENT_SDK_UNZIP_REQUEST";
+		public static const EVENT_RESTART_HELPING:String = "EVENT_RESTART_HELPING";
 		
 		private static const SDK_XTENDED:String = "SDK_XTENDED";
 		private static const CC_JAVA:String = "CC_JAVA";
@@ -65,6 +66,22 @@ package actionScripts.plugin.startup
 			// we want this to be work in desktop version only
 			if (!ConstantsCoreVO.IS_AIR) return;
 			
+			dispatcher.addEventListener(EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
+			
+			// event listner to open up #sdk-extended from File in OSX
+			CONFIG::OSX
+			{
+				dispatcher.addEventListener(EVENT_SDK_HELPER_DOWNLOAD_REQUEST, onSDKhelperDownloadRequest, false, 0, true);
+			}
+			
+			preInitHelping();
+		}
+		
+		/**
+		 * Pre-initialization helping process
+		 */
+		private function preInitHelping():void
+		{
 			sequences = new Array();
 			sequences.push(SDK_XTENDED);
 			sequences.push(CC_JAVA);
@@ -72,12 +89,6 @@ package actionScripts.plugin.startup
 			
 			// just a little delay to see things visually right
 			setTimeout(startHelping, 1000);
-			
-			// event listner to open up #sdk-extended from File in OSX
-			CONFIG::OSX
-			{
-				dispatcher.addEventListener(EVENT_SDK_HELPER_DOWNLOAD_REQUEST, onSDKhelperDownloadRequest, false, 0, true);
-			}
 		}
 		
 		/**
@@ -223,6 +234,21 @@ package actionScripts.plugin.startup
 		//  LISTENERS API
 		//
 		//--------------------------------------------------------------------------
+		
+		/**
+		 * To restart helping process
+		 */
+		private function onRestartRequest(event:Event):void
+		{
+			sdkNotificationView = null;
+			ccNotificationView = null;
+			sequences = null;
+			sequenceIndex = 0;
+			isSDKSetupShowing = false;
+			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
+			
+			preInitHelping();
+		}
 		
 		/**
 		 * On SDK notification prompt close

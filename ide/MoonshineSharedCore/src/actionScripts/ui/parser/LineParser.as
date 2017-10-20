@@ -36,15 +36,16 @@ package actionScripts.ui.parser
 
 		public function LineParser():void
 		{
-			for (var i:int = 0; i < keywords.length; i++) 
+			var keywordsCount:int = keywords.length;
+			for (var i:int = 0; i < keywordsCount; i++)
 			{
-				var k:Array = keywords[i];
-				for (var j:int = 0; j < k[1].length; j++)
+				var keyword:Array = keywords[i];
+				var keywordOneCount:int = keyword[1].length;
+				for (var j:int = 0; j < keywordOneCount; j++)
 				{ 
-					keywordSet[ k[1][j] ] = k[0];
+					keywordSet[ keyword[1][j] ] = keyword[0];
 				}
 			}
-			
 		}
 
 		public function setContext(newContext:int):void
@@ -153,25 +154,27 @@ package actionScripts.ui.parser
 		
 		protected function splitOnKeywords(source:String, pos:int):void
 		{
-			var m:Array = source.split(wordBoundaries);
-			var s:String;
+			var keywordsBoundary:Array = source.split(wordBoundaries);
+			var keywordsBoundaryCount:int = keywordsBoundary.length;
+			var currentKeyword:String;
 			var style:int;
 			var lastStyle:int;
-			for (var i:int = 0; i < m.length; i++) {
-				s = m[i];
+			for (var i:int = 0; i < keywordsBoundaryCount; i++) {
+				currentKeyword = keywordsBoundary[i];
 				lastStyle = style;
-				if (keywordSet.hasOwnProperty(s))
+				if (keywordSet.hasOwnProperty(currentKeyword))
 				{
-					style = keywordSet[s];
+					style = keywordSet[currentKeyword];
 				}
-				else if (!/^\s+$/.test(s)) { // Avoid switching styles for whitespace
+				else if (!/^\s+$/.test(currentKeyword)) { // Avoid switching styles for whitespace
 					style = defaultContext;
 				}
 				
-				if (style != lastStyle) {
+				if (style != lastStyle)
+				{
 					result.push(pos, style);
 				}
-				pos += s.length;
+				pos += currentKeyword.length;
 			}
 		}
 
