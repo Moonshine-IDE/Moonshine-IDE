@@ -33,8 +33,7 @@ package actionScripts.ui.editor.text
 	import actionScripts.ui.editor.text.change.TextChangeRemove;
 	import actionScripts.ui.parser.ILineParser;
 	import actionScripts.valueObjects.Settings;
-	
-	
+
 	public class ColorManager
 	{
 		private static var charWidthCache:Object = {"\t":7.82666015625*Settings.font.tabWidth};
@@ -88,7 +87,7 @@ package actionScripts.ui.editor.text
 		private function invalidate(line:int, addCount:int = 0, silent:Boolean = false):void
 		{
 			var merged:Boolean = false;
-			
+
 			for (var r:int = ranges.length; r--;)
 			{
 				var range:LineRange = ranges[r];
@@ -128,11 +127,9 @@ package actionScripts.ui.editor.text
 		private function process(event:Event = null):void
 		{
 			//if (!parser) return;
-			
 			var count:int = model.lines.length;
 			var timeLimit:int = getTimer() + CHUNK_TIMESPAN;
-			var lastContext:int = 0;
-			
+
 			while (ranges.length)
 			{
 				var range:LineRange = ranges[0];
@@ -201,37 +198,38 @@ package actionScripts.ui.editor.text
 		
 		public function calculateWidth(text:String):Number
 		{
-			var chars:String = "";
-			var c:String;
+			var chars:String;
+			var calculatedChars:String;
 			var i:int;
 			var width:Number = 0;
+			var textLenght:int = text.length;
 			
 			// Collect uncached characters
-			for (i = text.length; i--; )
+			for (i = textLenght; i--; )
 			{
-				c = text.charAt(i);
+				calculatedChars = text.charAt(i);
 				
-				if (!charWidthCache[c])
+				if (!charWidthCache[calculatedChars])
 				{
-					chars += c;
-					charWidthCache[c] = -1;
+					chars += calculatedChars;
+					charWidthCache[calculatedChars] = -1;
 				}
 			}
 			// Measure uncached characters
-			if (chars.length > 0)
+			if (chars)
 			{
 				var textLine:TextLine;
 				
 				textElement.text = chars;
-				textLine = textBlock.createTextLine()
+				textLine = textBlock.createTextLine();
 				for (i = chars.length; i--; )
 				{
-					c = chars.charAt(i);
-					charWidthCache[c] = textLine.getAtomBounds(textLine.getAtomIndexAtCharIndex(i)).width;
+					calculatedChars = chars.charAt(i);
+					charWidthCache[calculatedChars] = textLine.getAtomBounds(textLine.getAtomIndexAtCharIndex(i)).width;
 				}
 			}
 			// Calculate line width
-			for (i = text.length; i--; )
+			for (i = textLenght; i--; )
 			{
 				width += charWidthCache[text.charAt(i)];
 			}

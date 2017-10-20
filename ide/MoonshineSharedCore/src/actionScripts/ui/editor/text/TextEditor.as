@@ -18,12 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-    import flash.display.Sprite;
     import flash.events.FocusEvent;
     import flash.events.MouseEvent;
     import flash.events.TimerEvent;
     import flash.geom.Point;
     import flash.geom.Rectangle;
+    import flash.sampler.getSize;
     import flash.utils.Timer;
     import flash.utils.getTimer;
     
@@ -49,9 +49,6 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.Position;
     import actionScripts.valueObjects.SignatureHelp;
 	
-	
-	
-	
 	/*
 	Line-based text editor. Text rendering with Flash Text Engine. 
 	DataProvider (String) is split up newline & each TextLineRenderer gets one line to render.
@@ -76,6 +73,7 @@ package actionScripts.ui.editor.text
 	{	
 		// Amount to look ahead when horiz-scrolling caret into view (8 characters)
 		private static const HORIZONTAL_LOOKAHEAD:int = TextLineRenderer.charWidth*8;
+        private static const WIDTH_UPDATE_DELAY:int = 100;
 		
 		// Holds the text lines
 		internal var itemContainer:UIComponent = new UIComponent();
@@ -99,7 +97,6 @@ package actionScripts.ui.editor.text
 		public var model:TextEditorModel;
 		
 		private var widthUpdateTime:int;
-		private var widthUpdateDelay:int = 100;
 		private var widthUpdateDelayer:Timer;
 		
 		// Style defaults
@@ -177,8 +174,7 @@ package actionScripts.ui.editor.text
 			}
 			
 			// Set invalidation flags for render
-			invalidateFlag(INVALID_RESIZE);
-			invalidateFlag(INVALID_FULL);
+			invalidateLines();
 			
 			if (isNeedToBeTracedAfterOpening) 
 			{
@@ -231,13 +227,19 @@ package actionScripts.ui.editor.text
 		{
 			return _showScrollBars;
 		}
-		public function set showScrollBars(v:Boolean):void
+		public function set showScrollBars(value:Boolean):void
 		{
-			_showScrollBars = v;
+			_showScrollBars = value;
 			if (verticalScrollBar)
 			{
-				if (v) verticalScrollBar.alpha = horizontalScrollBar.alpha = 0;
-				else verticalScrollBar.alpha = horizontalScrollBar.alpha = 1;
+				if (value)
+				{
+					verticalScrollBar.alpha = horizontalScrollBar.alpha = 0;
+                }
+				else
+				{
+					verticalScrollBar.alpha = horizontalScrollBar.alpha = 1;
+                }
 			} 
 		}
 		
@@ -246,22 +248,22 @@ package actionScripts.ui.editor.text
 		{
 			return _showLineNumbers;
 		}
-		public function set showLineNumbers(v:Boolean):void
+		public function set showLineNumbers(value:Boolean):void
 		{
-			_showLineNumbers = v;
+			_showLineNumbers = value;
 			{
 				lineNumberWidth = 0;	
 			}
 		}
 		
-		private var _hasFocus:Boolean = false;
+		private var _hasFocus:Boolean;
 		protected function get hasFocus():Boolean
 		{
 			return _hasFocus;
 		}
-		protected function set hasFocus(v:Boolean):void
+		protected function set hasFocus(value:Boolean):void
 		{
-			_hasFocus = v;
+			_hasFocus = value;
 			if(model.hasTraceSelection)
 				invalidateTraceSelection(true);
 			else
@@ -475,11 +477,8 @@ package actionScripts.ui.editor.text
 		
 		public function getSelection():String
 		{
-			
 			if (model.hasMultilineSelection)
 			{
-				var selText:String = "";
-				
 				var startLine:int = model.selectionStartLineIndex;
 				var endLine:int = model.selectedLineIndex;
 				
@@ -495,8 +494,7 @@ package actionScripts.ui.editor.text
 					end = model.selectionStartCharIndex;
 				}
 				
-				
-				selText = model.lines[startLine].text.substr(start);
+				var selText:String = model.lines[startLine].text.substr(start);
 				for (var i:int = startLine+1; i < endLine; i++)
 				{
 					selText += lineDelim + model.lines[i].text;
@@ -542,13 +540,7 @@ package actionScripts.ui.editor.text
 			}
 			return lines;
 		}
-		
-		private function handleTraceChange(event:ChangeEvent):void
-		{
-			// Any text change requires line invalidation
-			invalidateLines();
-		}
-		
+
 		private function handleChange(event:ChangeEvent):void
 		{
 			// Any text change requires line invalidation
@@ -575,11 +567,11 @@ package actionScripts.ui.editor.text
 			else 
 			{
 				var timeDiff:int = getTimer()-widthUpdateTime;
-				if (timeDiff < widthUpdateDelay) 
+				if (timeDiff < WIDTH_UPDATE_DELAY)
 				{
 					if (!widthUpdateDelayer.running) 
 					{
-						widthUpdateDelayer.delay = widthUpdateDelay-timeDiff;
+						widthUpdateDelayer.delay = WIDTH_UPDATE_DELAY-timeDiff;
 						widthUpdateDelayer.reset();
 						widthUpdateDelayer.start();
 					}
@@ -593,11 +585,11 @@ package actionScripts.ui.editor.text
 		
 		private function calculateTextWidth(event:TimerEvent = null):void 
 		{
-			var lines:Vector.<TextLineModel> = model.lines;
+			var linesCount:int = model.lines.length;
 			var max:Number = 0;
-			for (var i:int = 0; i < lines.length; i++) 
+			for (var i:int = 0; i < linesCount; i++)
 			{
-				var line:TextLineModel = lines[i];
+				var line:TextLineModel = model.lines[i];
 				if (line.width > max) 
 				{
 					max = line.width;
@@ -643,8 +635,7 @@ package actionScripts.ui.editor.text
 
 			var charBounds:Rectangle = rdr.getCharBounds(character);
 			// .x is manually adjusted, so we can't use .topLeft:Point, instead we create a new Point.
-			var charPoint:Point = rdr.localToGlobal(new Point(charBounds.x, charBounds.y));
-			return charPoint;
+			return rdr.localToGlobal(new Point(charBounds.x, charBounds.y));
 		}
 		public function getCharAndLineForXY(globalXY:Point, returnNextAfterCenter:Boolean = true):Point
 		{
@@ -1038,7 +1029,9 @@ package actionScripts.ui.editor.text
 		{
 			var yStart:int = 0;
 			var rdr:TextLineRenderer;
-			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
+            var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
 				rdr.y = yStart;
@@ -1053,8 +1046,9 @@ package actionScripts.ui.editor.text
 		public function updateSelection():void
 		{
 			var rdr:TextLineRenderer;
-			
-			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
+            var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
 				if (i+model.scrollPosition == model.selectedLineIndex)
@@ -1074,8 +1068,9 @@ package actionScripts.ui.editor.text
 		public function updateTraceSelection():void
 		{
 			var rdr:TextLineRenderer;
-			
-			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
+            var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
 				if (i+model.scrollPosition == model.selectedTraceLineIndex)
@@ -1101,7 +1096,9 @@ package actionScripts.ui.editor.text
 		public function removeTraceSelection():void
 		{
 			var rdr:TextLineRenderer;
-			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
+            var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+			
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
 				rdr.model.debuggerLineSelection = rdr.showTraceLines = rdr.traceFocus = false;
@@ -1117,11 +1114,14 @@ package actionScripts.ui.editor.text
 			// If we are horiz-scrolling the selection might be wider than window width.
 			// Makes sure selection is drawn all the way to the right edge when scrolling.
 			var lineWidth:int = width + model.horizontalScrollPosition;
-			
-			for (var i:int = 0; i < model.itemRenderersInUse.length; i++)
+			var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+			var scrollPosition:int = 0;
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
 			{
 				rdr = model.itemRenderersInUse[i];
-				if (i+model.scrollPosition == model.selectionStartLineIndex) 
+                scrollPosition = i + model.scrollPosition;
+				
+				if (scrollPosition == model.selectionStartLineIndex)
 				{ // Beginning of selection (may be below or above current point)
 					if (model.selectionStartLineIndex > model.selectedLineIndex)
 					{
@@ -1133,7 +1133,7 @@ package actionScripts.ui.editor.text
 					}
 					rdr.focus = false;
 				} 
-				else if (i+model.scrollPosition == model.selectedLineIndex)
+				else if (scrollPosition == model.selectedLineIndex)
 				{ // Selected line
 					if (model.selectedLineIndex > model.selectionStartLineIndex)
 					{
@@ -1146,14 +1146,14 @@ package actionScripts.ui.editor.text
 					rdr.caretPosition = model.caretIndex;
 					rdr.focus = hasFocus;
 				}
-				else if (model.selectionStartLineIndex < i+model.scrollPosition 
-					&& model.selectedLineIndex > i+model.scrollPosition)
+				else if (model.selectionStartLineIndex < scrollPosition
+					&& model.selectedLineIndex > scrollPosition)
 				{ // Start of selection is above current line
 					rdr.drawFullLineSelection(lineWidth);
 					rdr.focus = false;				  
 				}
-				else if (model.selectionStartLineIndex > i+model.scrollPosition
-					&& model.selectedLineIndex < i+model.scrollPosition)
+				else if (model.selectionStartLineIndex > scrollPosition
+					&& model.selectedLineIndex < scrollPosition)
 				{ // Start of selection is below current line
 					rdr.drawFullLineSelection(lineWidth);
 					rdr.focus = false;
@@ -1234,12 +1234,7 @@ package actionScripts.ui.editor.text
 			}
 			invalidFlags |= flag;
 		}
-		
-		private function checkFlag(flag:uint, flags:uint):Boolean
-		{
-			return (flags & flag) > 0;
-		}
-		
+
         private function canScroll(lineIndex:int, eventType:String):Boolean
         {
             if (eventType == null) return true;
@@ -1260,6 +1255,11 @@ package actionScripts.ui.editor.text
                     {
                         return item.dataIndex != lineIndex || !item.model.traceLine;
                     });
+        }
+
+        private static function checkFlag(flag:uint, flags:uint):Boolean
+        {
+            return (flags & flag) > 0;
         }
     }
 }
