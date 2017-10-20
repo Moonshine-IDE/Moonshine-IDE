@@ -640,6 +640,9 @@ package actionScripts.utils
 		 */
 		public static function checkIfFlexJSApplication(project:AS3ProjectVO):void
 		{
+			// probable termination
+			if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
+			
 			var tmpContent:String = project.targets[0].fileBridge.read() as String;
 			if ((tmpContent.indexOf("js:Application") > -1 || tmpContent.indexOf("mdl:Application") > -1) && tmpContent.indexOf("library://ns.apache.org/flexjs/basic") > -1)
 			{

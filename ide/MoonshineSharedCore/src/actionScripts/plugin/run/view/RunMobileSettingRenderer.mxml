@@ -86,8 +86,7 @@
 			{
 				currentState = (cmbOption.selectedIndex == 0) ? "simulator" : "device";
 				
-				if (!forPlatform || forPlatform == "Android") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
-				else if (forPlatform == "iOS") cmbModelOption.dataProvider = ConstantsCoreVO.TEMPLATES_IOS_DEVICES;
+				cmbModelOption.dataProvider = (!forPlatform || forPlatform != "iOS") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES : ConstantsCoreVO.TEMPLATES_IOS_DEVICES;
 				isAndroidDevice = (forPlatform == "iOS") ? false : true;
 				cmbModelOption.callLater(function():void
 				{

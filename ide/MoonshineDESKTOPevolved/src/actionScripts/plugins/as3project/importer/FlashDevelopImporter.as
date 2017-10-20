@@ -134,6 +134,8 @@ package actionScripts.plugins.as3project.importer
 			p.buildOptions.certAndroid = UtilsCore.deserializeString(data.moonshineRunCustomization.certAndroid);
 			p.buildOptions.certIos = UtilsCore.deserializeString(data.moonshineRunCustomization.certIos);
 			p.buildOptions.certIosProvisioning = UtilsCore.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
+			
+			if (!p.air) UtilsCore.checkIfFlexJSApplication(p);
 
 			return p;
 		}
