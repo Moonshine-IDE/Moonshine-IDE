@@ -23,7 +23,6 @@ package actionScripts.ui.editor.text
     import flash.events.TimerEvent;
     import flash.geom.Point;
     import flash.geom.Rectangle;
-    import flash.sampler.getSize;
     import flash.utils.Timer;
     import flash.utils.getTimer;
     
@@ -298,14 +297,14 @@ package actionScripts.ui.editor.text
 				
 				colorManager.styles = styles;
 				
-				var t:TextLineRenderer;
-				for each (t in model.itemRenderersFree)
+				var textLineRenderer:TextLineRenderer;
+				for each (textLineRenderer in model.itemRenderersFree)
 				{
-					t.styles = styles;
+					textLineRenderer.styles = styles;
 				}
-				for each (t in model.itemRenderersInUse)
+				for each (textLineRenderer in model.itemRenderersInUse)
 				{
-					t.styles = styles;
+					textLineRenderer.styles = styles;
 				}
 				
 				invalidateLines();
@@ -318,19 +317,22 @@ package actionScripts.ui.editor.text
 		{
 			// Get breakpoints from line models
 			var bps:Array = [];
-			for (var i:int = 0; i < model.lines.length; i++)
+			var linesCount:int = model.lines.length;
+			
+			for (var i:int = 0; i < linesCount; i++)
 			{
 				var line:TextLineModel = model.lines[i];
 				if (line.breakPoint) bps.push(i);
 			}
 			return bps;
 		}
-		public function set breakpoints(v:Array):void
+		public function set breakpoints(value:Array):void
 		{
-			_breakpoints = v; // if it exists when set dataProvider is called we re-populate & remove it.
-			for (var i:int = 0; i < v.length; i++)
+			_breakpoints = value; // if it exists when set dataProvider is called we re-populate & remove it.
+			var breakpointsCount:int = value.length;
+			for (var i:int = 0; i < breakpointsCount; i++)
 			{
-				var lineNumber:int = v[i];
+				var lineNumber:int = value[i];
 				if (lineNumber >= model.lines.length) return;
 				var line:TextLineModel = model.lines[lineNumber];
 				line.breakPoint = true;
@@ -343,7 +345,6 @@ package actionScripts.ui.editor.text
 		public function TextEditor(readOnly:Boolean=false):void
 		{
 			model = new TextEditorModel();
-			
 			
 			widthUpdateDelayer = new Timer(0, 0);
 			widthUpdateDelayer.addEventListener(TimerEvent.TIMER_COMPLETE, calculateTextWidth);
@@ -377,37 +378,53 @@ package actionScripts.ui.editor.text
 		override public function styleChanged(styleProp:String):void
 		{
 			super.styleChanged(styleProp);
-			if (getStyle('backgroundColor') != null)
+
+			var backgroundColor:* = getStyle('backgroundColor');
+			var backgroundAlpha:* = getStyle('backgroundAlpha');
+			var selectionColor:* = getStyle('selectionColor');
+            var selectedLineColor:* = getStyle('selectedLineColor');
+			var selectedLineColorAlpha:* = getStyle('selectedLineColorAlpha');
+			var tracingLineColor:* = getStyle('tracingLineColor');
+
+			if (backgroundColor)
 			{ 
-				_backgroundColor = getStyle('backgroundColor');
-				invalidateFlag(INVALID_RESIZE);
+				_backgroundColor = backgroundColor;
 			}
-			if (getStyle('backgroundAlpha') != null)
+			
+			if (backgroundAlpha)
 			{
-				_backgroundAlpha = getStyle('backgroundAlpha');
-				invalidateFlag(INVALID_RESIZE);
+				_backgroundAlpha = backgroundAlpha;
 			}
-			if (getStyle('selectionColor') != null) 
+
+			if (backgroundColor || backgroundAlpha)
 			{
-				_selectionColor = getStyle('selectionColor');
+                invalidateFlag(INVALID_RESIZE);
+			}
+
+			if (selectionColor)
+			{
+				_selectionColor = selectionColor;
 				colorManager.styles['selectionColor'] = _selectionColor;
-				invalidateSelection(true);
 			}
-			if (getStyle('selectedLineColor') != null)
+			if (selectedLineColor)
 			{
-				_selectedLineColor = getStyle('selectedLineColor');
+				_selectedLineColor = selectedLineColor;
 				colorManager.styles['selectedLineColor'] = _selectedLineColor;
-				invalidateSelection(true);
 			}
-			if (getStyle('selectedLineColorAlpha') != null)
+			if (selectedLineColorAlpha)
 			{
-				_selectedLineColorAlpha = getStyle('selectedLineColorAlpha');
+				_selectedLineColorAlpha = selectedLineColorAlpha;
 				colorManager.styles['selectedLineColorAlpha'] = _selectedLineColorAlpha;
-				invalidateSelection(true);
 			}
-			if (getStyle('tracingLineColor') != null)
+
+			if (selectionColor || selectedLineColor || selectedLineColorAlpha)
 			{
-				_tracingLineColor = getStyle('tracingLineColor');
+                invalidateSelection(true);
+			}
+
+			if (tracingLineColor)
+			{
+				_tracingLineColor = tracingLineColor;
 				colorManager.styles['tracingLineColor'] = _tracingLineColor;
 				invalidateTraceSelection(true);
 			}
@@ -419,14 +436,7 @@ package actionScripts.ui.editor.text
 			
 			hasFocus = true;
 		}
-		
-		override protected function focusOutHandler(event:FocusEvent):void
-		{
-			super.focusOutHandler(event);
-			
-			//hasFocus = false;
-		}
-		
+
 		public function invalidateLines():void
 		{
 			invalidateFlag(INVALID_FULL);
@@ -817,9 +827,10 @@ package actionScripts.ui.editor.text
 					itemContainer.addChild(masker);*/
 					itemContainer.addChild(rdr);
 				}
-				
-				rdr.model = model.lines[beginningAtLine+i];
-				rdr.dataIndex = beginningAtLine+i;
+
+				var beginningAtLinePlusIndex:int = beginningAtLine + i;
+				rdr.model = model.lines[beginningAtLinePlusIndex];
+				rdr.dataIndex = beginningAtLinePlusIndex;
 				ret.push(rdr);
 			}
 			

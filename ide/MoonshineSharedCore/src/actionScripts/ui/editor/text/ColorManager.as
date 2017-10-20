@@ -73,9 +73,9 @@ package actionScripts.ui.editor.text
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
 		}
 		
-		public function setParser(v:ILineParser):void
+		public function setParser(value:ILineParser):void
 		{
-			parser = v;
+			parser = value;
 		}
 		
 		public function reset():void
