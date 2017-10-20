@@ -258,7 +258,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.userSavedSDKs[i].status != SDKUtils.BUNDLED)
 				{
 					model.userSavedSDKs.removeItemAt(i);
-					i--;
+					tmpCount--;
 				}
 			}
 

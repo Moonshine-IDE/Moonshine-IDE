@@ -153,15 +153,15 @@ package actionScripts.plugin.settings
 
 		private function onResetApplicationSettings(event:GeneralEvent):void
 		{
+			// removing plugin-storage values
+			clearAllSettings();
+			
 			// removing plugin-local values
 			var plugins:Vector.<IPlugin> = pluginManager.moonshine_internal::getPlugins();
 			for each (var plug:IPlugin in plugins)
 			{
 				plug.resetSettings();
 			}
-			
-			// removing plugin-storage values
-			clearAllSettings();
 			
 			// restarting all startup process again
 			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
