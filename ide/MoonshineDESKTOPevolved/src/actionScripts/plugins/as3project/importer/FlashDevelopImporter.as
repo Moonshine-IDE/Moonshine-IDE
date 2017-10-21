@@ -66,30 +66,16 @@ package actionScripts.plugins.as3project.importer
             project.classpaths.length = 0;
             project.resourcePaths.length = 0;
             project.targets.length = 0;
-			
-			parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
+
+            parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
 
             project.assetLibrary = data.library;
-			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
-
-            project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
-            project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
-            project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
-
-            project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
-
-            project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
-            project.testMovie = data.options.option.@testMovie;
-
-            project.assetLibrary = data.library;
-			parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
 
             project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
             project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
