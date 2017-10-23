@@ -68,7 +68,6 @@ package actionScripts.ui.editor.text
 			var match:Object;
 			var selectedIndex:int;
 			
-			
 			// Search with regexp
 			if (search is RegExp)
 			{
@@ -91,10 +90,10 @@ package actionScripts.ui.editor.text
 	         	}
 	         	
 	         	// Figure out which one we want to select
-	         	var resultLength:int = results.length;
+	         	var resultsLength:int = results.length;
 	         	if (backwards)
 	         	{
-	         		for (var i:int = resultLength-1; i >= 0; i--)
+	         		for (var i:int = resultsLength-1; i >= 0; i--)
 					{
 						if (results[i].index < startCharIndex)
 						{
@@ -107,7 +106,7 @@ package actionScripts.ui.editor.text
 	         	}
 	         	else
 	         	{
-	         		for (i = 0; i < resultLength; i++)
+	         		for (i = 0; i < resultsLength; i++)
 					{
 						if (results[i].index > startCharIndex)
 						{
@@ -150,10 +149,10 @@ package actionScripts.ui.editor.text
 				}
 				
 				// Figure out which one we want to select
-				resultLength = results.length;
+				resultsLength = results.length;
 				if (backwards)
 	         	{
-	         		for (i = resultLength-1; i >= 0; i--)
+	         		for (i = resultsLength-1; i >= 0; i--)
 					{
 						if (results[i] < startCharIndex)
 						{
@@ -165,7 +164,7 @@ package actionScripts.ui.editor.text
 	         	}
 	         	else
 	         	{
-	         		for (i = 0; i < resultLength; i++)
+	         		for (i = 0; i < resultsLength; i++)
 					{
 						if (results[i] >= startCharIndex)
 						{
@@ -175,13 +174,14 @@ package actionScripts.ui.editor.text
 						}
 					}
 	         	}
-				
+
+				resultsLength = results.length;
 				// No match, wrap search
-				if (result == -1 && results.length)
+				if (result == -1 && resultsLength)
 				{
 					if (backwards) 
 					{
-						selectedIndex = results.length-1;
+						selectedIndex = resultsLength - 1;
 						result = results[selectedIndex];
 					}
 					else
@@ -201,8 +201,7 @@ package actionScripts.ui.editor.text
 				applySearch(res);
 				return res;
 			}
-			
-			
+
 			// Did we find anything?
 			if (result != -1)
 			{
@@ -395,10 +394,7 @@ package actionScripts.ui.editor.text
 		
 		// Map to TextEditor internal representation
 		private function applySearch(s:SearchResult):void
-		{	
-			var firstLine:TextLineModel = model.lines[s.startLineIndex];
-			var endLine:TextLineModel = model.lines[s.endLineIndex];
-			
+		{
 			model.setSelection(s.startLineIndex, s.startCharIndex, s.endLineIndex, s.endCharIndex);			
 			
 			// TODO: Have a bit more margin, maybe center the selected textline?	
