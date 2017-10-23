@@ -65,12 +65,13 @@ package actionScripts.ui.editor
 		private var pop:FileSavePopup;
 		protected var model:IDEModel = IDEModel.getInstance();
 
-		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var selectProjectPopup:SelectOpenedFlexProject;
 
 		protected var isVisualEditor:Boolean;
 
         protected var _isChanged:Boolean;
+
+        protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 		override public function get label():String
 		{

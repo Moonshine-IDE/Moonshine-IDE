@@ -32,35 +32,35 @@ package actionScripts.ui.editor.text
 		protected var _lastQuoteText:String;
 		protected var _debuggerLineSelection:Boolean;
 		
-		public function set text(v:String):void
+		public function set text(value:String):void
 		{
-			_text = v;
+			_text = value;
 		}
 		public function get text():String
 		{
 			return _text;
 		}
 		
-		public function set meta(v:Vector.<int>):void
+		public function set meta(value:Vector.<int>):void
 		{
-			_meta = v;
+			_meta = value;
 		}
 		public function get meta():Vector.<int>
 		{
 			return _meta;
 		}
 		
-		public function set breakPoint(v:Boolean):void
+		public function set breakPoint(value:Boolean):void
 		{
-			_breakPoint = v;
+			_breakPoint = value;
 		}
 		public function get breakPoint():Boolean
 		{
 			return _breakPoint;
 		}
-		public function set traceLine(v:Boolean):void
+		public function set traceLine(value:Boolean):void
 		{
-			_traceLine = v;
+			_traceLine = value;
 		}
 		public function get traceLine():Boolean
 		{
@@ -114,18 +114,18 @@ package actionScripts.ui.editor.text
 			return text;
 		}
 		
-		public function set isQuoteTextOpen(v:Boolean):void
+		public function set isQuoteTextOpen(value:Boolean):void
 		{
-			_isQuoteTextOpen = v;
+			_isQuoteTextOpen = value;
 		}
 		public function get isQuoteTextOpen():Boolean
 		{
 			return _isQuoteTextOpen;
 		}
 		
-		public function set lastQuoteText(v:String):void
+		public function set lastQuoteText(value:String):void
 		{
-			_lastQuoteText = v;
+			_lastQuoteText = value;
 		}
 		public function get lastQuoteText():String
 		{
