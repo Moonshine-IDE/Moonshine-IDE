@@ -168,13 +168,13 @@ package actionScripts.plugins.ant
 			reset();
 			shellInfo = null;
 			cmdLine = null;
-			
 		}
 		
 		override public function resetSettings():void
 		{
 			model.antScriptFile = null;
-			antHomePath = "";
+			if (ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT) antHomePath = ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT.nativePath;
+			else antHomePath = "";
 		}
 		
 		private function reset():void 

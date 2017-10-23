@@ -48,7 +48,7 @@ package actionScripts.plugin.actionscript.as3project.save
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "General options to Moonshine"; }
 		
-		public var resetLabel:String = "Reset Everything";
+		public var resetLabel:String = "Reset to Default";
 		
 		private var _workspacePath:String;
 		private var _isSaveFiles:Boolean = false;
