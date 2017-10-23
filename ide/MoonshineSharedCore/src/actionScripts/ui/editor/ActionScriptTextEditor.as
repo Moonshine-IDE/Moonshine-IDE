@@ -30,14 +30,12 @@ package actionScripts.ui.editor
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.GotoDefinitionEvent;
 	import actionScripts.events.HoverEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.Location;
 
 	public class ActionScriptTextEditor extends BasicTextEditor
@@ -54,97 +52,65 @@ package actionScripts.ui.editor
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
-			GlobalEventDispatcher.getInstance().addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS,showDiagnosticsHandler);
+			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS,showDiagnosticsHandler);
 		}
 
 		private function dispatchTypeAheadEvent():void
 		{
-			var document:String = "";
-			var lines:Vector.<TextLineModel> = editor.model.lines;
-			if (lines.length > 1)
-			{
-				for (var i:int = 0; i < lines.length-1; i++)
-				{
-					var m:TextLineModel = lines[i];
-					document+=m.text+"\n";
-				}
-			}
+			var document:String = getTextDocument();
+			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
 			var endLine:int = editor.model.selectedLineIndex;
 			var endChar:int = editor.model.caretIndex;
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(
+			dispatcher.dispatchEvent(new TypeAheadEvent(
 				TypeAheadEvent.EVENT_TYPEAHEAD,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
-			GlobalEventDispatcher.getInstance().addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
+			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
 		}
 
 		private function dispatchSignatureHelpEvent():void
 		{
-			var document:String = "";
-			var lines:Vector.<TextLineModel> = editor.model.lines;
-			if (lines.length > 1)
-			{
-				for (var i:int = 0; i < lines.length-1; i++)
-				{
-					var m:TextLineModel = lines[i];
-					document+=m.text+"\n";
-				}
-			}
+			var document:String = getTextDocument();
+			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
 			var endLine:int = editor.model.selectedLineIndex;
 			var endChar:int = editor.model.caretIndex;
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(
+			dispatcher.dispatchEvent(new TypeAheadEvent(
 				TypeAheadEvent.EVENT_SIGNATURE_HELP,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
-			GlobalEventDispatcher.getInstance().addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 		}
 
 		private function dispatchHoverEvent(charAndLine:Point):void
 		{
-			var document:String = "";
-			var lines:Vector.<TextLineModel> = editor.model.lines;
-			if (lines.length > 1)
-			{
-				for (var i:int = 0; i < lines.length-1; i++)
-				{
-					var m:TextLineModel = lines[i];
-					document+=m.text+"\n";
-				}
-			}
+			var document:String = getTextDocument();
+			
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(
+			dispatcher.dispatchEvent(new TypeAheadEvent(
 				TypeAheadEvent.EVENT_HOVER,
 				char, line, char, line,
 				document, 0, 1));
-			GlobalEventDispatcher.getInstance().addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 		}
 
 		private function dispatchGotoDefinitionEvent(charAndLine:Point):void
 		{
-			var document:String = "";
-			var lines:Vector.<TextLineModel> = editor.model.lines;
-			if (lines.length > 1)
-			{
-				for (var i:int = 0; i < lines.length-1; i++)
-				{
-					var m:TextLineModel = lines[i];
-					document+=m.text+"\n";
-				}
-			}
+			var document:String = getTextDocument();
+
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(
+			dispatcher.dispatchEvent(new TypeAheadEvent(
 				TypeAheadEvent.EVENT_GOTO_DEFINITION,
 				char, line, char, line,
 				document, 0, 1));
-			GlobalEventDispatcher.getInstance().addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
+			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 		}
 
 		private function onTextInput(event:TextEvent):void
@@ -164,23 +130,25 @@ package actionScripts.ui.editor
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDOPEN,
+			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDOPEN,
 				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
 
 		private function onTextChange(event:ChangeEvent):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(
+			dispatcher.dispatchEvent(new TypeAheadEvent(
 				TypeAheadEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider));
 		}
 
 		private function onKeyDown(event:KeyboardEvent):void
 		{
+			var fromCharCode:String = String.fromCharCode(event.charCode);
+			
 			var ctrlSpace:Boolean = String.fromCharCode(event.keyCode) == " " && event.ctrlKey;
-			var memberAccess:Boolean = String.fromCharCode(event.charCode) == ".";
-			var typeAnnotation:Boolean = String.fromCharCode(event.charCode) == ":";
-			var space:Boolean = String.fromCharCode(event.charCode) == " ";
-			var openTag:Boolean = String.fromCharCode(event.charCode) == "<";
+			var memberAccess:Boolean = fromCharCode == ".";
+			var typeAnnotation:Boolean = fromCharCode == ":";
+			var space:Boolean = fromCharCode == " ";
+			var openTag:Boolean = fromCharCode == "<";
 			/*var openingBracket:Boolean = String.fromCharCode(event.charCode) == "(";
 			var openingSingleQuote:Boolean = String.fromCharCode(event.charCode) == "'";
 			var openingDoubleQuote:Boolean = String.fromCharCode(event.charCode) == '"';*/
@@ -200,8 +168,8 @@ package actionScripts.ui.editor
 				dispatchTypeAheadEvent();
 			}
 
-			var parenOpen:Boolean = String.fromCharCode(event.charCode) == "(";
-			var comma:Boolean = String.fromCharCode(event.charCode) == ",";
+			var parenOpen:Boolean = fromCharCode == "(";
+			var comma:Boolean = fromCharCode == ",";
 			var activeAndBackspace:Boolean = editor.signatureHelpActive && event.keyCode === Keyboard.BACKSPACE;
 			if (parenOpen || comma)
 			{
@@ -212,6 +180,9 @@ package actionScripts.ui.editor
 				dispatchSignatureHelpPending = false;
 				dispatchSignatureHelpEvent();
 			}
+
+            var minusOneSelectedLineIndex:int = editor.model.selectedLineIndex - 1;
+			var plusOneSelectedLineIndex:int = editor.model.selectedLineIndex + 1;
 			
 			var change:TextChangeInsert;
 			/*if (openingBracket) 
@@ -244,13 +215,17 @@ package actionScripts.ui.editor
 				);
 				editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '"', change);
 			}
-			else */if (enterKey) 
+			else */
+			if (enterKey)
 			{
 				var isCurlybracesOpened:Boolean;
 				var isQuotesOpened:Boolean;
-				var lineText:String = StringUtil.trim(editor.model.lines[editor.model.selectedLineIndex - 1].text);
-				if (lineText.charAt(lineText.length-1) == "{" && !editor.model.lines[editor.model.selectedLineIndex - 1].isQuoteTextOpen) isCurlybracesOpened = true;
-				else if (editor.model.lines[editor.model.selectedLineIndex - 1].isQuoteTextOpen) isQuotesOpened = true;
+				var lineText:String = StringUtil.trim(editor.model.lines[minusOneSelectedLineIndex].text);
+				if (lineText.charAt(lineText.length-1) == "{" && !editor.model.lines[minusOneSelectedLineIndex].isQuoteTextOpen) isCurlybracesOpened = true;
+				else if (editor.model.lines[minusOneSelectedLineIndex].isQuoteTextOpen)
+				{
+					isQuotesOpened = true;
+                }
 				
 				// for curly braces	
 				if (isCurlybracesOpened)
@@ -270,8 +245,8 @@ package actionScripts.ui.editor
 						if (editor.model.selectedLineIndex < (editor.model.lines.length - 1))
 						{
 							editorHasNextLine = true;
-							matches = regExp.exec(editor.model.lines[editor.model.selectedLineIndex+1].text);
-							if (!matches) regExp.exec(editor.model.lines[editor.model.selectedLineIndex-1].text); 
+							matches = regExp.exec(editor.model.lines[plusOneSelectedLineIndex].text);
+							if (!matches) regExp.exec(editor.model.lines[minusOneSelectedLineIndex].text);
 							if (matches) 
 							{
 								indent = matches[1];
@@ -283,7 +258,7 @@ package actionScripts.ui.editor
 						editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '\n');
 						editor.model.selectedLineIndex --;
 						change = new TextChangeInsert(
-							editorHasNextLine ? editor.model.selectedLineIndex+1 : editor.model.selectedLineIndex,
+							editorHasNextLine ? plusOneSelectedLineIndex : editor.model.selectedLineIndex,
 							newCaretPos,
 							Vector.<String>([indent+"}"])
 						);
@@ -335,19 +310,19 @@ package actionScripts.ui.editor
 
 		private function showCompletionListHandler(event:CompletionItemsEvent):void
 		{
-			GlobalEventDispatcher.getInstance().removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
+			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			editor.showCompletionList(event.items);
 		}
 
 		private function showSignatureHelpHandler(event:SignatureHelpEvent):void
 		{
-			GlobalEventDispatcher.getInstance().removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 			editor.showSignatureHelp(event.signatureHelp);
 		}
 
 		private function showHoverHandler(event:HoverEvent):void
 		{
-			GlobalEventDispatcher.getInstance().removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 			if(!mouseOverForHover)
 			{
 				//ignore because the mouse is no longer over the editor
@@ -358,7 +333,7 @@ package actionScripts.ui.editor
 
 		private function showDefinitionLinkHandler(event:GotoDefinitionEvent):void
 		{
-			GlobalEventDispatcher.getInstance().removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
+			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 			editor.showDefinitionLink(event.locations, event.position);
 		}
 
@@ -369,6 +344,24 @@ package actionScripts.ui.editor
 				return;
 			}
 			editor.showDiagnostics(event.diagnostics);
+		}
+
+		private function getTextDocument():String
+		{
+			var document:String;
+            var lines:Vector.<TextLineModel> = editor.model.lines;
+			var textLinesCount:int = lines.length;
+            if (textLinesCount > 1)
+            {
+				textLinesCount -= 1;
+                for (var i:int = 0; i < textLinesCount; i++)
+                {
+                    var textLine:TextLineModel = lines[i];
+                    document += textLine.text + "\n";
+                }
+            }
+
+			return document;
 		}
 	}
 }
