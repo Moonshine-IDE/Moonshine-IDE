@@ -50,5 +50,12 @@ package actionScripts.plugin.templating.settings
 			return rdr;
 		}
 		
+		public function resetTemplate():void
+		{
+			if (rdr) 
+			{
+				rdr.reset();
+			}
+		}
 	}
 }

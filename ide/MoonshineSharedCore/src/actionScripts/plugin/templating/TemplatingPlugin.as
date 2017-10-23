@@ -21,6 +21,7 @@ package actionScripts.plugin.templating
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
+	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -31,6 +32,7 @@ package actionScripts.plugin.templating
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.OpenFileEvent;
@@ -130,11 +132,19 @@ package actionScripts.plugin.templating
 		
 		override public function resetSettings():void
 		{
+			for each (var i:ISetting in settingsList)
+			{
+				if (i is TemplateSetting) TemplateSetting(i).resetTemplate();
+			}
 			
+			readTemplates();
 		}
 		
 		protected function readTemplates():void
 		{
+			fileTemplates = [];
+			projectTemplates = [];
+			
 			// Find default templates
 			var files:FileLocation = templatesDir.resolvePath("files");
 			var list:Array = files.fileBridge.getDirectoryListing();
@@ -336,12 +346,13 @@ package actionScripts.plugin.templating
 		{
 			// Create new file
 			var newTemplate:FileLocation = this.customTemplatesDir.resolvePath("files/New file template.txt");
-			newTemplate.fileBridge.createFile();
+			newTemplate.fileBridge.save("");
 			
 			// Add setting for it so we can remove it
 			var t:TemplateSetting = new TemplateSetting(null, newTemplate, newTemplate.fileBridge.name);
-			t.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify);
-			t.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset);
+			t.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify, false, 0, true);
+			t.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset, false, 0, true);
+			t.renderer.addEventListener(TemplateRenderer.EVENT_RESET, handleTemplateReset, false, 0, true);
 			var newPos:int = this.settingsList.indexOf(newFileTemplateSetting);
 			settingsList.splice(newPos, 0, t);
 			
@@ -349,10 +360,9 @@ package actionScripts.plugin.templating
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
 			// Add to project view so user can rename it
-			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, new ProjectVO(newTemplate))
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, newTemplate)
 			);
-						
 			
 			// Update internal template list
 			readTemplates();
@@ -384,21 +394,29 @@ package actionScripts.plugin.templating
 			var original:FileLocation = rdr.setting.originalTemplate;
 			var custom:FileLocation = rdr.setting.customTemplate;
 			
-			var p:ProjectVO;
+			var p:AS3ProjectVO;
 			
-			if (!original || !original.fileBridge.exists)
+			if ((!original || !original.fileBridge.exists) && custom.fileBridge.isDirectory)
 			{
-				p = new ProjectVO(custom)
+				p = new AS3ProjectVO(custom)
 			}
-			else if (!custom.fileBridge.exists)
+			else if (!custom.fileBridge.exists && (original && original.fileBridge.exists && original.fileBridge.isDirectory))
 			{
 				// Copy to app-storage so we can edit
 				original.fileBridge.copyTo(custom);
-				p = new ProjectVO(original);
+				p = new AS3ProjectVO(custom);
+			}
+			else if (!custom.fileBridge.exists && original && original.fileBridge.exists && !original.fileBridge.isDirectory)
+			{
+				original.fileBridge.copyTo(custom);
+			}
+			else if (custom && custom.fileBridge.exists && custom.fileBridge.isDirectory)
+			{
+				p = new AS3ProjectVO(custom);
 			}
 			
 			// If project or custom, show in Project View so user can rename it
-			if (custom.fileBridge.isDirectory || !original || !original.fileBridge.exists)
+			if (p)
 			{
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
@@ -406,7 +424,7 @@ package actionScripts.plugin.templating
 			}
 			
 			// If not a project, open the template for editing
-			if (!custom.fileBridge.isDirectory)
+			else if (!custom.fileBridge.isDirectory)
 			{
 				dispatcher.dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, custom)
@@ -443,8 +461,11 @@ package actionScripts.plugin.templating
 			var original:FileLocation = rdr.setting.originalTemplate;
 			var custom:FileLocation = rdr.setting.customTemplate;
 			
-			if (custom.fileBridge.isDirectory) custom.fileBridge.deleteDirectory(true);
-			else custom.fileBridge.deleteFile();
+			if (custom.fileBridge.exists)
+			{
+				if (custom.fileBridge.isDirectory) custom.fileBridge.deleteDirectory(true);
+				else custom.fileBridge.deleteFile();
+			}
 			
 			if (!original)
 			{

@@ -43,6 +43,5 @@ package actionScripts.plugin.templating.settings
 			rdr.setting = this;
 			return rdr;
 		}
-		
 	}
 }

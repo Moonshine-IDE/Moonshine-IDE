@@ -485,6 +485,10 @@
 					tmpMove.play();
 					isNoSDKMessageShown = false;
 				}
+				else if (isNoSDKMessageShown)
+				{
+					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
+				}
 				
 				function onEffectEnds(effEvent:EffectEvent):void
 				{
@@ -573,6 +577,23 @@
 					clipAndEnableScrolling="false" />
 			</s:layout>
 		</s:DataGroup>
+		<s:Label 
+			text="FEEDBACK"
+			color="0XD6D6D6"
+			paddingTop="3"
+			paddingLeft="3"
+			paddingRight="3"
+			paddingBottom="0"
+			fontFamily="DejaVuSerif"
+			fontStyle="italic"
+			fontSize="18"
+			/>
+		<s:HGroup autoLayout="true" verticalAlign="middle">
+			<s:Button label="This is great!"
+					  styleName="lightButton"/>
+			<s:Button label="I'm having some problems"
+					  styleName="lightButton"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<s:VGroup id="vgProjects" 
