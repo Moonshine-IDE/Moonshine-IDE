@@ -20,7 +20,6 @@ package actionScripts.plugin.console.view
 {
 	import spark.components.TextArea;
 	import spark.components.VScrollBar;
-	import spark.utils.TextFlowUtil;
 	
 	import actionScripts.ui.editor.text.TextEditorModel;
 	import actionScripts.ui.editor.text.TextLineModel;
@@ -39,7 +38,7 @@ package actionScripts.plugin.console.view
 			super();
 			this.setStyle("contentBackgroundColor",0x373737);
 			this.setStyle("contentBackgroundAlpha",0.9);
-			this.setStyle("borderVisible",false)
+			this.setStyle("borderVisible",false);
 			this.percentHeight = 100;
 			this.percentWidth = 100;
 		}
@@ -61,14 +60,16 @@ package actionScripts.plugin.console.view
 		}
 		public function appendtext(text:*):int
 		{
+            var linesCount:int;
 			if (text is String)
 			{
 				var lines:Array = text.split('\n');
+				linesCount = lines.length;
 				var p:ParagraphElement;
 				var tf:TextFlow;
 				var pe:ParagraphElement;
 				var fe:FlowElement;
-				for (var i:int = 0; i < lines.length; i++)
+				for (var i:int = 0; i < linesCount; i++)
 				{
 					p = new ParagraphElement();
 					tf = TextConverter.importToFlow(String(lines[i]) + "\n", TextConverter.TEXT_FIELD_HTML_FORMAT);
@@ -88,7 +89,8 @@ package actionScripts.plugin.console.view
 			} 
 			else if (text is Vector.<TextLineModel>)
 			{
-				for (i = 0; i < text.length; i++)
+                linesCount = text.length;
+				for (i = 0; i < linesCount; i++)
 				{
 					p = new ParagraphElement();
 					tf = TextConverter.importToFlow(String(text[i]) + "\n", TextConverter.PLAIN_TEXT_FORMAT);

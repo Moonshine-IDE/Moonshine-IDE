@@ -237,15 +237,14 @@ package actionScripts.ui.editor
 					if (openCount > closeCount)
 					{
 						//try to use the same indent as whatever follows
-						var regExp:RegExp = /^([ \t]*)\w/gm;
-						var matches:Array = null;
 						var newCaretPos:int;
 						var editorHasNextLine:Boolean;
 						var indent:String = "";
 						if (editor.model.selectedLineIndex < (editor.model.lines.length - 1))
 						{
+                            var regExp:RegExp = /^([ \t]*)\w/gm;
 							editorHasNextLine = true;
-							matches = regExp.exec(editor.model.lines[plusOneSelectedLineIndex].text);
+                            var matches:Array = regExp.exec(editor.model.lines[plusOneSelectedLineIndex].text);
 							if (!matches) regExp.exec(editor.model.lines[minusOneSelectedLineIndex].text);
 							if (matches) 
 							{
@@ -254,7 +253,7 @@ package actionScripts.ui.editor
 						}
 						
 						if (!matches) newCaretPos = editor.model.caretIndex;
-						
+
 						editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '\n');
 						editor.model.selectedLineIndex --;
 						change = new TextChangeInsert(
@@ -271,10 +270,10 @@ package actionScripts.ui.editor
 				{
 					change = new TextChangeInsert(
 						editor.model.selectedLineIndex-1,
-						editor.model.lines[editor.model.selectedLineIndex-1].text.length,
-						Vector.<String>([editor.model.lines[editor.model.selectedLineIndex-1].lastQuoteText])
+						editor.model.lines[minusOneSelectedLineIndex].text.length,
+						Vector.<String>([editor.model.lines[minusOneSelectedLineIndex].lastQuoteText])
 					);
-					editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '+ '+ editor.model.lines[editor.model.selectedLineIndex-1].lastQuoteText, change);
+					editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '+ '+ editor.model.lines[minusOneSelectedLineIndex].lastQuoteText, change);
 				}
 			}
 		}

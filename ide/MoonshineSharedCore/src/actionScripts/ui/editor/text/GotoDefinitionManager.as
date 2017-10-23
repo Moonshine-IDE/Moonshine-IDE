@@ -66,7 +66,6 @@ package actionScripts.ui.editor.text
 			if(!definitionOverlay.isPopUp)
 			{
 				PopUpManager.addPopUp(definitionOverlay, editor, false);
-				definitionOverlay.validateNow();
 			}
 
 			if(position === null)

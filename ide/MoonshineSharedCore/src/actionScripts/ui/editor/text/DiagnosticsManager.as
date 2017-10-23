@@ -28,7 +28,6 @@ package actionScripts.ui.editor.text
 		{
 			this.savedDiagnostics = diagnostics;
 			this.closeTooltip();
-			editor.validateNow();
 			var lines:Vector.<TextLineModel> = model.lines;
 			var linesCount:int = lines.length;
 			for(var i:int = 0; i < linesCount; i++)

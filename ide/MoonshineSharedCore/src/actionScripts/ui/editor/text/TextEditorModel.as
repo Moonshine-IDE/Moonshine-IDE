@@ -47,7 +47,6 @@ package actionScripts.ui.editor.text
 		public var horizontalScrollPosition:int = 0;
 		public var textWidth:Number = 0;
 		public var _hasTraceLine:Boolean = false;
-		public var copyText:String ;
 		
 		public function set selectedLineIndex(idx:int):void
 		{

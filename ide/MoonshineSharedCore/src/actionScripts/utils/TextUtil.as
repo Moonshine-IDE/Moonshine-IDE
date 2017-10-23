@@ -73,7 +73,13 @@ package actionScripts.utils
 		// Get amount of indentation on line
 		public static function indentAmount(line:String):int
 		{
-			return Math.max(0, line.length - line.replace(/^\t+/,"").length);
+			var indent:int = line.length - line.replace(/^\t+/,"").length;
+			if (indent > 0)
+			{
+				return indent;
+			}
+			
+			return 0;
 		}
 		
 		// Count digits in decimal number
