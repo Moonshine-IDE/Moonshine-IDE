@@ -137,7 +137,7 @@ package actionScripts.ui.editor
 			
 			percentHeight = 100;
 			percentWidth = 100;
-			addEventListener(FlexEvent.CREATION_COMPLETE, createdHandler);
+			addEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
 			initializeChildrens();
 		}
 		
@@ -171,8 +171,10 @@ package actionScripts.ui.editor
 			}
 		}
 
-		protected function createdHandler(e:Event):void
+		protected function basicTextEditorCreationCompleteHandler(e:FlexEvent):void
 		{
+			removeEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
+			
 			created = true;
 			if (file)
 				callLater(open, [file]);
