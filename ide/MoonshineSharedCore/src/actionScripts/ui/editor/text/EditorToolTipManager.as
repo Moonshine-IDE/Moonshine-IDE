@@ -112,7 +112,7 @@ package actionScripts.ui.editor.text
 			{
 				PopUpManager.addPopUp(tooltip, editor, false);
 			}
-			tooltip.validateNow();
+
 			var tooltipX:Number = tooltip.stage.mouseX;
 			var tooltipY:Number = tooltip.stage.mouseY - (tooltip.height + 15);
 			var maxTooltipX:Number = tooltip.stage.stageWidth - tooltip.width;
