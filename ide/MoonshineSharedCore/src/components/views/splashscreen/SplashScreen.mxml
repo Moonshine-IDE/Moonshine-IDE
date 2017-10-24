@@ -68,6 +68,11 @@
 			
 			import flashx.textLayout.events.FlowElementMouseEvent;
 			
+			[Embed("/elements/images/icoThumbUp.png")]
+			private const ICON_THUMB_UP:Class;
+			[Embed("/elements/images/icoThumbDown.png")]
+			private const ICON_THUMB_DOWN:Class;
+			
 			public var plugin: SplashScreenPlugin;
 			
 			[Bindable] private var model:IDEModel = IDEModel.getInstance();
@@ -590,9 +595,9 @@
 			/>
 		<s:HGroup autoLayout="true" verticalAlign="middle">
 			<s:Button label="This is great!"
-					  styleName="lightButton"/>
+					  icon="{ICON_THUMB_UP}" height="26"/>
 			<s:Button label="I'm having some problems"
-					  styleName="lightButton"/>
+					  icon="{ICON_THUMB_DOWN}" height="26"/>
 		</s:HGroup>
 	</s:VGroup>
 	
