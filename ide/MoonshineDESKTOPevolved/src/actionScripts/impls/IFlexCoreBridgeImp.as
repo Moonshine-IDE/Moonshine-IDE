@@ -341,16 +341,8 @@ package actionScripts.impls
 						if (firstMenuItems[i].label == close)
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
-							firstMenuItems.splice(i+2, 0, (new MenuItem(resourceManager.getString('resources','ACCESS_MANAGER'), null, ProjectEvent.ACCESS_MANAGER)));
-
-                            var bundledSdkLabel:String = ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ?
-                                    resourceManager.getString('resources','EXTRACT_BUNDLED_SDK'):
-                                    resourceManager.getString('resources','MOONSHINE_HELPER_APP');
-							var eventTypeBundledSdk:String = ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ?
-									StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST :
-									StartupHelperPlugin.EVENT_SDK_HELPER_DOWNLOAD_REQUEST;
-
-							firstMenuItems.splice(i+3, 0, (new MenuItem(bundledSdkLabel, null, eventTypeBundledSdk)));
+							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, ProjectEvent.ACCESS_MANAGER)));
+							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST : StartupHelperPlugin.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
 							break;
 						}
 					}

@@ -216,7 +216,7 @@ package actionScripts.utils
 			}
 			else if (((IDEModel.getInstance().userSavedSDKs.length == 0) || (IDEModel.getInstance().userSavedSDKs[0].status != SDKUtils.BUNDLED)) && !ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS) 
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_SDK_HELPER_DOWNLOAD_REQUEST));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_SDK_SETUP_REQUEST));
 			}
 			else 
 			{
