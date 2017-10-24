@@ -156,6 +156,7 @@ package actionScripts.utils
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 			_dispatcher.removeEventListener(MenuPlugin.MENU_QUIT_EVENT, shutdownHandler);
+			shutdownHandler(null);
 		}
 
 		public function get project():AS3ProjectVO
