@@ -300,7 +300,7 @@
 														   downloadError="updater_errorHandler(event)"
 														   updateError="updater_errorHandler(event)"/>
 	</fx:Declarations>
-	<fx:Style source="../../MoonshineSharedCore/src/elements/style/style.css"/>
+	<fx:Style source="/elements/style/style.css"/>
 	<fx:Style source="/assets/styles/InstallApacheFlexStyle.css"/>
 
 	<fx:Script source="actionScripts/utils/AutoUpdater.as"/>
