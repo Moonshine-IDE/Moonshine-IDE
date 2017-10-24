@@ -18,33 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.rename
 {
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.OpenFileEvent;
+	import actionScripts.utils.applyTextEditsToFile;
+
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+
+	import mx.controls.Alert;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.rename.view.RenameView;
-	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.change.TextChangeMulti;
-	import actionScripts.ui.editor.text.change.TextChangeRemove;
 	import actionScripts.utils.TextUtil;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
 	import actionScripts.valueObjects.TextEdit;
-
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-
-	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -61,7 +51,6 @@ package actionScripts.plugins.rename
 		private var _line:int;
 		private var _startChar:int;
 		private var _endChar:int;
-		private var _pendingChanges:Object = {};
 
 		private var renameView:RenameView = new RenameView();
 
@@ -70,7 +59,6 @@ package actionScripts.plugins.rename
 			super.activate();
 			dispatcher.addEventListener(EVENT_OPEN_RENAME_VIEW, handleOpenRenameView);
 			dispatcher.addEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
-			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, editorOpenHandler);
 		}
 
 		override public function deactivate():void
@@ -78,47 +66,6 @@ package actionScripts.plugins.rename
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_OPEN_RENAME_VIEW, handleOpenRenameView);
 			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
-			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, editorOpenHandler);
-		}
-
-		private function findTextEditor(file:FileLocation):TextEditor
-		{
-			var editors:ArrayCollection = model.editors;
-			var editorCount:int = editors.length;
-			for(var i:int = 0; i < editorCount; i++)
-			{
-				var contentWindow:IContentWindow = IContentWindow(editors.getItemAt(i));
-				if(contentWindow is BasicTextEditor)
-				{
-					var editor:BasicTextEditor = BasicTextEditor(contentWindow);
-					if(editor.currentFile.fileBridge.nativePath === file.fileBridge.nativePath)
-					{
-						return editor.editor;
-					}
-				}
-			}
-			return null;
-		}
-		
-		private function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Vector.<TextEdit>):void
-		{
-			var multi:TextChangeMulti = new TextChangeMulti();
-			var textEditsCount:int = textEdits.length;
-			for(var i:int = 0; i < textEditsCount; i++)
-			{
-				var change:TextEdit = textEdits[i];
-				var range:Range = change.range;
-				var start:Position = range.start;
-				var end:Position = range.end;
-				var insert:TextChangeInsert = new TextChangeInsert(start.line, start.character, new <String>[change.newText]);
-				if(start.line !== end.line || start.character !== end.character)
-				{
-					var remove:TextChangeRemove = new TextChangeRemove(start.line, start.character, end.line, end.character);
-					multi.changes.push(remove)
-				}
-				multi.changes.push(insert);
-			}
-			textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, multi));
 		}
 
 		private function handleOpenRenameView(event:Event):void
@@ -137,7 +84,6 @@ package actionScripts.plugins.rename
 			renameView.addEventListener(CloseEvent.CLOSE, renameView_closeHandler);
 			PopUpManager.addPopUp(renameView, DisplayObject(editor.parentApplication), true);
 			PopUpManager.centerPopUp(renameView);
-
 		}
 		
 		private function renameView_closeHandler(event:CloseEvent):void
@@ -161,43 +107,12 @@ package actionScripts.plugins.rename
 				//the key is the file path, the value is a list of TextEdits
 				var file:FileLocation = new FileLocation(key, true);
 				var changesInFile:Vector.<TextEdit> = changes[key] as Vector.<TextEdit>;
-				var textEditor:TextEditor = this.findTextEditor(file);
-				if(textEditor === null)
-				{
-					//we need to open the file before appling the changes
-					//so we'll save the changes for later
-					this._pendingChanges[key] = changesInFile;
-					var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, file);
-					dispatcher.dispatchEvent(openEvent);
-					continue;
-				}
-				this.applyTextEditsToTextEditor(textEditor, changesInFile);
+				applyTextEditsToFile(file, changesInFile);
 			}
 			if(fileCount === 0)
 			{
 				Alert.show("Could not rename symbol.", "Rename symbol", Alert.OK, renameView);
 			}
-		}
-		
-		private function editorOpenHandler(event:EditorPluginEvent):void
-		{
-			var url:String = event.file.fileBridge.url;
-			if(!(url in this._pendingChanges))
-			{
-				return;
-			}
-			var textEditor:TextEditor = event.editor;
-			var changesInFile:Vector.<TextEdit> = this._pendingChanges[url] as Vector.<TextEdit>;
-			delete this._pendingChanges[url];
-			var file:Object = event.file.fileBridge.getFile;
-			//this seems to be the only way to be sure that the editor is
-			//displaying the file -JT
-			file.addEventListener(Event.COMPLETE, function(event:Event):void
-			{
-				file.removeEventListener(event.target, arguments.callee);
-				//this is pretty hacky! but otherwise, we get an error -JT
-				renameView.callLater(applyTextEditsToTextEditor, [textEditor, changesInFile]);
-			});
 		}
 
 	}

@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
@@ -271,6 +272,14 @@ public class xSocketDataHandler implements IDataHandler
                     CompletableFuture<WorkspaceEdit> edits = txtSrv.rename(renameParams);
                     String json = getJSON(requestID, edits.get());
                     //System.out.println("rename result: " + json);
+                    nbc.write(json + "\0");
+                }
+                else if (method.equalsIgnoreCase("workspace/executeCommand"))
+                {
+                    ExecuteCommandParams executeCommandParams = g.fromJson(param.getAsJsonObject("ExecuteCommandParams"), ExecuteCommandParams.class);
+                    CompletableFuture<Object> result = txtSrv.executeCommand(executeCommandParams);
+                    String json = getJSON(requestID, result.get());
+                    //System.out.println("executeCommand result: " + json);
                     nbc.write(json + "\0");
                 }
             }

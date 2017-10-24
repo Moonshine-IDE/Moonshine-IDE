@@ -342,9 +342,9 @@ package actionScripts.ui.editor.text
 				line.breakPoint = true;
 			}
 		}
-		public function setCompletionData(begin:int, end:int, s:String, change:TextChangeInsert = null):void
+		public function setCompletionData(begin:int, end:int, s:String):void
 		{
-			editManager.setCompletionData(begin, end, s, change);
+			editManager.setCompletionData(begin, end, s);
 		}
 		public function TextEditor(readOnly:Boolean=false):void
 		{

@@ -13,6 +13,7 @@
     <property name="target.property" value="target.path" />
     <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
     <property name="target.path" value="../ide/MoonshineSharedCore/src/elements/" />
+    <property name="flexjs.version" value="0.8.0" />
 
 
     
@@ -43,8 +44,10 @@
         <!-- Compile the java code from ${src} into ${build} -->
         <javac  srcdir="${src}" 
                 destdir="${build}"
-                   includeAntRuntime="false"
-                debug="true">
+                includeAntRuntime="false"
+                debug="true"
+                source="1.8"
+                target="1.8">
             <classpath>
                 <path refid="default.classpath" />
             </classpath>
@@ -61,7 +64,7 @@
                     separate JARs from a real SDK. The language server tries to
                     read the FlexJS version, so we need a valid value.
                 -->
-                <attribute name="Implementation-Version" value="0.7.0"/> 
+                <attribute name="Implementation-Version" value="${flexjs.version}"/> 
             </manifest>
             <fileset dir="${build}"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-2.7.7.jar"/>
@@ -77,14 +80,14 @@
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-io-2.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-logging-1.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-validator-1.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-0.8.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-${flexjs.version}.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jburg-types-1.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-0.8.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-${flexjs.version}.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/flex-tool-api-1.0.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-0.0-20150902-b129bb9e.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-third-party-0.0-20150902-b129bb9e.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/gson-2.7.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/guava-18.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/guava-19.0-rc3.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/gunit-3.5.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/hamcrest-core-1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/jackson-core-2.8.2.jar"/>
@@ -95,12 +98,12 @@
             <zipfileset excludes="META-INF/*.SF" src="${lib}/jsr305-3.0.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/junit-4.10.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/lzma-sdk-4j-9.22.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.2.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.2.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.2.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.12.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.12.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.12.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.13.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.13.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.13.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/stringtemplate-3.2.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/xSocket-2.8.15.jar"/>
         </jar>

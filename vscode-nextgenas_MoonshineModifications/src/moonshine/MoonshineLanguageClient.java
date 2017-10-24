@@ -12,6 +12,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.MessageActionItem;
@@ -62,6 +64,32 @@ public class MoonshineLanguageClient implements LanguageClient
             e.printStackTrace();
             System.out.println(e.getMessage() + "publish diagnostics " + e.getStackTrace());
         }
+    }
+
+    public CompletableFuture<ApplyWorkspaceEditResponse> applyEdit(ApplyWorkspaceEditParams params)
+    {
+        if(connection == null)
+        {
+            return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
+        }
+        HashMap<String, Object> wrapper = new HashMap<>();
+        wrapper.put("method", "workspace/applyEdit");
+        wrapper.put("params", params);
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        String json = gson.toJson(wrapper);
+        System.out.println("apply edit : " + json);
+        try
+        {
+            connection.write(json + "\0");
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+            System.out.println(e.getMessage() + "apply edit " + e.getStackTrace());
+        }
+        return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(true));
     }
 
     public void showMessage(MessageParams messageParams)

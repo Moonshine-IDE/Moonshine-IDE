@@ -24,9 +24,9 @@ package actionScripts.ui.editor
 	import flash.events.TextEvent;
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-	
+
 	import mx.utils.StringUtil;
-	
+
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.DiagnosticsEvent;
@@ -36,6 +36,7 @@ package actionScripts.ui.editor
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
+	import actionScripts.ui.editor.text.change.TextChangeMulti;
 	import actionScripts.valueObjects.Location;
 
 	public class ActionScriptTextEditor extends BasicTextEditor
@@ -184,7 +185,6 @@ package actionScripts.ui.editor
             var minusOneSelectedLineIndex:int = editor.model.selectedLineIndex - 1;
 			var plusOneSelectedLineIndex:int = editor.model.selectedLineIndex + 1;
 			
-			var change:TextChangeInsert;
 			/*if (openingBracket) 
 			{
 				event.preventDefault();
@@ -255,25 +255,35 @@ package actionScripts.ui.editor
 						if (!matches) newCaretPos = editor.model.caretIndex;
 
 						editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '\n');
-						editor.model.selectedLineIndex --;
-						change = new TextChangeInsert(
-							editorHasNextLine ? plusOneSelectedLineIndex : editor.model.selectedLineIndex,
-							newCaretPos,
-							Vector.<String>([indent+"}"])
+						editor.model.selectedLineIndex--;
+						var curlyBraceChange:TextChangeMulti = new TextChangeMulti(
+							new TextChangeInsert(
+								editorHasNextLine ? plusOneSelectedLineIndex : editor.model.selectedLineIndex,
+								newCaretPos,
+								new <String>[indent + "}"]),
+							new TextChangeInsert(
+								editor.model.selectedLineIndex,
+								editor.model.caretIndex,
+								new <String>["\t"])
 						);
-						editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '\t', change);
+						editor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, curlyBraceChange));
 					}
 				}
 				
 				// for quotes
 				if (isQuotesOpened)
 				{
-					change = new TextChangeInsert(
-						editor.model.selectedLineIndex-1,
-						editor.model.lines[minusOneSelectedLineIndex].text.length,
-						Vector.<String>([editor.model.lines[minusOneSelectedLineIndex].lastQuoteText])
+					var quotesChange:TextChangeMulti = new TextChangeMulti(
+						new TextChangeInsert(
+							minusOneSelectedLineIndex,
+							editor.model.lines[minusOneSelectedLineIndex].text.length,
+							new <String>[editor.model.lines[minusOneSelectedLineIndex].lastQuoteText]),
+						new TextChangeInsert(
+							editor.model.selectedLineIndex,
+							editor.model.caretIndex,
+							new <String>["+ " + editor.model.lines[minusOneSelectedLineIndex].lastQuoteText])
 					);
-					editor.setCompletionData(editor.model.caretIndex, editor.model.caretIndex, '+ '+ editor.model.lines[minusOneSelectedLineIndex].lastQuoteText, change);
+					editor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, quotesChange));
 				}
 			}
 		}
