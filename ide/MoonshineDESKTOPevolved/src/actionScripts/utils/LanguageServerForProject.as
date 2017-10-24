@@ -21,6 +21,7 @@ package actionScripts.utils
 {
 	import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.GotoDefinitionEvent;
 	import actionScripts.events.HoverEvent;
@@ -38,6 +39,7 @@ package actionScripts.utils
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
@@ -74,6 +76,11 @@ package actionScripts.utils
 		private static const MARKDOWN_NEXTGENAS_START:String = "```nextgenas\n";
 		private static const MARKDOWN_MXML_START:String = "```mxml\n";
 		private static const MARKDOWN_CODE_END:String = "\n```";
+		private static const INCOMING_FIELD_METHOD:String = "method";
+		private static const INCOMING_FIELD_RESULT:String = "result";
+		private static const INCOMING_FIELD_ID:String = "id";
+		private static const METHOD_TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS:String = "textDocument/publishDiagnostics";
+		private static const METHOD_WORKSPACE_APPLY_EDIT:String = "workspace/applyEdit";
 
 		private var _project:AS3ProjectVO;
 		private var _requestID:int = 0;
@@ -117,6 +124,7 @@ package actionScripts.utils
 			_dispatcher.addEventListener(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_dispatcher.addEventListener(TypeAheadEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_dispatcher.addEventListener(TypeAheadEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_dispatcher.addEventListener(TypeAheadEvent.EVENT_RENAME, renameHandler);
 			_dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 			_dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, shutdownHandler);
@@ -145,6 +153,7 @@ package actionScripts.utils
 			_dispatcher.removeEventListener(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_dispatcher.removeEventListener(TypeAheadEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_dispatcher.removeEventListener(TypeAheadEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 			_dispatcher.removeEventListener(MenuPlugin.MENU_QUIT_EVENT, shutdownHandler);
 		}
@@ -506,6 +515,44 @@ package actionScripts.utils
 			var jsonstr:String = JSON.stringify(obj);
 			_xmlSocket.send(jsonstr);
 		}
+		
+		private function textDocument__publishDiagnostics(jsonObject:Object):void
+		{
+			var diagnosticsParams:Object = jsonObject.params;
+			var uri:String = diagnosticsParams.uri;
+			var path:String = (new File(uri)).nativePath;
+			var resultDiagnostics:Array = diagnosticsParams.diagnostics;
+			var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+			var diagnosticsCount:int = resultDiagnostics.length;
+			for(var i:int = 0; i < diagnosticsCount; i++)
+			{
+				var resultDiagnostic:Object = resultDiagnostics[i];
+				diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
+			}
+			GlobalEventDispatcher.getInstance().dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+		}
+		
+		private function workspace__applyEdit(jsonObject:Object):void
+		{
+			var applyEditParams:Object = jsonObject.params;
+			var edit:Object = applyEditParams.edit;
+			var changes:Object = edit.changes;
+			for(var uri:String in changes)
+			{
+				//the key is the file path, the value is a list of TextEdits
+				var file:FileLocation = new FileLocation(uri, true);
+				var resultChanges:Array = changes[uri];
+				var resultChangesCount:int = resultChanges.length;
+				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+				for(var i:int = 0; i < resultChangesCount; i++)
+				{
+					var resultChange:Object = resultChanges[i];
+					var textEdit:TextEdit = this.parseTextEdit(resultChange);
+					textEdits[i] = textEdit;
+				}
+				applyTextEditsToFile(file, textEdits);
+			}
+		}
 
 		private function shellData(e:ProgressEvent):void
 		{
@@ -589,26 +636,29 @@ package actionScripts.utils
 				trace("invalid JSON");
 				return;
 			}
-			if("method" in object)
+			if(INCOMING_FIELD_METHOD in object)
 			{
 				var method:String = object.method;
-				if(method === "textDocument/publishDiagnostics")
+				switch(method)
 				{
-					var diagnosticsParams:Object = object.params;
-					var uri:String = diagnosticsParams.uri;
-					var path:String = (new File(uri)).nativePath;
-					var resultDiagnostics:Array = diagnosticsParams.diagnostics;
-					var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
-					var diagnosticsCount:int = resultDiagnostics.length;
-					for(var i:int = 0; i < diagnosticsCount; i++)
+					case METHOD_TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS:
 					{
-						var resultDiagnostic:Object = resultDiagnostics[i];
-						diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
+						this.textDocument__publishDiagnostics(object);
+						break;
 					}
-					GlobalEventDispatcher.getInstance().dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+					case METHOD_WORKSPACE_APPLY_EDIT:
+					{
+						this.workspace__applyEdit(object);
+						break;
+					}
+					default:
+					{
+						trace("Unknown language server method:", method);
+						break;
+					}
 				}
 			}
-			else if("result" in object && "id" in object)
+			else if(INCOMING_FIELD_RESULT in object && INCOMING_FIELD_ID in object)
 			{
 				var result:Object = object.result;
 				var requestID:int = object.id as int;
@@ -619,7 +669,7 @@ package actionScripts.utils
 					{
 						var eventCompletionItems:Array = new Array();
 						var completionItemCount:int = resultCompletionItems.length;
-						for(i = 0; i < completionItemCount; i++)
+						for(var i:int = 0; i < completionItemCount; i++)
 						{
 							var resultItem:Object = resultCompletionItems[i];
 							eventCompletionItems[i] = parseCompletionItem(resultItem);
@@ -1140,6 +1190,35 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.RenameParams = RenameParams;
+			obj.params = params;
+
+			var jsonstr:String = JSON.stringify(obj);
+			_xmlSocket.send(jsonstr);
+		}
+		
+		private function executeCommandHandler(event:ExecuteLanguageServerCommandEvent):void
+		{
+			if(!_xmlSocket || !_initialized)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+
+			var obj:Object = new Object();
+			obj.jsonrpc = "2.0";
+			obj.id = getNextRequestID();
+			obj.method = "workspace/executeCommand";
+
+			var ExecuteCommandParams:Object = new Object();
+			ExecuteCommandParams.command = event.command;
+			ExecuteCommandParams.arguments = event.arguments;
+
+			var params:Object = new Object();
+			params.ExecuteCommandParams = ExecuteCommandParams;
 			obj.params = params;
 
 			var jsonstr:String = JSON.stringify(obj);

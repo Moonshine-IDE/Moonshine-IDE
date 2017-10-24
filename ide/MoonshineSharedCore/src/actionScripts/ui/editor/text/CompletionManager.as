@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.Command;
@@ -171,157 +173,14 @@ package actionScripts.ui.editor.text
 					text = item.label;
 				}
 			}
-			var change:TextChangeInsert = null;
+			editor.setCompletionData(startIndex, endIndex, text);
 			var command:Command = item.command;
 			if(command)
 			{
-				switch(command.command)
-				{
-					case COMMAND_ADD_IMPORT:
-					{
-						change = getAddImportChange.apply(this, command.arguments);
-						break;
-					}
-					case COMMAND_ADD_MXML_NAMESPACE:
-					{
-						change = getAddMXMLNamespaceChange.apply(this, command.arguments);
-						break;
-					}
-					default:
-					{
-						trace("unknown completion command:", command.command);
-					}
-				}
+				var event:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
+					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, command.command, command.arguments);
+				GlobalEventDispatcher.getInstance().dispatchEvent(event);
 			}
-			editor.setCompletionData(startIndex, endIndex, text, change);
-		}
-
-		private function getAddImportChange(qualifiedName:String, startIndex:int, endIndex:int):TextChangeInsert
-		{
-			if(!qualifiedName)
-			{
-				return null;
-			}
-			var text:String = editor.dataProvider;
-			var regExp:RegExp = /^([ \t]*)import ([\w\.]+)/gm;
-			var matches:Array;
-			var currentMatches:Array;
-			if(startIndex !== -1)
-			{
-				regExp.lastIndex = startIndex;
-			}
-			do
-			{
-				currentMatches = regExp.exec(text);
-				if(currentMatches)
-				{
-					if(endIndex !== -1 && currentMatches.index >= endIndex)
-					{
-						break;
-					}
-					if(currentMatches[2] === qualifiedName)
-					{
-						//this class is already imported!
-						return null;
-					}
-					matches = currentMatches;
-				}
-			}
-			while(currentMatches);
-			var indent:String = "";
-			var lineBreaks:String = "\n";
-			var position:Position = new Position();
-			if(matches)
-			{
-				//we found existing imports
-				var lineAndChar:Point = TextUtil.charIdx2LineCharIdx(text, matches.index, editor.lineDelim); 
-				position.line = lineAndChar.x;
-				position.character = lineAndChar.y;
-				indent = matches[1];
-				position.line++;
-				position.character = 0;
-			}
-			else //no existing imports
-			{
-				if(startIndex !== -1)
-				{
-					lineAndChar = TextUtil.charIdx2LineCharIdx(text, startIndex, editor.lineDelim);
-					position.line = lineAndChar.x;
-					position.character = lineAndChar.y;
-					if(position.character > 0)
-					{
-						//go to the next line, if we're not at the start
-						position.line++;
-						position.character = 0;
-					}
-					//try to use the same indent as whatever follows
-					regExp = /^([ \t]*)\w/gm;
-					regExp.lastIndex = startIndex;
-					matches = regExp.exec(text);
-					if(matches)
-					{
-						indent = matches[1];
-					}
-					else
-					{
-						indent = "";
-					}
-				}
-				else
-				{
-					regExp = /^package( [\w\.]+)*\s*\{[\r\n]+([ \t]*)/g;
-					matches = regExp.exec(text);
-					if(!matches)
-					{
-						return null;
-					}
-					lineAndChar = TextUtil.charIdx2LineCharIdx(text, regExp.lastIndex, editor.lineDelim);
-					position.line = lineAndChar.x;
-					position.character = lineAndChar.y;
-					if(position.character > 0)
-					{
-						//go to the beginning of the line, if we're not there
-						position.character = 0;
-					}
-					indent = matches[2];
-				}
-				lineBreaks += "\n"; //add an extra line break
-			}
-			var textToInsert:String = indent + "import " + qualifiedName + ";" + lineBreaks;
-
-			var change:TextChangeInsert = new TextChangeInsert(
-				position.line,
-				position.character,
-				Vector.<String>(textToInsert.split("\n"))
-			);
-			return change;
-		}
-
-		private function getAddMXMLNamespaceChange(prefix:String, uri:String, startIndex:int, endIndex:int):TextChangeInsert
-		{
-			if(!prefix || !uri)
-			{
-				return null;
-			}
-
-			//exclude the whitespace before the namespace so that finding duplicates
-			//doesn't depend on it
-			var textToInsert:String = "xmlns:" + prefix + "=\"" + uri + "\"";
-			var text:String = editor.dataProvider;
-			var index:int = text.indexOf(textToInsert, startIndex);
-			if(index !== -1 && index < endIndex)
-			{
-				return null;
-			}
-			//include the whitespace here instead (see above)
-			textToInsert = " " + textToInsert;
-			var lineAndChar:Point = TextUtil.charIdx2LineCharIdx(text, endIndex, editor.lineDelim);
-			var change:TextChangeInsert = new TextChangeInsert(
-				lineAndChar.x,
-				lineAndChar.y,
-				Vector.<String>(textToInsert.split("\n"))
-			);
-			return change;
 		}
 
 		private function onMenuFocusOut(event:FocusEvent):void

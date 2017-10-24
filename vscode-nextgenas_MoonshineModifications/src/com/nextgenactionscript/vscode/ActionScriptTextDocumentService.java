@@ -25,12 +25,14 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,10 +40,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.flex.abc.ABCParser;
 import org.apache.flex.abc.Pool;
 import org.apache.flex.abc.PoolingABCVisitor;
+import org.apache.flex.compiler.asdoc.IASDocComment;
+import org.apache.flex.compiler.asdoc.IASDocTag;
 import org.apache.flex.compiler.clients.MXMLJSC;
+import org.apache.flex.compiler.common.ASModifier;
 import org.apache.flex.compiler.common.ISourceLocation;
 import org.apache.flex.compiler.common.PrefixMap;
 import org.apache.flex.compiler.common.XMLName;
@@ -56,6 +62,7 @@ import org.apache.flex.compiler.definitions.IAccessorDefinition;
 import org.apache.flex.compiler.definitions.IClassDefinition;
 import org.apache.flex.compiler.definitions.IConstantDefinition;
 import org.apache.flex.compiler.definitions.IDefinition;
+import org.apache.flex.compiler.definitions.IDocumentableDefinition;
 import org.apache.flex.compiler.definitions.IEventDefinition;
 import org.apache.flex.compiler.definitions.IFunctionDefinition;
 import org.apache.flex.compiler.definitions.IGetterDefinition;
@@ -67,6 +74,7 @@ import org.apache.flex.compiler.definitions.ISetterDefinition;
 import org.apache.flex.compiler.definitions.IStyleDefinition;
 import org.apache.flex.compiler.definitions.ITypeDefinition;
 import org.apache.flex.compiler.definitions.IVariableDefinition;
+import org.apache.flex.compiler.definitions.IVariableDefinition.VariableClassification;
 import org.apache.flex.compiler.definitions.metadata.IMetaTag;
 import org.apache.flex.compiler.driver.IBackend;
 import org.apache.flex.compiler.filespecs.IFileSpecification;
@@ -78,6 +86,7 @@ import org.apache.flex.compiler.internal.driver.js.node.NodeModuleBackend;
 import org.apache.flex.compiler.internal.mxml.MXMLData;
 import org.apache.flex.compiler.internal.parsing.as.ASParser;
 import org.apache.flex.compiler.internal.parsing.as.ASToken;
+import org.apache.flex.compiler.internal.parsing.as.FlexJSASDocDelegate;
 import org.apache.flex.compiler.internal.parsing.as.RepairingTokenBuffer;
 import org.apache.flex.compiler.internal.parsing.as.StreamingASTokenizer;
 import org.apache.flex.compiler.internal.projects.CompilerProject;
@@ -115,11 +124,13 @@ import org.apache.flex.compiler.tree.as.IIdentifierNode;
 import org.apache.flex.compiler.tree.as.IImportNode;
 import org.apache.flex.compiler.tree.as.IInterfaceNode;
 import org.apache.flex.compiler.tree.as.IKeywordNode;
+import org.apache.flex.compiler.tree.as.ILanguageIdentifierNode;
 import org.apache.flex.compiler.tree.as.IMemberAccessExpressionNode;
 import org.apache.flex.compiler.tree.as.INamespaceDecorationNode;
 import org.apache.flex.compiler.tree.as.IPackageNode;
 import org.apache.flex.compiler.tree.as.IScopedDefinitionNode;
 import org.apache.flex.compiler.tree.as.IScopedNode;
+import org.apache.flex.compiler.tree.as.ITypeNode;
 import org.apache.flex.compiler.tree.as.IVariableNode;
 import org.apache.flex.compiler.tree.mxml.IMXMLClassReferenceNode;
 import org.apache.flex.compiler.tree.mxml.IMXMLConcatenatedDataBindingNode;
@@ -131,13 +142,23 @@ import org.apache.flex.compiler.units.ICompilationUnit;
 import org.apache.flex.compiler.units.IInvisibleCompilationUnit;
 import org.apache.flex.compiler.workspaces.IWorkspace;
 
+import com.google.common.io.Files;
+import com.google.gson.internal.LinkedTreeMap;
+import com.nextgenactionscript.vscode.asdoc.VSCodeASDocComment;
+import com.nextgenactionscript.vscode.asdoc.VSCodeASDocDelegate;
+import com.nextgenactionscript.vscode.commands.ICommandConstants;
+import com.nextgenactionscript.vscode.commands.ICommandHintCodes;
 import com.nextgenactionscript.vscode.mxml.IMXMLLibraryConstants;
 import com.nextgenactionscript.vscode.project.CompilerOptions;
 import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
 import com.nextgenactionscript.vscode.project.ProjectOptions;
 import com.nextgenactionscript.vscode.project.ProjectType;
+import com.nextgenactionscript.vscode.utils.ASTUtils;
+import com.nextgenactionscript.vscode.utils.ImportTextEditUtils;
 import com.nextgenactionscript.vscode.utils.LanguageServerUtils;
 import com.nextgenactionscript.vscode.utils.ProblemTracker;
+
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -157,6 +178,7 @@ import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
 import org.eclipse.lsp4j.DocumentRangeFormattingParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.Hover;
@@ -203,8 +225,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private static final String MARKDOWN_CODE_BLOCK_NEXTGENAS_START = "```nextgenas\n";
     private static final String MARKDOWN_CODE_BLOCK_MXML_START = "```mxml\n";
     private static final String MARKDOWN_CODE_BLOCK_END = "\n```";
-    private static final String COMMAND_IMPORT = "nextgenas.addImport";
-    private static final String COMMAND_XMLNS = "nextgenas.addMXMLNamespace";
     private static final String TOKEN_CONFIGNAME = "configname";
     private static final String CONFIG_JS = "js";
     private static final String CONFIG_NODE = "node";
@@ -214,8 +234,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private static final String SDK_SOURCE_PATH_SIGNATURE_UNIX = "/frameworks/projects/";
     private static final String SDK_SOURCE_PATH_SIGNATURE_WINDOWS = "\\frameworks\\projects\\";
     private static final String FLEXLIB = "flexlib";
-    private static final String PACKAGE_NAME_NO_IMPORT = "__AS3__.";
+    private static final String UNDERSCORE_UNDERSCORE_AS3_PACKAGE = "__AS3__.";
     private static final String VECTOR_HIDDEN_PREFIX = "Vector$";
+    private static final String ASDOC_TAG_PARAM = "param";
 
     private static final String[] LANGUAGE_TYPE_NAMES =
             {
@@ -264,10 +285,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private IWorkspace currentWorkspace;
     private ProjectOptions currentProjectOptions;
     private int currentOffset = -1;
-    private int importStartIndex = -1;
-    private int importEndIndex = -1;
+    private ImportRange importRange = new ImportRange();
     private int namespaceStartIndex = -1;
     private int namespaceEndIndex = -1;
+    private String namespaceUri;
     private LanguageServerFileSpecGetter fileSpecGetter;
     private boolean brokenMXMLValueEnd;
     private boolean flexLibSDKContainsFalconCompiler = false;
@@ -516,7 +537,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     if (typeDefinition instanceof IClassDefinition)
                     {
                         IClassDefinition classDefinition = (IClassDefinition) typeDefinition;
-                        functionDefinition = classDefinitionToConstructor(classDefinition);
+                        functionDefinition = classDefinition.getConstructor();
                     }
                 }
             }
@@ -528,12 +549,22 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
             SignatureInformation signatureInfo = new SignatureInformation();
             signatureInfo.setLabel(getSignatureLabel(functionDefinition));
+            String docs = getDocumentationForDefinition(functionDefinition, true);
+            if (docs != null)
+            {
+                signatureInfo.setDocumentation(docs);
+            }
 
             List<ParameterInformation> parameters = new ArrayList<>();
             for (IParameterDefinition param : functionDefinition.getParameters())
             {
                 ParameterInformation paramInfo = new ParameterInformation();
                 paramInfo.setLabel(param.getBaseName());
+                String paramDocs = getDocumentationForParameter(param, true);
+                if (paramDocs != null)
+                {
+                    paramInfo.setDocumentation(paramDocs);
+                }
                 parameters.add(paramInfo);
             }
             signatureInfo.setParameters(parameters);
@@ -741,28 +772,58 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             switch (code)
             {
+                case ICommandHintCodes.GENERATE_GETTER_AND_SETTER:
+                {
+                    createCodeActionForGenerateGetterAndSetter(textDocument, diagnostic, commands);
+                    break;
+                }
                 case "1120": //AccessUndefinedPropertyProblem
                 {
                     //see if there's anything we can import
-                    createCodeActionsForImport(diagnostic, commands);
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
+                    createCodeActionForMissingLocalVariable(textDocument, diagnostic, commands);
+                    createCodeActionForMissingField(textDocument, diagnostic, commands);
                     break;
                 }
                 case "1046": //UnknownTypeProblem
                 {
                     //see if there's anything we can import
-                    createCodeActionsForImport(diagnostic, commands);
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
+                    break;
+                }
+                case "1017": //UnknownSuperclassProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
+                    break;
+                }
+                case "1045": //UnknownInterfaceProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
+                    break;
+                }
+                case "1061": //StrictUndefinedMethodProblem
+                {
+                    createCodeActionForMissingMethod(textDocument, diagnostic, commands);
+                    break;
+                }
+                case "1119": //AccessUndefinedMemberProblem
+                {
+                    createCodeActionForMissingField(textDocument, diagnostic, commands);
                     break;
                 }
                 case "1178": //InaccessiblePropertyReferenceProblem
                 {
                     //see if there's anything we can import
-                    createCodeActionsForImport(diagnostic, commands);
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
                     break;
                 }
                 case "1180": //CallUndefinedMethodProblem
                 {
                     //see if there's anything we can import
-                    createCodeActionsForImport(diagnostic, commands);
+                    createCodeActionsForImport(textDocument, diagnostic, commands);
+                    createCodeActionForMissingMethod(textDocument, diagnostic, commands);
                     break;
                 }
             }
@@ -770,50 +831,235 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return CompletableFuture.completedFuture(commands);
     }
 
-    private void createCodeActionsForImport(Diagnostic diagnostic, List<Command> commands)
+    private void createCodeActionForGenerateGetterAndSetter(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
     {
-        String message = diagnostic.getMessage();
-        int start = message.lastIndexOf(" ") + 1;
-        int end = message.length() - 1;
-        String typeString = message.substring(start, end);
-
-        ArrayList<IDefinition> types = new ArrayList<>();
-        for (ICompilationUnit unit : compilationUnits)
+        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        IVariableNode variableNode = null;
+        if (offsetNode instanceof IVariableNode)
         {
-            if (unit == null)
+            variableNode = (IVariableNode) offsetNode;
+        }
+        if (offsetNode.getParent() instanceof IVariableNode)
+        {
+            variableNode = (IVariableNode) offsetNode.getParent();
+        }
+        if (variableNode == null)
+        {
+            return;
+        }
+        IExpressionNode assignedValueNode = variableNode.getAssignedValueNode();
+        String assignedValue = null;
+        if (assignedValueNode != null)
+        {
+            String source = sourceByPath.get(Paths.get(diagnostic.getSource()));
+            assignedValue = source.substring(assignedValueNode.getAbsoluteStart(),
+                assignedValueNode.getAbsoluteEnd());
+        }
+
+        Command generateGetterAndSetterCommand = new Command();
+        generateGetterAndSetterCommand.setTitle("Generate Getter and Setter");
+        generateGetterAndSetterCommand.setCommand(ICommandConstants.GENERATE_GETTER_AND_SETTER);
+        generateGetterAndSetterCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        commands.add(generateGetterAndSetterCommand);
+        
+        Command generateGetterCommand = new Command();
+        generateGetterCommand.setTitle("Generate Getter");
+        generateGetterCommand.setCommand(ICommandConstants.GENERATE_GETTER);
+        generateGetterCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        commands.add(generateGetterCommand);
+
+        Command generateSetterCommand = new Command();
+        generateSetterCommand.setTitle("Generate Setter");
+        generateSetterCommand.setCommand(ICommandConstants.GENERATE_SETTER);
+        generateSetterCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        commands.add(generateSetterCommand);
+    }
+
+    private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    {
+        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        IIdentifierNode identifierNode = null;
+        if (offsetNode instanceof IIdentifierNode)
+        {
+            IASNode parentNode = offsetNode.getParent();
+            if (parentNode instanceof IMemberAccessExpressionNode)
             {
-                continue;
-            }
-            try
-            {
-                Collection<IDefinition> definitions = unit.getFileScopeRequest().get().getExternallyVisibleDefinitions();
-                if (definitions == null)
+                IMemberAccessExpressionNode memberAccessExpressionNode = (IMemberAccessExpressionNode) offsetNode.getParent();
+                IExpressionNode leftOperandNode = memberAccessExpressionNode.getLeftOperandNode();
+                if (leftOperandNode instanceof ILanguageIdentifierNode)
                 {
-                    continue;
-                }
-                for (IDefinition definition : definitions)
-                {
-                    if (definition instanceof ITypeDefinition)
+                    ILanguageIdentifierNode leftIdentifierNode = (ILanguageIdentifierNode) leftOperandNode;
+                    if (leftIdentifierNode.getKind() == ILanguageIdentifierNode.LanguageIdentifierKind.THIS)
                     {
-                        ITypeDefinition typeDefinition = (ITypeDefinition) definition;
-                        String baseName = typeDefinition.getBaseName();
-                        if (typeDefinition.getQualifiedName().equals(baseName))
-                        {
-                            //this definition is top-level. no import required.
-                            continue;
-                        }
-                        if (baseName.equals(typeString))
-                        {
-                            types.add(typeDefinition);
-                        }
+                        identifierNode = (IIdentifierNode) offsetNode;
                     }
                 }
             }
-            catch (Exception e)
+            else //no member access
             {
-                //safe to ignore
+                identifierNode = (IIdentifierNode) offsetNode;
             }
         }
+        if (identifierNode == null)
+        {
+            return;
+        }
+
+        String identifierName = identifierNode.getName();
+        Command generateVariableCommand = new Command();
+        generateVariableCommand.setTitle("Generate Field Variable");
+        generateVariableCommand.setCommand(ICommandConstants.GENERATE_FIELD_VARIABLE);
+        generateVariableCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            identifierName
+        ));
+        commands.add(generateVariableCommand);
+    }
+    
+    private void createCodeActionForMissingLocalVariable(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    {
+        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        IIdentifierNode identifierNode = null;
+        if (offsetNode instanceof IIdentifierNode)
+        {
+            identifierNode = (IIdentifierNode) offsetNode;
+        }
+        if (identifierNode == null)
+        {
+            return;
+        }
+
+        String identifierName = identifierNode.getName();
+        Command generateVariableCommand = new Command();
+        generateVariableCommand.setTitle("Generate Local Variable");
+        generateVariableCommand.setCommand(ICommandConstants.GENERATE_LOCAL_VARIABLE);
+        generateVariableCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            identifierName
+        ));
+        commands.add(generateVariableCommand);
+    }
+
+    private void createCodeActionForMissingMethod(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    {
+        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        IASNode parentNode = offsetNode.getParent();
+        IFunctionCallNode functionCallNode = null;
+        String functionName = null;
+        if (offsetNode instanceof IFunctionCallNode)
+        {
+            functionCallNode = (IFunctionCallNode) offsetNode;
+            functionName = functionCallNode.getFunctionName();
+        }
+        else if (parentNode instanceof IFunctionCallNode)
+        {
+            functionCallNode = (IFunctionCallNode) offsetNode.getParent();
+            functionName = functionCallNode.getFunctionName();
+        }
+        else if(offsetNode instanceof IIdentifierNode
+                && parentNode instanceof IMemberAccessExpressionNode)
+        {
+            IMemberAccessExpressionNode memberAccessExpressionNode = (IMemberAccessExpressionNode) offsetNode.getParent();
+            IExpressionNode leftOperandNode = memberAccessExpressionNode.getLeftOperandNode();
+            if (leftOperandNode instanceof ILanguageIdentifierNode)
+            {
+                ILanguageIdentifierNode leftIdentifierNode = (ILanguageIdentifierNode) leftOperandNode;
+                IASNode gpNode = parentNode.getParent();
+                if (leftIdentifierNode.getKind() == ILanguageIdentifierNode.LanguageIdentifierKind.THIS
+                        && gpNode instanceof IFunctionCallNode)
+                {
+                    functionCallNode = (IFunctionCallNode) gpNode;
+                    IIdentifierNode rightIdentifierNode = (IIdentifierNode) offsetNode;
+                    functionName = rightIdentifierNode.getName();
+                }
+            }
+        }
+        if (functionCallNode == null || functionName == null || functionName.length() == 0)
+        {
+            return;
+        }
+
+        ArrayList<String> argTypes = new ArrayList<>();
+        for (IExpressionNode arg : functionCallNode.getArgumentNodes())
+        {
+            ITypeDefinition typeDefinition = arg.resolveType(currentProject);
+            if (typeDefinition != null)
+            {
+                argTypes.add(typeDefinition.getQualifiedName());
+            }
+            else
+            {
+                argTypes.add(IASLanguageConstants.Object);
+            }
+        }
+
+        Command generateMethodCommand = new Command();
+        generateMethodCommand.setTitle("Generate Method");
+        generateMethodCommand.setCommand(ICommandConstants.GENERATE_METHOD);
+        generateMethodCommand.setArguments(Arrays.asList(
+            textDocument.getUri(),
+            diagnostic.getRange().getStart().getLine(),
+            diagnostic.getRange().getStart().getCharacter(),
+            diagnostic.getRange().getEnd().getLine(),
+            diagnostic.getRange().getEnd().getCharacter(),
+            functionName,
+            argTypes.toArray()
+        ));
+        commands.add(generateMethodCommand);
+    }
+
+    private void createCodeActionsForImport(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    {
+        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        if (offsetNode == null || !(offsetNode instanceof IIdentifierNode))
+        {
+            return;
+        }
+        IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
+        String typeString = identifierNode.getName();
+
+        List<IDefinition> types = ASTUtils.findTypesThatMatchName(typeString, compilationUnits);
         for (IDefinition definitionToImport : types)
         {
             Command command = createImportCommand(definitionToImport);
@@ -897,6 +1143,62 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         }
         return actionScriptRename(params);
+    }
+
+    /**
+     * Called when one of the commands registered in ActionScriptLanguageServer
+     * is executed.
+     */
+    public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
+    {
+        switch(params.getCommand())
+        {
+            case ICommandConstants.ADD_IMPORT:
+            {
+                return executeAddImportCommand(params);
+            }
+            case ICommandConstants.ADD_MXML_NAMESPACE:
+            {
+                return executeAddMXMLNamespaceCommand(params);
+            }
+            case ICommandConstants.ORGANIZE_IMPORTS_IN_URI:
+            {
+                return executeOrganizeImportsInUriCommand(params);
+            }
+            case ICommandConstants.ORGANIZE_IMPORTS_IN_DIRECTORY:
+            {
+                return executeOrganizeImportsInDirectoryCommand(params);
+            }
+            case ICommandConstants.GENERATE_GETTER_AND_SETTER:
+            {
+                return executeGenerateGetterAndSetterCommand(params, true, true);
+            }
+            case ICommandConstants.GENERATE_GETTER:
+            {
+                return executeGenerateGetterAndSetterCommand(params, true, false);
+            }
+            case ICommandConstants.GENERATE_SETTER:
+            {
+                return executeGenerateGetterAndSetterCommand(params, false, true);
+            }
+            case ICommandConstants.GENERATE_LOCAL_VARIABLE:
+            {
+                return executeGenerateLocalVariableCommand(params);
+            }
+            case ICommandConstants.GENERATE_FIELD_VARIABLE:
+            {
+                return executeGenerateFieldVariableCommand(params);
+            }
+            case ICommandConstants.GENERATE_METHOD:
+            {
+                return executeGenerateMethodCommand(params);
+            }
+            default:
+            {
+                System.err.println("Unknown command: " + params.getCommand());
+                return CompletableFuture.completedFuture(new Object());
+            }
+        }
     }
 
     /**
@@ -1089,6 +1391,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         currentProjectOptions = projectConfigStrategy.getOptions();
     }
 
+    private String nodeToContainingPackageName(IASNode node)
+    {
+        IASNode currentNode = node;
+        String containingPackageName = null;
+        while(currentNode != null && containingPackageName == null)
+        {
+            containingPackageName = currentNode.getPackageName();
+            currentNode = currentNode.getParent();
+        }
+        return containingPackageName;
+    }
+
     private CompletionList actionScriptCompletion(TextDocumentPositionParams position)
     {
         IASNode offsetNode = getOffsetNode(position);
@@ -1118,6 +1432,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return new CompletionList();
         }
 
+        String containingPackageName = nodeToContainingPackageName(offsetNode);
+
         //variable types
         if (offsetNode instanceof IVariableNode)
         {
@@ -1132,7 +1448,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         || (line == nameExpression.getEndLine() && column > nameExpression.getEndColumn())
                         || (line == typeNode.getLine() && column <= typeNode.getColumn()))
                 {
-                    autoCompleteTypes(offsetNode, result);
+                    autoCompleteTypes(offsetNode, containingPackageName, result);
                 }
                 return result;
             }
@@ -1143,7 +1459,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IVariableNode variableNode = (IVariableNode) parentNode;
             if (offsetNode == variableNode.getVariableTypeNode())
             {
-                autoCompleteTypes(parentNode, result);
+                autoCompleteTypes(parentNode, containingPackageName, result);
                 return result;
             }
         }
@@ -1162,7 +1478,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         && line <= typeNode.getLine()
                         && column <= typeNode.getColumn())
                 {
-                    autoCompleteTypes(offsetNode, result);
+                    autoCompleteTypes(offsetNode, containingPackageName, result);
                     return result;
                 }
             }
@@ -1173,7 +1489,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IFunctionNode functionNode = (IFunctionNode) parentNode;
             if (offsetNode == functionNode.getReturnTypeNode())
             {
-                autoCompleteTypes(parentNode, result);
+                autoCompleteTypes(parentNode, containingPackageName, result);
                 return result;
             }
         }
@@ -1185,7 +1501,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (functionCallNode.getNameNode() == offsetNode
                     && functionCallNode.isNewExpression())
             {
-                autoCompleteTypes(parentNode, result);
+                autoCompleteTypes(parentNode, containingPackageName, result);
                 return result;
             }
         }
@@ -1193,7 +1509,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordNewID)
         {
-            autoCompleteTypes(nodeAtPreviousOffset, result);
+            autoCompleteTypes(nodeAtPreviousOffset, containingPackageName, result);
             return result;
         }
         //as and is keyword types
@@ -1205,7 +1521,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IBinaryOperatorNode binaryOperatorNode = (IBinaryOperatorNode) parentNode;
             if (binaryOperatorNode.getRightOperandNode() == offsetNode)
             {
-                autoCompleteTypes(parentNode, result);
+                autoCompleteTypes(parentNode, containingPackageName, result);
                 return result;
             }
         }
@@ -1214,7 +1530,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && (nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_AsID
                 || nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_IsID))
         {
-            autoCompleteTypes(nodeAtPreviousOffset, result);
+            autoCompleteTypes(nodeAtPreviousOffset, containingPackageName, result);
             return result;
         }
         //class extends keyword
@@ -1223,7 +1539,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, result);
+            autoCompleteTypes(offsetNode, containingPackageName, result);
             return result;
         }
         //class implements keyword
@@ -1232,7 +1548,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordImplementsID)
         {
-            autoCompleteTypes(offsetNode, result);
+            autoCompleteTypes(offsetNode, containingPackageName, result);
             return result;
         }
         //interface extends keyword
@@ -1241,7 +1557,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, result);
+            autoCompleteTypes(offsetNode, containingPackageName, result);
             return result;
         }
 
@@ -1407,27 +1723,28 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
 
         //local scope
+        IASNode currentNodeForScope = offsetNode;
         do
         {
             //just keep traversing up until we get a scoped node or run out of
             //nodes to check
-            if (offsetNode instanceof IScopedNode)
+            if (currentNodeForScope instanceof IScopedNode)
             {
-                IScopedNode scopedNode = (IScopedNode) offsetNode;
+                IScopedNode scopedNode = (IScopedNode) currentNodeForScope;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, false, result);
+                autoCompleteScope(scopedNode, false, containingPackageName, result);
 
                 //include all public definitions
                 IASScope scope = scopedNode.getScope();
                 IDefinition definitionToSkip = scope.getDefinition();
-                autoCompleteDefinitions(result, false, false, null, definitionToSkip);
-
-                return result;
+                autoCompleteDefinitions(result, false, false, null, definitionToSkip, containingPackageName);
+                autoCompleteKeywords(scopedNode, result);
+                return result;                
             }
-            offsetNode = offsetNode.getParent();
+            currentNodeForScope = currentNodeForScope.getParent();
         }
-        while (offsetNode != null);
+        while (currentNodeForScope != null);
 
         return result;
     }
@@ -1638,6 +1955,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String detail = getDefinitionDetail(definition);
         List<Either<String,MarkedString>> contents = new ArrayList<>();
         contents.add(Either.forLeft(MARKDOWN_CODE_BLOCK_NEXTGENAS_START + detail + MARKDOWN_CODE_BLOCK_END));
+        String docs = getDocumentationForDefinition(definition, true);
+        if(docs != null)
+        {
+            contents.add(Either.forLeft(docs));
+        }
         result.setContents(contents);
         return CompletableFuture.completedFuture(result);
     }
@@ -1700,6 +2022,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             IIdentifierNode expressionNode = (IIdentifierNode) offsetNode;
             definition = expressionNode.resolve(currentProject);
+
+            if (definition == null)
+            {
+                if (expressionNode.getName().equals(IASKeywordConstants.SUPER))
+                {
+                    ITypeDefinition typeDefinition = expressionNode.resolveType(currentProject);
+                    if (typeDefinition instanceof IClassDefinition)
+                    {
+                        IClassDefinition classDefinition = (IClassDefinition) typeDefinition;
+                        definition = classDefinition.getConstructor();
+                    }
+                }
+            }
         }
 
         if (definition == null)
@@ -1910,6 +2245,50 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
     }
+    
+    private void referencesForDefinitionInCompilationUnit(IDefinition definition, ICompilationUnit compilationUnit, List<Location> result)
+    {
+        if (compilationUnit.getAbsoluteFilename().endsWith(MXML_EXTENSION))
+        {
+            IMXMLDataManager mxmlDataManager = currentWorkspace.getMXMLDataManager();
+            MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(compilationUnit.getAbsoluteFilename()));
+            IMXMLTagData rootTag = mxmlData.getRootTag();
+            if (rootTag != null)
+            {
+                ArrayList<ISourceLocation> units = new ArrayList<>();
+                findMXMLUnits(mxmlData.getRootTag(), definition, units);
+                for (ISourceLocation otherUnit : units)
+                {
+                    Location location = LanguageServerUtils.getLocationFromSourceLocation(otherUnit);
+                    if (location == null)
+                    {
+                        continue;
+                    }
+                    result.add(location);
+                }
+            }
+        }
+        IASNode ast;
+        try
+        {
+            ast = compilationUnit.getSyntaxTreeRequest().get().getAST();
+        }
+        catch (Exception e)
+        {
+            return;
+        }
+        ArrayList<IIdentifierNode> identifiers = new ArrayList<>();
+        findIdentifiers(ast, definition, identifiers);
+        for (IIdentifierNode otherNode : identifiers)
+        {
+            Location location = LanguageServerUtils.getLocationFromSourceLocation(otherNode);
+            if (location == null)
+            {
+                continue;
+            }
+            result.add(location);
+        }
+    }
 
     private void referencesForDefinition(IDefinition definition, List<Location> result)
     {
@@ -1919,46 +2298,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 continue;
             }
-            if (compilationUnit.getAbsoluteFilename().endsWith(MXML_EXTENSION))
-            {
-                IMXMLDataManager mxmlDataManager = currentWorkspace.getMXMLDataManager();
-                MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(compilationUnit.getAbsoluteFilename()));
-                IMXMLTagData rootTag = mxmlData.getRootTag();
-                if (rootTag != null)
-                {
-                    ArrayList<ISourceLocation> units = new ArrayList<>();
-                    findMXMLUnits(mxmlData.getRootTag(), definition, units);
-                    for (ISourceLocation otherUnit : units)
-                    {
-                        Location location = LanguageServerUtils.getLocationFromSourceLocation(otherUnit);
-                        if (location == null)
-                        {
-                            continue;
-                        }
-                        result.add(location);
-                    }
-                }
-            }
-            IASNode ast;
-            try
-            {
-                ast = compilationUnit.getSyntaxTreeRequest().get().getAST();
-            }
-            catch (Exception e)
-            {
-                continue;
-            }
-            ArrayList<IIdentifierNode> identifiers = new ArrayList<>();
-            findIdentifiers(ast, definition, identifiers);
-            for (IIdentifierNode otherNode : identifiers)
-            {
-                Location location = LanguageServerUtils.getLocationFromSourceLocation(otherNode);
-                if (location == null)
-                {
-                    continue;
-                }
-                result.add(location);
-            }
+            referencesForDefinitionInCompilationUnit(definition, compilationUnit, result);
         }
     }
 
@@ -2035,7 +2375,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
 
         //special case for the __AS3__ package
-        if (packageName != null && packageName.startsWith(PACKAGE_NAME_NO_IMPORT))
+        if (packageName != null && packageName.startsWith(UNDERSCORE_UNDERSCORE_AS3_PACKAGE))
         {
             //anything in this package is in the language namespace
             String fxNamespace = mxmlData.getRootTag().getMXMLDialect().getLanguageNamespace();
@@ -2078,8 +2418,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         return STAR;
     }
+    
+    private void autoCompleteKeyword(String keyword, CompletionList result)
+    {
+        CompletionItem item = new CompletionItem();
+        item.setKind(CompletionItemKind.Keyword);
+        item.setLabel(keyword);
+        result.getItems().add(item);
+    }
 
-    private void autoCompleteTypes(IASNode withNode, CompletionList result)
+    private void autoCompleteTypes(IASNode withNode, String containingPackageName, CompletionList result)
     {
         //start by getting the types in scope
         IASNode node = withNode;
@@ -2092,18 +2440,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IScopedNode scopedNode = (IScopedNode) node;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, true, result);
+                autoCompleteScope(scopedNode, true, containingPackageName, result);
                 break;
             }
             node = node.getParent();
         }
         while (node != null);
-        autoCompleteDefinitions(result, false, true, null, null);
+        autoCompleteDefinitions(result, false, true, null, null, containingPackageName);
     }
 
     private void autoCompleteTypesForMXML(CompletionList result)
     {
-        autoCompleteDefinitions(result, true, true, null, null);
+        autoCompleteDefinitions(result, true, true, null, null, null);
     }
 
     /**
@@ -2183,8 +2531,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     }
 
     private void autoCompleteDefinitions(CompletionList result, boolean forMXML,
-                                         boolean typesOnly, String packageName,
-                                         IDefinition definitionToSkip)
+                                         boolean typesOnly, String requiredPackageName,
+                                         IDefinition definitionToSkip, String containingPackageName)
     {
         String skipQualifiedName = null;
         if (definitionToSkip != null)
@@ -2212,7 +2560,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 boolean isType = definition instanceof ITypeDefinition;
                 if (!typesOnly || isType)
                 {
-                    if (packageName == null || definition.getPackageName().equals(packageName))
+                    if (requiredPackageName == null || definition.getPackageName().equals(requiredPackageName))
                     {
                         if (skipQualifiedName != null
                                 && skipQualifiedName.equals(definition.getQualifiedName()))
@@ -2235,13 +2583,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         }
                         else
                         {
-                            addDefinitionAutoCompleteActionScript(definition, result);
+                            addDefinitionAutoCompleteActionScript(definition, containingPackageName, result);
                         }
                     }
                 }
             }
         }
-        if (packageName == null || packageName.equals(""))
+        if (requiredPackageName == null || requiredPackageName.equals(""))
         {
             CompletionItem item = new CompletionItem();
             item.setKind(CompletionItemKind.Class);
@@ -2250,7 +2598,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void autoCompleteScope(IScopedNode node, boolean typesOnly, CompletionList result)
+    private void autoCompleteScope(IScopedNode node, boolean typesOnly, String containingPackageName, CompletionList result)
     {
         IScopedNode currentNode = node;
         ASScope scope = (ASScope) node.getScope();
@@ -2293,12 +2641,164 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                 continue;
                             }
                         }
-                        addDefinitionAutoCompleteActionScript(localDefinition, result);
+                        addDefinitionAutoCompleteActionScript(localDefinition, containingPackageName, result);
                     }
                 }
             }
             currentNode = currentNode.getContainingScope();
         }
+    }
+    
+    private void autoCompleteKeywords(IScopedNode node, CompletionList result)
+    {
+        boolean isInFunction = false;
+        boolean isInClass = false;
+        boolean isFileScope = false;
+        boolean isTypeScope = false;
+        boolean isClassScope = false;
+        boolean isPackageScope = false;
+
+        IASNode exactNode = node.getParent();
+        IScopedNode currentNode = node;
+        while (currentNode != null)
+        {
+            IASNode parentNode = currentNode.getParent();
+            if (parentNode instanceof IFunctionNode)
+            {
+                isInFunction = true;
+            }
+            if (parentNode instanceof IClassNode)
+            {
+                if (parentNode == exactNode)
+                {
+                    isClassScope = true;
+                }
+                isInClass = true;
+            }
+            if (parentNode instanceof IFileNode && parentNode == exactNode)
+            {
+                isFileScope = true;
+            }
+            if (parentNode instanceof ITypeNode && parentNode == exactNode)
+            {
+                isTypeScope = true;
+            }
+            if (parentNode instanceof IPackageNode && parentNode == exactNode)
+            {
+                isPackageScope = true;
+            }
+
+            currentNode = currentNode.getContainingScope();
+        }
+
+        autoCompleteKeyword(IASKeywordConstants.AS, result);
+        autoCompleteKeyword(IASKeywordConstants.BREAK, result);
+        autoCompleteKeyword(IASKeywordConstants.CASE, result);
+        autoCompleteKeyword(IASKeywordConstants.CATCH, result);
+        if (isPackageScope || isFileScope)
+        {
+            autoCompleteKeyword(IASKeywordConstants.CLASS, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.CONST, result);
+        autoCompleteKeyword(IASKeywordConstants.CONTINUE, result);
+        autoCompleteKeyword(IASKeywordConstants.DEFAULT, result);
+        autoCompleteKeyword(IASKeywordConstants.DELETE, result);
+        autoCompleteKeyword(IASKeywordConstants.DO, result);
+        if (isPackageScope || isFileScope)
+        {
+            autoCompleteKeyword(IASKeywordConstants.DYNAMIC, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.EACH, result);
+        autoCompleteKeyword(IASKeywordConstants.ELSE, result);
+        if (isPackageScope || isFileScope)
+        {
+            autoCompleteKeyword(IASKeywordConstants.EXTENDS, result);
+            autoCompleteKeyword(IASKeywordConstants.FINAL, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.FINALLY, result);
+        autoCompleteKeyword(IASKeywordConstants.FOR, result);
+        autoCompleteKeyword(IASKeywordConstants.FUNCTION, result);
+        if (isTypeScope)
+        {
+            //get keyword can only be used in a class/interface
+            autoCompleteKeyword(IASKeywordConstants.GET, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.GOTO, result);
+        autoCompleteKeyword(IASKeywordConstants.IF, result);
+        if (isPackageScope || isFileScope)
+        {
+            autoCompleteKeyword(IASKeywordConstants.IMPLEMENTS, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.IMPORT, result);
+        autoCompleteKeyword(IASKeywordConstants.IN, result);
+        autoCompleteKeyword(IASKeywordConstants.INCLUDE, result);
+        autoCompleteKeyword(IASKeywordConstants.INSTANCEOF, result);
+        if (isPackageScope || isFileScope)
+        {
+            autoCompleteKeyword(IASKeywordConstants.INTERFACE, result);
+        }
+        if (!isInFunction)
+        {
+            //namespaces can't be in functions
+            autoCompleteKeyword(IASKeywordConstants.INTERNAL, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.IS, result);
+        autoCompleteKeyword(IASKeywordConstants.NAMESPACE, result);
+        if (isClassScope)
+        {
+            //native keyword may only be used for class members
+            autoCompleteKeyword(IASKeywordConstants.NATIVE, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.NEW, result);
+        if (isClassScope)
+        {
+            //override keyword may only be used for class members
+            autoCompleteKeyword(IASKeywordConstants.OVERRIDE, result);
+        }
+        if (isFileScope)
+        {
+            //a package can only be defined directly in a file
+            autoCompleteKeyword(IASKeywordConstants.PACKAGE, result);
+        }
+        if (isPackageScope || isClassScope)
+        {
+            //namespaces can't be in functions
+            autoCompleteKeyword(IASKeywordConstants.PRIVATE, result);
+            autoCompleteKeyword(IASKeywordConstants.PROTECTED, result);
+            autoCompleteKeyword(IASKeywordConstants.PUBLIC, result);
+        }
+        if (isInFunction)
+        {
+            //can only return from a function
+            autoCompleteKeyword(IASKeywordConstants.RETURN, result);
+        }
+        if (isTypeScope)
+        {
+            //set keyword can only be used in a class/interface
+            autoCompleteKeyword(IASKeywordConstants.SET, result);
+        }
+        if (isClassScope)
+        {
+            //static keyword may only be used for class members
+            autoCompleteKeyword(IASKeywordConstants.STATIC, result);
+        }
+        if (isInFunction && isInClass)
+        {
+            //can only be used in functions that are in classes
+            autoCompleteKeyword(IASKeywordConstants.SUPER, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.SWITCH, result);
+        if (isInFunction)
+        {
+            //this should only be used in functions
+            autoCompleteKeyword(IASKeywordConstants.THIS, result);
+        }
+        autoCompleteKeyword(IASKeywordConstants.THROW, result);
+        autoCompleteKeyword(IASKeywordConstants.TRY, result);
+        autoCompleteKeyword(IASKeywordConstants.TYPEOF, result);
+        autoCompleteKeyword(IASKeywordConstants.VAR, result);
+        autoCompleteKeyword(IASKeywordConstants.WHILE, result);
+        autoCompleteKeyword(IASKeywordConstants.WITH, result);
     }
 
     private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, CompletionList result)
@@ -2327,7 +2827,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             String packageName = memberAccessToPackageName(memberAccess);
             if (packageName != null)
             {
-                autoCompleteDefinitions(result, false, false, packageName, null);
+                autoCompleteDefinitions(result, false, false, packageName, null, null);
                 return;
             }
         }
@@ -2743,7 +3243,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             else //actionscript
             {
-                addDefinitionAutoCompleteActionScript(localDefinition, result);
+                addDefinitionAutoCompleteActionScript(localDefinition, null, result);
             }
         }
     }
@@ -2863,7 +3363,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return prefix;
     }
 
-    private void addDefinitionAutoCompleteActionScript(IDefinition definition, CompletionList result)
+    private void addDefinitionAutoCompleteActionScript(IDefinition definition, String containingPackageName, CompletionList result)
     {
         if (definition.getBaseName().startsWith(VECTOR_HIDDEN_PREFIX))
         {
@@ -2873,8 +3373,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         item.setKind(getDefinitionKind(definition));
         item.setDetail(getDefinitionDetail(definition));
         item.setLabel(definition.getBaseName());
+        String docs = getDocumentationForDefinition(definition, false);
+        if (docs != null)
+        {
+            item.setDocumentation(docs);
+        }
         boolean isInPackage = !definition.getQualifiedName().equals(definition.getBaseName());
-        if (isInPackage)
+        if (isInPackage && (containingPackageName == null || !definition.getPackageName().equals(containingPackageName)))
         {
             Command command = createImportCommand(definition);
             if (command != null)
@@ -2895,6 +3400,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         item.setKind(getDefinitionKind(definition));
         item.setDetail(getDefinitionDetail(definition));
         item.setLabel(definition.getBaseName());
+        String docs = getDocumentationForDefinition(definition, false);
+        if (docs != null)
+        {
+            item.setDocumentation(docs);
+        }
         if (prefix != null)
         {
             item.setInsertText(prefix + IMXMLCoreConstants.colon + definition.getBaseName());
@@ -2904,6 +3414,58 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         }
         result.getItems().add(item);
+    }
+    
+    private String getDocumentationForParameter(IParameterDefinition definition, boolean useMarkdown)
+    {
+        IDefinition parentDefinition = definition.getParent();
+        if (!(parentDefinition instanceof IFunctionDefinition))
+        {
+            return null;
+        }
+        IFunctionDefinition functionDefinition = (IFunctionDefinition) parentDefinition;
+        VSCodeASDocComment comment = (VSCodeASDocComment) functionDefinition.getExplicitSourceComment();
+        if (comment == null)
+        {
+            return null;
+        }
+        comment.compile(useMarkdown);
+        Collection<IASDocTag> paramTags = comment.getTagsByName(ASDOC_TAG_PARAM);
+        if (paramTags == null)
+        {
+            return null;
+        }
+        String paramName = definition.getBaseName();
+        for (IASDocTag paramTag : paramTags)
+        {
+            String description = paramTag.getDescription();
+            if (description.startsWith(paramName + " "))
+            {
+                return description.substring(paramName.length() + 1);
+            }
+        }
+        return null;
+    }
+    
+    private String getDocumentationForDefinition(IDefinition definition, boolean useMarkdown)
+    {
+        if (!(definition instanceof IDocumentableDefinition))
+        {
+            return null;
+        }
+        IDocumentableDefinition documentableDefinition = (IDocumentableDefinition) definition;
+        VSCodeASDocComment comment = (VSCodeASDocComment) documentableDefinition.getExplicitSourceComment();
+        if (comment == null)
+        {
+            return null;
+        }
+        comment.compile(useMarkdown);
+        String description = comment.getDescription();
+        if (description == null)
+        {
+            return null;
+        }
+        return description;
     }
 
     private CompletionItemKind getDefinitionKind(IDefinition definition)
@@ -2937,15 +3499,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String packageName = definition.getPackageName();
         if (packageName == null
                 || packageName.isEmpty()
-                || packageName.startsWith(PACKAGE_NAME_NO_IMPORT))
+                || packageName.startsWith(UNDERSCORE_UNDERSCORE_AS3_PACKAGE))
         {
+            //don't even bother with these things that don't need importing
             return null;
         }
         String qualifiedName = definition.getQualifiedName();
         Command importCommand = new Command();
         importCommand.setTitle("Import " + qualifiedName);
-        importCommand.setCommand(COMMAND_IMPORT);
-        importCommand.setArguments(Arrays.asList(qualifiedName, importStartIndex, importEndIndex));
+        importCommand.setCommand(ICommandConstants.ADD_IMPORT);
+        importCommand.setArguments(Arrays.asList(
+            qualifiedName,
+            importRange.uri,
+            importRange.startIndex,
+            importRange.endIndex
+        ));
         return importCommand;
     }
 
@@ -2953,8 +3521,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     {
         Command xmlnsCommand = new Command();
         xmlnsCommand.setTitle("Add Namespace " + uri);
-        xmlnsCommand.setCommand(COMMAND_XMLNS);
-        xmlnsCommand.setArguments(Arrays.asList(prefix, uri, namespaceStartIndex, namespaceEndIndex));
+        xmlnsCommand.setCommand(ICommandConstants.ADD_MXML_NAMESPACE);
+        xmlnsCommand.setArguments(Arrays.asList(
+            prefix,
+            uri,
+            namespaceUri,
+            namespaceStartIndex,
+            namespaceEndIndex
+        ));
         return xmlnsCommand;
     }
 
@@ -3061,8 +3635,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 return;
             }
 
-            Position position = new Position();
-            offsetToLineAndCharacter(reader, nameOffset, position);
+            Position position = LanguageServerUtils.getPositionFromOffset(reader, nameOffset);
             nameLine = position.getLine();
             nameColumn = position.getCharacter();
         }
@@ -3162,18 +3735,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             return result;
         }
-        IDefinition parentDefinition = definition.getParent();
-        if (parentDefinition != null && parentDefinition instanceof IPackageDefinition)
-        {
-            if (languageClient != null)
-            {
-                MessageParams message = new MessageParams();
-                message.setType(MessageType.Info);
-                message.setMessage("You cannot rename this element.");
-                languageClient.showMessage(message);
-            }
-            return result;
-        }
+        Path originalDefinitionFilePath = null;
+        Path newDefinitionFilePath = null;
         for (ICompilationUnit compilationUnit : compilationUnits)
         {
             if (compilationUnit == null || compilationUnit instanceof SWCCompilationUnit)
@@ -3238,10 +3801,72 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 continue;
             }
+
             URI uri = Paths.get(compilationUnit.getAbsoluteFilename()).toUri();
+            if (definitionIsMainDefinitionInCompilationUnit(compilationUnit, definition))
+            {
+                originalDefinitionFilePath = Paths.get(compilationUnit.getAbsoluteFilename());
+                String newBaseName = newName + "." + Files.getFileExtension(originalDefinitionFilePath.toFile().getName());
+                newDefinitionFilePath = originalDefinitionFilePath.getParent().resolve(newBaseName);
+                uri = newDefinitionFilePath.toUri();
+            }
             changes.put(uri.toString(), textEdits);
         }
+        if (newDefinitionFilePath != null)
+        {
+            //wait to actually rename the file because we need to be sure
+            //that finding the identifiers above still works with the old name
+            try
+            {
+                java.nio.file.Files.move(originalDefinitionFilePath, newDefinitionFilePath, StandardCopyOption.ATOMIC_MOVE);
+            }
+            catch(IOException e)
+            {
+                System.err.println("could not move file for rename: " + newDefinitionFilePath.toUri().toString());
+            }
+        }
         return result;
+    }
+
+    private boolean definitionIsMainDefinitionInCompilationUnit(ICompilationUnit unit, IDefinition definition)
+    {
+        IASScope[] scopes;
+        try
+        {
+            scopes = unit.getFileScopeRequest().get().getScopes();
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        for (IASScope scope : scopes)
+        {
+            for (IDefinition localDefinition : scope.getAllLocalDefinitions())
+            {
+                if (localDefinition instanceof IPackageDefinition)
+                {
+                    IPackageDefinition packageDefinition = (IPackageDefinition) localDefinition;
+                    IASScope packageScope = packageDefinition.getContainedScope();
+                    boolean mightBeConstructor = definition instanceof IFunctionDefinition;
+                    for (IDefinition localDefinition2 : packageScope.getAllLocalDefinitions())
+                    {
+                        if(localDefinition2 == definition)
+                        {
+                            return true;
+                        }
+                        if(mightBeConstructor && localDefinition2 instanceof IClassDefinition)
+                        {
+                            IClassDefinition classDefinition = (IClassDefinition) localDefinition2;
+                            if (classDefinition.getConstructor() == definition)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void findIdentifiers(IASNode node, IDefinition definition, List<IIdentifierNode> result)
@@ -3251,9 +3876,56 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (node instanceof IIdentifierNode)
             {
                 IIdentifierNode identifierNode = (IIdentifierNode) node;
-                if (identifierNode.resolve(currentProject) == definition)
+                IDefinition resolvedDefinition = identifierNode.resolve(currentProject);
+                if (resolvedDefinition == definition)
                 {
                     result.add(identifierNode);
+                }
+                else if (resolvedDefinition instanceof IClassDefinition
+                    && definition instanceof IFunctionDefinition
+                    && ((IFunctionDefinition) definition).isConstructor())
+                {
+                    //if renaming the constructor, also rename the class
+                    IClassDefinition classDefinition = (IClassDefinition) resolvedDefinition;
+                    IFunctionDefinition constructorDefinition = classDefinition.getConstructor();
+                    if (constructorDefinition != null && definition == constructorDefinition)
+                    {
+                        result.add(identifierNode);
+                    }
+                }
+                else if (resolvedDefinition instanceof IFunctionDefinition
+                    && ((IFunctionDefinition) resolvedDefinition).isConstructor()
+                    && definition instanceof IClassDefinition)
+                {
+                    //if renaming the class, also rename the constructor
+                    IClassDefinition classDefinition = (IClassDefinition) definition;
+                    IFunctionDefinition constructorDefinition = classDefinition.getConstructor();
+                    if (constructorDefinition != null && resolvedDefinition == constructorDefinition)
+                    {
+                        result.add(identifierNode);
+                    }
+                }
+                else if (resolvedDefinition instanceof ISetterDefinition
+                        && definition instanceof IGetterDefinition)
+                {
+                    //if renaming the getter, also rename the setter
+                    IGetterDefinition getterDefinition = (IGetterDefinition) definition;
+                    ISetterDefinition setterDefinition = getterDefinition.resolveSetter(currentProject);
+                    if (setterDefinition != null && resolvedDefinition == setterDefinition)
+                    {
+                        result.add(identifierNode);
+                    }
+                }
+                else if (resolvedDefinition instanceof IGetterDefinition
+                        && definition instanceof ISetterDefinition)
+                {
+                    //if renaming the setter, also rename the getter
+                    ISetterDefinition setterDefinition = (ISetterDefinition) definition;
+                    IGetterDefinition getterDefinition = setterDefinition.resolveGetter(currentProject);
+                    if (getterDefinition != null && resolvedDefinition == getterDefinition)
+                    {
+                        result.add(identifierNode);
+                    }
                 }
             }
             return;
@@ -3303,7 +3975,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         Range range = change.getRange();
         Position start = range.getStart();
         StringReader reader = new StringReader(sourceText);
-        int offset = lineAndCharacterToOffset(reader, start.getLine(), start.getCharacter());
+        int offset = LanguageServerUtils.getOffsetFromPosition(reader, start);
         return sourceText.substring(0, offset) + change.getText() + sourceText.substring(offset + change.getRangeLength());
     }
 
@@ -3478,6 +4150,34 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         String lastFilePath = files[files.length - 1];
         return Paths.get(lastFilePath);
+    }
+
+    private IASNode getAST(Path path)
+    {
+        ICompilationUnit unit = getCompilationUnit(path);
+        if (unit == null)
+        {
+            //no need to log this case because it can happen for reasons that
+            //should have been logged already
+            return null;
+        }
+        IASNode ast = null;
+        try
+        {
+            ast = unit.getSyntaxTreeRequest().get().getAST();
+        }
+        catch (InterruptedException e)
+        {
+            System.err.println("Interrupted while getting AST: " + path.toAbsolutePath().toString());
+            return null;
+        }
+        if (ast == null)
+        {
+            //we couldn't find the root node for this file
+            System.err.println("Could not find AST: " + path.toAbsolutePath().toString());
+            return null;
+        }
+        return ast;
     }
 
     private ICompilationUnit getCompilationUnit(Path path)
@@ -3726,6 +4426,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             project.setProblems(new ArrayList<>());
             currentWorkspace = project.getWorkspace();
+            currentWorkspace.setASDocDelegate(new VSCodeASDocDelegate());
             fileSpecGetter = new LanguageServerFileSpecGetter(currentWorkspace, sourceByPath);
         }
         else
@@ -3765,6 +4466,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (compilerOptions.jsLibraryPath != null)
         {
             appendPathCompilerOptions("--js-library-path+=", compilerOptions.jsLibraryPath, combinedOptions);
+        }
+        if (compilerOptions.swfVersion != -1)
+        {
+            combinedOptions.add("--swf-version=" + compilerOptions.swfVersion);
+        }
+        if (compilerOptions.targetPlayer != null)
+        {
+            combinedOptions.add("--target-player=" + compilerOptions.targetPlayer);
         }
         if (additionalOptions != null)
         {
@@ -4009,7 +4718,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     {
         URI uri = Paths.get(unit.getAbsoluteFilename()).toUri();
         PublishDiagnosticsParams publish = new PublishDiagnosticsParams();
-        publish.setDiagnostics(new ArrayList<>());
+        ArrayList<Diagnostic> diagnostics = new ArrayList<>();
+        publish.setDiagnostics(diagnostics);
         publish.setUri(uri.toString());
         codeProblemTracker.trackFileWithProblems(uri);
         ArrayList<ICompilerProblem> problems = new ArrayList<>();
@@ -4029,9 +4739,63 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             Diagnostic diagnostic = createDiagnosticWithoutRange();
             diagnostic.setSeverity(DiagnosticSeverity.Error);
             diagnostic.setMessage("A fatal error occurred while checking a file for problems: " + unit.getAbsoluteFilename());
-            publish.getDiagnostics().add(diagnostic);
+            diagnostics.add(diagnostic);
         }
+
+        if (sourceByPath.containsKey(Paths.get(uri)))
+        {
+            IASNode ast = null;
+            try
+            {
+                ast = unit.getSyntaxTreeRequest().get().getAST();
+            }
+            catch (Exception e)
+            {
+                //do nothing
+            }
+            if (ast != null)
+            {
+                addCodeGenerationHints(ast, diagnostics);
+            }
+        }
+
         return publish;
+    }
+
+    private void addCodeGenerationHints(IASNode node, ArrayList<Diagnostic> diagnostics)
+    {
+        if (node instanceof IVariableNode)
+        {
+            IVariableNode definitionNode = (IVariableNode) node;
+            IExpressionNode expressionNode = definitionNode.getNameExpressionNode();
+            IDefinition definition = expressionNode.resolve(currentProject);
+            if (definition instanceof IVariableDefinition
+                && !(definition instanceof IConstantDefinition)
+                && !(definition instanceof IAccessorDefinition))
+            {
+                //we want variables, but not constants or accessors
+                IVariableDefinition variableDefinition = (IVariableDefinition) definition;
+                if (variableDefinition.getVariableClassification().equals(VariableClassification.CLASS_MEMBER))
+                {
+                    Diagnostic generateGetterAndSetterHint = new Diagnostic();
+                    generateGetterAndSetterHint.setSeverity(DiagnosticSeverity.Hint);
+                    generateGetterAndSetterHint.setSource(node.getSourcePath());
+                    generateGetterAndSetterHint.setRange(LanguageServerUtils.getRangeFromSourceLocation(node));
+                    generateGetterAndSetterHint.setCode(ICommandHintCodes.GENERATE_GETTER_AND_SETTER);
+                    diagnostics.add(generateGetterAndSetterHint);
+                }
+            }
+        }
+        if (node instanceof IFunctionNode)
+        {
+            //a member can't be the child of a function, so no need to continue
+            return;
+        }
+        for (int i = 0, childCount = node.getChildCount(); i < childCount; i++)
+        {
+            IASNode child = node.getChild(i);
+            addCodeGenerationHints(child, diagnostics);
+        }
     }
 
     private Reader getReaderForPath(Path path)
@@ -4089,8 +4853,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
         currentOffset = -1;
-        importStartIndex = -1;
-        importEndIndex = -1;
+        importRange.uri = null;
+        importRange.startIndex = -1;
+        importRange.endIndex = -1;
         Path path = LanguageServerUtils.getPathFromLanguageServerURI(uri);
         if (path == null)
         {
@@ -4129,9 +4894,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        currentOffset = lineAndCharacterToOffset(new StringReader(code),
-                position.getLine(),
-                position.getCharacter());
+        currentOffset = LanguageServerUtils.getOffsetFromPosition(new StringReader(code), position);
         if (currentOffset == -1)
         {
             System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
@@ -4140,6 +4903,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
         //calculate the location for automatically generated xmlns tags
         IMXMLTagData rootTag = mxmlData.getRootTag();
+        if (rootTag == null)
+        {
+            return null;
+        }
         IMXMLTagAttributeData[] attributeDatas = rootTag.getAttributeDatas();
         for (IMXMLTagAttributeData attributeData : attributeDatas)
         {
@@ -4167,6 +4934,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 namespaceEndIndex = end;
             }
         }
+        namespaceUri = textDocument.getUri();
 
         IMXMLUnitData unitData = mxmlData.findContainmentReferenceUnit(currentOffset);
         IMXMLUnitData currentUnitData = unitData;
@@ -4181,8 +4949,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     IMXMLTextData textUnitData = (IMXMLTextData) unitData;
                     if (textUnitData.getTextType() == IMXMLTextData.TextType.CDATA)
                     {
-                        importStartIndex = textUnitData.getCompilableTextStart();
-                        importEndIndex = textUnitData.getCompilableTextEnd();
+                        importRange.startIndex = textUnitData.getCompilableTextStart();
+                        importRange.endIndex = textUnitData.getCompilableTextEnd();
                     }
                 }
                 return tagData;
@@ -4204,8 +4972,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //if we're in an <fx:Script> element, these will have been
             //previously calculated, so don't clear them
-            importStartIndex = -1;
-            importEndIndex = -1;
+            importRange.uri = null;
+            importRange.startIndex = -1;
+            importRange.endIndex = -1;
         }
         Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null)
@@ -4229,39 +4998,33 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        ICompilationUnit unit = getCompilationUnit(path);
-        if (unit == null)
-        {
-            //no need to log this case because it can happen for reasons that
-            //should have been logged already
-            return null;
-        }
-        IASNode ast = null;
-        try
-        {
-            ast = unit.getSyntaxTreeRequest().get().getAST();
-        }
-        catch (InterruptedException e)
-        {
-            System.err.println("Interrupted while getting AST: " + path.toAbsolutePath().toString());
-            return null;
-        }
+        IASNode ast = getAST(path);
         if (ast == null)
         {
-            //we couldn't find the root node for this file
-            System.err.println("Could not find AST: " + path.toAbsolutePath().toString());
             return null;
         }
 
-        currentOffset = lineAndCharacterToOffset(new StringReader(code),
-                position.getLine(),
-                position.getCharacter());
+        currentOffset = LanguageServerUtils.getOffsetFromPosition(new StringReader(code), position);
         if (currentOffset == -1)
         {
             System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
             return null;
         }
         IASNode offsetNode = getContainingNodeIncludingStart(ast, currentOffset);
+        importRange = getImportRange(offsetNode);
+        return offsetNode;
+    }
+    
+    private class ImportRange
+    {
+        public String uri = null;
+        public int startIndex = -1;
+        public int endIndex = -1;
+    }
+    
+    private ImportRange getImportRange(IASNode offsetNode)
+    {
+        ImportRange range = new ImportRange();
         if (offsetNode != null)
         {
             //if we have an offset node, try to find where imports may be added
@@ -4278,7 +5041,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         if (foundPackage)
                         {
                             //this is the node following the package
-                            importStartIndex = childNode.getAbsoluteStart();
+                            range.startIndex = childNode.getAbsoluteStart();
                             break;
                         }
                         if (childNode instanceof IPackageNode)
@@ -4292,10 +5055,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             else
             {
-                importEndIndex = packageNode.getAbsoluteEnd();
+                range.endIndex = packageNode.getAbsoluteEnd();
             }
+            range.uri = Paths.get(offsetNode.getSourcePath()).toUri().toString();
         }
-        return offsetNode;
+        return range;
     }
 
     private boolean containsWithStart(IASNode node, int offset)
@@ -4381,6 +5145,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //some attributes can have ActionScript completion, such as
             //events and properties with data binding
             IClassDefinition tagDefinition = (IClassDefinition) currentProject.resolveXMLNameToDefinition(tag.getXMLName(), tag.getMXMLDialect());
+            if (tagDefinition == null)
+            {
+                //we can't figure out which class the tag represents!
+                //maybe the user hasn't defined the tag's namespace or something
+                return null;
+            }
             IDefinition attributeDefinition = currentProject.resolveSpecifier(tagDefinition, attributeData.getShortName());
             if (attributeDefinition instanceof IEventDefinition)
             {
@@ -4552,7 +5322,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             detailBuilder.append(IASKeywordConstants.CLASS);
             detailBuilder.append(" ");
-            if (classDefinition.getPackageName().startsWith(PACKAGE_NAME_NO_IMPORT))
+            if (classDefinition.getPackageName().startsWith(UNDERSCORE_UNDERSCORE_AS3_PACKAGE))
             {
                 //classes like __AS3__.vec.Vector should not include the
                 //package name
@@ -4600,7 +5370,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IDefinition parentDefinition = variableDefinition.getParent();
             if (parentDefinition instanceof ITypeDefinition)
             {
-                //an IAccessoryDefinition actually extends both
+                //an IAccessorDefinition actually extends both
                 //IVariableDefinition and IFunctionDefinition 
                 if (variableDefinition instanceof IAccessorDefinition)
                 {
@@ -4954,24 +5724,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private IFunctionDefinition classDefinitionToConstructor(IClassDefinition definition)
-    {
-        IASScope scope = definition.getContainedScope();
-        Collection<IDefinition> definitions = scope.getAllLocalDefinitions();
-        for (IDefinition localDefinition : definitions)
-        {
-            if (localDefinition instanceof IFunctionDefinition)
-            {
-                IFunctionDefinition functionDefinition = (IFunctionDefinition) localDefinition;
-                if (functionDefinition.isConstructor())
-                {
-                    return functionDefinition;
-                }
-            }
-        }
-        return null;
-    }
-
     private void scopeToSymbols(IASScope scope, List<SymbolInformation> result)
     {
         Collection<IDefinition> definitions = scope.getAllLocalDefinitions();
@@ -5042,7 +5794,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             symbol.setKind(SymbolKind.Variable);
         }
-        symbol.setName(definition.getQualifiedName());
+        if (!definition.getQualifiedName().equals(definition.getBaseName()))
+        {
+            symbol.setContainerName(definition.getPackageName());
+        }
+        symbol.setName(definition.getBaseName());
         Location location = new Location();
         String sourcePath = definition.getSourcePath();
         if (sourcePath == null)
@@ -5065,7 +5821,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //node associated with them, so we need to figure this out from the
             //offset instead of a pre-calculated line and column -JT
             Reader definitionReader = getReaderForPath(definitionPath);
-            offsetToLineAndCharacter(definitionReader, definition.getNameStart(), start);
+            LanguageServerUtils.getPositionFromOffset(definitionReader, definition.getNameStart(), start);
             end.setLine(start.getLine());
             end.setCharacter(start.getCharacter());
         }
@@ -5084,98 +5840,518 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return symbol;
     }
 
-    private static void offsetToLineAndCharacter(Reader in, int targetOffset, Position result)
+    private CompletableFuture<Object> executeOrganizeImportsInDirectoryCommand(ExecuteCommandParams params)
     {
-        try
+        List<Object> args = params.getArguments();
+        Object uncastUri = args.get(0);
+        LinkedTreeMap<?,?> encodedUri = null;
+        if (uncastUri instanceof LinkedTreeMap<?,?>)
         {
-            int offset = 0;
-            int line = 0;
-            int character = 0;
+            encodedUri = (LinkedTreeMap<?,?>) uncastUri;
+        }
+        String uri = (String) encodedUri.get("external");
 
-            while (offset < targetOffset)
+        File rootDir = Paths.get(URI.create(uri)).toFile();
+        if (!rootDir.isDirectory())
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        ArrayList<File> directories = new ArrayList<>();
+        directories.add(rootDir);
+        for(int i = 0, dirCount = 1; i < dirCount; i++)
+        {
+            File currentDir = directories.get(i);
+            File[] files = currentDir.listFiles();
+            for (File file : files)
             {
-                int next = in.read();
-
-                if (next < 0)
+                if (file.isDirectory())
                 {
-                    result.setLine(line);
-                    result.setCharacter(line);
-                    return;
+                    //add this directory to the list to search
+                    directories.add(file);
+                    dirCount++;
+                    continue;
                 }
-                else
+                if (!file.getName().endsWith(AS_EXTENSION) && !file.getName().endsWith(MXML_EXTENSION))
                 {
-                    offset++;
-                    character++;
-
-                    if (next == '\n')
-                    {
-                        line++;
-                        character = 0;
-                    }
+                    continue;
                 }
+                organizeImportsInUri(file.toURI().toString());
             }
-
-            result.setLine(line);
-            result.setCharacter(character);
         }
-        catch (IOException e)
-        {
-            result.setLine(-1);
-            result.setCharacter(-1);
-        }
+        return CompletableFuture.completedFuture(new Object());
     }
 
-    private static int lineAndCharacterToOffset(Reader in, int targetLine, int targetCharacter)
+    private void organizeImportsInUri(String uri)
     {
+        Path pathForImport = Paths.get(URI.create(uri));
+        Reader reader = getReaderForPath(pathForImport);
+        String text = null;
         try
         {
-            int offset = 0;
-            int line = 0;
-            int character = 0;
-
-            while (line < targetLine)
-            {
-                int next = in.read();
-
-                if (next < 0)
-                {
-                    return offset;
-                }
-                else
-                {
-                    //don't skip \r here if line endings are \r\n in the file
-                    //there may be cases where the file line endings don't match
-                    //what the editor ends up rendering. skipping \r will help
-                    //that, but it will break other cases.
-                    offset++;
-
-                    if (next == '\n')
-                    {
-                        line++;
-                    }
-                }
-            }
-
-            while (character < targetCharacter)
-            {
-                int next = in.read();
-
-                if (next < 0)
-                {
-                    return offset;
-                }
-                else
-                {
-                    offset++;
-                    character++;
-                }
-            }
-
-            return offset;
+            text = IOUtils.toString(reader);
         }
         catch (IOException e)
         {
-            return -1;
+            return;
         }
+
+        Set<String> missingNames = null;
+        Set<String> importsToAdd = null;
+        Set<IImportNode> importsToRemove = null;
+        IASNode ast = getAST(pathForImport);
+        if (ast != null)
+        {
+            missingNames = ASTUtils.findUnresolvedIdentifiersToImport(ast, currentProject);
+            importsToRemove = ASTUtils.findImportNodesToRemove(ast, currentProject);
+        }
+        if (missingNames != null)
+        {
+            importsToAdd = new HashSet<>();
+            for (String missingName : missingNames)
+            {
+                List<IDefinition> types = ASTUtils.findTypesThatMatchName(missingName, compilationUnits);
+                if (types.size() == 1)
+                {
+                    //add an import only if exactly one type is found
+                    importsToAdd.add(types.get(0).getQualifiedName());
+                }
+            }
+        }
+        List<TextEdit> edits = ImportTextEditUtils.organizeImports(text, importsToRemove, importsToAdd);
+        if(edits == null || edits.size() == 0)
+        {
+            //no edit required
+            return;
+        }
+        
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        changes.put(uri, edits);
+        workspaceEdit.setChanges(changes);
+        editParams.setEdit(workspaceEdit);
+
+        languageClient.applyEdit(editParams);
+    }
+    
+    private CompletableFuture<Object> executeOrganizeImportsInUriCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        Object uncastUri = args.get(0);
+        LinkedTreeMap<?,?> encodedUri = null;
+        if (uncastUri instanceof LinkedTreeMap<?,?>)
+        {
+            encodedUri = (LinkedTreeMap<?,?>) uncastUri;
+        }
+
+        String uri = (String) encodedUri.get("external");
+        organizeImportsInUri(uri);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+    
+    private CompletableFuture<Object> executeAddImportCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        String qualifiedName = (String) args.get(0);
+        String uri = (String) args.get(1);
+        int startIndex = ((Double) args.get(2)).intValue();
+        int endIndex = ((Double) args.get(3)).intValue();
+        if(qualifiedName == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        Path pathForImport = Paths.get(URI.create(uri));
+        String text = sourceByPath.get(pathForImport);
+        TextEdit edit = ImportTextEditUtils.createTextEditForImport(qualifiedName, text, startIndex, endIndex);
+        if(edit == null)
+        {
+            //no edit required
+            return CompletableFuture.completedFuture(new Object());
+        }
+
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        List<TextEdit> edits = new ArrayList<>();
+        edits.add(edit);
+        changes.put(uri, edits);
+        workspaceEdit.setChanges(changes);
+        editParams.setEdit(workspaceEdit);
+
+        languageClient.applyEdit(editParams);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+    
+    private CompletableFuture<Object> executeAddMXMLNamespaceCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        String nsPrefix = (String) args.get(0);
+        String nsUri = (String) args.get(1);
+        String uri = (String) args.get(2);
+        int startIndex = ((Double) args.get(3)).intValue();
+        int endIndex = ((Double) args.get(4)).intValue();
+        if(nsPrefix == null || nsUri == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        Path pathForImport = Paths.get(URI.create(uri));
+        String text = sourceByPath.get(pathForImport);
+        TextEdit edit = ImportTextEditUtils.createTextEditForMXMLNamespace(nsPrefix, nsUri, text, startIndex, endIndex);
+        if(edit == null)
+        {
+            //no edit required
+            return CompletableFuture.completedFuture(new Object());
+        }
+
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        List<TextEdit> edits = new ArrayList<>();
+        edits.add(edit);
+        changes.put(uri, edits);
+        workspaceEdit.setChanges(changes);
+        editParams.setEdit(workspaceEdit);
+
+        languageClient.applyEdit(editParams);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+    
+    private CompletableFuture<Object> executeGenerateLocalVariableCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        String uri = (String) args.get(0);
+        int startLine = ((Double) args.get(1)).intValue();
+        int startChar = ((Double) args.get(2)).intValue();
+        int endLine = ((Double) args.get(3)).intValue();
+        int endChar = ((Double) args.get(4)).intValue();
+        String name = (String) args.get(5);
+
+        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
+        Position position = new Position(startLine, startChar);
+        IASNode offsetNode = getOffsetNode(identifier, position);
+        if (offsetNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IFunctionNode functionNode = (IFunctionNode) offsetNode.getAncestorOfType(IFunctionNode.class);
+        if (functionNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IScopedNode scopedNode = functionNode.getScopedNode();
+        if (scopedNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+
+        String newLine = "\n";
+        String indent = "\t\t\t";
+        StringBuilder builder = new StringBuilder();
+        builder.append(newLine);
+        builder.append(indent);
+        builder.append("var ");
+        builder.append(name);
+        builder.append(":");
+        builder.append(IASLanguageConstants.Object);
+        builder.append(";");
+        
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        editParams.setEdit(workspaceEdit);
+
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        workspaceEdit.setChanges(changes);
+
+        List<TextEdit> edits = new ArrayList<>();
+        changes.put(uri, edits);
+
+        TextEdit edit = new TextEdit();
+        edits.add(edit);
+
+        edit.setNewText(builder.toString());
+        Position editPosition = new Position(scopedNode.getLine(), scopedNode.getColumn() + 1);
+        edit.setRange(new Range(editPosition, editPosition));
+
+        languageClient.applyEdit(editParams);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+    
+    private CompletableFuture<Object> executeGenerateFieldVariableCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        String uri = (String) args.get(0);
+        int startLine = ((Double) args.get(1)).intValue();
+        int startChar = ((Double) args.get(2)).intValue();
+        int endLine = ((Double) args.get(3)).intValue();
+        int endChar = ((Double) args.get(4)).intValue();
+        String name = (String) args.get(5);
+        
+        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
+        Position position = new Position(startLine, startChar);
+        IASNode offsetNode = getOffsetNode(identifier, position);
+        if (offsetNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IClassNode classNode = (IClassNode) offsetNode.getAncestorOfType(IClassNode.class);
+        if (classNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IScopedNode scopedNode = classNode.getScopedNode();
+        if (scopedNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+
+        String indent = "\t\t";
+        String newLine = "\n";
+        StringBuilder builder = new StringBuilder();
+        builder.append(newLine);
+        builder.append(indent);
+        builder.append("public var ");
+        builder.append(name);
+        builder.append(":");
+        builder.append(IASLanguageConstants.Object);
+        builder.append(";");
+        builder.append(newLine);
+        
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        editParams.setEdit(workspaceEdit);
+
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        workspaceEdit.setChanges(changes);
+
+        List<TextEdit> edits = new ArrayList<>();
+        changes.put(uri, edits);
+
+        TextEdit edit = new TextEdit();
+        edits.add(edit);
+
+        edit.setNewText(builder.toString());
+        Position editPosition = new Position(scopedNode.getEndLine(), 0);
+        edit.setRange(new Range(editPosition, editPosition));
+
+        languageClient.applyEdit(editParams);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+    
+    private CompletableFuture<Object> executeGenerateMethodCommand(ExecuteCommandParams params)
+    {
+        List<Object> args = params.getArguments();
+        String uri = (String) args.get(0);
+        int startLine = ((Double) args.get(1)).intValue();
+        int startChar = ((Double) args.get(2)).intValue();
+        int endLine = ((Double) args.get(3)).intValue();
+        int endChar = ((Double) args.get(4)).intValue();
+        String name = (String) args.get(5);
+        Object uncastArgs = args.get(6);
+        ArrayList<?> methodArgs = null;
+        if (uncastArgs instanceof ArrayList<?>)
+        {
+            methodArgs = (ArrayList<?>) uncastArgs;
+        }
+
+        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
+        Position position = new Position(startLine, startChar);
+        IASNode offsetNode = getOffsetNode(identifier, position);
+        if (offsetNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IClassNode classNode = (IClassNode) offsetNode.getAncestorOfType(IClassNode.class);
+        if (classNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        IScopedNode scopedNode = classNode.getScopedNode();
+        if (scopedNode == null)
+        {
+            return CompletableFuture.completedFuture(new Object());
+        }
+        
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+        
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        editParams.setEdit(workspaceEdit);
+
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        workspaceEdit.setChanges(changes);
+
+        List<TextEdit> edits = new ArrayList<>();
+        changes.put(uri, edits);
+
+        TextEdit edit = new TextEdit();
+        edits.add(edit);
+
+        String newLine = "\n";
+        String indent = "\t\t";
+        StringBuilder builder = new StringBuilder();
+        builder.append(newLine);
+        builder.append(indent);
+        builder.append("private function ");
+        builder.append(name);
+        builder.append("(");
+        ImportRange importRange = getImportRange(offsetNode);
+        Path pathForImport = Paths.get(URI.create(uri));
+        String fileText = sourceByPath.get(pathForImport);
+        for (int i = 0, count = methodArgs.size(); i < count; i++)
+        {
+            if(i > 0)
+            {
+                builder.append(", ");
+            }
+            String type = (String) methodArgs.get(i);
+            builder.append("param");
+            builder.append(i);
+            builder.append(":");
+            int index = type.lastIndexOf(".");
+            if (index == -1)
+            {
+                builder.append(type);
+            }
+            else
+            {
+                builder.append(type.substring(index + 1));
+            }
+            TextEdit importEdit = ImportTextEditUtils.createTextEditForImport(type, fileText, importRange.startIndex, importRange.endIndex);
+            if (importEdit != null)
+            {
+                edits.add(importEdit);
+            }
+        }
+        builder.append(")");
+        builder.append(":");
+        builder.append(IASLanguageConstants.void_);
+        builder.append(newLine);
+        builder.append(indent);
+        builder.append("{");
+        builder.append(newLine);
+        builder.append(indent);
+        builder.append("}");
+        builder.append(newLine);
+
+        edit.setNewText(builder.toString());
+        Position editPosition = new Position(scopedNode.getEndLine(), 0);
+        edit.setRange(new Range(editPosition, editPosition));
+
+        languageClient.applyEdit(editParams);
+
+        return CompletableFuture.completedFuture(new Object());
+    }
+
+    private CompletableFuture<Object> executeGenerateGetterAndSetterCommand(ExecuteCommandParams params, boolean generateGetter, boolean generateSetter)
+    {
+        List<Object> args = params.getArguments();
+        String uri = (String) args.get(0);
+        int startLine = ((Double) args.get(1)).intValue();
+        int startChar = ((Double) args.get(2)).intValue();
+        int endLine = ((Double) args.get(3)).intValue();
+        int endChar = ((Double) args.get(4)).intValue();
+        String name = (String) args.get(5);
+        String namespace = (String) args.get(6);
+        boolean isStatic = (Boolean) args.get(7);
+        String type = (String) args.get(8);
+        String assignedValue = (String) args.get(9);
+
+        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
+
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        editParams.setEdit(workspaceEdit);
+
+        HashMap<String,List<TextEdit>> changes = new HashMap<>();
+        workspaceEdit.setChanges(changes);
+
+        List<TextEdit> edits = new ArrayList<>();
+        changes.put(uri, edits);
+
+        TextEdit edit = new TextEdit();
+        edits.add(edit);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("private ");
+        if(isStatic)
+        {
+            builder.append("static ");
+        }
+        builder.append("var _" + name);
+        if(type != null && type.length() > 0)
+        {
+            builder.append(":" + type);
+        }
+        if(assignedValue != null)
+        {
+            builder.append(" = " + assignedValue);
+        }
+        builder.append(";");
+        if (generateGetter)
+        {
+            builder.append("\n\n");
+            builder.append("\t\t" + namespace + " ");
+            if(isStatic)
+            {
+                builder.append("static ");
+            }
+            builder.append("function get " + name + "()");
+            if(type != null && type.length() > 0)
+            {
+                builder.append(":" + type);
+            }
+            builder.append("\n");
+            builder.append("\t\t{\n");
+            builder.append("\t\t\treturn _" + name +";\n");
+            builder.append("\t\t}");
+        }
+        if (generateSetter)
+        {
+            builder.append("\n\n");
+            builder.append("\t\t" + namespace + " ");
+            if(isStatic)
+            {
+                builder.append("static ");
+            }
+            builder.append("function set " + name + "(value");
+            if(type != null && type.length() > 0)
+            {
+                builder.append(":" + type);
+            }
+            builder.append("):void\n");
+            builder.append("\t\t{\n");
+            builder.append("\t\t\t_" + name + " = value;\n");
+            builder.append("\t\t}");
+        }
+        edit.setNewText(builder.toString());
+
+        Position startPosition = new Position(startLine, startChar);
+        Position endPosition = new Position(endLine, endChar);
+
+        //we may need to adjust the end position to include the semi-colon
+        try
+        {
+            Path path = Paths.get(URI.create(uri));
+            String text = IOUtils.toString(getReaderForPath(path));
+            int offset = LanguageServerUtils.getOffsetFromPosition(new StringReader(text), endPosition);
+            if (offset < text.length() && text.charAt(offset) == ';')
+            {
+                endPosition.setCharacter(endChar + 1);
+            }
+        }
+        catch (IOException e)
+        {
+            //ignore
+        }
+
+        edit.setRange(new Range(startPosition, endPosition));
+
+        languageClient.applyEdit(editParams);
+        return CompletableFuture.completedFuture(new Object());
     }
 }

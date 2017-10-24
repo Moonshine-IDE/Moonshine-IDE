@@ -204,13 +204,9 @@ package actionScripts.ui.editor.text
 			if (event.keyCode == 25) event.preventDefault();
 		}
 
-		public function setCompletionData(start:int, end:int, s:String, importChange:TextChangeInsert = null):void
+		public function setCompletionData(start:int, end:int, s:String):void
 		{
 			var lineIndex:int = model.selectedLineIndex;
-			if(importChange)
-			{
-				lineIndex += (importChange.textLines.length - 1);
-			}
 
 			var change:TextChangeBase = new TextChangeInsert(
 				lineIndex,
@@ -221,14 +217,6 @@ package actionScripts.ui.editor.text
 			if (start < end) {
 				change = new TextChangeMulti(
 					new TextChangeRemove(lineIndex, start, lineIndex, end),
-					change
-				);
-			}
-
-			if(importChange)
-			{
-				change = new TextChangeMulti(
-					importChange,
 					change
 				);
 			}
