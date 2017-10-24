@@ -101,7 +101,6 @@ package actionScripts.ui.editor.text
 			_model = value;
 			drawText();
 			traceFocus = _model.debuggerLineSelection;
-			trace(_model.debuggerLineSelection);
 		}
 		
 		private var _horizontalOffset:int = 0;
