@@ -228,6 +228,11 @@
 			protected function onInitialized(event:FlexEvent):void
 			{
 				if (showAsRequiresSDKNotification && !ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT) currentState = "permissionRequestOSX";
+				else if (showAsHelperDownloader)
+				{
+					//currentState = "permissionRequestOSX";
+					onPermittedOSX();
+				}
 				else if (showAsRequiresSDKNotification) 
 				{
 					currentState = "requiresSDKNotification";
