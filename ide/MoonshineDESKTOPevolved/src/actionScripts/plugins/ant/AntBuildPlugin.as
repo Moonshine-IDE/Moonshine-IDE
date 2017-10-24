@@ -169,8 +169,7 @@ package actionScripts.plugins.ant
 		override public function resetSettings():void
 		{
 			model.antScriptFile = null;
-			if (ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT) antHomePath = ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT.nativePath;
-			else antHomePath = "";
+			antHomePath = "";
 		}
 		
 		private function reset():void 
