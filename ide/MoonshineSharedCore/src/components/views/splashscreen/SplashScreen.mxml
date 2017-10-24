@@ -29,82 +29,64 @@
 	
 	<fx:Script>
 		<![CDATA[
-		import mx.collections.ArrayCollection;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.core.IDataRenderer;
-		import mx.effects.Fade;
-		import mx.events.EffectEvent;
-		import mx.events.FlexEvent;
-		import mx.events.ResizeEvent;
-		import mx.managers.PopUpManager;
-
-		import spark.effects.Move;
-
-		import actionScripts.controllers.DataAgent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.LayoutEvent;
-		import actionScripts.events.MenuEvent;
-		import actionScripts.events.NewProjectEvent;
-		import actionScripts.events.OpenFileEvent;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.events.SettingsEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-		import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
-		import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-		import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-		import actionScripts.plugin.templating.TemplatingHelper;
-		import actionScripts.ui.menu.MenuPlugin;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.TemplateVO;
-		import actionScripts.valueObjects.URLDescriptorVO;
-
-		import components.popup.Authentication;
-		import components.popup.AuthenticationPopUp;
-		import components.renderers.TemplateItemRenderer;
-
-		import flashx.textLayout.events.FlowElementMouseEvent;
-
-		public var plugin: SplashScreenPlugin;
-
-		[Bindable] private var model:IDEModel = IDEModel.getInstance();
-
-		protected var loader: DataAgent;
-		protected var recentOpenedProjectObject:Object;
-		protected var authPopup:AuthenticationPopUp;
-		protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-
-		private var renderedCount:int;
-		private var doAtOnce:Boolean;
-		private var isNoSDKMessageShown:Boolean;
-
-		public function get longLabel():String
-		{
-			return "But what is it good for?";
-		}
-
-		public function isChanged():Boolean
-		{
-			return false;
-		}
-
-		public function isEmpty():Boolean
-		{
-			return true;
-		}
-
-		public function save():void
-		{
-		}
-
-		public function setProjectTemplates(value:ArrayCollection):void
-		{
-			var projectTemplateCollection:ArrayCollection = new ArrayCollection();
-			var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
-			for each (var i:FileLocation in value)
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.core.IDataRenderer;
+			import mx.effects.Fade;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.effects.Move;
+			
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.LayoutEvent;
+			import actionScripts.events.MenuEvent;
+			import actionScripts.events.NewProjectEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
+			import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+			import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.TemplateVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.Authentication;
+			import components.popup.AuthenticationPopUp;
+			import components.renderers.TemplateItemRenderer;
+			
+			import flashx.textLayout.events.FlowElementMouseEvent;
+			
+			[Embed("/elements/images/icoThumbUp.png")]
+			private const ICON_THUMB_UP:Class;
+			[Embed("/elements/images/icoThumbDown.png")]
+			private const ICON_THUMB_DOWN:Class;
+			
+			public var plugin: SplashScreenPlugin;
+			
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			
+			protected var loader: DataAgent;
+			protected var recentOpenedProjectObject:Object;
+			protected var authPopup:AuthenticationPopUp;
+			protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			
+			private var renderedCount:int;
+			private var doAtOnce:Boolean;
+			private var isNoSDKMessageShown:Boolean;
+			
+			public function get longLabel():String
 			{
 				var tmpDescripFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".txt");
 				if (tmpDescripFile.exists)
@@ -609,9 +591,9 @@
 			/>
 		<s:HGroup autoLayout="true" verticalAlign="middle">
 			<s:Button label="This is great!"
-					  styleName="lightButton"/>
+					  icon="{ICON_THUMB_UP}" height="26"/>
 			<s:Button label="I'm having some problems"
-					  styleName="lightButton"/>
+					  icon="{ICON_THUMB_DOWN}" height="26"/>
 		</s:HGroup>
 	</s:VGroup>
 	
