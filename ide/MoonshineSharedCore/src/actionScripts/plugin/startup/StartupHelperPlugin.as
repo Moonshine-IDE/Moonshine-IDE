@@ -42,7 +42,8 @@ package actionScripts.plugin.startup
 		override public function get description():String	{ return "Startup Helper Plugin. Esc exits."; }
 		
 		public static const EVENT_TYPEAHEAD_REQUIRES_SDK:String = "EVENT_TYPEAHEAD_REQUIRES_SDK";
-		public static const EVENT_SDK_HELPER_DOWNLOAD_REQUEST:String = "EVENT_SDK_HELPER_DOWNLOAD_REQUEST";
+		public static const EVENT_SDK_SETUP_REQUEST:String = "EVENT_SDK_SETUP_REQUEST";
+		public static const EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST:String = "EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST";
 		public static const EVENT_SDK_UNZIP_REQUEST:String = "EVENT_SDK_UNZIP_REQUEST";
 		public static const EVENT_RESTART_HELPING:String = "EVENT_RESTART_HELPING";
 		
@@ -71,7 +72,8 @@ package actionScripts.plugin.startup
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
 			{
-				dispatcher.addEventListener(EVENT_SDK_HELPER_DOWNLOAD_REQUEST, onSDKhelperDownloadRequest, false, 0, true);
+				dispatcher.addEventListener(EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
+				dispatcher.addEventListener(EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
 			
 			preInitHelping();
@@ -197,6 +199,7 @@ package actionScripts.plugin.startup
 		private function triggerSDKNotificationView(showAsDownloader:Boolean, showAsRequiresSDKNotif:Boolean):void
 		{
 			sdkNotificationView = new SDKUnzipConfirmPopup;
+			sdkNotificationView.showAsHelperDownloader = showAsDownloader;
 			sdkNotificationView.horizontalCenter = sdkNotificationView.verticalCenter = 0;
 			sdkNotificationView.addEventListener(Event.CLOSE, onSDKNotificationClosed, false, 0, true);
 			FlexGlobals.topLevelApplication.addElement(sdkNotificationView);
@@ -255,11 +258,15 @@ package actionScripts.plugin.startup
 		 */
 		private function onSDKNotificationClosed(event:Event):void
 		{
+			var wasShowingAsHelperDownloaderOnly:Boolean = sdkNotificationView.showAsHelperDownloader;
+			
 			sdkNotificationView.removeEventListener(Event.CLOSE, onSDKNotificationClosed);
 			FlexGlobals.topLevelApplication.removeElement(sdkNotificationView);
 			
 			var isSDKSetupSectionOpened:Boolean = sdkNotificationView.isSDKSetupSectionOpened;
 			sdkNotificationView = null;
+			
+			if (wasShowingAsHelperDownloaderOnly) return;
 			
 			// restart rest of the checkings
 			if (!isSDKSetupSectionOpened) startHelping();
@@ -339,10 +346,18 @@ package actionScripts.plugin.startup
 		 * On helper application download requrest from File menu
 		 * in OSX
 		 */
-		private function onSDKhelperDownloadRequest(event:Event):void
+		private function onSDKSetupRequest(event:Event):void
 		{
 			sequenceIndex = 0;
 			checkDefaultSDK(true);
+		}
+		
+		/**
+		 * On Moonshine App Store Helper request from top menu
+		 */
+		private function onMoonshineHelperDownloadRequest(event:Event):void
+		{
+			triggerSDKNotificationView(true, false);
 		}
 	}
 }
