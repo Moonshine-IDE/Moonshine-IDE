@@ -118,19 +118,15 @@ package actionScripts.plugins.ant
 			GlobalEventDispatcher.getInstance().addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
 			GlobalEventDispatcher.getInstance().addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
 			GlobalEventDispatcher.getInstance().addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
-			if (!_antHomePath && ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT) 
-			{
-				antHomePath = ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT.nativePath;
-				
-				var thisSettings: Vector.<ISetting> = getSettingsList();
-				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-				pathSettingToDefaultSDK.stringValue = antHomePath;
-				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.ant::AntBuildPlugin", thisSettings));
-			}
 		}
 		
 		public function get antHomePath():String
 		{
+			if ((_antHomePath == "" || !_antHomePath) && ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT) 
+			{
+				antHomePath = ConstantsCoreVO.IS_HELPER_DOWNLOADED_ANT_PRESENT.nativePath;
+			}
+			
 			return _antHomePath;
 		}
 		public function set antHomePath(value:String):void
