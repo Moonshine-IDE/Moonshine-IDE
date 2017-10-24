@@ -42,9 +42,10 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.xsocket.MaxReadSizeExceededException;
 import org.xsocket.connection.IDataHandler;
+import org.xsocket.connection.IDisconnectHandler;
 import org.xsocket.connection.INonBlockingConnection;
 
-public class xSocketDataHandler implements IDataHandler
+public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 {
     private static final String osName = System.getProperty("os.name").toLowerCase();
     private static final boolean isMacOs = osName.startsWith("mac os x");
@@ -71,8 +72,18 @@ public class xSocketDataHandler implements IDataHandler
         return content;
     }
 
+    public boolean onDisconnect(INonBlockingConnection nbc)
+    {
+        System.exit(0);
+        return true;
+    }
+
     public boolean onData(INonBlockingConnection nbc) throws IOException, BufferUnderflowException, ClosedChannelException, MaxReadSizeExceededException
     {
+        if(!nbc.isOpen())
+        {
+            return false;
+        }
         try
         {
             int index = nbc.indexOf("\0");
