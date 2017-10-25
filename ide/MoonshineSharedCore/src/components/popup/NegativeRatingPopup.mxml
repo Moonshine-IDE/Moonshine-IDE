@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="400" width="500" minHeight="200" height="250" autoLayout="true"
+			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+			   title="How can we help you?" skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			
+			import mx.utils.StringUtil;
+			
+			import spark.events.TextOperationEvent;
+			
+			import components.skins.ResizableTitleWindowSkin;
+			
+			protected function onTextInput(event:TextOperationEvent):void
+			{
+				btnReport.enabled = StringUtil.trim(txtProblem.text).length != 0;
+			}
+			
+			protected function onFeatureRequest(event:MouseEvent):void
+			{
+				navigateToURL(new URLRequest("https://github.com/prominic/Moonshine-IDE/issues"), '_blank');
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" height="100%"
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+		<s:Label text="I want to report an issue:"/>
+		<s:TextArea id="txtProblem" 
+					width="100%" height="100%"
+					prompt="Describe your problem here.."
+					change="onTextInput(event)"/>
+	</s:VGroup>
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Request a feature to GitHub"
+				  styleName="darkButton"
+				  click="onFeatureRequest(event)"/>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnReport" 
+				  label="Report"
+				  styleName="darkButton"
+				  enabled="false"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

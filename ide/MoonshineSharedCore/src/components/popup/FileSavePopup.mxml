@@ -239,9 +239,11 @@
 			<s:Label id="lbl_ext" 
 					 height="100%" verticalAlign="middle"/>
 		</s:HGroup>
-		<mx:HRule width="100%"/>
-		<s:Button label="Save" id="btn_save"
-				  styleName="lightButtonTight" width="80"
-				  click="saveFileHandler(event)"/>
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Save" id="btn_save"
+				  styleName="darkButton"
+				  click="saveFileHandler(event)"/>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

@@ -23,7 +23,6 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
-			   backgroundColor="0xf5f5f5"
 			   width="600" height="240" minWidth="300" minHeight="150" title="Select SDK" skinClass="components.skins.ResizableTitleWindowSkin"
 			   creationComplete="onCreateionCompletes()" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
 	<fx:Script>
@@ -119,35 +118,33 @@
 		]]>
 	</fx:Script>
 
-	<s:VGroup width="100%" height="100%">
-		<s:DataGrid id="dgSDKs" 
-					dataProvider="{model.userSavedSDKs}"
-					width="100%" height="100%"
-					sortableColumns="false" borderVisible="false"
-					contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6" doubleClickEnabled="true"
-					rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
-			<s:columns>
-				<s:ArrayList>
-					<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"/>
-					<s:GridColumn headerText="Path" dataField="path" width="300"/>
-					<s:GridColumn headerText="" dataField="status" minWidth="100"/>
-				</s:ArrayList>
-			</s:columns>
-		</s:DataGrid>
-		<s:HGroup width="100%"
-				  paddingBottom="6" paddingRight="6" paddingLeft="6" paddingTop="4">
-			<s:Button label="+"
-					  click="onSDKAddition(event, true)"
-					  width="30"/>
-			<s:Button label="-"
-					  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}" width="30"
-					  click="onSDKDeletion(event)"/>
-			<s:Button label="Edit"
-					  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}" 
-					  click="onSDKAddition(event, false)"/>
-			<s:Spacer width="100%"/>
-			<s:Button label="Select"
-					  enabled="{dgSDKs.selectedItem}" click="onEntryDoubleClicked(event)"/>
-		</s:HGroup>
-	</s:VGroup>
+	<s:DataGrid id="dgSDKs" 
+				dataProvider="{model.userSavedSDKs}"
+				width="100%" height="100%"
+				sortableColumns="false" borderVisible="false"
+				contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6" doubleClickEnabled="true"
+				rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"/>
+				<s:GridColumn headerText="Path" dataField="path" width="300"/>
+				<s:GridColumn headerText="" dataField="status" minWidth="100"/>
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="+"
+				  click="onSDKAddition(event, true)"
+				  styleName="darkButton"/>
+		<s:Button label="-"
+				  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}"
+				  click="onSDKDeletion(event)" styleName="darkButton"/>
+		<s:Button label="Edit"
+				  enabled="{dgSDKs.selectedItem &amp;&amp; dgSDKs.selectedItem.status != SDKUtils.BUNDLED}" 
+				  click="onSDKAddition(event, false)" styleName="darkButton"/>
+		<s:Spacer width="100%"/>
+		<s:Button label="Select"
+				  enabled="{dgSDKs.selectedItem}" click="onEntryDoubleClicked(event)" styleName="darkButton"/>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
