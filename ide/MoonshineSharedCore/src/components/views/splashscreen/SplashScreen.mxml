@@ -34,6 +34,7 @@
 			import mx.core.FlexGlobals;
 			import mx.core.IDataRenderer;
 			import mx.effects.Fade;
+			import mx.events.CloseEvent;
 			import mx.events.EffectEvent;
 			import mx.events.FlexEvent;
 			import mx.events.ResizeEvent;
@@ -64,6 +65,8 @@
 			
 			import components.popup.Authentication;
 			import components.popup.AuthenticationPopUp;
+			import components.popup.NegativeRatingPopup;
+			import components.popup.PositiveRatingPopup;
 			import components.renderers.TemplateItemRenderer;
 			
 			import flashx.textLayout.events.FlowElementMouseEvent;
@@ -81,6 +84,8 @@
 			protected var recentOpenedProjectObject:Object;
 			protected var authPopup:AuthenticationPopUp;
 			protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			protected var positiveRatingPopup:PositiveRatingPopup;
+			protected var negativeRatingPopup:NegativeRatingPopup;
 			
 			private var renderedCount:int;
 			private var doAtOnce:Boolean;
@@ -510,6 +515,18 @@
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 			}
 			
+			protected function onPositiveRating(event:MouseEvent):void
+			{
+				positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
+				PopUpManager.centerPopUp(positiveRatingPopup);
+			}
+			
+			protected function onNegativeRating(event:MouseEvent):void
+			{
+				negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
+				PopUpManager.centerPopUp(negativeRatingPopup);
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -595,9 +612,11 @@
 			/>
 		<s:HGroup autoLayout="true" verticalAlign="middle">
 			<s:Button label="This is great!"
-					  icon="{ICON_THUMB_UP}" height="26"/>
+					  icon="{ICON_THUMB_UP}" height="26"
+					  click="onPositiveRating(event)"/>
 			<s:Button label="I'm having some problems"
-					  icon="{ICON_THUMB_DOWN}" height="26"/>
+					  icon="{ICON_THUMB_DOWN}" height="26"
+					  click="onNegativeRating(event)"/>
 		</s:HGroup>
 	</s:VGroup>
 	
