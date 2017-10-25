@@ -58,80 +58,27 @@
 		/**
 		 * @private
 		 */
-		override protected function initializationComplete():void {
+		override protected function initializationComplete():void 
+		{
 			useChromeColor = true;
 			if (hostComponent.minWidth != 0) minWidth = hostComponent.minWidth;
 			if (hostComponent.minHeight != 0) minHeight = hostComponent.minHeight;
 			super.initializationComplete();
 		}
 
-		/**
-		 * @private
-		 */
-		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
-			if (getStyle("borderVisible") == true) {
-				border.visible = true;
-				background.left = background.top = background.right = background.bottom = 1;
-				contents.left = contents.top = contents.right = contents.bottom = 1;
-			} else {
-				border.visible = false;
-				background.left = background.top = background.right = background.bottom = 0;
-				contents.left = contents.top = contents.right = contents.bottom = 0;
-			}
-
-			dropShadow.visible = getStyle("dropShadowVisible");
-
-			var cr:Number = getStyle("cornerRadius");
-			var withControls:Boolean =
-				(currentState == "disabledWithControlBar" ||
-				currentState == "normalWithControlBar" ||
-				currentState == "inactiveWithControlBar");
-
-			if (cornerRadius != cr) {
-				cornerRadius = cr;
-
-				dropShadow.tlRadius = cornerRadius;
-				dropShadow.trRadius = cornerRadius;
-				dropShadow.blRadius = withControls ? cornerRadius : 0;
-				dropShadow.brRadius = withControls ? cornerRadius : 0;
-
-				setPartCornerRadii(topMaskRect, withControls);
-				setPartCornerRadii(border, withControls);
-				setPartCornerRadii(background, withControls);
-			}
-
-			if (bottomMaskRect)
-				setPartCornerRadii(bottomMaskRect, withControls);
-
-			borderStroke.color = getStyle("borderColor");
-			borderStroke.alpha = getStyle("borderAlpha");
-			backgroundFill.color = getStyle("backgroundColor");
-			backgroundFill.alpha = getStyle("backgroundAlpha");
-
-			super.updateDisplayList(unscaledWidth, unscaledHeight);
-		}
-
-		/**
-		 * @private
-		 */
-		private function setPartCornerRadii(target:Rect, includeBottom:Boolean):void {
-			target.topLeftRadiusX = cornerRadius;
-			target.topRightRadiusX = cornerRadius;
-			target.bottomLeftRadiusX = includeBottom ? cornerRadius : 0;
-			target.bottomRightRadiusX = includeBottom ? cornerRadius : 0;
-		}
-
 		private var cornerRadius:Number;
 	</fx:Script>
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.ui.resizableControls.ResizeManager;
 			import mx.events.FlexEvent;
+			
+			import actionScripts.ui.resizableControls.ResizeManager;
 
 			[Bindable]
 			public var resizeManager:ResizeManager;
 
-			private function created(event:FlexEvent):void {
+			private function created(event:FlexEvent):void 
+			{
 				if (hostComponent.minWidth == 0) {
 					hostComponent.minWidth = minWidth;
 				}
@@ -155,29 +102,13 @@
 		<s:State name="disabledWithControlBar"
 			stateGroups="withControls"/>
 	</s:states>
+	
+	<s:BorderContainer cornerRadius="6" borderColor="0x2d2d2d"
+					   top="0" left="0" right="0" bottom="0">
+		<s:backgroundFill>
+			<s:SolidColor color="0xa0a0a0"/>
+		</s:backgroundFill>
 
-	<!--- drop shadow can't be hittable so it stays sibling of other graphics @private-->
-	<s:RectangularDropShadow id="dropShadow"
-		bottom="0"
-		color="0x000000"
-		left="0"
-		right="0"
-		top="0"
-		alpha="0.32"
-		alpha.inactiveGroup="0.22"
-		angle="90"
-		blurX="20"
-		blurY="20"
-		distance="11"
-		distance.inactiveGroup="7"/>
-
-	<!--- drop shadow can't be hittable so all other graphics go in this group -->
-	<s:Group bottom="0"
-		left="0"
-		right="0"
-		top="0">
-
-		<!--- top group mask @private-->
 		<s:Group id="topGroupMask"
 			bottom="1"
 			left="1"
@@ -188,9 +119,10 @@
 				bottom="0"
 				left="0"
 				right="0"
-				top="0">
+				top="0"
+				radiusX="6" radiusY="6">
 				<s:fill>
-					<s:SolidColor alpha="0"/>
+					<s:SolidColor color="0xffff00" alpha="0"/>
 				</s:fill>
 			</s:Rect>
 		</s:Group>
@@ -198,56 +130,28 @@
 		<!--- bottom group mask @private-->
 		<s:Group id="bottomGroupMask"
 			includeIn="withControls"
-			bottom="1"
-			left="1"
-			right="1"
-			top="1">
-			<!--- @private-->
-			<s:Rect id="bottomMaskRect"
-				bottom="0"
-				left="0"
-				right="0"
-				top="0">
-				<s:fill>
-					<s:SolidColor alpha="0"/>
-				</s:fill>
-			</s:Rect>
-		</s:Group>
-
-		<!--- layer 1: border @private -->
-		<s:Rect id="border"
 			bottom="0"
 			left="0"
 			right="0"
 			top="0">
-			<s:stroke>
-				<!--- Defines the TitleWindowSkin class's border stroke. The default value is 1. -->
-				<s:SolidColorStroke id="borderStroke"
-					weight="1"/>
-			</s:stroke>
-		</s:Rect>
-
-		<!-- layer 2: background fill -->
-		<!--- Defines the appearance of the TitleWindowSkin class's background. -->
-		<s:Rect id="background"
-			bottom="1"
-			left="1"
-			right="1"
-			top="1">
-			<s:fill>
-				<!--- Defines the TitleWindowSkin class's background fill. The default color is 0xFFFFFF. -->
-				<s:SolidColor id="backgroundFill"
-					color="#FFFFFF"/>
-			</s:fill>
-		</s:Rect>
+			<s:Rect id="bottomMaskRect"
+				bottom="0"
+				left="0"
+				right="0"
+				top="0" radiusX="6" radiusY="6">
+				<s:fill>
+					<s:SolidColor color="0xffff00" alpha="0"/>
+				</s:fill>
+			</s:Rect>
+		</s:Group>
 
 		<!-- layer 3: contents -->
 		<!--- Contains the vertical stack of title bar content and control bar. -->
 		<s:Group id="contents"
-			bottom="1"
-			left="1"
-			right="1"
-			top="1">
+			bottom="0"
+			left="0"
+			right="0"
+			top="0">
 			<s:layout>
 				<s:VerticalLayout horizontalAlign="justify"
 					gap="0"/>
@@ -255,62 +159,6 @@
 			<!--- @private -->
 			<s:Group id="topGroup"
 				mask="{topGroupMask}">
-
-				<!--- layer 0: title bar fill @private -->
-				<s:Rect id="tbFill"
-					bottom="1"
-					left="0"
-					right="0"
-					top="0">
-					<s:fill>
-						<s:LinearGradient rotation="90">
-							<s:GradientEntry color="0xD2D2D2"
-								color.inactiveGroup="0xEAEAEA"/>
-							<s:GradientEntry color="0x9A9A9A"
-								color.inactiveGroup="0xCECECE"/>
-						</s:LinearGradient>
-					</s:fill>
-				</s:Rect>
-
-				<!--- layer 1: title bar highlight @private -->
-				<s:Rect id="tbHilite"
-					bottom="0"
-					left="0"
-					right="0"
-					top="0">
-					<s:stroke>
-						<s:LinearGradientStroke rotation="90"
-							weight="1">
-							<s:GradientEntry color="0xE6E6E6"/>
-							<s:GradientEntry color="0xFFFFFF"
-								alpha="0.22"/>
-						</s:LinearGradientStroke>
-					</s:stroke>
-					<s:fill>
-						<s:LinearGradient rotation="90">
-							<s:GradientEntry color="0xFFFFFF"
-								alpha="0.15"/>
-							<s:GradientEntry color="0xFFFFFF"
-								alpha="0.15"
-								ratio="0.44"/>
-							<s:GradientEntry color="0xFFFFFF"
-								alpha="0"
-								ratio="0.4401"/>
-						</s:LinearGradient>
-					</s:fill>
-				</s:Rect>
-
-				<!--- layer 2: title bar divider @private -->
-				<s:Rect id="tbDiv"
-					height="1"
-					bottom="0"
-					left="0"
-					right="0">
-					<s:fill>
-						<s:SolidColor color="0x000000"
-							alpha="0.75"/>
-					</s:fill>
-				</s:Rect>
 
 				<!-- layer 3: text -->
 				<!--- @copy spark.components.Panel#titleDisplay -->
@@ -321,6 +169,7 @@
 					left="9"
 					right="36"
 					top="1"
+					color="0x292929"
 					verticalAlign="middle"
 					maxDisplayedLines="1"/>
 
@@ -334,11 +183,10 @@
 
 				<!--- @copy spark.components.TitleWindow#closeButton -->
 				<s:Button id="closeButton"
-					height="15"
-					width="15"
-					right="7"
-					top="7"
-					skinClass="spark.skins.spark.TitleWindowCloseButtonSkin"/>
+					height="27"
+					width="27"
+					right="0"
+					skinClass="elements.skins.MoonshineTitleWindowCloseButtonSkin"/>
 			</s:Group>
 
 			<!--
@@ -358,7 +206,8 @@
 			<s:Group id="bottomGroup"
 				includeIn="withControls"
 				minHeight="0"
-				minWidth="0">
+				minWidth="0"
+				bottom="0">
 
 				<s:Group bottom="0"
 					left="0"
@@ -370,65 +219,51 @@
 					<s:Rect height="1"
 						left="0"
 						right="0"
-						top="0"
-						alpha="0.22">
+						top="0">
 						<s:fill>
-							<s:SolidColor color="0x000000"/>
+							<s:SolidColor color="0x303030"/>
 						</s:fill>
 					</s:Rect>
-
+					
 					<!-- layer 1: control bar highlight -->
 					<s:Rect bottom="0"
 						left="0"
 						right="0"
-						top="1">
-						<s:stroke>
-							<s:LinearGradientStroke rotation="90"
-								weight="1">
-								<s:GradientEntry color="0xFFFFFF"/>
-								<s:GradientEntry color="0xD8D8D8"/>
-							</s:LinearGradientStroke>
-						</s:stroke>
-					</s:Rect>
-
-					<!-- layer 2: control bar fill -->
-					<s:Rect bottom="1"
-						left="1"
-						right="1"
-						top="2">
+						top="0">
 						<s:fill>
-							<s:LinearGradient rotation="90">
-								<s:GradientEntry color="0xEDEDED"/>
-								<s:GradientEntry color="0xCDCDCD"/>
-							</s:LinearGradient>
+							<s:SolidColor color="0x444444"/>
 						</s:fill>
 					</s:Rect>
+					
+					<s:filters>
+						<s:DropShadowFilter
+							alpha=".5" angle="90" blurX="0" blurY="7" strength="1" distance="1" inner="true"/>
+					</s:filters>
 				</s:Group>
 
 				<!--- @copy spark.components.Panel#controlBarGroup -->
 				<s:Group id="controlBarGroup"
-					minHeight="0"
+					minHeight="41"
 					minWidth="0"
-					bottom="1"
+					bottom="0"
 					left="0"
 					right="0"
-					top="1">
+					top="0">
 					<s:layout>
 						<s:HorizontalLayout paddingBottom="7"
 							paddingLeft="10"
 							paddingRight="10"
 							paddingTop="7"
-							gap="10"/>
+							gap="10" verticalAlign="middle" horizontalAlign="right"/>
 					</s:layout>
 				</s:Group>
 			</s:Group>
 		</s:Group>
-	</s:Group>
 
-	<skins:ResizeHandleLines id="resizeHandle"
-		enabled="{resizeManager.enabled}"
-		bottom="1"
-		right="1"
-		visible="{resizeManager.enabled}"/>
-
+		<skins:ResizeHandleLines id="resizeHandle"
+			enabled="{resizeManager.enabled}"
+			bottom="1"
+			right="1"
+			visible="{resizeManager.enabled}"/>
+	</s:BorderContainer>
 </s:SparkSkin>

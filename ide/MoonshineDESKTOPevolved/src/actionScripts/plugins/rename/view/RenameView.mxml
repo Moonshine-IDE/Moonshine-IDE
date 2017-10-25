@@ -91,23 +91,20 @@
 		]]>
 	</fx:Script>
 
-	<s:VGroup height="100%" width="100%"
-		gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
-		horizontalAlign="center">
-
-		<s:VGroup width="100%" height="100%">
-			<s:Label text="Rename symbol '{oldName}' and its usages to:"/>
-			<s:TextInput id="nameInput" width="100%"
-				change="nameInput_onChange(event)"
-				enter="nameInput_onEnter(event)"/>
-		</s:VGroup>
-		<s:HGroup>
-			<s:Button label="Rename"
-				styleName="lightButtonTight" width="80"
+	<s:VGroup width="100%" height="100%"
+			  paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+		<s:Label text="Rename symbol '{oldName}' and its usages to:"/>
+		<s:TextInput id="nameInput" width="100%"
+			change="nameInput_onChange(event)"
+			enter="nameInput_onEnter(event)"/>
+	</s:VGroup>
+	
+	<resizabletitlewindow:controlBarContent>
+		<s:Button label="Rename"
+				styleName="darkButton"
 				click="renameButton_onClick(event)"/>
 			<s:Button label="Cancel"
-				styleName="lightButtonTight" width="80"
+				styleName="darkButton"
 				click="cancelButton_onClick(event)"/>
-		</s:HGroup>
-	</s:VGroup>
+	</resizabletitlewindow:controlBarContent>
 </resizabletitlewindow:ResizableTitleWindow>

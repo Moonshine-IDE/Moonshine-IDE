@@ -84,7 +84,7 @@
             {
                 if (!sdkPopup)
                 {
-                    sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
+                    sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, true) as SDKSelectorPopup;
                     sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
                     sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
                     PopUpManager.centerPopUp(sdkPopup);

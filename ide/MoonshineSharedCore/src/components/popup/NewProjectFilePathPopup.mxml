@@ -93,10 +93,11 @@
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="Source file should be immediate children of main source folder" width="100%"/>
 		</s:HGroup>
-		<mx:HRule width="100%" height="1" strokeColor="0xdadada"
-				  horizontalCenter="0"/>
-		<s:Button id="btnCreate" label="Select"
-				  styleName="lightButtonTight" width="80"
-				  click="onCreateButton(event)" enabled="{lstResources.selectedIndex != -1}"/>
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="btnCreate" label="Select"
+				  styleName="darkButton"
+				  click="onCreateButton(event)" enabled="{lstResources.selectedIndex != -1}"/>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

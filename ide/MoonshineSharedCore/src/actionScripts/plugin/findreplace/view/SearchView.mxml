@@ -66,49 +66,22 @@
 	
 	<s:VGroup width="100%" height="100%"
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
-		<s:HGroup width="100%"
-				  verticalAlign="middle" gap="4">
-			<view:StatusTextInput
-				id="findInput"
-				prompt="Find"
-				width="100%"
-				styleName="textInputStatus"
-				creationComplete="{focusInput()}"
-				enter="find()"
-				tabIndex="1"
-				text="{initialSearchString}"/>
-			<s:Button
-				width="204"
-				label="Find"
-				styleName="lightButtonTight"
-				click="find()" />
-			<!--<s:Button
-				width="100"
-				label="Replace/Find"
-				height="100%" 
-				styleName="lightButtonTight"
-				click="replaceOne(true)" />-->
-		</s:HGroup>
-		<s:HGroup width="100%"
-				  verticalAlign="middle" gap="4">
-			<view:PromptTextInput
-				id="replaceInput" 
-				prompt="Replace"
-				width="100%"
-				styleName="textInput"
-				enter="replaceOne(true)"
-				tabIndex="2"/>
-			<s:Button
-				width="100"
-				label="Replace/Find"
-				styleName="lightButtonTight"
-				click="replaceOne(true)" />
-			<s:Button
-				width="100"
-				label="Replace All" 
-				styleName="lightButtonTight"
-				click="replaceAll()" />
-		</s:HGroup>
+		<view:StatusTextInput
+			id="findInput"
+			prompt="Find"
+			width="100%"
+			styleName="textInputStatus"
+			creationComplete="{focusInput()}"
+			enter="find()"
+			tabIndex="1"
+			text="{initialSearchString}"/>
+		<view:PromptTextInput
+			id="replaceInput" 
+			prompt="Replace"
+			width="100%"
+			styleName="textInput"
+			enter="replaceOne(true)"
+			tabIndex="2"/>
 		<s:HGroup width="100%"
 				  verticalAlign="middle" gap="4">
 			<s:CheckBox
@@ -129,4 +102,20 @@
 						   label="Backward"/>
 		</s:HGroup>
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button
+			label="Find"
+			styleName="darkButton"
+			click="find()" />
+		<s:Spacer width="100%"/>
+		<s:Button
+			label="Replace/Find"
+			styleName="darkButton"
+			click="replaceOne(true)" />
+		<s:Button
+			label="Replace All" 
+			styleName="darkButton"
+			click="replaceAll()" />
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

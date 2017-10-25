@@ -319,11 +319,12 @@
 				<s:Label text="{warningMessage}" width="100%"/>
 			</s:HGroup>
 		</s:VGroup>
-		<mx:HRule width="100%" height="1" strokeColor="0xdadada"
-				  horizontalCenter="0"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCreate" label="Create"
-				  styleName="lightButtonTight" width="80"
+				  styleName="darkButton"
 				  click="onCreateButton(event)"
 				  enabled="false"/>
-	</s:VGroup>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

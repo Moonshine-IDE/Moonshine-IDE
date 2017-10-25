@@ -138,11 +138,12 @@
 			<s:Image source="@Embed('/elements/images/exclamation.png')"/>
 			<s:Label text="Source folder must be a sub-folder in project path" width="100%"/>
 		</s:HGroup>
-		<mx:HRule width="100%" height="1" strokeColor="0xdadada"
-				  horizontalCenter="0"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCreate" label="Select"
-				  styleName="lightButtonTight" width="80"
+				  styleName="darkButton"
 				  click="onCreateButton(event)"
 				  enabled="{tree.selectedIndex != 0}"/>
-	</s:VGroup>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
