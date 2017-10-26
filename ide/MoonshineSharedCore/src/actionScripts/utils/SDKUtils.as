@@ -23,6 +23,8 @@ package actionScripts.utils
 	import flash.events.EventDispatcher;
 	import flash.utils.setTimeout;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.ProjectEvent;
@@ -146,6 +148,7 @@ package actionScripts.utils
 				if (!downloadsFolder.fileBridge.exists) return [];
 				
 				var totalBundledSDKs:Array = [];
+				IDEModel.getInstance().userSavedSDKs = new ArrayCollection();
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);

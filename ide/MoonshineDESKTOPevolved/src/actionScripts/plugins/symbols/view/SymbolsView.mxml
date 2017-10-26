@@ -84,8 +84,11 @@
 				dataProvider="{symbols}" labelField="name"
 				doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)"/>
 		</s:VGroup>
-		<s:Button label="Open"
-			styleName="lightButtonTight" width="80"
-			click="onListDoubleClicked(null)"/>
 	</s:VGroup>
+	
+	<resizabletitlewindow:controlBarContent>
+		<s:Button label="Open"
+			styleName="darkButton"
+			click="onListDoubleClicked(null)"/>
+	</resizabletitlewindow:controlBarContent>
 </resizabletitlewindow:ResizableTitleWindow>

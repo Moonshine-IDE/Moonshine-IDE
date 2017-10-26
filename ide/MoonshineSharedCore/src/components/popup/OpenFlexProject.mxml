@@ -296,8 +296,11 @@
 								  requestedRowCount="10" />
 			</s:layout>
 		</s:List>
-		<s:Button label="Load" id="btn_load" 
-				  styleName="lightButtonTight" width="80"
-				  click="onProjectLoadRequest(event)" />
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Load" id="btn_load" 
+				  styleName="darkButton"
+				  click="onProjectLoadRequest(event)" />
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

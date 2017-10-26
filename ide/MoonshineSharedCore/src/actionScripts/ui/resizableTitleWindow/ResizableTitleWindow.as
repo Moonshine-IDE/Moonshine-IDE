@@ -21,13 +21,19 @@ package actionScripts.ui.resizableTitleWindow
 {
     import flash.events.Event;
     import flash.events.KeyboardEvent;
+    import flash.events.NativeWindowDisplayStateEvent;
     import flash.geom.Point;
     import flash.ui.Keyboard;
     
+    import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
+    import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
     
     import spark.components.TitleWindow;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.LayoutEvent;
     
     /**
      *  ResizableTitleWindow is a TitleWindow with
@@ -78,6 +84,8 @@ package actionScripts.ui.resizableTitleWindow
 		{
 			addEventListener(CloseEvent.CLOSE, closeByCrossSign);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onResizeKeyDownEvent);
+			GlobalEventDispatcher.getInstance().addEventListener(LayoutEvent.WINDOW_MAXIMIZED, onNativeWindowResized, false, 0, true);
+			GlobalEventDispatcher.getInstance().addEventListener(LayoutEvent.WINDOW_NORMAL, onNativeWindowResized, false, 0, true);
 		}
 		
 		/**
@@ -87,6 +95,8 @@ package actionScripts.ui.resizableTitleWindow
 		{
 			if (stage) stage.removeEventListener(KeyboardEvent.KEY_DOWN, onResizeKeyDownEvent);
 			removeEventListener(CloseEvent.CLOSE, closeByCrossSign);
+			GlobalEventDispatcher.getInstance().removeEventListener(LayoutEvent.WINDOW_MAXIMIZED, onNativeWindowResized);
+			GlobalEventDispatcher.getInstance().removeEventListener(LayoutEvent.WINDOW_NORMAL, onNativeWindowResized);
 			PopUpManager.removePopUp(this);
 		}
 		
@@ -109,6 +119,11 @@ package actionScripts.ui.resizableTitleWindow
 		{
 			callLater(closeByCrossSign, [null]);
 			dispatchEvent(new CloseEvent(CloseEvent.CLOSE, true));
+		}
+		
+		protected function onNativeWindowResized(event:Event):void
+		{
+			PopUpManager.centerPopUp(this);
 		}
 	}
 }

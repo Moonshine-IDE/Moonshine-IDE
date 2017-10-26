@@ -151,8 +151,11 @@
 					dataProvider="{resources}" labelFunction="getResourceName" styleName="multiLineList"
 					doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)"/>
 		</s:VGroup>
-		<s:Button label="Open"
-				  styleName="lightButtonTight" width="80"
-				  click="onListDoubleClicked(null)"/>
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Open"
+				  styleName="darkButton"
+				  click="onListDoubleClicked(null)"/>
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

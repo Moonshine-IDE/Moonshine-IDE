@@ -45,22 +45,21 @@
 		}
 		]]></fx:Script>
 
-	<s:VGroup height="100%" width="100%"
-		gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
-		horizontalAlign="center">
-	
-		<s:VGroup width="100%" height="100%">
-			<s:Label text="Matching items:"/>
-			<s:List id="lstReferences" styleName="multiLineList" width="100%" height="100%"
+	<s:VGroup width="100%" height="100%"
+			  paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+		<s:Label text="Matching items:"/>
+		<s:List id="lstReferences" styleName="multiLineList" width="100%" height="100%"
 				dataProvider="{references}" labelFunction="{itemToLabel}"
 				doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)">
-				<s:layout>
-					<s:VerticalLayout horizontalAlign="justify" useVirtualLayout="true"/>
-				</s:layout>
-			</s:List>
-		</s:VGroup>
-		<s:Button label="Open"
-			styleName="lightButtonTight" width="80"
-			click="onListDoubleClicked(null)"/>
+			<s:layout>
+				<s:VerticalLayout horizontalAlign="justify" useVirtualLayout="true"/>
+			</s:layout>
+		</s:List>
 	</s:VGroup>
+	
+	<resizabletitlewindow:controlBarContent>
+		<s:Button label="Open"
+			styleName="darkButton"
+			click="onListDoubleClicked(null)"/>
+	</resizabletitlewindow:controlBarContent>
 </resizabletitlewindow:ResizableTitleWindow>

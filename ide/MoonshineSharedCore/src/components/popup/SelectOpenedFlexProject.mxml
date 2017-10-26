@@ -117,8 +117,11 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
-		<s:Button label=" Select &amp; Continue" id="btn_load" 
-				  styleName="lightButtonTight" width="150"
-				  click="onProjectBuildRequest(event)" />
 	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label=" Select &amp; Continue" id="btn_load" 
+				  styleName="darkButton"
+				  click="onProjectBuildRequest(event)" />
+	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
