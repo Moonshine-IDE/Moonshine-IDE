@@ -73,18 +73,20 @@ package actionScripts.plugins.swflauncher
 			var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			
 			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = sdk.resolvePath("bin/adt");
+			customInfo.executable = new File("C:\\Program Files\\Java\\jdk1.8.0_102\\bin\\javaw.exe");
 			customInfo.workingDirectory = swf.parent;
+			
+			var adtPath:String = "-jar&&"+ sdk.nativePath +"/lib/adt.jar&&";
 			
 			queue = new Vector.<Object>();
 			
 			//addToQueue({com:(Settings.os == "win" ? "set " : "export ") + "FLEX_HOME="+ sdk.nativePath, showInConsole:false});
-			addToQueue({com:"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
+			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
 			var adtPackagingCom:String;
 			if (isAndroid) 
 			{
-				adtPackagingCom = '-package -target '+ (runAsDebugger ? 'apk-debug' : 'apk') +' -storetype pkcs12 -keystore "'+ project.buildOptions.certAndroid +'" '+ project.name +'.apk' +' '+ descriptorPathModified[descriptorPathModified.length-1] +' '+ swf.name;
+				adtPackagingCom = adtPath +'-package&&-target&&'+ (runAsDebugger ? 'apk-debug' : 'apk') +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			else
 			{
@@ -104,8 +106,9 @@ package actionScripts.plugins.swflauncher
 			
 			addToQueue({com:adtPackagingCom, showInConsole:true});
 			//addToQueue({com:isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword, showInConsole:false});
-			addToQueue({com:"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-device&&2&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			addToQueue({com:"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
+			//addToQueue({com:"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-device&&2&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			addToQueue({com:adtPath +"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
