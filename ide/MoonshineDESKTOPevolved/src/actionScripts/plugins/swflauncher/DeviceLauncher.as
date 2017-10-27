@@ -158,12 +158,8 @@ package actionScripts.plugins.swflauncher
 			
 			if (queue[0].showInConsole) debug("Sending to adt: %s", queue[0].com);
 			
-			customInfo.arguments = new Vector.<String>();
 			var tmpArr:Array = queue[0].com.split("&&");
-			for (var i:String in tmpArr)
-			{
-				customInfo.arguments.push(tmpArr[i]);
-			}
+			customInfo.arguments = Vector.<String>(tmpArr);
 			
 			queue.shift();
 			customProcess.start(customInfo);
