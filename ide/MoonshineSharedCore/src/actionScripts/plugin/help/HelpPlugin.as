@@ -19,12 +19,10 @@
 package actionScripts.plugin.help
 {
 	import flash.events.Event;
-	import flash.utils.setTimeout;
-	
+
 	import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
@@ -35,10 +33,7 @@ package actionScripts.plugin.help
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.popup.JavaPathSetupPopup;
-	import components.popup.SDKUnzipConfirmPopup;
-	
+
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
 		public static const EVENT_TOURDEFLEX:String = "EVENT_TOURDEFLEX";
@@ -55,12 +50,7 @@ package actionScripts.plugin.help
 		private var tourdeContentView: IPanelWindow;
 		private var idemodel:IDEModel = IDEModel.getInstance();
 		private var as3DocsPanel:IPanelWindow = new AS3DocsView();
-		private var sdkUnzipView:SDKUnzipConfirmPopup;
-		private var javaPathDetection:JavaPathSetupPopup;
-		
-		private var panelCollectedValues:int;
-		private var totalPanelCollection:int = 2; // tourde, usefullinks
-		
+
 		override public function activate():void
 		{
 			super.activate();
