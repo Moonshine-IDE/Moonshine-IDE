@@ -73,23 +73,25 @@ package actionScripts.plugins.swflauncher
 			var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			
 			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = executableFile;
+			customInfo.executable = new File("C:\\Program Files\\Java\\jdk1.8.0_102\\bin\\javaw.exe");
 			customInfo.workingDirectory = swf.parent;
+			
+			var adtPath:String = "-jar&&"+ sdk.nativePath +"/lib/adt.jar&&";
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:"set FLEX_HOME="+ sdk.nativePath, showInConsole:false});
-			addToQueue({com:"adt -devices -platform "+ (isAndroid ? "android" : "ios"), showInConsole:false});
+			//addToQueue({com:(Settings.os == "win" ? "set " : "export ") + "FLEX_HOME="+ sdk.nativePath, showInConsole:false});
+			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
 			var adtPackagingCom:String;
 			if (isAndroid) 
 			{
-				adtPackagingCom = 'adt -package -target '+ (runAsDebugger ? 'apk-debug' : 'apk') +' -storetype pkcs12 -keystore "'+ project.buildOptions.certAndroid +'" '+ project.name +'.apk' +' '+ descriptorPathModified[descriptorPathModified.length-1] +' '+ swf.name;
+				adtPackagingCom = adtPath +'-package&&-target&&'+ (runAsDebugger ? 'apk-debug' : 'apk') +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			else
 			{
 				var packagingMode:String = (runAsDebugger) ? "ipa-debug-interpreter" : ((project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_STANDARD) ? "ipa-test" : "ipa-test-interpreter");
-				adtPackagingCom = 'adt -package -target '+ packagingMode +' -storetype pkcs12 -keystore "'+ project.buildOptions.certIos +'" -provisioning-profile "'+ project.buildOptions.certIosProvisioning +'" '+ project.name +'.ipa' +' '+ descriptorPathModified[descriptorPathModified.length-1] +' '+ swf.name;
+				adtPackagingCom = '-package&&-target&&'+ packagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			
 			// extensions and resources
@@ -103,9 +105,10 @@ package actionScripts.plugins.swflauncher
 			}
 			
 			addToQueue({com:adtPackagingCom, showInConsole:true});
-			addToQueue({com:project.buildOptions.certAndroidPassword, showInConsole:false});
-			addToQueue({com:"adt -installApp -platform "+ (isAndroid ? "android" : "ios") +" -package "+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			addToQueue({com:"adt -launchApp -platform "+ (isAndroid ? "android" : "ios") +" -appid "+ appID, showInConsole:true});
+			//addToQueue({com:isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword, showInConsole:false});
+			//addToQueue({com:"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-device&&2&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			addToQueue({com:adtPath +"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -150,11 +153,23 @@ package actionScripts.plugins.swflauncher
 				return;
 			}
 			
+			if (customProcess && customProcess.running)
+			{
+				//customProcess.exit();
+				return;
+			}
+			
 			if (queue[0].showInConsole) debug("Sending to adt: %s", queue[0].com);
 			
-			var input:IDataOutput = customProcess.standardInput;
-			input.writeUTFBytes(queue[0].com +"\n");
+			var tmpArr:Array = queue[0].com.split("&&");
+			customInfo.arguments = Vector.<String>(tmpArr);
+			
 			queue.shift();
+			customProcess.start(customInfo);
+			
+			/*var input:IDataOutput = customProcess.standardInput;
+			input.writeUTFBytes(queue[0].com +"\n");
+			queue.shift();*/
 		}
 		
 		private function startShell(start:Boolean):void 
@@ -167,7 +182,7 @@ package actionScripts.plugins.swflauncher
 				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
 				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				customProcess.start(customInfo);
+				//customProcess.start(customInfo);
 			}
 			else
 			{
@@ -181,6 +196,8 @@ package actionScripts.plugins.swflauncher
 				customProcess = null;
 			}
 		}
+		
+		private var isErrorClose:Boolean;
 		
 		private function shellError(e:ProgressEvent):void 
 		{
@@ -214,6 +231,7 @@ package actionScripts.plugins.swflauncher
 					debug("%s", data);
 				}
 				
+				isErrorClose = true;
 				startShell(false)
 			}
 		}
@@ -222,7 +240,8 @@ package actionScripts.plugins.swflauncher
 		{
 			if (customProcess) 
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
+				//GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
+				if (!isErrorClose) flush();
 			}
 		}
 		
@@ -230,18 +249,27 @@ package actionScripts.plugins.swflauncher
 		{
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
+			trace(" ||||||| \n"+ data);
 			var match:Array;
 			
 			match = data.toLowerCase().match(/set flex_home/);
 			if (match)
 			{
-				flush();
+				//flush();
 				return;
 			}
 			
-			match = data.toLowerCase().match(/list of devices attached/);
+			match = data.toLowerCase().match(/list of attached devices/);
 			if (match)
 			{
+				/*List of attached devices
+				
+				
+				List of attached devices:
+				Handle	DeviceClass	DeviceUUID					DeviceName
+				1	iPad    	6de82fb316b5bc0dc5534e6725678fe88bdfccc8	Santanu’s iPad*/
+				//flush();
+				return;
 				var devicesLines:Array = data.split("\r\n");
 				devicesLines.shift();
 				connectedDevices = new Vector.<String>();
@@ -265,7 +293,7 @@ package actionScripts.plugins.swflauncher
 					return;
 				}
 				
-				flush();
+				//flush();
 				return;
 			}
 			
@@ -274,7 +302,7 @@ package actionScripts.plugins.swflauncher
 			match = data.match(/password/);
 			if (match)
 			{
-				flush();
+				//flush();
 				return;
 			}
 			
@@ -282,11 +310,12 @@ package actionScripts.plugins.swflauncher
 			if (match) 
 			{
 				print("NOTE: The application has been packaged with a shared runtime.");
-				flush();
+				//flush();
 				return;
 			}
 			
-			flush();
+			isErrorClose = false;
+			//flush();
 		}
 	}
 }

@@ -23,192 +23,188 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx" autoLayout="true"
-		 creationComplete="addCloseButton()"
+		 creationComplete="onJavaPathSetupPopupCreationComplete(event)"
 		 horizontalCenter="0" verticalCenter="0">
 	<fx:Script>
 		<![CDATA[
-			import flash.net.navigateToURL;
-			
-			import mx.core.UIComponent;
-			import mx.events.FlexEvent;
-			
-			import spark.utils.TextFlowUtil;
-			
-			import actionScripts.events.FilePluginEvent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.SettingsEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			
-			import flashx.textLayout.elements.TextFlow;
-			
-			[Bindable] public var showAsHelperDownloader:Boolean;
-			
-			public var showAsRequiresSDKNotification:Boolean;
-			public var isSDKSetupShowing:Boolean;
-			public var isDiscarded:Boolean;
-			
-			[Bindable] private var userNotes:String;
-			[Bindable] private var autoDetectedJavaPath:String;
-			
-			private var foundAndAccessNote:String = "<p>Code completion requires the Java Development Kit 1.8. Follow the instructions below to set up access,<br/></p><list listStyleType='decimal'><li>Copy the path given below to clipboard</li><li>click on <span fontWeight='bold'>Allow Access</span> button below</li><li>Press CMD-Shift-G. This will open a prompt where you can specify a path to navigate to</li><li>Right click in the text field and select Paste</li><li>Click <span fontWeight='bold'>Open</span></li></list>";
-			private var model:IDEModel = IDEModel.getInstance();
-			
-			private function addCloseButton():void
+		import mx.core.UIComponent;
+		import mx.events.FlexEvent;
+
+		import spark.utils.TextFlowUtil;
+
+		import actionScripts.events.FilePluginEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.SettingsEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import flashx.textLayout.elements.TextFlow;
+
+		[Bindable]
+		public var showAsHelperDownloader:Boolean;
+
+		public var showAsRequiresSDKNotification:Boolean;
+		public var isSDKSetupShowing:Boolean;
+		public var isDiscarded:Boolean;
+
+		[Bindable]
+		private var userNotes:String;
+		[Bindable]
+		private var autoDetectedJavaPath:String;
+
+		private var foundAndAccessNote:String = "<p>Code completion requires the Java Development Kit 1.8. Follow the instructions below to set up access,<br/></p><list listStyleType='decimal'><li>Copy the path given below to clipboard</li><li>click on <span fontWeight='bold'>Allow Access</span> button below</li><li>Press CMD-Shift-G. This will open a prompt where you can specify a path to navigate to</li><li>Right click in the text field and select Paste</li><li>Click <span fontWeight='bold'>Open</span></li></list>";
+		private var model:IDEModel = IDEModel.getInstance();
+
+		private function onJavaPathSetupPopupCreationComplete(event:FlexEvent):void
+		{
+			if (showAsRequiresSDKNotification) onPermittedOSX();
+
+			var closeButtonUIC:UIComponent = new UIComponent();
+			closeButtonUIC.width = closeButtonUIC.height = 27;
+			closeButtonUIC.right = 0;
+
+			var closeButton:Sprite = new Sprite();
+			// Circle
+			closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.8);
+			closeButton.graphics.beginFill(0x0, 0);
+			closeButton.graphics.drawCircle(14, 12, 6);
+			closeButton.graphics.endFill();
+			// X (\)
+			closeButton.graphics.lineStyle(2, 0xFFFFFF, 0.8, true);
+			closeButton.graphics.moveTo(12, 10);
+			closeButton.graphics.lineTo(16, 14);
+			// X (/)
+			closeButton.graphics.moveTo(16, 10);
+			closeButton.graphics.lineTo(12, 14);
+			// Hit area
+			closeButton.graphics.lineStyle(0, 0x0, 0);
+			closeButton.graphics.beginFill(0x0, 0);
+			closeButton.graphics.drawRect(0, 0, 27, 25);
+			closeButton.graphics.endFill();
+
+			closeButton.addEventListener(MouseEvent.CLICK, closeButtonClickedRequest, false, 0, true);
+			closeButtonUIC.addChild(closeButton);
+
+			addElement(closeButtonUIC);
+		}
+
+		private function prepareNotifications():void
+		{
+			// when opend as required SDK not present window
+			if (showAsRequiresSDKNotification)
 			{
-				if (showAsRequiresSDKNotification) onPermittedOSX();
-				
-				var closeButtonUIC:UIComponent = new UIComponent();
-				closeButtonUIC.width = closeButtonUIC.height = 27;
-				closeButtonUIC.right = 0;
-				
-				var closeButton:Sprite = new Sprite();
-				// Circle
-				closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.8);
-				closeButton.graphics.beginFill(0x0, 0);
-				closeButton.graphics.drawCircle(14, 12, 6);
-				closeButton.graphics.endFill();
-				// X (\)
-				closeButton.graphics.lineStyle(2, 0xFFFFFF, 0.8, true);
-				closeButton.graphics.moveTo(12, 10);
-				closeButton.graphics.lineTo(16, 14);
-				// X (/)
-				closeButton.graphics.moveTo(16, 10);
-				closeButton.graphics.lineTo(12, 14);
-				// Hit area
-				closeButton.graphics.lineStyle(0, 0x0, 0);
-				closeButton.graphics.beginFill(0x0, 0);
-				closeButton.graphics.drawRect(0, 0, 27, 25);
-				closeButton.graphics.endFill();
-				
-				closeButton.addEventListener(MouseEvent.CLICK, closeButtonClickedRequest, false, 0, true);
-				closeButtonUIC.addChild(closeButton);
-				
-				addElement(closeButtonUIC);
+				var flow:TextFlow = TextFlowUtil.importFromString("<p>Code completion requires Apache Flex® or FlexJS® SDK.<br/><br/>Make sure you have it defined in SDK list by clicking on <span fontWeight='bold'>Fix Now</span> button. In case of MacOS, your SDK location needs to be in your <span fontWeight='bold'>Downloads</span> folder.</p>");
+				currentState = "noRequiredSDK";
+				body.alpha = 1;
+				callLater(function ():void {
+					retAutoDetectedNotif.textFlow = flow;
+				});
 			}
-			
-			private function prepareNotifications():void
+			else if (ConstantsCoreVO.IS_MACOS)
 			{
-				// when opend as required SDK not present window
-				if (showAsRequiresSDKNotification)
+				model.flexCore.getJavaPath(onJavaPathDetectedInOSX);
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+			{
+				// let user manually set Java path once
+				onJavaPathDetectedInOSX(null);
+			}
+		}
+
+		private function onPermittedOSX():void
+		{
+			ConstantsCoreVO.IS_OSX_JAVA_SDK_PROMPT = true;
+			currentState = "default";
+			prepareNotifications();
+		}
+
+		private function closeButtonClickedRequest(event:MouseEvent):void
+		{
+			closeButtonClicked(event, true);
+		}
+
+		private function closeButtonClicked(event:MouseEvent, isDiscarded:Boolean = false):void
+		{
+			this.isDiscarded = isDiscarded;
+			if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
+			dispatchEvent(new Event(Event.CLOSE));
+		}
+
+		protected function onAllowAccess(event:MouseEvent):void
+		{
+			var javaLocation:FileLocation = new FileLocation(autoDetectedJavaPath);
+			javaLocation.fileBridge.browseForDirectory("Select Java Path", onJavaDirectorySelected);
+		}
+
+		protected function onJavaDirectorySelected(dir:Object):void
+		{
+			model.javaPathForTypeAhead = (dir is FileLocation) ? dir as FileLocation : new FileLocation(dir.nativePath);
+			GlobalEventDispatcher.getInstance().dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
+
+			// close this
+			closeButtonClicked(null);
+		}
+
+		protected function openJavaDownloadPage(event:MouseEvent):void
+		{
+			navigateToURL(new URLRequest("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html"), "_blank");
+		}
+
+		protected function fixRequiredSDK(event:MouseEvent):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+			isSDKSetupShowing = true;
+
+			// close this
+			closeButtonClicked(null, true);
+		}
+
+		private function onJavaPathDetectedInOSX(path:String):void
+		{
+			// in case java 1.8 found
+			var flow:TextFlow;
+			if (path)
+			{
+				autoDetectedJavaPath = path;
+
+				var pattern:RegExp = new RegExp(/(\n)/g);
+				autoDetectedJavaPath = autoDetectedJavaPath.replace(pattern, "");
+
+				// for OSX we'll need the user to select the folder
+				// to let sandbox app access it
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					var flow:TextFlow = TextFlowUtil.importFromString("<p>Code completion requires Apache Flex® or FlexJS® SDK.<br/><br/>Make sure you have it defined in SDK list by clicking on <span fontWeight='bold'>Fix Now</span> button. In case of MacOS, your SDK location needs to be in your <span fontWeight='bold'>Downloads</span> folder.</p>");
-					currentState = "noRequiredSDK";
+					flow = TextFlowUtil.importFromString(foundAndAccessNote);
+					txtAutoDetectedPath.includeInLayout = txtAutoDetectedPath.visible = true;
 					body.alpha = 1;
-					callLater(function():void
-					{
+					callLater(function ():void {
 						retAutoDetectedNotif.textFlow = flow;
 					});
 				}
-				else if (ConstantsCoreVO.IS_MACOS)
+				else
 				{
-					model.flexCore.getJavaPath(onJavaPathDetectedInOSX);
-				}
-				else if (!ConstantsCoreVO.IS_MACOS)
-				{
-					// let user manually set Java path once
-					onJavaPathDetectedInOSX(null);
+					onJavaDirectorySelected(new FileLocation(autoDetectedJavaPath));
 				}
 			}
-			
-			private function onPermittedOSX():void
+			else
 			{
-				ConstantsCoreVO.IS_OSX_JAVA_SDK_PROMPT = true;
-				currentState = "default";
-				prepareNotifications();
-			}
-			
-			private function closeButtonClickedRequest(event:MouseEvent):void
-			{
-				closeButtonClicked(event, true);
-			}
-			
-			private function closeButtonClicked(event:MouseEvent, isDiscarded:Boolean=false):void
-			{
-				this.isDiscarded = isDiscarded;
-				if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
-				dispatchEvent(new Event(Event.CLOSE));
-			}
-			
-			protected function onAllowAccess(event:MouseEvent):void
-			{
-				var javaLocation:FileLocation = new FileLocation(autoDetectedJavaPath);
-				javaLocation.fileBridge.browseForDirectory("Select Java Path", onJavaDirectorySelected);
-			}
-			
-			protected function onJavaDirectorySelected(dir:Object):void
-			{
-				model.javaPathForTypeAhead = (dir is FileLocation) ? dir as FileLocation : new FileLocation(dir.nativePath);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
-				
-				// close this
-				closeButtonClicked(null);
-			}
-			
-			protected function openJavaDownloadPage(event:MouseEvent):void
-			{
-				navigateToURL(new URLRequest("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html"), "_blank");
-			}
-			
-			protected function fixRequiredSDK(event:MouseEvent):void
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
-				isSDKSetupShowing = true;
-				
-				// close this
-				closeButtonClicked(null, true);
-			}
-			
-			private function onJavaPathDetectedInOSX(path:String):void
-			{
-				// in case java 1.8 found
-				var flow:TextFlow;
-				if (path)
+				body.alpha = 1;
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					autoDetectedJavaPath = path;
-					
-					var pattern:RegExp = new RegExp(/(\n)/g);
-					autoDetectedJavaPath = autoDetectedJavaPath.replace(pattern, "");
-					
-					// for OSX we'll need the user to select the folder
-					// to let sandbox app access it
-					if (ConstantsCoreVO.IS_MACOS)
-					{
-						flow = TextFlowUtil.importFromString(foundAndAccessNote);
-						txtAutoDetectedPath.includeInLayout = txtAutoDetectedPath.visible = true;
-						body.alpha = 1;
-						callLater(function():void
-						{
-							retAutoDetectedNotif.textFlow = flow;
-						});
-					}
-					else
-					{
-						onJavaDirectorySelected(new FileLocation(autoDetectedJavaPath));
-					}
+					retAutoDetectedNotif.includeInLayout = retAutoDetectedNotif.visible = false;
+					// since link to ActionScript not worked in AS textFlow conversion
+					retManualNotif.includeInLayout = retManualNotif.visible = true;
 				}
 				else
 				{
-					body.alpha = 1;
-					if (ConstantsCoreVO.IS_MACOS)
-					{
-						retAutoDetectedNotif.includeInLayout = retAutoDetectedNotif.visible = false;
-						// since link to ActionScript not worked in AS textFlow conversion
-						retManualNotif.includeInLayout = retManualNotif.visible = true;
-					}
-					else
-					{
-						flow = TextFlowUtil.importFromString("<p>Code completion requires the Java Development Kit 1.8. To select the path click on <span fontWeight='bold'>Allow Access</span> button</p>");
-						callLater(function():void
-						{
-							retAutoDetectedNotif.textFlow = flow;
-						});
-					}
+					flow = TextFlowUtil.importFromString("<p>Code completion requires the Java Development Kit 1.8. To select the path click on <span fontWeight='bold'>Allow Access</span> button</p>");
+					callLater(function ():void {
+						retAutoDetectedNotif.textFlow = flow;
+					});
 				}
 			}
-			
+		}
 		]]>
 	</fx:Script>
 	

@@ -19,7 +19,8 @@
 package actionScripts.plugin.startup
 {
 	import flash.events.Event;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CollectionEvent;
@@ -56,6 +57,10 @@ package actionScripts.plugin.startup
 		private var sequences:Array;
 		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
+
+		private var javaSetupPathTimeout:uint;
+		private var startHelpintTimeout:uint;
+		private var changeMenuSDKTimeout:uint;
 		
 		/**
 		 * INITIATOR
@@ -84,13 +89,10 @@ package actionScripts.plugin.startup
 		 */
 		private function preInitHelping():void
 		{
-			sequences = new Array();
-			sequences.push(SDK_XTENDED);
-			sequences.push(CC_JAVA);
-			sequences.push(CC_SDK);
-			
+			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK];
+
 			// just a little delay to see things visually right
-			setTimeout(startHelping, 1000);
+            startHelpintTimeout = setTimeout(startHelping, 1000);
 		}
 		
 		/**
@@ -99,6 +101,9 @@ package actionScripts.plugin.startup
 		 */
 		private function startHelping():void
 		{
+			clearTimeout(startHelpintTimeout);
+			startHelpintTimeout = 0;
+
 			var tmpSequence:String = sequences[sequenceIndex];
 			
 			switch(tmpSequence)
@@ -142,6 +147,9 @@ package actionScripts.plugin.startup
 				// lets show up the default sdk requirement strip at bottom
 				setTimeout(function():void
 				{
+					clearTimeout(changeMenuSDKTimeout);
+                    changeMenuSDKTimeout = 0;
+					
 					dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 				}, 1000);
 			}
@@ -153,10 +161,13 @@ package actionScripts.plugin.startup
 		private function checkJavaPathPresenceForTypeahead():void
 		{
 			sequenceIndex++;
-			
-			if (!model.javaPathForTypeAhead && !ccNotificationView)
+
+			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
+
+			if ((!model.javaPathForTypeAhead || !isJavaPathExists) && !ccNotificationView)
 			{
-				setTimeout(triggerJavaSetupViewWithParam, 1000, false);
+				model.javaPathForTypeAhead = null;
+                javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 				
 				// add the listener only if flexJS 0.7.0+ not present
 				/*var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
@@ -179,7 +190,7 @@ package actionScripts.plugin.startup
 			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
 			if (!model.defaultSDK && !ccNotificationView && !isSDKSetupShowing)
 			{
-				setTimeout(triggerJavaSetupViewWithParam, 1000, true);
+                javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
 			}
 			else if (!model.defaultSDK && isSDKSetupShowing)
 			{
@@ -210,6 +221,9 @@ package actionScripts.plugin.startup
 		 */
 		private function triggerJavaSetupViewWithParam(showAsRequiresSDKNotif:Boolean):void
 		{
+			clearTimeout(javaSetupPathTimeout);
+			javaSetupPathTimeout = -1;
+			
 			ccNotificationView = new JavaPathSetupPopup;
 			ccNotificationView.showAsRequiresSDKNotification = showAsRequiresSDKNotif;
 			ccNotificationView.horizontalCenter = ccNotificationView.verticalCenter = 0;
