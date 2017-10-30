@@ -52,7 +52,13 @@
 
         protected function onBrowserPath(event:MouseEvent):void
         {
-            file = new FileLocation(editedSDKPath.path);
+			var sdkPath:String;
+			if (editedSDKPath)
+			{
+				sdkPath = editedSDKPath.path;
+			}
+
+            file = new FileLocation(sdkPath);
             file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
         }
 
