@@ -66,7 +66,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var certIos:String;
 		public var certIosPassword:String;
 		public var certIosProvisioning:String;
-		public var iosPackagingMode:String = IOS_PACKAGING_STANDARD;
+		public var iosPackagingMode:String = IOS_PACKAGING_FAST;
 		
 		private var _targetPlatform:String;
 		public function set targetPlatform(value:String):void

@@ -222,7 +222,7 @@ package actionScripts.plugin.startup
 		private function triggerJavaSetupViewWithParam(showAsRequiresSDKNotif:Boolean):void
 		{
 			clearTimeout(javaSetupPathTimeout);
-			javaSetupPathTimeout = -1;
+			javaSetupPathTimeout = 0;
 			
 			ccNotificationView = new JavaPathSetupPopup;
 			ccNotificationView.showAsRequiresSDKNotification = showAsRequiresSDKNotif;
