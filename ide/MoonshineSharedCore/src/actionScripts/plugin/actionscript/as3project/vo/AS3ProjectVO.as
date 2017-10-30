@@ -378,8 +378,18 @@ package actionScripts.plugin.actionscript.as3project.vo
 					)
 				]);
 			}
-			
+
+			settings.sort(order);
 			return settings;
+			/*
+			* @local
+			*/
+			function order(a:Object, b:Object):Number
+			{ 
+				if (a.name < b.name) { return -1; } 
+				else if (a.name > b.name) { return 1; }
+				return 0;
+			}
 		}
 		
 		override public function saveSettings():void

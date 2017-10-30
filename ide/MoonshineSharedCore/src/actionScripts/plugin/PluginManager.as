@@ -70,6 +70,17 @@ package actionScripts.plugin
 			}
 			settingsPlugin.initializePlugin(menuInstance);
 			registeredPlugins.push(menuInstance);
+			registeredPlugins.sort(order);
+			
+			/*
+			 * @local
+			 */
+			function order(a:Object, b:Object):Number
+			{ 
+				if (a.name < b.name) { return -1; } 
+				else if (a.name > b.name) { return 1; }
+				return 0;
+			}
         }
 		
 		private var index:int;
