@@ -95,7 +95,6 @@ package actionScripts.plugin.settings
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.moonshine_internal;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -236,7 +235,7 @@ package actionScripts.plugin.settings
 			var plugins:Vector.<IPlugin> = pluginManager.moonshine_internal::getPlugins();
 
 			var qualifiedClassName:String;
-			var provider:ISettingsProvider
+			var provider:ISettingsProvider;
 			for each (var plug:IPlugin in plugins)
 			{
 				if (plug == this)

@@ -92,9 +92,15 @@
             }
             else
             {
-                file = new FileLocation();
-                if (setting.directory) file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
-                else file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled); // for Balsmiq project we need only .xml file to get selected.
+                file = new FileLocation(setting.stringValue);
+                if (setting.directory)
+				{
+					file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+				}
+                else
+				{
+					file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled);
+				} // for Balsmiq project we need only .xml file to get selected.
             }
         }
 
@@ -166,8 +172,7 @@
 
         private function openFileCancelled():void
         {
-            /*event.target.removeEventListener(Event.SELECT, openFile);
-            event.target.removeEventListener(Event.CANCEL, openFileCancelled);*/
+            file = null;
         }
 
         protected function onCreationCompletes(event:FlexEvent):void

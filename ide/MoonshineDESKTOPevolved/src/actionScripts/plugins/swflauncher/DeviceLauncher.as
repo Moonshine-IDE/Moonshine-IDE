@@ -28,7 +28,6 @@ package actionScripts.plugins.swflauncher
 	import flash.filesystem.File;
 	import flash.system.Capabilities;
 	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
 	
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
@@ -343,12 +342,4 @@ package actionScripts.plugins.swflauncher
 			isErrorClose = false;
 		}
 	}
-}
-
-class DeviceVO
-{
-	public var deviceID:int;
-	public var deviceUDID:String;
-	
-	public function DeviceVO() {}
 }

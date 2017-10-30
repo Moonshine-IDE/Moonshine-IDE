@@ -56,7 +56,7 @@ package actionScripts.plugin.settings.vo
             return null;
         }
 
-        protected var _provider:Object
+        protected var _provider:Object;
         public function get provider():Object
         {
             return _provider;

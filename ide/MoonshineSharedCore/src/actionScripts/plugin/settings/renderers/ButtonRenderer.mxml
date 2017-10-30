@@ -30,27 +30,31 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.plugin.settings.vo.ButtonSetting;
-			
-			[Bindable] public var setting:ButtonSetting;
-			
-			private function init():void
-			{
-				if (setting.style == ButtonSetting.STYLE_NORMAL) btn.styleName = "lightButton";
-				else if (setting.style == ButtonSetting.STYLE_DARK) btn.styleName = "darkButton";
-				else if (setting.style == ButtonSetting.STYLE_DANGER) btn.styleName = "redButton";
-			}
-			
-			protected function onButtonClicked(event:MouseEvent):void
-			{
-				setting.provider[setting.handlerVariableName] = true;
-			}
-			
+		import actionScripts.plugin.settings.vo.ButtonSetting;
+
+		[Bindable]
+		public var setting:ButtonSetting;
+
+		private function init():void
+		{
+			if (setting.style == ButtonSetting.STYLE_NORMAL) btn.styleName = "lightButton";
+			else if (setting.style == ButtonSetting.STYLE_DARK) btn.styleName = "darkButton";
+			else if (setting.style == ButtonSetting.STYLE_DANGER) btn.styleName = "redButton";
+		}
+
+		protected function onButtonClicked(event:MouseEvent):void
+		{
+			setting.provider[setting.handlerName]();
+		}
 		]]>
 	</fx:Script>
-	
-	<s:Label styleName="uiTextSettingsLabel"
-			 text="{setting.label}" />
+
+	<s:VGroup>
+		<s:Label styleName="uiTextSettingsValue" text="{setting.title}"
+				 visible="{setting.title != null}" includeInLayout="{setting.title != null}"/>
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="{setting.label}" />
+	</s:VGroup>
 
 	<mx:Spacer width="100%"/>
 	
