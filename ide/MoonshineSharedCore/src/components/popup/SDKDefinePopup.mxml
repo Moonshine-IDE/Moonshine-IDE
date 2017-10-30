@@ -21,8 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   width="500" autoLayout="true" title="Define a SDK Path"
 			   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
 	<fx:Script>
@@ -45,12 +44,15 @@
          */
         protected function onCloseWindow(event:CloseEvent):void
         {
+			editedSDKPath = null;
+			file = null;
+			
             PopUpManager.removePopUp(this);
         }
 
         protected function onBrowserPath(event:MouseEvent):void
         {
-            file = new FileLocation();
+            file = new FileLocation(editedSDKPath.path);
             file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
         }
 
@@ -75,6 +77,7 @@
 
         private function openFileCancelled():void
         {
+			file = null;
         }
 
         protected function onCreate(event:MouseEvent):void
