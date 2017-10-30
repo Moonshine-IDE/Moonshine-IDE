@@ -18,12 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.swflauncher
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.system.Capabilities;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	
@@ -33,6 +36,7 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputter;
@@ -45,8 +49,11 @@ package actionScripts.plugins.swflauncher
 		private var customInfo:NativeProcessStartupInfo;
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var connectedDevices:Vector.<String>;
+		private var windowsAutoJavaLocation:File;
+		private var model:IDEModel = IDEModel.getInstance();
 		private var isAndroid:Boolean;
 		private var isRunAsDebugger:Boolean;
+		private var isErrorClose:Boolean;
 		
 		public function DeviceLauncher()
 		{
@@ -68,19 +75,49 @@ package actionScripts.plugins.swflauncher
 			var appID:String = descriptorXML.xmlns::id;
 			
 			var descriptorPathModified:Array = descriptorPath.split(File.separator);
+			var adtPath:String = "-jar&&"+ sdk.nativePath +"/lib/adt.jar&&";
 			
 			// STEP 1
-			var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			//var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			var executableFile:File;
+			if (model.javaPathForTypeAhead) 
+			{
+				executableFile = model.javaPathForTypeAhead.fileBridge.getFile as File;
+			}
+			else
+			{
+				if (Settings.os != "win") executableFile = new File("/usr/bin/java");
+				else 
+				{
+					if (!windowsAutoJavaLocation)
+					{
+						var javaFolder:String = Capabilities.supports64BitProcesses ? "Program Files (x86)" : "Program Files";
+						var tmpJavaLocation:File = new File("C:/"+ javaFolder +"/Java");
+						if (tmpJavaLocation.exists)
+						{
+							var javaFiles:Array = tmpJavaLocation.getDirectoryListing();
+							for each (var j:File in javaFiles)
+							{
+								if (j.nativePath.indexOf("jre") != -1)
+								{
+									windowsAutoJavaLocation = new File(j.nativePath +"\\bin\\javaw.exe");
+									executableFile = windowsAutoJavaLocation;
+								}
+							}
+						}
+					}
+					else
+						executableFile = windowsAutoJavaLocation;
+				}
+			}
 			
+			if (customProcess) startShell(false);
 			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = new File("C:\\Program Files\\Java\\jdk1.8.0_102\\bin\\javaw.exe");
+			customInfo.executable = executableFile;
 			customInfo.workingDirectory = swf.parent;
-			
-			var adtPath:String = "-jar&&"+ sdk.nativePath +"/lib/adt.jar&&";
 			
 			queue = new Vector.<Object>();
 			
-			//addToQueue({com:(Settings.os == "win" ? "set " : "export ") + "FLEX_HOME="+ sdk.nativePath, showInConsole:false});
 			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
 			var adtPackagingCom:String;
@@ -91,23 +128,21 @@ package actionScripts.plugins.swflauncher
 			else
 			{
 				var packagingMode:String = (runAsDebugger) ? "ipa-debug-interpreter" : ((project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_STANDARD) ? "ipa-test" : "ipa-test-interpreter");
-				adtPackagingCom = '-package&&-target&&'+ packagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
+				adtPackagingCom = adtPath +'-package&&-target&&'+ packagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			
 			// extensions and resources
-			if (project.nativeExtensions && project.nativeExtensions.length > 0) adtPackagingCom+= ' -extdir "'+ project.nativeExtensions[0].fileBridge.nativePath +'"';
+			if (project.nativeExtensions && project.nativeExtensions.length > 0) adtPackagingCom+= '&&-extdir&&'+ project.nativeExtensions[0].fileBridge.nativePath;
 			if (project.resourcePaths)
 			{
 				for each (var i:FileLocation in project.resourcePaths)
 				{
-					adtPackagingCom += ' "'+ i.fileBridge.nativePath +'"';
+					adtPackagingCom += '&&'+ i.fileBridge.nativePath;
 				}
 			}
 			
 			addToQueue({com:adtPackagingCom, showInConsole:true});
-			//addToQueue({com:isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword, showInConsole:false});
-			//addToQueue({com:"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-device&&2&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"{{DEVICE}}-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
 			addToQueue({com:adtPath +"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
 			
 			if (customProcess) startShell(false);
@@ -153,12 +188,6 @@ package actionScripts.plugins.swflauncher
 				return;
 			}
 			
-			if (customProcess && customProcess.running)
-			{
-				//customProcess.exit();
-				return;
-			}
-			
 			if (queue[0].showInConsole) debug("Sending to adt: %s", queue[0].com);
 			
 			var tmpArr:Array = queue[0].com.split("&&");
@@ -166,10 +195,6 @@ package actionScripts.plugins.swflauncher
 			
 			queue.shift();
 			customProcess.start(customInfo);
-			
-			/*var input:IDataOutput = customProcess.standardInput;
-			input.writeUTFBytes(queue[0].com +"\n");
-			queue.shift();*/
 		}
 		
 		private function startShell(start:Boolean):void 
@@ -182,7 +207,6 @@ package actionScripts.plugins.swflauncher
 				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
 				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				//customProcess.start(customInfo);
 			}
 			else
 			{
@@ -194,10 +218,9 @@ package actionScripts.plugins.swflauncher
 				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 				customProcess = null;
+				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
 			}
 		}
-		
-		private var isErrorClose:Boolean;
 		
 		private function shellError(e:ProgressEvent):void 
 		{
@@ -240,7 +263,6 @@ package actionScripts.plugins.swflauncher
 		{
 			if (customProcess) 
 			{
-				//GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
 				if (!isErrorClose) flush();
 			}
 		}
@@ -249,35 +271,37 @@ package actionScripts.plugins.swflauncher
 		{
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			trace(" ||||||| \n"+ data);
 			var match:Array;
 			
 			match = data.toLowerCase().match(/set flex_home/);
 			if (match)
 			{
-				//flush();
 				return;
 			}
 			
 			match = data.toLowerCase().match(/list of attached devices/);
 			if (match)
 			{
-				/*List of attached devices
-				
-				
+				/*
+				@example
 				List of attached devices:
 				Handle	DeviceClass	DeviceUUID					DeviceName
-				1	iPad    	6de82fb316b5bc0dc5534e6725678fe88bdfccc8	Santanu’s iPad*/
-				//flush();
-				return;
-				var devicesLines:Array = data.split("\r\n");
-				devicesLines.shift();
+				1	iPad    	6de82fb31xxxxxxxxxxxxcc8	My iPad*/
+
+				var devicesLines:Array = data.split("\n");
+				devicesLines.shift(); // one
+				devicesLines.shift(); // two
 				connectedDevices = new Vector.<String>();
 				for (var i:String in devicesLines)
 				{
 					if (devicesLines[i] != "")
 					{
-						connectedDevices.push(devicesLines[i].split("\t")[0]);
+						var newDevice:DeviceVO = new DeviceVO();
+						var breakups:Array = devicesLines[i].split("\t");
+						
+						newDevice.deviceID = int(StringUtil.trim(breakups[0]));
+						newDevice.deviceUDID = StringUtil.trim(breakups[2]);
+						connectedDevices.push(newDevice);
 					}
 					else
 					{
@@ -292,8 +316,12 @@ package actionScripts.plugins.swflauncher
 					startShell(false);
 					return;
 				}
+				else
+				{
+					var deviceString:String = (Settings.os == "win") ? "&&" : "&&-device&&"+ newDevice.deviceID +"&&";
+					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
+				}
 				
-				//flush();
 				return;
 			}
 			
@@ -302,7 +330,6 @@ package actionScripts.plugins.swflauncher
 			match = data.match(/password/);
 			if (match)
 			{
-				//flush();
 				return;
 			}
 			
@@ -310,12 +337,18 @@ package actionScripts.plugins.swflauncher
 			if (match) 
 			{
 				print("NOTE: The application has been packaged with a shared runtime.");
-				//flush();
 				return;
 			}
 			
 			isErrorClose = false;
-			//flush();
 		}
 	}
+}
+
+class DeviceVO
+{
+	public var deviceID:int;
+	public var deviceUDID:String;
+	
+	public function DeviceVO() {}
 }
