@@ -381,6 +381,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			settings.sort(order);
 			return settings;
+			
 			/*
 			* @local
 			*/

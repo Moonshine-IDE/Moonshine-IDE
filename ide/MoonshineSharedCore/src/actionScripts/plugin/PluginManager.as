@@ -73,8 +73,8 @@ package actionScripts.plugin
 			registeredPlugins.sort(order);
 			
 			/*
-			 * @local
-			 */
+			* @local
+			*/
 			function order(a:Object, b:Object):Number
 			{ 
 				if (a.name < b.name) { return -1; } 
