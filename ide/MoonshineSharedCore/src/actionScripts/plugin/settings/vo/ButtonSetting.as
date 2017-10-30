@@ -30,21 +30,24 @@ package actionScripts.plugin.settings.vo
 		public static const STYLE_POSITIVE:String = "STYLE_POSITIVE";
 		
 		public var style:String;
-		public var handlerVariableName:String;
+		public var handlerName:String;
 		
 		private var rdr:ButtonRenderer;
+		private var _title:String;
 		
-		public function ButtonSetting(provider:Object, name:String, label:String, handlerVariableName:String, style:String=STYLE_NORMAL)
+		public function ButtonSetting(provider:Object, name:String, label:String, handlerName:String,
+									  title:String = null, style:String=STYLE_NORMAL)
 		{
 			super();
 			this.provider = provider;
 			this.name = name;
 			this.label = label;
+			this.title = title;
 			this.style = style;
 			
 			// instead of using any Function or Event (which may left footprint) 
 			// use a setter method to notify the owner 
-			this.handlerVariableName = handlerVariableName;
+			this.handlerName = handlerName;
 			
 			defaultValue = stringValue;
 		}
@@ -56,7 +59,18 @@ package actionScripts.plugin.settings.vo
 			rdr.enabled = _isEnabled;
 			return rdr;
 		}
-		
+
+		[Bindable]
+        public function get title():String
+        {
+            return _title;
+        }
+
+        public function set title(value:String):void
+        {
+            _title = value;
+        }
+
 		private var _isEnabled:Boolean = true;
 		public function set isEnabled(value:Boolean):void
 		{
@@ -67,5 +81,5 @@ package actionScripts.plugin.settings.vo
 		{
 			return _isEnabled;
 		}
-	}
+    }
 }

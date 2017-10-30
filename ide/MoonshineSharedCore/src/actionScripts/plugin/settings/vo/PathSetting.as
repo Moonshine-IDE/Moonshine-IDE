@@ -20,8 +20,6 @@ package actionScripts.plugin.settings.vo
 {
 	import mx.core.IVisualElement;
 	
-	import spark.filters.BlurFilter;
-	
 	import actionScripts.plugin.settings.renderers.PathRenderer;
 	
 	[Event(name="PATH_SELECTED", type="flash.events.Event")]
@@ -33,10 +31,9 @@ package actionScripts.plugin.settings.vo
 		public var directory:Boolean;
 		
 		private var isSDKPath:Boolean;
-		private var isDropDown:Boolean
+		private var isDropDown:Boolean;
 		private var rdr:PathRenderer;
-		private var myBlurFilter:BlurFilter = new BlurFilter();
-		
+
 		private var _isEditable:Boolean = true;
 		
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)

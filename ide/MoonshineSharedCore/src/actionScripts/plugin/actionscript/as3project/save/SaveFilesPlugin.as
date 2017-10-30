@@ -77,15 +77,7 @@ package actionScripts.plugin.actionscript.as3project.save
 			_workspacePath = value;
 			OSXBookmarkerNotifiers.workspaceLocation = value ? new FileLocation(_workspacePath) : null;
 		}
-		
-		public function get isResetCalled():Boolean {	return false;	}
-		public function set isResetCalled(value:Boolean):void
-		{
-			Alert.yesLabel = "Reset everything";
-			Alert.buttonWidth = 120;
-			Alert.show("Are you sure you want to reset all Moonshine settings?", "Warning!", Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite, onResetHandler, null, Alert.CANCEL);
-		}
-		
+
 		override public function activate():void 
 		{
 			super.activate();
@@ -118,7 +110,7 @@ package actionScripts.plugin.actionscript.as3project.save
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
 				new BooleanSetting(this,'isSaveFiles', 'Save automatically Before Build'),
-				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "isResetCalled", ButtonSetting.STYLE_DANGER)
+				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "resetApplication", null, ButtonSetting.STYLE_DANGER)
 			])
 		}
 		
@@ -150,5 +142,12 @@ package actionScripts.plugin.actionscript.as3project.save
 				}
 			}
 		}
-	}
+
+        public function resetApplication():void
+        {
+            Alert.yesLabel = "Reset everything";
+            Alert.buttonWidth = 120;
+            Alert.show("Are you sure you want to reset all Moonshine settings?", "Warning!", Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite, onResetHandler, null, Alert.CANCEL);
+        }
+    }
 }

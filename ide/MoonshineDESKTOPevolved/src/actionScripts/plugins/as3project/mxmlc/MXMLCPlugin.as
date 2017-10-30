@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import flash.desktop.NativeProcess;
+    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
+    import actionScripts.plugin.settings.vo.ButtonSetting;
+
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
@@ -38,8 +41,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
-	
-	import actionScripts.events.GeneralEvent;
+
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
@@ -49,7 +51,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.console.MarkupTextLineModel;
@@ -76,7 +77,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.SelectOpenedFlexProject;
-	import components.popup.UnsaveFileMessagePopup;
 	import components.views.project.TreeView;
 	
 	import org.as3commons.asblocks.utils.FileUtil;
@@ -92,9 +92,9 @@ package actionScripts.plugins.as3project.mxmlc
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
 		private var fcshPath:String = "bin/fcsh";
-		private var mxmlcPath:String = "bin/mxmlc"
+		private var mxmlcPath:String = "bin/mxmlc";
 		private var cmdFile:File;
-		private var _defaultFlexSDK:String
+		private var _defaultFlexSDK:String;
 		private var fcsh:NativeProcess;
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
@@ -110,12 +110,10 @@ package actionScripts.plugins.as3project.mxmlc
 		private var errors:String = "";
 		
 		private var cmdLine:CommandLine;
-		private var _instance:MXMLCPlugin;
 		private var	tempObj:Object;
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
-		private var pop:UnsaveFileMessagePopup;
 		
 		public function get flexSDK():File
 		{
@@ -270,7 +268,11 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			return Vector.<ISetting>([
 				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex® or FlexJS® SDK', true, defaultFlexSDK, true),
-				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation')
+				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
+				new ButtonSetting(new JavaSettingsProvider(),
+						"resetLabel", model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
+						,"resetJavaPath", "Java Development Kit Path",
+						ButtonSetting.STYLE_DANGER)
 			]);
 		}
 		
