@@ -33,16 +33,13 @@ package actionScripts.plugin.settings.vo
 		public var handlerName:String;
 		
 		private var rdr:ButtonRenderer;
-		private var _title:String;
-		
-		public function ButtonSetting(provider:Object, name:String, label:String, handlerName:String,
-									  title:String = null, style:String=STYLE_NORMAL)
+
+		public function ButtonSetting(provider:Object, name:String, label:String, handlerName:String, style:String=STYLE_NORMAL)
 		{
 			super();
 			this.provider = provider;
 			this.name = name;
 			this.label = label;
-			this.title = title;
 			this.style = style;
 			
 			// instead of using any Function or Event (which may left footprint) 
@@ -59,17 +56,6 @@ package actionScripts.plugin.settings.vo
 			rdr.enabled = _isEnabled;
 			return rdr;
 		}
-
-		[Bindable]
-        public function get title():String
-        {
-            return _title;
-        }
-
-        public function set title(value:String):void
-        {
-            _title = value;
-        }
 
 		private var _isEnabled:Boolean = true;
 		public function set isEnabled(value:Boolean):void
