@@ -110,7 +110,7 @@ package actionScripts.plugin.actionscript.as3project.save
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
 				new BooleanSetting(this,'isSaveFiles', 'Save automatically Before Build'),
-				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "resetApplication", null, ButtonSetting.STYLE_DANGER)
+				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "resetApplication", ButtonSetting.STYLE_DANGER)
 			])
 		}
 		

@@ -19,7 +19,6 @@
 package actionScripts.plugins.as3project.mxmlc
 {
     import actionScripts.plugin.settings.providers.JavaSettingsProvider;
-    import actionScripts.plugin.settings.vo.ButtonSetting;
 
     import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -269,10 +268,9 @@ package actionScripts.plugins.as3project.mxmlc
 			return Vector.<ISetting>([
 				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex® or FlexJS® SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
-				new ButtonSetting(new JavaSettingsProvider(),
-						"resetLabel", model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
-						,"resetJavaPath", "Java Development Kit Path",
-						ButtonSetting.STYLE_DANGER)
+				new PathSetting(new JavaSettingsProvider(),
+						"currentJavaPath",
+						"Java Development Kit Path", true)
 			]);
 		}
 		

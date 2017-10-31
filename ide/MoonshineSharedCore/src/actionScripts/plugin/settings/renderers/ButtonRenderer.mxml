@@ -23,7 +23,6 @@
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
   	xmlns:s="library://ns.adobe.com/flex/spark"
   	xmlns:mx="library://ns.adobe.com/flex/mx"
-	
 	width="100%"
 	paddingLeft="15" paddingRight="15" paddingTop="15" paddingBottom="15" verticalAlign="middle"
 	creationComplete="init()">
@@ -49,12 +48,8 @@
 		]]>
 	</fx:Script>
 
-	<s:VGroup>
-		<s:Label styleName="uiTextSettingsValue" text="{setting.title}"
-				 visible="{setting.title != null}" includeInLayout="{setting.title != null}"/>
-		<s:Label styleName="uiTextSettingsLabel"
-				 text="{setting.label}" />
-	</s:VGroup>
+	<s:Label styleName="uiTextSettingsLabel"
+			 text="{setting.label}" />
 
 	<mx:Spacer width="100%"/>
 	

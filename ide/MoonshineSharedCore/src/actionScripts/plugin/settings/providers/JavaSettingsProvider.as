@@ -18,67 +18,71 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.providers
 {
+    import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
-    import actionScripts.ui.tabview.CloseTabEvent;
-
-    import flash.display.DisplayObject;
-
-    import flash.display.Sprite;
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.net.SharedObject;
-
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
 
     public class JavaSettingsProvider implements ISettingsProvider
     {
-        public var resetLabel:String = "Reset Java path";
-
+        private var model:IDEModel = IDEModel.getInstance();
+        private var _currentJavaPath:String;
+        
         public function JavaSettingsProvider()
         {
+            _currentJavaPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
         }
 
         public function getSettingsList():Vector.<ISetting>
         {
             return null;
         }
-        
-        public function resetJavaPath():void
+
+        public function get currentJavaPath():String
         {
-            Alert.yesLabel = "Reset";
-            Alert.buttonWidth = 120;
-            Alert.show("Are you sure you want to reset the Java Development Kit path?", "Warning!",
-                    Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite,
-                    onResetHandler, null, Alert.CANCEL);
+            return _currentJavaPath;
         }
 
-        private function onResetHandler(event:CloseEvent):void
+        public function set currentJavaPath(value:String):void
         {
-            var model:IDEModel = IDEModel.getInstance();
-            if (!model.javaPathForTypeAhead) return;
-            
-            var cookie:SharedObject = SharedObject.getLocal("moonshine-ide-local");
-            var dispatcher:EventDispatcher = GlobalEventDispatcher.getInstance();
-
-            Alert.yesLabel = "Yes";
-            Alert.buttonWidth = 65;
-            if (event.detail == Alert.YES)
+            if (_currentJavaPath != value)
             {
-                if (model.activeEditor)
+                _currentJavaPath = value;
+
+                if (!value)
                 {
-                    delete cookie.data["javaPathForTypeahead"];
-                    model.javaPathForTypeAhead = null;
-                    
-                    dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, model.activeEditor as DisplayObject));
-                    dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
+                    resetJavaPath();
+                }
+                else
+                {
+                    setNewJavaPath();
                 }
             }
+        }
+
+        private function resetJavaPath():void
+        {
+            if (!model.javaPathForTypeAhead) return;
+
+            var cookie:SharedObject = SharedObject.getLocal("moonshine-ide-local");
+            if (model.activeEditor)
+            {
+                delete cookie.data["javaPathForTypeahead"];
+                model.javaPathForTypeAhead = null;
+
+                cookie.flush();
+            }
+        }
+
+        private function setNewJavaPath():void
+        {
+            model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
+            GlobalEventDispatcher
+                    .getInstance()
+                    .dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
         }
     }
 }
