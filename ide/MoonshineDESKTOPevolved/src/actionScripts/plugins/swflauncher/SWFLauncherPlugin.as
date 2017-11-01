@@ -29,7 +29,6 @@ package actionScripts.plugins.swflauncher
 	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -44,6 +43,7 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.plugins.swflauncher.launchers.DeviceLauncher;
 	
 	public class SWFLauncherPlugin extends PluginBase
 	{	
@@ -218,6 +218,12 @@ package actionScripts.plugins.swflauncher
 				processArgs.push("extendedDesktop");
 			}
 			
+			if (project.nativeExtensions && project.nativeExtensions.length > 0)
+			{
+				var relativeExtensionFolderPath:String = project.folderLocation.fileBridge.getRelativePath(project.nativeExtensions[0], true);
+				processArgs.push("-extdir");
+				processArgs.push(relativeExtensionFolderPath +"/");
+			}
 			processArgs.push(appXML);
 			//processArgs.push(rootPath);
 			

@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.swflauncher
+package actionScripts.plugins.swflauncher.launchers
 {
 	import com.adobe.utils.StringUtil;
 	
