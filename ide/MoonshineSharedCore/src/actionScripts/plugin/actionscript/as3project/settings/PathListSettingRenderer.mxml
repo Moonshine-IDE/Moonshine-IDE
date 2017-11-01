@@ -27,10 +27,12 @@
   	paddingTop="15"
   	paddingBottom="5"
   	paddingLeft="15"
-  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*">
+  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+	creationComplete="onCreationCompletes(event)">
 	
 	<fx:Script>
 		<![CDATA[
+			import mx.events.FlexEvent;
 			
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
@@ -154,6 +156,11 @@
 				setting.paths.addItem(item);
 			}
 		
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (setting.customMessage) addElement(setting.customMessage);
+			}
+			
 		]]>
 	</fx:Script>
 	

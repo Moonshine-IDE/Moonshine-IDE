@@ -35,6 +35,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 		public var allowFolders:Boolean;
 		public var fileMustExist:Boolean;
 		public var relativeRoot:FileLocation;
+		public var customMessage:IVisualElement;
 		
 		private var rdr:PathListSettingRenderer;
 		

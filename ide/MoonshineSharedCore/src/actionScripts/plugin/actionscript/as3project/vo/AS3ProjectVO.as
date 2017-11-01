@@ -19,11 +19,16 @@
 package actionScripts.plugin.actionscript.as3project.vo
 {
     import flash.events.Event;
+    import flash.events.MouseEvent;
     
     import mx.collections.ArrayCollection;
+    import mx.controls.LinkButton;
+    
+    import spark.components.Label;
     
     import __AS3__.vec.Vector;
     
+    import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
@@ -47,6 +52,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 	public class AS3ProjectVO extends ProjectVO
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
+		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
 		
 		public static const TEST_MOVIE_EXTERNAL_PLAYER:String = "ExternalPlayer";
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
@@ -258,6 +264,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
 			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 			
+			var nativeExtensionSettings:PathListSetting = new PathListSetting(this, "nativeExtensions", "Native extensions folder", folderLocation, false, true);
+			var tmpLinkLabel:LinkButton = new LinkButton();
+			tmpLinkLabel.label = "(Important: Know how Moonshine supports native extension)";
+			tmpLinkLabel.setStyle("color", 0x8e3b4e);
+			tmpLinkLabel.addEventListener(MouseEvent.CLICK, dispatchNativeExtensionMessageRequest, false, 0, true);
+			nativeExtensionSettings.customMessage = tmpLinkLabel;
+			
 			if (!isFlashBuilderProject)
 			{
 				settings = Vector.<SettingsWrapper>([
@@ -291,7 +304,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 							new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
 							new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
 							new PathListSetting(this, "libraries", "Libraries", folderLocation),
-							new PathListSetting(this, "nativeExtensions", "Native extensions folder", folderLocation, false, true)
+							nativeExtensionSettings
 						])
 					),
 					new SettingsWrapper("Warnings & Errors",
@@ -359,7 +372,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
 							new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
 							new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
-							new PathListSetting(this, "libraries", "Libraries", folderLocation)
+							new PathListSetting(this, "libraries", "Libraries", folderLocation),
+							nativeExtensionSettings
 						])
 					),
 					new SettingsWrapper("Warnings & Errors",
@@ -438,6 +452,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 			config.write(this);
 			configInvalid = false;
 			//}
+		}
+		
+		private function dispatchNativeExtensionMessageRequest(event:MouseEvent):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE));
 		}
 	}
 }
