@@ -18,67 +18,67 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
-
     import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.display.DisplayObject;
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
-	import flash.filesystem.File;
-	import flash.utils.Dictionary;
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
-	import flash.utils.setTimeout;
-	
-	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-	import mx.resources.ResourceManager;
-
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.StatusBarEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
-	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-	import actionScripts.plugin.console.MarkupTextLineModel;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.event.SetSettingsEvent;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
-	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.utils.HtmlFormatter;
-	import actionScripts.utils.NoSDKNotifier;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import actionScripts.utils.SDKUtils;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectReferenceVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.Settings;
-	
-	import components.popup.SelectOpenedFlexProject;
-	import components.views.project.TreeView;
-	
-	import org.as3commons.asblocks.utils.FileUtil;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
+    import flash.display.Sprite;
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.utils.Dictionary;
+    import flash.utils.IDataInput;
+    import flash.utils.IDataOutput;
+    import flash.utils.setTimeout;
+    
+    import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    import mx.resources.ResourceManager;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RefreshTreeEvent;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.actionscript.mxmlc.CommandLine;
+    import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+    import actionScripts.plugin.console.MarkupTextLineModel;
+    import actionScripts.plugin.core.compiler.CompilerEventBase;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.event.SetSettingsEvent;
+    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
+    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+    import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
+    import actionScripts.ui.editor.text.DebugHighlightManager;
+    import actionScripts.ui.editor.text.TextLineModel;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.utils.HtmlFormatter;
+    import actionScripts.utils.NoSDKNotifier;
+    import actionScripts.utils.OSXBookmarkerNotifiers;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
+    
+    import components.popup.SelectOpenedFlexProject;
+    import components.views.project.TreeView;
+    
+    import org.as3commons.asblocks.utils.FileUtil;
 	
 	public class MXMLCPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -685,6 +685,31 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					output = " -o " + pvo.folderLocation.fileBridge.getRelativePath(new FileLocation(outputFile.nativePath));
 					if (outputFile.exists == false) FileUtil.createFile(outputFile);
+				}
+				
+				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
+				{
+					var extensionArgs:String = "";
+					var relativeExtensionFolderPath:String = pvo.folderLocation.fileBridge.getRelativePath(pvo.nativeExtensions[0], true);
+					var tmpExtensionFiles:Array = pvo.nativeExtensions[0].fileBridge.getDirectoryListing();
+					for (var i:int = 0; i < tmpExtensionFiles.length; i++)
+					{
+						if (tmpExtensionFiles[i].extension == "ane" && !tmpExtensionFiles[i].isDirectory) 
+						{
+							extensionArgs += " -external-library-path+="+ relativeExtensionFolderPath +"/"+ tmpExtensionFiles[i].name;
+						}
+						else
+						{
+							tmpExtensionFiles.splice(i, 1);
+							i--;
+						}
+					}
+					
+					if (extensionArgs != "") 
+					{
+						buildArgs += extensionArgs;
+						if (pvo.air && pvo.buildOptions.isMobileRunOnSimulator) new NativeExtensionExpander(tmpExtensionFiles);
+					}
 				}
 				
 				var mxmlcStr:String = "mxmlc"

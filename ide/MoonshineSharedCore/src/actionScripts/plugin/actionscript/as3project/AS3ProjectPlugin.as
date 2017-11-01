@@ -42,6 +42,7 @@ package actionScripts.plugin.actionscript.as3project
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
+	import components.popup.NativeExtensionMessagePopup;
 	import components.popup.OpenFlexProject;
 	
 	public class AS3ProjectPlugin extends PluginBase
@@ -60,6 +61,7 @@ package actionScripts.plugin.actionscript.as3project
 		private var flashBuilderProjectFile:FileLocation;
 		private var flashDevelopProjectFile:FileLocation;
 		private var nonProjectFolderLocation:FileLocation;
+		private var aneMessagePopup:NativeExtensionMessagePopup;
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
 		override public function get author():String 		{return "Moonshine Project Team";}
@@ -76,6 +78,7 @@ package actionScripts.plugin.actionscript.as3project
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
 			dispatcher.addEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
+			dispatcher.addEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
 			
 			super.activate();
 		}
@@ -85,6 +88,7 @@ package actionScripts.plugin.actionscript.as3project
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
 			dispatcher.removeEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
+			dispatcher.removeEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
 			
 			super.deactivate();
 		}
@@ -271,6 +275,26 @@ package actionScripts.plugin.actionscript.as3project
 			if (!canCreateProject(event)) return;
 			
 			model.flexCore.createProject(event);
+		}
+		
+		private function onNativeExtensionMessage(event:Event):void
+		{
+			if (!aneMessagePopup)
+			{
+				aneMessagePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NativeExtensionMessagePopup) as NativeExtensionMessagePopup;
+				aneMessagePopup.addEventListener(CloseEvent.CLOSE, onAneMessageClosed, false, 0, true);
+				PopUpManager.centerPopUp(aneMessagePopup);
+			}
+			else
+			{
+				PopUpManager.bringToFront(aneMessagePopup);
+			}
+		}
+		
+		private function onAneMessageClosed(event:CloseEvent):void
+		{
+			aneMessagePopup.removeEventListener(CloseEvent.CLOSE, onAneMessageClosed);
+			aneMessagePopup = null;
 		}
 
         private function canCreateProject(event:NewProjectEvent):Boolean
