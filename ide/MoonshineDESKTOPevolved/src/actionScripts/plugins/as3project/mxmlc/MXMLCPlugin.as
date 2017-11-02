@@ -460,7 +460,7 @@ package actionScripts.plugins.as3project.mxmlc
 			UtilsCore.checkIfFlexJSApplication(as3Pvo);
 			
 			// Read file content to indentify the project type regular flex application or flexjs applicatino
-			if (as3Pvo.FlexJS)
+			if (as3Pvo.isFlexJS)
 			{
 				// terminate if it's a debug call against FlexJS
 				if (debugAfterBuild)
@@ -544,32 +544,52 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
-				
-				var processArgs:Vector.<String> = new Vector.<String>;
+
 				shellInfo = new NativeProcessStartupInfo();
-				
-				var FlexJSCompileStr:String = compile(pvo as AS3ProjectVO, release);
-				FlexJSCompileStr = FlexJSCompileStr.substring(FlexJSCompileStr.indexOf(" -load-config"),FlexJSCompileStr.length);
-				if(Settings.os == "win")
-				{
-					processArgs.push("/c");
-					processArgs.push("set FLEX_HOME="+ SDKstr +"&& "+ fschstr + FlexJSCompileStr + (isFlexJSAfter7 ? " -compiler.targets=SWF" : ""));
-				}
-				else
-				{
-					processArgs.push("-c");
-					processArgs.push("export FLEX_HOME="+SDKstr+"&&"+"export FALCON_HOME="+SDKstr+"&&"+fschstr + FlexJSCompileStr + (isFlexJSAfter7 ? " -compiler.targets=SWF" : ""));
-				}
-				//var workingDirectory:File = currentSDK.resolvePath("bin/");
-				
-				shellInfo.arguments = processArgs;
+
+				shellInfo.arguments = getFlexJSBuildArgs(pvo as AS3ProjectVO);
 				shellInfo.executable = cmdFile;
 				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 				
 				initShell();
 			}
 		}
-		
+
+        private function getFlexJSBuildArgs(project:AS3ProjectVO):Vector.<String>
+        {
+            // determine if the sdk version is lower than 0.8.0 or not
+            var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
+            var processArgs:Vector.<String> = new Vector.<String>();
+
+            var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+            var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
+            var compilerArg:String = "&& " + fschstr;
+			
+			project.buildOptions.optimize = true;
+            var configArg:String = compile(project as AS3ProjectVO, release);
+            configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
+
+            var additionalBuildArgs:String = " " + project.buildOptions.getArguments();
+            var jsCompilationArg:String = isFlexJSAfter7 ? " -compiler.targets=SWF" : "";
+
+            if(Settings.os == "win")
+            {
+                processArgs.push("/c");
+                processArgs.push("set ".concat(
+                        sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                ));
+            }
+            else
+            {
+                processArgs.push("-c");
+                processArgs.push("export ".concat(
+                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                ));
+            }
+
+            return processArgs;
+        }
+
 		private function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 

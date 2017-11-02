@@ -642,21 +642,28 @@ package actionScripts.utils
 		 */
 		public static function checkIfFlexJSApplication(project:AS3ProjectVO):void
 		{
-			// probable termination
-			if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
-			
-			var tmpContent:String = project.targets[0].fileBridge.read() as String;
-			if ((tmpContent.indexOf("js:Application") > -1 || tmpContent.indexOf("mdl:Application") > -1) && tmpContent.indexOf("library://ns.apache.org/flexjs/basic") > -1)
-			{
-				// FlexJS Application
-				project.FlexJS  = true;
-				// FlexJS MDL applicaiton
-				if (tmpContent.indexOf("mdl:Application") > -1) project.isMDLFlexJS = true;
-			}
-			else
-			{
-				project.FlexJS = project.isMDLFlexJS = false;
-			}
+            // probable termination
+            if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
+
+            var mainAppContent:String = project.targets[0].fileBridge.read() as String;
+			var isMdlApp:Boolean = mainAppContent.indexOf("mdl:Application") > -1;
+		    var hasRoyaleNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/basic") > -1;
+			var hasFlexJSNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/flexjs/basic") > -1;
+
+            if ((mainAppContent.indexOf("js:Application") > -1 || isMdlApp) &&
+				(hasFlexJSNamespace || hasRoyaleNamespace))
+            {
+                // FlexJS Application
+                project.isFlexJS  = true;
+				project.isRoyale = hasRoyaleNamespace;
+				
+                // FlexJS MDL applicaiton
+                project.isMDLFlexJS = isMdlApp;
+            }
+            else
+            {
+                project.isFlexJS = project.isMDLFlexJS = project.isRoyale = false;
+            }
 		}
 		
 		/**
