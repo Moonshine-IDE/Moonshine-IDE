@@ -68,8 +68,10 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
-	
-	public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
+
+    import mx.utils.StringUtil;
+
+    public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		override public function get name():String			{ return "MXMLC Java Script Compiler Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
@@ -124,7 +126,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var errors:String = "";
 		
 		private var cmdLine:CommandLine;
-		private var _instance:MXMLCJavaScriptPlugin;
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -304,10 +305,7 @@ package actionScripts.plugins.as3project.mxmlc
 					error("No FlexJS SDK found. Setup one in Settings menu.");
 					return;
 				}
-				
-				// determine if the sdk version is lower than 0.8.0 or not
-				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-				
+
 				var fschFile:File = currentSDK.resolvePath(fcshPath);
 				if (!fschFile.exists)
 				{
@@ -328,41 +326,23 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
-				var buildArgs:String = as3Pvo.buildOptions.getArguments();
 				
 				UtilsCore.checkIfFlexJSApplication(as3Pvo);
-				if (as3Pvo.FlexJS)
+				if (as3Pvo.isFlexJS)
 				{
 					// FlexJS Application
 					var processArgs:Vector.<String> = new Vector.<String>;
 					shellInfo = new NativeProcessStartupInfo();
 					fschstr = fschFile.nativePath;
 					fschstr = UtilsCore.convertString(fschstr);
-					
 					SDKstr = currentSDK.nativePath;
 					SDKstr = UtilsCore.convertString(SDKstr);
 					
 					// update build config file
 					as3Pvo.updateConfig();
-					
-					if(Settings.os == "win")
-					{
-						processArgs.push("/c");
-						processArgs.push("set FLEX_HOME="+ SDKstr +"&& "+ fschstr +" -load-config+="+as3Pvo.folderLocation.fileBridge.getRelativePath(as3Pvo.config.file) +" "+ buildArgs +(isFlexJSAfter7 ? " -compiler.targets=JSFlex" : ""));
-					}
-					else
-					{
-						/*if (!isQuarantined)
-						{
-						onGBAWriteFileCompleted(null);
-							//quarantineExecutables(as3Pvo, fschstr);
-							return;
-						}*/
-						
-						processArgs.push("-c");
-						processArgs.push("export FLEX_HOME="+ SDKstr +"&&export FALCON_HOME="+ SDKstr +"&&"+ fschstr +" -load-config+="+as3Pvo.folderLocation.fileBridge.getRelativePath(as3Pvo.config.file) +" "+ buildArgs +(isFlexJSAfter7 ? " -compiler.targets=JSFlex" : ""));
-					}
-					
+
+					processArgs = getBuildArgs(as3Pvo);
+
 					shellInfo.arguments = processArgs;
 					shellInfo.executable = cmdFile;
 					shellInfo.workingDirectory = activeProject.folderLocation.fileBridge.getFile as File;
@@ -379,7 +359,44 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			debug("SDK path: %s", currentSDK.nativePath);
 		}
-		
+
+		private function getBuildArgs(project:AS3ProjectVO):Vector.<String>
+		{
+            // determine if the sdk version is lower than 0.8.0 or not
+            var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
+            var processArgs:Vector.<String> = new Vector.<String>();
+
+			var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+			var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
+			var compilerArg:String = "&& " + fschstr;
+			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
+			var additionalBuildArgs:String = project.buildOptions.getArguments();
+			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
+
+			var jsCompilationArg:String = "";
+			if (isFlexJSAfter7)
+			{
+				jsCompilationArg = project.isRoyale ? " -compiler.targets=JSRoyale" : " -compiler.targets=JSFlex";
+			}
+
+            if(Settings.os == "win")
+            {
+                processArgs.push("/c");
+                processArgs.push("set ".concat(
+						sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+				));
+            }
+            else
+            {
+                processArgs.push("-c");
+                processArgs.push("export ".concat(
+                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                ));
+            }
+
+			return processArgs;
+		}
+
 		private function clearConsoleBeforeRun():void
 		{
 			if (ConstantsCoreVO.IS_CONSOLE_CLEARED_ONCE) clearOutput();

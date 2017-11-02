@@ -26,7 +26,6 @@ package actionScripts.plugins.swflauncher.launchers
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.system.Capabilities;
 	import flash.utils.IDataInput;
 	
 	import mx.controls.Alert;
@@ -40,7 +39,8 @@ package actionScripts.plugins.swflauncher.launchers
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
-	import actionScripts.valueObjects.Settings;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class DeviceLauncher extends ConsoleOutputter
 	{
@@ -79,35 +79,18 @@ package actionScripts.plugins.swflauncher.launchers
 			// STEP 1
 			//var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			var executableFile:File;
-			if (model.javaPathForTypeAhead) 
+			if (!ConstantsCoreVO.IS_MACOS && windowsAutoJavaLocation) executableFile = windowsAutoJavaLocation;
+			else 
 			{
-				executableFile = model.javaPathForTypeAhead.fileBridge.getFile as File;
+				var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
+				if (tmpExecutableJava) executableFile = tmpExecutableJava.fileBridge.getFile as File;
+				if (!ConstantsCoreVO.IS_MACOS && !windowsAutoJavaLocation) windowsAutoJavaLocation = executableFile;
 			}
-			else
+			
+			if (!executableFile || !executableFile.exists)
 			{
-				if (Settings.os != "win") executableFile = new File("/usr/bin/java");
-				else 
-				{
-					if (!windowsAutoJavaLocation)
-					{
-						var javaFolder:String = Capabilities.supports64BitProcesses ? "Program Files (x86)" : "Program Files";
-						var tmpJavaLocation:File = new File("C:/"+ javaFolder +"/Java");
-						if (tmpJavaLocation.exists)
-						{
-							var javaFiles:Array = tmpJavaLocation.getDirectoryListing();
-							for each (var j:File in javaFiles)
-							{
-								if (j.nativePath.indexOf("jre") != -1)
-								{
-									windowsAutoJavaLocation = new File(j.nativePath +"\\bin\\javaw.exe");
-									executableFile = windowsAutoJavaLocation;
-								}
-							}
-						}
-					}
-					else
-						executableFile = windowsAutoJavaLocation;
-				}
+				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
+				return;
 			}
 			
 			if (customProcess) startShell(false);
@@ -269,37 +252,84 @@ package actionScripts.plugins.swflauncher.launchers
 		private function shellData(e:ProgressEvent):void 
 		{
 			var output:IDataInput = customProcess.standardOutput;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
+			var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 			var match:Array;
 			
-			match = data.toLowerCase().match(/set flex_home/);
+			match = data.match(/set flex_home/);
 			if (match)
 			{
 				return;
 			}
 			
-			match = data.toLowerCase().match(/list of attached devices/);
+			// osx return
+			match = data.match(/list of attached devices/);
 			if (match)
+			{
+				onDeviceListFound();
+				return;
+			}
+			
+			// windows return
+			match = data.match(/list of devices attached/);
+			if (match)
+			{
+				onDeviceListFound();
+				return;
+			}
+			
+			match = data.match(/password/);
+			if (match)
+			{
+				return;
+			}
+			
+			match = data.match(/the application has been packaged with a shared runtime/);
+			if (match) 
+			{
+				print("NOTE: The application has been packaged with a shared runtime.");
+				return;
+			}
+			
+			isErrorClose = false;
+			
+			/*
+			 * @local
+			 */
+			function onDeviceListFound():void
 			{
 				/*
 				@example
+				@osx
 				List of attached devices:
 				Handle	DeviceClass	DeviceUUID					DeviceName
-				1	iPad    	6de82fb31xxxxxxxxxxxxcc8	My iPad*/
-
+				1	iPad    	6de82fb31xxxxxxxxxxxxcc8	My iPad
+				
+				@windows
+				list of devices attached
+				h7azcyxxxx32	device
+				*/
+				
 				var devicesLines:Array = data.split("\n");
 				devicesLines.shift(); // one
-				devicesLines.shift(); // two
+				if (ConstantsCoreVO.IS_MACOS) devicesLines.shift(); // two
 				connectedDevices = new Vector.<String>();
 				for (var i:String in devicesLines)
 				{
-					if (devicesLines[i] != "")
+					if (StringUtil.trim(devicesLines[i]).length != 0)
 					{
 						var newDevice:DeviceVO = new DeviceVO();
 						var breakups:Array = devicesLines[i].split("\t");
 						
-						newDevice.deviceID = int(StringUtil.trim(breakups[0]));
-						newDevice.deviceUDID = StringUtil.trim(breakups[2]);
+						if (ConstantsCoreVO.IS_MACOS)
+						{
+							newDevice.deviceID = int(StringUtil.trim(breakups[0]));
+							newDevice.deviceUDID = StringUtil.trim(breakups[2]);
+						}
+						else
+						{
+							newDevice.deviceUDID = StringUtil.trim(breakups[0]);
+						}
+						
 						connectedDevices.push(newDevice);
 					}
 					else
@@ -317,29 +347,10 @@ package actionScripts.plugins.swflauncher.launchers
 				}
 				else
 				{
-					var deviceString:String = (Settings.os == "win") ? "&&" : "&&-device&&"+ newDevice.deviceID +"&&";
+					var deviceString:String = !ConstantsCoreVO.IS_MACOS ? "&&" : "&&-device&&"+ newDevice.deviceID +"&&";
 					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
 				}
-				
-				return;
 			}
-			
-			data = data.toLowerCase();
-			
-			match = data.match(/password/);
-			if (match)
-			{
-				return;
-			}
-			
-			match = data.match(/the application has been packaged with a shared runtime/);
-			if (match) 
-			{
-				print("NOTE: The application has been packaged with a shared runtime.");
-				return;
-			}
-			
-			isErrorClose = false;
 		}
 	}
 }

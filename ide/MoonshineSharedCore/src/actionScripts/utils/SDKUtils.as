@@ -405,7 +405,7 @@ package actionScripts.utils
 
             if (sdk && sdk.fileBridge.exists)
             {
-                var configFile: FileLocation = sdk.resolvePath("frameworks/flex-config.xml");
+				var configFile:FileLocation = getSDKConfig(sdk);
                 if (configFile.fileBridge.exists)
                 {
                     // for async type of read and update to specific object's field
@@ -442,7 +442,7 @@ package actionScripts.utils
 
             if (sdk && sdk.fileBridge.exists)
             {
-                var configFile: FileLocation = sdk.resolvePath("frameworks/flex-config.xml");
+                var configFile:FileLocation = getSDKConfig(sdk);
                 if (configFile.fileBridge.exists)
                 {
 					var tmpConfigXML: XML = XML(configFile.fileBridge.read());
@@ -462,6 +462,17 @@ package actionScripts.utils
 		{
 			isSDKExtractionFailed = true;
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(EVENT_SDK_EXTRACTION_FAILED));
+		}
+
+		private static function getSDKConfig(sdkLocation:FileLocation):FileLocation
+		{
+            var configFile: FileLocation = sdkLocation.resolvePath("frameworks/royale-config.xml");
+            if (!configFile.fileBridge.exists)
+            {
+                configFile = sdkLocation.resolvePath("frameworks/flex-config.xml");
+            }
+
+			return configFile;
 		}
 	}
 }

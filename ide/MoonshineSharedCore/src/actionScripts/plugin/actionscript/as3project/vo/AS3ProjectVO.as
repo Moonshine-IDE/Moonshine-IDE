@@ -87,8 +87,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var prebuildCommands:String;
 		public var postbuildCommands:String;
 		public var postbuildAlways:Boolean;
-
-
+		public var isFlexJS:Boolean;
+		public var isMDLFlexJS:Boolean;
+		public var isRoyale:Boolean;
+		
 		public var testMovie:String = TEST_MOVIE_EXTERNAL_PLAYER;
 		public var testMovieCommand:String;
 		public var defaultBuildTargets:String;
@@ -99,9 +101,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var flashDevelopObjConfig:XML;
 		public var isFlashBuilderProject:Boolean;
 		public var flashBuilderDOCUMENTSPath:String;
-		
-        public var FlexJS:Boolean = false;
-        public var isMDLFlexJS:Boolean;
+
         public var isMobile:Boolean;
         public var isProjectFromExistingSource:Boolean;
 		public var isVisualEditorProject:Boolean;
@@ -220,7 +220,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				if (htmlPath) return htmlPath.fileBridge.nativePath;
 				
-				var html:FileLocation = !FlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
+				var html:FileLocation = !isFlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
 				htmlPath = html;
 				
 				return htmlPath.fileBridge.nativePath;
