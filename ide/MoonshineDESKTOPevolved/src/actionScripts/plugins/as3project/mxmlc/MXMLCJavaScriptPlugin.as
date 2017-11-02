@@ -68,8 +68,10 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
-	
-	public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
+
+    import mx.utils.StringUtil;
+
+    public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		override public function get name():String			{ return "MXMLC Java Script Compiler Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
@@ -368,7 +370,9 @@ package actionScripts.plugins.as3project.mxmlc
 			var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
 			var compilerArg:String = "&& " + fschstr;
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
-			var additionalBuildArgs:String = " " + project.buildOptions.getArguments();
+			var additionalBuildArgs:String = project.buildOptions.getArguments();
+			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
+
 			var jsCompilationArg:String = "";
 			if (isFlexJSAfter7)
 			{
