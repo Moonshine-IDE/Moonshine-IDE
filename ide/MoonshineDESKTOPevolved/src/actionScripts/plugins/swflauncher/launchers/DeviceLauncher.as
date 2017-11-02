@@ -26,7 +26,6 @@ package actionScripts.plugins.swflauncher.launchers
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.system.Capabilities;
 	import flash.utils.IDataInput;
 	
 	import mx.controls.Alert;
@@ -42,7 +41,6 @@ package actionScripts.plugins.swflauncher.launchers
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Settings;
 
 	public class DeviceLauncher extends ConsoleOutputter
 	{

@@ -29,10 +29,8 @@ package actionScripts.plugins.swflauncher.launchers
 	import mx.controls.Alert;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Settings;
 
 	public class NativeExtensionExpander
 	{
@@ -71,21 +69,25 @@ package actionScripts.plugins.swflauncher.launchers
 			}
 			else
 			{
-				processArgs.push("/c");
-				processArgs.push("jar xf ../"+ byANE.name);
+				processArgs.push("xf");
+				processArgs.push("..\\"+ byANE.name);
 			}
 			
 			var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
-			if (!ConstantsCoreVO.IS_MACOS && !tmpExecutableJava)
+			if (!ConstantsCoreVO.IS_MACOS && (!tmpExecutableJava || !tmpExecutableJava.fileBridge.exists))
 			{
 				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
 				return;
 			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+			{
+				tmpExecutableJava = tmpExecutableJava.fileBridge.parent.resolvePath("jar.exe");
+			}
 			
 			var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			shellInfo.arguments = processArgs;
 			shellInfo.executable = ConstantsCoreVO.IS_MACOS ? new File("/bin/bash") : tmpExecutableJava.fileBridge.getFile as File;
 			shellInfo.workingDirectory = toFolder;
-			shellInfo.arguments = processArgs;
 			
 			var fcsh:NativeProcess = new NativeProcess();
 			startShell(fcsh, shellInfo);
