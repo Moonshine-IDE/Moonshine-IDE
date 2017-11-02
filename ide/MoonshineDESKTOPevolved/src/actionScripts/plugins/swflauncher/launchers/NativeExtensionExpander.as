@@ -26,6 +26,12 @@ package actionScripts.plugins.swflauncher.launchers
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	
+	import mx.controls.Alert;
+	
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
 	public class NativeExtensionExpander
@@ -58,18 +64,26 @@ package actionScripts.plugins.swflauncher.launchers
 		private function startUnzipProcess(toFolder:File, byANE:File):void
 		{
 			var processArgs:Vector.<String> = new Vector.<String>;
-			if (Settings.os == "win")
-			{
-				processArgs.push("/c");
-			}
-			else
+			if (ConstantsCoreVO.IS_MACOS)
 			{
 				processArgs.push("-c");
 				processArgs.push("unzip ../"+ byANE.name);
 			}
+			else
+			{
+				processArgs.push("/c");
+				processArgs.push("jar xf ../"+ byANE.name);
+			}
+			
+			var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
+			if (!ConstantsCoreVO.IS_MACOS && !tmpExecutableJava)
+			{
+				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
+				return;
+			}
 			
 			var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			shellInfo.executable = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			shellInfo.executable = ConstantsCoreVO.IS_MACOS ? new File("/bin/bash") : tmpExecutableJava.fileBridge.getFile as File;
 			shellInfo.workingDirectory = toFolder;
 			shellInfo.arguments = processArgs;
 			

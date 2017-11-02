@@ -20,9 +20,11 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.geom.Point;
+	import flash.system.Capabilities;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -655,6 +657,45 @@ package actionScripts.utils
 			{
 				project.FlexJS = project.isMDLFlexJS = false;
 			}
+		}
+		
+		/**
+		 * Returns possible Java exeuctable in system
+		 */
+		public static function getJavaPath():FileLocation
+		{
+			var executableFile:FileLocation;
+			var model:IDEModel = IDEModel.getInstance();
+			
+			if (ConstantsCoreVO.IS_MACOS) executableFile = new FileLocation("/usr/bin/java");
+			else 
+			{
+				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists) 
+				{
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\bin\\javaw.exe");
+					if (!executableFile.fileBridge.exists) executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\javaw.exe"); // in case of user setup by 'javaPath/bin'
+				}
+				else
+				{
+					var javaFolder:String = Capabilities.supports64BitProcesses ? "Program Files (x86)" : "Program Files";
+					var tmpJavaLocation:FileLocation = new FileLocation("C:/"+ javaFolder +"/Java");
+					if (tmpJavaLocation.fileBridge.exists)
+					{
+						var javaFiles:Array = tmpJavaLocation.fileBridge.getDirectoryListing();
+						for each (var j:Object in javaFiles)
+						{
+							if (j.nativePath.indexOf("jre") != -1)
+							{
+								executableFile = new FileLocation(j.nativePath +"\\bin\\javaw.exe");
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			// finally
+			return executableFile;
 		}
 	}
 }
