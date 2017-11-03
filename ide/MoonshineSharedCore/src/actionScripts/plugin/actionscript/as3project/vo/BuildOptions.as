@@ -122,6 +122,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var dpairs:Object = defaultOptions.getArgumentPairs();
 			var args:String = "";
 			for (var p:String in pairs) {
+				if (isArgumentExistsInAdditionalOptions(p))
+				{
+					continue;
+                }
+				
 				if (pairs[p] != dpairs[p]) {
 					args += " -"+p+"="+pairs[p];
 				}
@@ -145,29 +150,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			return args;
 		}
-		private function getArgumentPairs():Object {
-			return {
-				"load-config+"							:	loadConfig,
-				"accessible"							:	accessible,
-				"allow-source-path-overlap"				:	allowSourcePathOverlap,
-				"benchmark"								:	benchmark,
-				"es"									:	es,
-				"as3"									:	!es,
-				"optimize"								:	optimize,
-				"show-actionscript-warnings"			:	showActionScriptWarnings,
-				"show-binding-warnings"					:	showBindingWarnings,
-				"show-deprecation-warnings"				:	showDeprecationWarnings,
-				"show-unused-type-selector-warnings"	:	showUnusedTypeSelectorWarnings,
-				"strict"								:	strict,
-				"use-network"							:	useNetwork,
-				"use-resource-bundle-metadata"			:	useResourceBundleMetadata,
-				"warnings"								:	warnings,
-				"verbose-stacktraces"					:	verboseStackTraces,
-				"link-report"							:	linkReport,
-				"static-link-runtime-shared-libraries"	:	staticLinkRSL
-			}
-		}
-		
+
 		public function parse(build:XMLList, parseType:String=TYPE_FD):void 
 		{
 			if (parseType == TYPE_FD)
@@ -244,6 +227,41 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			return build;
 		}
-		
-	}
+
+		private function isArgumentExistsInAdditionalOptions(name:String):Boolean
+		{
+			if (!additional) return false;
+
+			var trimmedAdditionalOptions:String = StringUtil.trim(additional);
+			if (trimmedAdditionalOptions.length == 0)
+			{
+				return false;
+            }
+
+			return trimmedAdditionalOptions.indexOf("-" + name) > -1 || trimmedAdditionalOptions.indexOf("+" + name) > -1;
+		}
+
+        private function getArgumentPairs():Object {
+            return {
+                "load-config+"							:	loadConfig,
+                "accessible"							:	accessible,
+                "allow-source-path-overlap"				:	allowSourcePathOverlap,
+                "benchmark"								:	benchmark,
+                "es"									:	es,
+                "as3"									:	!es,
+                "optimize"								:	optimize,
+                "show-actionscript-warnings"			:	showActionScriptWarnings,
+                "show-binding-warnings"					:	showBindingWarnings,
+                "show-deprecation-warnings"				:	showDeprecationWarnings,
+                "show-unused-type-selector-warnings"	:	showUnusedTypeSelectorWarnings,
+                "strict"								:	strict,
+                "use-network"							:	useNetwork,
+                "use-resource-bundle-metadata"			:	useResourceBundleMetadata,
+                "warnings"								:	warnings,
+                "verbose-stacktraces"					:	verboseStackTraces,
+                "link-report"							:	linkReport,
+                "static-link-runtime-shared-libraries"	:	staticLinkRSL
+            }
+        }
+    }
 }
