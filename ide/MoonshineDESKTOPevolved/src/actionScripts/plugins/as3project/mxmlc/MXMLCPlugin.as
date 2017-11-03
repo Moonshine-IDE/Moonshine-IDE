@@ -716,7 +716,8 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						if (tmpExtensionFiles[i].extension == "ane" && !tmpExtensionFiles[i].isDirectory) 
 						{
-							extensionArgs += " -external-library-path+="+ relativeExtensionFolderPath +"/"+ tmpExtensionFiles[i].name;
+							var extensionArg:String = " -external-library-path+="+ relativeExtensionFolderPath +"/"+ tmpExtensionFiles[i].name; 
+							if (pvo.buildOptions.additional.indexOf(extensionArg) == -1) extensionArgs += extensionArg;
 						}
 						else
 						{
