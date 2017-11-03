@@ -564,26 +564,23 @@ package actionScripts.plugins.as3project.mxmlc
             var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
             var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
             var compilerArg:String = "&& " + fschstr;
-			
-			project.buildOptions.optimize = true;
+
             var configArg:String = compile(project as AS3ProjectVO, release);
             configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
-
-            var additionalBuildArgs:String = " " + project.buildOptions.getArguments();
             var jsCompilationArg:String = isFlexJSAfter7 ? " -compiler.targets=SWF" : "";
 
             if(Settings.os == "win")
             {
                 processArgs.push("/c");
                 processArgs.push("set ".concat(
-                        sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                        sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
                 ));
             }
             else
             {
                 processArgs.push("-c");
                 processArgs.push("export ".concat(
-                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
                 ));
             }
 
@@ -716,7 +713,8 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						if (tmpExtensionFiles[i].extension == "ane" && !tmpExtensionFiles[i].isDirectory) 
 						{
-							extensionArgs += " -external-library-path+="+ relativeExtensionFolderPath +"/"+ tmpExtensionFiles[i].name;
+							var extensionArg:String = " -external-library-path+="+ relativeExtensionFolderPath +"/"+ tmpExtensionFiles[i].name; 
+							if (pvo.buildOptions.additional.indexOf(extensionArg) == -1) extensionArgs += extensionArg;
 						}
 						else
 						{

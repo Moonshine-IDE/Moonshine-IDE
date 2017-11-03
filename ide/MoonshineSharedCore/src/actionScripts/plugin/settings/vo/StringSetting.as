@@ -19,7 +19,7 @@
 package actionScripts.plugin.settings.vo
 {
 	import mx.core.IVisualElement;
-
+	
 	import actionScripts.plugin.settings.renderers.StringRenderer;
 	
 	public class StringSetting extends AbstractSetting

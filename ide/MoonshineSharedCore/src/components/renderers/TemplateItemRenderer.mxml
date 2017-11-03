@@ -22,7 +22,7 @@
 	xmlns:fx="http://ns.adobe.com/mxml/2009" 
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	creationComplete="init()" autoDrawBackground="false" width="100%"
-	 useHandCursor="true" buttonMode="true" mouseChildren="false">
+	xmlns:mx1="library://ns.adobe.com/flex/mx">
 	
 	<fx:Script>
 		<![CDATA[
@@ -31,8 +31,8 @@
 			
 			private function init():void
 			{
-				removeEventListener(MouseEvent.CLICK, handleClick);
-				addEventListener(MouseEvent.CLICK, handleClick);
+				lbl.removeEventListener(MouseEvent.CLICK, handleClick);
+				lbl.addEventListener(MouseEvent.CLICK, handleClick);
 			}
 			
 			private function handleClick(event:Event):void
@@ -79,8 +79,9 @@
 	<s:layout>
 		<s:HorizontalLayout  />
 	</s:layout>
-		<s:Image id="fileIcon" height="20" width="20"  />
-		<s:Label 
+	
+	<s:Image id="fileIcon" height="20" width="20"  />
+	<s:Label 
 		id="lbl"
 		paddingTop="4"
 		paddingLeft="3"
@@ -89,12 +90,9 @@
 		fontFamily="DejaVuSans"
 		fontSize="15"
 		baseline="50"
-		height="100%" width="100%"
+		height="100%"
 		verticalAlign="middle"
 		color="0XD6D6D6"
-		color.hovered="0XFFFFFF"/>
-	<!--	<s:Label id="desc"
-	fontSize="12" paddingTop="4"
-	width="100%" maxDisplayedLines="5"/>-->
-	
+		color.hovered="0XFFFFFF"
+		useHandCursor="true" buttonMode="true" mouseChildren="false"/>	
 </s:ItemRenderer>

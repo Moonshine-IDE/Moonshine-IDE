@@ -22,7 +22,7 @@
  xmlns:fx="http://ns.adobe.com/mxml/2009" 
  xmlns:s="library://ns.adobe.com/flex/spark" 
  xmlns:mx="library://ns.adobe.com/flex/halo" autoDrawBackground="false" width="100%"
- creationComplete="init()" useHandCursor="true" buttonMode="true" mouseChildren="false">
+ creationComplete="init()">
 	<fx:Script>
 		<![CDATA[
 			import flash.events.Event;
@@ -30,8 +30,8 @@
 			
 			private function init():void
 			{
-				removeEventListener(MouseEvent.CLICK, handleClick);
-				addEventListener(MouseEvent.CLICK, handleClick);
+				lbl.removeEventListener(MouseEvent.CLICK, handleClick);
+				lbl.addEventListener(MouseEvent.CLICK, handleClick);
 			}
 			
 			private function handleClick(event:Event):void
@@ -56,7 +56,7 @@
   </s:states>
   
   <s:layout>
-    <s:HorizontalLayout/>
+    <s:HorizontalLayout horizontalAlign="right"/>
   </s:layout>
   
   <s:Label 
@@ -67,9 +67,10 @@
 	paddingBottom="0"
 	fontFamily="DejaVuSans"
 	fontSize="15"
-	width="100%" maxDisplayedLines="1"
+	maxDisplayedLines="1"
 	color="0XD6D6D6" textAlign="right"
 	color.hovered="0XFFFFFF"
+	useHandCursor="true" buttonMode="true" mouseChildren="false"
   	/>
   
 </s:ItemRenderer>
