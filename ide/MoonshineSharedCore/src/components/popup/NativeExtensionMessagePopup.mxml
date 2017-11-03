@@ -23,16 +23,22 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
-			   width="400" height="250" minWidth="300" minHeight="200" title="How Moonshine supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
+			   width="475" height="300" minWidth="400" minHeight="200" title="How Moonshine supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
 	<fx:Script>
 		<![CDATA[
 			
 		]]>
 	</fx:Script>
-
-	<s:Label text="DEMO text on how Moonshine expands .ane to use at the time of project compilation."
-			 width="100%" textAlign="center" verticalCenter="0"/>
+	
+	<s:Scroller width="90%" height="90%" horizontalCenter="0" verticalCenter="0">
+		<s:RichEditableText editable="false" focusEnabled="false"
+							width="100%" height="100%">
+			<s:textFlow>
+				<s:TextFlow>On desktop simulator Moonshine supports native extension a little differently. To run simulator with native extension support Moonshine requires to expand its (ANE) files to user's file system. Following are a detailed steps how this happens.<s:br/><s:br/><s:list paddingTop="0"><s:li>User needs to locate the folder where native extensions are exists</s:li><s:li>At the time of desktop simulator run/compilation, Moonshine expands all native extension files to the same folder owns the extensions</s:li><s:li>Once expansion done Moonshine run the application with the expanded (native extension) files</s:li></s:list></s:TextFlow>
+			</s:textFlow>
+		</s:RichEditableText>
+	</s:Scroller>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button label="OK"
