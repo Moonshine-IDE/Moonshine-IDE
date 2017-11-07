@@ -18,20 +18,26 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:ItemRenderer 
- xmlns:fx="http://ns.adobe.com/mxml/2009" 
- xmlns:s="library://ns.adobe.com/flex/spark" 
- xmlns:mx="library://ns.adobe.com/flex/halo" autoDrawBackground="false" width="100%"
- creationComplete="init()">
+<s:HGroup 
+	 xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	 xmlns:s="library://ns.adobe.com/flex/spark" 
+	 xmlns:mx="library://ns.adobe.com/flex/halo" width="100%"
+	 creationComplete="init()" horizontalAlign="right">
 	<fx:Script>
 		<![CDATA[
 			import flash.events.Event;
 			import flash.events.MouseEvent;
 			
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			public var project:ProjectReferenceVO;
+			
 			private function init():void
 			{
 				lbl.removeEventListener(MouseEvent.CLICK, handleClick);
 				lbl.addEventListener(MouseEvent.CLICK, handleClick);
+				
+				lbl.text = project.name;
 			}
 			
 			private function handleClick(event:Event):void
@@ -39,25 +45,8 @@
 				dispatchEvent( new Event("itemClick", true, false) );
 			}
 			
-			override public function set data(value:Object):void
-			{
-				super.data = value;
-				if (!value) return;
-				var s:String = value.name;
-				lbl.text = s;
-			}
-			
 		]]>
 	</fx:Script>
-  
-  <s:states>
-    <s:State name="normal"/>
-    <s:State name="hovered"/>
-  </s:states>
-  
-  <s:layout>
-    <s:HorizontalLayout horizontalAlign="right"/>
-  </s:layout>
   
   <s:Label 
   	id="lbl"
@@ -68,9 +57,9 @@
 	fontFamily="DejaVuSans"
 	fontSize="15"
 	maxDisplayedLines="1"
-	color="0XD6D6D6" textAlign="right"
-	color.hovered="0XFFFFFF"
+	textAlign="right"
+	mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
 	useHandCursor="true" buttonMode="true" mouseChildren="false"
   	/>
   
-</s:ItemRenderer>
+</s:HGroup>
