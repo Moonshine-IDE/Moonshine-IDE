@@ -400,7 +400,7 @@
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				addEventListener(ResizeEvent.RESIZE, onStageResized);
-				addEventListener("itemClick", handleRecentClick);
+				addEventListener(RecentProjectRenderer.RECENT_PROJECT_RENDERER_CLICK, handleRecentClick);
 				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);

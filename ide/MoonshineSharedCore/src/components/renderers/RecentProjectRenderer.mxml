@@ -30,6 +30,8 @@
 			
 			import actionScripts.valueObjects.ProjectReferenceVO;
 			
+			public static const RECENT_PROJECT_RENDERER_CLICK:String = "RECENT_PROJECT_RENDERER_CLICK";
+			
 			public var project:ProjectReferenceVO;
 			
 			private function init():void
@@ -42,7 +44,7 @@
 			
 			private function handleClick(event:Event):void
 			{		
-				dispatchEvent( new Event("itemClick", true, false) );
+				dispatchEvent( new Event(RECENT_PROJECT_RENDERER_CLICK, true, false) );
 			}
 			
 		]]>
