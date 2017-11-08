@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="400" width="500" minHeight="200" height="250" autoLayout="true"
+			   minWidth="400" width="500" minHeight="200" height="250" autoLayout="true"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 			   title="How can we help you?" skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
-			import flash.net.navigateToURL;
-			
-			import mx.utils.StringUtil;
-			
-			import spark.events.TextOperationEvent;
-			
-			import components.skins.ResizableTitleWindowSkin;
-			
-			protected function onTextInput(event:TextOperationEvent):void
-			{
-				btnReport.enabled = StringUtil.trim(txtProblem.text).length != 0;
-			}
-			
-			protected function onFeatureRequest(event:MouseEvent):void
-			{
-				navigateToURL(new URLRequest("https://github.com/prominic/Moonshine-IDE/issues"), '_blank');
-			}
-			
+		import mx.utils.StringUtil;
+
+		import spark.events.TextOperationEvent;
+
+		protected function onTextInput(event:TextOperationEvent):void
+		{
+			btnReport.enabled = StringUtil.trim(txtProblem.text).length != 0;
+		}
+
+		protected function onBtnReportClick(event:MouseEvent):void
+		{
+			var issueGithubRequest:URLRequest = new URLRequest("https://github.com/prominic/Moonshine-IDE/issues/new");
+			var urlVariables:URLVariables = new URLVariables();
+			urlVariables.body = txtProblem.text;
+
+			issueGithubRequest.data = urlVariables;
+			navigateToURL(issueGithubRequest, '_blank');
+		}
 		]]>
 	</fx:Script>
 	
@@ -36,13 +36,9 @@
 					change="onTextInput(event)"/>
 	</s:VGroup>
 	<resizableTitleWindow:controlBarContent>
-		<s:Button label="Request a feature to GitHub"
-				  styleName="darkButton"
-				  click="onFeatureRequest(event)"/>
-		<s:Spacer width="100%"/>
 		<s:Button id="btnReport" 
-				  label="Report"
+				  label="Report Issue"
 				  styleName="darkButton"
-				  enabled="false"/>
+				  enabled="false" click="onBtnReportClick(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
