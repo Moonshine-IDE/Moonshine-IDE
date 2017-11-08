@@ -23,6 +23,8 @@
 
 			issueGithubRequest.data = urlVariables;
 			navigateToURL(issueGithubRequest, '_blank');
+
+			closeThis();
 		}
 		]]>
 	</fx:Script>
