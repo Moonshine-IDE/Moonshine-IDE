@@ -20,9 +20,6 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	
@@ -190,7 +187,7 @@ package actionScripts.utils
 		 */
 		public static function deserializeBoolean(o:Object):Boolean {
 			var str:String = o.toString();
-			return (str.toLowerCase() == "true") ? true:false;
+			return str.toLowerCase() == "true";
 		}
 		/**
 		 * Serializes a Boolean value into True or False strings.
@@ -297,22 +294,7 @@ package actionScripts.utils
 		{
 			return pvo.buildOptions.customSDK ? pvo.buildOptions.customSDK.fileBridge.getFile : (IDEModel.getInstance().defaultSDK ? IDEModel.getInstance().defaultSDK.fileBridge.getFile : null);
 		}
-		
-		/**
-		 * Stores dotted package references
-		 * against a project path to the projectVO
-		 */
-		public static function storePackageReferenceByProjectPath(project:ProjectVO, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null):void
-		{
-			if (fileWrapper) filePath = fileWrapper.nativePath;
-			else if (fileLocation) filePath = fileLocation.fileBridge.nativePath;
-			
-			var separator:String = IDEModel.getInstance().fileCore.separator;
-			var projectPathSplit:Array = project.folderPath.split(separator);
-			filePath = filePath.replace(project.folderPath, "");
-			project.folderNamesOnly.push(projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join("."));
-		}
-		
+
 		/**
 		 * Returns dotted package references
 		 * against a project path
@@ -477,7 +459,6 @@ package actionScripts.utils
 					pop.removeEventListener(UnsaveFileMessagePopup.CONTINUE, ContinueHandler);
 					pop.removeEventListener(UnsaveFileMessagePopup.CANCELLED, CancelHandler);
 					pop = null;
-					return;
 				}
 				function ContinueHandler(evt:Event):void{
 					pop.removeEventListener(UnsaveFileMessagePopup.SAVE_SELECTED, saveUnsavedFileHandler);
@@ -602,37 +583,53 @@ package actionScripts.utils
 			// to ensure addition of new compiler argument '-compiler.targets' 
 			// which do not works with SDK < 0.8.0
 			var sdkFullName:String;
-			for each (var i:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+			for each (var project:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
 			{
-				if (sdkPath == i.path)
+				if (sdkPath == project.path)
 				{
-					sdkFullName = i.name;
+					sdkFullName = project.name;
 					break;
 				}
 			}
-			
-			var FLEXJS_NAME_PREFIX:String = "Apache Flex (FlexJS) ";
-			
-			if (sdkFullName.indexOf(FLEXJS_NAME_PREFIX) != -1)
+
+            var flexJSPrefixName:String = "Apache Flex (FlexJS) ";
+            var royalePrefixName:String = "Apache Royale ";
+
+            var isValidSdk:Boolean = false;
+			var validPrefixSdkName:String;
+			if (sdkFullName.indexOf(flexJSPrefixName) > -1)
 			{
-				var sdkVersion:String = sdkFullName.substr(FLEXJS_NAME_PREFIX.length, sdkFullName.indexOf(" ", FLEXJS_NAME_PREFIX.length) - FLEXJS_NAME_PREFIX.length);
+				validPrefixSdkName = flexJSPrefixName;
+				isValidSdk = true;
+			}
+			else if (sdkFullName.indexOf(royalePrefixName) > -1)
+			{
+				validPrefixSdkName = royalePrefixName;
+				isValidSdk = true;
+			}
+
+			if (isValidSdk)
+            {
+                var sdkNamePrefixLength:int = validPrefixSdkName.length;
+
+				var sdkVersion:String = sdkFullName.substr(sdkNamePrefixLength,
+						sdkFullName.indexOf(" ", sdkNamePrefixLength) - sdkNamePrefixLength);
 				var versionParts:Array = sdkVersion.split("-")[0].split(".");
 				var major:int = 0;
 				var minor:int = 0;
-				var revision:int = 0;
+
 				if (versionParts.length >= 3)
 				{
 					major = parseInt(versionParts[0], 10);
 					minor = parseInt(versionParts[1], 10);
-					revision = parseInt(versionParts[2], 10);
 				}
-				
+
 				if (major > 0 || minor > olderVersion)
 				{
 					return true;
 				}
-			}
-			
+            }
+
 			return false;
 		}
 		

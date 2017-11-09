@@ -376,7 +376,14 @@ package actionScripts.plugins.as3project.mxmlc
 			var jsCompilationArg:String = "";
 			if (isFlexJSAfter7)
 			{
-				jsCompilationArg = project.isRoyale ? " -compiler.targets=JSRoyale" : " -compiler.targets=JSFlex";
+                jsCompilationArg = " -compiler.targets=JSFlex";
+				
+                if (project.isRoyale)
+                {
+                    jsCompilationArg = " -compiler.targets=JSRoyale";
+					sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
+					compilerPathHomeArg = "ROYALE_COMPILER_HOME=" + SDKstr;
+                }
 			}
 
             if(Settings.os == "win")
