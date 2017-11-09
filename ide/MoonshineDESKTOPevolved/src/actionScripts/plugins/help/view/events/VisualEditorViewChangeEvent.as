@@ -22,7 +22,6 @@ package actionScripts.plugins.help.view.events
 
     public class VisualEditorViewChangeEvent extends Event
     {
-        public static const VISUAL_CHANGE:String = "visualChange";
         public static const CODE_CHANGE:String = "codeChange";
         
         public function VisualEditorViewChangeEvent(type:String)

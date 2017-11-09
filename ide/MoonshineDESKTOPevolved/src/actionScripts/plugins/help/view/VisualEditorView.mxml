@@ -28,7 +28,7 @@
 
         private var _codeEditor:TextEditor;
 
-        
+
         public function set codeEditor(value:TextEditor):void
         {
             _codeEditor = value;
@@ -41,11 +41,6 @@
 
         private function onTabBarChange(event:IndexChangeEvent):void
         {
-            if (event.newIndex == 0)
-            {
-                dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.VISUAL_CHANGE));
-            }
-
             if (event.newIndex == 1)
             {
                 visualEditor.editingSurface.selectedItem = null;
@@ -54,7 +49,6 @@
         }
         ]]></fx:Script>
     <fx:Metadata>
-        [Event(name="visualChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
         [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
     </fx:Metadata>
 </s:VGroup>

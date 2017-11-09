@@ -32,6 +32,8 @@ package actionScripts.plugins.ui.editor
 
     import flash.filesystem.File;
 
+    import mx.events.FlexEvent;
+
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
@@ -48,6 +50,7 @@ package actionScripts.plugins.ui.editor
             visualEditorView = new VisualEditorView();
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
+            visualEditorView.addEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
             visualEditorView.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
 
             editor = new TextEditor(true);
@@ -60,6 +63,12 @@ package actionScripts.plugins.ui.editor
             
             dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabOpenClose);
             dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
+        }
+
+        private function onVisualEditorCreationComplete(event:FlexEvent):void
+        {
+            visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
+            visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -103,10 +112,15 @@ package actionScripts.plugins.ui.editor
             createVisualEditorFile();
         }
 
+        private function onEditingSurfaceChange(event:Event):void
+        {
+            _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+        }
+
         private function onTabOpenClose(event:Event):void
         {
             if (!visualEditorView.visualEditor) return;
-            
+
             visualEditorView.visualEditor.editingSurface.selectedItem = null;
         }
 
