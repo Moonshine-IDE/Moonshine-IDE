@@ -26,6 +26,7 @@ package actionScripts.plugins.ui.editor
     import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
     import actionScripts.ui.editor.*;
     import actionScripts.ui.editor.text.TextEditor;
+    import actionScripts.ui.tabview.CloseTabEvent;
 
     import flash.events.Event;
 
@@ -57,7 +58,8 @@ package actionScripts.plugins.ui.editor
 
             visualEditorView.codeEditor = editor;
             
-            dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onAddTab);
+            dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabOpenClose);
+            dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -101,7 +103,7 @@ package actionScripts.plugins.ui.editor
             createVisualEditorFile();
         }
 
-        private function onAddTab(event:AddTabEvent):void
+        private function onTabOpenClose(event:Event):void
         {
             if (!visualEditorView.visualEditor) return;
             
