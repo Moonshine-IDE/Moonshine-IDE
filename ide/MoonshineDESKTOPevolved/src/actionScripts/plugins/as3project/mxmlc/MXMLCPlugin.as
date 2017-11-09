@@ -567,7 +567,17 @@ package actionScripts.plugins.as3project.mxmlc
 
             var configArg:String = compile(project as AS3ProjectVO, release);
             configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
-            var jsCompilationArg:String = isFlexJSAfter7 ? " -compiler.targets=SWF" : "";
+            var jsCompilationArg:String = "";
+
+			if (isFlexJSAfter7)
+			{
+				jsCompilationArg = " -compiler.targets=SWF";
+				if (project.isRoyale)
+                {
+                    sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
+                    compilerPathHomeArg = "ROYALE_SWF_COMPILER_HOME=" + SDKstr;
+                }
+			}
 
             if(Settings.os == "win")
             {

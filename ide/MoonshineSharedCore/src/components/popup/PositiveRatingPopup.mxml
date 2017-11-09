@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="400" width="500" minHeight="200" height="200"
+			   minWidth="400" width="500" minHeight="200" height="200"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 			   title="Thank you!" skinClass="components.skins.ResizableTitleWindowSkin">
-	<fx:Script>
-		<![CDATA[
-			import components.skins.ResizableTitleWindowSkin;
-		]]>
-	</fx:Script>
 	
 	<s:VGroup width="100%" height="100%"
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
@@ -17,13 +12,69 @@
 					width="100%" height="100%"
 					prompt="Say something you liked about #moonshineide"
 					text="I have a nice experience using Moonshine IDE! #moonshineide #actionscript"/>
+		
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button label="Share on Facebook"
-				  styleName="darkButton"/>
+				  styleName="darkButton" click="onButtonShareOnFacebookClick(event)"/>
 		<s:Spacer width="100%"/>
 		<s:Button label="Share on Twitter"
-				  styleName="darkButton"/>
+				  styleName="darkButton" click="onButtonShareOnTwitterClick(event)"/>
 	</resizableTitleWindow:controlBarContent>
+	<fx:Script><![CDATA[
+		private function onButtonShareOnTwitterClick(event:MouseEvent):void
+		{
+			var shareOnTwitterRequest:URLRequest = new URLRequest("https://twitter.com/intent/tweet");
+			var urlVariables:URLVariables = new URLVariables();
+			urlVariables.text = txtMessage.text;
+
+			shareOnTwitterRequest.data = urlVariables;
+			navigateToURL(shareOnTwitterRequest, "_blank");
+
+			closeThis();
+		}
+
+		private function onButtonShareOnFacebookClick(event:MouseEvent):void
+		{
+			var shareOnFacebookRequest:URLRequest = new URLRequest("http://www.facebook.com/dialog/share");
+			var urlVariables:URLVariables = new URLVariables();
+			urlVariables.app_id = "249823608417885";
+			urlVariables.href = "http://moonshine-ide.com/";
+			urlVariables.hashtag = getFirstHashTag();
+			urlVariables.quote = getTextWithoutHashTags();
+			urlVariables.redirect_uri = "http://moonshine-ide.com/";
+			
+			shareOnFacebookRequest.data = urlVariables;
+			navigateToURL(shareOnFacebookRequest, "_blank");
+
+			closeThis();
+		}
+
+		private function getFirstHashTag():String
+		{
+			var message:String = txtMessage.text;
+			if (message)
+			{
+				var indexOfFirstHashTag:int = message.indexOf("#");
+				var indexOfSpaceAfterHashTag:int = message.indexOf(" ", indexOfFirstHashTag);
+
+				return message.substring(indexOfFirstHashTag, indexOfSpaceAfterHashTag);
+			}
+
+			return "";
+		}
+
+		private function getTextWithoutHashTags():String
+		{
+			var message:String = txtMessage.text;
+			if (message)
+			{
+				var indexOfFirstHashTag:int = message.indexOf("#");
+				return message.substring(0, indexOfFirstHashTag);
+			}
+
+			return "";
+		}
+		]]></fx:Script>
 </resizableTitleWindow:ResizableTitleWindow>

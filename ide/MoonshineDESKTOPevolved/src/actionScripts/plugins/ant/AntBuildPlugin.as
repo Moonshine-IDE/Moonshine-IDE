@@ -432,15 +432,34 @@ package actionScripts.plugins.ant
             shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
 			
 			var isFlexJSProject:Boolean = currentSDK.resolvePath("js/bin/mxmlc").fileBridge.exists;
-			var isFlexJSAfter7:Boolean = isFlexJSProject ? UtilsCore.isNewerVersionSDKThan(7, currentSDK.fileBridge.nativePath) : false;
+			var isApacheRoyaleSDK:Boolean = currentSDK.resolvePath("frameworks/royale-config.xml").fileBridge.exists;
+			var isFlexJSAfter7Arg:String = "";
+            var isApacheRoyaleArg:String = "";
+
+			if (!isApacheRoyaleSDK && isFlexJSProject)
+			{
+				if (UtilsCore.isNewerVersionSDKThan(7, currentSDK.fileBridge.nativePath))
+				{
+					isFlexJSAfter7Arg = " -DIS_FLEXJS_AFTER_7=true";
+				}
+			}
+
+			if (isApacheRoyaleSDK)
+            {
+                isApacheRoyaleArg = " -DIS_APACHE_ROYALE=true";
+                isFlexJSAfter7Arg = " -DIS_FLEXJS_AFTER_7=true";
+            }
+
+			var sdkPath:String = "FLEX_HOME=" + sdkPath;
 			
 			if (Settings.os == "win")
 			{
 				//Create file with following content:
                 var antBuildRunnerPath:String = prepareAntBuildRunnerFile(buildDirPath);
+
 				//Created file is being run
                 processArgs.push("/C");
-                processArgs.push("set FLEX_HOME=" + sdkPath + "&& " + antBuildRunnerPath +" -DIS_FLEXJS_AFTER_7="+ isFlexJSAfter7);
+                processArgs.push("set " + sdkPath + "&& " + antBuildRunnerPath + isFlexJSAfter7Arg + isApacheRoyaleArg);
 
                 shellInfo.arguments = processArgs;
                 shellInfo.executable = cmdFile;
@@ -448,7 +467,7 @@ package actionScripts.plugins.ant
 			else 
 			{
 				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME=" + sdkPath + "&&" + antBatPath + " -file "+ UtilsCore.convertString(buildDirPath) +" -DIS_FLEXJS_AFTER_7="+ isFlexJSAfter7);
+				processArgs.push("export " + sdkPath + "&&" + antBatPath + " -file "+ UtilsCore.convertString(buildDirPath) + isFlexJSAfter7Arg + isApacheRoyaleArg);
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 			}
