@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-    import actionScripts.events.GlobalEventDispatcher;
-
     import flash.display.DisplayObject;
 	import flash.events.Event;
 	

@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
+    import actionScripts.events.AddTabEvent;
     import actionScripts.events.ChangeEvent;
     import actionScripts.interfaces.IVisualEditorViewer;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -55,6 +56,8 @@ package actionScripts.plugins.ui.editor
             editor.dataProvider = "";
 
             visualEditorView.codeEditor = editor;
+            
+            dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onAddTab);
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -96,6 +99,13 @@ package actionScripts.plugins.ui.editor
             super.openHandler(event);
 
             createVisualEditorFile();
+        }
+
+        private function onAddTab(event:AddTabEvent):void
+        {
+            if (!visualEditorView.visualEditor) return;
+            
+            visualEditorView.visualEditor.editingSurface.selectedItem = null;
         }
 
         private function createVisualEditorFile():void

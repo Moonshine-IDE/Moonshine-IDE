@@ -5,7 +5,7 @@
     <mx:ViewStack id="viewStack" width="100%" height="100%">
         <s:NavigatorContent label="Visual">
            <s:Scroller width="100%" height="100%">
-                <view:VisualEditor id="visualEditor" right="0" left="0" focusOut="onVisualEditorFocusOut(event)"/>
+                <view:VisualEditor id="visualEditor" right="0" left="0" />
            </s:Scroller>
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
@@ -51,11 +51,6 @@
                 visualEditor.editingSurface.selectedItem = null;
                 dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
             }
-        }
-
-        private function onVisualEditorFocusOut(event:FocusEvent):void
-        {
-            visualEditor.editingSurface.selectedItem = null;
         }
         ]]></fx:Script>
     <fx:Metadata>
