@@ -596,21 +596,18 @@ package actionScripts.utils
             var royalePrefixName:String = "Apache Royale ";
 
             var isValidSdk:Boolean = false;
-			var validPrefixSdkName:String;
 			if (sdkFullName.indexOf(flexJSPrefixName) > -1)
 			{
-				validPrefixSdkName = flexJSPrefixName;
 				isValidSdk = true;
 			}
 			else if (sdkFullName.indexOf(royalePrefixName) > -1)
 			{
-				validPrefixSdkName = royalePrefixName;
-				isValidSdk = true;
+				return true;
 			}
 
 			if (isValidSdk)
             {
-                var sdkNamePrefixLength:int = validPrefixSdkName.length;
+                var sdkNamePrefixLength:int = flexJSPrefixName.length;
 
 				var sdkVersion:String = sdkFullName.substr(sdkNamePrefixLength,
 						sdkFullName.indexOf(" ", sdkNamePrefixLength) - sdkNamePrefixLength);
