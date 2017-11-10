@@ -6,24 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.6.1-Pending]
 
 ### Added 
-Settings: Options to change Java Development Kit path. See the "Default SDK" tab in the IDE settings.
-Settings: Options "Reset all Settings (Hard)" to reset all settings. See the "General" tab in IDE settings. 
-Project Settings: Add support for projects with Native Extension.
-Add "Feedback" section where user can share experience with Moonshine on Twitter, Facebook and raise issue on GitHub.
-Add confirmation dialog to file/directory delete in project.
+* Settings: Options to change Java Development Kit path. See the "Default SDK" tab in the IDE settings.
+* Settings: Options "Reset all Settings (Hard)" to reset all settings. See the "General" tab in IDE settings. 
+* Project Settings: Add support for projects with Native Extension.
+* Add "Feedback" section where user can share experience with Moonshine on Twitter, Facebook and raise issue on GitHub.
+* Add confirmation dialog to file/directory delete in project.
 
 ### Changed
-Update [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.7.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.7.0).
-Option "Additional compiler options" now have precedence agains selected options in settings.
-Settings: Sorting tabs in settings alphabetically. 
+* Update [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.7.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.7.0).
+* Option "Additional compiler options" now have precedence agains selected options in settings.
+* Settings: Sorting tabs in settings alphabetically. 
 
 ### Fixed
-Project settings: Fixed issue where selecting -optimize=true does not work. 
-Project settings: Fixed issue where "Additional compiler options" were disabled for other projects than Adobe Air.
-Fixed issue where alert for project delete appear twice.
-ANT: Fixed issue where option "Ant Home" was reset once after restart.
-Menu: On Mac OSX menu "File" -> "Moonshine App Store Helper" does not work
-Flex web browser project was created with wrong url for launch
+* Project settings: Fixed issue where selecting -optimize=true does not work. 
+* Project settings: Fixed issue where "Additional compiler options" were disabled for other projects than Adobe Air.
+* Fixed issue where alert for project delete appear twice.
+* ANT: Fixed issue where option "Ant Home" was reset once after restart.
+* Menu: On Mac OSX menu "File" -> "Moonshine App Store Helper" does not work
+* Flex web browser project was created with wrong url for launch
 
 ## Moonshine IDE [1.6.0] 
 
@@ -33,6 +33,7 @@ Flex web browser project was created with wrong url for launch
 * Window:  The window size and maximized status will be preserved when restarting Moonshine
 * Panels:  The panel size will be preserved when restarting Moonshine
 * Auto-updater:  Moonshine will automatically prompt you to update to new versions.  Disabled for the App Store version.
+* Add partial support for Apache Royale. IDE is able to open, build project and write code using Nightly build of Apache Royale.
 
 
 ### Changed
