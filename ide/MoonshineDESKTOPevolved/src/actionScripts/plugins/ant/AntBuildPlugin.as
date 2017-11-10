@@ -450,7 +450,7 @@ package actionScripts.plugins.ant
                 isFlexJSAfter7Arg = " -DIS_FLEXJS_AFTER_7=true";
             }
 
-			var sdkPath:String = "FLEX_HOME=" + sdkPath;
+			sdkPath = "FLEX_HOME=" + sdkPath;
 			
 			if (Settings.os == "win")
 			{
