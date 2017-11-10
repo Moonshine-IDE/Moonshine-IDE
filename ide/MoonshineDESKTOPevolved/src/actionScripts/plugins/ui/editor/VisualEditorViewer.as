@@ -69,6 +69,7 @@ package actionScripts.plugins.ui.editor
         {
             visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
             visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
+            visualEditorView.visualEditor.propertyEditor.addEventListener("propertyEditorChanged", onPropertyEditorChanged);
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -117,10 +118,17 @@ package actionScripts.plugins.ui.editor
             _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
         }
 
+        private function onPropertyEditorChanged(event:Event):void
+        {
+            _isChanged = true;
+        }
+
         private function onTabOpenClose(event:Event):void
         {
             if (!visualEditorView.visualEditor) return;
 
+            visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+            visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
             visualEditorView.visualEditor.editingSurface.selectedItem = null;
         }
 
