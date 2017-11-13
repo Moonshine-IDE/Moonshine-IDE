@@ -90,7 +90,7 @@ package actionScripts.plugins.ui.editor
 
             editor.dataProvider = xmlString;
 
-            _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+            refreshIsChanged();
         }
 
         override protected function createChildren():void
@@ -115,7 +115,7 @@ package actionScripts.plugins.ui.editor
 
         private function onEditingSurfaceChange(event:Event):void
         {
-            _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+            refreshIsChanged();
         }
 
         private function onPropertyEditorChanged(event:Event):void
@@ -155,6 +155,14 @@ package actionScripts.plugins.ui.editor
             }
 
             return null;
+        }
+
+        private function refreshIsChanged():void
+        {
+            if (!_isChanged)
+            {
+                _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+            }
         }
     }
 }
