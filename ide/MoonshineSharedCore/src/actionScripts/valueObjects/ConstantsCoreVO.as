@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-	import flash.system.Security;
+    import flash.system.Security;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
@@ -27,7 +27,11 @@ package actionScripts.valueObjects
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	
-	/**
+
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+
+    /**
 	 * ConstantsCoreVO
 	 * 
 	 * @date 10.28.2015
@@ -42,8 +46,6 @@ package actionScripts.valueObjects
 		//--------------------------------------------------------------------------
 		
 		public static const IS_AIR: Boolean = Security.sandboxType.toString() == "application" ? true : false;
-		public static const FILE_APPLICATIONSTORAGE: String = "applicationStorageDirectory";
-		public static const FILE_APPLICATIONDIRECTORY: String = "applicationDirectory";
 		public static const MOONSHINE_PROD_ID: String = "com.moonshine-ide";
 		public static const REQUIRED_FLEXJS_SDK_VERION_MINIMUM:String = "0.7.0";
 		public static const REQUIRED_FLEX_SDK_VERION_MINIMUM:String = null;
@@ -60,10 +62,12 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
+		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
+        public static var TEMPLATES_VISUALEDITOR_FILES_COMPONENTS:ArrayCollection = new ArrayCollection();
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
@@ -71,6 +75,7 @@ package actionScripts.valueObjects
 		public static var FLEXBROWSER_PROJECT:FileLocation;
 		public static var FLEXDESKTOP_PROJECT:FileLocation;
 		public static var FLEXMOBILE_PROJECT:FileLocation;
+		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
 		public static var HAXESWF_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
 		public static var FLEXJSBL_PROJECT:FileLocation;
@@ -199,6 +204,8 @@ package actionScripts.valueObjects
 		
 		public static function generate():void
 		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			
 			TEMPLATE_AS3CLASS = new FileLocation("TEMPLATE");
 			TEMPLATE_AS3CLASS.fileBridge.name = "AS3 Class.as";
 			TEMPLATE_AS3CLASS.fileBridge.isDirectory = false;
@@ -252,7 +259,17 @@ package actionScripts.valueObjects
 			TEMPLATE_XML.fileBridge.isDirectory = false;
 			TEMPLATE_XML.fileBridge.extension = "xml";
 			TEMPLATE_XML.fileBridge.data = <root><![CDATA[<?xml version="1.0" encoding="utf-8"?>]]></root>;
-			
+
+			TEMPLATE_VISUAL_EDITOR_FLEX = new FileLocation("TEMPLATE");
+            TEMPLATE_VISUAL_EDITOR_FLEX.fileBridge.name = "Visual Editor Flex File.mxml";
+            TEMPLATE_VISUAL_EDITOR_FLEX.fileBridge.isDirectory = false;
+            TEMPLATE_VISUAL_EDITOR_FLEX.fileBridge.extension = "mxml";
+            TEMPLATE_VISUAL_EDITOR_FLEX.fileBridge.data = <root><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+																	<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+																			xmlns:s="library://ns.adobe.com/flex/spark"
+																			xmlns:mx="library://ns.adobe.com/flex/mx">
+																	</s:Group>]]></root>;
+
 			ACTIONSCRIPT_PROJECT = new FileLocation("Actionscript Project (SWF, Desktop)");
 			ACTIONSCRIPT_PROJECT.fileBridge.name = "Actionscript Project (SWF, Desktop)";
 			ACTIONSCRIPT_PROJECT.fileBridge.isDirectory = true;
@@ -282,7 +299,12 @@ package actionScripts.valueObjects
 			HAXESWF_PROJECT.fileBridge.name = "HaXe SWF Project";
 			HAXESWF_PROJECT.fileBridge.isDirectory = true;
 			HAXESWF_PROJECT.fileBridge.data = "Create a HaXe-based project that will generate a SWF file only.";
-			
+
+			VISUALEDITOR_FLEX_PROJECT = new FileLocation(resourceManager.getString('resources', 'VE_PROJECT'));
+			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = resourceManager.getString('resources', 'VE_PROJECT');
+            VISUALEDITOR_FLEX_PROJECT.fileBridge.isDirectory = true;
+            VISUALEDITOR_FLEX_PROJECT.fileBridge.data = "Create a Flex project using visual editor.";
+
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
 			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/JS Project..";
@@ -291,8 +313,8 @@ package actionScripts.valueObjects
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,FLEXJSBL_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,VISUALEDITOR_FLEX_PROJECT,FLEXJSBL_PROJECT,HAXESWF_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},

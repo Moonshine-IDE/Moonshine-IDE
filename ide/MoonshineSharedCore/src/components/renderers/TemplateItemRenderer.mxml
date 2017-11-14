@@ -20,17 +20,13 @@
 -->
 <s:ItemRenderer 
 	xmlns:fx="http://ns.adobe.com/mxml/2009" 
-	xmlns:s="library://ns.adobe.com/flex/spark" 
-	xmlns:mx="library://ns.adobe.com/flex/halo"
+	xmlns:s="library://ns.adobe.com/flex/spark"
 	creationComplete="init()" autoDrawBackground="false" width="100%"
 	xmlns:mx1="library://ns.adobe.com/flex/mx">
 	
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.valueObjects.ConstantsCoreVO;
-			
-			import flash.events.Event;
-			import flash.events.MouseEvent;
 			private var loader:Loader = new Loader();
 			
 			private function init():void

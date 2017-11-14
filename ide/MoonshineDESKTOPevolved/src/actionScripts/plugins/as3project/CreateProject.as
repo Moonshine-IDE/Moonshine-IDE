@@ -32,10 +32,8 @@ package actionScripts.plugins.as3project
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -50,13 +48,15 @@ package actionScripts.plugins.as3project
     import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.plugin.project.ProjectType;
     import actionScripts.utils.SDKUtils;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.TemplateVO;
 	
 	public class CreateProject
 	{
-		public var activeType:uint = AS3ProjectPlugin.AS3PROJ_AS_AIR;
+		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		private var newProjectSourcePathSetting:NewProjectSourcePathListSetting;
 		private var newProjectNameSetting:StringSetting;
@@ -67,10 +67,12 @@ package actionScripts.plugins.as3project
 		private var project:AS3ProjectVO;
 		private var allProjectTemplates:ArrayCollection;
 		private var model:IDEModel = IDEModel.getInstance();
+		
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
+		private var isVisualEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
 		
 		private var _isProjectFromExistingSource:Boolean;
@@ -86,8 +88,14 @@ package actionScripts.plugins.as3project
 				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 			}
 			
-			if (event.projectFileEnding == "as3proj") createAS3Project(event);
-			else if (event.projectFileEnding == "awd") createAway3DProject(event);
+			if (isAllowedTemplateFile(event.projectFileEnding))
+			{
+				createAS3Project(event);
+            }
+			else if (event.projectFileEnding == "awd")
+			{
+				createAway3DProject(event);
+            }
 		}
 		
 		public function get isProjectFromExistingSource():Boolean
@@ -138,17 +146,28 @@ package actionScripts.plugins.as3project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
 			// Only template for those we can handle
-			if (event.projectFileEnding != "as3proj") return;
-			
-			cookie = SharedObject.getLocal("moonshine-ide-local");
+			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
+
+            setProjectType(event.templateDir.fileBridge.name);
+
+            cookie = SharedObject.getLocal("moonshine-ide-local");
 			//Read recent project path from shared object
 			
 			// if opened by Open project, event.settingsFile will be false
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
+
+			if (isOpenProjectCall)
+			{
+				project = new AS3ProjectVO(event.templateDir, null, false);
+			}
+			else
+			{
+				project = FlashDevelopImporter.parse(event.settingsFile, null, null, false);
+			}
 			
-			project = isOpenProjectCall ? new AS3ProjectVO(event.templateDir, null, false) : FlashDevelopImporter.parse(event.settingsFile, null, null, false);
-			
+			project.isVisualEditorProject = isVisualEditorProject;
+
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
@@ -163,13 +182,22 @@ package actionScripts.plugins.as3project
 			if (!isOpenProjectCall)
 			{
 				var tempName: String = event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("("));
-				if (event.templateDir.fileBridge.name.indexOf("FlexJS") != -1) project.projectName = "NewFlexJSBrowserProject";
-				else project.projectName = "New"+tempName;
+				if (event.templateDir.fileBridge.name.indexOf("FlexJS") != -1)
+				{
+					project.projectName = "NewFlexJSBrowserProject";
+                }
+				else
+				{
+					project.projectName = event.exportProject ? event.exportProject.name : "New"+tempName;
+                }
 			}
 			
 			if (isOpenProjectCall)
 			{
-				if (!model.recentSaveProjectPath.contains(event.templateDir.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(event.templateDir.fileBridge.nativePath);
+				if (!model.recentSaveProjectPath.contains(event.templateDir.fileBridge.nativePath))
+				{
+					model.recentSaveProjectPath.addItem(event.templateDir.fileBridge.nativePath);
+                }
 				project.projectName = "ExternalProject";
 				project.isProjectFromExistingSource = true;
 			}
@@ -177,8 +205,9 @@ package actionScripts.plugins.as3project
 			project.folderLocation = new FileLocation(model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1]);
 			
 			var settingsView:SettingsView = new SettingsView();
+			settingsView.exportProject = event.exportProject;
 			settingsView.Width = 150;
-			settingsView.defaultSaveLabel = "Create";
+			settingsView.defaultSaveLabel = event.isExport ? "Export" : "Create";
 			settingsView.isNewProjectSettings = true;
 			
 			settingsView.addCategory("");
@@ -186,41 +215,30 @@ package actionScripts.plugins.as3project
 			project.projectName = project.projectName.replace(/ /g, "");
 			
 			var nvps:Vector.<NameValuePair> = Vector.<NameValuePair>([
-				new NameValuePair("AIR", AS3ProjectPlugin.AS3PROJ_AS_AIR),
-				new NameValuePair("Web", AS3ProjectPlugin.AS3PROJ_AS_WEB)
+				new NameValuePair("AIR", ProjectType.AS3PROJ_AS_AIR),
+				new NameValuePair("Web", ProjectType.AS3PROJ_AS_WEB),
+			    new NameValuePair("Visual Editor", ProjectType.VISUAL_EDITOR)
 			]);
+
+			var settings:SettingsWrapper = getProjectSettings(project, event);
+
+			if (newProjectSourcePathSetting)
+            {
+                if (isOpenProjectCall)
+                {
+                    isProjectFromExistingSource = project.isProjectFromExistingSource;
+                }
+
+                newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
+            }
 			
-			newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._');
-			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true);
-			newProjectSourcePathSetting = new NewProjectSourcePathListSetting(project, "projectWithExistingSourcePaths", "Main source folder");
-			newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
-			if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
-			
-			var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
-				new StaticLabelSetting('New '+ event.templateDir.fileBridge.name),
-				newProjectNameSetting, // No space input either plx
-				newProjectPathSetting,
-				new PathSetting(this,'customFlexSDK', 'Apache Flex® or FlexJS® SDK', true, customFlexSDK, true),
-				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
-				newProjectSourcePathSetting
-			]));
-			
-			if (event.templateDir.fileBridge.name.indexOf("Feathers") != -1) isFeathersProject = true;
-			if (event.templateDir.fileBridge.name.indexOf("Actionscript Project") != -1)
+            if (isActionScriptProject)
 			{
 				isActionScriptProject = true;
 				newProjectTypeSetting = new MultiOptionSetting(this, "activeType", "Select project type", nvps);
 				settings.getSettingsList().splice(4, 0, newProjectTypeSetting);
 			}
-			else if (event.templateDir.fileBridge.name.indexOf("Mobile Project") != -1)
-			{
-				isMobileProject = true;
-			}
-			else
-			{
-				isActionScriptProject = false;
-			}
-			
+
 			if (isOpenProjectCall)
 			{
 				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
@@ -263,11 +281,7 @@ package actionScripts.plugins.as3project
 			
 			settingsView.addCategory("");
 			
-			var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
-				new StaticLabelSetting('New Away3D Project'),
-				new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._'),
-				new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true)
-			]));
+			var settings:SettingsWrapper = getProjectSettings(project, event);
 			
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
 			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
@@ -282,14 +296,60 @@ package actionScripts.plugins.as3project
 			
 			templateLookup[project] = event.templateDir;
 		}
-		
-		private function swap(fromIndex:int, toIndex:int,myArray:Array):void
+
+        private function isAllowedTemplateFile(projectFileExtension:String):Boolean
+        {
+            return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj";
+        }
+
+		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
-			var temp:* = myArray[toIndex];
-			myArray[toIndex] = myArray[fromIndex];
-			myArray[fromIndex] = temp;	
+            newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._');
+            newProjectPathSetting = new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true);
+
+			if (eventObject.isExport)
+			{
+				newProjectNameSetting.isEditable = false;
+                return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+                    new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
+                    newProjectNameSetting, // No space input either plx
+                    newProjectPathSetting
+                ]));
+			}
+
+			if (eventObject.projectFileEnding == "awd")
+            {
+                return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+                    new StaticLabelSetting('New Away3D Project'),
+                    new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._'),
+                    new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true)
+                ]));
+            }
+
+            newProjectSourcePathSetting = new NewProjectSourcePathListSetting(project,
+					"projectWithExistingSourcePaths", "Main source folder");
+			
+            if (project.isVisualEditorProject && !eventObject.isExport)
+            {
+                return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+                    new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
+                    newProjectNameSetting, // No space input either plx
+                    newProjectPathSetting,
+                    new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
+                    newProjectSourcePathSetting
+                ]));
+            }
+
+            return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
+				newProjectNameSetting, // No space input either plx
+				newProjectPathSetting,
+				new PathSetting(this,'customFlexSDK', 'Apache Flex® or FlexJS® SDK', true, customFlexSDK, true),
+				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
+				newProjectSourcePathSetting
+			]));
 		}
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS
@@ -321,30 +381,34 @@ package actionScripts.plugins.as3project
 		private function createSave(event:Event):void
 		{
 			var view:SettingsView = event.target as SettingsView;
-			var pvo:AS3ProjectVO = view.associatedData as AS3ProjectVO;
-			var targetFolder:FileLocation = pvo.folderLocation;
-			var comparePath:Boolean=false;
-			
+			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
+			var targetFolder:FileLocation = project.folderLocation;
+
 			//save  project path in shared object
 			cookie = SharedObject.getLocal("moonshine-ide-local");
 			var tmpParent:FileLocation;
 			if (_isProjectFromExistingSource)
 			{
-				var tmpIndex:int = model.recentSaveProjectPath.getItemIndex(pvo.folderLocation.fileBridge.nativePath);
+				var tmpIndex:int = model.recentSaveProjectPath.getItemIndex(project.folderLocation.fileBridge.nativePath);
 				if (tmpIndex != -1) model.recentSaveProjectPath.removeItemAt(tmpIndex);
-				tmpParent = pvo.folderLocation.fileBridge.parent;
+				tmpParent = project.folderLocation.fileBridge.parent;
 			}
 			else
 			{
-				tmpParent = pvo.folderLocation;
+				tmpParent = project.folderLocation;
 			}
-			if (!model.recentSaveProjectPath.contains(tmpParent.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
+
+			if (!model.recentSaveProjectPath.contains(tmpParent.fileBridge.nativePath))
+			{
+				model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
+            }
+
 			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
+
+            project = createFileSystemBeforeSave(project, view.exportProject);
 			
-			pvo = createFileSystemBeforeSave(pvo);
-			
-			if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(pvo.projectName);
+			if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
 			
 			// Close settings view
 			createClose(event);
@@ -352,24 +416,24 @@ package actionScripts.plugins.as3project
 			// Open main file for editing
 			if (isAway3DProject)
 			{
-				pvo.folderLocation = targetFolder;
+                project.folderLocation = targetFolder;
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, pvo)
+					new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, project)
 				);
 			}
 			else
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT, pvo)
+					new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 				);
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, pvo.targets[0])
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0])
 				);
 			}
 		}
 		
-		private function createFileSystemBeforeSave(pvo:AS3ProjectVO):AS3ProjectVO
+		private function createFileSystemBeforeSave(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
 		{
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
@@ -379,16 +443,18 @@ package actionScripts.plugins.as3project
 				{
 					if (i.title == projectTemplateType)
 					{
-						if (i.title.indexOf("Feathers") != -1) isFeathersProject = true;
-						if (i.title.indexOf("Actionscript Project") != -1) isActionScriptProject = true;
-						else if (i.title.indexOf("Mobile Project") != -1) isMobileProject = true;
-						
+						setProjectType(i.title);
+
+						var templateSettingsName:String = isVisualEditorProject && !exportProject ?
+								"$Settings.veditorproj.template" :
+								"$Settings.as3proj.template";
+
 						var tmpLocation:FileLocation = pvo.folderLocation;
 						var tmpName:String = pvo.projectName;
 						var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
 						var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
 						templateLookup[pvo] = i.file;
-						pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath("$Settings.as3proj.template"));
+						pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
 						pvo.folderLocation = tmpLocation;
 						pvo.projectName = tmpName;
 						pvo.projectWithExistingSourcePaths = tmpExistingSource;
@@ -434,36 +500,49 @@ package actionScripts.plugins.as3project
 			th.templatingData["$Settings"] = projectName;
 			th.templatingData["$Certificate"] = projectName +"Certificate";
 			th.templatingData["$Password"] = projectName +"Certificate";
-			th.templatingData["$FlexHome"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "";
+			th.templatingData["$FlexHome"] = model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : "";
 			th.templatingData["$MovieVersion"] = movieVersion;
-			if (_customFlexSDK) th.templatingData["${flexlib}"] = _customFlexSDK;
-			else th.templatingData["${flexlib}"] = (IDEModel.getInstance().defaultSDK) ? IDEModel.getInstance().defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
-			th.projectTemplate(templateDir, targetFolder);
-			
-			// we do not needs any further proceeding for non-flex projects, i.e away3d
-			if (templateDir.fileBridge.name.indexOf("Away3D") != -1) isAway3DProject = true;
-			if (isAway3DProject)
+			if (_customFlexSDK)
 			{
+				th.templatingData["${flexlib}"] = _customFlexSDK;
+            }
+			else
+			{
+				th.templatingData["${flexlib}"] = (model.defaultSDK) ? model.defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
+            }
+
+            if (exportProject)
+            {
+                exportProject.sourceFolder.fileBridge.copyTo(targetFolder.resolvePath("src"));
+				th.isProjectFromExistingSource = true;
+            }
+
+            th.projectTemplate(templateDir, targetFolder);
+
+			// we do not needs any further proceeding for non-flex projects, i.e away3d
+			if (templateDir.fileBridge.name.indexOf("Away3D") != -1)
+			{
+				isAway3DProject = true;
 				return pvo;
-			}
-			
+            }
+
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
-			var descriptorFile:FileLocation;
+			var descriptorFileLocation:FileLocation;
 			var isAIR:Boolean = templateDir.resolvePath("build_air").fileBridge.exists;
 			if (isActionScriptProject || isAIR || isMobileProject)
 			{
-				if (activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)
+				if (activeType == ProjectType.AS3PROJ_AS_AIR)
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
-					descriptorFile = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
+					descriptorFileLocation = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
 					try
 					{
-						descriptorFile.fileBridge.moveTo(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						descriptorFileLocation.fileBridge.moveTo(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 					}
 					catch(e:Error)
 					{
-						descriptorFile.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						descriptorFileLocation.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 					}
 				}
 				else
@@ -487,7 +566,8 @@ package actionScripts.plugins.as3project
 						folderToDelete3.fileBridge.deleteDirectory(true);
 						folderToDelete4.fileBridge.deleteDirectory(true);
 					}
-				} catch (e:Error)
+				}
+				catch (e:Error)
 				{
 					folderToDelete1.fileBridge.deleteDirectoryAsync(true);
 					if (isActionScriptProject)
@@ -500,40 +580,73 @@ package actionScripts.plugins.as3project
 			}
 			
 			// creating certificate conditional checks
-			if (!descriptorFile || !descriptorFile.fileBridge.exists)
+			if (!descriptorFileLocation || !descriptorFileLocation.fileBridge.exists)
 			{
-				descriptorFile = targetFolder.resolvePath("application.xml");
-				if (!descriptorFile.fileBridge.exists)
+				descriptorFileLocation = targetFolder.resolvePath("application.xml");
+				if (!descriptorFileLocation.fileBridge.exists)
 				{
-					descriptorFile = targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml");
+					descriptorFileLocation = targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml");
 				}
 			}
 			
-			if (descriptorFile.fileBridge.exists)
+			if (descriptorFileLocation.fileBridge.exists)
 			{
 				// lets update $SWFVersion with SWF version now
-				var stringOutput:String = descriptorFile.fileBridge.read() as String;
+				var stringOutput:String = descriptorFileLocation.fileBridge.read() as String;
 				var firstNamespaceQuote:int = stringOutput.indexOf('"', stringOutput.indexOf("<application xmlns=")) + 1;
 				var lastNamespaceQuote:int = stringOutput.indexOf('"', firstNamespaceQuote);
 				var currentAIRNamespaceVersion:String = stringOutput.substring(firstNamespaceQuote, lastNamespaceQuote);
 				
 				stringOutput = stringOutput.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ movieVersion);
-				descriptorFile.fileBridge.save(stringOutput);
+				descriptorFileLocation.fileBridge.save(stringOutput);
 			}
-			
+
+			var projectSettingsFile:String = isVisualEditorProject && !exportProject ?
+                    projectName+".veditorproj" :
+                    projectName+".as3proj";
+
 			// Figure out which one is the settings file
-			var settingsFile:FileLocation = targetFolder.resolvePath(projectName+".as3proj");
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
+            var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
+                    new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
+                    null;
 			
 			// Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, (isMobileProject || (isActionScriptProject && activeType == AS3ProjectPlugin.AS3PROJ_AS_AIR)) ? new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") : null);
+			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
 			
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
-			
+
 			return pvo;
 		}
-	}
+
+        private function setProjectType(templateName:String):void
+        {
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
+			{
+				isVisualEditorProject = true;
+			}
+
+            if (templateName.indexOf(ProjectTemplateType.FEATHERS) != -1)
+            {
+                isFeathersProject = true;
+            }
+
+            if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1)
+            {
+                isActionScriptProject = true;
+            }
+            else if (templateName.indexOf(ProjectTemplateType.MOBILE) != -1)
+            {
+                isMobileProject = true;
+            }
+            else
+            {
+                isActionScriptProject = false;
+            }
+        }
+    }
 }

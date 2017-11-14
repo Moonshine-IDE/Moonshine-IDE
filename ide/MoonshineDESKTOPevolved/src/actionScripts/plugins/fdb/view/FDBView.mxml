@@ -36,8 +36,6 @@
 	</mx:Style>
 	<mx:Script>
 		<![CDATA[
-			import flash.events.Event;
-			
 			import mx.collections.HierarchicalData;
 			import mx.collections.XMLListCollection;
 			import mx.events.AdvancedDataGridEvent;

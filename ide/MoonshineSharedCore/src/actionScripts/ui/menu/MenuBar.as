@@ -109,7 +109,7 @@ package actionScripts.ui.menu
 
 		private function drawMenuState():void
 		{
-			var barItem:MenuBarItemRenderer
+			var barItem:MenuBarItemRenderer;
 			var items:Vector.<ICustomMenuItem> = _menu.items;
 			for each (var item:ICustomMenuItem in items)
 			{
@@ -179,8 +179,8 @@ package actionScripts.ui.menu
 			var mtr:Matrix = new Matrix();
 			mtr.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
 
-			graphics.clear()
-			graphics.beginGradientFill("linear", [0xebeff7, 0xCACBCD], [1, 1], [64, 255], mtr)
+			graphics.clear();
+			graphics.beginGradientFill("linear", [0xebeff7, 0xCACBCD], [1, 1], [64, 255], mtr);
 			graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
 			graphics.endFill();
 

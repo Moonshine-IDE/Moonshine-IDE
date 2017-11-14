@@ -29,8 +29,10 @@ package actionScripts.impls
 	import actionScripts.interfaces.IFileBridge;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	CONFIG::OSX
+
+    import org.apache.flex.ant.tags.filesetClasses.exceptions.IOException;
+
+    CONFIG::OSX
 	{
 		// ** IMPORTANT **
 		// DO NOT DELETE THE IMPORT EVEN IF 
@@ -150,11 +152,11 @@ package actionScripts.impls
 			return _file.getRelativePath(ref.fileBridge.getFile as File, useDotDot);
 		}
 		
-		public function copyTo(value:FileLocation):void
+		public function copyTo(value:FileLocation, overwrite:Boolean = false):void
 		{
-			_file.copyTo(value.fileBridge.getFile as File);
+			_file.copyTo(value.fileBridge.getFile as File, overwrite);
 		}
-		
+
 		public function moveToTrashAsync():void
 		{
 			_file.moveToTrashAsync();

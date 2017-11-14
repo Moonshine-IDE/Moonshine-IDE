@@ -19,18 +19,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import flash.display.DisplayObject;
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.valueObjects.FileWrapper;
+
+    import flash.display.DisplayObject;
 	
 	import mx.core.IFlexDisplayObject;
 	import mx.core.IVisualElement;
-	
-	import actionScripts.events.NewProjectEvent;
+
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
-	import actionScripts.valueObjects.FileWrapper;
 
 	/**
 	 * IFlexCoreBridge
@@ -56,10 +57,6 @@ package actionScripts.interfaces
 		function exportFlashBuilder(project:AS3ProjectVO, file:FileLocation):void;
 		function testFlashDevelop(file:Object):FileLocation;
 		function testFlashBuilder(file:Object):FileLocation;
-		function createAS3Project(event:NewProjectEvent):void;
-		function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void; // finishHandler must return a FileWrapper object
-		function getCorePlugins():Array;
-		function getDefaultPlugins():Array;
 		function getQuitMenuItem():MenuItem;
 		function getSettingsMenuItem():MenuItem;
 		function getAboutMenuItem():MenuItem;
@@ -68,18 +65,30 @@ package actionScripts.interfaces
 		function getAccessManagerPopup():IFlexDisplayObject;
 		function getSDKInstallerView():IFlexDisplayObject;
 		function getTourDeView():IPanelWindow;
-		function exitApplication():void;
 		function getTourDeEditor(swfSource:String):BasicTextEditor;
 		function getSoftwareInformationView():IVisualElement;
 		function getNewAntBuild():IFlexDisplayObject;
-		function getPluginsNotToShowInSettings():Array;
 		function updateFlashPlayerTrustContent(value:FileLocation):void;
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
 		function startTypeAheadWithJavaPath(path:String):void;
 		function reAdjustApplicationSize(width:Number, height:Number):void;
-		
+
+        function createProject(event:NewProjectEvent):void;
+
+        /**
+         *
+         * @param projectWrapper
+         * @param finishHandler - handler must return FileWrapper object
+         */
+        function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void;
+
+        function getCorePlugins():Array;
+        function getDefaultPlugins():Array;
+        function getPluginsNotToShowInSettings():Array;
+        function exitApplication():void;
+
 		function get runtimeVersion():String;
 		function get version():String;
 	}
