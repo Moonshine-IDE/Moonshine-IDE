@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.6.1-Pending]
+## Moonshine IDE [1.6.1]
 
 ### Added 
 * Settings: Options to change Java Development Kit path. See the "Default SDK" tab in the IDE settings.
@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Settings: Add support for projects with Native Extension.
 * Add "Feedback" section where user can share experience with Moonshine on Twitter, Facebook and raise issue on GitHub.
 * Add confirmation dialog to file/directory delete in project.
+* Add partial support for Apache Royale. IDE is able to open, build project and write code using Nightly build of Apache Royale.
 
 ### Changed
 * Update [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.7.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.7.0).
@@ -33,7 +34,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Window:  The window size and maximized status will be preserved when restarting Moonshine
 * Panels:  The panel size will be preserved when restarting Moonshine
 * Auto-updater:  Moonshine will automatically prompt you to update to new versions.  Disabled for the App Store version.
-* Add partial support for Apache Royale. IDE is able to open, build project and write code using Nightly build of Apache Royale.
 
 
 ### Changed
