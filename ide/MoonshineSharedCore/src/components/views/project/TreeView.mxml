@@ -251,7 +251,6 @@
 			
 			public function handleProjectsChange(event:CollectionEvent):void
 			{
-				var previousCount:int = projectFolders.length;
 				var project:ProjectVO = null;
 
 				switch (event.kind)

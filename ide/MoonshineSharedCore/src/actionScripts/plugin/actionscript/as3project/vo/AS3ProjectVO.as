@@ -23,9 +23,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
-    
-    import spark.components.Label;
-    
+
     import __AS3__.vec.Vector;
     
     import actionScripts.events.GlobalEventDispatcher;
@@ -245,11 +243,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
 			super(folder, projectName, updateToTreeView);
-			
+
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
 			
 			config = new MXMLCConfigVO();
+
+            projectReference.hiddenPaths = this.hiddenPaths;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>

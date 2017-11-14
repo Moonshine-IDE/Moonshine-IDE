@@ -62,8 +62,6 @@ package actionScripts.controllers
 				var e:OpenFileEvent = event as OpenFileEvent;
 				if (e.file)
 				{
-                    if (!canOpenFile(e.file)) return;
-
                     openAsTourDe = e.openAsTourDe;
 					tourDeSWFSource = e.tourDeSWFSource;
 					wrapper = e.wrapper;
@@ -268,19 +266,6 @@ package actionScripts.controllers
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
 			);
-		}
-
-		private function canOpenFile(openFile:FileLocation):Boolean
-		{
-			if (openFile.fileBridge.isDirectory) return true;
-
-            var veProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-			if (veProject == null || !veProject.isVisualEditorProject)
-			{
-				return true;
-			}
-
-            return openFile.fileBridge.extension == "mxml";
 		}
 	}
 }

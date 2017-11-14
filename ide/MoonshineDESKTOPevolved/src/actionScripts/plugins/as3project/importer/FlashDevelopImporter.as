@@ -77,12 +77,17 @@ package actionScripts.plugins.as3project.importer
             parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
 
+			if (project.hiddenPaths.length > 0 && project.projectFolder)
+			{
+				project.projectFolder.updateChildren();
+			}
+
             project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
             project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
             project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
 
             project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
-			
+
 			if (project.targets.length > 0)
 			{
 				var target:FileLocation = project.targets[0];

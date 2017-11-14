@@ -48,7 +48,9 @@
   <compileTargets>
     <compile path="$SourceFile"/>
   </compileTargets>
-  <hiddenPaths/>
+  <hiddenPaths>
+    <hidden path="visualeditor-src" />
+  </hiddenPaths>
   <preBuildCommand/>
   <postBuildCommand alwaysRun="False"/>
   <options>
