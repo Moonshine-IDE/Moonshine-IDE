@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.menu.MenuUtils;
     import actionScripts.valueObjects.ProjectVO;
 
@@ -156,12 +155,7 @@ package actionScripts.ui.renderers
 			
 			inputValidator.source = editText;
 		}
-		
-		public function stopEdit():void
-		{
-			editDone();
-		}
-		
+
 		public function cancelEdit():void
 		{
 			if (!editText) return;

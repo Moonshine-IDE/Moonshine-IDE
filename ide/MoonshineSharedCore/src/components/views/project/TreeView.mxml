@@ -121,9 +121,19 @@
 			
 			private function refreshByWrapperItem(fileWrapper:FileWrapper):void
 			{
-				if (!fileWrapper.file.fileBridge.isDirectory) refresh(fileWrapper.file.fileBridge.parent);
-				else refreshItem(fileWrapper);
-				if (fileWrapper.sourceController) fileWrapper.sourceController.refresh(fileWrapper.file);
+				if (!fileWrapper.file.fileBridge.isDirectory)
+				{
+					refresh(fileWrapper.file.fileBridge.parent);
+				}
+				else
+				{
+					refreshItem(fileWrapper);
+				}
+
+				if (fileWrapper.sourceController)
+				{
+					fileWrapper.sourceController.refresh(fileWrapper.file);
+				}
 			}
 			
 			public function refresh(dir:FileLocation):void
@@ -783,6 +793,8 @@
 				{
 					tree.expandItem(item, !tree.isItemOpen(item), true);
 				}
+
+				refreshActiveProject(item as FileWrapper);
 			}
 			
 			private function fileDoubleClickedInTree(event:ListEvent):void
@@ -790,14 +802,7 @@
 				var fw:FileWrapper = event.itemRenderer.data as FileWrapper;
 				if (fw.file.fileBridge.isDirectory || fw.isWorking) return;
 
-				var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
-				var globalDispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-
-				if (activeProject)
-				{
-					model.activeProject = activeProject;
-					globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
-				}
+				refreshActiveProject(fw);
 
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fw.file, -1, fw) 
@@ -820,7 +825,20 @@
 				if (!FileWrapper(item).isRoot) return null;
 				return FileWrapper(item).file.fileBridge.nativePath;
 			}
-			
+
+			private function refreshActiveProject(projectFileWrapper:FileWrapper):void
+			{
+				if (!projectFileWrapper) return;
+				
+				var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(projectFileWrapper);
+				if (activeProject)
+				{
+					model.activeProject = activeProject;
+
+					var globalDispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+					globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
+				}
+			}
 		]]>
 	</mx:Script>
 	
@@ -840,22 +858,18 @@
 		selectionColor="0xc165b8"
 		alternatingItemColors="[0x444444, 0x4d4c4c]"
 		verticalScrollBarStyleName="black"
-		
 		showDataTips="true"
 		dataTipFunction="getTreeTooltip"
 		keyNav="true"
-		
 		borderVisible="false"
 		rowHeight="18"
 		useRollOver="true"
 		doubleClickEnabled="true"
 		labelField="name"
-	
 		iconFunction="{getIconForFile}"
 		itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
 		itemDoubleClick="fileDoubleClickedInTree(event)"
 		itemClick="fileClickedInTree(event)"
-		
 		creationComplete="initTree()"/>
 	
 </mx:VBox>

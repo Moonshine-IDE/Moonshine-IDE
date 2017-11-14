@@ -20,15 +20,12 @@
 package actionScripts.plugin.help
 {
 	import flash.display.Sprite;
-	import flash.events.Event;
 	import flash.filters.GlowFilter;
 	
 	import mx.controls.treeClasses.TreeItemRenderer;
-	import mx.core.UIComponent;
 	import mx.core.mx_internal;
 	
 	import spark.components.Label;
-	import spark.components.TextInput;
 	
 	import actionScripts.locator.IDEModel;
 
@@ -37,24 +34,15 @@ package actionScripts.plugin.help
 	public class GenericTreeItemRenderer extends TreeItemRenderer
 	{
 		private var label2:Label;
-		private var editText:TextInput;
 		
 		private var model:IDEModel;
 		private var isOpenIcon:Sprite;
 		private var hitareaSprite:Sprite;
-		private var sourceControlBackground:UIComponent;
-		private var sourceControlText:Label;
-		private var sourceControlSystem:Label;
 		
 		public function GenericTreeItemRenderer()
 		{
 			super();
 			model = IDEModel.getInstance();
-		}
-		
-		private function onActiveEditorChange(event:Event):void
-		{
-			invalidateDisplayList();
 		}
 		
 		override public function set data(value:Object):void

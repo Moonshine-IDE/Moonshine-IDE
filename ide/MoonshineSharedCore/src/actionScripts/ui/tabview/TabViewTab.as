@@ -35,7 +35,6 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
 		
 		protected var closeButton:Sprite;
-		protected var closeButtonSeparator:Sprite;
 		protected var background:Sprite;
 		protected var labelView:Label;
 		protected var labelViewMask:Sprite;
