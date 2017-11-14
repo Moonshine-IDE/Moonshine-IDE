@@ -565,14 +565,17 @@
 			fontStyle="italic"
 			fontSize="18" 
 			right="20"/>
-		<s:Scroller width="100%" height="48%" top="36" horizontalScrollPolicy="off">
-			<s:VGroup id="recentProjects" 
-					  width="100%" paddingRight="20" gap="5" verticalAlign="bottom" horizontalAlign="right"/>
-		</s:Scroller>
-		<s:Scroller width="100%" height="48%" bottom="0" horizontalScrollPolicy="off">
-			<s:VGroup id="recentFiles" 
-					  width="100%" paddingRight="20" gap="5" horizontalAlign="right"/>
-		</s:Scroller>
+		<s:VGroup width="100%" top="36" bottom="0" gap="0">
+			<s:Scroller width="100%" height="50%" horizontalScrollPolicy="off">
+				<s:VGroup id="recentProjects" 
+						  width="100%" paddingRight="20" gap="5" verticalAlign="bottom" horizontalAlign="right"/>
+			</s:Scroller>
+			<s:Spacer height="20"/>
+			<s:Scroller width="100%" height="50%" horizontalScrollPolicy="off">
+				<s:VGroup id="recentFiles" 
+						  width="100%" paddingRight="20" gap="5" horizontalAlign="right"/>
+			</s:Scroller>
+		</s:VGroup>
 	</s:Group>
 	
 	<s:Group id="grpNoSDKMess" 
