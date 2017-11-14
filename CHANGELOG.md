@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project settings: Fixed issue where selecting -optimize=true does not work. 
 * Project settings: Fixed issue where "Additional compiler options" were disabled for other projects than Adobe Air.
 * Fixed issue where alert for project delete appear twice.
-* ANT: Fixed issue where option "Ant Home" was reset once after restart.
+* ANT: Fixed issue where option "Ant Home" was reset after IDE restart.
 * Menu: On Mac OSX menu "File" -> "Moonshine App Store Helper" does not work
 * Flex web browser project was created with wrong url for launch
 
