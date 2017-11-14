@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Settings: Add support for projects with Native Extension.
 * Add "Feedback" section where user can share experience with Moonshine on Twitter, Facebook and raise issue on GitHub.
 * Add confirmation dialog to file/directory delete in project.
-* Add partial support for Apache Royale. IDE is able to open, build project and write code using Nightly build of Apache Royale.
+* Add partial support for Apache Royale. User is able to open, build project and write code using Nightly build of Apache Royale.
 
 ### Changed
 * Update [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.7.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.7.0).
