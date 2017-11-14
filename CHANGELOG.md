@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 * Update [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.7.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.7.0).
-* Option "Additional compiler options" now have precedence agains selected options in settings.
+* Option "Additional compiler options" now have precedence against selected options in settings.
 * Settings: Sorting tabs in settings alphabetically. 
 
 ### Fixed
