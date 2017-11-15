@@ -7,11 +7,12 @@
 	
 	<s:VGroup width="100%" height="100%"
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
-		<s:Label text="Perhaps you want to share some words on this?"/>
+		<s:Label text="If you would like to help spread the word, you can share a message on Facebook or Twitter using the buttons below."
+				 width="100%"/>
 		<s:TextArea id="txtMessage" 
 					width="100%" height="100%"
 					prompt="Say something you liked about #moonshineide"
-					text="I have a nice experience using Moonshine IDE! #moonshineide #actionscript"/>
+					text="I had a nice experience using Moonshine IDE! #moonshineide #actionscript"/>
 		
 	</s:VGroup>
 	
