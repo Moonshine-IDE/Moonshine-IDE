@@ -20,13 +20,10 @@ package actionScripts.ui.editor.text
 {
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.utils.TextUtil;
+    import actionScripts.ui.renderers.CodeCompletionItemRenderer;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
-	import actionScripts.valueObjects.Position;
-
-	import flash.events.Event;
+    import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
@@ -35,7 +32,8 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayList;
-	import mx.managers.PopUpManager;
+    import mx.core.ClassFactory;
+    import mx.managers.PopUpManager;
 
 	import spark.components.List;
 	import spark.filters.DropShadowFilter;
@@ -63,13 +61,17 @@ package actionScripts.ui.editor.text
 			this.model = model;
 
 			completionList = new List();
-			completionList.minWidth = 300;
+			completionList.labelField = "label";
+			completionList.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
+			completionList.minWidth = 350;
 			completionList.styleName = "completionList";
 			var layout:VerticalLayout = new VerticalLayout();
 			layout.requestedMaxRowCount = 8;
-			layout.gap = 0;
+			layout.gap = 0;  
 			layout.horizontalAlign = HorizontalAlign.CONTENT_JUSTIFY;
 			layout.useVirtualLayout = true;
+			layout.rowHeight = 22;
+			layout.variableRowHeight = false;
 			completionList.layout = layout;
 			completionList.doubleClickEnabled = true;
 			completionList.filters = [new DropShadowFilter(3, 90, 0, 0.2, 8, 8)];

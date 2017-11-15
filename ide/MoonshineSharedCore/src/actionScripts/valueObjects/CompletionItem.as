@@ -3,7 +3,7 @@ package actionScripts.valueObjects
 	public class CompletionItem
 	{
 		public var label:String;
-		public var kind:Number = 0;
+		public var kind:String;
 		public var detail:String;
 		public var documentation:String;
 		public var insertText:String = null;
@@ -19,5 +19,15 @@ package actionScripts.valueObjects
 		 * a completion and a completion resolve request.
 		 */
 		public var data: *;
+
+		public function isProperty():Boolean
+		{
+			if (detail)
+			{
+				return kind == "Function" && detail.indexOf("property") > -1;
+			}
+
+			return false;
+		}
 	}
 }
