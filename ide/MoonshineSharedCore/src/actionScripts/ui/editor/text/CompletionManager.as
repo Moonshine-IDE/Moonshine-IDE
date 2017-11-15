@@ -61,7 +61,7 @@ package actionScripts.ui.editor.text
 			this.model = model;
 
 			completionList = new List();
-			completionList.labelField = "label";
+			completionList.labelField = "labelWithPrefix";
 			completionList.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
 			completionList.minWidth = 350;
 			completionList.styleName = "completionList";

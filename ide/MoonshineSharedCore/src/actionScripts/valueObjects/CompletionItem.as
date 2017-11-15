@@ -29,5 +29,18 @@ package actionScripts.valueObjects
 
 			return false;
 		}
+
+		public function get labelWithPrefix():String
+		{
+			if (command)
+			{
+			   if (command.command == "nextgenas.addMXMLNamespace" && command.arguments)
+			   {
+				   return command.arguments[0] + ":" + label;
+			   }
+			}
+
+			return label;
+		}
 	}
 }
