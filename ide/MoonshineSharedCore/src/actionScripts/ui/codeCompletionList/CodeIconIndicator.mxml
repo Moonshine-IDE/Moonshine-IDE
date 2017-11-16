@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark" visible.normal="false" includeInLayout.normal="false"
-         width="18" height="18">
+         toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true"
+         visible.info="{_data.documentation != null}" includeInLayout.info="{_data.documentation != null}">
     <s:states>
         <s:State name="normal" />
         <s:State name="Function" />
@@ -11,8 +12,10 @@
         <s:State name="Class" />
         <s:State name="Field" />
         <s:State name="Property" />
+        <s:State name="info" />
     </s:states>
-    <s:Ellipse verticalCenter="0" horizontalCenter="0" width="18" height="18">
+    <s:Ellipse verticalCenter="0" horizontalCenter="0"
+               width="18" height="18" width.info="14" height.info="14">
         <s:fill>
             <s:SolidColor id="codeIndicatorColor"
                           color.Function="0x3382dd"
@@ -21,29 +24,39 @@
                           color.Class="0xa848da"
                           color.Variable="0x6d5a9c"
                           color.Field="0xC28627"
-                          color.Property="0x3E8854"/>
+                          color.Property="0x3E8854"
+                          color.info="0xFFB05B"/>
         </s:fill>
     </s:Ellipse>
     <s:Label id="codeIndicationLabel" verticalCenter="0" horizontalCenter="0" color="0xFFFFFF"
-             fontWeight="bold" fontSize="10" textAlign="center"
+             fontWeight="bold" fontSize="10" fontSize.info="8" textAlign="center"
              text.Function="M"
              text.Keyword="K"
              text.Interface="I"
              text.Class="C"
              text.Variable="V"
              text.Field="E"
-             text.Property="P"/>
+             text.Property="P"
+             text.info="i"/>
     <fx:Script><![CDATA[
         import actionScripts.valueObjects.CompletionItem;
 
+        [Bindable]
         private var _data:CompletionItem;
-        
+
         public function set data(value:CompletionItem):void
         {
             _data = value;
             if (value)
             {
-                currentState = value.isProperty() ? "Property" : value.kind;
+                if (currentState == "info")
+                {
+                    currentState = "info";
+                }
+                else
+                {
+                    currentState = value.isProperty() ? "Property" : value.kind;
+                }
             }
         }
 

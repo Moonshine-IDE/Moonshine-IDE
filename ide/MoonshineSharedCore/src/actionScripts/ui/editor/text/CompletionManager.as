@@ -20,7 +20,7 @@ package actionScripts.ui.editor.text
 {
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.ui.renderers.CodeCompletionItemRenderer;
+    import actionScripts.ui.codeCompletionList.CodeCompletionList;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
     import flash.events.Event;
@@ -32,13 +32,9 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayList;
-    import mx.core.ClassFactory;
     import mx.managers.PopUpManager;
 
 	import spark.components.List;
-	import spark.filters.DropShadowFilter;
-	import spark.layouts.HorizontalAlign;
-	import spark.layouts.VerticalLayout;
 
 	public class CompletionManager
 	{
@@ -49,7 +45,7 @@ package actionScripts.ui.editor.text
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 
-		private var completionList:List;
+		private var completionList:CodeCompletionList;
 		private var menuStr:String;
 		private var menuRefY:Number;
 		private var caret:int;
@@ -60,21 +56,7 @@ package actionScripts.ui.editor.text
 			this.editor = editor;
 			this.model = model;
 
-			completionList = new List();
-			completionList.labelField = "labelWithPrefix";
-			completionList.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
-			completionList.minWidth = 350;
-			completionList.styleName = "completionList";
-			var layout:VerticalLayout = new VerticalLayout();
-			layout.requestedMaxRowCount = 8;
-			layout.gap = 0;  
-			layout.horizontalAlign = HorizontalAlign.CONTENT_JUSTIFY;
-			layout.useVirtualLayout = true;
-			layout.rowHeight = 22;
-			layout.variableRowHeight = false;
-			completionList.layout = layout;
-			completionList.doubleClickEnabled = true;
-			completionList.filters = [new DropShadowFilter(3, 90, 0, 0.2, 8, 8)];
+			completionList = new CodeCompletionList();
 			menuData = new ArrayList();
 			completionList.dataProvider = menuData;
 		}
@@ -145,6 +127,7 @@ package actionScripts.ui.editor.text
 			completionList.removeEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
 			completionList.removeEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
 			completionList.removeEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
+			completionList.closeDocumentation();
 		}
 
 		private function filterMenu():Boolean

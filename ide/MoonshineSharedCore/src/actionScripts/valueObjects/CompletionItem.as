@@ -4,7 +4,9 @@ package actionScripts.valueObjects
 	{
 		public var label:String;
 		public var kind:String;
+		[Bindable]
 		public var detail:String;
+		[Bindable]
 		public var documentation:String;
 		public var insertText:String = null;
 
