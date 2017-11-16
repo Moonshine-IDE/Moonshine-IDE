@@ -75,10 +75,10 @@
 		]]>
 	</fx:Script>
 	
-	<s:states>
+	<!--<s:states>
 		<s:State name="normal"/>
 		<s:State name="hovered"/>
-	</s:states>
+	</s:states>-->
 	
 	<s:layout>
 		<s:HorizontalLayout  />
@@ -96,7 +96,6 @@
 		baseline="50"
 		height="100%"
 		verticalAlign="middle"
-		color="0XD6D6D6"
-		color.hovered="0XFFFFFF"
+		mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
 		useHandCursor="true" buttonMode="true" mouseChildren="false"/>	
 </s:ItemRenderer>

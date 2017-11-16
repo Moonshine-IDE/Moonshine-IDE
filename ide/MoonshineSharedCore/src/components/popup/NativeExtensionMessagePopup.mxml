@@ -23,7 +23,7 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
-			   width="475" height="300" minWidth="400" minHeight="200" title="How Moonshine supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
+			   width="475" height="280" minWidth="400" minHeight="200" title="How Moonshine supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
 	<fx:Script>
 		<![CDATA[
@@ -35,7 +35,7 @@
 		<s:RichEditableText editable="false" focusEnabled="false"
 							width="100%" height="100%">
 			<s:textFlow>
-				<s:TextFlow>On desktop simulator Moonshine supports native extension a little differently. To run simulator with native extension support Moonshine requires to expand its (ANE) files to user's file system. Following are a detailed steps how this happens.<s:br/><s:br/><s:list paddingTop="0"><s:li>User needs to locate the folder where native extensions are exists</s:li><s:li>At the time of desktop simulator run/compilation, Moonshine expands all native extension files to the same folder owns the extensions</s:li><s:li>Once expansion done Moonshine run the application with the expanded (native extension) files</s:li></s:list></s:TextFlow>
+				<s:TextFlow>To run the simulator with native extension support, Moonshine needs to expand the ANE files to user's file system. Here are the steps:<s:br/><s:br/><s:list paddingTop="0"><s:li>The user defines a folder where native extensions are exists in the project configuration</s:li><s:li>When building and running the project, Moonshine expands all native extension files in the configured directories. The files are expanded in the same directory where they were found.</s:li><s:li>Moonshine will execute the application using the expanded native extension files</s:li></s:list></s:TextFlow>
 			</s:textFlow>
 		</s:RichEditableText>
 	</s:Scroller>

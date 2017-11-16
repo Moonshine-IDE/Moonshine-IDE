@@ -267,7 +267,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			var nativeExtensionSettings:PathListSetting = new PathListSetting(this, "nativeExtensions", "Native extensions folder", folderLocation, false, true);
 			var tmpLinkLabel:LinkButton = new LinkButton();
-			tmpLinkLabel.label = "(Important: Know how Moonshine supports native extension)";
+			tmpLinkLabel.label = "(See how Moonshine supports native extensions)";
 			tmpLinkLabel.setStyle("color", 0x8e3b4e);
 			tmpLinkLabel.addEventListener(MouseEvent.CLICK, dispatchNativeExtensionMessageRequest, false, 0, true);
 			nativeExtensionSettings.customMessage = tmpLinkLabel;
