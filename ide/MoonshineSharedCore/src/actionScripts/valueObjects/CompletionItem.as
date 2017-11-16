@@ -32,11 +32,15 @@ package actionScripts.valueObjects
 
 		public function get labelWithPrefix():String
 		{
-			if (command)
+			if (command && command.command == "nextgenas.addMXMLNamespace")
 			{
-			   if (command.command == "nextgenas.addMXMLNamespace" && command.arguments)
+			   if (command.arguments)
 			   {
-				   return command.arguments[0] + ":" + label;
+				   var namespace:String = command.arguments[1];
+				   if (namespace.indexOf("http://") > -1 || namespace.indexOf("library://") > -1)
+                   {
+                       return command.arguments[0] + ":" + label;
+                   }
 			   }
 			}
 
