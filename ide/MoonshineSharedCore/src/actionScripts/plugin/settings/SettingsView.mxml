@@ -69,9 +69,10 @@
 			public var defaultCloseLabel:String = "Close";
 			public var currentRequestedSelectedItem:IHasSettings;
 			public var isSaved:Boolean;
+			public var exportProject:AS3ProjectVO;
 			
 			private var currentSelectedItem:IHasSettings;
-			
+
 			public function get longLabel():String
 			{
 				return label;

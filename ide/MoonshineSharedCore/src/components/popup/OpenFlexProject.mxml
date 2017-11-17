@@ -20,12 +20,10 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx"
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   backgroundColor="0xf5f5f5"
-			   width="400" height="160"
-			   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+			   width="400" height="160" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 			   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[

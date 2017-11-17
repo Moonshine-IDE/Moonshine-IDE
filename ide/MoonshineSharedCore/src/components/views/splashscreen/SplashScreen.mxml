@@ -90,32 +90,32 @@
 			private var renderedCount:int;
 			private var doAtOnce:Boolean;
 			private var isNoSDKMessageShown:Boolean;
-			
+
 			public function get longLabel():String
 			{
 				return "But what is it good for?";
 			}
-			
+
 			public function isChanged():Boolean
 			{
 				return false;
 			}
-			
+
 			public function isEmpty():Boolean
 			{
 				return true;
 			}
-			
+
 			public function save():void
 			{
 			}
-			
+
 			public function setProjectTemplates(value:ArrayCollection):void
 			{
 				var projectTemplateCollection:ArrayCollection = new ArrayCollection();
 				var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 				for each (var i:FileLocation in value)
-				{ 	
+				{
 					var tmpDescripFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".txt");
 					if (tmpDescripFile.exists)
 					{
@@ -126,16 +126,16 @@
 						var tmpImageFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".png");
 						template.description = String(tmpDescripFileLocation.fileBridge.read());
 						if (tmpImageFile.exists) template.logoImagePath = tmpImageFile.url;
-						
+
 						if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1) feathersProjectTemplates.addItem(template);
 						else projectTemplateCollection.addItem(template);
 					}
 				}
-				
+
 				ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
 				ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
 			}
-			
+
 			private function updateRecetProjectList(event:Event):void
 			{
 				recentProjects.removeAllElements();
@@ -176,58 +176,58 @@
 			{
 				// we need another check here, too
 				if (UtilsCore.checkProjectIfAlreadyOpened(recentOpenedProjectObject.path)) return;
-				
+
 				var activeProj:MXMLProjectVO = new MXMLProjectVO(recentOpenedProjectObject.path, recentOpenedProjectObject.name);
 				activeProj.projectName = recentOpenedProjectObject.name;
 				activeProj.projectRemotePath = "";
 				model.activeProject = activeProj;
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT, activeProj)
+						new ProjectEvent(ProjectEvent.ADD_PROJECT, activeProj)
 				);
-				
+
 				// just to makeup some visual distruaction
-				if (authPopup && authPopup.isPopUp) 
+				if (authPopup && authPopup.isPopUp)
 				{
 					PopUpManager.removePopUp(authPopup);
 					authPopup = null;
 				}
 			}
-			
+
 			private function handleProjectOpen(event:Event):void
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT)
+						new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT)
 				);
 			}
-			
+
 			private function handleTemplateClick(event:Event):void
 			{
 				var rdr:TemplateItemRenderer = event.target as TemplateItemRenderer;
 				var fl:Object = ConstantsCoreVO.IS_AIR ? rdr.data as TemplateVO : rdr.data as FileLocation;
-				
+
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					if (fl.file.fileBridge.isDirectory)
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewProjectFromTemplate"+ TemplatingHelper.getTemplateLabel(fl.file))
+								new Event("eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
 						);
 					}
 					else
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewFileFromTemplate"+ TemplatingHelper.getTemplateLabel(fl.file))
+								new Event("eventNewFileFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
 						);
 					}
 				}
 				else
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(
-						new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, FileLocation(fl).fileBridge.name, null, null)
+							new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, FileLocation(fl).fileBridge.name, null, null)
 					);
 				}
 			}
-			
+
 			private function handleRecentClick(event:Event):void
 			{
 				var refVO:ProjectReferenceVO = RecentProjectRenderer(event.target).project;
@@ -239,22 +239,18 @@
 				{
 					var projectName:String = refVO.name;
 					recentOpenedProjectObject = new FileLocation(refVO.path);
-					
-					// probable termination
-					if (!recentOpenedProjectObject.fileBridge.exists) return;
-					
 					if (recentOpenedProjectObject.fileBridge.isDirectory)
 					{
-						var p:AS3ProjectVO;
+						var project:AS3ProjectVO;
 						var lastOpenedOption:String;
 						var flashDevelopProjectFile: FileLocation;
 						
 						// open if away3d project
 						if (refVO.isAway3D)
 						{
-							p = new AS3ProjectVO(recentOpenedProjectObject as FileLocation, refVO.name);
+							project = new AS3ProjectVO(recentOpenedProjectObject as FileLocation, refVO.name);
 							GlobalEventDispatcher.getInstance().dispatchEvent(
-								new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, p)
+								new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, project)
 							);
 							return;
 						}
@@ -268,68 +264,26 @@
 								break;
 							}
 						}
-						
-						switch(lastOpenedOption)
-						{
-							case "":
-							case null:
-							case undefined:
-							case ProjectEvent.LAST_OPENED_AS_FB_PROJECT:
-							{
-								// @devsena
-								// check change log in AS3ProjectVO.as against
-								// commenting the following process
-								
-								/*if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-								else
-								{
-									flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
-									if (flashDevelopProjectFile) p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile);
-								}*/
-								
-								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile);
-								if (flashDevelopProjectFile) 
-								{
-									p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
-								}
-								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) 
-								{
-									p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-								}
-								break;
-							}
-							case ProjectEvent.LAST_OPENED_AS_FD_PROJECT:
-							{
-								flashDevelopProjectFile = model.flexCore.testFlashDevelop(recentOpenedProjectObject.fileBridge.getFile)
-								if (flashDevelopProjectFile) 
-								{
-									p = model.flexCore.parseFlashDevelop(null, flashDevelopProjectFile, projectName);
-								}
-								else if (model.flexCore.testFlashBuilder(recentOpenedProjectObject.fileBridge.getFile)) 
-								{
-									p = model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-								}
-								break;
-							}
-						}
-						
-						if (!p)
+
+						project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
+
+						if (!project)
 						{
 							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
 							return;
 						}
-						
+
 						// save old sdk details to the project
-						p.buildOptions.oldDefaultSDKPath = refVO.sdk;
+						project.buildOptions.oldDefaultSDKPath = refVO.sdk;
 						
 						// trigger the project to open
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new ProjectEvent(ProjectEvent.ADD_PROJECT, p, lastOpenedOption));
+								new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
 					}
 					else
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
+								new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
 						);
 					}
 				}
@@ -341,7 +295,10 @@
 					if (URLDescriptorVO.BASE_URL_MIRROR == "")
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {path: recentOpenedProjectObject.path, name: recentOpenedProjectObject.name})
+								new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {
+									path: recentOpenedProjectObject.path,
+									name: recentOpenedProjectObject.name
+								})
 						);
 					}
 					else if (ConstantsCoreVO.IS_AUTH_REQUIRED)
@@ -354,11 +311,36 @@
 					}
 				}
 			}
-			
+
+			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):AS3ProjectVO
+			{
+				var projectFile:File = recentOpenedProjectObject.fileBridge.getFile;
+				var projectFileLocation:FileLocation;
+
+				if (!lastOpenedOption ||
+					 lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
+					 lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
+				{
+					projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
+					if (projectFileLocation)
+					{
+						return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
+					}
+
+					projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
+					if (projectFileLocation)
+					{
+						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+					}
+				}
+
+				return null;
+			}
+
 			private function onProjectLoadSuccess(value:Object):void
 			{
 				loader = null;
-				
+
 				var xData:XML = XML(String(value));
 				if (!xData) return;
 				if (xData.status == Authentication.SESSION_UNAUTHENTICATED)
@@ -371,32 +353,32 @@
 				}
 				else if (xData.status == Authentication.SESSION_AUTHLIMITEDACCESS)
 				{
-					Alert.show( "You do not have sufficient rights to performn this operation. If you feel this is in error please contact the Administrator.", "Error!" );
+					Alert.show("You do not have sufficient rights to performn this operation. If you feel this is in error please contact the Administrator.", "Error!");
 				}
 				else
 				{
 					loadRecentProject();
 				}
 			}
-			
+
 			private function onLoginTestFault(result:Object):void
 			{
 				loader = null;
 			}
-			
+
 			private function authSuccessHandler(evt:Event):void
 			{
 				loadRecentProject();
 			}
-			
+
 			private function authCancelHandler(evt:Event):void
 			{
-				authPopup.removeEventListener(Authentication.SUCCESS,authSuccessHandler);
-				authPopup.removeEventListener(Authentication.CANCEL,authCancelHandler);
+				authPopup.removeEventListener(Authentication.SUCCESS, authSuccessHandler);
+				authPopup.removeEventListener(Authentication.CANCEL, authCancelHandler);
 				PopUpManager.removePopUp(authPopup);
 				authPopup = null;
 			}
-			
+
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				addEventListener(ResizeEvent.RESIZE, onStageResized);
@@ -411,13 +393,13 @@
 				updateRecetProjectList(null);
 				updateRecetFileList(null);
 			}
-			
+
 			private function onStageResized(event:ResizeEvent):void
 			{
 				if (isNoSDKMessageShown) grpNoSDKMess.y = this.height - grpNoSDKMess.height;
 				updateRecentLabelPosition();
 			}
-			
+
 			private function onDefaultSDKStateChanged(event:Event):void
 			{
 				var isSDKAvailable:Boolean = IDEModel.getInstance().defaultSDK ? true : false;
@@ -425,7 +407,7 @@
 				{
 					isNoSDKMessageShown = true;
 					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
-					
+
 					var tmpFade:Fade = new Fade(grpNoSDKMess);
 					tmpFade.alphaFrom = 0;
 					tmpFade.alphaTo = 1;
@@ -444,14 +426,21 @@
 				{
 					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
 				}
-				
+
 				function onEffectEnds(effEvent:EffectEvent):void
 				{
 					effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
 					grpNoSDKMess.alpha = 0;
 				}
 			}
-			
+
+
+			private function onEffectEnds(effEvent:EffectEvent):void
+			{
+				effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
+				grpNoSDKMess.visible = false;
+			}
+
 			/**
 			 * On agreement link clicked
 			 */
@@ -459,18 +448,17 @@
 			{
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 			}
-			
-			protected function onPositiveRating(event:MouseEvent):void
-			{
-				positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
-				PopUpManager.centerPopUp(positiveRatingPopup);
-			}
-			
-			protected function onNegativeRating(event:MouseEvent):void
-			{
-				negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
-				PopUpManager.centerPopUp(negativeRatingPopup);
-			}
+				protected function onPositiveRating(event:MouseEvent):void
+				{
+					positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
+					PopUpManager.centerPopUp(positiveRatingPopup);
+				}
+
+				protected function onNegativeRating(event:MouseEvent):void
+				{
+					negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
+					PopUpManager.centerPopUp(negativeRatingPopup);
+				}
 			
 		]]>
 	</fx:Script>
@@ -482,7 +470,7 @@
 		gap="20" width="60%">
 		<s:Label 
 			text="OPEN"
-			color="0XFFFFFF"
+			color="0xFFFFFF"
 			paddingTop="3"
 			paddingLeft="3"
 			paddingRight="3"
@@ -502,7 +490,7 @@
 		</s:DataGroup>
 		<s:Label 
 			text="CREATE"
-			color="0XD6D6D6"
+			color="0xD6D6D6"
 			paddingTop="3"
 			paddingLeft="3"
 			paddingRight="3"
@@ -524,7 +512,7 @@
 		</s:DataGroup>
 		<s:Label 
 			text="MORE"
-			color="0XD6D6D6"
+			color="0xD6D6D6"
 			paddingTop="3"
 			paddingLeft="3"
 			paddingRight="3"
@@ -569,7 +557,7 @@
 		width="40%" right="0" top="20" bottom="40">
 		<s:Label id="lblRecent"
 			text="RECENT"
-			color="0XFFFFFF"
+			color="0xFFFFFF"
 			paddingTop="2"
 			paddingLeft="3"
 			paddingBottom="0"

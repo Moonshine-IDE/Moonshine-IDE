@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-    import actionScripts.events.GlobalEventDispatcher;
-
     import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -66,7 +64,10 @@ package actionScripts.ui.editor
 		protected var model:IDEModel = IDEModel.getInstance();
 
 		private var selectProjectPopup:SelectOpenedFlexProject;
-        private var _isChanged:Boolean;
+
+		protected var isVisualEditor:Boolean;
+
+        protected var _isChanged:Boolean;
 
         protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
@@ -159,7 +160,11 @@ package actionScripts.ui.editor
 
 		override protected function createChildren():void
 		{
-			addChild(editor);
+			if (!isVisualEditor)
+            {
+                addChild(editor);
+            }
+			
 			super.createChildren();
 			
 			// @note

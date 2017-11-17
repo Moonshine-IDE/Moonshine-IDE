@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
-	import flash.display.DisplayObject;
+    import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.plugin.project.ProjectType;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
 	
@@ -42,16 +45,16 @@ package actionScripts.plugin.actionscript.as3project
 	import components.popup.NativeExtensionMessagePopup;
 	import components.popup.OpenFlexProject;
 	
-	public class AS3ProjectPlugin extends PluginBase 
+	public class AS3ProjectPlugin extends PluginBase
 	{
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
 		public static const EVENT_IMPORT_FLASHDEVELOP_PROJECT:String = "importFDProjectEvent";
-		public static const AS3PROJ_AS_AIR:uint = 1;
-		public static const AS3PROJ_AS_WEB:uint = 2;
+        public static const AS3PROJ_AS_AIR:uint = 1;
+        public static const AS3PROJ_AS_WEB:uint = 2;
 		public static const AS3PROJ_AS_ANDROID:uint = 3;
 		public static const AS3PROJ_AS_IOS:uint = 4;
 		
-		public var activeType:uint = AS3PROJ_AS_AIR;
+		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		// projectvo:templatedir
 		private var importProjectPopup:OpenFlexProject;
@@ -269,7 +272,9 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			model.flexCore.createAS3Project(event);
+			if (!canCreateProject(event)) return;
+			
+			model.flexCore.createProject(event);
 		}
 		
 		private function onNativeExtensionMessage(event:Event):void
@@ -291,5 +296,11 @@ package actionScripts.plugin.actionscript.as3project
 			aneMessagePopup.removeEventListener(CloseEvent.CLOSE, onAneMessageClosed);
 			aneMessagePopup = null;
 		}
+
+        private function canCreateProject(event:NewProjectEvent):Boolean
+        {
+            var projectTemplateName:String = event.templateDir.fileBridge.name;
+            return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1;
+        }
 	}
 }

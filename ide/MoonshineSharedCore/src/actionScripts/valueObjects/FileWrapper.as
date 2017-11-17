@@ -20,8 +20,10 @@ package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
-	
-	[Bindable] dynamic public class FileWrapper
+
+    import flash.filesystem.File;
+
+    [Bindable] dynamic public class FileWrapper
 	{
 		public var projectReference: ProjectReferenceVO;
 		
@@ -60,19 +62,27 @@ package actionScripts.valueObjects
 		{
 			if (!ConstantsCoreVO.IS_AIR || !file.fileBridge.isDirectory) return;
 			
-			var c:Array = file.fileBridge.getDirectoryListing();
-			if (c.length == 0 && !file.fileBridge.isDirectory)
+			var directoryListing:Array = file.fileBridge.getDirectoryListing();
+			if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
 			{
 				_children = null;
 				return;
 			}
 			else _children = [];
 			var fw: FileWrapper;
-			for (var i:int = 0; i < c.length; i++)
+			var directoryListingCount:int = directoryListing.length;
+			
+			for (var i:int = 0; i < directoryListingCount; i++)
 			{
-				if (!c[i].isHidden)
+				var currentDirectory:File = directoryListing[i];
+				var hasHiddenPath:Boolean = projectReference.hiddenPaths.some(function(item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
 				{
-					fw = new FileWrapper(new FileLocation(c[i].nativePath), false, projectReference, _shallUpdateChildren);
+					return currentDirectory.nativePath == item.fileBridge.nativePath;
+				});
+
+				if (!currentDirectory.isHidden && !hasHiddenPath)
+				{
+					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
 					fw.sourceController = _sourceController;
 					_children.push(fw);
 				}

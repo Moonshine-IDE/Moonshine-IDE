@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*"
+                toolTip="{data.detail}">
+
+    <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
+    <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
+             textAlign="left" maxDisplayedLines="1" left="24"/>
+    <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false" includeInLayout="false"
+              verticalAlign="middle">
+        <s:Label color="0x606060" verticalCenter="0" textAlign="right"
+                 maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.kind}"/>
+        <codecompletionlist:CodeIconIndicator id="infoIndicator" verticalCenter="0" currentState="info" data="{data}"
+                                              click="onCodeIconIndicatorClick(event)"/>
+    </s:HGroup>
+    <fx:Script><![CDATA[
+        override protected function set hovered(value:Boolean):void
+        {
+            super.hovered = value;
+
+            if (!selected)
+            {
+                refreshVisibilityOfDetails(value);
+            }
+        }
+
+        override public function set selected(value:Boolean):void
+        {
+            super.selected = value;
+            refreshVisibilityOfDetails(value);
+        }
+
+        private function refreshVisibilityOfDetails(visible:Boolean):void
+        {
+            if (detailsGroup)
+            {
+                detailsGroup.visible = detailsGroup.includeInLayout = visible;
+            }
+        }
+
+        private function onCodeIconIndicatorClick(event:MouseEvent):void
+        {
+            dispatchEvent(new Event("showDocumentation", true));
+        }
+        ]]></fx:Script>
+</s:ItemRenderer>

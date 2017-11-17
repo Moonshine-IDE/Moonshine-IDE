@@ -33,7 +33,6 @@ package actionScripts.ui.menu.renderers
 	
 	import actionScripts.ui.menu.MenuModel;
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
-	import actionScripts.ui.menu.vo.CustomMenuItem;
 	import actionScripts.utils.moonshine_internal;
 
 
@@ -41,22 +40,17 @@ package actionScripts.ui.menu.renderers
 
 	public class MenuItemRenderer extends UIComponent
 	{
+		private var shortcutView:Label;
+		private var myTip:ToolTip;
+		private var labelView:Label;
+		private var arrowClip:UIComponent;
 
+		private var checkBoxGap:UIComponent;
+		private var container:HBox;
+		private var rollOverShape:Shape;
 
-		private var shortcutView:Label
-		private var myTip:ToolTip
-		private var labelView:Label
-		private var arrowClip:UIComponent
-
-		private var checkBoxGap:UIComponent
-		private var container:HBox
-		private var rollOverShape:Shape
-
-		private var verticalLine:Shape
-
-		private var updateShortcut:Boolean
 		private var needsRedrawing:Boolean = false;
-		private var separatorLine:Shape
+		private var separatorLine:Shape;
 
 
 		private const RENDERER_AS_SPERATOR_HEIGHT:int = 10;
@@ -77,9 +71,7 @@ package actionScripts.ui.menu.renderers
 
 		private var _label:String;
 		
-		private var _tooltip:String
-
-		private var updateChildrenLayoutFlag:Boolean = false;
+		private var _tooltip:String;
 
 		public function set label(v:String):void
 		{
@@ -103,7 +95,7 @@ package actionScripts.ui.menu.renderers
 			return _tooltip;
 		}
 
-		private var _data:ICustomMenuItem
+		private var _data:ICustomMenuItem;
 
 		public function set data(v:ICustomMenuItem):void
 		{
@@ -115,7 +107,7 @@ package actionScripts.ui.menu.renderers
 			return _data;
 		}
 
-		private var _separator:Boolean
+		private var _separator:Boolean;
 
 		public function get separator():Boolean
 		{
@@ -133,7 +125,7 @@ package actionScripts.ui.menu.renderers
 
 		}
 
-		private var _submenu:Boolean
+		private var _submenu:Boolean;
 
 		public function get submenu():Boolean
 		{
@@ -151,7 +143,7 @@ package actionScripts.ui.menu.renderers
 
 		}
 
-		private var _shortcut:String
+		private var _shortcut:String;
 
 		public function set shortcut(v:String):void
 		{
@@ -182,14 +174,13 @@ package actionScripts.ui.menu.renderers
 			width = MIN_WIDTH;
 			minWidth = MIN_WIDTH;
 			height = RENDERER_HEIGHT;
-
 		}
 
 		moonshine_internal function resizeLabels(
 			labelWidth:Number=NaN, shortcutWidth:Number=NaN):void
 		{
 			var newWidth:Number = 0;
-			var oldLabelWidth:Number
+			var oldLabelWidth:Number;
 
 			oldLabelWidth = labelView.width || labelView.measuredWidth;
 			labelWidth = labelWidth != oldLabelWidth ? labelWidth : oldLabelWidth;
@@ -205,7 +196,7 @@ package actionScripts.ui.menu.renderers
 			newWidth += shortcutWidth;
 
 			newWidth += checkBoxGap.width;
-			newWidth += arrowClip.width
+			newWidth += arrowClip.width;
 			newWidth += EDGE_PADDING * 2 // container left/right padding
 
 			newWidth = Math.round(newWidth);
@@ -250,7 +241,6 @@ package actionScripts.ui.menu.renderers
 
 		private function drawItemState():void
 		{
-
 			height = _separator ? RENDERER_AS_SPERATOR_HEIGHT : RENDERER_HEIGHT
 			shortcutView.visible = shortcutView.includeInLayout = !_separator;
 			labelView.includeInLayout = labelView.visible = !_separator;
@@ -266,9 +256,6 @@ package actionScripts.ui.menu.renderers
 			g.endFill();
 		}
 
-
-
-
 		override protected function createChildren():void
 		{
 			super.createChildren();
@@ -283,6 +270,8 @@ package actionScripts.ui.menu.renderers
 			addChild(separatorLine);
 
 			container = new HBox();
+			container.enabled = enabled;
+			
 			setProps(container, {
 					verticalGap:0,
 					horizontalGap:0,
@@ -299,7 +288,6 @@ package actionScripts.ui.menu.renderers
 			container.mouseChildren = false;
 			container.mouseEnabled = false;
 
-
 			addChild(container);
 
 			checkBoxGap = new UIComponent();
@@ -314,25 +302,28 @@ package actionScripts.ui.menu.renderers
 
 			labelView = createLabel(_label);
 			labelView.setStyle("paddingRight", 25);
-			if (data && !data.enabled) labelView.setStyle("color", 0x999999);
+
+			if (data && !data.enabled)
+			{
+				labelView.setStyle("color", 0x999999);
+            }
 			container.addChild(labelView);
 			
 			shortcutView = createLabel(_shortcut);
 			shortcutView.setStyle("paddingRight", 5);
 			shortcutView.setStyle("textAlign", "right");
-			container.addChild(shortcutView);
 
+			container.addChild(shortcutView);
 			
 			arrowClip = new UIComponent();
 			arrowClip.width = 13;
-
 
 			var yStartPos:Number = height / 2 - SUBMENU_ARROW_HEIGHT / 2;
 			g = arrowClip.graphics;
 			g.beginFill(0x333333);
 			g.moveTo(0, yStartPos);
 			g.lineTo(SUBMENU_ARROW_WIDTH, yStartPos + (SUBMENU_ARROW_HEIGHT / 2));
-			g.lineTo(0, yStartPos + SUBMENU_ARROW_HEIGHT)
+			g.lineTo(0, yStartPos + SUBMENU_ARROW_HEIGHT);
 			g.lineTo(0, yStartPos);
 			g.endFill();
 
@@ -343,7 +334,6 @@ package actionScripts.ui.menu.renderers
 			drawItemState();
 			addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
 			addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
-		
 		}
 
 		private function setProps(target:UIComponent, props:Object):void
@@ -383,8 +373,7 @@ package actionScripts.ui.menu.renderers
 			}
 		}
 
-
-		private var _explictActive:Boolean
+		private var _explictActive:Boolean;
 
 		public function set explictActive(value:Boolean):void
 		{
@@ -400,7 +389,7 @@ package actionScripts.ui.menu.renderers
 			return _explictActive;
 		}
 
-		private var _active:Boolean
+		private var _active:Boolean;
 
 		public function set active(value:Boolean):void
 		{
@@ -431,7 +420,6 @@ package actionScripts.ui.menu.renderers
 		{
 			if (!_separator)
 				active = true;
-			
 		}
 
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
@@ -469,6 +457,5 @@ package actionScripts.ui.menu.renderers
 			g.endFill();
 
 		}
-
-	}
+    }
 }

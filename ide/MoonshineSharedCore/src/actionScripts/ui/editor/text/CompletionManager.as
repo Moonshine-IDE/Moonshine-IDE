@@ -20,13 +20,10 @@ package actionScripts.ui.editor.text
 {
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.utils.TextUtil;
+    import actionScripts.ui.codeCompletionList.CodeCompletionList;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
-	import actionScripts.valueObjects.Position;
-
-	import flash.events.Event;
+    import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
@@ -35,12 +32,9 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayList;
-	import mx.managers.PopUpManager;
+    import mx.managers.PopUpManager;
 
 	import spark.components.List;
-	import spark.filters.DropShadowFilter;
-	import spark.layouts.HorizontalAlign;
-	import spark.layouts.VerticalLayout;
 
 	public class CompletionManager
 	{
@@ -51,7 +45,7 @@ package actionScripts.ui.editor.text
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 
-		private var completionList:List;
+		private var completionList:CodeCompletionList;
 		private var menuStr:String;
 		private var menuRefY:Number;
 		private var caret:int;
@@ -62,17 +56,7 @@ package actionScripts.ui.editor.text
 			this.editor = editor;
 			this.model = model;
 
-			completionList = new List();
-			completionList.minWidth = 300;
-			completionList.styleName = "completionList";
-			var layout:VerticalLayout = new VerticalLayout();
-			layout.requestedMaxRowCount = 8;
-			layout.gap = 0;
-			layout.horizontalAlign = HorizontalAlign.CONTENT_JUSTIFY;
-			layout.useVirtualLayout = true;
-			completionList.layout = layout;
-			completionList.doubleClickEnabled = true;
-			completionList.filters = [new DropShadowFilter(3, 90, 0, 0.2, 8, 8)];
+			completionList = new CodeCompletionList();
 			menuData = new ArrayList();
 			completionList.dataProvider = menuData;
 		}
@@ -143,6 +127,7 @@ package actionScripts.ui.editor.text
 			completionList.removeEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
 			completionList.removeEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
 			completionList.removeEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
+			completionList.closeDocumentation();
 		}
 
 		private function filterMenu():Boolean

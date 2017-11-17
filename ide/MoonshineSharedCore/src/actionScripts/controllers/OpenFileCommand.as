@@ -28,7 +28,8 @@ package actionScripts.controllers
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.IContentWindow;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicHTMLViewer;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -48,7 +49,7 @@ package actionScripts.controllers
 		protected var openAsTourDe:Boolean;
 		protected var tourDeSWFSource:String;
 		protected var ged:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		
+
 		private var loader: DataAgent;
 
 		public function execute(event:Event):void
@@ -61,7 +62,7 @@ package actionScripts.controllers
 				var e:OpenFileEvent = event as OpenFileEvent;
 				if (e.file)
 				{
-					openAsTourDe = e.openAsTourDe;
+                    openAsTourDe = e.openAsTourDe;
 					tourDeSWFSource = e.tourDeSWFSource;
 					wrapper = e.wrapper;
 					file = e.file;
@@ -94,7 +95,7 @@ package actionScripts.controllers
 		protected function openFile(fileDir:Object=null, openType:String=null):void
 		{
 			if (fileDir) file = new FileLocation(fileDir.nativePath);
-			
+
 			var isFileOpen:Boolean = false;
 			
 			// If file is open already, just focus that editor.
@@ -179,9 +180,18 @@ package actionScripts.controllers
 			// Test if file is binary
 			var binary:Boolean = /[\x00-\x08\x0E-\x1F]/.test(file.fileBridge.data.toString());
 			
-			if (binary) openBinaryFile();
-			else if (openAsTourDe) openTextFile(null, true);
-			else openTextFile(null);
+			if (binary)
+			{
+				openBinaryFile();
+            }
+			else if (openAsTourDe)
+			{
+				openTextFile(null, true);
+            }
+			else
+			{
+				openTextFile(null);
+            }
 		}
 		
 		private function fileFault(message:String):void
@@ -213,15 +223,23 @@ package actionScripts.controllers
 			}
 			else
 			{
-				var extension:String = file.fileBridge.extension;
-				if(extension === "as" || extension === "mxml")
+				var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+				if (activeProject && activeProject.isVisualEditorProject)
 				{
-					editor = new ActionScriptTextEditor();
+					 editor = model.visualEditorCore.getVisualEditor();
 				}
 				else
-				{
-					editor = new BasicTextEditor()
-				}
+                {
+                    var extension:String = file.fileBridge.extension;
+                    if (extension === "as" || extension === "mxml")
+                    {
+                        editor = new ActionScriptTextEditor();
+                    }
+                    else
+                    {
+                        editor = new BasicTextEditor()
+                    }
+                }
 			}
 
 			// Let plugins hook in syntax highlighters & other functionality
@@ -248,8 +266,6 @@ package actionScripts.controllers
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
 			);
-
 		}
-
 	}
 }

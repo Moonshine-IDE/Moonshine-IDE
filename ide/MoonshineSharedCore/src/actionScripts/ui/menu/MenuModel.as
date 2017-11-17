@@ -18,14 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import flash.display.DisplayObject;
+    import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	import flash.geom.Point;
-	import flash.utils.Dictionary;
 	import flash.utils.Timer;
 	
 	import mx.managers.PopUpManager;
@@ -37,10 +36,11 @@ package actionScripts.ui.menu
 	import actionScripts.ui.menu.renderers.MenuItemRenderer;
 	import actionScripts.ui.menu.renderers.MenuRenderer;
 
-
-	public class MenuModel extends EventDispatcher
+    public class MenuModel extends EventDispatcher
 	{
-		private var freeMenuItemRenderers:Vector.<MenuItemRenderer> = new Vector.<MenuItemRenderer>();
+        private const AUTO_CLICK_DELAY:int = 200;
+
+        private var freeMenuItemRenderers:Vector.<MenuItemRenderer> = new Vector.<MenuItemRenderer>();
 
 		private var freeMenuOrSubMenus:Vector.<MenuRenderer> = new Vector.<MenuRenderer>();
 
@@ -57,22 +57,15 @@ package actionScripts.ui.menu
 
 		// Current MenuItemRenderer in scope, this will be used after the the renderer has been
 		// in over state for 300ms
-		internal var activeMenuItemRenderer:MenuItemRenderer
+		internal var activeMenuItemRenderer:MenuItemRenderer;
 
-		internal var previousMenuItemRenderer:MenuItemRenderer
+		internal var previousMenuItemRenderer:MenuItemRenderer;
 
-		internal var topLevelMenu:MenuRenderer
-
-		private const AUTO_CLICK_DELAY:int = 200;
+		internal var topLevelMenu:MenuRenderer;
 
 		// helper flag used to suppress the stage MouseEvent.CLICK listener
 		// when MenuItemRenderer is clicked
 		private var supressMouseClick:Boolean = false;
-
-
-
-		private var keyboardManager:MenuKeyboardManager;
-
 
 		private function setTopLevelMenu(value:MenuRenderer):void
 		{
@@ -84,16 +77,13 @@ package actionScripts.ui.menu
 
 		}
 
-
 		public function get bar():MenuBar
 		{
 			return _menuBar;
 		}
 
-
 		public function MenuModel(menuBar:MenuBar)
 		{
-
 			_menuBar = menuBar;
 
 			var hook:Function = function(e:Event):void
@@ -102,29 +92,24 @@ package actionScripts.ui.menu
 					stage = _menuBar.stage;
 					init();
 
-				}
+				};
 			_menuBar.addEventListener(Event.ADDED_TO_STAGE, hook);
-
 
 			hysteresisTimer = new Timer(AUTO_CLICK_DELAY, 0);
 			hysteresisTimer.addEventListener(TimerEvent.TIMER, timerHysteresisHandler);
 		}
 
 		private function init():void
-		{
-			stage.addEventListener(Event.DEACTIVATE, deactivateHandler);
-			keyboardManager = new MenuKeyboardManager(this);
-			keyboardManager.manage(stage);
-
-		}
+        {
+            stage.addEventListener(Event.DEACTIVATE, deactivateHandler);
+            var keyboardManager:MenuKeyboardManager = new MenuKeyboardManager(this);
+            keyboardManager.manage(stage);
+        }
 
 		private function deactivateHandler(e:Event):void
 		{
 			destroy();
 		}
-
-
-
 
 		public function isOpen():Boolean
 		{
@@ -136,8 +121,6 @@ package actionScripts.ui.menu
 			return topLevelMenu ? topLevelMenu.items : null;
 		}
 
-
-
 		/**
 		 * Release unused menuItemRenders
 		 * @param	container
@@ -146,10 +129,10 @@ package actionScripts.ui.menu
 		public function freeMenuItemRenderer(container:DisplayObjectContainer, startIndex:int):void
 		{
 			var toRemove:Vector.<MenuItemRenderer> = new Vector.<MenuItemRenderer>();
-			var renderer:MenuItemRenderer
+			var renderer:MenuItemRenderer;
 			while (container.numChildren > startIndex)
 			{
-				renderer = container.getChildAt(startIndex) as MenuItemRenderer
+				renderer = container.getChildAt(startIndex) as MenuItemRenderer;
 
 				if (!renderer)
 					continue;
@@ -167,8 +150,8 @@ package actionScripts.ui.menu
 		public function getMenuItemRenderers(howMany:int):Vector.<MenuItemRenderer>
 		{
 			var rtn:Vector.<MenuItemRenderer> = new Vector.<MenuItemRenderer>();
+			var rdr:MenuItemRenderer;
 
-			var rdr:MenuItemRenderer
 			for (var i:int = 0; i < howMany; i++)
 			{
 				if (freeMenuItemRenderers.length > 0)
@@ -183,6 +166,7 @@ package actionScripts.ui.menu
 					rdr.addEventListener(MouseEvent.ROLL_OUT, menuItemRenderRollOutHandler);
 					rdr.addEventListener(MouseEvent.MOUSE_DOWN, menuItemRenderClickHandler);
 				}
+
 				rtn.push(rdr);
 			}
 			return rtn;
@@ -190,7 +174,6 @@ package actionScripts.ui.menu
 
 		public function displayMenu(base:DisplayObjectContainer, menuItems:Vector.<ICustomMenuItem>):MenuRenderer
 		{
-
 			if (topLevelMenu)
 			{
 				// menuItems will never be null so we can do a direct lookup to see if request is from same topmenu
@@ -211,23 +194,21 @@ package actionScripts.ui.menu
 
 		public function displaySubmenu(menu:MenuRenderer, base:DisplayObjectContainer, menuItems:Vector.<ICustomMenuItem>):MenuRenderer
 		{
-
 			hysteresisTimer.reset();
-			var submenu:MenuRenderer
+			var submenu:MenuRenderer;
 			if (activeMenuRepo.hasObjectAsBase(menu))
 			{
-				submenu = activeMenuRepo.getMenu(menu);;
+				submenu = activeMenuRepo.getMenu(menu);
 
 			}
 			else
 			{
-
 				submenu = positionMenu(menuItems, menu, new Point(base.width - 5, base.y));
 				menu.addChild(submenu);
 			}
 			// Since we are using the Flex framework we need to delay this event on frame till all models are added,
 			// Maybe we should move this to the MenuRenderer ??
-			submenu.callLater(delayMenuOpenEvent, [submenu])
+			submenu.callLater(delayMenuOpenEvent, [submenu]);
 			return submenu;
 
 		}
@@ -256,14 +237,12 @@ package actionScripts.ui.menu
 
 		}
 
-
 		private function positionMenu(menuItems:Vector.<ICustomMenuItem>, base:DisplayObjectContainer, position:Point):MenuRenderer
 		{
-			var menu:MenuRenderer = getMenuOrSubMenu()
+            var menu:MenuRenderer = getMenuOrSubMenu();
 			menu.items = menuItems;
-			menu.x = position.x
-			menu.y = position.y
-
+			menu.x = position.x;
+			menu.y = position.y;
 
 			if (topLevelMenu == null)
 			{ // request is to open up top menu
@@ -271,7 +250,7 @@ package actionScripts.ui.menu
 				registerForMouseClicks(true);
 			}
 
-			activeMenuRepo.add(base, menu);
+            activeMenuRepo.add(base, menu);
 			return menu;
 		}
 
@@ -326,7 +305,7 @@ package actionScripts.ui.menu
 		{
 			registerForMouseClicks(false);
 			cleanUpAfterMenu(topLevelMenu);
-			setTopLevelMenu(null)
+			setTopLevelMenu(null);
 			cancelHysteresisTimer();
 			previousMenuItemRenderer = null;
 			supressMouseClick = false;
@@ -353,7 +332,7 @@ package actionScripts.ui.menu
 			if (menu.parent) // completely remove it from its parnet, fixes dropshadow bug o_0
 				menu.parent.removeChild(menu);
 			freeMenuOrSubMenu(menu);
-			activeMenuRepo.clear(menu) // clear instance in repo
+			activeMenuRepo.clear(menu); // clear instance in repo
 			dispatchEvent(new MenuModelEvent(MenuModelEvent.MENU_CLOSED,
 				false, false, menu));
 			menu = null;
@@ -363,7 +342,7 @@ package actionScripts.ui.menu
 
 		private function getMenuOrSubMenu():MenuRenderer
 		{
-			var menu:MenuRenderer
+			var menu:MenuRenderer;
 			if (freeMenuItemRenderers.length > 0)
 			{
 				menu = freeMenuOrSubMenus.pop();
@@ -398,7 +377,7 @@ package actionScripts.ui.menu
 		}
 
 
-		private var lastActiveRendererForSubMenu:MenuItemRenderer
+		private var lastActiveRendererForSubMenu:MenuItemRenderer;
 
 		private function displaySubMenuForRenderer(rdr:MenuItemRenderer):void
 		{
@@ -420,14 +399,13 @@ package actionScripts.ui.menu
 			// Keyboard navigation will have localX and localY set to NaN
 
 			registerActiveMenuItemRenderer(rdr, !isNaN(e.localX));
-
 		}
 
 		private function menuItemRenderClickHandler(e:MouseEvent):void
 		{
 			var rdr:MenuItemRenderer = e.target as MenuItemRenderer;
 
-			if (!rdr)
+			if (!rdr || !rdr.enabled)
 				return;
 			cancelHysteresisTimer(); // go ahead and stop the autotimer passing null to clean up previous 
 
@@ -435,9 +413,7 @@ package actionScripts.ui.menu
 			if (!currMenuItem)
 				return;
 
-
 			var canDispatch:Boolean = currMenuItem.hasShortcut() || currMenuItem.hasSubmenu() || (currMenuItem.data && currMenuItem.data);
-
 
 			if (canDispatch)
 			{
@@ -455,8 +431,6 @@ package actionScripts.ui.menu
 				dispatchMenuEvent(currMenuItem);
 
 			}
-
-
 		}
 
 		private function menuItemRenderRollOutHandler(e:MouseEvent):void
@@ -465,9 +439,6 @@ package actionScripts.ui.menu
 
 			/*if (!rdr || !rdr.data || !rdr.data.hasSubmenu()) // if not a submenu then dont worry about it
 			 return;*/
-
-
-
 			var relatedObject:DisplayObject = e.relatedObject as DisplayObject
 
 			trace(relatedObject);
@@ -481,8 +452,6 @@ package actionScripts.ui.menu
 				if (!previousMenuItemRenderer &&
 					(relatedObject is MenuRenderer || relatedObject.parent is MenuRenderer))
 					setPreviousRenderer(rdr);
-
-				return;
 			}
 			else if (hasSubMenu(rdr))
 			{
@@ -492,9 +461,6 @@ package actionScripts.ui.menu
 			{
 				setPreviousRenderer(rdr);
 			}
-
-
-
 		}
 
 		private function hasSubMenu(rdr:MenuItemRenderer):Boolean
@@ -512,7 +478,7 @@ package actionScripts.ui.menu
 
 			activeMenuItemRenderer = rdr;
 			if (activeMenuItemRenderer == previousMenuItemRenderer)
-				previousMenuItemRenderer = null
+				previousMenuItemRenderer = null;
 
 			dispatchEvent(new MenuModelEvent(MenuModelEvent.ACTIVE_MENU_ITEM_RENDERER_CHANGED,
 				false, false, rescursiveFindMenu(rdr), rdr));
@@ -616,17 +582,13 @@ package actionScripts.ui.menu
 				}
 			}
 
-
-
-
 			var rdr:MenuItemRenderer = activeMenuItemRenderer;
 
 			cancelHysteresisTimer();
 
 			displaySubMenuForRenderer(rdr);
 		}
-
-	}
+    }
 }
 
 import flash.display.DisplayObjectContainer;
@@ -683,14 +645,9 @@ internal class MenuRepo
 		return baseToMenuRepo[base] as MenuRenderer;
 	}
 
-	public function getBase(menu:MenuRenderer):DisplayObjectContainer
-	{
-		return menuToBaseRepo[menu] as DisplayObjectContainer;
-	}
-
 	public function clear(menuOrBase:Object=null):void
 	{
-		var obj:Object
+		var obj:Object;
 		if (menuOrBase)
 		{
 

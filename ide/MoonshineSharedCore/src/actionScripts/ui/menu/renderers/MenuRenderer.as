@@ -34,9 +34,9 @@ package actionScripts.ui.menu.renderers
 	public class MenuRenderer extends Canvas
 	{
 		private var needsRedrawing:Boolean = false;
-		private var background:Shape
-		private var itemContainer:VBox
-		private var needsShadow:Boolean
+		private var background:Shape;
+		private var itemContainer:VBox;
+		private var needsShadow:Boolean;
 		private var needsRendererLayout:Boolean = false;
 		private var startTime:Number;
 
@@ -128,7 +128,7 @@ package actionScripts.ui.menu.renderers
 			startTime = getTimer();
 			var tmpRenderers:Vector.<MenuItemRenderer> = _model.getMenuItemRenderers(numOfItems);
 			trace("Get Menu Item Renderers 1", getTimer() - startTime);
-			var currMenuItem:ICustomMenuItem
+			var currMenuItem:ICustomMenuItem;
 
 			for (var i:int = 0; i < numOfItems; i++)
 			{
@@ -188,12 +188,12 @@ package actionScripts.ui.menu.renderers
 			{
 
 				needsRendererLayout = false;
-				var rdr:MenuItemRenderer
+				var rdr:MenuItemRenderer;
 				var containerNumOfChildren:int = itemContainer.numChildren;
 
 				var maxRendererLabelWidth:Number = 0;
 				var maxRendererShortcutLabelWidth:Number = 0;
-				var currentWidth:Number
+				var currentWidth:Number;
 
 				var hasShortcut:Boolean = false;
 				const defaultShortcutWidth:Number = 50;

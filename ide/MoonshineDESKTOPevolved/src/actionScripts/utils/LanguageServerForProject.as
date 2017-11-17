@@ -266,6 +266,8 @@ package actionScripts.utils
 			vo.insertText = original.insertText;
 			vo.detail  = original.detail;
 			vo.kind = original.kind;
+			vo.documentation = original.documentation;
+			
 			if("command" in original)
 			{
 				vo.command = parseCommand(original.command);

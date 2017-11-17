@@ -18,14 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import flash.display.NativeMenu;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+
+    import flash.display.NativeMenu;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.MenuEvent;
 	
-	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.ShortcutEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.factory.NativeMenuItemLocation;
@@ -42,22 +45,18 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.Settings;
-	
-	// This class is a singleton
+
+    // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
-		
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
 		public static const MENU_QUIT_EVENT:String = "menuQuitEvent";
-		public static const MENU_OPEN_EVENT:String = "menuOpenEvent";
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
 		public static const MENU_SAVE_AS_EVENT:String = "menuSaveAsEvent";
 		public static const EVENT_ABOUT:String = "EVENT_ABOUT";
 		public static const CHANGE_MENU_MAC_DISABLE_STATE:String = "CHANGE_MENU_MAC_DISABLE_STATE"; // shows only Quit command with File menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
-		public static const CHANGE_MENU_FILE_NEW_DISABLE_STATE:String = "CHANGE_MENU_FILE_NEW_DISABLE_STATE";
-		public static const CHANGE_MENU_FILE_NEW_ENABLE_STATE:String = "CHANGE_MENU_FILE_NEW_ENABLE_STATE";
 		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
 		
 		private const BUILD_NATIVE_MENU:uint = 1;
@@ -69,8 +68,8 @@ package actionScripts.ui.menu
 		private var eventToMenuMapping:Dictionary = new Dictionary();
 		private var noSDKOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
-		
-		override public function get name():String { return "Application Menu Plugin"; }
+
+        override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
 		
@@ -120,10 +119,6 @@ package actionScripts.ui.menu
 		{
 		}
 		
-		public function addMenu(menu:MenuItem):void
-		{
-		}
-		
 		public function addPluginMenu(menu:MenuItem):void
 		{
 			if (!menu)
@@ -137,7 +132,7 @@ package actionScripts.ui.menu
 		}
 		
 		private function init():void
-		{	
+		{
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				if (Settings.os == "mac") 
@@ -167,7 +162,7 @@ package actionScripts.ui.menu
 				windowMenus[0].items.push(settingsMenuItem);
 				
 				// this will populate template items inside File -> New
-				var parentArray:Array = new Array('File','New');
+				var parentArray:Array = ['File','New'];
 				addSUBMenu(parentArray,windowMenus);
 			}
 			
@@ -186,8 +181,6 @@ package actionScripts.ui.menu
 			}
 			
 			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
-			dispatcher.addEventListener(CHANGE_MENU_FILE_NEW_DISABLE_STATE, onDisableFileNewMenu);
-			dispatcher.addEventListener(CHANGE_MENU_FILE_NEW_ENABLE_STATE, onEnableFileNewMenu);
 			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
@@ -196,11 +189,69 @@ package actionScripts.ui.menu
 				dispatcher.addEventListener(CHANGE_MENU_MAC_NO_MENU_STATE, onMacNoMenuStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_ENABLE_STATE, onMacEnableStateChange);
 			}
+
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onMenusDisableStateChange);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
 			
 			// disable File-New menu as default
-			onDisableFileNewMenu(null);
+            disableMenuOptionsForVEProject();
+			disableNewFileMenuOptions();
 		}
-		
+
+        private function onMenusDisableStateChange(event:ProjectEvent):void
+        {
+            disableNewFileMenuOptions();
+			disableMenuOptionsForVEProject();
+        }
+
+		private function disableMenuOptionsForVEProject():void
+		{
+			var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+
+			if (ConstantsCoreVO.IS_AIR)
+            {
+				var menu:Object = null;
+                if (Settings.os == "win")
+                {
+                    menu = (model.mainView.getChildAt(0) as MenuBar).menu;
+                }
+				else if (Settings.os == "mac")
+				{
+                    menu = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				}
+
+				if (menu)
+                {
+                    var countMenuItems:int = menu.items.length;
+					var menuItem:Object;
+                    for (var i:int = 0; i < countMenuItems; i++)
+                    {
+						menuItem = menu.items[i];
+						if (menuItem.submenu)
+                        {
+                            recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, activeProject);
+                        }
+                    }
+
+                }
+            }
+		}
+
+		private function recursiveDisabledMenuForVisualEditor(menuItems:Object, currentProject:AS3ProjectVO):void
+		{
+            var countMenuItems:int = menuItems.length;
+            for (var i:int = 0; i < countMenuItems; i++)
+            {
+				var menuItem:Object = menuItems[i];
+				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
+				
+				if (menuItem.submenu)
+                {
+                    recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, currentProject);
+                }
+            }
+		}
+
 		// Add submenu under parent
 		private function addSUBMenu(parentItem:Array,windowmenu:Vector.<MenuItem>):void
 		{
@@ -219,7 +270,7 @@ package actionScripts.ui.menu
 							m.items = new Vector.<MenuItem>;
 							for each (file in ConstantsCoreVO.TEMPLATES_FILES)
 							{
-								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."))
+								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."));
 								menuitem = new MenuItem(fileName,null,fileName);
 								m.items.push(menuitem);
 							}
@@ -301,7 +352,7 @@ package actionScripts.ui.menu
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
 		
-		private function onDisableFileNewMenu(event:Event):void
+		private function disableNewFileMenuOptions():void
 		{
 			if (!topNativeMenuItemsForFileNew)
 			{
@@ -319,31 +370,20 @@ package actionScripts.ui.menu
 					topNativeMenuItemsForFileNew = (menuBarMenu.items[0] as CustomMenuItem).data.items[0].data.items;
 				}
 				
-				for (var i:int=0; i < 6; i++)
+				for (var i:int=0; i < 7; i++)
 				{
 					topNativeMenuItemsForFileNew[i].enabled = false;
 				}
 			}
 			else
 			{
-				for (var j:int=0; j < 6; j++)
+				for (var j:int=0; j < 7; j++)
 				{
 					topNativeMenuItemsForFileNew[j].enabled = false;
 				}
 			}
 		}
-		
-		private function onEnableFileNewMenu(event:Event):void
-		{
-			if (topNativeMenuItemsForFileNew)
-			{
-				for (var i:int=0; i < 6; i++)
-				{
-					topNativeMenuItemsForFileNew[i].enabled = true;
-				}
-			}
-		}
-		
+
 		private function onMacDisableStateChange(event:Event):void
 		{
 			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
@@ -399,7 +439,7 @@ package actionScripts.ui.menu
 			}
 			
 			var tmpOptionsArr:Array;
-			var subItemsInTopMenu:Object
+			var subItemsInTopMenu:Object;
 			for (var i:String in noSDKOptionsToMenuMapping)
 			{
 				tmpOptionsArr = noSDKOptionsToMenuMapping[i];
@@ -467,7 +507,7 @@ package actionScripts.ui.menu
 					menuItem.data = {
 						eventData:item.data,
 							event:item.event
-					}
+					};
 					eventToMenuMapping[item.event] = menuItem;
 				}
 				

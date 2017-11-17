@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-	public class ProjectReferenceVO
+    import actionScripts.factory.FileLocation;
+
+    public class ProjectReferenceVO
 	{
 		public var name: String;
 		public var path: String = "";
@@ -28,6 +30,7 @@ package actionScripts.valueObjects
 		public var loading: Boolean;
 		public var sdk:String;
 		public var isAway3D:Boolean;
+		public var hiddenPaths:Vector.<FileLocation>;
 		
 		public function ProjectReferenceVO()
 		{

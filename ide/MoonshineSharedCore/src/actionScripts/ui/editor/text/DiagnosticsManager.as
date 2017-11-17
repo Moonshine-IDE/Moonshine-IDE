@@ -60,6 +60,10 @@ package actionScripts.ui.editor.text
 
 					//default to the end of the line, since we might not
 					//find a character that ends the word
+					if (startLine == lines.length)
+					{
+						startLine = startLine - 1;
+					}
 					line = lines[startLine];
 					//update the end character so that it matches what is
 					//displayed in the UI

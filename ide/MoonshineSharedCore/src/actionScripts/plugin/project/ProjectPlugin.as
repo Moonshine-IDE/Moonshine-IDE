@@ -26,7 +26,6 @@ package actionScripts.plugin.project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.ShowSettingsEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -98,15 +97,7 @@ package actionScripts.plugin.project
 				LayoutModifier.attachSidebarSections(treeView);
 			}
 		}
-		
-		private function openProject(root:FileLocation, projectFile:String):void
-		{
-			var p:ProjectVO = new ProjectVO(root);
-			
-			model.activeProject = p;
-			model.projects.addItem(p);
-		}
-		
+
 		private function handleShowSettings(event:ShowSettingsEvent):void
 		{
 			showSettings(event.project, event.jumpToSection);
@@ -114,10 +105,10 @@ package actionScripts.plugin.project
 		
 		private function handleMenuShowSettings(event:Event):void
 		{
-			var project:ProjectVO = IDEModel.getInstance().activeProject;
+			var project:ProjectVO = model.activeProject;
 			if (project)
 			{
-				showSettings(IDEModel.getInstance().activeProject);
+				showSettings(model.activeProject);
 			} 
 		}
 		
@@ -184,7 +175,9 @@ package actionScripts.plugin.project
 				{
 					// Newly created project, add it to project explorer & show it
 					model.projects.addItem(pvo);
-					IDEModel.getInstance().activeProject = pvo;
+                    model.activeProject = pvo;
+                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+
 					showProjectPanel();
 					
 					dispatcher.dispatchEvent( 
@@ -216,9 +209,8 @@ package actionScripts.plugin.project
 			{
 				model.projects.addItemAt(event.project, 0);
 				model.activeProject = event.project;
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
 			}
-			
-			
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void
@@ -243,8 +235,16 @@ package actionScripts.plugin.project
 			
 			if (model.activeProject == event.project)
 			{
-				if (model.projects.length) model.activeProject = model.projects[0];
-				else model.activeProject = null;
+				if (model.projects.length)
+				{
+					model.activeProject = model.projects[0];
+                }
+				else
+				{
+					model.activeProject = null;
+                }
+
+                dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 			}
 		}
 		

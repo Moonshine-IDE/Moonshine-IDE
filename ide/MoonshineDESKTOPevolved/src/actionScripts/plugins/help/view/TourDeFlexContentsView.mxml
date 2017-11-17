@@ -29,8 +29,6 @@
 	initialize="onInitialized(event)" xmlns:view="actionScripts.plugins.fdb.view.*">
 	<mx:Script>
 		<![CDATA[
-			import flash.events.Event;
-			
 			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			

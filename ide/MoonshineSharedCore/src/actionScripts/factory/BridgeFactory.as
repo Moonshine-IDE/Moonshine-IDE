@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.factory
 {
-	import flash.system.ApplicationDomain;
+    import actionScripts.interfaces.IVisualEditorBridge;
+
+    import flash.system.ApplicationDomain;
 	
 	import actionScripts.interfaces.IAboutBridge;
 	import actionScripts.interfaces.IContextMenuBridge;
@@ -75,7 +77,14 @@ package actionScripts.factory
 			var gb: IFlexCoreBridge = new clsToCreate();
 			return gb;
 		}
-		
+
+		public static function getVisualEditorInstance():IVisualEditorBridge
+		{
+            var clsToCreate : Object = getClassToCreate("actionScripts.impls.IVisualEditorProjectBridgeImpl");
+            var gb: IVisualEditorBridge = new clsToCreate();
+            return gb;
+		}
+
 		public static function getAboutInstance(): IAboutBridge 
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IAboutBridgeImp");
@@ -100,8 +109,7 @@ package actionScripts.factory
 		 */
 		private static function getClassToCreate(className:String): Object 
 		{
-			var tmpClass: Object = null;
-			tmpClass = ApplicationDomain.currentDomain.getDefinition(className);
+			var tmpClass: Object = ApplicationDomain.currentDomain.getDefinition(className);
 			return tmpClass;
 		}
 	}

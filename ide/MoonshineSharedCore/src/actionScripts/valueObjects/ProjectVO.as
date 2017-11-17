@@ -51,12 +51,13 @@ package actionScripts.valueObjects
 		
 		private var loader: DataAgent;
 		private var projectConfigurationFile: FileWrapper;
-		private var projectReference: ProjectReferenceVO;
 		private var shallUpdateToTreeView:Boolean;
 		private var isFlashDevelopProject:Boolean;
 		private var isFlashBuilderProject:Boolean;
 		private var rootFound:Boolean;
-		
+
+        protected var projectReference: ProjectReferenceVO;
+
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
 			//if (ConstantsCoreVO.IS_AIR && !folderLocation) folder = folder.getDirectoryListing();
@@ -69,7 +70,7 @@ package actionScripts.valueObjects
 			projectReference = new ProjectReferenceVO();
 			projectReference.name = projectName;
 			projectReference.path = folder.fileBridge.nativePath;
-			
+
 			folderLocation.fileBridge.name = this.projectName = projectName;
 			shallUpdateToTreeView = updateToTreeView;
 			

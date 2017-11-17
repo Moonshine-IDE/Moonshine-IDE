@@ -18,8 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-	import flash.display.Sprite;
-	import flash.events.Event;
+    import actionScripts.ui.menu.MenuUtils;
+    import actionScripts.valueObjects.ProjectVO;
+
+    import flash.display.NativeMenuItem;
+
+    import flash.display.Sprite;
+    import flash.events.ContextMenuEvent;
+    import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.filters.GlowFilter;
@@ -67,8 +73,7 @@ package actionScripts.ui.renderers
 		public static const PROJECT_SETUP:String = "Project Setup";
 		public static const CLOSE:String = "Close";
 		public static const DELETE_PROJECT:String = "Delete Project";
-		public static const UNTITLED_FOLDER:String = "untitled folder";
-		
+
 		private var label2:Label;
 		private var editText:TextInput;
 		
@@ -82,8 +87,7 @@ package actionScripts.ui.renderers
 		private var isTooltipListenerAdded:Boolean;
 		private var newMenuItems:Array = [];
 		private var inputValidator:StringValidator;
-		private var isErrorTipShowing:Boolean;
-		
+
 		public function FTETreeItemRenderer()
 		{
 			super();
@@ -151,12 +155,7 @@ package actionScripts.ui.renderers
 			
 			inputValidator.source = editText;
 		}
-		
-		public function stopEdit():void
-		{
-			editDone();
-		}
-		
+
 		public function cancelEdit():void
 		{
 			if (!editText) return;
@@ -229,13 +228,13 @@ package actionScripts.ui.renderers
 			if (fw)
 			{
 				contextMenu = model.contextMenuCore.getContextMenu();
+				contextMenu.addEventListener(ContextMenuEvent.MENU_SELECT, contextMenuSelectHandler);
 				
 				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
 				
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					var newMenu:Object = model.contextMenuCore.getContextMenuItem(NEW, populateTemplatingMenu, "DISPLAYING");
-					
 					var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 					folder.data = NEW_FOLDER;
 					model.contextMenuCore.subMenu(newMenu, folder);
@@ -326,7 +325,7 @@ package actionScripts.ui.renderers
 			
 			isOpenIcon.visible = false;
 		}
-		
+
 		private function populateTemplatingMenu(e:Event):void
 		{
 			model.contextMenuCore.subMenu(e.target);
@@ -535,6 +534,24 @@ package actionScripts.ui.renderers
 	        	}
 			}
 		} // updateDisplayList
-		
+
+
+        private function contextMenuSelectHandler(event:ContextMenuEvent):void
+        {
+            disableMenuItems(contextMenu.items);
+        }
+
+        private function disableMenuItems(items:Array):void
+		{
+			var currentProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
+            for each (var item:NativeMenuItem in items)
+            {
+                item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(item.label, currentProject);
+				if (item.submenu)
+				{
+                    disableMenuItems(item.submenu.items);
+				}
+            }
+		}
 	}
 }
