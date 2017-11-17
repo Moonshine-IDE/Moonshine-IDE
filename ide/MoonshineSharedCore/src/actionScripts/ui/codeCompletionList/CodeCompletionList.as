@@ -81,19 +81,28 @@ package actionScripts.ui.codeCompletionList
                     _codeDocumentationPopup.addEventListener(CloseEvent.CLOSE, onCodeDocumentationPopupClose);
                 }
 
-                _codeDocumentationPopup.data = selectedItem;
-                PopUpManager.addPopUp(_codeDocumentationPopup, this);
+                if (_codeDocumentationPopup.data != this.selectedItem)
+                {
+                    _codeDocumentationPopup.data = this.selectedItem;
+                    PopUpManager.addPopUp(_codeDocumentationPopup, this);
 
-                _codeDocumentationPopup.maxWidth = 300;
-                _codeDocumentationPopup.maxHeight = 250;
-                _codeDocumentationPopup.x = this.x + this.width;
-                _codeDocumentationPopup.y = this.y;
+                    _codeDocumentationPopup.maxWidth = 350;
+                    _codeDocumentationPopup.maxHeight = 300;
+                    _codeDocumentationPopup.x = this.x + this.width;
+                    _codeDocumentationPopup.y = this.y;
+                }
+                else
+                {
+                    PopUpManager.removePopUp(_codeDocumentationPopup);
+                    _codeDocumentationPopup.data = null;
+                }
             }
         }
 
         private function onCodeDocumentationPopupClose(event:CloseEvent):void
         {
             PopUpManager.removePopUp(_codeDocumentationPopup);
+            _codeDocumentationPopup.data = null;
         }
     }
 }

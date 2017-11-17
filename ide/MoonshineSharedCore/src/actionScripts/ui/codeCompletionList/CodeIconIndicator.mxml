@@ -2,7 +2,7 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark" visible.normal="false" includeInLayout.normal="false"
          toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true"
-         visible.info="{_data.documentation != null}" includeInLayout.info="{_data.documentation != null}">
+         visible.info="{hasDocumentation}" includeInLayout.info="{hasDocumentation}">
     <s:states>
         <s:State name="normal" />
         <s:State name="Function" />
@@ -15,7 +15,7 @@
         <s:State name="info" />
     </s:states>
     <s:Ellipse verticalCenter="0" horizontalCenter="0"
-               width="18" height="18" width.info="14" height.info="14">
+               width="20" height="20" width.info="15" height.info="15">
         <s:fill>
             <s:SolidColor id="codeIndicatorColor"
                           color.Function="0x3382dd"
@@ -30,6 +30,7 @@
     </s:Ellipse>
     <s:Label id="codeIndicationLabel" verticalCenter="0" horizontalCenter="0" color="0xFFFFFF"
              fontWeight="bold" fontSize="10" fontSize.info="8" textAlign="center"
+             width="20" width.info="15"
              text.Function="M"
              text.Keyword="K"
              text.Interface="I"
@@ -44,6 +45,12 @@
         [Bindable]
         private var _data:CompletionItem;
 
+        [Bindable(event="dataChanged")]
+        public function get hasDocumentation():Boolean
+        {
+            return _data && _data.documentation != null && _data.documentation != "";
+        }
+
         public function set data(value:CompletionItem):void
         {
             _data = value;
@@ -57,6 +64,8 @@
                 {
                     currentState = value.isProperty() ? "Property" : value.kind;
                 }
+
+                dispatchEvent(new Event("dataChanged"));
             }
         }
 

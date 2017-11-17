@@ -6,13 +6,13 @@
 
     <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
     <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
-             textAlign="left" maxDisplayedLines="1" left="24"/>
+             textAlign="left" maxDisplayedLines="1" left="25"/>
     <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false" includeInLayout="false"
-              verticalAlign="middle">
-        <s:Label color="0x606060" verticalCenter="0" textAlign="right"
+              verticalAlign="middle" height="15">
+        <s:Label color="0x606060" textAlign="right"
                  maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.kind}"/>
-        <codecompletionlist:CodeIconIndicator id="infoIndicator" verticalCenter="0" currentState="info" data="{data}"
-                                              click="onCodeIconIndicatorClick(event)"/>
+        <codecompletionlist:CodeIconIndicator id="infoIndicator" currentState="info" data="{data}"
+                                              click="onCodeIconIndicatorClick(event)" />
     </s:HGroup>
     <fx:Script><![CDATA[
         override protected function set hovered(value:Boolean):void

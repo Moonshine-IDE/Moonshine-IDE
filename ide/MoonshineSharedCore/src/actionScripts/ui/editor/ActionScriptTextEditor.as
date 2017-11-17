@@ -319,6 +319,8 @@ package actionScripts.ui.editor
 
 		private function showCompletionListHandler(event:CompletionItemsEvent):void
 		{
+			if (event.items.length == 0) return;
+			
 			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			editor.showCompletionList(event.items);
 		}
