@@ -22,19 +22,17 @@
 <s:VGroup 
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
   	xmlns:s="library://ns.adobe.com/flex/spark"
-  	xmlns:mx="library://ns.adobe.com/flex/mx"
   	width="100%"
   	paddingTop="15"
   	paddingBottom="15"
   	paddingLeft="15"
-  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" creationComplete="init()">
+  	paddingRight="15" creationComplete="init()">
 	
 	<fx:Script>
 		<![CDATA[
 			import mx.core.FlexGlobals;
 			import mx.core.IVisualElement;
 			import mx.events.CloseEvent;
-			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
 			
 			import spark.events.IndexChangeEvent;
@@ -61,13 +59,14 @@
 			
 			private function init():void
 			{
-				cmbOption.selectedIndex = BuildOptions(setting.provider).isMobileRunOnSimulator ? 0 : 1;
-				updateDevices(BuildOptions(setting.provider).targetPlatform);
+				var buildOptions:BuildOptions = setting.provider as BuildOptions;
+				cmbOption.selectedIndex = buildOptions.isMobileRunOnSimulator ? 0 : 1;
+				updateDevices(buildOptions.targetPlatform);
 				setting.stringValue = "nil";
 				
 				cmbModelOption.callLater(function():void
 				{
-					if (BuildOptions(setting.provider).isMobileHasSimulatedDevice.name != "null")
+					if (buildOptions.isMobileHasSimulatedDevice && buildOptions.isMobileHasSimulatedDevice.name != "null")
 					{
 						for (var i:int=0; i < cmbModelOption.dataProvider.length; i++)
 						{
