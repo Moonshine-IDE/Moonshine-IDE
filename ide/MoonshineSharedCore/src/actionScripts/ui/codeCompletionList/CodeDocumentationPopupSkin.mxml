@@ -18,10 +18,10 @@
 
         /* Define the skin elements that should not be colorized.
         For panel, border and title background are skinned, but the content area, background, border, and title text are not. */
-        static private const exclusions:Array = ["background", "titleDisplay", "contentGroup", "border"];
+        static private const exclusions:Array = ["background", "contentGroup", "border"];
 
         /* exclusions before Flex 4.5 for backwards-compatibility purposes */
-        static private const exclusions_4_0:Array = ["background", "titleDisplay", "contentGroup"];
+        static private const exclusions_4_0:Array = ["background", "contentGroup"];
 
         /**
          * @private
@@ -134,23 +134,14 @@
         <!-- layer 3: contents -->
         <!--- Contains the vertical stack of title bar content and control bar. -->
         <s:Group left="1" right="1" top="1" bottom="1" id="contents">
-            <s:layout>
-                <s:VerticalLayout gap="5" horizontalAlign="justify" />
-            </s:layout>
-            <s:Group id="topGroup">
-                <!-- layer 3: text -->
-                <!--- @copy spark.components.Panel#titleDisplay -->
-                <s:Label id="titleDisplay"
-                         left="9" right="36" top="1" bottom="0" minHeight="30"
-                         verticalAlign="middle" fontWeight="bold" />
-
+            <s:Group id="topGroup" right="5" top="5">
                 <!-- layer 4: moveArea -->
                 <!--- @copy spark.components.TitleWindow#moveArea -->
                 <s:Group id="moveArea" left="0" right="0" top="0" bottom="0" />
 
                 <!--- @copy spark.components.TitleWindow#closeButton -->
                 <s:Button id="closeButton" skinClass="actionScripts.ui.codeCompletionList.CodeDocumentationCloseButtonSkin"
-                          width="15" height="15" right="7" top="7" useHandCursor="true" buttonMode="true"/>
+                          useHandCursor="true" buttonMode="true"/>
             </s:Group>
             <!--
                 Note: setting the minimum size to 0 here so that changes to the host component's

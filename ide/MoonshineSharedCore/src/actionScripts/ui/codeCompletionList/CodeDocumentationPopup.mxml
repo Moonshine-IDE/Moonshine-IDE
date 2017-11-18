@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
                xmlns:s="library://ns.adobe.com/flex/spark"
-               title="{data.detail}"
                skinClass="actionScripts.ui.codeCompletionList.CodeDocumentationPopupSkin">
-    <s:Label text="{data.documentation}" left="9" right="9" lineBreak="toFit"/>
+    <s:Label text="{data.documentation}" left="10" right="15" top="15" bottom="10" lineBreak="toFit"/>
     <fx:Script><![CDATA[
         import actionScripts.valueObjects.CompletionItem;
 
