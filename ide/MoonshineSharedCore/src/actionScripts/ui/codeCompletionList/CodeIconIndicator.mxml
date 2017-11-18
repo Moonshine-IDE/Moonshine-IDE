@@ -15,7 +15,7 @@
         <s:State name="info" />
     </s:states>
     <s:Ellipse verticalCenter="0" horizontalCenter="0"
-               width="20" height="20" width.info="15" height.info="15">
+               width="20" height="20" width.info="18" height.info="18">
         <s:fill>
             <s:SolidColor id="codeIndicatorColor"
                           color.Function="0x3382dd"
@@ -28,9 +28,10 @@
                           color.info="0xFFB05B"/>
         </s:fill>
     </s:Ellipse>
-    <s:Label id="codeIndicationLabel" verticalCenter="0" horizontalCenter="0" color="0xFFFFFF"
-             fontWeight="bold" fontSize="10" fontSize.info="8" textAlign="center"
-             width="20" width.info="15"
+    <s:Label id="codeIndicationLabel" verticalCenter="0" horizontalCenter="0"
+             horizontalCenter.info="{undefined}" color="0xFFFFFF"
+             fontWeight="bold" fontSize="10" textAlign="center"
+             width="20" paddingLeft="0" paddingBottom="0" paddingTop="0" paddingRight="1"
              text.Function="M"
              text.Keyword="K"
              text.Interface="I"

@@ -8,7 +8,7 @@
     <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
              textAlign="left" maxDisplayedLines="1" left="25"/>
     <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false" includeInLayout="false"
-              verticalAlign="middle" height="15">
+              verticalAlign="middle">
         <s:Label color="0x606060" textAlign="right"
                  maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.kind}"/>
         <codecompletionlist:CodeIconIndicator id="infoIndicator" currentState="info" data="{data}"
