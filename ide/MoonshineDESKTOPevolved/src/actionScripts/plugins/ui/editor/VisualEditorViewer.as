@@ -28,7 +28,6 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
-    import actionScripts.ui.tabview.TabViewTab;
 
     import flash.events.Event;
 

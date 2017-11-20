@@ -53,8 +53,9 @@ package actionScripts.plugin.templating
 				file = new FileLocation(file.nativePath);
 				if (FileLocation(file).fileBridge.isDirectory)
 				{
-					// do not copy stocked 'src' folder if user choose to create a project with his/her existing source
-					if (!isProjectFromExistingSource || (isProjectFromExistingSource && FileLocation(file).fileBridge.name != "src"))
+					var directorySourceName:String = FileLocation(file).fileBridge.name;
+					// do not copy stocked 'src' and 'visualeditor-src' folder if user choose to create a project with his/her existing source
+					if (!isProjectFromExistingSource || (directorySourceName != "src" && directorySourceName != "visualeditor-src"))
 					{
 						if (ConstantsCoreVO.IS_AIR)
 						{
