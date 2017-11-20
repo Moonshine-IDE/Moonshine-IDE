@@ -20,12 +20,10 @@ package actionScripts.ui
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.setTimeout;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.containers.VBox;
 	import mx.events.CollectionEvent;
-	import mx.events.FlexEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.locator.IDEModel;
@@ -134,6 +132,12 @@ package actionScripts.ui
 			if (event.child is IContentWindow)
 			{
 				model.activeEditor = event.child as IContentWindow;
+			}
+
+			if (event.type == TabEvent.EVENT_TAB_SELECT)
+			{
+                var e:TabEvent = new TabEvent(TabEvent.EVENT_TAB_SELECT, event.child);
+                GlobalEventDispatcher.getInstance().dispatchEvent(e);
 			}
 		}
 		

@@ -27,6 +27,8 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.*;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.ui.tabview.TabViewTab;
 
     import flash.events.Event;
 
@@ -61,8 +63,9 @@ package actionScripts.plugins.ui.editor
 
             visualEditorView.codeEditor = editor;
             
-            dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabOpenClose);
+            dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
             dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
+            dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
         }
 
         private function onVisualEditorCreationComplete(event:FlexEvent):void
@@ -123,15 +126,35 @@ package actionScripts.plugins.ui.editor
             _isChanged = true;
         }
 
-        private function onTabOpenClose(event:Event):void
+        private function onTabAdd(event:Event):void
         {
             if (!visualEditorView.visualEditor) return;
 
-            visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
-            visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
             visualEditorView.visualEditor.editingSurface.selectedItem = null;
         }
 
+        private function onTabOpenClose(event:CloseTabEvent):void
+        {
+            if (!visualEditorView.visualEditor) return;
+            
+            if (event.tab.hasOwnProperty("editor") && event.tab["editor"] == this.editor)
+            {
+                visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+                visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
+                visualEditorView.visualEditor.editingSurface.selectedItem = null;
+            }
+        }
+
+        private function onTabSelect(event:TabEvent):void
+        {
+            if (!visualEditorView.visualEditor) return;
+
+            if (!event.child.hasOwnProperty("editor") || event.child["editor"] != this.editor)
+            {
+                visualEditorView.visualEditor.editingSurface.selectedItem = null;
+            }
+        }
+        
         private function createVisualEditorFile():void
         {
             var veFilePath:String = getVisualEditorFilePath();
