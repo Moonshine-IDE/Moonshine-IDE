@@ -88,7 +88,7 @@ package actionScripts.impls
 			//TODO: implement function
 		}
 		
-		public function copyTo(value:FileLocation):void
+		public function copyTo(value:FileLocation, overwrite:Boolean = false):void
 		{
 			//TODO: implement function
 		}
