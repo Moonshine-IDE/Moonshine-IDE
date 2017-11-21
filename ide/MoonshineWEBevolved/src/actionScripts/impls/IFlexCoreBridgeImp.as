@@ -142,6 +142,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function createProject(event:NewProjectEvent):void
+		{
+			
+		}
+		
 		public function createAS3Project(event:NewProjectEvent):void
 		{
 			authPopup = new AuthenticationPopUp();
