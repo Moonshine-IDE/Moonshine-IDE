@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+    import actionScripts.events.RefreshTreeEvent;
+    import actionScripts.utils.UtilsCore;
+
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
@@ -309,7 +312,7 @@ package actionScripts.plugins.as3project
 
 			if (eventObject.isExport)
 			{
-				newProjectNameSetting.isEditable = false;
+				//newProjectNameSetting.isEditable = false;
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
@@ -405,8 +408,13 @@ package actionScripts.plugins.as3project
 			cookie.flush();
 
             project = createFileSystemBeforeSave(project, view.exportProject);
-			
-			if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
+
+            if (view.exportProject)
+            {
+                exportVisualEditorProject(project, view.exportProject);
+            }
+
+            if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
 			
 			// Close settings view
 			createClose(event);
@@ -429,8 +437,36 @@ package actionScripts.plugins.as3project
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
 				);
 			}
+
+			if (view.exportProject)
+			{
+                GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.sourceFolder));
+			}
 		}
-		
+
+		private function exportVisualEditorProject(project:AS3ProjectVO, exportProject:AS3ProjectVO):void
+		{
+			var mainExportedFile:FileLocation = exportProject.targets[0];
+			var mainProjectFile:FileLocation = project.targets[0];
+
+            mainExportedFile.fileBridge.copyTo(mainProjectFile, true);
+
+			var filesForExport:Array = exportProject.sourceFolder.fileBridge.getDirectoryListing();
+			var filesForExportCount:int = filesForExport.length;
+			for (var i:int = 0; i < filesForExportCount; i++)
+			{
+				var fileForCopy:File = filesForExport[i];
+				if (fileForCopy.name == mainExportedFile.fileBridge.name)
+				{
+					continue;
+				}
+
+				var destinationPath:String = UtilsCore.fixSlashes(project.sourceFolder.fileBridge.getFile.nativePath + "\\" + fileForCopy.name);
+				var destination:File = new File(destinationPath);
+				fileForCopy.copyTo(destination, true);
+			}
+		}
+
 		private function createFileSystemBeforeSave(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
 		{
 			// in case of create new project through Open Project option
@@ -507,12 +543,6 @@ package actionScripts.plugins.as3project
 			else
 			{
 				th.templatingData["${flexlib}"] = (model.defaultSDK) ? model.defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
-            }
-
-            if (exportProject)
-            {
-                exportProject.sourceFolder.fileBridge.copyTo(targetFolder.resolvePath("src"));
-				th.isProjectFromExistingSource = true;
             }
 
             th.projectTemplate(templateDir, targetFolder);
@@ -608,17 +638,17 @@ package actionScripts.plugins.as3project
             var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
-			
-			// Set some stuff to get the paths right
+
+            // Set some stuff to get the paths right
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
-			
+
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);
 
-			return pvo;
+            return pvo;
 		}
 
         private function setProjectType(templateName:String):void
