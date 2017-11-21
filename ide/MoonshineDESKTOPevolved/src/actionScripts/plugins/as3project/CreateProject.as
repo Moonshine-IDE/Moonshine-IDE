@@ -334,9 +334,7 @@ package actionScripts.plugins.as3project
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
-                    newProjectPathSetting,
-                    new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
-                    newProjectSourcePathSetting
+                    newProjectPathSetting
                 ]));
             }
 
