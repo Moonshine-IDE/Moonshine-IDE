@@ -115,6 +115,7 @@ package actionScripts.plugin.templating
 			
 			dispatcher.addEventListener(RequestTemplatesEvent.EVENT_REQUEST_TEMPLATES, handleTemplateRequest);
 			dispatcher.addEventListener(TemplateEvent.CREATE_NEW_FILE, handleCreateFileTemplate);
+            dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, handleExportNewProjectFromTemplate);
 			
 			// For web Moonshine, we won't depend on getMenu()
 			// getMenu() exclusively calls for desktop Moonshine
@@ -164,6 +165,14 @@ package actionScripts.plugin.templating
 				if (!file.isHidden && !file.isDirectory)
 					ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem(file);
 			}
+
+            files = templatesDir.resolvePath("files/visualeditor/flex");
+            list = files.fileBridge.getDirectoryListing();
+            for each (file in list)
+            {
+                if (!file.isHidden && !file.isDirectory)
+                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS.addItem(file);
+            }
 			
 			files = templatesDir.resolvePath("files/AS3 Class.as.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
@@ -595,6 +604,7 @@ package actionScripts.plugin.templating
 				// MXML type choose
 				switch (eventName)
 				{
+                    case "Visual Editor Flex File":
 					case "MXML File":
 						openMXMLComponentTypeChoose(event);
 						return;
@@ -990,64 +1000,85 @@ package actionScripts.plugin.templating
 		
 		protected function handleNewProjectFile(event:Event):void
 		{
-			var eventName:String;
-			if (ConstantsCoreVO.IS_AIR)
-			{
-				eventName = event.type.substr(27);
-				if(eventName == "HaXe SWF Project")
-				{
-					Alert.show("coming shortly");
-					return;
-				}
-				// Figure out which menu item was clicked (add extra data var to MenuPlugin/event dispatching?)
-				for each (var projectTemplate:FileLocation in projectTemplates)
-				{
-					if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
-					{
-						var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
-						if (customTemplate.fileBridge.exists) projectTemplate = customTemplate;
-						
-						if (eventName == "Away3D Project")
-						{
-							dispatcher.dispatchEvent(
-								new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "awd", null, projectTemplate)
-							);
-						}
-						else findSettingsFile(projectTemplate);
-						break;
-					}
-				}	
-			}
-			else
-			{
-				eventName = event.type;
-				dispatcher.dispatchEvent(
-					new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, eventName, null, null)
-				);
-			}
+            newProjectFromTemplate(event.type);
 		}
-		
-		protected function findSettingsFile(projectDir:FileLocation):void
-		{
-			// TODO: If none is found, prompt user for location to save project & template it over
-			var files:Array = projectDir.fileBridge.getDirectoryListing();
-			
-			for each (var file:Object in files)
-			{
-				if (!file.isDirectory)
-				{
-					if (file.name.indexOf("$Settings.") == 0)
-					{
-						file = new FileLocation(file.nativePath);
-						var ext:String = TemplatingHelper.getExtension(file as FileLocation);
-						dispatcher.dispatchEvent(
-							new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, ext, file as FileLocation, projectDir)
-						);
-						return;
-					}
-				}
-			}
-		}
+
+        private function handleExportNewProjectFromTemplate(event:ProjectEvent):void
+        {
+            if (event.type == ProjectEvent.EXPORT_VISUALEDITOR_PROJECT)
+            {
+                newProjectFromTemplate(
+                        "eventNewProjectFromTemplateFlex Desktop Project (MacOS, Windows)",
+                        event.project as AS3ProjectVO);
+            }
+        }
+
+        private function newProjectFromTemplate(eventName:String, exportProject:AS3ProjectVO = null):void
+        {
+            if (ConstantsCoreVO.IS_AIR)
+            {
+                eventName = eventName.substr(27);
+                if(eventName == "HaXe SWF Project")
+                {
+                    Alert.show("coming shortly");
+                    return;
+                }
+                // Figure out which menu item was clicked (add extra data var to MenuPlugin/event dispatching?)
+                for each (var projectTemplate:FileLocation in projectTemplates)
+                {
+                    if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
+                    {
+                        var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
+                        var extension:String = null;
+                        var settingsFile:FileLocation = null;
+
+                        if (customTemplate.fileBridge.exists)
+                        {
+                            projectTemplate = customTemplate;
+                        }
+
+                        if (eventName == "Away3D Project")
+                        {
+                            extension = "awd";
+                        }
+                        else
+                        {
+                            settingsFile = getSettingsTemplateFileLocation(projectTemplate);
+                            extension = TemplatingHelper.getExtension(settingsFile);
+                        }
+
+                        dispatcher.dispatchEvent(new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,
+                                extension, settingsFile, projectTemplate, exportProject));
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                dispatcher.dispatchEvent(
+                        new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, eventName, null, null)
+                );
+            }
+        }
+
+        protected function getSettingsTemplateFileLocation(projectDir:FileLocation):FileLocation
+        {
+            // TODO: If none is found, prompt user for location to save project & template it over
+            var files:Array = projectDir.fileBridge.getDirectoryListing();
+
+            for each (var file:Object in files)
+            {
+                if (!file.isDirectory)
+                {
+                    if (file.name.indexOf("$Settings.") == 0)
+                    {
+                        return new FileLocation(file.nativePath);
+                    }
+                }
+            }
+
+            return null;
+        }
 		
 		protected function handleTemplateRequest(event:RequestTemplatesEvent):void
 		{
