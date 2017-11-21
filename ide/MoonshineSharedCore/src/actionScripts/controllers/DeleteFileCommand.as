@@ -35,7 +35,7 @@ package actionScripts.controllers
 	import actionScripts.valueObjects.FileWrapper;
 	
 	import components.views.splashscreen.SplashScreen;
-
+	
 	public class DeleteFileCommand implements ICommand
 	{
 		private var file: FileLocation;
@@ -47,16 +47,21 @@ package actionScripts.controllers
 			var e:DeleteFileEvent = DeleteFileEvent(event);
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
-
+			
 			if (!e.file.fileBridge.exists) return;
 			
 			// project deletion
-			if (e.wrapper.isRoot)
+			if (e.wrapper.isRoot && e.showAlert)
 			{
 				Alert.show("Are you sure you want to delete project '"+ e.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
 				return;
 			}
-
+			else if (e.wrapper.isRoot)
+			{
+				onProjectDeleteConfirm(null);
+				return;
+			}
+			
 			// file/folder deletion for desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -80,7 +85,7 @@ package actionScripts.controllers
 				// removing the wrapper in tree view
 				e.treeViewCompletionHandler(e.wrapper);
 			}
-			// for web
+				// for web
 			else
 			{
 				file = e.file;
@@ -95,12 +100,12 @@ package actionScripts.controllers
 			}
 			
 			/*
-			 * @local
-			 * to access method chain parameters
-			 */
+			* @local
+			* to access method chain parameters
+			*/
 			function onProjectDeleteConfirm(event:CloseEvent):void
 			{
-				if (event.detail == Alert.YES)
+				if (!event || event.detail == Alert.YES)
 				{
 					var model: IDEModel = IDEModel.getInstance();
 					// sends delete call to factory classes
@@ -109,7 +114,7 @@ package actionScripts.controllers
 					// closing is IMPORTANT
 					for (var i:int; i < model.editors.length; i ++)
 					{
-						if (!(model.editors[i] is SplashScreen))
+						if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == e.wrapper.projectReference.path)
 						{
 							ed = model.editors[i];
 							var parentProjectPath: String = e.wrapper.projectReference.path + IDEModel.getInstance().fileCore.separator;

@@ -239,6 +239,10 @@ package actionScripts.controllers
                     {
                         editor = new BasicTextEditor()
                     }
+					
+					// requires in case of project deletion and closing all the opened
+					// file instances belongs to the project
+					if (wrapper) editor.projectPath = wrapper.projectReference.path;
                 }
 			}
 

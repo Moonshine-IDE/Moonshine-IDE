@@ -21,7 +21,6 @@ package actionScripts.plugin.templating
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -32,11 +31,13 @@ package actionScripts.plugin.templating
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.RenameApplicationEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IMenuPlugin;
@@ -51,27 +52,29 @@ package actionScripts.plugin.templating
 	import actionScripts.plugin.templating.settings.TemplateSetting;
 	import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
 	import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
+	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.AS3ClassAttributes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
-	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.NewASFilePopup;
 	import components.popup.NewCSSFilePopup;
 	import components.popup.NewFilePopup;
 	import components.popup.NewMXMLFilePopup;
-
+	
 	/*
-		Templating plugin
-		
-		Provides templates & possibility to customize them
-		
-		Standard templates ship in the app-dir, but since we can't change those files once installed 
-		we override them by copying them to app-storage-dir & let the user modify them there.
+	Templating plugin
+	
+	Provides templates & possibility to customize them
+	
+	Standard templates ship in the app-dir, but since we can't change those files once installed 
+	we override them by copying them to app-storage-dir & let the user modify them there.
 	*/
 	
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
@@ -112,14 +115,14 @@ package actionScripts.plugin.templating
 			
 			dispatcher.addEventListener(RequestTemplatesEvent.EVENT_REQUEST_TEMPLATES, handleTemplateRequest);
 			dispatcher.addEventListener(TemplateEvent.CREATE_NEW_FILE, handleCreateFileTemplate);
-			dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, handleExportNewProjectFromTemplate);
+			
 			// For web Moonshine, we won't depend on getMenu()
 			// getMenu() exclusively calls for desktop Moonshine
 			if (!ConstantsCoreVO.IS_AIR)
 			{
 				for each (var m:FileLocation in ConstantsCoreVO.TEMPLATES_FILES)
 				{
-					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."));
+					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."))
 					dispatcher.addEventListener(fileName, handleNewTemplateFile);
 				}
 				
@@ -129,7 +132,7 @@ package actionScripts.plugin.templating
 				}
 			}
 		}
-
+		
 		override public function resetSettings():void
 		{
 			for each (var i:ISetting in settingsList)
@@ -161,15 +164,7 @@ package actionScripts.plugin.templating
 				if (!file.isHidden && !file.isDirectory)
 					ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem(file);
 			}
-
-            files = templatesDir.resolvePath("files/visualeditor/flex");
-            list = files.fileBridge.getDirectoryListing();
-            for each (file in list)
-            {
-                if (!file.isHidden && !file.isDirectory)
-                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS.addItem(file);
-            }
-
+			
 			files = templatesDir.resolvePath("files/AS3 Class.as.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_AS3CLASS = files;
@@ -208,7 +203,7 @@ package actionScripts.plugin.templating
 				if (!file.isHidden && file.isDirectory)
 					projectTemplates.push(new FileLocation(file.nativePath));
 			}
-				
+			
 			// Find user-added custom templates
 			if (!customTemplatesDir.fileBridge.exists) customTemplatesDir.fileBridge.createDirectory();
 			
@@ -258,7 +253,7 @@ package actionScripts.plugin.templating
 			}
 			
 			newFileTemplateSetting = new NewTemplateSetting("Add file template");
-			newFileTemplateSetting.renderer.addEventListener('create', handleFileTemplateCreate);
+			newFileTemplateSetting.renderer.addEventListener('create', handleFileTemplateCreate, false, 0, true);
 			
 			settings.push(newFileTemplateSetting);
 			
@@ -268,13 +263,13 @@ package actionScripts.plugin.templating
 			for each (var p:FileLocation in projectTemplates)
 			{
 				if (p.fileBridge.isHidden) continue;
-
+				
 				setting = getTemplateSetting(p);				
 				settings.push(setting);
 			}
 			
 			newProjectTemplateSetting = new NewTemplateSetting("Add project template");
-			newProjectTemplateSetting.renderer.addEventListener('create', handleProjectTemplateCreate);
+			newProjectTemplateSetting.renderer.addEventListener('create', handleProjectTemplateCreate, false, 0, true);
 			
 			settings.push(newProjectTemplateSetting);
 			
@@ -314,7 +309,7 @@ package actionScripts.plugin.templating
 				
 				eventType = "eventNewProjectFromTemplate"+lbl;
 				
-				dispatcher.addEventListener(eventType, handleNewProjectFile);
+				dispatcher.addEventListener(eventType, handleNewProjectFile)
 				
 				menuItem = new MenuItem(lbl, null, eventType);
 				menuItem.data = projectTemplate;
@@ -345,6 +340,7 @@ package actionScripts.plugin.templating
 			setting.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify, false, 0, true);
 			setting.renderer.addEventListener(TemplateRenderer.EVENT_RESET, handleTemplateReset, false, 0, true);
 			setting.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset, false, 0, true);
+			setting.renderer.addEventListener(GeneralEvent.DONE, onRenameDone, false, 0, true);
 			
 			return setting;
 		}
@@ -353,7 +349,14 @@ package actionScripts.plugin.templating
 		protected function handleFileTemplateCreate(event:Event):void
 		{
 			// Create new file
-			var newTemplate:FileLocation = this.customTemplatesDir.resolvePath("files/New file template.txt");
+			var increamentalNumber:int = 1;
+			var newTemplate:FileLocation = this.customTemplatesDir.resolvePath("files/New file template.txt.template");
+			while (newTemplate.fileBridge.exists)
+			{
+				newTemplate = this.customTemplatesDir.resolvePath("files/New file template("+ increamentalNumber +").txt.template");
+				increamentalNumber++;
+			}
+			
 			newTemplate.fileBridge.save("");
 			
 			// Add setting for it so we can remove it
@@ -361,6 +364,7 @@ package actionScripts.plugin.templating
 			t.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify, false, 0, true);
 			t.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset, false, 0, true);
 			t.renderer.addEventListener(TemplateRenderer.EVENT_RESET, handleTemplateReset, false, 0, true);
+			t.renderer.addEventListener(GeneralEvent.DONE, onRenameDone, false, 0, true);
 			var newPos:int = this.settingsList.indexOf(newFileTemplateSetting);
 			settingsList.splice(newPos, 0, t);
 			
@@ -378,17 +382,29 @@ package actionScripts.plugin.templating
 		
 		protected function handleProjectTemplateCreate(event:Event):void
 		{
+			var increamentalNumber:int = 1;
 			var newTemplate:FileLocation = this.customTemplatesDir.resolvePath("projects/New Project Template/");
+			while (newTemplate.fileBridge.exists)
+			{
+				newTemplate = this.customTemplatesDir.resolvePath("projects/New Project Template("+ increamentalNumber +")/");
+				increamentalNumber++;
+			}
+			
 			newTemplate.fileBridge.createDirectory();
 			
 			var t:TemplateSetting = new TemplateSetting(null, newTemplate, newTemplate.fileBridge.name);
-			t.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify);
-			t.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset);
+			t.renderer.addEventListener(TemplateRenderer.EVENT_MODIFY, handleTemplateModify, false, 0, true);
+			t.renderer.addEventListener(TemplateRenderer.EVENT_REMOVE, handleTemplateReset, false, 0, true);
+			t.renderer.addEventListener(GeneralEvent.DONE, onRenameDone, false, 0, true);
 			var newPos:int = this.settingsList.indexOf(newProjectTemplateSetting);
 			settingsList.splice(newPos, 0, t);
 			
+			var newProject:AS3ProjectVO = new AS3ProjectVO(newTemplate, newTemplate.fileBridge.name);
+			newProject.classpaths[0] = newTemplate;
+			newProject.projectFolder.projectReference.isTemplate = true;
+			
 			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, new ProjectVO(newTemplate))
+				new ProjectEvent(ProjectEvent.ADD_PROJECT, newProject)
 			);
 			
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
@@ -406,13 +422,13 @@ package actionScripts.plugin.templating
 			
 			if ((!original || !original.fileBridge.exists) && custom.fileBridge.isDirectory)
 			{
-				p = new AS3ProjectVO(custom)
+				p = new AS3ProjectVO(custom, custom.fileBridge.name)
 			}
 			else if (!custom.fileBridge.exists && (original && original.fileBridge.exists && original.fileBridge.isDirectory))
 			{
 				// Copy to app-storage so we can edit
 				original.fileBridge.copyTo(custom);
-				p = new AS3ProjectVO(custom);
+				p = new AS3ProjectVO(custom, custom.fileBridge.name);
 			}
 			else if (!custom.fileBridge.exists && original && original.fileBridge.exists && !original.fileBridge.isDirectory)
 			{
@@ -420,18 +436,20 @@ package actionScripts.plugin.templating
 			}
 			else if (custom && custom.fileBridge.exists && custom.fileBridge.isDirectory)
 			{
-				p = new AS3ProjectVO(custom);
+				p = new AS3ProjectVO(custom, custom.fileBridge.name);
 			}
 			
 			// If project or custom, show in Project View so user can rename it
 			if (p)
 			{
+				p.classpaths[0] = p.folderLocation;
+				p.projectFolder.projectReference.isTemplate = true;
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
 				);
 			}
-			
-			// If not a project, open the template for editing
+				
+				// If not a project, open the template for editing
 			else if (!custom.fileBridge.isDirectory)
 			{
 				dispatcher.dispatchEvent(
@@ -444,7 +462,7 @@ package actionScripts.plugin.templating
 		{
 			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
 			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-
+			
 			var customTemplatePath:String = template.fileBridge.nativePath.substr(appDirPath.length+1);
 			var customTemplate:FileLocation = template.fileBridge.resolveApplicationStorageDirectoryPath(customTemplatePath);
 			
@@ -453,8 +471,9 @@ package actionScripts.plugin.templating
 		
 		protected function getOriginalFileForCustom(template:FileLocation):FileLocation
 		{
+			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
 			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-
+			
 			var originalTemplatePath:String = template.fileBridge.nativePath.substr(appStorageDirPath.length+1);
 			var originalTemplate:FileLocation = template.fileBridge.resolveApplicationDirectoryPath(originalTemplatePath);
 			
@@ -470,8 +489,44 @@ package actionScripts.plugin.templating
 			
 			if (custom.fileBridge.exists)
 			{
-				if (custom.fileBridge.isDirectory) custom.fileBridge.deleteDirectory(true);
-				else custom.fileBridge.deleteFile();
+				if (custom.fileBridge.isDirectory) 
+				{
+					var isProjectOpen:Boolean = false;
+					for each (var i:AS3ProjectVO in model.projects)
+					{
+						if (i.folderLocation.fileBridge.nativePath == custom.fileBridge.nativePath)
+						{
+							isProjectOpen = true;
+							i.projectFolder.isRoot = true;
+							model.mainView.getTreeViewPanel().tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, FTETreeItemRenderer.DELETE_PROJECT, i.projectFolder, false));
+							break;
+						}
+					}
+					
+					if (!isProjectOpen) custom.fileBridge.deleteDirectory(true);
+				}
+				else 
+				{
+					// if the template file is already opened to an editor
+					for each (var tab:IContentWindow in model.editors)
+					{
+						var ed:BasicTextEditor = tab as BasicTextEditor;
+						if (ed 
+							&& ed.currentFile
+							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
+						{
+							// active the editor
+							handleTemplateModify(event);
+							
+							// close the tab
+							GlobalEventDispatcher.getInstance().dispatchEvent(
+								new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
+							);
+						}
+					}
+					// deletes the file
+					custom.fileBridge.deleteFile();
+				}
 			}
 			
 			if (!original)
@@ -480,10 +535,29 @@ package actionScripts.plugin.templating
 				settingsList.splice(idx, 1);
 				rdr.dispatchEvent(new Event('refresh'));
 				
-				readTemplates();	
+				readTemplates();
 			}
 		}
 		
+		protected function onRenameDone(event:GeneralEvent):void
+		{
+			// Resetting a template just removes it from app-storage
+			var rdr:TemplateRenderer = TemplateRenderer(event.target);
+			var custom:FileLocation = rdr.setting.customTemplate;
+			var newFileName:String = event.value as String;
+			
+			if (custom.fileBridge.exists)
+			{
+				var customNewLocation:FileLocation = custom.fileBridge.parent.resolvePath(newFileName +(!custom.fileBridge.isDirectory ? ".template" : ""));
+				
+				if (!custom.fileBridge.isDirectory)	custom.fileBridge.moveTo(customNewLocation, true);
+				else dispatcher.dispatchEvent(new RenameApplicationEvent(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, custom, customNewLocation));
+				
+				rdr.setting.customTemplate = customNewLocation;
+				rdr.setting.label = rdr.setting.customTemplate.fileBridge.name;
+				rdr.dispatchEvent(new Event('refresh'));
+			}
+		}
 		
 		protected function handleCreateFileTemplate(event:TemplateEvent):void
 		{
@@ -493,7 +567,7 @@ package actionScripts.plugin.templating
 				// Request additional data for templating
 				var event:TemplateEvent = new TemplateEvent(TemplateEvent.REQUEST_ADDITIONAL_DATA, event.template, event.location);
 				dispatcher.dispatchEvent(event);
-								
+				
 				var helper:TemplatingHelper = new TemplatingHelper();
 				helper.templatingData = event.templatingData;
 				helper.fileTemplate(event.template, event.location);
@@ -514,7 +588,6 @@ package actionScripts.plugin.templating
 			var eventName:String;
 			var i:int;
 			var fileTemplate:FileLocation;
-
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				eventName = event.type.substr(24);
@@ -522,7 +595,6 @@ package actionScripts.plugin.templating
 				// MXML type choose
 				switch (eventName)
 				{
-                    case "Visual Editor Flex File":
 					case "MXML File":
 						openMXMLComponentTypeChoose(event);
 						return;
@@ -553,7 +625,7 @@ package actionScripts.plugin.templating
 						{
 							fileTemplate = customTemplate;
 						}
-
+						
 						createFile(fileTemplate);
 						return;
 					}
@@ -574,11 +646,11 @@ package actionScripts.plugin.templating
 				}
 			}
 		}
-
+		
 		protected function createFile(template:FileLocation):void
 		{
 			var editor:BasicTextEditor = new BasicTextEditor();
-
+			
 			// Let plugins hook in syntax highlighters & other functionality
 			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
 			editorEvent.editor = editor.getEditorComponent();
@@ -611,8 +683,8 @@ package actionScripts.plugin.templating
 				new AddTabEvent(editor)
 			);
 		}
-
-        protected function openMXMLComponentTypeChoose(event:Event):void
+		
+		protected function openMXMLComponentTypeChoose(event:Event):void
 		{
 			if (!newMXMLComponentPopup)
 			{
@@ -863,7 +935,7 @@ package actionScripts.plugin.templating
 				{
 					dispatcher.dispatchEvent(
 						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-						);
+					);
 				}
 			}
 		}
@@ -918,69 +990,44 @@ package actionScripts.plugin.templating
 		
 		protected function handleNewProjectFile(event:Event):void
 		{
-			newProjectFromTemplate(event.type);
-		}
-
-
-        private function handleExportNewProjectFromTemplate(event:ProjectEvent):void
-        {
-			if (event.type == ProjectEvent.EXPORT_VISUALEDITOR_PROJECT)
+			var eventName:String;
+			if (ConstantsCoreVO.IS_AIR)
 			{
-                newProjectFromTemplate(
-						"eventNewProjectFromTemplateFlex Desktop Project (MacOS, Windows)",
-						event.project as AS3ProjectVO);
+				eventName = event.type.substr(27);
+				if(eventName == "HaXe SWF Project")
+				{
+					Alert.show("coming shortly");
+					return;
+				}
+				// Figure out which menu item was clicked (add extra data var to MenuPlugin/event dispatching?)
+				for each (var projectTemplate:FileLocation in projectTemplates)
+				{
+					if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
+					{
+						var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
+						if (customTemplate.fileBridge.exists) projectTemplate = customTemplate;
+						
+						if (eventName == "Away3D Project")
+						{
+							dispatcher.dispatchEvent(
+								new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "awd", null, projectTemplate)
+							);
+						}
+						else findSettingsFile(projectTemplate);
+						break;
+					}
+				}	
 			}
-        }
-
-		private function newProjectFromTemplate(eventName:String, exportProject:AS3ProjectVO = null):void
-		{
-            if (ConstantsCoreVO.IS_AIR)
-            {
-                eventName = eventName.substr(27);
-                if(eventName == "HaXe SWF Project")
-                {
-                    Alert.show("coming shortly");
-                    return;
-                }
-                // Figure out which menu item was clicked (add extra data var to MenuPlugin/event dispatching?)
-                for each (var projectTemplate:FileLocation in projectTemplates)
-                {
-                    if ( TemplatingHelper.getTemplateLabel(projectTemplate) == eventName )
-                    {
-                        var customTemplate:FileLocation = getCustomFileFor(projectTemplate);
-                        var extension:String = null;
-                        var settingsFile:FileLocation = null;
-
-                        if (customTemplate.fileBridge.exists)
-                        {
-                            projectTemplate = customTemplate;
-                        }
-
-                        if (eventName == "Away3D Project")
-                        {
-                            extension = "awd";
-                        }
-                        else
-                        {
-                            settingsFile = getSettingsTemplateFileLocation(projectTemplate);
-                            extension = TemplatingHelper.getExtension(settingsFile);
-                        }
-
-                        dispatcher.dispatchEvent(new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,
-                                extension, settingsFile, projectTemplate, exportProject));
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                dispatcher.dispatchEvent(
-                        new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, eventName, null, null)
-                );
-            }
+			else
+			{
+				eventName = event.type;
+				dispatcher.dispatchEvent(
+					new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, eventName, null, null)
+				);
+			}
 		}
-
-        protected function getSettingsTemplateFileLocation(projectDir:FileLocation):FileLocation
+		
+		protected function findSettingsFile(projectDir:FileLocation):void
 		{
 			// TODO: If none is found, prompt user for location to save project & template it over
 			var files:Array = projectDir.fileBridge.getDirectoryListing();
@@ -991,12 +1038,15 @@ package actionScripts.plugin.templating
 				{
 					if (file.name.indexOf("$Settings.") == 0)
 					{
-						return new FileLocation(file.nativePath);
+						file = new FileLocation(file.nativePath);
+						var ext:String = TemplatingHelper.getExtension(file as FileLocation);
+						dispatcher.dispatchEvent(
+							new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, ext, file as FileLocation, projectDir)
+						);
+						return;
 					}
 				}
 			}
-
-			return null;
 		}
 		
 		protected function handleTemplateRequest(event:RequestTemplatesEvent):void
@@ -1006,7 +1056,7 @@ package actionScripts.plugin.templating
 		}
 		
 		/*
-			Silly little helper methods
+		Silly little helper methods
 		*/
 		
 		protected function isCustom(template:FileLocation):Boolean
@@ -1015,7 +1065,7 @@ package actionScripts.plugin.templating
 			{
 				return true;
 			}
-				
+			
 			return false;
 		}
 		

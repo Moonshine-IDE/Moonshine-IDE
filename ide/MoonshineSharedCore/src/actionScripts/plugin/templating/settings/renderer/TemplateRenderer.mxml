@@ -21,9 +21,9 @@
 -->
 <s:VGroup 
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
-  	xmlns:s="library://ns.adobe.com/flex/spark"
-  	xmlns:mx="library://ns.adobe.com/flex/mx"
-  		
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	
 	width="100%"
 	paddingLeft="15"
 	paddingTop="5"
@@ -36,6 +36,10 @@
 		<![CDATA[
 			import flash.events.Event;
 			
+			import mx.controls.Alert;
+			import mx.utils.StringUtil;
+			
+			import actionScripts.events.GeneralEvent;
 			import actionScripts.plugin.templating.settings.TemplateSetting;
 			
 			public static const EVENT_RESET:String = "reset";
@@ -61,7 +65,7 @@
 				{
 					showReset = true;
 				}
-					
+				
 			}
 			
 			public function reset():void
@@ -82,33 +86,96 @@
 				showReset = true;
 			}
 			
+			private function rename():void
+			{
+				// show the file name cutting down .template word
+				var lastIndex:int = setting.label.indexOf(".template");
+				txtRename.text = (lastIndex != -1) ? setting.label.substring(0, lastIndex) : setting.label;
+				
+				lblName.visible = false;
+				txtRename.visible = true;
+				btnsRegular.includeInLayout = btnsRegular.visible = false;
+				btnsRename.includeInLayout = btnsRename.visible = true;
+				
+				txtRename.callLater(txtRename.setFocus);
+			}
+			
+			protected function renameDone(event:MouseEvent):void
+			{
+				if (StringUtil.trim(txtRename.text).length == 0)
+				{
+					Alert.show("Please enter a valid file name.", "Error!");
+					return;
+				}
+				
+				dispatchEvent(new GeneralEvent(GeneralEvent.DONE, txtRename.text));
+				
+				// when done
+				renameCancel(null);
+			}
+			
+			protected function renameCancel(event:MouseEvent):void
+			{
+				lblName.visible = true;
+				txtRename.visible = false;
+				btnsRegular.includeInLayout = btnsRegular.visible = true;
+				btnsRename.includeInLayout = btnsRename.visible = false;
+			}
 			
 		]]>
 	</fx:Script>
 	
 	<s:HGroup width="100%" verticalAlign="middle">
-		<s:Label styleName="uiTextSettingsValue"
-			text="{setting.label}" />
+		<s:Group autoLayout="true" width="100%">
+			<s:TextInput id="txtRename"
+						 styleName="uiTextSettingsValue"
+						 width="100%"
+						 borderVisible="false"
+						 contentBackgroundAlpha="1"
+						 unfocusedTextSelectionColor="#a8c6ee"
+						 focusAlpha="0" paddingLeft="0"
+						 prompt="Enter a template name"
+						 visible="false"/>
+			<s:Label id="lblName" 
+					 styleName="uiTextSettingsValue"
+					 text="{setting.label}"
+					 verticalCenter="0"/>
+		</s:Group>
 		
-		<mx:Spacer width="100%"/>
-	
-		<s:Button
-			label="Remove"
-			styleName="lightButton"
-			visible="{showRemove}"
-			click="remove()"
-			/>
-		<s:Button 
-			label="Reset"
-			styleName="lightButton"
-			visible="{showReset &amp;&amp; !showRemove}"
-			includeInLayout="{showReset &amp;&amp; !showRemove}"
-			click="reset()" />
-		<s:Button 
-			label="Modify"
-			styleName="lightButton"
-			click="modify()" />
-						
+		<mx:Spacer width="100"/>
+		
+		<s:HGroup id="btnsRename"
+				  includeInLayout="false" visible="false">
+			<s:Button
+				label="Done"
+				styleName="lightButton"
+				click="renameDone(event)"/>
+			<s:Button 
+				label="Cancel"
+				styleName="lightButton"
+				click="renameCancel(event)"/>
+		</s:HGroup>
+		<s:HGroup id="btnsRegular" verticalAlign="middle">
+			<s:Image source="@Embed('/elements/images/icoRecycle.png')"
+					 buttonMode="true" visible="{showRemove}"
+					 click="remove()"/>
+			<s:Button 
+				label="Reset"
+				styleName="lightButton"
+				visible="{showReset &amp;&amp; !showRemove}"
+				includeInLayout="{showReset &amp;&amp; !showRemove}"
+				click="reset()" />
+			<s:Button
+				label="Rename"
+				styleName="lightButton"
+				visible="{showRemove}" includeInLayout="{showRemove}"
+				click="rename()"
+				/>
+			<s:Button 
+				label="Modify"
+				styleName="lightButton"
+				click="modify()"/>
+		</s:HGroup>
 	</s:HGroup>
 	
 </s:VGroup>

@@ -495,8 +495,6 @@ package actionScripts.utils
 				files[i] = file;
 			}
 			var additionalOptions:String = buildOptions.additional;
-			//debug is handled separately and should not be duplicated
-			additionalOptions = additionalOptions.replace(/--?debug=\w+/, "");
 
 			//this object is designed to be similar to the asconfig.json
 			//format used by vscode-nextgenas
@@ -510,6 +508,8 @@ package actionScripts.utils
 			DidChangeConfigurationParams.compilerOptions = compilerOptions;
 			if(additionalOptions)
 			{
+				//debug is handled separately and should not be duplicated
+				additionalOptions = additionalOptions.replace(/--?debug=\w+/, "");
 				DidChangeConfigurationParams.additionalOptions = additionalOptions;
 			}
 			var params:Object = new Object();

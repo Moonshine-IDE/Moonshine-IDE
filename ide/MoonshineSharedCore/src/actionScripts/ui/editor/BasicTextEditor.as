@@ -51,8 +51,9 @@ package actionScripts.ui.editor
 	public class BasicTextEditor extends Canvas implements IContentWindow, IFocusManagerComponent
 	{
 		public var defaultLabel:String = "New";
-		
+		public var projectPath:String;
 		public var editor:TextEditor;
+		
 		protected var file:FileLocation;
 		protected var created:Boolean;
 		protected var loadingFile:Boolean;

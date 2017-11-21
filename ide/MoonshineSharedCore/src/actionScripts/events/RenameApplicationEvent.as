@@ -21,26 +21,20 @@ package actionScripts.events
 	import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.valueObjects.FileWrapper;
-
-	public class DeleteFileEvent extends Event
+	
+	public class RenameApplicationEvent extends Event
 	{
-		public static const EVENT_DELETE_FILE:String = "deleteFileEvent";
+		public static const RENAME_APPLICATION_FOLDER:String = "RENAME_APPLICATION_FOLDER";
 		
-		public var file:FileLocation;
-		public var wrapper:FileWrapper;
-		public var treeViewCompletionHandler:Function;
-		public var showAlert:Boolean;
+		public var from:FileLocation;
+		public var to:FileLocation;
 		
-		// If you don't supply a filewrapper with a version control object it won't be registered with vc
-		public function DeleteFileEvent(file:FileLocation, wrapper:FileWrapper=null, treeViewHandler:Function=null, showAlert:Boolean=true)
+		public function RenameApplicationEvent(type:String, from:FileLocation, to:FileLocation)
 		{
-			this.file = file;
-			this.wrapper = wrapper;
-			this.showAlert = showAlert;
-			this.treeViewCompletionHandler = treeViewHandler;
-			super(EVENT_DELETE_FILE, false, false);
+			this.from = from;
+			this.to = to;
+			
+			super(type, true, false);
 		}
-		
 	}
 }

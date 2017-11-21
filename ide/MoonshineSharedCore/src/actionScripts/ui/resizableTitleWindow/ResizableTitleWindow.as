@@ -19,64 +19,61 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.resizableTitleWindow
 {
-    import flash.events.Event;
-    import flash.events.KeyboardEvent;
-    import flash.events.NativeWindowDisplayStateEvent;
-    import flash.geom.Point;
-    import flash.ui.Keyboard;
-    
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
-    import mx.events.ResizeEvent;
-    import mx.managers.PopUpManager;
-    
-    import spark.components.TitleWindow;
-    
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.LayoutEvent;
-    
-    /**
-     *  ResizableTitleWindow is a TitleWindow with
-     *  a resize handle.
-     */
-    public class ResizableTitleWindow extends TitleWindow
-    {
-        
-        //--------------------------------------------------------------------------
-        //
-        //  Constructor
-        //
-        //--------------------------------------------------------------------------
-        
-        /**
-         *  Constructor.
-         */
-        public function ResizableTitleWindow()
-        {
-            super();
+	import flash.events.Event;
+	import flash.events.KeyboardEvent;
+	import flash.geom.Point;
+	import flash.ui.Keyboard;
+	
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
+	import spark.components.TitleWindow;
+	
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.LayoutEvent;
+	
+	/**
+	 *  ResizableTitleWindow is a TitleWindow with
+	 *  a resize handle.
+	 */
+	public class ResizableTitleWindow extends TitleWindow
+	{
+		
+		//--------------------------------------------------------------------------
+		//
+		//  Constructor
+		//
+		//--------------------------------------------------------------------------
+		
+		/**
+		 *  Constructor.
+		 */
+		public function ResizableTitleWindow()
+		{
+			super();
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-        }
-        
-        //--------------------------------------------------------------------------
-        //
-        //  Variables
-        //
-        //--------------------------------------------------------------------------
-        
-        private var clickOffset:Point;
-        
-        //--------------------------------------------------------------------------
-        //
-        //  Properties 
-        //
-        //--------------------------------------------------------------------------
-        
-        //--------------------------------------------------------------------------
-        // 
-        // Event Handlers
-        //
-        //--------------------------------------------------------------------------
-        
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  Variables
+		//
+		//--------------------------------------------------------------------------
+		
+		private var clickOffset:Point;
+		
+		//--------------------------------------------------------------------------
+		//
+		//  Properties 
+		//
+		//--------------------------------------------------------------------------
+		
+		//--------------------------------------------------------------------------
+		// 
+		// Event Handlers
+		//
+		//--------------------------------------------------------------------------
+		
 		/**
 		 *  @private
 		 */

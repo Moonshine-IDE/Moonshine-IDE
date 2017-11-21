@@ -286,13 +286,16 @@ package actionScripts.ui.renderers
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(CLOSE, redispatch, Event.SELECT));
 					if (ConstantsCoreVO.IS_AIR)
 					{
-						// for some reason separatorBefore is not working through Constructor in desktop hence this separate null entry addition 
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_PROJECT, redispatch, Event.SELECT));
+						if (!fw.projectReference.isTemplate)
+						{
+							// for some reason separatorBefore is not working through Constructor in desktop hence this separate null entry addition 
+							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE, redispatch, Event.SELECT));
+						}
 					}
 					else
 					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_PROJECT, redispatch, Event.SELECT, true));
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE_PROJECT, redispatch, Event.SELECT, true));
 					}
 					
 					label2.setStyle("color", 0xffffcc);

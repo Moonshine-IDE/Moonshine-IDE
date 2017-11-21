@@ -428,7 +428,7 @@ package actionScripts.plugins.as3project
 				);
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0])
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
 				);
 			}
 		}

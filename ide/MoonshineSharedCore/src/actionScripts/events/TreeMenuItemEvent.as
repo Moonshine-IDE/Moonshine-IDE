@@ -36,11 +36,13 @@ package actionScripts.events
 		public var data:FileWrapper;
 		public var renderer:FTETreeItemRenderer;
 		public var extra:*;
+		public var showAlert:Boolean;
 		
-		public function TreeMenuItemEvent(type:String, menuLabel:String, data:FileWrapper)
+		public function TreeMenuItemEvent(type:String, menuLabel:String, data:FileWrapper, showAlert:Boolean=true)
 		{
 			this.menuLabel = menuLabel;
 			this.data = data;
+			this.showAlert = showAlert;
 			
 			super(type, true, false);
 		}

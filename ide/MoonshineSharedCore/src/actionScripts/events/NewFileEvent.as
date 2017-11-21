@@ -23,7 +23,7 @@ package actionScripts.events
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectVO;
-
+	
 	public class NewFileEvent extends Event
 	{
 		public static const EVENT_NEW_FILE:String = "newFileEvent";
@@ -32,6 +32,7 @@ package actionScripts.events
 		public static const EVENT_FILE_RENAMED:String = "EVENT_FILE_RENAMED";
 		public static const EVENT_PROJECT_SELECTED:String = "EVENT_PROJECT_SELECTED";
 		public static const EVENT_FILE_SELECTED:String = "EVENT_FILE_SELECTED";
+		public static const EVENT_PROJECT_RENAME:String = "EVENT_PROJECT_RENAME";
 		
 		public var filePath:String;
 		public var fileName:String;
