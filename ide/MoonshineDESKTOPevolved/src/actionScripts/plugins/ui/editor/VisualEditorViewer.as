@@ -76,21 +76,7 @@ package actionScripts.plugins.ui.editor
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
         {
-            var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
-            var mxmlCodeList:XMLList = mxmlCode.children();
-
-            var mxmlEditor:XML = new XML(editor.dataProvider);
-            mxmlEditor.setChildren("");
-
-            for each (var child:XML in mxmlCodeList)
-            {
-                mxmlEditor.appendChild(child);
-            }
-
-            var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-            var xmlString:String = markAsXml + mxmlEditor.toXMLString();
-
-            editor.dataProvider = xmlString;
+            editor.dataProvider = getMxmlCode();
 
             refreshIsChanged();
         }
@@ -105,6 +91,8 @@ package actionScripts.plugins.ui.editor
         override public function save():void
         {
             visualEditorView.visualEditor.saveEditedFile();
+            editor.dataProvider = getMxmlCode();
+            
             super.save();
         }
 
@@ -153,7 +141,25 @@ package actionScripts.plugins.ui.editor
                 visualEditorView.visualEditor.editingSurface.selectedItem = null;
             }
         }
-        
+
+        private function getMxmlCode():String
+        {
+            var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
+            var mxmlCodeList:XMLList = mxmlCode.children();
+
+            var mxmlEditor:XML = new XML(editor.dataProvider);
+            mxmlEditor.setChildren("");
+
+            for each (var child:XML in mxmlCodeList)
+            {
+                mxmlEditor.appendChild(child);
+            }
+
+            var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+            
+            return markAsXml + mxmlEditor.toXMLString();
+        }
+
         private function createVisualEditorFile():void
         {
             var veFilePath:String = getVisualEditorFilePath();
