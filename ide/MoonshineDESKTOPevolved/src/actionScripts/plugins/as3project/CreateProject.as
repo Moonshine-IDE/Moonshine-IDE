@@ -18,9 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import actionScripts.events.RefreshTreeEvent;
-    import actionScripts.utils.UtilsCore;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
@@ -33,10 +30,13 @@ package actionScripts.plugins.as3project
     import actionScripts.events.NewProjectEvent;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RefreshTreeEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -48,12 +48,12 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.project.ProjectType;
     import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.TemplateVO;
 	
@@ -77,6 +77,7 @@ package actionScripts.plugins.as3project
 		private var isFeathersProject:Boolean;
 		private var isVisualEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
+		private var isCustomTemplateProject:Boolean;
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
@@ -86,18 +87,20 @@ package actionScripts.plugins.as3project
 		{
 			if (!allProjectTemplates)
 			{
-				allProjectTemplates = new ArrayCollection();
-				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
-				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
+				allProjectTemplates = new ArrayCollection(TemplatingPlugin.projectTemplates);
 			}
 			
-			if (isAllowedTemplateFile(event.projectFileEnding))
+			// determine if a given project is custom or Moonshine default
+			var customTemplateDirectory:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("templates/projects");
+			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1) isCustomTemplateProject = true;
+			
+			if (isCustomTemplateProject || event.projectFileEnding == "awd")
+			{
+				createCustomOrAway3DProject(event);
+			}
+			else if (isAllowedTemplateFile(event.projectFileEnding))
 			{
 				createAS3Project(event);
-            }
-			else if (event.projectFileEnding == "awd")
-			{
-				createAway3DProject(event);
             }
 		}
 		
@@ -244,7 +247,7 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
+				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "name"));
 			}
 			
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
@@ -261,7 +264,7 @@ package actionScripts.plugins.as3project
 			templateLookup[project] = event.templateDir;
 		}
 		
-		private function createAway3DProject(event:NewProjectEvent):void
+		private function createCustomOrAway3DProject(event:NewProjectEvent):void
 		{
 			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), null, false);
 			cookie = SharedObject.getLocal("moonshine-ide-local");
@@ -302,7 +305,7 @@ package actionScripts.plugins.as3project
 
         private function isAllowedTemplateFile(projectFileExtension:String):Boolean
         {
-            return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj";
+            return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj" || !projectFileExtension;
         }
 
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
@@ -320,10 +323,10 @@ package actionScripts.plugins.as3project
                 ]));
 			}
 
-			if (eventObject.projectFileEnding == "awd")
+			if (eventObject.projectFileEnding == "awd" || isCustomTemplateProject)
             {
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
-                    new StaticLabelSetting('New Away3D Project'),
+                    new StaticLabelSetting(isCustomTemplateProject ? 'New ' + eventObject.templateDir.fileBridge.name : 'New Away3D Project'),
                     new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._'),
                     new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true)
                 ]));
@@ -433,9 +436,12 @@ package actionScripts.plugins.as3project
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 				);
 				
-				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
-				);
+				if (!isCustomTemplateProject)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent( 
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
+					);
+				}
 			}
 
 			if (view.exportProject)
@@ -553,6 +559,13 @@ package actionScripts.plugins.as3project
 				isAway3DProject = true;
 				return pvo;
             }
+			
+			// we copy everything from template to target folder 
+			// in case of custom project template and terminate
+			if (isCustomTemplateProject)
+			{
+				return pvo;
+			}
 
 			// If this an ActionScript Project then we need to copy selective file/folders for web or desktop
 			var descriptorFileLocation:FileLocation;

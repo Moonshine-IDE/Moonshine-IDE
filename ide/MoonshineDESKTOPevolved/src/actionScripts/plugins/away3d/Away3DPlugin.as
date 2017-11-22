@@ -141,7 +141,7 @@ package actionScripts.plugins.away3d
 				if (!executablePath) openAway3DBuilder(null);
 				else runAwdFile(awdFileObject);
 			}
-			else error("Now Away3D file found.");
+			else error("No Away3D file found.");
 		}
 		
 		private function runAwdFile(withFile:File=null):void

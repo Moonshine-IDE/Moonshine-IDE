@@ -52,6 +52,11 @@ package actionScripts.factory
 			return fileBridge.resolvePath(path);
 		}
 		
+		public function get name():String
+		{
+			return fileBridge.name;
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  WEB METHODS
