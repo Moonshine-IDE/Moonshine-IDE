@@ -79,6 +79,7 @@
 			public var plugin: SplashScreenPlugin;
 			
 			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+			[Bindable] private var projectTemplates:ArrayCollection = new ArrayCollection();
 			
 			protected var loader: DataAgent;
 			protected var recentOpenedProjectObject:Object;
@@ -314,7 +315,7 @@
 
 			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):AS3ProjectVO
 			{
-				var projectFile:File = recentOpenedProjectObject.fileBridge.getFile;
+				var projectFile:Object = recentOpenedProjectObject.fileBridge.getFile;
 				var projectFileLocation:FileLocation;
 
 				if (!lastOpenedOption ||
@@ -386,6 +387,9 @@
 				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
+				
+				projectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
+				projectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 				
 				grpNoSDKMess.y = this.height;
 				
@@ -500,32 +504,10 @@
 			fontSize="18"
 			/>
 		<s:DataGroup id="projectTemplateList"
-					 dataProvider="{ConstantsCoreVO.TEMPLATES_PROJECTS}"
+					 dataProvider="{projectTemplates}"
 					 itemRenderer="components.renderers.TemplateItemRenderer"
 					 color="0xFFFFFF" width="100%"
 					 creationComplete="projectTemplateList.addEventListener('itemClick', handleTemplateClick)">
-			<s:layout>
-				<s:VerticalLayout
-					gap="10" 
-					clipAndEnableScrolling="false" />
-			</s:layout>
-		</s:DataGroup>
-		<s:Label 
-			text="MORE"
-			color="0xD6D6D6"
-			paddingTop="3"
-			paddingLeft="3"
-			paddingRight="3"
-			paddingBottom="0"
-			fontFamily="DejaVuSerif"
-			fontStyle="italic"
-			fontSize="18"
-			/>
-		<s:DataGroup id="projectTemplateListMore"
-					 dataProvider="{ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS}"
-					 itemRenderer="components.renderers.TemplateItemRenderer"
-					 color="0xFFFFFF" width="100%"
-					 creationComplete="projectTemplateListMore.addEventListener('itemClick', handleTemplateClick)">
 			<s:layout>
 				<s:VerticalLayout
 					gap="10" 
