@@ -18,10 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-	import flash.display.DisplayObject;
+    import actionScripts.valueObjects.TemplateVO;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
-	
-	import mx.controls.Alert;
+
+    import mx.collections.ArrayCollection;
+
+    import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -46,7 +50,6 @@ package actionScripts.plugin.templating
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
-	import actionScripts.plugin.templating.event.RequestTemplatesEvent;
 	import actionScripts.plugin.templating.event.TemplateEvent;
 	import actionScripts.plugin.templating.settings.NewTemplateSetting;
 	import actionScripts.plugin.templating.settings.TemplateSetting;
@@ -112,8 +115,7 @@ package actionScripts.plugin.templating
 		override public function activate():void
 		{
 			super.activate();
-			
-			dispatcher.addEventListener(RequestTemplatesEvent.EVENT_REQUEST_TEMPLATES, handleTemplateRequest);
+
 			dispatcher.addEventListener(TemplateEvent.CREATE_NEW_FILE, handleCreateFileTemplate);
             dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, handleExportNewProjectFromTemplate);
 			
@@ -241,7 +243,44 @@ package actionScripts.plugin.templating
 					projectTemplates.push(new FileLocation(file.nativePath));
 				}
 			}
+
+			generateTemplateProjects();
 		}
+
+        private function generateTemplateProjects():void
+        {
+            var projectTemplateCollection:ArrayCollection = new ArrayCollection();
+            var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
+            for each (var file:FileLocation in projectTemplates)
+            {
+                var tmpDescripFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".txt");
+                if (tmpDescripFile.exists)
+                {
+                    var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
+                    var template:TemplateVO = new TemplateVO();
+                    template.title = file.fileBridge.name ;
+                    template.file = file;
+                    var tmpImageFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".png");
+                    template.description = String(tmpDescripFileLocation.fileBridge.read());
+                    if (tmpImageFile.exists)
+					{
+						template.logoImagePath = tmpImageFile.url;
+                    }
+
+                    if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1)
+					{
+						feathersProjectTemplates.addItem(template);
+                    }
+                    else
+					{
+						projectTemplateCollection.addItem(template);
+                    }
+                }
+            }
+
+            ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
+            ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
+        }
 		
 		public function getSettingsList():Vector.<ISetting>	
 		{	
@@ -1073,13 +1112,7 @@ package actionScripts.plugin.templating
 
             return null;
         }
-		
-		protected function handleTemplateRequest(event:RequestTemplatesEvent):void
-		{
-			event.fileTemplates = fileTemplates;
-			event.projectTemplates = projectTemplates;	
-		}
-		
+
 		/*
 		Silly little helper methods
 		*/

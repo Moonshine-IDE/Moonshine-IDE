@@ -19,25 +19,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.splashscreen
 {
-	import flash.events.Event;
-	import flash.utils.setTimeout;
+    import actionScripts.valueObjects.TemplateVO;
+
+    import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
-	import mx.core.IFlexDisplayObject;
-	
-	import actionScripts.events.GlobalEventDispatcher;
+
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.templating.event.RequestTemplatesEvent;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.SDKUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.views.splashscreen.SplashScreen;
@@ -51,11 +46,15 @@ package actionScripts.plugin.splashscreen
 		public static const EVENT_SHOW_SPLASH:String = "showSplashEvent";
 		
 		private var splashScreen:SplashScreen;
-		private var defineDefaultSDK:IFlexDisplayObject;
 		
 		[Bindable]
 		public var showSplash:Boolean = true;
-		
+
+		[Bindable]
+		public var projectsTemplates:ArrayCollection = new ArrayCollection();
+
+		private var _excludedTemplatesOnSplashScreen:Array = ["Royale Browser Project"];
+
 		override public function activate():void
 		{
 			super.activate();
@@ -85,8 +84,7 @@ package actionScripts.plugin.splashscreen
 			var viewMenu:MenuItem = new MenuItem('View');
 			viewMenu.parents = ["View"];
 			viewMenu.items = new Vector.<MenuItem>();
-			//viewMenu.items.push(new MenuItem('Splashscreen', null, EVENT_SHOW_SPLASH));
-			
+
 			return viewMenu;
 		}
 		
@@ -96,42 +94,46 @@ package actionScripts.plugin.splashscreen
 				new BooleanSetting(this, 'showSplash', 'Show splashscreen at startup')
 			])
 		}
-		
-		public function showSplashScreen():void
-		{
-			// Don't add another splash if one is up already
-			for each (var tab:IContentWindow in model.editors)
-			{
-				if (tab == splashScreen) return;
-			}
-			
-			if (!splashScreen)
-			{ 
-				splashScreen = new SplashScreen();
-				splashScreen.plugin = this;
-			}
-			
-			model.editors.addItem(splashScreen);
-			
-			// following will load template data from local for desktop
-			if (ConstantsCoreVO.IS_AIR)
-			{
-				var event:RequestTemplatesEvent = new RequestTemplatesEvent();
-				dispatcher.dispatchEvent(event);
-				//splashScreen.fileTemplateCollection = new ArrayCollection(event.fileTemplates);
-				splashScreen.setProjectTemplates(new ArrayCollection(event.projectTemplates));	
-			}
-		}
-		
+
 		protected function handleShowSplash(event:Event):void
 		{
 			showSplashScreen();
 		}
-		
-		private function onDefineSDKClosed(event:CloseTabEvent):void
+
+        private function showSplashScreen():void
+        {
+            // Don't add another splash if one is up already
+            for each (var tab:IContentWindow in model.editors)
+            {
+                if (tab == splashScreen) return;
+            }
+
+            if (!splashScreen)
+            {
+                splashScreen = new SplashScreen();
+                splashScreen.plugin = this;
+            }
+
+            model.editors.addItem(splashScreen);
+
+            // following will load template data from local for desktop
+            if (ConstantsCoreVO.IS_AIR)
+            {
+                projectsTemplates = getProjectsTemplatesForSpashScreen();
+            }
+        }
+
+		private function getProjectsTemplatesForSpashScreen():ArrayCollection
 		{
-			defineDefaultSDK.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
-			defineDefaultSDK = null;
+			var templates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source.filter(filterProjectsTemplates);
+			var specialTemplates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source.filter(filterProjectsTemplates);
+
+			return new ArrayCollection(templates.concat(specialTemplates));
 		}
-	}
+
+		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
+		{
+			return _excludedTemplatesOnSplashScreen.indexOf(item.title) == -1;
+        }
+    }
 }

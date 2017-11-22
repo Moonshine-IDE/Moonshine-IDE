@@ -42,14 +42,12 @@ package actionScripts.ui.renderers
 	
 	import spark.components.Label;
 	import spark.components.TextInput;
-	
-	import actionScripts.events.GlobalEventDispatcher;
+
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugin.templating.TemplatingPlugin;
-	import actionScripts.plugin.templating.event.RequestTemplatesEvent;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.notifier.ErrorTipManager;
 	import actionScripts.utils.UtilsCore;
@@ -332,11 +330,8 @@ package actionScripts.ui.renderers
 		private function populateTemplatingMenu(e:Event):void
 		{
 			model.contextMenuCore.subMenu(e.target);
-			
-			var event:RequestTemplatesEvent = new RequestTemplatesEvent();
-			GlobalEventDispatcher.getInstance().dispatchEvent(event);
-			
-			for each (var file:FileLocation in event.fileTemplates)
+
+			for each (var file:FileLocation in TemplatingPlugin.fileTemplates)
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);

@@ -87,7 +87,9 @@ package actionScripts.plugins.as3project
 		{
 			if (!allProjectTemplates)
 			{
-				allProjectTemplates = new ArrayCollection(TemplatingPlugin.projectTemplates);
+				allProjectTemplates = new ArrayCollection();
+				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
+				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 			}
 			
 			// determine if a given project is custom or Moonshine default
@@ -247,7 +249,7 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "name"));
+				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
 			}
 			
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);

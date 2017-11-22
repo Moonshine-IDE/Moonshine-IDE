@@ -29,8 +29,6 @@
 	
 	<fx:Script>
 		<![CDATA[
-			
-			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.effects.Fade;
@@ -75,12 +73,12 @@
 			private const ICON_THUMB_UP:Class;
 			[Embed("/elements/images/icoThumbDown.png")]
 			private const ICON_THUMB_DOWN:Class;
-			
+
+			[Bindable]
 			public var plugin: SplashScreenPlugin;
 			
 			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			[Bindable] private var projectTemplates:ArrayCollection = new ArrayCollection();
-			
+
 			protected var loader: DataAgent;
 			protected var recentOpenedProjectObject:Object;
 			protected var authPopup:AuthenticationPopUp;
@@ -109,32 +107,6 @@
 
 			public function save():void
 			{
-			}
-
-			public function setProjectTemplates(value:ArrayCollection):void
-			{
-				var projectTemplateCollection:ArrayCollection = new ArrayCollection();
-				var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
-				for each (var i:FileLocation in value)
-				{
-					var tmpDescripFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".txt");
-					if (tmpDescripFile.exists)
-					{
-						var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
-						var template:TemplateVO = new TemplateVO();
-						template.title = i.fileBridge.name ;
-						template.file = i;
-						var tmpImageFile: Object = i.fileBridge.getFile.parent.resolvePath(i.fileBridge.name+".png");
-						template.description = String(tmpDescripFileLocation.fileBridge.read());
-						if (tmpImageFile.exists) template.logoImagePath = tmpImageFile.url;
-
-						if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1) feathersProjectTemplates.addItem(template);
-						else projectTemplateCollection.addItem(template);
-					}
-				}
-
-				ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
-				ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
 			}
 
 			private function updateRecetProjectList(event:Event):void
@@ -387,10 +359,7 @@
 				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
-				
-				projectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
-				projectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
-				
+
 				grpNoSDKMess.y = this.height;
 				
 				// manual run for the first time
@@ -504,7 +473,7 @@
 			fontSize="18"
 			/>
 		<s:DataGroup id="projectTemplateList"
-					 dataProvider="{projectTemplates}"
+					 dataProvider="{plugin.projectsTemplates}"
 					 itemRenderer="components.renderers.TemplateItemRenderer"
 					 color="0xFFFFFF" width="100%"
 					 creationComplete="projectTemplateList.addEventListener('itemClick', handleTemplateClick)">
@@ -516,7 +485,7 @@
 		</s:DataGroup>
 		<s:Label 
 			text="FEEDBACK"
-			color="0XD6D6D6"
+			color="0xD6D6D6"
 			paddingTop="3"
 			paddingLeft="3"
 			paddingRight="3"

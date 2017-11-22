@@ -78,7 +78,7 @@ package actionScripts.valueObjects
 		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
 		public static var HAXESWF_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
-		public static var FLEXJSBL_PROJECT:FileLocation;
+        public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
@@ -289,7 +289,12 @@ package actionScripts.valueObjects
 			FLEXJS_PROJECT.fileBridge.name = "Flex Browser Project (FlexJS)";
 			FLEXJS_PROJECT.fileBridge.isDirectory = true;
 			FLEXJS_PROJECT.fileBridge.data = "Create a FlexJS project that will generate an SWF and HTML files, to run on browser.";
-			
+
+            ROYALE_PROJECT = new FileLocation("Royale Browser Project");
+            ROYALE_PROJECT.fileBridge.name = "Royale Browser Project";
+            ROYALE_PROJECT.fileBridge.isDirectory = true;
+            ROYALE_PROJECT.fileBridge.data = "Create a Apache Royale project that will generate an SWF and HTML files, to run on browser.";
+
 			FLEXMOBILE_PROJECT = new FileLocation("Flex Mobile Project (iOS, Android)");
 			FLEXMOBILE_PROJECT.fileBridge.name = "Flex Mobile Project (iOS, Android)";
 			FLEXMOBILE_PROJECT.fileBridge.isDirectory = true;
@@ -314,7 +319,7 @@ package actionScripts.valueObjects
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,VISUALEDITOR_FLEX_PROJECT,FLEXJSBL_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
