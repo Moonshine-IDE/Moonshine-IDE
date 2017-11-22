@@ -251,6 +251,8 @@ package actionScripts.plugin.templating
         {
             var projectTemplateCollection:ArrayCollection = new ArrayCollection();
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
+			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
+
             for each (var file:FileLocation in projectTemplates)
             {
                 var tmpDescripFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".txt");
@@ -275,11 +277,17 @@ package actionScripts.plugin.templating
 					{
 						projectTemplateCollection.addItem(template);
                     }
+
+					if (template.title.indexOf("Royale") != -1 || template.title.indexOf("FlexJS") != -1)
+					{
+                        royaleProjectTemplates.addItem(template);
+					}
                 }
             }
 
             ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
             ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

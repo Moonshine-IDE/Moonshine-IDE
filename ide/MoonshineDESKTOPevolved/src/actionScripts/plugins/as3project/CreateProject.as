@@ -48,7 +48,6 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.plugin.templating.TemplatingHelper;
-    import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
@@ -57,7 +56,7 @@ package actionScripts.plugins.as3project
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.TemplateVO;
 	
-	public class CreateProject
+    public class CreateProject
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
@@ -89,7 +88,7 @@ package actionScripts.plugins.as3project
 			{
 				allProjectTemplates = new ArrayCollection();
 				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
-				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
+				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS); 
 			}
 			
 			// determine if a given project is custom or Moonshine default
@@ -185,12 +184,13 @@ package actionScripts.plugins.as3project
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
-			
+
+			var isFlexJSTemplate:Boolean = event.templateDir.fileBridge.name.indexOf("FlexJS") != -1;
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
 				var tempName: String = event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("("));
-				if (event.templateDir.fileBridge.name.indexOf("FlexJS") != -1)
+				if (isFlexJSTemplate)
 				{
 					project.projectName = "NewFlexJSBrowserProject";
                 }
@@ -251,7 +251,13 @@ package actionScripts.plugins.as3project
 			{
 				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
 			}
-			
+			else if (isFlexJSTemplate)
+			{
+                settings.getSettingsList().splice(3, 0,
+						new ListSetting(this, "projectTemplateType", "Select Template Type",
+								ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
+			}
+
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
 			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
 			settingsView.addSetting(settings, "");
@@ -479,32 +485,7 @@ package actionScripts.plugins.as3project
 		{
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
-			if (isOpenProjectCall && projectTemplateType)
-			{
-				for each (var i:TemplateVO in allProjectTemplates)
-				{
-					if (i.title == projectTemplateType)
-					{
-						setProjectType(i.title);
-
-						var templateSettingsName:String = isVisualEditorProject && !exportProject ?
-								"$Settings.veditorproj.template" :
-								"$Settings.as3proj.template";
-
-						var tmpLocation:FileLocation = pvo.folderLocation;
-						var tmpName:String = pvo.projectName;
-						var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
-						var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
-						templateLookup[pvo] = i.file;
-						pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
-						pvo.folderLocation = tmpLocation;
-						pvo.projectName = tmpName;
-						pvo.projectWithExistingSourcePaths = tmpExistingSource;
-						pvo.isProjectFromExistingSource = tmpIsExistingProjectSource;
-						break;
-					}
-				}
-			}
+			pvo = getProjectWithTemplate(pvo, exportProject);
 			
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
@@ -664,6 +645,47 @@ package actionScripts.plugins.as3project
 			FlashDevelopExporter.export(pvo, settingsFile);
 
             return pvo;
+		}
+
+		private function getProjectWithTemplate(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
+		{
+			if (!projectTemplateType) return pvo;
+
+			var isRoyaleTemplates:Boolean = projectTemplateType.indexOf("Royale") != -1 ||
+					projectTemplateType.indexOf("FlexJS") != -1;
+
+            if (isOpenProjectCall || isRoyaleTemplates)
+            {
+                var projectsTemplates:ArrayCollection = isRoyaleTemplates ?
+                        ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
+                        allProjectTemplates;
+
+                for each (var i:TemplateVO in projectsTemplates)
+                {
+                    if (i.title == projectTemplateType)
+                    {
+                        setProjectType(i.title);
+
+                        var templateSettingsName:String = isVisualEditorProject && !exportProject ?
+                                "$Settings.veditorproj.template" :
+                                "$Settings.as3proj.template";
+
+                        var tmpLocation:FileLocation = pvo.folderLocation;
+                        var tmpName:String = pvo.projectName;
+                        var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
+                        var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
+                        templateLookup[pvo] = i.file;
+                        pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
+                        pvo.folderLocation = tmpLocation;
+                        pvo.projectName = tmpName;
+                        pvo.projectWithExistingSourcePaths = tmpExistingSource;
+                        pvo.isProjectFromExistingSource = tmpIsExistingProjectSource;
+						break;
+                    }
+                }
+            }
+
+			return pvo;
 		}
 
         private function setProjectType(templateName:String):void
