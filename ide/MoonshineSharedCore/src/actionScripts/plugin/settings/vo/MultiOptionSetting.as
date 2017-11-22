@@ -20,25 +20,21 @@ package actionScripts.plugin.settings.vo
 {
 	import mx.core.IVisualElement;
 	
-	import spark.filters.BlurFilter;
-	
 	import actionScripts.plugin.settings.renderers.MultiOptionRenderer;
 
 	public class MultiOptionSetting extends StringSetting
 	{
 		private var _options:Vector.<NameValuePair>;
-		private var _value:Object;
+
 		private var _isEditable:Boolean;
 		
 		private var rdr:MultiOptionRenderer;
-		private var myBlurFilter:BlurFilter = new BlurFilter();
 		
 		public function MultiOptionSetting(provider:Object, name:String, label:String,options:Vector.<NameValuePair>)
 		{
 			super(provider,name,label);
 			_options = options;
 			value = defaultValue = stringValue;
-			
 		}
 		
 		public function get value():Object{

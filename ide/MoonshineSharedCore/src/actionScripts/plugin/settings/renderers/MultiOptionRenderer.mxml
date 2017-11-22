@@ -48,13 +48,12 @@
 			public var setting:MultiOptionSetting;
 			
 			[Bindable]
-			private var _options:ArrayCollection
+			private var _options:ArrayCollection;
 			
 			public function set options(v:Vector.<NameValuePair>):void
 			{
 				var opts:ArrayCollection = new ArrayCollection();
-				
-				var nvp:NameValuePair
+				var nvp:NameValuePair;
 				
 				for each(nvp in v){
 					opts.addItem(nvp);

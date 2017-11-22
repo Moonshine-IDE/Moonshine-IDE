@@ -30,9 +30,9 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.utils.StringUtil;
-			
 			import actionScripts.plugin.settings.vo.StringSetting;
-			
+			import spark.components.TextSelectionHighlighting;
+
 			[Bindable]
 			public var setting:StringSetting;
 			
@@ -42,6 +42,8 @@
 				text.selectRange(0,text.text.length);
 				
 				updatePrompt();
+
+				text.setFocus();
 			}
 			
 			private function focusIn():void
@@ -63,7 +65,10 @@
 				textPrompt.visible = textPrompt.includeInLayout = !hasText;
 				
 				//to show project Name highlighted while creating new Project
-				if(setting.name=="projectName") text.selectionHighlighting="always";
+				if(setting.name=="projectName")
+				{
+					text.selectionHighlighting = TextSelectionHighlighting.ALWAYS;
+				}
 			}
 			
 		]]>
