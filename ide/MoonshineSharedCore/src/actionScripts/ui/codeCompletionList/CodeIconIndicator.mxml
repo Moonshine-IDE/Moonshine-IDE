@@ -63,7 +63,7 @@
                 }
                 else
                 {
-                    currentState = value.isProperty() ? "Property" : value.kind;
+                    currentState = value.isProperty ? "Property" : value.kind;
                 }
 
                 dispatchEvent(new Event("dataChanged"));

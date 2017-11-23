@@ -22,7 +22,17 @@ package actionScripts.valueObjects
 		 */
 		public var data: *;
 
-		public function isProperty():Boolean
+		public function get isEvent():Boolean
+		{
+			if (detail)
+			{
+				return kind == "Field" && detail.indexOf("(event)") > -1;
+			}
+
+			return false;
+		}
+
+		public function get isProperty():Boolean
 		{
 			if (detail)
 			{

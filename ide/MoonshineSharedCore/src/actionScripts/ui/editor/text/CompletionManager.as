@@ -21,7 +21,7 @@ package actionScripts.ui.editor.text
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.ui.codeCompletionList.CodeCompletionList;
-	import actionScripts.valueObjects.Command;
+    import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
     import flash.events.Event;
 	import flash.events.FocusEvent;
@@ -33,8 +33,6 @@ package actionScripts.ui.editor.text
 
 	import mx.collections.ArrayList;
     import mx.managers.PopUpManager;
-
-	import spark.components.List;
 
 	public class CompletionManager
 	{
@@ -96,8 +94,10 @@ package actionScripts.ui.editor.text
 			pos -= menuStr.length + 1;
 
 			menuData.source = items;
+			
+            autoCloseXmlAttributes();
 
-			var position:Point = editor.getPointForIndex(pos+1);
+            var position:Point = editor.getPointForIndex(pos+1);
 			position.x -= editor.horizontalScrollBar.scrollPosition;
 
 			menuRefY = position.y;
@@ -135,12 +135,40 @@ package actionScripts.ui.editor.text
 			menuData.source = menuData.source.filter(filterCodeCompletionMenu);
 
             if (menuData.length == 0) return false;
-			
+
 			completionList.selectedIndex = 0;
 
 			rePositionMenu();
 			return true;
 		}
+
+        private function autoCloseXmlAttributes():void
+        {
+            var selectedLine:TextLineModel = editor.model.selectedLine;
+			if (selectedLine && selectedLine.text)
+            {
+                var selectedLineText:String = selectedLine.text;
+                var selectedLineIsXml:Boolean = selectedLineText.indexOf("<") != -1 &&
+                        selectedLineText.indexOf("</") == -1 &&
+                        selectedLineText.lastIndexOf(">") != -1;
+
+				if (selectedLineIsXml)
+                {
+                    var completionListCount:int = menuData.length;
+                    for (var i:int = 0; i < completionListCount; i++)
+                    {
+                        var completionItem:CompletionItem = menuData.getItemAt(i) as CompletionItem;
+                        if (selectedLineText)
+                        {
+                            if (completionItem.isProperty || completionItem.isEvent || completionItem.kind == "Variable")
+                            {
+                                completionItem.insertText = completionItem.label + "=\"\"";
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
 		private function completeItem(item:CompletionItem):void
 		{
@@ -149,14 +177,7 @@ package actionScripts.ui.editor.text
 			var text:String = item.insertText;
 			if(!text)
 			{
-				if(item.insertText)
-				{
-					text = item.insertText;
-				}
-				else
-				{
-					text = item.label;
-				}
+				text = item.label;
 			}
 			editor.setCompletionData(startIndex, endIndex, text);
 			var command:Command = item.command;
