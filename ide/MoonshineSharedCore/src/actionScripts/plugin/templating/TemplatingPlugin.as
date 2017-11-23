@@ -18,58 +18,56 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-    import actionScripts.valueObjects.TemplateVO;
-
     import flash.display.DisplayObject;
-	import flash.events.Event;
-
+    import flash.events.Event;
+    
     import mx.collections.ArrayCollection;
-
     import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-	import mx.resources.ResourceManager;
-	
-	import __AS3__.vec.Vector;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.GeneralEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.NewProjectEvent;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.RenameApplicationEvent;
-	import actionScripts.events.TreeMenuItemEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IMenuPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.StaticLabelSetting;
-	import actionScripts.plugin.templating.event.TemplateEvent;
-	import actionScripts.plugin.templating.settings.NewTemplateSetting;
-	import actionScripts.plugin.templating.settings.TemplateSetting;
-	import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
-	import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.menu.vo.MenuItem;
-	import actionScripts.ui.renderers.FTETreeItemRenderer;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.TextUtil;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.AS3ClassAttributes;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.FileWrapper;
-	
-	import components.popup.NewASFilePopup;
-	import components.popup.NewCSSFilePopup;
-	import components.popup.NewFilePopup;
-	import components.popup.NewMXMLFilePopup;
+    import mx.core.FlexGlobals;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    import mx.resources.ResourceManager;
+    
+    import __AS3__.vec.Vector;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.GeneralEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.NewFileEvent;
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RenameApplicationEvent;
+    import actionScripts.events.TreeMenuItemEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.IMenuPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.StaticLabelSetting;
+    import actionScripts.plugin.templating.event.TemplateEvent;
+    import actionScripts.plugin.templating.settings.NewTemplateSetting;
+    import actionScripts.plugin.templating.settings.TemplateSetting;
+    import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
+    import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.renderers.FTETreeItemRenderer;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.TextUtil;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.AS3ClassAttributes;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.TemplateVO;
+    
+    import components.popup.NewASFilePopup;
+    import components.popup.NewCSSFilePopup;
+    import components.popup.NewFilePopup;
+    import components.popup.NewMXMLFilePopup;
 	
 	/*
 	Templating plugin
@@ -606,7 +604,23 @@ package actionScripts.plugin.templating
 			{
 				var customNewLocation:FileLocation = custom.fileBridge.parent.resolvePath(newFileName +(!custom.fileBridge.isDirectory ? ".template" : ""));
 				
-				if (!custom.fileBridge.isDirectory)	custom.fileBridge.moveTo(customNewLocation, true);
+				if (!custom.fileBridge.isDirectory)	
+				{
+					// we need to update file location of the (if any) opened instance 
+					// of the file template
+					for each (var tab:IContentWindow in model.editors)
+					{
+						var ed:BasicTextEditor = tab as BasicTextEditor;
+						if (ed 
+							&& ed.currentFile
+							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
+						{
+							ed.currentFile = customNewLocation;
+							ed.label = newFileName;
+						}
+					}
+					custom.fileBridge.moveTo(customNewLocation, true);
+				}
 				else dispatcher.dispatchEvent(new RenameApplicationEvent(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, custom, customNewLocation));
 				
 				rdr.setting.customTemplate = customNewLocation;

@@ -19,34 +19,34 @@
 package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
-	import flash.events.Event;
-	
-	import mx.containers.Canvas;
-	import mx.core.FlexGlobals;
-	import mx.events.FlexEvent;
-	import mx.managers.IFocusManagerComponent;
-	import mx.managers.PopUpManager;
-	
-	import actionScripts.controllers.DataAgent;
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.SaveFileEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.vo.SearchResult;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.URLDescriptorVO;
-	
-	import components.popup.FileSavePopup;
-	import components.popup.SelectOpenedFlexProject;
-	import components.views.project.TreeView;
+    import flash.events.Event;
+    
+    import mx.containers.Canvas;
+    import mx.core.FlexGlobals;
+    import mx.events.FlexEvent;
+    import mx.managers.IFocusManagerComponent;
+    import mx.managers.PopUpManager;
+    
+    import actionScripts.controllers.DataAgent;
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.RefreshTreeEvent;
+    import actionScripts.events.SaveFileEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.editor.text.DebugHighlightManager;
+    import actionScripts.ui.editor.text.TextEditor;
+    import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.URLDescriptorVO;
+    
+    import components.popup.FileSavePopup;
+    import components.popup.SelectOpenedFlexProject;
+    import components.views.project.TreeView;
 	
 	public class BasicTextEditor extends Canvas implements IContentWindow, IFocusManagerComponent
 	{
@@ -93,6 +93,10 @@ package actionScripts.ui.editor
 		public function get currentFile():FileLocation
 		{
 			return file;
+		}
+		public function set currentFile(value:FileLocation):void
+		{
+			file = value;
 		}
 
 		public function get text():String
