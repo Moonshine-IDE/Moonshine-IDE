@@ -274,7 +274,10 @@ package actionScripts.plugins.as3project
 		
 		private function createCustomOrAway3DProject(event:NewProjectEvent):void
 		{
-			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), null, false);
+			var tempName: String = event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("("));
+			tempName = tempName.replace(/ /g, "");
+			
+			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), tempName, false);
 			cookie = SharedObject.getLocal("moonshine-ide-local");
 			
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
@@ -335,8 +338,8 @@ package actionScripts.plugins.as3project
             {
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting(isCustomTemplateProject ? 'New ' + eventObject.templateDir.fileBridge.name : 'New Away3D Project'),
-                    new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._'),
-                    new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true)
+                    newProjectNameSetting,
+                    newProjectPathSetting
                 ]));
             }
 
@@ -540,13 +543,16 @@ package actionScripts.plugins.as3project
 			if (templateDir.fileBridge.name.indexOf("Away3D") != -1)
 			{
 				isAway3DProject = true;
-				return pvo;
             }
 			
 			// we copy everything from template to target folder 
 			// in case of custom project template and terminate
-			if (isCustomTemplateProject)
+			if (isCustomTemplateProject || isAway3DProject)
 			{
+				// re-create the vo so all the requisite fields
+				// updated with final target folder path
+				pvo = new AS3ProjectVO(targetFolder, pvo.name);
+				pvo.classpaths[0] = targetFolder;
 				return pvo;
 			}
 
