@@ -48,6 +48,7 @@ package actionScripts.ui.editor.text
 		private var menuRefY:Number;
 		private var caret:int;
 		private var menuData:ArrayList;
+		private var hasSelectedLineAutoCloseAttr:Boolean;
 
 		public function CompletionManager(editor:TextEditor, model:TextEditorModel)
 		{
@@ -144,15 +145,16 @@ package actionScripts.ui.editor.text
 
         private function autoCloseXmlAttributes():void
         {
+			hasSelectedLineAutoCloseAttr = false;
             var selectedLine:TextLineModel = editor.model.selectedLine;
 			if (selectedLine && selectedLine.text)
             {
                 var selectedLineText:String = selectedLine.text;
-                var selectedLineIsXml:Boolean = selectedLineText.indexOf("<") != -1 &&
-                        selectedLineText.indexOf("</") == -1 &&
-                        selectedLineText.lastIndexOf(">") != -1;
+                hasSelectedLineAutoCloseAttr = (selectedLineText.indexOf("<") != -1 ||
+						selectedLineText.lastIndexOf(">") != -1) &&
+						selectedLineText.indexOf("</") == -1;
 
-				if (selectedLineIsXml)
+				if (hasSelectedLineAutoCloseAttr)
                 {
                     var completionListCount:int = menuData.length;
                     for (var i:int = 0; i < completionListCount; i++)
@@ -179,7 +181,16 @@ package actionScripts.ui.editor.text
 			{
 				text = item.label;
 			}
+
 			editor.setCompletionData(startIndex, endIndex, text);
+
+			if (hasSelectedLineAutoCloseAttr)
+			{
+				var lineIndexWithAutoCloseAttr:int = model.selectedLineIndex;
+				var cursorIndex:int = startIndex + text.length - 1;
+				model.setSelection(lineIndexWithAutoCloseAttr, cursorIndex, lineIndexWithAutoCloseAttr, cursorIndex);
+			}
+
 			var command:Command = item.command;
 			if(command)
 			{
