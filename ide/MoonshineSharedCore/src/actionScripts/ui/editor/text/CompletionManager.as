@@ -48,7 +48,6 @@ package actionScripts.ui.editor.text
 		private var menuRefY:Number;
 		private var caret:int;
 		private var menuData:ArrayList;
-		private var hasSelectedLineAutoCloseAttr:Boolean;
 
 		public function CompletionManager(editor:TextEditor, model:TextEditorModel)
 		{
@@ -95,8 +94,6 @@ package actionScripts.ui.editor.text
 			pos -= menuStr.length + 1;
 
 			menuData.source = items;
-			
-            autoCloseXmlAttributes();
 
             var position:Point = editor.getPointForIndex(pos+1);
 			position.x -= editor.horizontalScrollBar.scrollPosition;
@@ -143,38 +140,9 @@ package actionScripts.ui.editor.text
 			return true;
 		}
 
-        private function autoCloseXmlAttributes():void
-        {
-			hasSelectedLineAutoCloseAttr = false;
-            var selectedLine:TextLineModel = editor.model.selectedLine;
-			if (selectedLine && selectedLine.text)
-            {
-                var selectedLineText:String = selectedLine.text;
-                hasSelectedLineAutoCloseAttr = selectedLineText.indexOf("<") != -1 &&
-						selectedLineText.lastIndexOf(">") != -1 &&
-						selectedLineText.indexOf("</") == -1;
-
-				if (hasSelectedLineAutoCloseAttr)
-                {
-                    var completionListCount:int = menuData.length;
-                    for (var i:int = 0; i < completionListCount; i++)
-                    {
-                        var completionItem:CompletionItem = menuData.getItemAt(i) as CompletionItem;
-                        if (selectedLineText)
-                        {
-                            if (completionItem.isProperty || completionItem.isEvent || completionItem.kind == "Variable")
-                            {
-                                completionItem.insertText = completionItem.label + "=\"\"";
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
 		private function completeItem(item:CompletionItem):void
 		{
-			var startIndex:int = caret - menuStr.length;
+            var startIndex:int = caret - menuStr.length;
 			var endIndex:int = caret;
 			var text:String = item.insertText;
 			if(!text)
@@ -182,9 +150,19 @@ package actionScripts.ui.editor.text
 				text = item.label;
 			}
 
-			editor.setCompletionData(startIndex, endIndex, text);
+            var hasSelectedLineAutoCloseAttr:Boolean = false;
+			if (item.kind != "Class")
+            {
+                hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr();
+                if (hasSelectedLineAutoCloseAttr)
+                {
+                    text = item.label + "=\"\"";
+                }
+            }
 
-			if (hasSelectedLineAutoCloseAttr)
+            editor.setCompletionData(startIndex, endIndex, text);
+
+			if (hasSelectedLineAutoCloseAttr && item.kind != "Class")
 			{
 				var lineIndexWithAutoCloseAttr:int = model.selectedLineIndex;
 				var cursorIndex:int = startIndex + text.length - 1;
@@ -285,6 +263,71 @@ package actionScripts.ui.editor.text
 			else
 				completionList.y = (menuRefY + 15);
 		}
+
+        private function checkSelectedLineIfItIsForAutoCloseAttr():Boolean
+        {
+            var line:TextLineModel = editor.model.selectedLine;
+            var selectedLineText:String = line.text;
+            var isLineForAutoCloseAttr:Boolean = false;
+            if (line && selectedLineText)
+            {
+                isLineForAutoCloseAttr = selectedLineText.indexOf("<") != -1 &&
+                        selectedLineText.lastIndexOf(">") != -1 &&
+                        selectedLineText.indexOf("</") == -1;
+
+                if (!isLineForAutoCloseAttr)
+                {
+                    var linesCount:int = editor.model.lines.length;
+                    var searchedLinesCount:int = editor.model.selectedLineIndex - 50;
+                    if (searchedLinesCount < 0)
+                    {
+                        searchedLinesCount = 0;
+                    }
+
+                    for (var i:int = editor.model.selectedLineIndex - 1; i > searchedLinesCount; i--)
+                    {
+                        line = editor.model.lines[i];
+                        selectedLineText = line.text;
+                        if (selectedLineText)
+                        {
+                            if (selectedLineText.indexOf(">") != -1 || selectedLineText.indexOf("/>") != -1)
+                            {
+                                break;
+                            }
+
+                            if (selectedLineText.indexOf("<") != -1 && selectedLineText.indexOf("</") == -1)
+                            {
+                                isLineForAutoCloseAttr = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isLineForAutoCloseAttr)
+                    {
+                        searchedLinesCount = editor.model.selectedLineIndex + 50;
+                        if (searchedLinesCount > linesCount)
+                        {
+                            searchedLinesCount = linesCount;
+                        }
+
+                        isLineForAutoCloseAttr = false;
+                        for (var j:int = editor.model.selectedLineIndex; j < searchedLinesCount; j++)
+                        {
+                            line = editor.model.lines[j];
+                            selectedLineText = line.text;
+                            if (selectedLineText.indexOf(">") != -1 && selectedLineText.indexOf("</") == -1)
+                            {
+                                isLineForAutoCloseAttr = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return isLineForAutoCloseAttr;
+        }
 
         private function filterCodeCompletionMenu(item:CompletionItem, index:int, arr:Array):Boolean
         {
