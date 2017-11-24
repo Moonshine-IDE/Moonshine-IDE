@@ -5,7 +5,6 @@ package actionScripts.valueObjects
 		public var label:String;
 		[Bindable]
 		public var kind:String;
-		[Bindable]
 		public var detail:String;
 		[Bindable]
 		public var documentation:String;
