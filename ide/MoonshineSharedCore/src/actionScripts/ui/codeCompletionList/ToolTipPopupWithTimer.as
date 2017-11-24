@@ -36,24 +36,28 @@ package actionScripts.ui.codeCompletionList
         {
             super();
 
+            addEventListener(Event.ADDED_TO_STAGE, onToolTipPopupAddedToStage);
             addEventListener(Event.REMOVED_FROM_STAGE, onToolTipPopupRemovedFromStage);
-            timer = new Timer(HIDE_DELAY);
-            timer.addEventListener(TimerEvent.TIMER, onToolTipTimer);
-            timer.start();
         }
 
         private function onToolTipTimer(event:TimerEvent):void
         {
             PopUpManager.removePopUp(this);
 
-            cleanUpTimer();
             dispatchEvent(new Event(Event.CLOSE));
         }
 
+        private function onToolTipPopupAddedToStage(event:Event):void
+        {
+            cleanUpTimer();
+
+            timer = new Timer(HIDE_DELAY);
+            timer.addEventListener(TimerEvent.TIMER, onToolTipTimer);
+            timer.start();
+        }
 
         private function onToolTipPopupRemovedFromStage(event:Event):void
         {
-            removeEventListener(Event.REMOVED_FROM_STAGE, onToolTipPopupRemovedFromStage);
             cleanUpTimer();
         }
 
@@ -61,8 +65,8 @@ package actionScripts.ui.codeCompletionList
         {
             if (!timer) return;
 
-            timer.stop();
             timer.removeEventListener(TimerEvent.TIMER, onToolTipTimer);
+            timer.stop();
             timer = null;
         }
     }

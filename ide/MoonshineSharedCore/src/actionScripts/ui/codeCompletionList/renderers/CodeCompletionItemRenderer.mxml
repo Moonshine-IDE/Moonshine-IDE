@@ -2,7 +2,8 @@
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*"
-                removedFromStage="onItemRemovedFromStage(event)" creationComplete="onItemCreationComplete(event)">
+                addedToStage="onItemAddedToStage(event)" removedFromStage="onItemRemovedFromStage(event)"
+                creationComplete="onItemCreationComplete(event)">
 
     <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
     <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
@@ -16,10 +17,11 @@
     </s:HGroup>
     <fx:Script><![CDATA[
         import actionScripts.ui.codeCompletionList.ToolTipPopupWithTimer;
+
         import mx.events.FlexEvent;
         import mx.managers.PopUpManager;
 
-        private var _signatureToolTip:ToolTipPopupWithTimer;
+        private var signatureToolTip:ToolTipPopupWithTimer;
 
         override protected function set hovered(value:Boolean):void
         {
@@ -44,7 +46,7 @@
         {
             super.selected = value;
             refreshVisibilityOfDetails(value);
-            createSignatureTooltip();
+            showSignatureToolTip();
         }
 
         private function onCodeIconIndicatorClick(event:MouseEvent):void
@@ -60,51 +62,65 @@
             }
         }
 
-        private function createSignatureTooltip():void
+        private function showSignatureToolTip():void
         {
-            destroySignatureTooltip();
-            if (selected && data)
+            if (!selected)
             {
-                var toolTipPosition:Point = localToGlobal(new Point(labelDisplay.x, labelDisplay.y + labelDisplay.height));
-                _signatureToolTip = new ToolTipPopupWithTimer();
-                _signatureToolTip.addEventListener(Event.CLOSE, onSignatureToolTipClose);
-                _signatureToolTip.text = data.detail;
-                _signatureToolTip.x = toolTipPosition.x + labelDisplay.width;
-                _signatureToolTip.y = toolTipPosition.y;
+                hideSignatureToolTip();
+            }
 
-                PopUpManager.addPopUp(_signatureToolTip, this);
+            if (selected && data && signatureToolTip)
+            {
+                callLater(refreshSignatureToolTip);
+                PopUpManager.addPopUp(signatureToolTip, this);
             }
         }
 
-        private function destroySignatureTooltip():void
+        private function refreshSignatureToolTip():void
         {
-            if (_signatureToolTip)
+            if (!signatureToolTip) return;
+
+            var toolTipPosition:Point = localToGlobal(new Point(labelDisplay.x, labelDisplay.y + labelDisplay.height));
+            signatureToolTip.text = data.detail;
+            signatureToolTip.x = toolTipPosition.x + labelDisplay.width;
+            signatureToolTip.y = toolTipPosition.y;
+        }
+
+        private function hideSignatureToolTip():void
+        {
+            if (signatureToolTip)
             {
-                PopUpManager.removePopUp(_signatureToolTip);
-                _signatureToolTip.removeEventListener(Event.CLOSE, onSignatureToolTipClose);
-                _signatureToolTip = null;
+                PopUpManager.removePopUp(signatureToolTip);
             }
         }
 
         private function onSignatureToolTipClose(event:Event):void
         {
-            _signatureToolTip.removeEventListener(Event.CLOSE, onSignatureToolTipClose);
-            _signatureToolTip = null;
+            hideSignatureToolTip();
         }
 
-        private function onItemCreationComplete(event:FlexEvent):void
+        private function onItemAddedToStage(event:Event):void
         {
-            removeEventListener(FlexEvent.CREATION_COMPLETE, onItemCreationComplete);
-            if (selected)
-            {
-                createSignatureTooltip();
-            }
+            if (signatureToolTip) return;
+            
+            signatureToolTip = new ToolTipPopupWithTimer();
+            showSignatureToolTip();
         }
 
         private function onItemRemovedFromStage(event:Event):void
         {
-            destroySignatureTooltip();
+            hideSignatureToolTip();
+            if (signatureToolTip)
+            {
+                signatureToolTip.removeEventListener(Event.CLOSE, onSignatureToolTipClose);
+                signatureToolTip = null;
+            }
         }
 
+        private function onItemCreationComplete(event:FlexEvent):void
+        {
+            signatureToolTip = new ToolTipPopupWithTimer();
+            showSignatureToolTip();
+        }
         ]]></fx:Script>
 </s:ItemRenderer>
