@@ -150,8 +150,8 @@ package actionScripts.ui.editor.text
 			if (selectedLine && selectedLine.text)
             {
                 var selectedLineText:String = selectedLine.text;
-                hasSelectedLineAutoCloseAttr = (selectedLineText.indexOf("<") != -1 ||
-						selectedLineText.lastIndexOf(">") != -1) &&
+                hasSelectedLineAutoCloseAttr = selectedLineText.indexOf("<") != -1 &&
+						selectedLineText.lastIndexOf(">") != -1 &&
 						selectedLineText.indexOf("</") == -1;
 
 				if (hasSelectedLineAutoCloseAttr)

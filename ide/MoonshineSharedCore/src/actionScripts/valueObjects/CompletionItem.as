@@ -3,6 +3,7 @@ package actionScripts.valueObjects
 	public class CompletionItem
 	{
 		public var label:String;
+		[Bindable]
 		public var kind:String;
 		[Bindable]
 		public var detail:String;
