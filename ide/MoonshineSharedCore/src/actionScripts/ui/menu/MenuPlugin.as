@@ -18,33 +18,35 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.ui.menu.interfaces.ICustomMenuItem;
-
     import flash.display.NativeMenu;
-	import flash.events.Event;
-	import flash.utils.Dictionary;
-	
-	import mx.core.FlexGlobals;
-	import mx.events.MenuEvent;
-	
-	import actionScripts.events.ShortcutEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.factory.NativeMenuItemLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.MultiOptionSetting;
-	import actionScripts.plugin.settings.vo.NameValuePair;
-	import actionScripts.ui.menu.vo.CustomMenu;
-	import actionScripts.ui.menu.vo.CustomMenuItem;
-	import actionScripts.ui.menu.vo.MenuItem;
-	import actionScripts.utils.KeyboardShortcutManager;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.KeyboardShortcut;
-	import actionScripts.valueObjects.Settings;
+    import flash.events.Event;
+    import flash.utils.Dictionary;
+    
+    import mx.core.FlexGlobals;
+    import mx.events.MenuEvent;
+    
+    import actionScripts.events.GeneralEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.ShortcutEvent;
+    import actionScripts.events.TemplatingEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.factory.NativeMenuItemLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.MultiOptionSetting;
+    import actionScripts.plugin.settings.vo.NameValuePair;
+    import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugin.templating.TemplatingPlugin;
+    import actionScripts.ui.menu.vo.CustomMenu;
+    import actionScripts.ui.menu.vo.CustomMenuItem;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.utils.KeyboardShortcutManager;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.KeyboardShortcut;
+    import actionScripts.valueObjects.Settings;
 
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -58,6 +60,7 @@ package actionScripts.ui.menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
 		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
+		public static const UPDATE_NEW_MENU:String = "UPDATE_NEW_MENU:String";
 		
 		private const BUILD_NATIVE_MENU:uint = 1;
 		private const BUILD_CUSTOM_MENU:uint = 2;
@@ -68,6 +71,7 @@ package actionScripts.ui.menu
 		private var eventToMenuMapping:Dictionary = new Dictionary();
 		private var noSDKOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
+		private var isFileNewMenuIsEnabled:Boolean;
 
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
@@ -182,6 +186,8 @@ package actionScripts.ui.menu
 			
 			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
 			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
+			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -194,6 +200,7 @@ package actionScripts.ui.menu
 			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
 			
 			// disable File-New menu as default
+			isFileNewMenuIsEnabled = false;
             disableMenuOptionsForVEProject();
 			disableNewFileMenuOptions();
 		}
@@ -244,6 +251,7 @@ package actionScripts.ui.menu
             {
 				var menuItem:Object = menuItems[i];
 				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
+				isFileNewMenuIsEnabled = menuItem.enabled;
 				
 				if (menuItem.submenu)
                 {
@@ -268,7 +276,7 @@ package actionScripts.ui.menu
 						{
 							// add submenu
 							m.items = new Vector.<MenuItem>;
-							for each (file in ConstantsCoreVO.TEMPLATES_FILES)
+							for each (file in TemplatingPlugin.fileTemplates)
 							{
 								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."));
 								menuitem = new MenuItem(fileName,null,fileName);
@@ -276,7 +284,7 @@ package actionScripts.ui.menu
 							}
 							menuitem = new MenuItem(null);
 							m.items.push(menuitem);
-							for each (file in ConstantsCoreVO.TEMPLATES_PROJECTS)
+							for each (file in TemplatingPlugin.projectTemplates)
 							{
 								menuitem = new MenuItem(file.fileBridge.name,null,file.fileBridge.name);
 								m.items.push(menuitem);
@@ -369,17 +377,45 @@ package actionScripts.ui.menu
 					var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 					topNativeMenuItemsForFileNew = (menuBarMenu.items[0] as CustomMenuItem).data.items[0].data.items;
 				}
-				
-				for (var i:int=0; i < 7; i++)
-				{
-					topNativeMenuItemsForFileNew[i].enabled = false;
-				}
 			}
-			else
+			
+			isFileNewMenuIsEnabled = false;
+			for (var j:int=0; j < TemplatingPlugin.fileTemplates.length; j++)
 			{
-				for (var j:int=0; j < 7; j++)
+				topNativeMenuItemsForFileNew[j].enabled = false;
+			}
+		}
+		
+		private function onNewMenuAddRequest(event:TemplatingEvent):void
+		{
+			var tmpMI:MenuItem = new MenuItem(event.label, null, event.listener);
+			var menuItem:* = createNewMenuItem(tmpMI);
+			
+			var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+			var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
+			
+			if (menuItem)
+			{
+				var itemToAddAt:int = event.isProject ? TemplatingPlugin.projectTemplates.length + TemplatingPlugin.fileTemplates.length : TemplatingPlugin.fileTemplates.length - 1;
+				var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
+				if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
+				subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
+			}
+		}
+		
+		private function onNewMenuRemoveRequest(event:TemplatingEvent):void
+		{
+			var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+			var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items[0].submenu.items;
+			
+			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
+			{
+				if (subItemsInItemOfTopMenu[i].label == event.label)
 				{
-					topNativeMenuItemsForFileNew[j].enabled = false;
+					itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+					return;
 				}
 			}
 		}

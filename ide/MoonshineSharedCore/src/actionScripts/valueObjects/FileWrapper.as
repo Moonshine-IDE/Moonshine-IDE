@@ -21,8 +21,6 @@ package actionScripts.valueObjects
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 
-    import flash.filesystem.File;
-
     [Bindable] dynamic public class FileWrapper
 	{
 		public var projectReference: ProjectReferenceVO;
@@ -74,7 +72,7 @@ package actionScripts.valueObjects
 			
 			for (var i:int = 0; i < directoryListingCount; i++)
 			{
-				var currentDirectory:File = directoryListing[i];
+				var currentDirectory:Object = directoryListing[i];
 				var hasHiddenPath:Boolean = projectReference.hiddenPaths.some(function(item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
 				{
 					return currentDirectory.nativePath == item.fileBridge.nativePath;

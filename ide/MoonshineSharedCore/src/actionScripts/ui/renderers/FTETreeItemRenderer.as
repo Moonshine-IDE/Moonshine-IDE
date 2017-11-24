@@ -536,7 +536,7 @@ package actionScripts.ui.renderers
 
         private function contextMenuSelectHandler(event:ContextMenuEvent):void
         {
-            disableMenuItems(contextMenu.items);
+            disableMenuItems(contextMenu["items"]);
         }
 
         private function disableMenuItems(items:Array):void
@@ -544,10 +544,10 @@ package actionScripts.ui.renderers
 			var currentProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
             for each (var item:NativeMenuItem in items)
             {
-                item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(item.label, currentProject);
-				if (item.submenu)
+                item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(item["label"], currentProject);
+				if (item["submenu"])
 				{
-                    disableMenuItems(item.submenu.items);
+                    disableMenuItems(item["submenu"].items);
 				}
             }
 		}

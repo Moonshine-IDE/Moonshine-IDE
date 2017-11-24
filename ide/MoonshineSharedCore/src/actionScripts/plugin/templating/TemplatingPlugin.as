@@ -39,6 +39,7 @@ package actionScripts.plugin.templating
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameApplicationEvent;
+    import actionScripts.events.TemplatingEvent;
     import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.IMenuPlugin;
@@ -54,6 +55,7 @@ package actionScripts.plugin.templating
     import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
     import actionScripts.ui.tabview.CloseTabEvent;
@@ -432,6 +434,12 @@ package actionScripts.plugin.templating
 			
 			// Update internal template list
 			readTemplates();
+			
+			// send event to get the new item added immediately to File/New menu
+			var lbl:String = TemplatingHelper.getTemplateLabel(newTemplate);
+			var eventType:String = "eventNewFileFromTemplate"+lbl;
+			dispatcher.addEventListener(eventType, handleNewTemplateFile, false, 0, true);
+			dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.ADDED_NEW_TEMPLATE, false, lbl, eventType));
 		}
 		
 		protected function handleProjectTemplateCreate(event:Event):void
@@ -464,6 +472,13 @@ package actionScripts.plugin.templating
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
 			readTemplates();
+			
+			// send event to get the new item added immediately to File/New menu
+			// send event to get the new item added immediately to File/New menu
+			var lbl:String = TemplatingHelper.getTemplateLabel(newTemplate);
+			var eventType:String = "eventNewProjectFromTemplate"+lbl;
+			dispatcher.addEventListener(eventType, handleNewProjectFile, false, 0, true);
+			dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.ADDED_NEW_TEMPLATE, true, lbl, eventType));
 		}
 		
 		protected function handleTemplateModify(event:Event):void
@@ -540,6 +555,7 @@ package actionScripts.plugin.templating
 			var rdr:TemplateRenderer = TemplateRenderer(event.target);
 			var original:FileLocation = rdr.setting.originalTemplate;
 			var custom:FileLocation = rdr.setting.customTemplate;
+			var lbl:String = TemplatingHelper.getTemplateLabel(custom);
 			
 			if (custom.fileBridge.exists)
 			{
@@ -553,11 +569,18 @@ package actionScripts.plugin.templating
 							isProjectOpen = true;
 							i.projectFolder.isRoot = true;
 							model.mainView.getTreeViewPanel().tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, FTETreeItemRenderer.DELETE_PROJECT, i.projectFolder, false));
+							// remove the item from New/File menu
+							dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
 							break;
 						}
 					}
 					
-					if (!isProjectOpen) custom.fileBridge.deleteDirectory(true);
+					if (!isProjectOpen) 
+					{
+						// remove the item from New/File menu
+						dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
+						custom.fileBridge.deleteDirectory(true);
+					}
 				}
 				else 
 				{
@@ -578,6 +601,9 @@ package actionScripts.plugin.templating
 							);
 						}
 					}
+					
+					// remove the item from New/File menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, false, lbl));
 					// deletes the file
 					custom.fileBridge.deleteFile();
 				}
@@ -603,6 +629,12 @@ package actionScripts.plugin.templating
 			if (custom.fileBridge.exists)
 			{
 				var customNewLocation:FileLocation = custom.fileBridge.parent.resolvePath(newFileName +(!custom.fileBridge.isDirectory ? ".template" : ""));
+				// check if no duplicate naming happens
+				if (customNewLocation.fileBridge.exists)
+				{
+					Alert.show(newFileName +" is already available.", "!Error");
+					return;
+				}
 				
 				if (!custom.fileBridge.isDirectory)	
 				{
@@ -682,6 +714,7 @@ package actionScripts.plugin.templating
 						openNewComponentTypeChoose(event, NewFilePopup.AS_XML);
 						return;
 					case "File":
+					default:
 						openNewComponentTypeChoose(event, NewFilePopup.AS_PLAIN_TEXT);
 						return;
 				}

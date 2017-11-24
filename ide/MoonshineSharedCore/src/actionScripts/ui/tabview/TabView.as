@@ -315,7 +315,7 @@ package actionScripts.ui.tabview
 			}
 			else
 			{
-				othersButton.visible = false;	
+				othersButton.visible = false;
 			} 
 			
 			// Each item draws vertical separators on both sides, overlap by 1 px to not have duplicate lines.
