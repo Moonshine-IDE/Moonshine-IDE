@@ -40,6 +40,11 @@ package actionScripts.ui.codeCompletionList
             addEventListener(Event.REMOVED_FROM_STAGE, onToolTipPopupRemovedFromStage);
         }
 
+        public function close():void
+        {
+            PopUpManager.removePopUp(this);
+        }
+
         private function onToolTipTimer(event:TimerEvent):void
         {
             PopUpManager.removePopUp(this);

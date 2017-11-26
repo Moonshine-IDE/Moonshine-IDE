@@ -33,7 +33,6 @@ package actionScripts.utils
 		
 		private var stage:DisplayObject;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var currentlyWorking:Boolean = false;
 		private var pendingEvent:String;
 		private var lookup:Object = {};
 

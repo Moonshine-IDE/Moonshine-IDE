@@ -18,9 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.codeCompletionList
 {
+    import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.ui.codeCompletionList.renderers.CodeCompletionItemRenderer;
+    import actionScripts.utils.KeyboardShortcutManager;
+    import actionScripts.valueObjects.KeyboardShortcut;
+    import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
+    import flash.ui.Keyboard;
 
     import mx.core.ClassFactory;
     import mx.events.CloseEvent;
@@ -33,12 +38,14 @@ package actionScripts.ui.codeCompletionList
 
     public class CodeCompletionList extends List
     {
-        private var _codeDocumentationPopup:CodeDocumentationPopup;
+        private var codeDocumentationPopup:CodeDocumentationPopup;
+        private var keyboardShortcutManager:KeyboardShortcutManager;
         
         public function CodeCompletionList()
         {
             super();
 
+            this.keyboardShortcutManager = KeyboardShortcutManager.getInstance();
             this.styleName = "completionList";
             this.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
             this.labelField = "labelWithPrefix";
@@ -55,54 +62,89 @@ package actionScripts.ui.codeCompletionList
             this.doubleClickEnabled = true;
             this.filters = [new DropShadowFilter(3, 90, 0, 0.2, 8, 8)];
 
-            this.addEventListener("showDocumentation", onCodeCompletionListShowDocumentation);
+            this.addEventListener(Event.ADDED_TO_STAGE, onCodeCompletionListAddedToStage);
+            this.addEventListener(Event.REMOVED_FROM_STAGE, onCodeCompletionListRemovedFromStage);
         }
 
         public function closeDocumentation():void
         {
-            if (_codeDocumentationPopup)
+            if (codeDocumentationPopup)
             {
-                PopUpManager.removePopUp(_codeDocumentationPopup);
-                _codeDocumentationPopup.removeEventListener(CloseEvent.CLOSE, onCodeDocumentationPopupClose);
-                _codeDocumentationPopup.data = null;
-                _codeDocumentationPopup = null;
+                PopUpManager.removePopUp(codeDocumentationPopup);
+                codeDocumentationPopup.removeEventListener(CloseEvent.CLOSE, onCodeDocumentationPopupClose);
+                codeDocumentationPopup.data = null;
+                codeDocumentationPopup = null;
             }
+        }
+
+        private function onCodeCompletionListAddedToStage(event:Event):void
+        {
+            GlobalEventDispatcher.getInstance().addEventListener("showDocumentation", onCodeCompletionListShowDocumentation);
+            activateShortcuts();
+        }
+
+        private function onCodeCompletionListRemovedFromStage(event:Event):void
+        {
+            GlobalEventDispatcher.getInstance().removeEventListener("showDocumentation", onCodeCompletionListShowDocumentation);
+            deactivateShortcuts();
         }
 
         private function onCodeCompletionListShowDocumentation(event:Event):void
         {
-            event.stopImmediatePropagation();
-
             if (selectedItem && selectedItem.documentation)
             {
-                if (!_codeDocumentationPopup)
+                if (!codeDocumentationPopup)
                 {
-                    _codeDocumentationPopup = new CodeDocumentationPopup();
-                    _codeDocumentationPopup.addEventListener(CloseEvent.CLOSE, onCodeDocumentationPopupClose);
+                    codeDocumentationPopup = new CodeDocumentationPopup();
+                    codeDocumentationPopup.addEventListener(CloseEvent.CLOSE, onCodeDocumentationPopupClose);
                 }
 
-                if (_codeDocumentationPopup.data != this.selectedItem)
+                if (codeDocumentationPopup.data != this.selectedItem)
                 {
-                    _codeDocumentationPopup.data = this.selectedItem;
-                    PopUpManager.addPopUp(_codeDocumentationPopup, this);
+                    codeDocumentationPopup.data = this.selectedItem;
+                    PopUpManager.addPopUp(codeDocumentationPopup, this);
 
-                    _codeDocumentationPopup.maxWidth = 350;
-                    _codeDocumentationPopup.maxHeight = 300;
-                    _codeDocumentationPopup.x = this.x + this.width;
-                    _codeDocumentationPopup.y = this.y;
+                    codeDocumentationPopup.maxWidth = 350;
+                    codeDocumentationPopup.maxHeight = 300;
+                    codeDocumentationPopup.x = this.x + this.width;
+                    codeDocumentationPopup.y = this.y;
                 }
                 else
                 {
-                    PopUpManager.removePopUp(_codeDocumentationPopup);
-                    _codeDocumentationPopup.data = null;
+                    PopUpManager.removePopUp(codeDocumentationPopup);
+                    codeDocumentationPopup.data = null;
                 }
             }
         }
 
         private function onCodeDocumentationPopupClose(event:CloseEvent):void
         {
-            PopUpManager.removePopUp(_codeDocumentationPopup);
-            _codeDocumentationPopup.data = null;
+            PopUpManager.removePopUp(codeDocumentationPopup);
+            codeDocumentationPopup.data = null;
+        }
+
+        private function activateShortcuts():void
+        {
+            if (Settings.os == "win")
+            {
+                this.keyboardShortcutManager.activate(new KeyboardShortcut("showDocumentation", "q", [Keyboard.CONTROL]));
+            }
+            else
+            {
+                this.keyboardShortcutManager.activate(new KeyboardShortcut("showDocumentation", "F1", [Keyboard.F1]));
+            }
+        }
+
+        private function deactivateShortcuts():void
+        {
+            if (Settings.os == "win")
+            {
+                this.keyboardShortcutManager.deactivate(new KeyboardShortcut("showDocumentation", "q", [Keyboard.CONTROL]));
+            }
+            else
+            {
+                this.keyboardShortcutManager.deactivate(new KeyboardShortcut("showDocumentation", "F1", [Keyboard.F1]));
+            }
         }
     }
 }
