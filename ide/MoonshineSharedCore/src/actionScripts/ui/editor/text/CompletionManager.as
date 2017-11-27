@@ -151,7 +151,7 @@ package actionScripts.ui.editor.text
 			}
 
             var hasSelectedLineAutoCloseAttr:Boolean = false;
-			if (item.kind != "Class")
+			if (item.kind != "Class" && item.kind != "Value")
             {
                 hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr();
                 if (hasSelectedLineAutoCloseAttr)
@@ -162,7 +162,7 @@ package actionScripts.ui.editor.text
 
             editor.setCompletionData(startIndex, endIndex, text);
 
-			if (hasSelectedLineAutoCloseAttr && item.kind != "Class")
+			if (hasSelectedLineAutoCloseAttr && item.kind != "Class" && item.kind != "Value")
 			{
 				var lineIndexWithAutoCloseAttr:int = model.selectedLineIndex;
 				var cursorIndex:int = startIndex + text.length - 1;
@@ -273,7 +273,9 @@ package actionScripts.ui.editor.text
             {
                 isLineForAutoCloseAttr = selectedLineText.indexOf("<") != -1 &&
                         selectedLineText.lastIndexOf(">") != -1 &&
-                        selectedLineText.indexOf("</") == -1;
+                        selectedLineText.indexOf("</") == -1 &&
+						selectedLineText.indexOf("<![CDATA[") == -1 &&
+						selectedLineText.indexOf("]]>") == -1;
 
                 if (!isLineForAutoCloseAttr)
                 {
@@ -290,7 +292,10 @@ package actionScripts.ui.editor.text
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if (selectedLineText.indexOf(">") != -1 || selectedLineText.indexOf("/>") != -1)
+                            if (selectedLineText.indexOf(">") != -1 ||
+								selectedLineText.indexOf("/>") != -1 ||
+								selectedLineText.indexOf("<![CDATA[") != -1 ||
+								selectedLineText.indexOf("]]>") != -1)
                             {
                                 break;
                             }
