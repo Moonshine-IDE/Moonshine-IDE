@@ -31,13 +31,13 @@ package actionScripts.ui.editor.text
 	import flash.ui.Keyboard;
 	import flash.utils.setTimeout;
 
+	import mx.collections.ArrayCollection;
+
 	import mx.collections.ArrayList;
     import mx.managers.PopUpManager;
 
 	public class CompletionManager
 	{
-		private static const COMMAND_ADD_IMPORT:String = "nextgenas.addImport";
-		private static const COMMAND_ADD_MXML_NAMESPACE:String = "nextgenas.addMXMLNamespace";
 		private static const MIN_CODECOMPLETION_LIST_HEIGHT:int = 8;
 		
 		protected var editor:TextEditor;
@@ -47,7 +47,7 @@ package actionScripts.ui.editor.text
 		private var menuStr:String;
 		private var menuRefY:Number;
 		private var caret:int;
-		private var menuData:ArrayList;
+		private var menuCollection:ArrayCollection;
 
 		public function CompletionManager(editor:TextEditor, model:TextEditorModel)
 		{
@@ -55,8 +55,9 @@ package actionScripts.ui.editor.text
 			this.model = model;
 
 			completionList = new CodeCompletionList();
-			menuData = new ArrayList();
-			completionList.dataProvider = menuData;
+			menuCollection = new ArrayCollection();
+			menuCollection.filterFunction = filterCodeCompletionMenu;
+			completionList.dataProvider = menuCollection;
 		}
 
 		public function get isActive():Boolean
@@ -93,7 +94,7 @@ package actionScripts.ui.editor.text
 			menuStr = menuStr.split('').reverse().join('');
 			pos -= menuStr.length + 1;
 
-			menuData.source = items;
+			menuCollection.source = items;
 
             var position:Point = editor.getPointForIndex(pos+1);
 			position.x -= editor.horizontalScrollBar.scrollPosition;
@@ -110,8 +111,8 @@ package actionScripts.ui.editor.text
 			completionList.addEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
 			completionList.addEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
 			rePositionMenu();
-			
-			if (menuStr.length) filterMenu();
+
+			filterMenu();
 		}
 
 		public function closeCompletionList():void
@@ -130,13 +131,24 @@ package actionScripts.ui.editor.text
 
 		private function filterMenu():Boolean
 		{
-			menuData.source = menuData.source.filter(filterCodeCompletionMenu);
+			menuCollection.refresh();
 
-            if (menuData.length == 0) return false;
+            if (menuCollection.length == 0)
+			{
+				return false;
+			}
 
+			//validate so that the list's layout updates with the new
+			//filtered items
+			completionList.validateNow();
 			completionList.selectedIndex = 0;
+			//for some reason, we need to validate again, or the
+			//verticalScrollPosition will not change
+			completionList.validateNow();
+			completionList.dataGroup.verticalScrollPosition = 0;
 
 			rePositionMenu();
+
 			return true;
 		}
 
@@ -194,7 +206,10 @@ package actionScripts.ui.editor.text
 					if (menuStr.length > 0)
 					{
 						menuStr = menuStr.substr(0, -1);
-						if (filterMenu()) return;
+						if (filterMenu())
+						{
+							return;
+						}
 					}
 				}
 				else if (e.keyCode == Keyboard.DELETE)
@@ -334,8 +349,13 @@ package actionScripts.ui.editor.text
             return isLineForAutoCloseAttr;
         }
 
-        private function filterCodeCompletionMenu(item:CompletionItem, index:int, arr:Array):Boolean
+        private function filterCodeCompletionMenu(item:CompletionItem):Boolean
         {
+			if(menuStr.length === 0)
+			{
+				//all items are visible
+				return true;
+			}
             return item.label.toLowerCase().indexOf(menuStr.toLowerCase()) == 0;
         }
     }
