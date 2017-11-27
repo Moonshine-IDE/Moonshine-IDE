@@ -21,15 +21,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5"
-				   width="600" height="500" title="Find Rersource" skinClass="components.skins.ResizableTitleWindowSkin"
-				   minWidth="300" minHeight="300"
-				   creationComplete="onCreationComplete()" xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
+				   						   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*" 										   										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   backgroundColor="0xf5f5f5"
+										   width="600" height="500" title="Find Resources" skinClass="components.skins.ResizableTitleWindowSkin"
+										   minWidth="300" minHeight="300" defaultButton="{openBtn}"
+										   creationComplete="onCreationComplete()">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
+		import elements.skins.DarkButtonSkin;
+
+		import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.controls.Image;
 			import mx.core.IVisualElementContainer;
@@ -52,6 +54,9 @@
 				{
 					parseChildrens(i.projectFolder);
 				}
+
+				//Workaround for unresolved issue https://issues.apache.org/jira/browse/FLEX-26797
+				openBtn.setStyle("skinClass", DarkButtonSkin);
 			}
 			
 			/**
@@ -154,8 +159,8 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button label="Open"
+		<s:Button id="openBtn" label="Open"
 				  styleName="darkButton"
-				  click="onListDoubleClicked(null)"/>
+				  click="onListDoubleClicked(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
