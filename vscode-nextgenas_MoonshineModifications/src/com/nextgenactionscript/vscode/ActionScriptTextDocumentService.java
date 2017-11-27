@@ -44,14 +44,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.flex.abc.ABCParser;
 import org.apache.flex.abc.Pool;
 import org.apache.flex.abc.PoolingABCVisitor;
-import org.apache.flex.compiler.asdoc.IASDocComment;
 import org.apache.flex.compiler.asdoc.IASDocTag;
 import org.apache.flex.compiler.clients.MXMLJSC;
 import org.apache.flex.compiler.common.ASModifier;
 import org.apache.flex.compiler.common.ISourceLocation;
 import org.apache.flex.compiler.common.PrefixMap;
 import org.apache.flex.compiler.common.XMLName;
-import org.apache.flex.compiler.config.Configuration;
 import org.apache.flex.compiler.config.Configurator;
 import org.apache.flex.compiler.config.ICompilerSettingsConstants;
 import org.apache.flex.compiler.constants.IASKeywordConstants;
@@ -86,7 +84,6 @@ import org.apache.flex.compiler.internal.driver.js.node.NodeModuleBackend;
 import org.apache.flex.compiler.internal.mxml.MXMLData;
 import org.apache.flex.compiler.internal.parsing.as.ASParser;
 import org.apache.flex.compiler.internal.parsing.as.ASToken;
-import org.apache.flex.compiler.internal.parsing.as.FlexJSASDocDelegate;
 import org.apache.flex.compiler.internal.parsing.as.RepairingTokenBuffer;
 import org.apache.flex.compiler.internal.parsing.as.StreamingASTokenizer;
 import org.apache.flex.compiler.internal.projects.CompilerProject;
@@ -94,6 +91,7 @@ import org.apache.flex.compiler.internal.projects.FlexJSProject;
 import org.apache.flex.compiler.internal.projects.FlexProject;
 import org.apache.flex.compiler.internal.scopes.ASScope;
 import org.apache.flex.compiler.internal.scopes.TypeScope;
+import org.apache.flex.compiler.internal.scopes.ASProjectScope.DefinitionPromise;
 import org.apache.flex.compiler.internal.tree.as.FileNode;
 import org.apache.flex.compiler.internal.tree.as.FullNameNode;
 import org.apache.flex.compiler.internal.units.SWCCompilationUnit;
@@ -147,15 +145,16 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.nextgenactionscript.vscode.asdoc.VSCodeASDocComment;
 import com.nextgenactionscript.vscode.asdoc.VSCodeASDocDelegate;
 import com.nextgenactionscript.vscode.commands.ICommandConstants;
-import com.nextgenactionscript.vscode.commands.ICommandHintCodes;
 import com.nextgenactionscript.vscode.mxml.IMXMLLibraryConstants;
 import com.nextgenactionscript.vscode.project.CompilerOptions;
 import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
 import com.nextgenactionscript.vscode.project.ProjectOptions;
 import com.nextgenactionscript.vscode.project.ProjectType;
+import com.nextgenactionscript.vscode.project.VSCodeConfiguration;
 import com.nextgenactionscript.vscode.utils.ASTUtils;
 import com.nextgenactionscript.vscode.utils.ImportTextEditUtils;
-import com.nextgenactionscript.vscode.utils.LanguageServerUtils;
+import com.nextgenactionscript.vscode.utils.LSPUtils;
+import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
 import com.nextgenactionscript.vscode.utils.ProblemTracker;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
@@ -276,8 +275,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private LanguageClient languageClient;
     private IProjectConfigStrategy projectConfigStrategy;
+    private String oldFrameworkSDKPath;
     private Path workspaceRoot;
     private Map<Path, String> sourceByPath = new HashMap<>();
+    private Map<Path, List<SavedCodeAction>> codeActionsByPath = new HashMap<>();
     private Collection<ICompilationUnit> compilationUnits;
     private ArrayList<IInvisibleCompilationUnit> invisibleUnits = new ArrayList<>();
     private ICompilationUnit currentUnit;
@@ -290,7 +291,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private int namespaceEndIndex = -1;
     private String namespaceUri;
     private LanguageServerFileSpecGetter fileSpecGetter;
-    private boolean brokenMXMLValueEnd;
     private boolean flexLibSDKContainsFalconCompiler = false;
     private boolean flexLibSDKIsFlexJS = false;
     private ProblemTracker codeProblemTracker = new ProblemTracker();
@@ -309,31 +309,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         public String uri;
     }
 
+    private class SavedCodeAction
+    {
+        public SavedCodeAction(Command command, Range range)
+        {
+            this.command = command;
+            this.range = range;
+        }
+        
+        public Command command;
+        public Range range;
+    }
+
     public ActionScriptTextDocumentService()
     {
-        String sdkVersion = IASNode.class.getPackage().getImplementationVersion();
-        String[] versionParts = sdkVersion.split("-")[0].split("\\.");
-        int major = 0;
-        int minor = 0;
-        int revision = 0;
-        if (versionParts.length >= 3)
-        {
-            major = Integer.parseInt(versionParts[0]);
-            minor = Integer.parseInt(versionParts[1]);
-            revision = Integer.parseInt(versionParts[2]);
-        }
-        //FlexJS 0.7 has a bug in parsing MXML and we need a workaround
-        brokenMXMLValueEnd = major == 0 && minor == 7;
-
-        //if the framework SDK doesn't include the Falcon compiler, we can
-        //ignore certain errors from the editor SDK, which includes Falcon.
-        Path sdkPath = Paths.get(System.getProperty(FLEXLIB));
-        sdkPath = sdkPath.resolve("../lib/falcon-mxmlc.jar");
-        flexLibSDKContainsFalconCompiler = sdkPath.toFile().exists();
-        sdkPath = Paths.get(System.getProperty(FLEXLIB));
-        sdkPath = sdkPath.resolve("../js/bin/asjsc");
-        flexLibSDKIsFlexJS = sdkPath.toFile().exists();
-
+        updateFrameworkSDK();
         isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
     }
 
@@ -719,7 +709,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params)
     {
         TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null)
         {
             return CompletableFuture.completedFuture(Collections.emptyList());
@@ -756,7 +746,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     {
         List<? extends Diagnostic> diagnostics = params.getContext().getDiagnostics();
         TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null || !sourceByPath.containsKey(path))
         {
             return CompletableFuture.completedFuture(Collections.emptyList());
@@ -772,11 +762,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             switch (code)
             {
-                case ICommandHintCodes.GENERATE_GETTER_AND_SETTER:
-                {
-                    createCodeActionForGenerateGetterAndSetter(textDocument, diagnostic, commands);
-                    break;
-                }
                 case "1120": //AccessUndefinedPropertyProblem
                 {
                     //see if there's anything we can import
@@ -828,84 +813,20 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 }
             }
         }
+        if (codeActionsByPath.containsKey(path))
+        {
+            List<SavedCodeAction> codeActionsForPath = codeActionsByPath.get(path);
+            for (SavedCodeAction codeAction : codeActionsForPath)
+            {
+                Range savedRange = codeAction.range;
+                Range paramRange = params.getRange();
+                if (LSPUtils.rangesIntersect(savedRange, paramRange))
+                {
+                    commands.add(codeAction.command);
+                }
+            }
+        }
         return CompletableFuture.completedFuture(commands);
-    }
-
-    private void createCodeActionForGenerateGetterAndSetter(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
-    {
-        IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
-        IVariableNode variableNode = null;
-        if (offsetNode instanceof IVariableNode)
-        {
-            variableNode = (IVariableNode) offsetNode;
-        }
-        if (offsetNode.getParent() instanceof IVariableNode)
-        {
-            variableNode = (IVariableNode) offsetNode.getParent();
-        }
-        if (variableNode == null)
-        {
-            return;
-        }
-        IExpressionNode assignedValueNode = variableNode.getAssignedValueNode();
-        String assignedValue = null;
-        if (assignedValueNode != null)
-        {
-            String source = sourceByPath.get(Paths.get(diagnostic.getSource()));
-            assignedValue = source.substring(assignedValueNode.getAbsoluteStart(),
-                assignedValueNode.getAbsoluteEnd());
-        }
-
-        Command generateGetterAndSetterCommand = new Command();
-        generateGetterAndSetterCommand.setTitle("Generate Getter and Setter");
-        generateGetterAndSetterCommand.setCommand(ICommandConstants.GENERATE_GETTER_AND_SETTER);
-        generateGetterAndSetterCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            variableNode.getName(),
-            variableNode.getNamespace(),
-            variableNode.hasModifier(ASModifier.STATIC),
-            variableNode.getVariableType(),
-            assignedValue
-        ));
-        commands.add(generateGetterAndSetterCommand);
-        
-        Command generateGetterCommand = new Command();
-        generateGetterCommand.setTitle("Generate Getter");
-        generateGetterCommand.setCommand(ICommandConstants.GENERATE_GETTER);
-        generateGetterCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            variableNode.getName(),
-            variableNode.getNamespace(),
-            variableNode.hasModifier(ASModifier.STATIC),
-            variableNode.getVariableType(),
-            assignedValue
-        ));
-        commands.add(generateGetterCommand);
-
-        Command generateSetterCommand = new Command();
-        generateSetterCommand.setTitle("Generate Setter");
-        generateSetterCommand.setCommand(ICommandConstants.GENERATE_SETTER);
-        generateSetterCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            variableNode.getName(),
-            variableNode.getNamespace(),
-            variableNode.hasModifier(ASModifier.STATIC),
-            variableNode.getVariableType(),
-            assignedValue
-        ));
-        commands.add(generateSetterCommand);
     }
 
     private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
@@ -1220,11 +1141,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return;
         }
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocumentUri);
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocumentUri);
         if (path != null)
         {
             String text = textDocument.getText();
             sourceByPath.put(path, text);
+            codeActionsByPath.put(path, new ArrayList<>());
 
             if (currentWorkspace != null)
             {
@@ -1254,7 +1176,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return;
         }
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocumentUri);
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocumentUri);
         if (path != null)
         {
             for (TextDocumentContentChangeEvent change : params.getContentChanges())
@@ -1297,10 +1219,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return;
         }
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocumentUri);
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocumentUri);
         if (path != null)
         {
             sourceByPath.remove(path);
+            codeActionsByPath.remove(path);
         }
     }
 
@@ -1325,7 +1248,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         boolean needsFullCheck = false;
         for (FileEvent event : params.getChanges())
         {
-            Path path = LanguageServerUtils.getPathFromLanguageServerURI(event.getUri());
+            Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(event.getUri());
             if (path == null)
             {
                 continue;
@@ -1365,10 +1288,29 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      */
     public void checkForProblemsNow()
     {
+        updateFrameworkSDK();
         if (projectConfigStrategy.getChanged())
         {
             checkProjectForProblems();
         }
+    }
+
+    private void updateFrameworkSDK()
+    {
+        String frameworkSDKPath = System.getProperty(FLEXLIB);
+        if(frameworkSDKPath.equals(oldFrameworkSDKPath))
+        {
+            return;
+        }
+        oldFrameworkSDKPath = frameworkSDKPath;
+        //if the framework SDK doesn't include the Falcon compiler, we can
+        //ignore certain errors from the editor SDK, which includes Falcon.
+        Path sdkPath = Paths.get(frameworkSDKPath);
+        sdkPath = sdkPath.resolve("../lib/falcon-mxmlc.jar");
+        flexLibSDKContainsFalconCompiler = sdkPath.toFile().exists();
+        sdkPath = Paths.get(System.getProperty(FLEXLIB));
+        sdkPath = sdkPath.resolve("../js/bin/asjsc");
+        flexLibSDKIsFlexJS = sdkPath.toFile().exists();
     }
 
     private void cleanupCurrentProject()
@@ -1771,6 +1713,35 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return result;
         }
 
+        //an implicit offset tag may mean that we're trying to close a tag
+        if (parentTag != null && offsetTag.isImplicit())
+        {
+            IMXMLTagData nextTag = offsetTag.getNextTag();
+            if (nextTag != null
+                    && nextTag.isImplicit()
+                    && nextTag.isCloseTag()
+                    && nextTag.getName().equals(parentTag.getName())
+                    && parentTag.getShortName().startsWith(offsetTag.getShortName()))
+            {
+                String closeTagText = "</" + nextTag.getName() + ">";
+                CompletionItem closeTagItem = new CompletionItem();
+                //display the full close tag
+                closeTagItem.setLabel(closeTagText);
+                //strip </ from the insert text
+                String insertText = closeTagText.substring(2);
+                int prefixLength = offsetTag.getPrefix().length();
+                if (prefixLength > 0)
+                {
+                    //if the prefix already exists, strip it away so that the
+                    //editor won't duplicate it.
+                    insertText = insertText.substring(prefixLength + 1);
+                }
+                closeTagItem.setInsertText(insertText);
+                closeTagItem.setSortText(offsetTag.getShortName());
+                result.getItems().add(closeTagItem);
+            }
+        }
+
         //inside <fx:Declarations>
         if (isDeclarationsTag(offsetTag))
         {
@@ -1860,6 +1831,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 return mxmlAttributeCompletion(offsetTag, result);
             }
+            attribute = getMXMLTagAttributeWithNameAtOffset(offsetTag, currentOffset, true);
+            if (attribute != null
+                    && currentOffset > (attribute.getAbsoluteStart() + attribute.getXMLName().toString().length()))
+            {
+                return mxmlStatesCompletion(offsetTag, result);
+            }
 
             IClassDefinition classDefinition = (IClassDefinition) offsetDefinition;
             addMembersForMXMLTypeToAutoComplete(classDefinition, offsetTag, !isAttribute, result);
@@ -1895,6 +1872,36 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return result;
         }
         System.err.println("Unknown definition for MXML completion: " + offsetDefinition.getClass());
+        return result;
+    }
+
+    private CompletionList mxmlStatesCompletion(IMXMLTagData offsetTag, CompletionList result)
+    {
+        List<IDefinition> definitions = currentUnit.getDefinitionPromises();
+        if (definitions.size() == 0)
+        {
+            return result;
+        }
+        IDefinition definition = definitions.get(0);
+        if (definition instanceof DefinitionPromise)
+        {
+            DefinitionPromise definitionPromise = (DefinitionPromise) definition;
+            definition = definitionPromise.getActualDefinition();
+        }
+        if (definition instanceof IClassDefinition)
+        {
+            List<CompletionItem> items = result.getItems();
+            IClassDefinition classDefinition = (IClassDefinition) definition;
+            Set<String> stateNames = classDefinition.getStateNames();
+            for (String stateName : stateNames)
+            {
+                CompletionItem stateItem = new CompletionItem();
+                stateItem.setKind(CompletionItemKind.Field);
+                stateItem.setLabel(stateName);
+                items.add(stateItem);
+            }
+            return result;
+        }
         return result;
     }
 
@@ -2124,7 +2131,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //definition referenced at the current position.
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
         if (path == null)
         {
             //this probably shouldn't happen, but check just to be safe
@@ -2259,7 +2266,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 findMXMLUnits(mxmlData.getRootTag(), definition, units);
                 for (ISourceLocation otherUnit : units)
                 {
-                    Location location = LanguageServerUtils.getLocationFromSourceLocation(otherUnit);
+                    Location location = LanguageServerCompilerUtils.getLocationFromSourceLocation(otherUnit);
                     if (location == null)
                     {
                         continue;
@@ -2281,7 +2288,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         findIdentifiers(ast, definition, identifiers);
         for (IIdentifierNode otherNode : identifiers)
         {
-            Location location = LanguageServerUtils.getLocationFromSourceLocation(otherNode);
+            Location location = LanguageServerCompilerUtils.getLocationFromSourceLocation(otherNode);
             if (location == null)
             {
                 continue;
@@ -2417,6 +2424,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return packageName + DOT_STAR;
         }
         return STAR;
+    }
+    
+    private void autoCompleteValue(String value, CompletionList result)
+    {
+        CompletionItem item = new CompletionItem();
+        item.setKind(CompletionItemKind.Value);
+        item.setLabel(value);
+        result.getItems().add(item);
     }
     
     private void autoCompleteKeyword(String keyword, CompletionList result)
@@ -2799,6 +2814,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         autoCompleteKeyword(IASKeywordConstants.VAR, result);
         autoCompleteKeyword(IASKeywordConstants.WHILE, result);
         autoCompleteKeyword(IASKeywordConstants.WITH, result);
+
+        autoCompleteValue(IASKeywordConstants.TRUE, result);
+        autoCompleteValue(IASKeywordConstants.FALSE, result);
+        autoCompleteValue(IASKeywordConstants.NULL, result);
     }
 
     private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, CompletionList result)
@@ -3635,7 +3654,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 return;
             }
 
-            Position position = LanguageServerUtils.getPositionFromOffset(reader, nameOffset);
+            Position position = LanguageServerCompilerUtils.getPositionFromOffset(reader, nameOffset);
             nameLine = position.getLine();
             nameColumn = position.getCharacter();
         }
@@ -3758,7 +3777,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         TextEdit textEdit = new TextEdit();
                         textEdit.setNewText(newName);
 
-                        Range range = LanguageServerUtils.getRangeFromSourceLocation(otherUnit);
+                        Range range = LanguageServerCompilerUtils.getRangeFromSourceLocation(otherUnit);
                         if (range == null)
                         {
                             continue;
@@ -3787,7 +3806,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     TextEdit textEdit = new TextEdit();
                     textEdit.setNewText(newName);
 
-                    Range range = LanguageServerUtils.getRangeFromSourceLocation(identifierNode);
+                    Range range = LanguageServerCompilerUtils.getRangeFromSourceLocation(identifierNode);
                     if (range == null)
                     {
                         continue;
@@ -3975,7 +3994,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         Range range = change.getRange();
         Position start = range.getStart();
         StringReader reader = new StringReader(sourceText);
-        int offset = LanguageServerUtils.getOffsetFromPosition(reader, start);
+        int offset = LanguageServerCompilerUtils.getOffsetFromPosition(reader, start);
         return sourceText.substring(0, offset) + change.getText() + sourceText.substring(offset + change.getRangeLength());
     }
 
@@ -3994,10 +4013,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         Diagnostic diagnostic = new Diagnostic();
 
-        DiagnosticSeverity severity = LanguageServerUtils.getDiagnosticSeverityFromCompilerProblem(problem);
+        DiagnosticSeverity severity = LanguageServerCompilerUtils.getDiagnosticSeverityFromCompilerProblem(problem);
         diagnostic.setSeverity(severity);
 
-        Range range = LanguageServerUtils.getRangeFromSourceLocation(problem);
+        Range range = LanguageServerCompilerUtils.getRangeFromSourceLocation(problem);
         if (range == null)
         {
             //fall back to an empty range
@@ -4058,7 +4077,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 parser = null;
                 System.err.println("Failed to parse file (" + path.toString() + "): " + e);
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
             //if an error occurred above, parser will be null
             if (parser != null)
@@ -4208,10 +4227,26 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     }
                     continue;
                 }
+                if (currentProject.getSourcePath().size() == 0
+                        && i == (files.length - 1))
+                {
+                    //if the main file didn't exist at first, it's possible
+                    //that the project won't have a source path yet. when the
+                    //file is created later, the compilation unit can only be
+                    //created successfully if we set the source path manually
+                    File mainFile = new File(file);
+                    ArrayList<File> sourcePaths = new ArrayList<>();
+                    sourcePaths.add(mainFile.getParentFile());
+                    currentProject.setSourcePath(sourcePaths);
+                }
                 IInvisibleCompilationUnit unit = currentProject.createInvisibleCompilationUnit(file, fileSpecGetter);
                 if (unit == null)
                 {
-                    System.err.println("Could not create compilation unit for file: " + file);
+                    if (sourceByPath.containsKey(path) || (new File(absolutePath)).exists())
+                    {
+                        //only display an error if the compilation unit should definitely exist
+                        System.err.println("Could not create compilation unit for file: " + file);
+                    }
                     continue;
                 }
                 invisibleUnits.add(unit);
@@ -4246,7 +4281,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IInvisibleCompilationUnit unit = currentProject.createInvisibleCompilationUnit(absolutePath, fileSpecGetter);
             if (unit == null)
             {
-                System.err.println("Could not create compilation unit for file: " + absolutePath);
+                if (sourceByPath.containsKey(path) || (new File(absolutePath)).exists())
+                {
+                    //only display an error if the compilation unit should definitely exist
+                    System.err.println("Could not create compilation unit for file (final fallback): " + absolutePath);
+                }
                 return null;
             }
             invisibleUnits.add(unit);
@@ -4443,7 +4482,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         else //swf only
         {
-            configurator = new Configurator(Configuration.class);
+            configurator = new Configurator(VSCodeConfiguration.class);
         }
         configurator.setToken(TOKEN_CONFIGNAME, currentProjectOptions.config);
         ProjectType type = currentProjectOptions.type;
@@ -4704,7 +4743,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         catch (Exception e)
         {
             System.err.println("Exception during build: " + e);
-            e.printStackTrace();
+            e.printStackTrace(System.err);
             return false;
         }
         if (languageClient != null)
@@ -4725,7 +4764,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         ArrayList<ICompilerProblem> problems = new ArrayList<>();
         try
         {
-            unit.waitForBuildFinish(problems, ITarget.TargetType.SWF);
+            //if we pass in null, it's designed to ignore certain errors that
+            //don't matter for IDE code intelligence.
+            unit.waitForBuildFinish(problems, null);
             for (ICompilerProblem problem : problems)
             {
                 addCompilerProblem(problem, publish);
@@ -4734,7 +4775,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         catch (Exception e)
         {
             System.err.println("Exception during waitForBuildFinish(): " + e);
-            e.printStackTrace();
+            e.printStackTrace(System.err);
 
             Diagnostic diagnostic = createDiagnosticWithoutRange();
             diagnostic.setSeverity(DiagnosticSeverity.Error);
@@ -4742,7 +4783,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             diagnostics.add(diagnostic);
         }
 
-        if (sourceByPath.containsKey(Paths.get(uri)))
+        Path unitPath = Paths.get(uri);
+        if (sourceByPath.containsKey(unitPath) && codeActionsByPath.containsKey(unitPath))
         {
             IASNode ast = null;
             try
@@ -4755,19 +4797,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             if (ast != null)
             {
-                addCodeGenerationHints(ast, diagnostics);
+                List<SavedCodeAction> codeActions = codeActionsByPath.get(unitPath);
+                codeActions.clear();
+                saveCodeActionsForLater(ast, unitPath, codeActions);
             }
         }
 
         return publish;
     }
 
-    private void addCodeGenerationHints(IASNode node, ArrayList<Diagnostic> diagnostics)
+    private void saveCodeActionsForLater(IASNode node, Path path, List<SavedCodeAction> codeActions)
     {
         if (node instanceof IVariableNode)
         {
-            IVariableNode definitionNode = (IVariableNode) node;
-            IExpressionNode expressionNode = definitionNode.getNameExpressionNode();
+            IVariableNode variableNode = (IVariableNode) node;
+            IExpressionNode expressionNode = variableNode.getNameExpressionNode();
             IDefinition definition = expressionNode.resolve(currentProject);
             if (definition instanceof IVariableDefinition
                 && !(definition instanceof IConstantDefinition)
@@ -4777,12 +4821,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IVariableDefinition variableDefinition = (IVariableDefinition) definition;
                 if (variableDefinition.getVariableClassification().equals(VariableClassification.CLASS_MEMBER))
                 {
-                    Diagnostic generateGetterAndSetterHint = new Diagnostic();
-                    generateGetterAndSetterHint.setSeverity(DiagnosticSeverity.Hint);
-                    generateGetterAndSetterHint.setSource(node.getSourcePath());
-                    generateGetterAndSetterHint.setRange(LanguageServerUtils.getRangeFromSourceLocation(node));
-                    generateGetterAndSetterHint.setCode(ICommandHintCodes.GENERATE_GETTER_AND_SETTER);
-                    diagnostics.add(generateGetterAndSetterHint);
+                    createCommandsForGenerateGetterAndSetter(variableNode, path, codeActions);
                 }
             }
         }
@@ -4794,8 +4833,74 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         for (int i = 0, childCount = node.getChildCount(); i < childCount; i++)
         {
             IASNode child = node.getChild(i);
-            addCodeGenerationHints(child, diagnostics);
+            saveCodeActionsForLater(child, path, codeActions);
         }
+    }
+
+    private void createCommandsForGenerateGetterAndSetter(IVariableNode variableNode, Path path, List<SavedCodeAction> codeActions)
+    {
+        Range range = LanguageServerCompilerUtils.getRangeFromSourceLocation(variableNode);
+        IExpressionNode assignedValueNode = variableNode.getAssignedValueNode();
+        String assignedValue = null;
+        if (assignedValueNode != null)
+        {
+            String source = sourceByPath.get(path);
+            assignedValue = source.substring(assignedValueNode.getAbsoluteStart(),
+                assignedValueNode.getAbsoluteEnd());
+        }
+        Command generateGetterAndSetterCommand = new Command();
+        generateGetterAndSetterCommand.setTitle("Generate Getter and Setter");
+        generateGetterAndSetterCommand.setCommand(ICommandConstants.GENERATE_GETTER_AND_SETTER);
+        generateGetterAndSetterCommand.setArguments(Arrays.asList(
+            path.toUri().toString(),
+            range.getStart().getLine(),
+            range.getStart().getCharacter(),
+            range.getEnd().getLine(),
+            range.getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        SavedCodeAction getterSetterCodeAction = new SavedCodeAction(generateGetterAndSetterCommand, range);
+        codeActions.add(getterSetterCodeAction);
+        
+        Command generateGetterCommand = new Command();
+        generateGetterCommand.setTitle("Generate Getter");
+        generateGetterCommand.setCommand(ICommandConstants.GENERATE_GETTER);
+        generateGetterCommand.setArguments(Arrays.asList(
+            path.toUri().toString(),
+            range.getStart().getLine(),
+            range.getStart().getCharacter(),
+            range.getEnd().getLine(),
+            range.getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        SavedCodeAction getterCodeAction = new SavedCodeAction(generateGetterCommand, range);
+        codeActions.add(getterCodeAction);
+
+        Command generateSetterCommand = new Command();
+        generateSetterCommand.setTitle("Generate Setter");
+        generateSetterCommand.setCommand(ICommandConstants.GENERATE_SETTER);
+        generateSetterCommand.setArguments(Arrays.asList(
+            path.toUri().toString(),
+            range.getStart().getLine(),
+            range.getStart().getCharacter(),
+            range.getEnd().getLine(),
+            range.getEnd().getCharacter(),
+            variableNode.getName(),
+            variableNode.getNamespace(),
+            variableNode.hasModifier(ASModifier.STATIC),
+            variableNode.getVariableType(),
+            assignedValue
+        ));
+        SavedCodeAction setterCodeAction = new SavedCodeAction(generateSetterCommand, range);
+        codeActions.add(setterCodeAction);
     }
 
     private Reader getReaderForPath(Path path)
@@ -4856,7 +4961,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         importRange.uri = null;
         importRange.startIndex = -1;
         importRange.endIndex = -1;
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(uri);
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
         if (path == null)
         {
             return null;
@@ -4894,7 +4999,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        currentOffset = LanguageServerUtils.getOffsetFromPosition(new StringReader(code), position);
+        currentOffset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(code), position);
         if (currentOffset == -1)
         {
             System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
@@ -4921,10 +5026,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             int start = attributeData.getAbsoluteStart();
             int end = attributeData.getValueEnd() + 1;
-            if (brokenMXMLValueEnd)
-            {
-                end--;
-            }
             if (namespaceStartIndex == -1 || namespaceStartIndex > start)
             {
                 namespaceStartIndex = start;
@@ -4949,6 +5050,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     IMXMLTextData textUnitData = (IMXMLTextData) unitData;
                     if (textUnitData.getTextType() == IMXMLTextData.TextType.CDATA)
                     {
+                        importRange.uri = Paths.get(textUnitData.getSourcePath()).toUri().toString();
                         importRange.startIndex = textUnitData.getCompilableTextStart();
                         importRange.endIndex = textUnitData.getCompilableTextEnd();
                     }
@@ -4976,7 +5078,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             importRange.startIndex = -1;
             importRange.endIndex = -1;
         }
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null)
         {
             return null;
@@ -5004,14 +5106,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        currentOffset = LanguageServerUtils.getOffsetFromPosition(new StringReader(code), position);
+        currentOffset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(code), position);
         if (currentOffset == -1)
         {
             System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
             return null;
         }
         IASNode offsetNode = getContainingNodeIncludingStart(ast, currentOffset);
-        importRange = getImportRange(offsetNode);
+        if (!textDocument.getUri().endsWith(MXML_EXTENSION))
+        {
+            importRange = getImportRange(offsetNode);
+        }
         return offsetNode;
     }
     
@@ -5123,15 +5228,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return null;
     }
 
-    private IMXMLTagAttributeData getMXMLTagAttributeWithNameAtOffset(IMXMLTagData tag, int offset)
+    private IMXMLTagAttributeData getMXMLTagAttributeWithNameAtOffset(IMXMLTagData tag, int offset, boolean includeEnd)
     {
         IMXMLTagAttributeData[] attributes = tag.getAttributeDatas();
         for (IMXMLTagAttributeData attributeData : attributes)
         {
-            if (offset >= attributeData.getAbsoluteStart()
-                    && offset < attributeData.getAbsoluteEnd())
+            if (offset >= attributeData.getAbsoluteStart())
             {
-                return attributeData;
+                if(includeEnd && offset <= attributeData.getAbsoluteEnd())
+                {
+                    return attributeData;
+                }
+                else if(offset < attributeData.getAbsoluteEnd())
+                {
+                    return attributeData;
+                }
             }
         }
         return null;
@@ -5196,8 +5307,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             }
                             if (propertyChild instanceof IMXMLSingleDataBindingNode)
                             {
-                                IMXMLSingleDataBindingNode dataBinding = (IMXMLSingleDataBindingNode) propertyChild;
-                                IASNode containingNode = dataBinding.getExpressionNode().getContainingNode(currentOffset);
+                                //IMXMLSingleDataBindingNode dataBinding = (IMXMLSingleDataBindingNode) propertyChild;
+                                //IASNode containingNode = dataBinding.getExpressionNode().getContainingNode(currentOffset);
                                 //we found the correct expression, but due to a bug
                                 //in the compiler its line and column positions
                                 //will be wrong. the resulting completion is too
@@ -5244,7 +5355,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         else
         {
-            attributeData = getMXMLTagAttributeWithNameAtOffset(tag, offset);
+            attributeData = getMXMLTagAttributeWithNameAtOffset(tag, offset, false);
         }
         if (attributeData == null)
         {
@@ -5574,7 +5685,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private boolean isInActionScriptComment(TextDocumentPositionParams params)
     {
         TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null || !sourceByPath.containsKey(path))
         {
             return false;
@@ -5602,7 +5713,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private boolean isInXMLComment(TextDocumentPositionParams params)
     {
         TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null || !sourceByPath.containsKey(path))
         {
             return false;
@@ -5821,7 +5932,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //node associated with them, so we need to figure this out from the
             //offset instead of a pre-calculated line and column -JT
             Reader definitionReader = getReaderForPath(definitionPath);
-            LanguageServerUtils.getPositionFromOffset(definitionReader, definition.getNameStart(), start);
+            LanguageServerCompilerUtils.getPositionFromOffset(definitionReader, definition.getNameStart(), start);
             end.setLine(start.getLine());
             end.setCharacter(start.getCharacter());
         }
@@ -6025,8 +6136,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String uri = (String) args.get(0);
         int startLine = ((Double) args.get(1)).intValue();
         int startChar = ((Double) args.get(2)).intValue();
-        int endLine = ((Double) args.get(3)).intValue();
-        int endChar = ((Double) args.get(4)).intValue();
+        //int endLine = ((Double) args.get(3)).intValue();
+        //int endChar = ((Double) args.get(4)).intValue();
         String name = (String) args.get(5);
 
         TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
@@ -6087,8 +6198,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String uri = (String) args.get(0);
         int startLine = ((Double) args.get(1)).intValue();
         int startChar = ((Double) args.get(2)).intValue();
-        int endLine = ((Double) args.get(3)).intValue();
-        int endChar = ((Double) args.get(4)).intValue();
+        //int endLine = ((Double) args.get(3)).intValue();
+        //int endChar = ((Double) args.get(4)).intValue();
         String name = (String) args.get(5);
         
         TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
@@ -6150,8 +6261,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String uri = (String) args.get(0);
         int startLine = ((Double) args.get(1)).intValue();
         int startChar = ((Double) args.get(2)).intValue();
-        int endLine = ((Double) args.get(3)).intValue();
-        int endChar = ((Double) args.get(4)).intValue();
+        //int endLine = ((Double) args.get(3)).intValue();
+        //int endChar = ((Double) args.get(4)).intValue();
         String name = (String) args.get(5);
         Object uncastArgs = args.get(6);
         ArrayList<?> methodArgs = null;
@@ -6338,7 +6449,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             Path path = Paths.get(URI.create(uri));
             String text = IOUtils.toString(getReaderForPath(path));
-            int offset = LanguageServerUtils.getOffsetFromPosition(new StringReader(text), endPosition);
+            int offset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(text), endPosition);
             if (offset < text.length() && text.charAt(offset) == ';')
             {
                 endPosition.setCharacter(endChar + 1);

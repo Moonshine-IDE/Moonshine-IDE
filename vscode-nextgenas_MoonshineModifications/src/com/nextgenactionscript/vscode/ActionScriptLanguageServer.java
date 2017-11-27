@@ -28,7 +28,7 @@ import org.apache.flex.compiler.tree.as.IASNode;
 import com.google.gson.internal.LinkedTreeMap;
 import com.nextgenactionscript.vscode.commands.ICommandConstants;
 import com.nextgenactionscript.vscode.project.ASConfigProjectConfigStrategy;
-import com.nextgenactionscript.vscode.utils.LanguageServerUtils;
+import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -93,7 +94,8 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params)
     {
-        Path workspaceRoot = Paths.get(params.getRootPath()).toAbsolutePath().normalize();
+        URI rootURI = URI.create(params.getRootUri());
+        Path workspaceRoot = Paths.get(rootURI).toAbsolutePath().normalize();
         projectConfigStrategy.setASConfigPath(workspaceRoot.resolve(ASCONFIG_JSON));
         textDocumentService.setWorkspaceRoot(workspaceRoot);
 
@@ -180,9 +182,9 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
                     {
                         return;
                     }
-                    LinkedTreeMap settings = (LinkedTreeMap) params.getSettings();
-                    LinkedTreeMap nextgenas = (LinkedTreeMap) settings.get("nextgenas");
-                    LinkedTreeMap sdk = (LinkedTreeMap) nextgenas.get("sdk");
+                    LinkedTreeMap<?,?> settings = (LinkedTreeMap<?,?>) params.getSettings();
+                    LinkedTreeMap<?,?> nextgenas = (LinkedTreeMap<?,?>) settings.get("nextgenas");
+                    LinkedTreeMap<?,?> sdk = (LinkedTreeMap<?,?>) nextgenas.get("sdk");
                     String frameworkSDK = (String) sdk.get("framework");
                     if (frameworkSDK == null)
                     {
@@ -211,7 +213,7 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
                 {
                     for (FileEvent event : params.getChanges())
                     {
-                        Path path = LanguageServerUtils.getPathFromLanguageServerURI(event.getUri());
+                        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(event.getUri());
                         if (path == null)
                         {
                             continue;
@@ -235,6 +237,12 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
                 public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
                 {
                     return textDocumentService.executeCommand(params);
+                }
+                
+                @JsonNotification("$/setTraceNotification")
+                public void setTraceNotification(Object params)
+                {
+                    //this may be ignored. see: eclipse/lsp4j#22
                 }
             };
         }
