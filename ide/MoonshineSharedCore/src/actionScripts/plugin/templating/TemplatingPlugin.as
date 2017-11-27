@@ -624,6 +624,7 @@ package actionScripts.plugin.templating
 			// Resetting a template just removes it from app-storage
 			var rdr:TemplateRenderer = TemplateRenderer(event.target);
 			var custom:FileLocation = rdr.setting.customTemplate;
+			var tmpOldIndex:int;
 			var oldFileName:String = TemplatingHelper.getTemplateLabel(custom);
 			var newFileNameWithExtension:String = event.value as String;
 			var newFileName:String = newFileNameWithExtension.split(".")[0];
@@ -637,6 +638,8 @@ package actionScripts.plugin.templating
 					Alert.show(newFileNameWithExtension +" is already available.", "!Error");
 					return;
 				}
+				
+				custom.fileBridge.moveTo(customNewLocation, true);
 				
 				if (!custom.fileBridge.isDirectory)	
 				{
@@ -653,28 +656,37 @@ package actionScripts.plugin.templating
 							ed.label = newFileNameWithExtension;
 						}
 					}
-					custom.fileBridge.moveTo(customNewLocation, true);
+					
+					// remove the existing File/New listener
+					dispatcher.removeEventListener("eventNewFileFromTemplate"+ oldFileName, handleNewTemplateFile);
+					dispatcher.addEventListener("eventNewFileFromTemplate"+ newFileName, handleNewTemplateFile);
+					
+					// update file list
+					tmpOldIndex = fileTemplates.indexOf(custom);
+					if (tmpOldIndex != -1) fileTemplates[tmpOldIndex] = customNewLocation;
+					
+					// updating file/new menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, false, oldFileName, null, newFileName));
 				}
-				else dispatcher.dispatchEvent(new RenameApplicationEvent(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, custom, customNewLocation));
+				else 
+				{
+					dispatcher.dispatchEvent(new RenameApplicationEvent(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, custom, customNewLocation));
+					
+					// remove the existing File/New listener
+					dispatcher.removeEventListener("eventNewProjectFromTemplate"+ oldFileName, handleNewProjectFile);
+					dispatcher.addEventListener("eventNewProjectFromTemplate"+ newFileName, handleNewProjectFile);
+					
+					// update file list
+					tmpOldIndex = projectTemplates.indexOf(custom);
+					if (tmpOldIndex != -1) projectTemplates[tmpOldIndex] = customNewLocation;
+					
+					// updating file/new menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName));
+				}
 				
 				rdr.setting.customTemplate = customNewLocation;
 				rdr.setting.label = rdr.setting.customTemplate.fileBridge.name;
 				rdr.dispatchEvent(new Event('refresh'));
-				
-				// remove the existing File/New listener
-				if (!custom.fileBridge.isDirectory)
-				{
-					dispatcher.removeEventListener("eventNewFileFromTemplate"+ oldFileName, handleNewTemplateFile);
-					dispatcher.addEventListener("eventNewFileFromTemplate"+ newFileName, handleNewTemplateFile);
-				}
-				else
-				{
-					dispatcher.removeEventListener("eventNewFileFromTemplate"+ oldFileName, handleNewProjectFile);
-					dispatcher.addEventListener("eventNewFileFromTemplate"+ newFileName, handleNewProjectFile);
-				}
-				
-				// updating file/new menu
-				dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName));
 			}
 		}
 		

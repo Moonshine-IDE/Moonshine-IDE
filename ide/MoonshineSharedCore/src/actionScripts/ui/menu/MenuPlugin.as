@@ -459,7 +459,7 @@ package actionScripts.ui.menu
 				{
 					/*if (buildingNativeMenu)	itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
 					else*/ subItemsInItemOfTopMenu[i].label = event.newLabel;
-					subItemsInItemOfTopMenu[i].data.event = "eventNewFileFromTemplate"+ event.newLabel;
+					subItemsInItemOfTopMenu[i].data.event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
 					return;
 				}
 			}

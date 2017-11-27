@@ -533,8 +533,6 @@
 			
 			protected function onProjectRenameRequest(event:RenameApplicationEvent):void
 			{
-				event.from.fileBridge.moveTo(event.to, true);
-				
 				for each (var i:AS3ProjectVO in model.projects)
 				{
 					if (i.folderLocation.fileBridge.nativePath == event.from.fileBridge.nativePath)
