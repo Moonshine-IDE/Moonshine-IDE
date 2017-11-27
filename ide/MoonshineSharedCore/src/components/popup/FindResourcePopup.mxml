@@ -153,6 +153,7 @@
 			<s:Label text="Matching items:"/>
 			<s:List id="lstResources" 
 					width="100%" height="100%"
+					requireSelection="true"
 					dataProvider="{resources}" labelFunction="getResourceName" styleName="multiLineList"
 					doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)"/>
 		</s:VGroup>
