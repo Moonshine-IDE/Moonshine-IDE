@@ -24,15 +24,18 @@ package actionScripts.events
 	{
 		public static const ADDED_NEW_TEMPLATE:String = "ADDED_NEW_TEMPLATE";
 		public static const REMOVE_TEMPLATE:String = "REMOVE_TEMPLATE";
+		public static const RENAME_TEMPLATE:String = "RENAME_TEMPLATE";
 		
 		public var label:String;
+		public var newLabel:String;
 		public var listener:String;
 		public var isProject:Boolean;
 		
-		public function TemplatingEvent(type:String, isProject:Boolean, label:String, listener:String=null)
+		public function TemplatingEvent(type:String, isProject:Boolean, label:String, listener:String=null, newLabel:String=null)
 		{
 			this.isProject = isProject;
 			this.label = label;
+			this.newLabel = newLabel;
 			this.listener = listener;
 			
 			super(type, false, false);
@@ -40,7 +43,7 @@ package actionScripts.events
 		
 		public override function clone():Event
 		{
-			return new TemplatingEvent(type, isProject, label, listener);
+			return new TemplatingEvent(type, isProject, label, listener, newLabel);
 		}
 	}
 }

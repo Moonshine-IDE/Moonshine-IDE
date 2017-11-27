@@ -188,6 +188,7 @@ package actionScripts.ui.menu
 			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
 			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -390,31 +391,75 @@ package actionScripts.ui.menu
 		{
 			var tmpMI:MenuItem = new MenuItem(event.label, null, event.listener);
 			var menuItem:* = createNewMenuItem(tmpMI);
-			
-			var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-			var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
+			var itemToAddAt:int = event.isProject ? TemplatingPlugin.projectTemplates.length + TemplatingPlugin.fileTemplates.length : TemplatingPlugin.fileTemplates.length - 1;
+			var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
+			if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
 			
 			if (menuItem)
 			{
-				var itemToAddAt:int = event.isProject ? TemplatingPlugin.projectTemplates.length + TemplatingPlugin.fileTemplates.length : TemplatingPlugin.fileTemplates.length - 1;
-				var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
-				if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
-				subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
+				if (buildingNativeMenu)
+				{
+					var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+					var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
+					subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
+				}
+				else
+				{
+					var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+					CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.insertAt(itemToAddAt, menuObject);
+				}
 			}
 		}
 		
 		private function onNewMenuRemoveRequest(event:TemplatingEvent):void
 		{
-			var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-			var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items[0].submenu.items;
+			var subItemsInItemOfTopMenu:Object;
+			if (buildingNativeMenu)
+			{
+				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+				subItemsInItemOfTopMenu = itemsInTopMenu[1].submenu.items[0].submenu.items;
+			}
+			else
+			{
+				var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
+			}
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
 				if (subItemsInItemOfTopMenu[i].label == event.label)
 				{
-					itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+					if (buildingNativeMenu)	itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+					else CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.removeAt(i);
+					return;
+				}
+			}
+		}
+		
+		private function onNewMenuRenameRequest(event:TemplatingEvent):void
+		{
+			var menuObject:Object;
+			var subItemsInItemOfTopMenu:Object;
+			if (buildingNativeMenu)
+			{
+				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				subItemsInItemOfTopMenu = tmpTopMenu.items[1].submenu.items[0].submenu.items;
+			}
+			else
+			{
+				var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
+			}
+			
+			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
+			{
+				if (subItemsInItemOfTopMenu[i].label == event.label)
+				{
+					/*if (buildingNativeMenu)	itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+					else*/ subItemsInItemOfTopMenu[i].label = event.newLabel;
+					subItemsInItemOfTopMenu[i].data.event = "eventNewFileFromTemplate"+ event.newLabel;
 					return;
 				}
 			}

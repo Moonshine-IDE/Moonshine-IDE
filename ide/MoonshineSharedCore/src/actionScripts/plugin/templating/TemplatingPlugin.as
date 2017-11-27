@@ -624,15 +624,17 @@ package actionScripts.plugin.templating
 			// Resetting a template just removes it from app-storage
 			var rdr:TemplateRenderer = TemplateRenderer(event.target);
 			var custom:FileLocation = rdr.setting.customTemplate;
-			var newFileName:String = event.value as String;
+			var oldFileName:String = TemplatingHelper.getTemplateLabel(custom);
+			var newFileNameWithExtension:String = event.value as String;
+			var newFileName:String = newFileNameWithExtension.split(".")[0];
 			
 			if (custom.fileBridge.exists)
 			{
-				var customNewLocation:FileLocation = custom.fileBridge.parent.resolvePath(newFileName +(!custom.fileBridge.isDirectory ? ".template" : ""));
+				var customNewLocation:FileLocation = custom.fileBridge.parent.resolvePath(newFileNameWithExtension +(!custom.fileBridge.isDirectory ? ".template" : ""));
 				// check if no duplicate naming happens
 				if (customNewLocation.fileBridge.exists)
 				{
-					Alert.show(newFileName +" is already available.", "!Error");
+					Alert.show(newFileNameWithExtension +" is already available.", "!Error");
 					return;
 				}
 				
@@ -648,7 +650,7 @@ package actionScripts.plugin.templating
 							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
 						{
 							ed.currentFile = customNewLocation;
-							ed.label = newFileName;
+							ed.label = newFileNameWithExtension;
 						}
 					}
 					custom.fileBridge.moveTo(customNewLocation, true);
@@ -658,6 +660,21 @@ package actionScripts.plugin.templating
 				rdr.setting.customTemplate = customNewLocation;
 				rdr.setting.label = rdr.setting.customTemplate.fileBridge.name;
 				rdr.dispatchEvent(new Event('refresh'));
+				
+				// remove the existing File/New listener
+				if (!custom.fileBridge.isDirectory)
+				{
+					dispatcher.removeEventListener("eventNewFileFromTemplate"+ oldFileName, handleNewTemplateFile);
+					dispatcher.addEventListener("eventNewFileFromTemplate"+ newFileName, handleNewTemplateFile);
+				}
+				else
+				{
+					dispatcher.removeEventListener("eventNewFileFromTemplate"+ oldFileName, handleNewProjectFile);
+					dispatcher.addEventListener("eventNewFileFromTemplate"+ newFileName, handleNewProjectFile);
+				}
+				
+				// updating file/new menu
+				dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName));
 			}
 		}
 		
@@ -714,25 +731,22 @@ package actionScripts.plugin.templating
 						openNewComponentTypeChoose(event, NewFilePopup.AS_XML);
 						return;
 					case "File":
-					default:
 						openNewComponentTypeChoose(event, NewFilePopup.AS_PLAIN_TEXT);
 						return;
-				}
-				
-				for (i = 0; i < fileTemplates.length; i++)
-				{
-					fileTemplate = fileTemplates[i];
-					if ( TemplatingHelper.getTemplateLabel(fileTemplate) == eventName )
-					{
-						var customTemplate:FileLocation = getCustomFileFor(fileTemplate);
-						if (customTemplate.fileBridge.exists)
+					default:
+						for (i = 0; i < fileTemplates.length; i++)
 						{
-							fileTemplate = customTemplate;
+							fileTemplate = fileTemplates[i];
+							if ( TemplatingHelper.getTemplateLabel(fileTemplate) == eventName )
+							{
+								if (fileTemplate.fileBridge.exists)
+								{
+									openNewComponentTypeChoose(event, NewFilePopup.AS_CUSTOM, fileTemplate);
+									break;
+								}
+							}
 						}
-						
-						createFile(fileTemplate);
 						return;
-					}
 				}
 			}
 			else
@@ -856,7 +870,7 @@ package actionScripts.plugin.templating
 			}
 		}
 		
-		protected function openNewComponentTypeChoose(event:Event, openType:String):void
+		protected function openNewComponentTypeChoose(event:Event, openType:String, fileTemplate:FileLocation=null):void
 		{
 			if (!newFilePopup)
 			{
@@ -864,6 +878,7 @@ package actionScripts.plugin.templating
 				newFilePopup.addEventListener(CloseEvent.CLOSE, handleFilePopupClose);
 				newFilePopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onFileCreateRequest);
 				newFilePopup.openType = openType;
+				newFilePopup.fileTemplate = fileTemplate;
 				
 				// newFileEvent sends by TreeView when right-clicked 
 				// context menu
