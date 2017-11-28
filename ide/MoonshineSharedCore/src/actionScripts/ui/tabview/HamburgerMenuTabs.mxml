@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<s:DropDownList xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                skinClass="actionScripts.ui.tabview.skin.HamburgerMenuTabsSkin"
+                labelField="label" cornerRadius="0" height="25"
+                dataProvider="{_model.hamburgerTabs}">
+    <fx:Script><![CDATA[
+        [Bindable]
+        private var _model:TabsModel;
+
+        public function set model(value:TabsModel):void
+        {
+            _model = value;
+        }
+        ]]></fx:Script>
+</s:DropDownList>
