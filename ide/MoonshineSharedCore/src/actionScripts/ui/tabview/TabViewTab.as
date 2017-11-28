@@ -67,21 +67,26 @@ package actionScripts.ui.tabview
 		}
 		
 		protected var _label:String;
-		public function set label(v:String):void
+		public function set label(value:String):void
 		{
-			_label = v;
-			if (labelView) labelView.text = v;
+			_label = value;
+			if (labelView) labelView.text = value;
 		}
-		
+
+		public function get label():String
+		{
+			return _label;
+		}
+
 		protected var _selected:Boolean;
 		public function get selected():Boolean
 		{
 			return _selected;
 		}
-		public function set selected(v:Boolean):void
+		public function set selected(value:Boolean):void
 		{
-			if (v == _selected) return;
-			_selected = v;
+			if (value == _selected) return;
+			_selected = value;
 			
 			drawButtonState();
 		}

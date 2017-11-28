@@ -221,7 +221,10 @@ package actionScripts.ui.editor
 				var isCurlybracesOpened:Boolean;
 				var isQuotesOpened:Boolean;
 				var lineText:String = StringUtil.trim(editor.model.lines[minusOneSelectedLineIndex].text);
-				if (lineText.charAt(lineText.length-1) == "{" && !editor.model.lines[minusOneSelectedLineIndex].isQuoteTextOpen) isCurlybracesOpened = true;
+				if (lineText.charAt(lineText.length-1) == "{" && !editor.model.lines[minusOneSelectedLineIndex].isQuoteTextOpen)
+				{
+					isCurlybracesOpened = true;
+                }
 				else if (editor.model.lines[minusOneSelectedLineIndex].isQuoteTextOpen)
 				{
 					isQuotesOpened = true;

@@ -18,38 +18,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
-	import flash.display.DisplayObject;
+    import actionScripts.valueObjects.HamburgerMenuTabsVO;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.filters.DropShadowFilter;
 	import flash.geom.Matrix;
 	import flash.utils.Dictionary;
 	
 	import mx.containers.Canvas;
-	import mx.containers.VBox;
 	import mx.core.UIComponent;
 	import mx.events.ResizeEvent;
-	
 
-	/*
-		TODO: 
-			Make it clearer what selectedIndex means
-			Use skins instead of drawing in TabViewTab
-	*/
+    import spark.events.IndexChangeEvent;
+
+
+    /*
+        TODO:
+            Make it clearer what selectedIndex means
+            Use skins instead of drawing in TabViewTab
+    */
 
 	public class TabView extends Canvas
 	{
 		private var tabContainer:Canvas;
 		private var itemContainer:Canvas;
 		private var shadow:UIComponent;
-		
-		private var othersButton:TabViewTab;
-		private var othersMenu:VBox;
+
+        private var hamburgerMenuTabs:HamburgerMenuTabs;
+		private var tabsModel:TabsModel;
 		
 		private var tabLookup:Dictionary = new Dictionary(true); // child:tab
 		
 		private var tabSizeDefault:int = 200;
-		private var tabSizeMin:int = 100; 
+		private var tabSizeMin:int = 100;
 		
 		protected var needsTabLayout:Boolean;
 		protected var needsNewSelectedTab:Boolean = false;
@@ -59,11 +60,11 @@ package actionScripts.ui.tabview
 		{
 			return _selectedIndex;
 		}
-		public function set selectedIndex(v:int):void
+		public function set selectedIndex(value:int):void
 		{
 			if (itemContainer.numChildren == 0) return;
-			if (v < 0) v = 0;
-			_selectedIndex = v;
+			if (value < 0) value = 0;
+			_selectedIndex = value;
 			
 			// Explicitly set new, so no automagic needed.
 			needsNewSelectedTab = false;
@@ -71,7 +72,7 @@ package actionScripts.ui.tabview
 			// Select correct tab
 			for (var i:int = 0; i < tabContainer.numChildren; i++)
 			{
-				if (i == v)
+				if (i == value)
 				{
 					TabViewTab(tabContainer.getChildAt(i)).selected = true;	
 				}
@@ -81,23 +82,7 @@ package actionScripts.ui.tabview
 				}
 			}
 			
-			var itemToDisplay:DisplayObject;
-			
-			if (v >= tabContainer.numChildren)
-			{
-				// Reparent tab so it's not in the others menu.
-				// We let invalidateTabs move another tab out to that menu again later.
-				var tab:TabViewTab = othersMenu.getChildAt(v-tabContainer.numChildren) as TabViewTab;
-				tabContainer.addChild(tab);
-				tab.selected = true;
-				invalidateTabs();
-				_selectedIndex = tabContainer.getChildIndex(tab);
-				itemToDisplay = tab.data as DisplayObject;
-			}
-			else
-			{
-				itemToDisplay = TabViewTab(tabContainer.getChildAt(v)).data as DisplayObject;
-			}
+			var itemToDisplay:DisplayObject = TabViewTab(tabContainer.getChildAt(value)).data as DisplayObject;
 			
 			// Display or hide content
 			for (i = 0; i < itemContainer.numChildren; i++) 
@@ -121,6 +106,8 @@ package actionScripts.ui.tabview
 		public function TabView()
 		{
 			super();
+
+			tabsModel = new TabsModel();
 			addEventListener(ResizeEvent.RESIZE, handleResize);
 		}
 		
@@ -151,25 +138,15 @@ package actionScripts.ui.tabview
 			shadow.height = 25;
 			shadow.mouseEnabled = false;
 			super.addChild(shadow);
+
+			hamburgerMenuTabs = new HamburgerMenuTabs();
+			hamburgerMenuTabs.right = 0;
+			hamburgerMenuTabs.top = 0;
+			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = false;
+			hamburgerMenuTabs.model = tabsModel;
+			hamburgerMenuTabs.addEventListener(Event.CHANGE, onHamburgerMenuTabsChange);
 			
-			othersButton = new TabViewTab();
-			othersButton.setStyle('textPaddingLeft', 2);
-			othersButton.showCloseButton = false;
-			othersButton.width = 25;
-			othersButton.right = 0;
-			othersButton.visible = false;
-			othersButton.addEventListener(MouseEvent.MOUSE_OVER, showOthersMenu);
-			othersButton.addEventListener(MouseEvent.MOUSE_OUT, hideOthersMenu);
-			super.addChild(othersButton);
-			
-			othersMenu = new VBox();
-			othersMenu.setStyle('verticalGap', 0);
-			othersMenu.right = 0;
-			othersMenu.top = 25;
-			othersMenu.visible = false;
-			othersMenu.filters = [new DropShadowFilter(3, 90, 0x0, .3, 4, 4, 1)];
-			othersButton.addEventListener(MouseEvent.MOUSE_OUT, hideOthersMenu);
-			super.addChild(othersMenu); 
+			super.addChild(hamburgerMenuTabs);
 		}
 		
 		private function addTabFor(child:DisplayObject):void
@@ -183,24 +160,26 @@ package actionScripts.ui.tabview
 				child.addEventListener('labelChanged', updateTabLabel);
 			}
 			tabContainer.addChildAt(tab,0);
-			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, focusTab);
-			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, closeTab);
-			callLater(invalidateTabs);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
+			invalidateTabs();
 		}
 		
 		private function removeTabFor(child:DisplayObject):void
 		{
 			var tab:DisplayObject = tabLookup[child];
-			tabLookup[child] = null;
-			child.removeEventListener('labelChanged', updateTabLabel);
-			tab.parent.removeChild(tab);
-			
-			invalidateTabs();
+			if (tab)
+            {
+                tabLookup[child] = null;
+                child.removeEventListener('labelChanged', updateTabLabel);
+                tab.parent.removeChild(tab);
+
+                invalidateTabs();
+            }
 		}
 		
-		private function closeTab(event:Event):void
+		private function onTabClose(event:Event):void
 		{
-			var childIndex:int = tabContainer.getChildIndex(event.target as DisplayObject);
 			var child:DisplayObject = TabViewTab(event.target).data as DisplayObject;
 			
 			var te:TabEvent = new TabEvent(TabEvent.EVENT_TAB_CLOSE, child);
@@ -211,7 +190,7 @@ package actionScripts.ui.tabview
 			
 			invalidateTabs();
 		}
-		
+
 		private function updateTabLabel(event:Event):void
 		{
 			var child:DisplayObject = event.target as DisplayObject;
@@ -220,7 +199,7 @@ package actionScripts.ui.tabview
 			tab.label = child['label'];
 		}
 		
-		private function focusTab(event:Event):void
+		private function onTabClick(event:Event):void
 		{
 			if (event.target.parent == tabContainer)
 			{ 
@@ -229,52 +208,36 @@ package actionScripts.ui.tabview
 			else
 			{
 				var tab:TabViewTab = event.target as TabViewTab;
-				othersMenu.removeChild(tab);
 				tabContainer.addChild(tab);
 				tab.selected = true;
 				selectedIndex = tabContainer.numChildren-1;
-				
-				othersMenu.visible = false;
 			}
 		}
-		
-		private function showOthersMenu(event:Event):void
+
+		private function onHamburgerMenuTabsChange(event:IndexChangeEvent):void
 		{
-			othersMenu.visible = true;	
+			var hamburgerMenuTabsVO:HamburgerMenuTabsVO = hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO;
+			addChild(hamburgerMenuTabsVO.tabData);
+
+			var indexOfHamburgerMenuTabsVO:int = tabsModel.hamburgerTabs.getItemIndex(hamburgerMenuTabsVO);
+			tabsModel.hamburgerTabs.removeItemAt(indexOfHamburgerMenuTabsVO);
 		}
-		
-		private function hideOthersMenu(event:Event):void
-		{
-			if (othersMenu.hitTestPoint(mouseX, mouseY, true)) return;
-			
-			othersMenu.visible = false;
-		}
-		
-		
-		
-		public function invalidateTabs():void
-		{
-			needsTabLayout = true;
-			invalidateDisplayList();
-		}
-		
+
 		override public function getChildIndex(child:DisplayObject):int
 		{
 			var tab:DisplayObject = tabLookup[child];
 			if (tab.parent == tabContainer)
 			{
 				return tabContainer.getChildIndex(tab);
-			} 
-			else
-			{
-				return othersMenu.getChildIndex(tab) + tabContainer.numChildren;
 			}
+
+			return 0;
 		}
 		
 		override public function addChild(child:DisplayObject):DisplayObject
 		{
 			addTabFor(child);
-			selectedIndex = tabContainer.numChildren-1;
+			selectedIndex = tabContainer.numChildren - 1;
 			return itemContainer.addChild(child);
 		}
 		
@@ -282,7 +245,7 @@ package actionScripts.ui.tabview
 		{
 			needsNewSelectedTab = true;
 			invalidateDisplayList();
-			
+
 			removeTabFor(itemContainer.getChildAt(index));
 			return itemContainer.removeChildAt(index);
 		}
@@ -304,76 +267,73 @@ package actionScripts.ui.tabview
 			else
 				selectedIndex = 0;
 		}
-		
-		
+
 		protected function updateTabLayout():void
-		{	
-			if (othersMenu.numChildren > 0)
-			{ 
-				othersButton.visible = true;
-				othersButton.label = othersMenu.numChildren.toString();
-			}
-			else
-			{
-				othersButton.visible = false;
-			} 
-			
+		{
 			// Each item draws vertical separators on both sides, overlap by 1 px to not have duplicate lines.
-			var avalibleWidth:int = width+1;
-			if (othersButton.visible) avalibleWidth -= othersButton.width;
-			
+			var availableWidth:int = width + 1;
+
+			var tab:TabViewTab = null;
+            var i:int;
 			var numTabs:int = tabContainer.numChildren;
-			var tabWidth:int = int(avalibleWidth/numTabs);
+			var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+			var currentTabsWidth:Number = numTabs * tabSizeDefault;
+			var isTabNotFeetToSpace:Boolean = allTabsWidth > availableWidth;
+			var isCurrentTabsFeetToSpace:Boolean = currentTabsWidth > availableWidth;
+			
+			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isTabNotFeetToSpace;
+			
+			if (isTabNotFeetToSpace && isCurrentTabsFeetToSpace)
+			{
+				for (i = numTabs - 2; i > -1; i--)
+				{
+					tab = tabContainer.getChildAt(i) as TabViewTab;
+					var tabData:DisplayObject = tab.data as DisplayObject;
+					if (!tab.selected && tabData)
+					{
+						tabsModel.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
+						removeChild(tabData);
+						break;
+					}
+				}
+			}
+
+            numTabs = tabContainer.numChildren;
+			var tabWidth:int = int(availableWidth/numTabs);
 			
 			tabWidth = Math.max(tabWidth, tabSizeMin);
-			tabWidth = Math.min(tabWidth, tabSizeDefault); 
+			tabWidth = Math.min(tabWidth, tabSizeDefault);
 			tabWidth += 2;
 			
 			var pos:int = -2;
-			for (var i:int = tabContainer.numChildren-1; i > -1; i--)
+			for (i = tabContainer.numChildren-1; i > -1; i--)
 			{
-				var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
+				tab = tabContainer.getChildAt(i) as TabViewTab;
 				tab.x = pos;
 				tab.y = 0;
-				tab.width = tabWidth;
+				//tab.width = tabWidth;
 				pos += tabWidth-1;
 			}
 		}
 		
 		protected function fitTabs():void
 		{
-			var availableWidth:int = Math.max(0, width-othersButton.width);
-			var numTabs:int = tabContainer.numChildren + othersMenu.numChildren;
-			var tabsWeCanFit:int = Math.floor(availableWidth/tabSizeMin);
-			
-			if (tabContainer.numChildren < tabsWeCanFit)
-			{ 	
-				// Move tabs to tab bar
-				var tabsToMove:int = Math.min(tabsWeCanFit-tabContainer.numChildren, othersMenu.numChildren);
-				for (var i:int = 0; i < tabsToMove; i++)
-				{
-					var tab:TabViewTab = othersMenu.getChildAt(0) as TabViewTab;
-					tab.removeEventListener(MouseEvent.MOUSE_OUT, hideOthersMenu);
-					othersMenu.removeChild(tab);
-					tabContainer.addChildAt(tab, 0);
-				}
-			}
-			else if (tabContainer.numChildren > tabsWeCanFit)
+			var tabsWeCanFit:int = Math.floor(width/tabSizeMin);
+
+			if (tabContainer.numChildren > tabsWeCanFit)
 			{ 	
 				// Move tabs to menu (but never the last tab)
-				for (i = tabContainer.numChildren-tabsWeCanFit-1; i >= 0; i--)
+				for (var i:int = tabContainer.numChildren-tabsWeCanFit-1; i >= 0; i--)
 				{
-					tab = tabContainer.getChildAt(i) as TabViewTab;
+					var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
 					if (tab.selected)
 					{ 
 						// Don't move selected tab
 						if (i+1 >= tabContainer.numChildren) break;
 						tab = tabContainer.getChildAt(i+1) as TabViewTab;
 					}
-					
-					tab.addEventListener(MouseEvent.MOUSE_OUT, hideOthersMenu);
+
 					tab.width = tabSizeDefault;
-					othersMenu.addChildAt(tab, 0);
 				}
 			}
 		}
@@ -407,6 +367,11 @@ package actionScripts.ui.tabview
 				needsTabLayout = false;
 			}
 		}
-		
-	}
+
+        private function invalidateTabs():void
+        {
+            needsTabLayout = true;
+            invalidateDisplayList();
+        }
+    }
 }
