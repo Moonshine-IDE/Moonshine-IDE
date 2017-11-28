@@ -38,7 +38,7 @@
 		import mx.collections.IHierarchicalData;
 		import mx.events.AdvancedDataGridEvent;
 		import mx.events.ListEvent;
-		
+
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
 		import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
@@ -76,10 +76,24 @@
 			return "";
 		}
 
+		private function lineLabelFunction(item:StackFrame, column:DataGridColumn = null):String
+		{
+			if(item.source)
+			{
+				return item.line.toString();
+			}
+			return "";
+		}
+
 		private function nameDataTipFunction(item:StackFrame):String
 		{
-			return item.name + " (" + item.line + "," + item.column + ")\n" +
-				item.source.path;
+			var result:String = item.name;
+			if(item.source)
+			{
+				result += " (" + item.line + "," + item.column + ")";
+				result += "\n" + item.source.path;
+			}
+			return result;
 		}
 
 		private function variablesTree_itemOpenHandler(event:AdvancedDataGridEvent):void
@@ -96,7 +110,6 @@
 			var stackFrame:StackFrame = StackFrame(event.itemRenderer.data);
 			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, stackFrame));
 		}
-		
 		]]></mx:Script>
 	
 	<mx:Style>
@@ -196,7 +209,7 @@
 		<mx:columns>
 			<mx:DataGridColumn headerText="Stack Frame" dataField="name"
 				dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
-			<mx:DataGridColumn headerText="Line" dataField="line" width="50"/>
+			<mx:DataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
 		</mx:columns>
 	</mx:DataGrid>
 </mx:VBox>
