@@ -551,6 +551,12 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function parseSource(response:Object):Source
 		{
+			if(!response)
+			{
+				//the stack trace sometimes includes functions internal to the
+				//runtime that don't have a source. That's perfectly fine!
+				return null;
+			}
 			var vo:Source = new Source();
 			vo.name = response.name as String;
 			vo.path = response.path as String;
@@ -570,6 +576,12 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function gotoStackFrame(stackFrame:StackFrame):void
 		{
+			if(!stackFrame.source)
+			{
+				//nothing to open! sometimes the stack trace includes functions
+				//internal to the runtime that cannot be viewed as source.
+				return;
+			}
 			var filePath:String = stackFrame.source.path;
 			var line:int = stackFrame.line - 1;
 			var character:int = stackFrame.column;
