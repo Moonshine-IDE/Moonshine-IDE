@@ -18,41 +18,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import actionScripts.ui.menu.MenuUtils;
-    import actionScripts.valueObjects.ProjectVO;
-
     import flash.display.NativeMenuItem;
-
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
     import flash.events.Event;
-	import flash.events.FocusEvent;
-	import flash.events.KeyboardEvent;
-	import flash.filters.GlowFilter;
-	import flash.ui.ContextMenuItem;
-	import flash.ui.Keyboard;
-	
-	import mx.binding.utils.ChangeWatcher;
-	import mx.controls.Image;
-	import mx.controls.treeClasses.TreeItemRenderer;
-	import mx.core.UIComponent;
-	import mx.core.mx_internal;
-	import mx.events.ToolTipEvent;
-	import mx.validators.StringValidator;
-	
-	import spark.components.Label;
-	import spark.components.TextInput;
-
-	import actionScripts.events.TreeMenuItemEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugin.templating.TemplatingPlugin;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.notifier.ErrorTipManager;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.FileWrapper;
+    import flash.events.FocusEvent;
+    import flash.events.KeyboardEvent;
+    import flash.filters.GlowFilter;
+    import flash.ui.ContextMenuItem;
+    import flash.ui.Keyboard;
+    
+    import mx.binding.utils.ChangeWatcher;
+    import mx.controls.Image;
+    import mx.controls.treeClasses.TreeItemRenderer;
+    import mx.core.UIComponent;
+    import mx.core.mx_internal;
+    import mx.events.ToolTipEvent;
+    import mx.validators.StringValidator;
+    
+    import spark.components.Label;
+    import spark.components.TextInput;
+    
+    import actionScripts.events.TreeMenuItemEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugin.templating.TemplatingPlugin;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.MenuUtils;
+    import actionScripts.ui.notifier.ErrorTipManager;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.ProjectVO;
 
 	use namespace mx_internal;
 	
@@ -93,8 +91,22 @@ package actionScripts.ui.renderers
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 			
 			// stores *new* context menu item
+			generateNewMenuItems();
+			
+			inputValidator = new StringValidator();
+			inputValidator.property = "text";
+			inputValidator.required = true;
+			inputValidator.minLength = 100;
+			inputValidator.enabled = false;
+			
+			ErrorTipManager.registerValidator(inputValidator);
+		}
+		
+		private function generateNewMenuItems():void
+		{
 			if (ConstantsCoreVO.IS_AIR)
 			{
+				newMenuItems = [];
 				for each (var fileTemplate:FileLocation in TemplatingPlugin.fileTemplates)
 				{
 					var lbl:String = TemplatingHelper.getTemplateLabel(fileTemplate);
@@ -106,14 +118,6 @@ package actionScripts.ui.renderers
 					newMenuItems.push(newMenu);
 				}
 			}
-			
-			inputValidator = new StringValidator();
-			inputValidator.property = "text";
-			inputValidator.required = true;
-			inputValidator.minLength = 100;
-			inputValidator.enabled = false;
-			
-			ErrorTipManager.registerValidator(inputValidator);
 		}
 		
 		private function onActiveEditorChange(event:Event):void
@@ -232,12 +236,7 @@ package actionScripts.ui.renderers
 				
 				if (ConstantsCoreVO.IS_AIR)
 				{
-					var newMenu:Object = model.contextMenuCore.getContextMenuItem(NEW, populateTemplatingMenu, "DISPLAYING");
-					var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
-					folder.data = NEW_FOLDER;
-					model.contextMenuCore.subMenu(newMenu, folder);
-					model.contextMenuCore.subMenu(newMenu, model.contextMenuCore.getContextMenuItem(null));
-					model.contextMenuCore.subMenu(newMenu, newMenuItems, redispatch);
+					var newMenu:Object = model.contextMenuCore.getContextMenuItem(NEW, populateTemplatingMenu, "displaying");
 					model.contextMenuCore.addItem(contextMenu, newMenu);
 				}
 				
@@ -329,17 +328,21 @@ package actionScripts.ui.renderers
 
 		private function populateTemplatingMenu(e:Event):void
 		{
-			model.contextMenuCore.subMenu(e.target);
-
+			model.contextMenuCore.removeAll(e.target);
+			
+			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
+			folder.data = NEW_FOLDER;
+			model.contextMenuCore.subMenu(e.target, folder);
+			model.contextMenuCore.subMenu(e.target, model.contextMenuCore.getContextMenuItem(null));
+			
 			for each (var file:FileLocation in TemplatingPlugin.fileTemplates)
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
+				var eventType:String = "eventNewFileFromTemplate"+label;
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
-				item.data = file;
-				model.contextMenuCore.addItem(e.target, item);
+				item.data = eventType;
+				model.contextMenuCore.subMenu(e.target, item);
 			}
-			
-			model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT));
 		}
 		
 		private function redispatch(event:Event):void

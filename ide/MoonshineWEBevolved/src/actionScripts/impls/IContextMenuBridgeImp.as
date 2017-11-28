@@ -49,5 +49,10 @@ package actionScripts.impls
 		{
 			ContextMenu(menuOf).customItems.push(menuItem as ContextMenuItem);
 		}
+		
+		public function removeAll(menuOf:Object):void
+		{
+			if (ContextMenu(menuOf).customItems) ContextMenu(menuOf).customItems = [];
+		}
 	}
 }

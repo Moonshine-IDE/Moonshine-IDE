@@ -433,7 +433,7 @@ package actionScripts.plugin.templating
 			);
 			
 			// Update internal template list
-			readTemplates();
+			fileTemplates.push(newTemplate);
 			
 			// send event to get the new item added immediately to File/New menu
 			var lbl:String = TemplatingHelper.getTemplateLabel(newTemplate);
@@ -471,7 +471,7 @@ package actionScripts.plugin.templating
 			
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
-			readTemplates();
+			projectTemplates.push(newTemplate);
 			
 			// send event to get the new item added immediately to File/New menu
 			// send event to get the new item added immediately to File/New menu
@@ -615,7 +615,9 @@ package actionScripts.plugin.templating
 				settingsList.splice(idx, 1);
 				rdr.dispatchEvent(new Event('refresh'));
 				
-				readTemplates();
+				//readTemplates();
+				if (custom.fileBridge.isDirectory) projectTemplates.splice(projectTemplates.indexOf(custom), 1);
+				else fileTemplates.splice(fileTemplates.indexOf(custom), 1);
 			}
 		}
 		
@@ -639,9 +641,10 @@ package actionScripts.plugin.templating
 					return;
 				}
 				
+				var isDirectory:Boolean = custom.fileBridge.isDirectory; // detect this before moveTo else it'll always return false to older file instance
 				custom.fileBridge.moveTo(customNewLocation, true);
 				
-				if (!custom.fileBridge.isDirectory)	
+				if (!isDirectory)	
 				{
 					// we need to update file location of the (if any) opened instance 
 					// of the file template
@@ -666,7 +669,7 @@ package actionScripts.plugin.templating
 					if (tmpOldIndex != -1) fileTemplates[tmpOldIndex] = customNewLocation;
 					
 					// updating file/new menu
-					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, false, oldFileName, null, newFileName));
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, false, oldFileName, null, newFileName, customNewLocation));
 				}
 				else 
 				{
@@ -681,7 +684,7 @@ package actionScripts.plugin.templating
 					if (tmpOldIndex != -1) projectTemplates[tmpOldIndex] = customNewLocation;
 					
 					// updating file/new menu
-					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName));
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName, customNewLocation));
 				}
 				
 				rdr.setting.customTemplate = customNewLocation;
@@ -1076,7 +1079,8 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + ((event.fromTemplate == ConstantsCoreVO.TEMPLATE_XML) ? ".xml" : ""));
+				var tmpArr:Array = event.fromTemplate.fileBridge.name.split(".");
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +"."+ tmpArr[tmpArr.length - 2]);
 				fileToSave.fileBridge.save(content);
 				
 				// opens the file after writing done

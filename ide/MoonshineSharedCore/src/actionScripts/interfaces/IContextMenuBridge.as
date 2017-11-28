@@ -27,5 +27,6 @@ package actionScripts.interfaces
 		function getContextMenuItem(title:String, listener:Function = null, forState:String=null, hasSeparatorBefore:Boolean=false):Object;
 		function subMenu(menuOf:Object, menuItem:Object = null, extendedListner:Function=null):void;
 		function addItem(menuOf:Object, menuItem:Object):void;
+		function removeAll(menuOf:Object):void;
 	}
 }

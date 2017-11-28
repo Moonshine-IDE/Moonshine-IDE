@@ -63,6 +63,11 @@ package actionScripts.impls
 			else if (menuItem) NativeMenuItem(menuOf).submenu.addItem(menuItem as NativeMenuItem);
 		}
 		
+		public function removeAll(menuOf:Object):void
+		{
+			if (NativeMenuItem(menuOf).submenu) NativeMenuItem(menuOf).submenu.removeAllItems();
+		}
+		
 		public function addItem(menuOf:Object, menuItem:Object):void
 		{
 			ContextMenu(menuOf).addItem(menuItem as NativeMenuItem);

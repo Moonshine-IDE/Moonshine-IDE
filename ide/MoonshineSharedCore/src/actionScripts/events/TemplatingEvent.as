@@ -20,6 +20,8 @@ package actionScripts.events
 {
 	import flash.events.Event;
 	
+	import actionScripts.factory.FileLocation;
+	
 	public class TemplatingEvent extends Event
 	{
 		public static const ADDED_NEW_TEMPLATE:String = "ADDED_NEW_TEMPLATE";
@@ -28,14 +30,16 @@ package actionScripts.events
 		
 		public var label:String;
 		public var newLabel:String;
+		public var newFileTemplate:FileLocation;
 		public var listener:String;
 		public var isProject:Boolean;
 		
-		public function TemplatingEvent(type:String, isProject:Boolean, label:String, listener:String=null, newLabel:String=null)
+		public function TemplatingEvent(type:String, isProject:Boolean, label:String, listener:String=null, newLabel:String=null, newFileTemplate:FileLocation=null)
 		{
 			this.isProject = isProject;
 			this.label = label;
 			this.newLabel = newLabel;
+			this.newFileTemplate = newFileTemplate;
 			this.listener = listener;
 			
 			super(type, false, false);

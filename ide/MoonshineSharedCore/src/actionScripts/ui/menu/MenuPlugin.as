@@ -25,7 +25,6 @@ package actionScripts.ui.menu
     import mx.core.FlexGlobals;
     import mx.events.MenuEvent;
     
-    import actionScripts.events.GeneralEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.ShortcutEvent;
     import actionScripts.events.TemplatingEvent;
@@ -38,7 +37,6 @@ package actionScripts.ui.menu
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
-    import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.menu.vo.CustomMenu;
     import actionScripts.ui.menu.vo.CustomMenuItem;
@@ -457,9 +455,17 @@ package actionScripts.ui.menu
 			{
 				if (subItemsInItemOfTopMenu[i].label == event.label)
 				{
-					/*if (buildingNativeMenu)	itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
-					else*/ subItemsInItemOfTopMenu[i].label = event.newLabel;
+					subItemsInItemOfTopMenu[i].label = event.newLabel;
 					subItemsInItemOfTopMenu[i].data.event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
+					subItemsInItemOfTopMenu[i].data.eventData = event.newFileTemplate;
+					
+					// in case of mac we need to update windowMenus for latter use
+					if (buildingNativeMenu)
+					{
+						windowMenus[1].items[0].items[i].label = event.newLabel;
+						windowMenus[1].items[0].items[i].event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
+						windowMenus[1].items[0].items[i].data = event.newFileTemplate;
+					}
 					return;
 				}
 			}
