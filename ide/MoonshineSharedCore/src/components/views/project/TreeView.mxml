@@ -739,7 +739,6 @@
 			/*
 			Custom implementation of editing, instead of using mx:Trees builtin capabilities
 			*/
-			
 			private function handleItemRenameCancel(event:TreeMenuItemEvent):void
 			{
 				cleanupAfterRename();
@@ -814,27 +813,23 @@
 				return null;
 			}
 			
-			private function fileClickedInTree(event:ListEvent):void
+			private function fileDoubleClickedInTree(event:ListEvent):void
 			{
-				var item:Object = tree.selectedItem;
-				if ( tree.dataDescriptor.isBranch(item) )
+				var item:FileWrapper = tree.selectedItem as FileWrapper;
+				if (tree.dataDescriptor.isBranch(item))
 				{
 					tree.expandItem(item, !tree.isItemOpen(item), true);
 				}
+				else
+				{
+					if (item.file.fileBridge.isDirectory || item.isWorking) return;
+					
+					GlobalEventDispatcher.getInstance().dispatchEvent( 
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, item.file, -1, item) 
+					);
+				}
 
-				refreshActiveProject(item as FileWrapper);
-			}
-			
-			private function fileDoubleClickedInTree(event:ListEvent):void
-			{
-				var fw:FileWrapper = event.itemRenderer.data as FileWrapper;
-				if (fw.file.fileBridge.isDirectory || fw.isWorking) return;
-
-				refreshActiveProject(fw);
-
-				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fw.file, -1, fw) 
-				);
+				refreshActiveProject(item);
 			}
 			
 			private function getIconForFile(object:Object):Class
@@ -897,7 +892,6 @@
 		iconFunction="{getIconForFile}"
 		itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
 		itemDoubleClick="fileDoubleClickedInTree(event)"
-		itemClick="fileClickedInTree(event)"
 		creationComplete="initTree()"/>
 	
 </mx:VBox>
