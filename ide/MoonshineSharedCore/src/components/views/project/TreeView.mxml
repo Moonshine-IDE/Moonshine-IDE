@@ -261,7 +261,12 @@
 					case 'remove':
 					{
 						project = event.items[0] as ProjectVO;
-						projectFolders.removeItemAt(projectFolders.getItemIndex(project.projectFolder));
+						// after a project renaming, and updating its internal fields
+						// direct search (i.e. getItemIndex) of fileWrapper object in the collection
+						// returns -1 even the fileWrapper object and object inside the collection has same
+						// instance id. Thus a different approach it needs to parse by its uid value
+						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
+						projectFolders.removeItemAt(tmpFWIndex);
 						break;
 					}
 					case 'add':
@@ -358,10 +363,7 @@
 					}
 					case FTETreeItemRenderer.CLOSE:
 					{
-						project = getProjectFromProjectFolder(fileWrapper);
-						dispatcher.dispatchEvent(
-							new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project)
-						);
+						onFileDeletedOnServer(fileWrapper);
 						break;
 					}
 					case FTETreeItemRenderer.DELETE:
@@ -545,10 +547,9 @@
 						
 						setTimeout(function():void
 						{
-							var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(i.projectFolder, null, i.projectFolder);
-							tree.selectedItem = tmpFileW;
+							tree.selectedItem = i.projectFolder;
 							
-							var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+							var indexToItemRenderer:int = tree.getItemIndex(i.projectFolder);
 							tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
 						}, 300);
 						break;

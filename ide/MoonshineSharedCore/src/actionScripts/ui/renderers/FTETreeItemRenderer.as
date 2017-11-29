@@ -279,7 +279,10 @@ package actionScripts.ui.renderers
 					}
 					
 					//contextMenu.addItem(new ContextMenuItem(null, true));
-					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? SETTINGS : PROJECT_SETUP, redispatch, Event.SELECT));
+					if (ConstantsCoreVO.IS_AIR && !fw.projectReference.isTemplate)
+					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? SETTINGS : PROJECT_SETUP, redispatch, Event.SELECT));
+					}
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(CLOSE, redispatch, Event.SELECT));
 					if (ConstantsCoreVO.IS_AIR)
 					{
