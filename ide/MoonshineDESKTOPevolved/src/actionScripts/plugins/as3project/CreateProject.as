@@ -154,6 +154,8 @@ package actionScripts.plugins.as3project
 		{
 			// Only template for those we can handle
 			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
+			
+			var lastSelectedProjectPath:String;
 
             setProjectType(event.templateDir.fileBridge.name);
 
@@ -178,6 +180,7 @@ package actionScripts.plugins.as3project
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 			}
 			else
 			{
@@ -209,8 +212,9 @@ package actionScripts.plugins.as3project
 				project.projectName = "ExternalProject";
 				project.isProjectFromExistingSource = true;
 			}
-				
-			project.folderLocation = new FileLocation(model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1]);
+			
+			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+			project.folderLocation = new FileLocation(tmpProjectSourcePath);
 			
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
@@ -274,6 +278,7 @@ package actionScripts.plugins.as3project
 		
 		private function createCustomOrAway3DProject(event:NewProjectEvent):void
 		{
+			var lastSelectedProjectPath:String;
 			var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 			tempName = tempName.replace(/ /g, "");
 			
@@ -283,13 +288,15 @@ package actionScripts.plugins.as3project
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 			}
 			else
 			{
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
 			
-			project.folderLocation = new FileLocation(model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1]);
+			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+			project.folderLocation = new FileLocation(tmpProjectSourcePath);
 			
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.Width = 150;
@@ -418,6 +425,7 @@ package actionScripts.plugins.as3project
 				model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
             }
 
+			cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
 			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 
