@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
-	import flash.display.DisplayObject;
+    import components.views.splashscreen.SplashScreen;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	
 	import mx.binding.utils.BindingUtils;
@@ -104,7 +106,10 @@ package actionScripts.ui
 				case 'remove':
 				{
 					var editor:DisplayObject = event.items[0] as DisplayObject;
-					mainContent.removeChild(editor);
+					if (!(editor is SplashScreen))
+                    {
+                        mainContent.removeChild(editor);
+                    }
 					// This is the only thing that changes when user saves as
 					if (editor is IContentWindow)
 					{

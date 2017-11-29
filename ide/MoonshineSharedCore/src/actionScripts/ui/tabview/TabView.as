@@ -53,7 +53,7 @@ package actionScripts.ui.tabview
 		private var tabSizeMin:int = 100;
 		
 		protected var needsTabLayout:Boolean;
-		protected var needsNewSelectedTab:Boolean = false;
+		protected var needsNewSelectedTab:Boolean;
 		
 		private var _selectedIndex:int = 0;
 		public function get selectedIndex():int
@@ -100,7 +100,7 @@ package actionScripts.ui.tabview
 				}
 			}
 			
-			invalidateTabs();
+			invalidateLayoutTabs();
 		}
 		
 		public function TabView()
@@ -113,7 +113,7 @@ package actionScripts.ui.tabview
 		
 		private function handleResize(event:Event):void
 		{
-			invalidateTabs();
+			invalidateLayoutTabs();
 		}
 		
 		override protected function createChildren():void
@@ -162,20 +162,18 @@ package actionScripts.ui.tabview
 			tabContainer.addChildAt(tab,0);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
-			invalidateTabs();
+			invalidateLayoutTabs();
 		}
 		
 		private function removeTabFor(child:DisplayObject):void
 		{
 			var tab:DisplayObject = tabLookup[child];
-			if (tab)
-            {
-                tabLookup[child] = null;
-                child.removeEventListener('labelChanged', updateTabLabel);
-                tab.parent.removeChild(tab);
+			
+			tabLookup[child] = null;
+            tab.parent.removeChild(tab);
 
-                invalidateTabs();
-            }
+            child.removeEventListener('labelChanged', updateTabLabel);
+            invalidateLayoutTabs();
 		}
 		
 		private function onTabClose(event:Event):void
@@ -188,7 +186,7 @@ package actionScripts.ui.tabview
 			 
 			removeChild(child);
 			
-			invalidateTabs();
+			invalidateLayoutTabs();
 		}
 
 		private function updateTabLabel(event:Event):void
@@ -217,11 +215,11 @@ package actionScripts.ui.tabview
 		private function onHamburgerMenuTabsChange(event:IndexChangeEvent):void
 		{
 			var hamburgerMenuTabsVO:HamburgerMenuTabsVO = hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO;
-			addChild(hamburgerMenuTabsVO.tabData);
+			tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
 
-			var indexOfHamburgerMenuTabsVO:int = tabsModel.hamburgerTabs.getItemIndex(hamburgerMenuTabsVO);
-			tabsModel.hamburgerTabs.removeItemAt(indexOfHamburgerMenuTabsVO);
-		}
+            addChild(hamburgerMenuTabsVO.tabData);
+            selectedIndex = 0;
+        }
 
 		override public function getChildIndex(child:DisplayObject):int
 		{
@@ -243,8 +241,7 @@ package actionScripts.ui.tabview
 		
 		override public function removeChildAt(index:int):DisplayObject
 		{
-			needsNewSelectedTab = true;
-			invalidateDisplayList();
+			invalidateTabSelection();
 
 			removeTabFor(itemContainer.getChildAt(index));
 			return itemContainer.removeChildAt(index);
@@ -252,12 +249,17 @@ package actionScripts.ui.tabview
 		
 		override public function removeChild(child:DisplayObject):DisplayObject
 		{
-			needsNewSelectedTab = true;
-			invalidateDisplayList();
-			
-			removeTabFor(child);
-			
-			return itemContainer.removeChild(child);
+			invalidateTabSelection();
+
+			var tab:TabViewTab = tabLookup[child];
+
+			if (tab)
+            {
+                removeTabFor(child);
+                return itemContainer.removeChild(child);
+            }
+
+			return null;
 		}
 		
 		protected function focusNewTab():void
@@ -277,13 +279,11 @@ package actionScripts.ui.tabview
             var i:int;
 			var numTabs:int = tabContainer.numChildren;
 			var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
-			var currentTabsWidth:Number = numTabs * tabSizeDefault;
 			var isTabNotFeetToSpace:Boolean = allTabsWidth > availableWidth;
-			var isCurrentTabsFeetToSpace:Boolean = currentTabsWidth > availableWidth;
-			
+
 			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isTabNotFeetToSpace;
 			
-			if (isTabNotFeetToSpace && isCurrentTabsFeetToSpace)
+			if (isTabsFitIntoSpace())
 			{
 				for (i = numTabs - 2; i > -1; i--)
 				{
@@ -368,7 +368,23 @@ package actionScripts.ui.tabview
 			}
 		}
 
-        private function invalidateTabs():void
+		private function isTabsFitIntoSpace():Boolean
+		{
+            var availableWidth:int = width + 1;
+            var numTabs:int = tabContainer.numChildren;
+            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+            var currentTabsWidth:Number = numTabs * tabSizeDefault;
+
+            return allTabsWidth > availableWidth && currentTabsWidth > availableWidth;
+		}
+
+		private function invalidateTabSelection():void
+		{
+            needsNewSelectedTab = true;
+            invalidateDisplayList();
+		}
+
+        private function invalidateLayoutTabs():void
         {
             needsTabLayout = true;
             invalidateDisplayList();
