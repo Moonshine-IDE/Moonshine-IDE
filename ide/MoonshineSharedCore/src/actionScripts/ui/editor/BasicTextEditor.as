@@ -176,7 +176,7 @@ package actionScripts.ui.editor
 			// https://github.com/prominic/Moonshine-IDE/issues/31
 			// to ensure if the file has a pending debug/breakpoint call
 			// call extended from OpenFileCommand/openFile(..)
-			if (currentFile.fileBridge.nativePath == DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH) 
+			if (currentFile && currentFile.fileBridge.nativePath == DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH)
 			{
 				editor.isNeedToBeTracedAfterOpening = true;
 			}
