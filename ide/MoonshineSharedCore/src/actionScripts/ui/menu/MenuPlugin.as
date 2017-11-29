@@ -462,9 +462,9 @@ package actionScripts.ui.menu
 					// in case of mac we need to update windowMenus for latter use
 					if (buildingNativeMenu)
 					{
-						windowMenus[1].items[0].items[i].label = event.newLabel;
-						windowMenus[1].items[0].items[i].event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
-						windowMenus[1].items[0].items[i].data = event.newFileTemplate;
+						windowMenus[1].items[0].items[i-1].label = event.newLabel;
+						windowMenus[1].items[0].items[i-1].event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
+						windowMenus[1].items[0].items[i-1].data = event.newFileTemplate;
 					}
 					return;
 				}
