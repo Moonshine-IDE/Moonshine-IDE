@@ -274,7 +274,7 @@ package actionScripts.plugins.as3project
 		
 		private function createCustomOrAway3DProject(event:NewProjectEvent):void
 		{
-			var tempName: String = event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("("));
+			var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 			tempName = tempName.replace(/ /g, "");
 			
 			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), tempName, false);
