@@ -160,10 +160,11 @@ package actionScripts.ui.tabview
 				child.addEventListener('labelChanged', updateTabLabel);
 			}
 			tabContainer.addChildAt(tab,0);
+
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
 			invalidateLayoutTabs();
-		}
+        }
 		
 		private function removeTabFor(child:DisplayObject):void
 		{
@@ -235,8 +236,10 @@ package actionScripts.ui.tabview
 		override public function addChild(child:DisplayObject):DisplayObject
 		{
 			addTabFor(child);
-			selectedIndex = tabContainer.numChildren - 1;
-			return itemContainer.addChild(child);
+			var editor:DisplayObject = itemContainer.addChild(child);
+            selectedIndex = 0;
+
+			return editor;
 		}
 		
 		override public function removeChildAt(index:int):DisplayObject
@@ -278,12 +281,10 @@ package actionScripts.ui.tabview
 			var tab:TabViewTab = null;
             var i:int;
 			var numTabs:int = tabContainer.numChildren;
-			var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
-			var isTabNotFeetToSpace:Boolean = allTabsWidth > availableWidth;
+			var isHamburgerMenuVisible:Boolean = isHamburgerMenuWithTabsVisible();
+			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isHamburgerMenuVisible;
 
-			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isTabNotFeetToSpace;
-			
-			if (isTabsFitIntoSpace())
+			if (checkWhetherTabsCanFeedIntoAvailableSpace())
 			{
 				for (i = numTabs - 2; i > -1; i--)
 				{
@@ -296,6 +297,14 @@ package actionScripts.ui.tabview
 						break;
 					}
 				}
+			}
+			else if (!isHamburgerMenuVisible)
+			{
+				if (tabsModel.hamburgerTabs.length > 0)
+                {
+                    var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
+                    addChild(hamburgerMenuVO.tabData);
+                }
 			}
 
             numTabs = tabContainer.numChildren;
@@ -311,33 +320,10 @@ package actionScripts.ui.tabview
 				tab = tabContainer.getChildAt(i) as TabViewTab;
 				tab.x = pos;
 				tab.y = 0;
-				//tab.width = tabWidth;
 				pos += tabWidth-1;
 			}
 		}
-		
-		protected function fitTabs():void
-		{
-			var tabsWeCanFit:int = Math.floor(width/tabSizeMin);
 
-			if (tabContainer.numChildren > tabsWeCanFit)
-			{ 	
-				// Move tabs to menu (but never the last tab)
-				for (var i:int = tabContainer.numChildren-tabsWeCanFit-1; i >= 0; i--)
-				{
-					var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
-					if (tab.selected)
-					{ 
-						// Don't move selected tab
-						if (i+1 >= tabContainer.numChildren) break;
-						tab = tabContainer.getChildAt(i+1) as TabViewTab;
-					}
-
-					tab.width = tabSizeDefault;
-				}
-			}
-		}
-		
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
 		{
 			super.updateDisplayList(unscaledWidth, unscaledHeight);
@@ -362,13 +348,21 @@ package actionScripts.ui.tabview
 			
 			if (needsTabLayout)
 			{
-				fitTabs();
 				updateTabLayout();
 				needsTabLayout = false;
 			}
 		}
 
-		private function isTabsFitIntoSpace():Boolean
+		private function isHamburgerMenuWithTabsVisible():Boolean
+		{
+            var availableWidth:int = width + 1;
+            var numTabs:int = tabContainer.numChildren;
+            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+
+            return allTabsWidth > availableWidth;
+        }
+
+		private function checkWhetherTabsCanFeedIntoAvailableSpace():Boolean
 		{
             var availableWidth:int = width + 1;
             var numTabs:int = tabContainer.numChildren;
