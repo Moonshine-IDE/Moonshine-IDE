@@ -281,10 +281,9 @@ package actionScripts.ui.tabview
 			var tab:TabViewTab = null;
             var i:int;
 			var numTabs:int = tabContainer.numChildren;
-			var isHamburgerMenuVisible:Boolean = isHamburgerMenuWithTabsVisible();
-			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isHamburgerMenuVisible;
+			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = isHamburgerMenuWithTabsVisible();
 
-			if (checkWhetherTabsCanFeedIntoAvailableSpace())
+			if (!canAllTabsFitIntoAvailableSpace())
 			{
 				for (i = numTabs - 2; i > -1; i--)
 				{
@@ -298,13 +297,9 @@ package actionScripts.ui.tabview
 					}
 				}
 			}
-			else if (!isHamburgerMenuVisible)
+			else
 			{
-				if (tabsModel.hamburgerTabs.length > 0)
-                {
-                    var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
-                    addChild(hamburgerMenuVO.tabData);
-                }
+                shiftHamburgerMenuTabsIfSpaceAvailable();
 			}
 
             numTabs = tabContainer.numChildren;
@@ -321,6 +316,21 @@ package actionScripts.ui.tabview
 				tab.x = pos;
 				tab.y = 0;
 				pos += tabWidth-1;
+			}
+		}
+
+		private function shiftHamburgerMenuTabsIfSpaceAvailable():void
+		{
+			if (!canTabFitIntoAvailableSpace()) return;
+
+			if (tabsModel.hamburgerTabs.length > 0)
+			{
+				var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
+				addChild(hamburgerMenuVO.tabData);
+
+				tabsModel.hamburgerTabs.refresh();
+
+				shiftHamburgerMenuTabsIfSpaceAvailable();
 			}
 		}
 
@@ -362,14 +372,32 @@ package actionScripts.ui.tabview
             return allTabsWidth > availableWidth;
         }
 
-		private function checkWhetherTabsCanFeedIntoAvailableSpace():Boolean
+		private function canAllTabsFitIntoAvailableSpace():Boolean
 		{
             var availableWidth:int = width + 1;
             var numTabs:int = tabContainer.numChildren;
             var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
 
-            return allTabsWidth > availableWidth && currentTabsWidth > availableWidth;
+            return !(allTabsWidth > availableWidth && currentTabsWidth > availableWidth);
+		}
+
+		private function canTabFitIntoAvailableSpace():Boolean
+		{
+            var availableWidth:int = width + 1;
+            var numTabs:int = tabContainer.numChildren;
+            var currentTabsWidth:Number = numTabs * tabSizeDefault;
+
+			if (currentTabsWidth < availableWidth)
+			{
+				var widthOfEmptySpace:Number = availableWidth - currentTabsWidth;
+				if (widthOfEmptySpace > 0 && widthOfEmptySpace > tabSizeDefault)
+                {
+                    return true;
+                }
+			}
+
+			return false;
 		}
 
 		private function invalidateTabSelection():void

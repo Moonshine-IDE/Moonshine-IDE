@@ -112,9 +112,9 @@ package actionScripts.plugin.splashscreen
             {
                 splashScreen = new SplashScreen();
                 splashScreen.plugin = this;
-            }
 
-            model.editors.addItem(splashScreen);
+                model.editors.addItem(splashScreen);
+            }
 
             // following will load template data from local for desktop
             if (ConstantsCoreVO.IS_AIR)
