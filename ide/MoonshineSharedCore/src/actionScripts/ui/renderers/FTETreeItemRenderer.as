@@ -81,7 +81,6 @@ package actionScripts.ui.renderers
 		private var sourceControlSystem:Label;
 		private var loadingIcon:Image;
 		private var isTooltipListenerAdded:Boolean;
-		private var newMenuItems:Array = [];
 		private var inputValidator:StringValidator;
 
 		public function FTETreeItemRenderer()
@@ -90,9 +89,6 @@ package actionScripts.ui.renderers
 			model = IDEModel.getInstance();
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 			
-			// stores *new* context menu item
-			generateNewMenuItems();
-			
 			inputValidator = new StringValidator();
 			inputValidator.property = "text";
 			inputValidator.required = true;
@@ -100,24 +96,6 @@ package actionScripts.ui.renderers
 			inputValidator.enabled = false;
 			
 			ErrorTipManager.registerValidator(inputValidator);
-		}
-		
-		private function generateNewMenuItems():void
-		{
-			if (ConstantsCoreVO.IS_AIR)
-			{
-				newMenuItems = [];
-				for each (var fileTemplate:FileLocation in TemplatingPlugin.fileTemplates)
-				{
-					var lbl:String = TemplatingHelper.getTemplateLabel(fileTemplate);
-					
-					// TODO: Do MenuEvent and have data:* for this kind of thing
-					var eventType:String = "eventNewFileFromTemplate"+lbl;
-					var newMenu:Object = model.contextMenuCore.getContextMenuItem(lbl, null, Event.SELECT);
-					newMenu.data = eventType;
-					newMenuItems.push(newMenu);
-				}
-			}
 		}
 		
 		private function onActiveEditorChange(event:Event):void
