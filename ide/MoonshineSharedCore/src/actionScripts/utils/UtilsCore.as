@@ -24,11 +24,13 @@ package actionScripts.utils
 	import flash.system.Capabilities;
 	
 	import mx.collections.ArrayCollection;
+	import mx.collections.ICollectionView;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
 	import mx.events.ToolTipEvent;
 	import mx.managers.PopUpManager;
+	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
@@ -386,6 +388,20 @@ package actionScripts.utils
 			}
 			
 			return wrapper;
+		}
+		
+		/**
+		 * Finding fileWrapper by its UDID
+		 */
+		public static function findFileWrapperIndexByID(wrapperToSearch:FileWrapper, searchIn:ICollectionView):int
+		{
+			var uidToSearch:String = UIDUtil.getUID(wrapperToSearch);
+			for (var i:String in searchIn)
+			{
+				if (UIDUtil.getUID(searchIn[i]) == uidToSearch) return int(i);
+			}
+			
+			return -1;
 		}
 		
 		/**

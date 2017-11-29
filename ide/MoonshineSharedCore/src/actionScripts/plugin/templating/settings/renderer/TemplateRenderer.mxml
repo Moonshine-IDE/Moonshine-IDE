@@ -85,20 +85,14 @@
 			private function rename():void
 			{
 				isProject = setting.customTemplate.fileBridge.isDirectory;
+				txtRename.prompt = isProject ? "Enter a name" : "Enter a name and extension";
 				
 				// show the file name cutting down .template word
-				if (!isProject)
-				{
-					var tmpSplit:Array = setting.label.split(".");
-					tmpSplit.pop(); // .pop twice as 1. ".template", 2. extension
-					txtRenameExt.text = tmpSplit.pop();
-					txtRename.text = tmpSplit.join(".");
-				}
-				else
-					txtRename.text = setting.label;
+				var lastIndex:int = setting.label.indexOf(".template");
+				txtRename.text = (lastIndex != -1) ? setting.label.substring(0, lastIndex) : setting.label;
 				
 				lblName.visible = false;
-				hgEdit.visible = true;
+				txtRename.visible = true;
 				btnsRegular.includeInLayout = btnsRegular.visible = false;
 				btnsRename.includeInLayout = btnsRename.visible = true;
 				
@@ -107,13 +101,13 @@
 			
 			protected function renameDone(event:MouseEvent):void
 			{
-				if (StringUtil.trim(txtRename.text).length == 0 || (!isProject && StringUtil.trim(txtRenameExt.text).length == 0))
+				if (StringUtil.trim(txtRename.text).length == 0 || (!isProject && txtRename.text.split(".").length < 2))
 				{
-					Alert.show("Please enter a valid file name and extension.", "Error!");
+					Alert.show("Please enter a valid file "+ (isProject ? "name." : "name with extension."), "Error!");
 					return;
 				}
 				
-				dispatchEvent(new GeneralEvent(GeneralEvent.DONE, txtRename.text +(isProject ? "" : "."+ txtRenameExt.text)));
+				dispatchEvent(new GeneralEvent(GeneralEvent.DONE, txtRename.text));
 				
 				// when done
 				renameCancel(null);
@@ -122,7 +116,7 @@
 			protected function renameCancel(event:MouseEvent):void
 			{
 				lblName.visible = true;
-				hgEdit.visible = false;
+				txtRename.visible = false;
 				btnsRegular.includeInLayout = btnsRegular.visible = true;
 				btnsRename.includeInLayout = btnsRename.visible = false;
 			}
@@ -132,26 +126,13 @@
 	
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:Group autoLayout="true" width="100%">
-			<s:HGroup id="hgEdit" 
-					  width="100%" visible="false" verticalAlign="bottom" gap="0">
-				<s:TextInput id="txtRename"
-							 styleName="uiTextSettingsValue"
-							 borderVisible="false" width="100%"
-							 contentBackgroundAlpha="1"
-							 unfocusedTextSelectionColor="#a8c6ee"
-							 focusAlpha="0" paddingLeft="0"
-							 prompt="Enter a template name"/>
-				<s:Label text="." paddingBottom="4" visible="{!isProject}" includeInLayout="{!isProject}"/>
-				<s:TextInput id="txtRenameExt"
-							 styleName="uiTextSettingsValue"
-							 width="80" maxChars="8"
-							 borderVisible="false"
-							 contentBackgroundAlpha="1"
-							 unfocusedTextSelectionColor="#a8c6ee"
-							 focusAlpha="0" paddingLeft="0"
-							 prompt="Extension"
-							 visible="{!isProject}" includeInLayout="{!isProject}"/>
-			</s:HGroup>
+			<s:TextInput id="txtRename"
+						 styleName="uiTextSettingsValue"
+						 borderVisible="false" width="100%"
+						 contentBackgroundAlpha="1"
+						 unfocusedTextSelectionColor="#a8c6ee"
+						 focusAlpha="0" paddingLeft="0"
+						 visible="false"/>
 			<s:Label id="lblName" 
 					 styleName="uiTextSettingsValue"
 					 text="{setting.label}"
