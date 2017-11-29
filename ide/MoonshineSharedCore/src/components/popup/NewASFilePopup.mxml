@@ -288,9 +288,13 @@
 		</s:VGroup>
 		<s:VGroup width="100%">
 			<s:Label text="Name:"/>
-			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
-								  change="onNameChanged(event)" enter="onCreateButton(null)"/>
+			<s:Group width="100%">
+				<view:PromptTextInput id="txtFileName"
+									  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+									  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
+				<s:Label text=".as" styleName="textInputLabel" textAlign="right"
+						 right="6" verticalCenter="0"/>
+			</s:Group>
 			<s:Label text="Modifiers:"/>
 			<s:TileGroup width="220" columnWidth="100">
 				<s:RadioButton id="radio1"

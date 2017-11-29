@@ -165,8 +165,22 @@
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				minHeight = height;
-				title = (openType == AS_XML) ? "New XML File" : "New File";
 				txtFileName.restrict = "0-9A-Za-z_.";
+				if (openType == AS_XML) 
+				{
+					title = "New XML File";
+					lblExtension.text = ".xml";
+				}
+				else
+				{
+					title = "New File";
+					if (!fileTemplate) lblExtension.text = ".txt";
+					else
+					{
+						var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
+						if (tmpArr.length >= 3) lblExtension.text = "."+ tmpArr[tmpArr.length - 2];
+					}
+				}
 				
 				if (wrapperBelongToProject)
 				{
@@ -259,9 +273,14 @@
 		</s:VGroup>
 		<s:VGroup width="100%">
 			<s:Label text="Name:"/>
-			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
-								  change="onNameChanged(event)" enter="onCreateButton(null)"/>
+			<s:Group width="100%">
+				<view:PromptTextInput id="txtFileName"
+									  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+									  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
+				<s:Label id="lblExtension" 
+						 styleName="textInputLabel" textAlign="right"
+						 right="6" verticalCenter="0"/>
+			</s:Group>
 			<s:HGroup id="hgExistingWarning" 
 					  width="100%" verticalAlign="middle"
 					  visible="{!btnCreate.enabled &amp;&amp; modifiedName != ''}">
