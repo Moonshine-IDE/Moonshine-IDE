@@ -101,10 +101,20 @@
 			
 			protected function renameDone(event:MouseEvent):void
 			{
-				if (StringUtil.trim(txtRename.text).length == 0 || (!isProject && txtRename.text.split(".").length < 2))
+				if (StringUtil.trim(txtRename.text).length == 0)
 				{
 					Alert.show("Please enter a valid file "+ (isProject ? "name." : "name with extension."), "Error!");
 					return;
+				}
+				
+				if (!isProject)
+				{
+					var tmpArr:Array = txtRename.text.split(".");
+					if (tmpArr.length < 2 || StringUtil.trim(tmpArr[tmpArr.length - 1]).length == 0)
+					{
+						Alert.show("Please enter a valid file name with extension.", "Error!");
+						return;
+					}
 				}
 				
 				dispatchEvent(new GeneralEvent(GeneralEvent.DONE, txtRename.text));

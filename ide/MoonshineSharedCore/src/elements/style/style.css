@@ -197,6 +197,12 @@ global
 	focus-thickness: 0;
 	skinClass: ClassReference('actionScripts.plugin.findreplace.view.StatusTextInputSkin');
 }
+.textInputLabel
+{
+	fontFamily: 'DejaVuSans';
+	color: #f3f3f3;
+	fontSize: 13;
+}
 
 .pathInputs
 {

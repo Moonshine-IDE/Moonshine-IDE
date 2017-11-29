@@ -33,6 +33,7 @@ package actionScripts.plugin.findreplace.view
 	{	
 		[SkinPart(required="true")]
 		public var promptView:RichText;
+		public var marginRight:int = 4;
 		
 		private var _prompt:String
 		
@@ -88,6 +89,7 @@ package actionScripts.plugin.findreplace.view
 				instance.addEventListener(FocusEvent.FOCUS_OUT, updatePromptVisiblity);
 				instance.addEventListener(Event.CHANGE, updatePromptVisiblity);
 				instance.styleName = "uiTextWhite";
+				instance.right = marginRight;
 			}
 			
 			if (instance == promptView)
