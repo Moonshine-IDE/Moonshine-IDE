@@ -42,6 +42,7 @@ package actionScripts.ui.renderers
     import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -311,6 +312,7 @@ package actionScripts.ui.renderers
 		{
 			model.contextMenuCore.removeAll(e.target);
 			
+			var isVisualEditorProject:Boolean = (UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO).isVisualEditorProject;
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
@@ -322,6 +324,10 @@ package actionScripts.ui.renderers
 				var eventType:String = "eventNewFileFromTemplate"+label;
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
+				
+				if (isVisualEditorProject && label.indexOf("Visual Editor Flex") == -1) item.enabled = false;
+				else if (!isVisualEditorProject && label.indexOf("Visual Editor Flex") != -1) item.enabled = false;
+				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
 		}

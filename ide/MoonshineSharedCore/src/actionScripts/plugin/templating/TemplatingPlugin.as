@@ -56,6 +56,7 @@ package actionScripts.plugin.templating
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.ui.menu.MenuUtils;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
     import actionScripts.ui.tabview.CloseTabEvent;
@@ -212,7 +213,11 @@ package actionScripts.plugin.templating
 			for each (file in list)
 			{
 				if (!file.isHidden && file.isDirectory)
+				{
 					projectTemplates.push(new FileLocation(file.nativePath));
+					// updating VE item menu list to be enabled in case of VE projects
+					MenuUtils.menuItemsDisabledInVEProject.push(file.name);
+				}
 			}
 			
 			// Find user-added custom templates
@@ -241,6 +246,8 @@ package actionScripts.plugin.templating
 					&& !file.isHidden && file.isDirectory)
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
+					// updating VE item menu list to be enabled in case of VE projects
+					MenuUtils.menuItemsDisabledInVEProject.push(file.name);
 				}
 			}
 

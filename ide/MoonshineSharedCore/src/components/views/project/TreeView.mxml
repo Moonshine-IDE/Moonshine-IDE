@@ -862,6 +862,12 @@
 					globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
 				}
 			}
+			
+			protected function onFileSingleClickedInTree(event:ListEvent):void
+			{
+				refreshActiveProject(tree.selectedItem as FileWrapper);
+			}
+			
 		]]>
 	</mx:Script>
 	
@@ -892,6 +898,7 @@
 		iconFunction="{getIconForFile}"
 		itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
 		itemDoubleClick="fileDoubleClickedInTree(event)"
+		itemClick="onFileSingleClickedInTree(event)"
 		creationComplete="initTree()"/>
 	
 </mx:VBox>
