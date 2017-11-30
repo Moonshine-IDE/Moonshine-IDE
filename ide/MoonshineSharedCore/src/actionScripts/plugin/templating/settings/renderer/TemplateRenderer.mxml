@@ -85,7 +85,7 @@
 			private function rename():void
 			{
 				isProject = setting.customTemplate.fileBridge.isDirectory;
-				txtRename.prompt = isProject ? "Enter a name" : "Enter a name and extension";
+				txtRename.prompt = isProject ? "Enter a name" : "Enter a name including an extension";
 				
 				// show the file name cutting down .template word
 				var lastIndex:int = setting.label.indexOf(".template");
@@ -103,7 +103,7 @@
 			{
 				if (StringUtil.trim(txtRename.text).length == 0)
 				{
-					Alert.show("Please enter a valid file "+ (isProject ? "name." : "name with extension."), "Error!");
+					Alert.show("Please enter a valid file "+ (isProject ? "name." : "name including an extension."), "Error!");
 					return;
 				}
 				
@@ -112,7 +112,7 @@
 					var tmpArr:Array = txtRename.text.split(".");
 					if (tmpArr.length < 2 || StringUtil.trim(tmpArr[tmpArr.length - 1]).length == 0)
 					{
-						Alert.show("Please enter a valid file name with extension.", "Error!");
+						Alert.show("Please enter a valid file name including an extension.", "Error!");
 						return;
 					}
 				}

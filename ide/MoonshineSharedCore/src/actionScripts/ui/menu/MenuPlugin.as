@@ -33,6 +33,7 @@ package actionScripts.ui.menu
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.fullscreen.FullscreenPlugin;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
@@ -110,6 +111,7 @@ package actionScripts.ui.menu
 		
 		protected static var shortcutManager:KeyboardShortcutManager = KeyboardShortcutManager.getInstance();
 		private var buildingNativeMenu:Boolean = false;
+		private var lastSelectedProjectBeforeMacDisableStateChange:AS3ProjectVO;
 		
 		override public function activate():void
 		{
@@ -210,9 +212,9 @@ package actionScripts.ui.menu
 			disableMenuOptionsForVEProject();
         }
 
-		private function disableMenuOptionsForVEProject():void
+		private function disableMenuOptionsForVEProject(lastSelectedProject:AS3ProjectVO=null):void
 		{
-			var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			var activeProject:AS3ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject as AS3ProjectVO;
 
 			if (ConstantsCoreVO.IS_AIR)
             {
@@ -404,6 +406,8 @@ package actionScripts.ui.menu
 					var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
 					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
 					subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
+					
+					windowMenus[1].items[0].items.insertAt(itemToAddAt, new MenuItem(event.label, null, event.listener));
 				}
 				else
 				{
@@ -435,7 +439,11 @@ package actionScripts.ui.menu
 			{
 				if (subItemsInItemOfTopMenu[i].label == event.label)
 				{
-					if (buildingNativeMenu)	itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+					if (buildingNativeMenu)	
+					{
+						itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
+						windowMenus[1].items[0].items.removeAt(i);
+					}
 					else CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.removeAt(i);
 					return;
 				}
@@ -471,9 +479,9 @@ package actionScripts.ui.menu
 					// in case of mac we need to update windowMenus for latter use
 					if (buildingNativeMenu)
 					{
-						windowMenus[1].items[0].items[i-1].label = event.newLabel;
-						windowMenus[1].items[0].items[i-1].event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
-						windowMenus[1].items[0].items[i-1].data = event.newFileTemplate;
+						windowMenus[1].items[0].items[i].label = event.newLabel;
+						windowMenus[1].items[0].items[i].event = (event.isProject ? "eventNewProjectFromTemplate" : "eventNewFileFromTemplate")+ event.newLabel;
+						windowMenus[1].items[0].items[i].data = event.newFileTemplate;
 					}
 					return;
 				}
@@ -491,6 +499,8 @@ package actionScripts.ui.menu
 				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
 				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
 			}
+			
+			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
 		}
 		
 		private function onMacNoMenuStateChange(event:Event):void
@@ -504,6 +514,8 @@ package actionScripts.ui.menu
 				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
 				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
 			}
+			
+			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
 		}
 		
 		private function onMacEnableStateChange(event:Event):void
@@ -517,6 +529,9 @@ package actionScripts.ui.menu
 				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
 				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
 			}
+			
+			// update menus for VE project
+			disableMenuOptionsForVEProject(lastSelectedProjectBeforeMacDisableStateChange);
 		}
 		
 		private function onSDKStateChange(event:Event):void
