@@ -222,7 +222,7 @@ package actionScripts.plugin.templating
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
 					// updating VE item menu list to be enabled in case of VE projects
-					MenuUtils.menuItemsDisabledInVEProject.push(file.name);
+					MenuUtils.menuItemsEnabledInVEProject.push(file.name);
 				}
 			}
 			
@@ -253,7 +253,7 @@ package actionScripts.plugin.templating
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
 					// updating VE item menu list to be enabled in case of VE projects
-					MenuUtils.menuItemsDisabledInVEProject.push(file.name);
+					MenuUtils.menuItemsEnabledInVEProject.push(file.name);
 				}
 			}
 

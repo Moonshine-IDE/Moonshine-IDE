@@ -66,8 +66,10 @@ package actionScripts.plugin.settings
 	 * 		when the plugin is loaded for the first time (without settings xml file written)
 	 *
 	 * */
-	
-	import flash.display.DisplayObject;
+
+    import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.getQualifiedClassName;
 	
@@ -121,7 +123,7 @@ package actionScripts.plugin.settings
 		private var excludeFromSettings:Array = [MenuPlugin,MXMLSyntaxPlugin,
 												 AS3SyntaxPlugin, SplashScreenPlugin,
 												 XMLSyntaxPlugin,CSSSyntaxPlugin,JSSyntaxPlugin,HTMLSyntaxPlugin,
-												 FullscreenPlugin];
+												 FullscreenPlugin, VisualEditorProjectPlugin];
 
 		public function SettingsPlugin()
 		{
@@ -261,8 +263,7 @@ package actionScripts.plugin.settings
 
 				var setList:Vector.<ISetting> = provider ? provider.getSettingsList() : new Vector.<ISetting>();
 
-				var p:PluginSetting = new PluginSetting(plug.name, plug.author, plug.description, plug.activated);
-				setList.unshift(p);
+				setList.unshift(new PluginSetting(plug.name, plug.author, plug.description, plug.activated));
 
 				var settingsObject:IHasSettings = new PluginSettingsWrapper(plug.name, setList, qualifiedClassName);
 				if (settingsObject)
