@@ -28,7 +28,7 @@ package actionScripts.ui.menu
     public class MenuUtils
     {
         private static var resourceManager:IResourceManager = ResourceManager.getInstance();
-        public static var menuItemsDisabledInVEProject:Array = [
+        public static var menuItemsEnabledInVEProject:Array = [
             resourceManager.getString('resources', 'NEW'),
             resourceManager.getString('resources', 'OPEN'),
             resourceManager.getString('resources', 'SAVE'),
@@ -69,7 +69,7 @@ package actionScripts.ui.menu
 
             if (currentProject && currentProject.isVisualEditorProject)
             {
-                return menuItemsDisabledInVEProject.indexOf(label) > -1;
+                return menuItemsEnabledInVEProject.indexOf(label) > -1;
             }
 
             return !isMenuItemDisabledNoneVisualEditorProject(label, project);

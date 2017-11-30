@@ -394,7 +394,7 @@ package actionScripts.ui.menu
 			if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
 			
 			// updating arraylist to use against VE project
-			MenuUtils.menuItemsDisabledInVEProject.push(event.label);
+			MenuUtils.menuItemsEnabledInVEProject.push(event.label);
 			
 			if (menuItem)
 			{
@@ -429,7 +429,7 @@ package actionScripts.ui.menu
 			}
 			
 			// updating arraylist to use against VE project
-			MenuUtils.menuItemsDisabledInVEProject.splice(MenuUtils.menuItemsDisabledInVEProject.indexOf(event.label), 1);
+			MenuUtils.menuItemsEnabledInVEProject.splice(MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label), 1);
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
@@ -458,7 +458,7 @@ package actionScripts.ui.menu
 			}
 			
 			// updating arraylist to use against VE project
-			MenuUtils.menuItemsDisabledInVEProject[MenuUtils.menuItemsDisabledInVEProject.indexOf(event.label)] = event.newLabel;
+			MenuUtils.menuItemsEnabledInVEProject[MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label)] = event.newLabel;
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
