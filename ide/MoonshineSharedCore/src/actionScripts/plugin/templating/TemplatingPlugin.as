@@ -101,6 +101,8 @@ package actionScripts.plugin.templating
 		protected var newCSSComponentPopup:NewCSSFilePopup;
 		protected var newFilePopup:NewFilePopup;
 		
+		private var resetIndex:int = -1;
+		
 		public function TemplatingPlugin()
 		{
 			super();
@@ -139,9 +141,13 @@ package actionScripts.plugin.templating
 		
 		override public function resetSettings():void
 		{
-			for each (var i:ISetting in settingsList)
+			resetIndex = 0;
+			for (resetIndex; resetIndex < settingsList.length; resetIndex++)
 			{
-				if (i is TemplateSetting) TemplateSetting(i).resetTemplate();
+				if (settingsList[resetIndex] is TemplateSetting) 
+				{
+					TemplateSetting(settingsList[resetIndex]).resetTemplate();
+				}
 			}
 			
 			readTemplates();
@@ -614,6 +620,8 @@ package actionScripts.plugin.templating
 					// deletes the file
 					custom.fileBridge.deleteFile();
 				}
+				
+				resetIndex --;
 			}
 			
 			if (!original)
