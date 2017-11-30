@@ -23,7 +23,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
-
+    
     import __AS3__.vec.Vector;
     
     import actionScripts.events.GlobalEventDispatcher;
@@ -106,6 +106,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
+		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
 		private var targetPlatformSettings:ListSetting;
 		
@@ -187,6 +188,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var tmpCollection:ArrayCollection;
 			//additional.isEditable = air;
 			htmlFilePath.isEditable = !air;
+			nativeExtensionPath.isEditable = air;
 			mobileRunSettings.visible = isMobile;
 			
 			if (!air)
@@ -259,11 +261,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			if (additional) additional = null;
 			if (htmlFilePath) htmlFilePath = null;
+			if (nativeExtensionPath) nativeExtensionPath = null;
 			if (mobileRunSettings) mobileRunSettings = null;
 			if (targetPlatformSettings) targetPlatformSettings = null;
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
 			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
 			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
@@ -380,8 +384,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
                             new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
                             new PathListSetting(this, "libraries", "Libraries", folderLocation),
-                            new PathListSetting(this, "nativeExtensions", "Native extensions", folderLocation, true, false),
-                            getExtensionsSettings()
+                            nativeExtensionPath
                         ])
                 ),
                 new SettingsWrapper("Warnings & Errors",
@@ -453,7 +456,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
                             new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
                             new PathListSetting(this, "libraries", "Libraries", folderLocation),
-							getExtensionsSettings()
+							nativeExtensionPath
                         ])
                 ),
                 new SettingsWrapper("Warnings & Errors",
