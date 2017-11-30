@@ -24,5 +24,6 @@ package actionScripts.plugin.project
         public static const ACTIONSCRIPT:String = "Actionscript Project";
         public static const MOBILE:String = "Mobile Project";
         public static const VISUAL_EDITOR:String = "Visual Editor";
+		public static const AWAY3D:String = "Away3D Project";
     }
 }

@@ -1,0 +1,122 @@
+/*
+    Author: Walker Dalton
+    Version: 1.0
+    Description:
+        Away3D Example implementation of loading an AWD model (model built with Away Builder)
+    Dependencies:
+        - AIR SDK v26.0
+        - Away3D v4.0
+    Notes:
+        - The 'wmode' param MUST be set to direct to make use of 3D API
+        - Check the Application Descriptor file for necessary & recommended params for Away3D
+ */
+
+package {
+    import away3d.containers.ObjectContainer3D;
+    import away3d.containers.View3D;
+    import away3d.events.LoaderEvent;
+    import away3d.loaders.Loader3D;
+    import away3d.loaders.parsers.AWD2Parser;
+    import flash.display.Sprite;
+    import flash.display.StageAlign;
+    import flash.display.StageScaleMode;
+    import flash.events.Event;
+    import flash.net.URLRequest;
+
+    public class $ProjectName extends Sprite {
+        /*
+            Store the path to the model that was built with Away Builder
+         */
+        private var _model:String = "/assets/$ProjectName.awd";
+
+        private var _3DLoader:Loader3D;
+        private var _view:View3D = new View3D();
+
+        /*
+            Program entry point
+         */
+        public function $ProjectName() {
+            this.addEventListener(Event.ADDED_TO_STAGE, this.added_to_stage);
+        }
+
+        private final function added_to_stage($e:Event):void {
+            this.addEventListener(Event.REMOVED_FROM_STAGE, this.removed_from_stage);
+            this.removeEventListener(Event.ADDED_TO_STAGE, this.added_to_stage);
+
+            /*
+                Recommended Stage configuration for Away3D
+             */
+            stage.scaleMode = StageScaleMode.NO_SCALE;
+            stage.align = StageAlign.TOP_LEFT;
+
+            /*
+                Add the 3D View to the Stage
+             */
+            this.addChild(this._view);
+
+            /*
+                Initiate rendering
+             */
+            this.addEventListener(Event.ENTER_FRAME, this.enter_frame);
+
+            /*
+                Force a Stage Resize Event for fitting the 3D View
+             */
+            stage.addEventListener(Event.RESIZE, this.resize);
+            this.resize();
+
+            /*
+                Initiate the 3D Scene and add Meshes
+             */
+            this.initScene();
+        }
+
+        /*
+            Fit the 3D View to the Stage
+         */
+        private final function resize($event:Event = null):void {
+            this._view.width = stage.stageWidth;
+            this._view.height = stage.stageHeight;
+        }
+
+        /*
+            Rendering using the Enter Frame Event
+         */
+        private final function enter_frame($event:Event):void {
+            this._view.render();
+        }
+
+        private final function initScene():void {
+            this._view.antiAlias = 4;
+
+            /*
+                Enable the necessary parser for our model's file extension (AWD)
+             */
+            Loader3D.enableParser(AWD2Parser);
+
+            /*
+                Initiate the Loader, it's completion Event, and then load the model
+             */
+            this._3DLoader = new Loader3D();
+            this._3DLoader.addEventListener(LoaderEvent.RESOURCE_COMPLETE, loader_complete);
+            this._3DLoader.load(new URLRequest(this._model));
+        }
+
+        private final function loader_complete($event:LoaderEvent):void {
+            this._3DLoader.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, loader_complete);
+
+            /*
+                Finally, add the completely loaded model into the 3D View
+             */
+            this._view.scene.addChild(($event.currentTarget as ObjectContainer3D));
+        }
+
+        /*
+            Unload all Event listeners
+         */
+        private final function removed_from_stage($e:Event):void {
+            this.removeEventListener(Event.REMOVED_FROM_STAGE, this.removed_from_stage);
+            stage.removeEventListener(Event.RESIZE, this.resize);
+        }
+    }
+}
