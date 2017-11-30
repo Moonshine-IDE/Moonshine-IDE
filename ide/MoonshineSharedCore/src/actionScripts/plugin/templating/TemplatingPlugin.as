@@ -1171,15 +1171,8 @@ package actionScripts.plugin.templating
                         var extension:String = null;
                         var settingsFile:FileLocation = null;
 
-                        if (eventName == "Away3D Project")
-                        {
-                            extension = "awd";
-                        }
-                        else
-                        {
-                            settingsFile = getSettingsTemplateFileLocation(projectTemplate);
-                            extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
-                        }
+                        settingsFile = getSettingsTemplateFileLocation(projectTemplate);
+                        extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
 
                         dispatcher.dispatchEvent(new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,
                                 extension, settingsFile, projectTemplate, exportProject));

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <output>
+    <movie height="600"/>
+    <movie fps="60"/>
+    <movie path="bin-debug/$ProjectSWF"/>
+    <movie disabled="False"/>
+    <movie version="$MovieVersion"/>
+    <movie background="#FF00FF"/>
+    <movie input=""/>
+    <movie width="800"/>
+  </output>
+  <classpaths>
+    <class path="$SourcePath"/>
+  </classpaths>
+  <moonshineResourcePaths>
+    <class path="$SourcePath/assets"/>
+  </moonshineResourcePaths>
+  <build>
+    <option es="False"/>
+    <option locale=""/>
+    <option strict="True"/>
+    <option loadConfig=""/>
+    <option staticLinkRSL="False"/>
+    <option useNetwork="True"/>
+    <option optimize="False"/>
+    <option compilerConstants=""/>
+    <option customSDK=""/>
+    <option useResourceBundleMetadata="True"/>
+    <option showActionScriptWarnings="True"/>
+    <option antBuildPath=""/>
+    <option accessible="False"/>
+    <option warnings="True"/>
+    <option showBindingWarnings="True"/>
+    <option allowSourcePathOverlap="False"/>
+    <option verboseStackTraces="False"/>
+    <option showDeprecationWarnings="True"/>
+    <option additional=""/>
+    <option benchmark="False"/>
+    <option linkReport=""/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+  </build>
+  <includeLibraries></includeLibraries>
+  <libraryPaths>
+    <element path="libs/away3d-core-fp11_4_1_6.swc"/>
+  </libraryPaths>
+  <externalLibraryPaths></externalLibraryPaths>
+  <rslPaths></rslPaths>
+  <intrinsics></intrinsics>
+  <library></library>
+  <compileTargets>
+    <compile path="$SourceFile"/>
+  </compileTargets>
+  <hiddenPaths></hiddenPaths>
+  <preBuildCommand>null</preBuildCommand>
+  <postBuildCommand alwaysRun="False">null</postBuildCommand>
+  <options>
+    <option testMovie="AIR"/>
+    <option defaultBuildTargets=""/>
+    <option testMovieCommand=""/>
+    <option showHiddenPaths="False"/>
+  </options>
+</project>

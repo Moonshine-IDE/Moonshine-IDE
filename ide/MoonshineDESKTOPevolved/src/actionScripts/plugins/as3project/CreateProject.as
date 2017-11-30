@@ -95,7 +95,7 @@ package actionScripts.plugins.as3project
 			var customTemplateDirectory:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("templates/projects");
 			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1) isCustomTemplateProject = true;
 			
-			if (isCustomTemplateProject || event.projectFileEnding == "awd")
+			if (isCustomTemplateProject)
 			{
 				createCustomOrAway3DProject(event);
 			}
@@ -341,7 +341,7 @@ package actionScripts.plugins.as3project
                 ]));
 			}
 
-			if (eventObject.projectFileEnding == "awd" || isCustomTemplateProject)
+			if (isCustomTemplateProject)
             {
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting(isCustomTemplateProject ? 'New ' + eventObject.templateDir.fileBridge.name : 'New Away3D Project'),
@@ -442,25 +442,15 @@ package actionScripts.plugins.as3project
 			createClose(event);
 			
 			// Open main file for editing
-			if (isAway3DProject)
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
+			);
+			
+			if (!isCustomTemplateProject)
 			{
-                project.folderLocation = targetFolder;
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, project)
+				GlobalEventDispatcher.getInstance().dispatchEvent( 
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
 				);
-			}
-			else
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
-				);
-				
-				if (!isCustomTemplateProject)
-				{
-					GlobalEventDispatcher.getInstance().dispatchEvent( 
-						new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
-					);
-				}
 			}
 
 			if (view.exportProject)
@@ -501,7 +491,7 @@ package actionScripts.plugins.as3project
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
 			var sourceFile:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
-			var sourceFileWithExtension:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name : pvo.projectName + ((isActionScriptProject || isFeathersProject) ? ".as" : ".mxml");
+			var sourceFileWithExtension:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name : pvo.projectName + ((isActionScriptProject || isFeathersProject || isAway3DProject) ? ".as" : ".mxml");
 			var sourcePath:String = _isProjectFromExistingSource ? pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) : "src";
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
@@ -547,15 +537,9 @@ package actionScripts.plugins.as3project
 
             th.projectTemplate(templateDir, targetFolder);
 
-			// we do not needs any further proceeding for non-flex projects, i.e away3d
-			if (templateDir.fileBridge.name.indexOf("Away3D") != -1)
-			{
-				isAway3DProject = true;
-            }
-			
 			// we copy everything from template to target folder 
 			// in case of custom project template and terminate
-			if (isCustomTemplateProject || isAway3DProject)
+			if (isCustomTemplateProject)
 			{
 				// re-create the vo so all the requisite fields
 				// updated with final target folder path
@@ -573,6 +557,7 @@ package actionScripts.plugins.as3project
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
+					if (isAway3DProject) th.projectTemplate(templateDir.resolvePath("libs"), targetFolder.resolvePath("libs"));
 					descriptorFileLocation = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
 					try
 					{
@@ -595,6 +580,7 @@ package actionScripts.plugins.as3project
 				var folderToDelete2:FileLocation = targetFolder.resolvePath("build_web");
 				var folderToDelete3:FileLocation = targetFolder.resolvePath("bin-debug_web");
 				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
+				var folderToDelete5:FileLocation = targetFolder.resolvePath("build");
 				try
 				{
 					folderToDelete1.fileBridge.deleteDirectory(true);
@@ -603,6 +589,10 @@ package actionScripts.plugins.as3project
 						folderToDelete2.fileBridge.deleteDirectory(true);
 						folderToDelete3.fileBridge.deleteDirectory(true);
 						folderToDelete4.fileBridge.deleteDirectory(true);
+					}
+					if (isAway3DProject)
+					{
+						folderToDelete5.fileBridge.deleteDirectory(true);
 					}
 				}
 				catch (e:Error)
@@ -613,6 +603,10 @@ package actionScripts.plugins.as3project
 						folderToDelete2.fileBridge.deleteDirectoryAsync(true);
 						folderToDelete3.fileBridge.deleteDirectoryAsync(true);
 						folderToDelete4.fileBridge.deleteDirectoryAsync(true);
+					}
+					if (isAway3DProject)
+					{
+						folderToDelete5.fileBridge.deleteDirectoryAsync(true);
 					}
 				}
 			}
@@ -722,6 +716,10 @@ package actionScripts.plugins.as3project
             {
                 isMobileProject = true;
             }
+			else if (templateName.indexOf(ProjectTemplateType.AWAY3D) != -1)
+			{
+				isAway3DProject = true;
+			}
             else
             {
                 isActionScriptProject = false;

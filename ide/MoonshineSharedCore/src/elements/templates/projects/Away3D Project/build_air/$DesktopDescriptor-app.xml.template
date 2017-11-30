@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<application xmlns="http://ns.adobe.com/air/application/10.0">
+	<id>$ProjectID</id>
+	<filename>$SourceNameOnly</filename>
+	<name>$SourceNameOnly</name>
+	<versionNumber>0.0</versionNumber>
+	<initialWindow>
+		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
+		<visible>true</visible>
+		<renderMode>direct</renderMode>
+		<depthAndStencil>true</depthAndStencil>
+		<requestedDisplayResolution>high</requestedDisplayResolution>
+	</initialWindow>
+</application>
