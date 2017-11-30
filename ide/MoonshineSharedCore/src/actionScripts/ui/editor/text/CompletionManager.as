@@ -32,8 +32,7 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayCollection;
-
-	import mx.collections.ArrayList;
+	
     import mx.managers.PopUpManager;
 
 	public class CompletionManager
@@ -301,14 +300,13 @@ package actionScripts.ui.editor.text
                         searchedLinesCount = 0;
                     }
 
-                    for (var i:int = editor.model.selectedLineIndex - 1; i > searchedLinesCount; i--)
+                    for (var i:int = editor.model.selectedLineIndex; i > searchedLinesCount; i--)
                     {
                         line = editor.model.lines[i];
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if (selectedLineText.indexOf(">") != -1 ||
-								selectedLineText.indexOf("/>") != -1 ||
+                            if (selectedLineText.indexOf("/>") != -1 ||
 								selectedLineText.indexOf("<![CDATA[") != -1 ||
 								selectedLineText.indexOf("]]>") != -1)
                             {
