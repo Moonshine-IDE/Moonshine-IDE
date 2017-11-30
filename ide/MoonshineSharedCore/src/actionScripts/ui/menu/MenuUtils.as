@@ -28,7 +28,7 @@ package actionScripts.ui.menu
     public class MenuUtils
     {
         private static var resourceManager:IResourceManager = ResourceManager.getInstance();
-        private static var menuItemsDisabledInVEProject:Array = [
+        public static var menuItemsDisabledInVEProject:Array = [
             resourceManager.getString('resources', 'NEW'),
             resourceManager.getString('resources', 'OPEN'),
             resourceManager.getString('resources', 'SAVE'),
@@ -46,15 +46,6 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
             resourceManager.getString('resources', 'USEFUL_LINKS'),
-            resourceManager.getString('resources', 'VE_PROJECT'),
-            resourceManager.getString('resources', 'ACTION_SCRIPT_PROJECT'),
-            resourceManager.getString('resources', 'FLEX_MOBILE_PROJECT'),
-            resourceManager.getString('resources', 'FLEX_DESKTOP_PROJECT'),
-            resourceManager.getString('resources', 'FLEX_BROWSER_PROJECT'),
-            resourceManager.getString('resources', 'FLEXJS_BROWSER_PROJECT'),
-            resourceManager.getString('resources', 'FEATHERS_DESKTOP_PROJECT'),
-            resourceManager.getString('resources', 'FEATHERS_MOBILE_PROJECT'),
-            resourceManager.getString('resources', 'AWAY3D_PROJECT'),
             resourceManager.getString('resources', 'REFRESH'),
             resourceManager.getString('resources', 'SETTINGS'),
             resourceManager.getString('resources', 'DELETE'),

@@ -393,6 +393,9 @@ package actionScripts.ui.menu
 			var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
 			if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
 			
+			// updating arraylist to use against VE project
+			MenuUtils.menuItemsDisabledInVEProject.push(event.label);
+			
 			if (menuItem)
 			{
 				if (buildingNativeMenu)
@@ -425,6 +428,9 @@ package actionScripts.ui.menu
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
 			
+			// updating arraylist to use against VE project
+			MenuUtils.menuItemsDisabledInVEProject.splice(MenuUtils.menuItemsDisabledInVEProject.indexOf(event.label), 1);
+			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
 				if (subItemsInItemOfTopMenu[i].label == event.label)
@@ -450,6 +456,9 @@ package actionScripts.ui.menu
 				var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
+			
+			// updating arraylist to use against VE project
+			MenuUtils.menuItemsDisabledInVEProject[MenuUtils.menuItemsDisabledInVEProject.indexOf(event.label)] = event.newLabel;
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
