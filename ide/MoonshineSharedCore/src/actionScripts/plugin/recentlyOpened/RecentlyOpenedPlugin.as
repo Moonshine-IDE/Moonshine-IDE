@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-	import flash.events.Event;
+    import actionScripts.utils.SharedObjectConst;
+
+    import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.setTimeout;
 	
@@ -55,7 +57,7 @@ package actionScripts.plugin.recentlyOpened
 		{
 			super.activate();
 			
-			cookie = SharedObject.getLocal("moonshine-ide-local");
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 
 			if (model.recentlyOpenedFiles.length == 0)
 			{

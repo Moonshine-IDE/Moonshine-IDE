@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package no.doomsday.console.core.persistence 
 {
-	import flash.net.SharedObject;
+    import actionScripts.utils.SharedObjectConst;
+
+    import flash.net.SharedObject;
 	import no.doomsday.console.core.commands.ConsoleCommand;
 	import no.doomsday.console.core.DConsole;
 	/**
@@ -37,7 +39,7 @@ package no.doomsday.console.core.persistence
 		public function PersistenceManager(console:DConsole) 
 		{
 			this.console = console;
-			historySO = SharedObject.getLocal("consoleHistory");
+			historySO = SharedObject.getLocal(SharedObjectConst.CONSOLE_HISTORY);
 			if (!historySO.data.history) historySO.data.history = [];
 			if (!historySO.data.numLines) historySO.data.numLines = numLines;
 			if (!historySO.data.dockState) historySO.data.dockState = _dockState;
