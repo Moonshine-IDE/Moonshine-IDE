@@ -149,12 +149,8 @@ package actionScripts.ui
 		protected function activeEditorChanged(newActiveEditor:IContentWindow):void
 		{
 			if (!mainContent) return;
-			var childIndex:int = mainContent.getChildIndex(model.activeEditor as DisplayObject);
-			if (childIndex != mainContent.selectedIndex) 
-			{
-				mainContent.selectedIndex = childIndex;
-			}
-			
+
+			mainContent.setSelectedTab(model.activeEditor as DisplayObject);
 			updateLabel(newActiveEditor);
 		}
 		

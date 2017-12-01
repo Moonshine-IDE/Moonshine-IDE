@@ -30,8 +30,7 @@ package actionScripts.ui.tabview
 	import mx.events.ResizeEvent;
 
     import spark.events.IndexChangeEvent;
-
-
+	
     /*
         TODO:
             Make it clearer what selectedIndex means
@@ -60,6 +59,7 @@ package actionScripts.ui.tabview
 		{
 			return _selectedIndex;
 		}
+
 		public function set selectedIndex(value:int):void
 		{
 			if (itemContainer.numChildren == 0) return;
@@ -110,7 +110,29 @@ package actionScripts.ui.tabview
 			tabsModel = new TabsModel();
 			addEventListener(ResizeEvent.RESIZE, handleResize);
 		}
-		
+
+		public function setSelectedTab(editor:DisplayObject):void
+		{
+            var childIndex:int = getChildIndex(editor);
+            if (childIndex != selectedIndex && childIndex > -1)
+            {
+                selectedIndex = childIndex;
+            }
+			else
+			{
+			    var hamburgerMenuCount:int = tabsModel.hamburgerTabs.length;
+				for (var i:int = 0; i < hamburgerMenuCount; i++)
+				{
+					var hamburgerMenuTabsVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.getItemAt(i) as HamburgerMenuTabsVO;
+					if (hamburgerMenuTabsVO.tabData == editor)
+					{
+						addTabFromHamburgerMenu(hamburgerMenuTabsVO);
+						break;
+					}
+				}
+			}
+		}
+
 		private function handleResize(event:Event):void
 		{
 			invalidateLayoutTabs();
@@ -215,22 +237,18 @@ package actionScripts.ui.tabview
 
 		private function onHamburgerMenuTabsChange(event:IndexChangeEvent):void
 		{
-			var hamburgerMenuTabsVO:HamburgerMenuTabsVO = hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO;
-			tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
-
-            addChild(hamburgerMenuTabsVO.tabData);
-            selectedIndex = 0;
+            addTabFromHamburgerMenu(hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO);
         }
 
 		override public function getChildIndex(child:DisplayObject):int
 		{
 			var tab:DisplayObject = tabLookup[child];
-			if (tab.parent == tabContainer)
+			if (tab && tab.parent == tabContainer)
 			{
 				return tabContainer.getChildIndex(tab);
 			}
 
-			return 0;
+			return -1;
 		}
 		
 		override public function addChild(child:DisplayObject):DisplayObject
@@ -264,8 +282,16 @@ package actionScripts.ui.tabview
 
 			return null;
 		}
-		
-		protected function focusNewTab():void
+
+        private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
+        {
+            tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
+
+            addChild(hamburgerMenuTabsVO.tabData);
+            selectedIndex = 0;
+        }
+
+        protected function focusNewTab():void
 		{
 			if (selectedIndex-1 < tabContainer.numChildren)
 				selectedIndex = _selectedIndex-1;
