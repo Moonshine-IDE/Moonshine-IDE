@@ -218,16 +218,6 @@
 						var lastOpenedOption:String;
 						var flashDevelopProjectFile: FileLocation;
 						
-						// open if away3d project
-						if (refVO.isAway3D)
-						{
-							project = new AS3ProjectVO(recentOpenedProjectObject as FileLocation, refVO.name);
-							GlobalEventDispatcher.getInstance().dispatchEvent(
-								new ProjectEvent(ProjectEvent.ADD_PROJECT_AWAY3D, project)
-							);
-							return;
-						}
-						
 						// check if any last opend option is associated with the project
 						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
 						{

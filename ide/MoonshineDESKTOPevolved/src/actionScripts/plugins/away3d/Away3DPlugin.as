@@ -26,6 +26,9 @@ package actionScripts.plugins.away3d
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+	import flash.system.System;
 	import flash.utils.IDataInput;
 	
 	import mx.controls.Alert;
@@ -34,6 +37,7 @@ package actionScripts.plugins.away3d
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
@@ -41,13 +45,16 @@ package actionScripts.plugins.away3d
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
 	public class Away3DPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const OPEN_AWAY3D_BUILDER:String = "OPEN_AWAY3D_BUILDER";
 		
-		public var executablePath:String;
+		private static const APP_EXT_COUNT					: int = 3;
+		private static const APP_INTERNAL_PATH_TO_EXEC		: String = "/Contents/MacOS/";
+		private static const APP_INTERNAL_PATH_TO_PLIST		: String = "/Contents/Info.plist";
 		
 		override public function get name():String { return "Away3D"; }
 		override public function get author():String { return "Moonshine Project Team"; }
@@ -57,12 +64,23 @@ package actionScripts.plugins.away3d
 		private var customInfo:NativeProcessStartupInfo;
 		private var awdFileObject:File;
 		
+		private var finalExecutablePath:String;
+		public function get executablePath():String
+		{
+			return finalExecutablePath;
+		}
+		public function set executablePath(value:String):void
+		{
+			var path:String = validatePath(value);
+			finalExecutablePath = path ? path : value;
+		}
+		
 		override public function activate():void
 		{
 			super.activate();
 			
 			dispatcher.addEventListener(OPEN_AWAY3D_BUILDER, openAway3DBuilder, false, 0, true);
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, onAway3DProjectCreated, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.OPEN_PROJECT_AWAY3D, onAway3DProjectOpen, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -70,7 +88,7 @@ package actionScripts.plugins.away3d
 			super.deactivate();
 			
 			dispatcher.removeEventListener(OPEN_AWAY3D_BUILDER, openAway3DBuilder);
-			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, onAway3DProjectCreated);
+			dispatcher.removeEventListener(ProjectEvent.OPEN_PROJECT_AWAY3D, onAway3DProjectOpen);
 		}
 		
 		override public function resetSettings():void
@@ -123,18 +141,9 @@ package actionScripts.plugins.away3d
 			event.target.removeEventListener(SettingsView.EVENT_CLOSE, onAway3DSettingsCanceled);
 		}
 		
-		private function onAway3DProjectCreated(event:ProjectEvent):void
+		private function onAway3DProjectOpen(event:ProjectEvent):void
 		{
-			var files:Array = event.project.folderLocation.fileBridge.getDirectoryListing();
-			for each (var file:File in files)
-			{
-				// get the first instance of the awd file and run it
-				if (file.extension == "awd")
-				{
-					awdFileObject = file;
-					break;
-				}
-			}
+			awdFileObject = FileLocation(event.anObject).fileBridge.getFile as File;
 			
 			if (awdFileObject) 
 			{
@@ -152,8 +161,7 @@ package actionScripts.plugins.away3d
 			
 			if (Settings.os == "win") processArgs.push("/c");
 			else processArgs.push("-c");
-			processArgs.push(executablePath);
-			if (withFile) processArgs.push(withFile.nativePath);
+			processArgs.push("'"+ finalExecutablePath +"' '"+ withFile.nativePath +"'");
 			
 			customInfo.arguments = processArgs;
 			customInfo.executable = executableFile;
@@ -234,6 +242,130 @@ package actionScripts.plugins.away3d
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
 			debug("%s", data);
+		}
+		
+		/**
+		 * Checks any given path (executable)
+		 * existance in the application
+		 *
+		 * @required
+		 * executable path
+		 * @return
+		 * Boolean
+		 */
+		private function validatePath( path:String ) : String {
+			
+			var finalExecPath : String;
+			var splitPath : Array = path.split("/");
+			
+			// for the macOS platform
+			if ( ConstantsCoreVO.IS_MACOS ) {
+				
+				// i.e. /applications/cord.app
+				finalExecPath = (path.substr(path.length - APP_EXT_COUNT, APP_EXT_COUNT) != "app") ? path+".app" : path;
+				if ( finalExecPath.charAt(0) != "/" ) finalExecPath = "/"+finalExecPath;
+				
+				/*
+				* @note
+				* we need some info.plist reading here,
+				* as some of the app has different name/cases
+				* for their executable file in Contents/MacOS folder
+				* and some mac system may has case-sensitive setup.
+				*/
+				var file:File = new File(finalExecPath + APP_INTERNAL_PATH_TO_PLIST);
+				if (file.exists)
+				{
+					var fs:FileStream = new FileStream();
+					// following synchronous call as this method
+					// requires to return a value in synchronous way
+					fs.open(file, FileMode.READ);
+					// following String mode read instead as XML
+					// as the file values has no nested tag but as:
+					// <key/>
+					// <string/>
+					// it could be hard to find a particular key's value
+					// as there will be several such tags runs
+					// one after another without having any
+					// internal-relation between each other
+					var executableFileName:String;
+					var loopedCount:int;
+					var plistXML:XML = XML(fs.readUTFBytes(fs.bytesAvailable));
+					fs.close();
+					
+					// we don't want any unwanted namespace that problem in parsing
+					var plistToString:String = plistXML.toXMLString();
+					var xmlnsPattern:RegExp = new RegExp("xmlns[^\"]*\"[^\"]*\"", "gi");
+					plistToString = plistToString.replace(xmlnsPattern, "");
+					
+					// removing all the whitespace/white-lines to form proper XML
+					plistToString = plistToString.replace(/\s*\R/g, "\n");
+					plistToString = plistToString.replace(/^\s*|[\t ]+$/gm, "");
+					plistToString = plistToString.replace(/\n/g, "");
+					plistXML = new XML(plistToString);
+					
+					for each (var j:XML in plistXML.dict.children())
+					{
+						if (j.contains(<key>CFBundleExecutable</key>))
+						{
+							// its mandatory as per plist arc that appropriate value should 
+							// come after the 'key' declaration, so we assume
+							// the next value is 'string' (value)
+							executableFileName = plistXML.dict.children()[loopedCount+1];
+							// if the plist is malformed with inappropriate ordering
+							// then it won't take the plist as a valid source of 
+							// information and executableFileName may have any value
+							// which eventually will gets into (!File.exist) condition, next
+							break;
+						}
+						
+						loopedCount ++;
+					}
+					
+					// release
+					System.disposeXML(plistXML);
+					
+					// to overcome some silly mis-cnfiguration issue
+					// one which came for Cyberlink where info.plist
+					// mentioned with executable with wrong casing. 
+					// to overcome such situation another round of
+					// painful checking we've decided to take for
+					// every other application validation
+					var exeFolderPath:String = finalExecPath + APP_INTERNAL_PATH_TO_EXEC;
+					finalExecPath += APP_INTERNAL_PATH_TO_EXEC + executableFileName;
+					file = new File(finalExecPath);
+					// if problem in case matching
+					// in case-sensitive system
+					if (!file.exists)
+					{
+						file = new File(exeFolderPath);
+						var fileLists:Array = file.getDirectoryListing();
+						for (var i:int; i < fileLists.length; i++)
+						{
+							if (finalExecPath.toLowerCase() == fileLists[i].nativePath.toLowerCase())
+							{
+								finalExecPath = fileLists[i].nativePath;
+								break;
+							}
+						}
+					}
+				}
+				
+				// for Windows
+			} else {
+				
+				finalExecPath = path;
+			}
+			
+			// searching for the existing file
+			file = new File(finalExecPath);
+			if (file.exists)
+			{
+				file.canonicalize();
+				return file.nativePath;
+			}
+			
+			// unless
+			return null;
 		}
 	}
 }

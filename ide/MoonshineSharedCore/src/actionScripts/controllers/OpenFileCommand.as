@@ -26,10 +26,11 @@ package actionScripts.controllers
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.ui.IContentWindow;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicHTMLViewer;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -62,6 +63,13 @@ package actionScripts.controllers
 				var e:OpenFileEvent = event as OpenFileEvent;
 				if (e.file)
 				{
+					// in case of awd file proceed to different process
+					if (e.file.fileBridge.extension == "awd")
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.OPEN_PROJECT_AWAY3D, e.file));
+						return;
+					}
+					
                     openAsTourDe = e.openAsTourDe;
 					tourDeSWFSource = e.tourDeSWFSource;
 					wrapper = e.wrapper;
