@@ -33,15 +33,12 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.setTimeout;
-			
 			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
-			
-			import spark.events.DropDownEvent;
+
 			import spark.events.TextOperationEvent;
 			
 			import actionScripts.events.GlobalEventDispatcher;
@@ -50,7 +47,6 @@
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.ui.renderers.FTETreeItemRenderer;
 			import actionScripts.utils.SimpleValidator;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.AS3ClassAttributes;
@@ -172,12 +168,7 @@
 				var renderer:Class = item is String ? DividerRenderer : FileTypeRenderer;
 				return new ClassFactory(renderer);
 			}
-			
-			protected function onDropDownClosed(event:DropDownEvent):void
-			{
-				if (event.target.selectedItem is String) event.target.selectedItem = lastSelectedItem;
-			}
-			
+
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				minHeight = height;

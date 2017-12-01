@@ -21,7 +21,8 @@ package actionScripts.utils
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -177,13 +178,15 @@ package actionScripts.utils
 				}
 				
 				// set one as default sdk if requires
-				setTimeout(function():void
+				var timeoutValue:uint = setTimeout(function():void
 				{
 					if (isFound && IDEModel.getInstance().defaultSDK == null)
 					{
 						setDefaultSDKByBundledSDK();
 						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, IDEModel.getInstance().userSavedSDKs[0]));
 					}
+
+					clearTimeout(timeoutValue);
 				}, 500);
 				
 				// send to owner
