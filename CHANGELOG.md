@@ -9,19 +9,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Code Editor: Auto close quotes for XML attributes.
 * Code Completion List: Added icons, tooltips and documentation popup to have more information in completion list.
 * Code Completion List: Open tooltip details and documentation popup (if available) of selected item by shortcuts (Windows: Ctrl + Q, Mac: Shift + F1).
-* Added support for create Apache Royale project.
-* Added support for create [Away3D](http://away3d.com/) project.
+* Added support for creating Apache Royale projects.
+* Added support for creating [Away3D](http://away3d.com/) projects.
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.8.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.8.0).
 * Project Tree: Double click to Expand/Collapse branches.
 
 ### Fixed
-* Find Resources: Button "Open" is now default, which allows to confirm choose by "Enter" 
-* Project directory does not default to the same directory used to create a project.
-* Project Creation: Fixed issue where project name was highlighted, but doesn't have focus.
+* Find Resources: Button "Open" is now default, which allows user to confirm choice with "Enter" 
+* Project directory defaults to directory used for the previous new project
+* Project Creation: Fixed issue where project name was highlighted, but didn't have focus.
 * Fixed issue where first import in the MXML file was inserted at the beginning of file.
-* Debugging: Fixed null pointer exception occurst during debugging code in MXML
+* Debugging: Fixed null pointer exception which occurred while debugging MXML code
 
 ## Moonshine IDE [1.6.1]
 
