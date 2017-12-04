@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
-             alpha.disabled=".5">
+             alpha.disabled=".5" creationComplete="onHamburgerMenuTabsSkinCreationComplete(event)">
 
     <!-- host component -->
     <fx:Metadata>
@@ -14,11 +14,18 @@
 
     <fx:Script>
         <![CDATA[
+        import mx.events.CollectionEvent;
+        import mx.events.CollectionEventKind;
+        import mx.events.FlexEvent;
+
         /* Define the content fill items that should be colored by the "contentBackgroundColor" style. */
         static private const contentFill:Array = ["bgFill"];
 
         [Embed("/elements/images/hamburger_menu_icon.png")]
         private const hamburgerIcon:Class;
+
+        [Bindable]
+        private var itemsCount:String;
 
         /**
          * @private
@@ -40,7 +47,29 @@
                 borderStroke.color = getStyle("borderColor");
                 borderStroke.alpha = getStyle("borderAlpha");
             }
+
             super.updateDisplayList(unscaledWidth, unscaledHeight);
+        }
+
+        private function onHamburgerMenuTabsSkinCreationComplete(event:FlexEvent):void
+        {
+            removeEventListener(FlexEvent.CREATION_COMPLETE, onHamburgerMenuTabsSkinCreationComplete);
+            hostComponent.dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onHamburgerTabsCollectionChange);
+        }
+
+        private function onHamburgerTabsCollectionChange(event:CollectionEvent):void
+        {
+            if (event.kind == CollectionEventKind.REMOVE)
+            {
+                var timeoutValue:int = setTimeout(function ():void {
+                    clearTimeout(timeoutValue);
+                    itemsCount = String(hostComponent.dataProvider.length);
+                }, 50);
+            }
+            else
+            {
+                itemsCount = String(hostComponent.dataProvider.length);
+            }
         }
         ]]>
     </fx:Script>
@@ -108,9 +137,9 @@
               focusEnabled="false" tabEnabled="false">
         <s:BitmapImage source="{hamburgerIcon}" height="20"/>
          <!--- @copy spark.components.DropDownList#labelDisplay -->
-        <s:Label verticalAlign="middle" maxDisplayedLines="1" text="{hostComponent.dataProvider.length}"
+        <s:Label verticalAlign="middle" maxDisplayedLines="1"
                  mouseEnabled="false" mouseChildren="false" textAlignLast="end" height="20" paddingBottom="-4"
-                 focusEnabled="false" tabEnabled="false" color="#FFFFFF" fontWeight="bold" />
+                 focusEnabled="false" tabEnabled="false" color="#FFFFFF" fontWeight="bold" text="{itemsCount}"/>
     </s:HGroup>
     <s:Button id="openButton" left="0" right="0" top="0" bottom="0" focusEnabled="false" tabEnabled="false"
               skinClass="actionScripts.ui.tabview.skin.HamburgerMenuTabsButtonSkin"/>
