@@ -19,7 +19,6 @@
 package actionScripts.ui.tabview
 {
     import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
 
     public class TabsModel
     {

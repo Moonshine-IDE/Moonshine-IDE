@@ -74,7 +74,7 @@ package actionScripts.ui.tabview
 			{
 				if (i == value)
 				{
-					TabViewTab(tabContainer.getChildAt(i)).selected = true;	
+					TabViewTab(tabContainer.getChildAt(i)).selected = true;
 				}
 				else
 				{
@@ -181,7 +181,7 @@ package actionScripts.ui.tabview
 				tab.label = child['label'];
 				child.addEventListener('labelChanged', updateTabLabel);
 			}
-			tabContainer.addChildAt(tab,0);
+			tabContainer.addChildAt(tab, 0);
 
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
@@ -206,9 +206,9 @@ package actionScripts.ui.tabview
 			var te:TabEvent = new TabEvent(TabEvent.EVENT_TAB_CLOSE, child);
 			dispatchEvent(te);
 			if (te.isDefaultPrevented()) return;
-			 
+
 			removeChild(child);
-			
+
 			invalidateLayoutTabs();
 		}
 
@@ -259,7 +259,13 @@ package actionScripts.ui.tabview
 
 			return editor;
 		}
-		
+
+		public function addChildTab(child:DisplayObject):DisplayObject
+		{
+            addTabFor(child);
+            return itemContainer.addChildAt(child, 0);
+		}
+
 		override public function removeChildAt(index:int):DisplayObject
 		{
 			invalidateTabSelection();
@@ -286,9 +292,7 @@ package actionScripts.ui.tabview
         private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
         {
             tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
-
-            addChild(hamburgerMenuTabsVO.tabData);
-            selectedIndex = 0;
+			addChild(hamburgerMenuTabsVO.tabData);
         }
 
         protected function focusNewTab():void
@@ -319,6 +323,8 @@ package actionScripts.ui.tabview
 					{
 						tabsModel.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
 						removeChild(tabData);
+						needsNewSelectedTab = false;
+                        validateDisplayList();
 						break;
 					}
 				}
@@ -347,14 +353,16 @@ package actionScripts.ui.tabview
 
 		private function shiftHamburgerMenuTabsIfSpaceAvailable():void
 		{
-			if (!canTabFitIntoAvailableSpace()) return;
+			if (!canTabFitIntoAvailableSpace())
+			{
+                tabsModel.hamburgerTabs.refresh();
+                return;
+            }
 
 			if (tabsModel.hamburgerTabs.length > 0)
 			{
 				var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
-				addChild(hamburgerMenuVO.tabData);
-
-				tabsModel.hamburgerTabs.refresh();
+				addChildTab(hamburgerMenuVO.tabData);
 
 				shiftHamburgerMenuTabsIfSpaceAvailable();
 			}
