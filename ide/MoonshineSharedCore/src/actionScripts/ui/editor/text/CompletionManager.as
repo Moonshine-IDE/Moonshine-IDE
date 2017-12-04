@@ -336,8 +336,13 @@ package actionScripts.ui.editor.text
                             selectedLineText = line.text;
                             if (selectedLineText.indexOf(">") != -1 && selectedLineText.indexOf("</") == -1)
                             {
-                                isLineForAutoCloseAttr = true;
-                                break;
+								if (selectedLineText.indexOf("<") == -1 &&
+									selectedLineText.indexOf("<![CDATA[") == -1 &&
+                                    selectedLineText.indexOf("]]>") == -1)
+								{
+                                    isLineForAutoCloseAttr = true;
+                                    break;
+                                }
                             }
                         }
                     }
