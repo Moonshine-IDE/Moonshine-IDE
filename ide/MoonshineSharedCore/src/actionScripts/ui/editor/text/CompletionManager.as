@@ -93,6 +93,9 @@ package actionScripts.ui.editor.text
 			menuStr = menuStr.split('').reverse().join('');
 			pos -= menuStr.length + 1;
 
+			//make sure this value is lower case for filtering
+			menuStr = menuStr.toLowerCase();
+
 			menuCollection.source = items;
 
             var position:Point = editor.getPointForIndex(pos+1);
