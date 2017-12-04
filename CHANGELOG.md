@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Code Editor: Auto close quotes for XML attributes.
 * Code Completion List: Added icons, tooltips and documentation popup to have more information in completion list.
 * Code Completion List: Open tooltip details and documentation popup (if available) of selected item by shortcuts (Windows: Ctrl + Q, Mac: Shift + F1).
-* Added ability to create Apache Royale project.
+* Added support for create Apache Royale project.
+* Added support for create [Away3D](http://away3d.com/) project.
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.8.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.8.0).
