@@ -30,8 +30,7 @@ package actionScripts.ui.tabview
 	import mx.events.ResizeEvent;
 
     import spark.events.IndexChangeEvent;
-
-
+	
     /*
         TODO:
             Make it clearer what selectedIndex means
@@ -45,7 +44,7 @@ package actionScripts.ui.tabview
 		private var shadow:UIComponent;
 
         private var hamburgerMenuTabs:HamburgerMenuTabs;
-		private var tabsModel:TabsModel;
+		private var _model:TabsModel;
 		
 		private var tabLookup:Dictionary = new Dictionary(true); // child:tab
 		
@@ -60,6 +59,7 @@ package actionScripts.ui.tabview
 		{
 			return _selectedIndex;
 		}
+
 		public function set selectedIndex(value:int):void
 		{
 			if (itemContainer.numChildren == 0) return;
@@ -74,7 +74,7 @@ package actionScripts.ui.tabview
 			{
 				if (i == value)
 				{
-					TabViewTab(tabContainer.getChildAt(i)).selected = true;	
+					TabViewTab(tabContainer.getChildAt(i)).selected = true;
 				}
 				else
 				{
@@ -102,15 +102,42 @@ package actionScripts.ui.tabview
 			
 			invalidateLayoutTabs();
 		}
-		
+
+		public function get model():TabsModel
+		{
+			return _model;
+		}
+
 		public function TabView()
 		{
 			super();
 
-			tabsModel = new TabsModel();
+			_model = new TabsModel();
 			addEventListener(ResizeEvent.RESIZE, handleResize);
 		}
-		
+
+		public function setSelectedTab(editor:DisplayObject):void
+		{
+            var childIndex:int = getChildIndex(editor);
+            if (childIndex != selectedIndex && childIndex > -1)
+            {
+                selectedIndex = childIndex;
+            }
+			else
+			{
+			    var hamburgerMenuCount:int = _model.hamburgerTabs.length;
+				for (var i:int = 0; i < hamburgerMenuCount; i++)
+				{
+					var hamburgerMenuTabsVO:HamburgerMenuTabsVO = _model.hamburgerTabs.getItemAt(i) as HamburgerMenuTabsVO;
+					if (hamburgerMenuTabsVO.tabData == editor)
+					{
+						addTabFromHamburgerMenu(hamburgerMenuTabsVO);
+						break;
+					}
+				}
+			}
+		}
+
 		private function handleResize(event:Event):void
 		{
 			invalidateLayoutTabs();
@@ -143,7 +170,7 @@ package actionScripts.ui.tabview
 			hamburgerMenuTabs.right = 0;
 			hamburgerMenuTabs.top = 0;
 			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = false;
-			hamburgerMenuTabs.model = tabsModel;
+			hamburgerMenuTabs.model = _model;
 			hamburgerMenuTabs.addEventListener(Event.CHANGE, onHamburgerMenuTabsChange);
 			
 			super.addChild(hamburgerMenuTabs);
@@ -159,7 +186,7 @@ package actionScripts.ui.tabview
 				tab.label = child['label'];
 				child.addEventListener('labelChanged', updateTabLabel);
 			}
-			tabContainer.addChildAt(tab,0);
+			tabContainer.addChildAt(tab, 0);
 
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
@@ -183,10 +210,13 @@ package actionScripts.ui.tabview
 			
 			var te:TabEvent = new TabEvent(TabEvent.EVENT_TAB_CLOSE, child);
 			dispatchEvent(te);
-			if (te.isDefaultPrevented()) return;
-			 
+			if (te.isDefaultPrevented())
+			{
+				return;
+            }
+
 			removeChild(child);
-			
+
 			invalidateLayoutTabs();
 		}
 
@@ -215,22 +245,18 @@ package actionScripts.ui.tabview
 
 		private function onHamburgerMenuTabsChange(event:IndexChangeEvent):void
 		{
-			var hamburgerMenuTabsVO:HamburgerMenuTabsVO = hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO;
-			tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
-
-            addChild(hamburgerMenuTabsVO.tabData);
-            selectedIndex = 0;
+            addTabFromHamburgerMenu(hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO);
         }
 
 		override public function getChildIndex(child:DisplayObject):int
 		{
 			var tab:DisplayObject = tabLookup[child];
-			if (tab.parent == tabContainer)
+			if (tab && tab.parent == tabContainer)
 			{
 				return tabContainer.getChildIndex(tab);
 			}
 
-			return 0;
+			return -1;
 		}
 		
 		override public function addChild(child:DisplayObject):DisplayObject
@@ -241,7 +267,13 @@ package actionScripts.ui.tabview
 
 			return editor;
 		}
-		
+
+		public function addChildTab(child:DisplayObject):DisplayObject
+		{
+            addTabFor(child);
+            return itemContainer.addChildAt(child, 0);
+		}
+
 		override public function removeChildAt(index:int):DisplayObject
 		{
 			invalidateTabSelection();
@@ -264,8 +296,14 @@ package actionScripts.ui.tabview
 
 			return null;
 		}
-		
-		protected function focusNewTab():void
+
+        private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
+        {
+            _model.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
+			addChild(hamburgerMenuTabsVO.tabData);
+        }
+
+        protected function focusNewTab():void
 		{
 			if (selectedIndex-1 < tabContainer.numChildren)
 				selectedIndex = _selectedIndex-1;
@@ -276,7 +314,7 @@ package actionScripts.ui.tabview
 		protected function updateTabLayout():void
 		{
 			// Each item draws vertical separators on both sides, overlap by 1 px to not have duplicate lines.
-			var availableWidth:int = width + 1;
+			var availableWidth:int = width - hamburgerMenuTabs.width;
 
 			var tab:TabViewTab = null;
             var i:int;
@@ -291,8 +329,10 @@ package actionScripts.ui.tabview
 					var tabData:DisplayObject = tab.data as DisplayObject;
 					if (!tab.selected && tabData)
 					{
-						tabsModel.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
+						_model.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
 						removeChild(tabData);
+						needsNewSelectedTab = false;
+                        validateDisplayList();
 						break;
 					}
 				}
@@ -321,14 +361,16 @@ package actionScripts.ui.tabview
 
 		private function shiftHamburgerMenuTabsIfSpaceAvailable():void
 		{
-			if (!canTabFitIntoAvailableSpace()) return;
-
-			if (tabsModel.hamburgerTabs.length > 0)
+			if (!canTabFitIntoAvailableSpace())
 			{
-				var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
-				addChild(hamburgerMenuVO.tabData);
+                _model.hamburgerTabs.refresh();
+                return;
+            }
 
-				tabsModel.hamburgerTabs.refresh();
+			if (_model.hamburgerTabs.length > 0)
+			{
+				var hamburgerMenuVO:HamburgerMenuTabsVO = _model.hamburgerTabs.source.shift();
+				addChildTab(hamburgerMenuVO.tabData);
 
 				shiftHamburgerMenuTabsIfSpaceAvailable();
 			}
@@ -365,18 +407,18 @@ package actionScripts.ui.tabview
 
 		private function isHamburgerMenuWithTabsVisible():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
-            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+            var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
 
             return allTabsWidth > availableWidth;
         }
 
 		private function canAllTabsFitIntoAvailableSpace():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
-            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+            var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
 
             return !(allTabsWidth > availableWidth && currentTabsWidth > availableWidth);
@@ -384,7 +426,7 @@ package actionScripts.ui.tabview
 
 		private function canTabFitIntoAvailableSpace():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
 

@@ -36,8 +36,10 @@ package actionScripts.ui
 	import actionScripts.ui.tabview.TabView;
 	
 	import components.views.project.TreeView;
-	
-	// TODO: Make this an all-in-one flexible layout thing
+
+    import mx.events.CollectionEventKind;
+
+    // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox
 	{
 		public var isProjectViewAdded:Boolean;
@@ -45,7 +47,7 @@ package actionScripts.ui
 		public var mainPanel:IDEHDividedBox;
 		public var sidebar:IDEVDividedBox;
 		
-		private var mainContent:TabView;
+		private var _mainContent:TabView;
 		private var model:IDEModel;
 		private var childIndex:int=0;
 		
@@ -57,7 +59,12 @@ package actionScripts.ui
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange);
 			BindingUtils.bindSetter(activeEditorChanged, model, 'activeEditor');
 		}
-		
+
+		public function get mainContent():TabView
+		{
+			return _mainContent;
+		}
+
 		override protected function createChildren():void
 		{
 			super.createChildren();
@@ -81,13 +88,13 @@ package actionScripts.ui
 			mainPanel.setStyle('horizontalGap', 2);
 			bodyPanel.addChild(mainPanel);
 			
-			mainContent = new TabView();
-			mainContent.styleName = "tabNav";
-			mainContent.percentWidth = 100;
-			mainContent.percentHeight = 100;
-			mainContent.addEventListener(TabEvent.EVENT_TAB_CLOSE, handleTabClose);
-			mainContent.addEventListener(TabEvent.EVENT_TAB_SELECT, focusNewEditor);
-			mainPanel.addChild(mainContent);
+			_mainContent = new TabView();
+			_mainContent.styleName = "tabNav";
+			_mainContent.percentWidth = 100;
+			_mainContent.percentHeight = 100;
+			_mainContent.addEventListener(TabEvent.EVENT_TAB_CLOSE, handleTabClose);
+			_mainContent.addEventListener(TabEvent.EVENT_TAB_SELECT, focusNewEditor);
+			mainPanel.addChild(_mainContent);
 			
 			sidebar = new IDEVDividedBox();
 			sidebar.verticalScrollPolicy = "off";
@@ -103,12 +110,12 @@ package actionScripts.ui
 		{
 			switch (event.kind)
 			{
-				case 'remove':
+				case CollectionEventKind.REMOVE:
 				{
 					var editor:DisplayObject = event.items[0] as DisplayObject;
 					if (!(editor is SplashScreen))
                     {
-                        mainContent.removeChild(editor);
+                        _mainContent.removeChild(editor);
                     }
 					// This is the only thing that changes when user saves as
 					if (editor is IContentWindow)
@@ -117,11 +124,11 @@ package actionScripts.ui
 					}
 					break;
 				}
-				case 'add':
+				case CollectionEventKind.ADD:
 				{
 					editor = model.editors.getItemAt(event.location) as DisplayObject;
-					mainContent.addChild(editor);
-					mainContent.selectedIndex = mainContent.getChildIndex(editor);
+                    mainContent.addChild(editor);
+                    mainContent.selectedIndex = _mainContent.getChildIndex(editor);
 					model.activeEditor = editor as IContentWindow;
 					if (editor is IContentWindow)
 					{
@@ -149,12 +156,8 @@ package actionScripts.ui
 		protected function activeEditorChanged(newActiveEditor:IContentWindow):void
 		{
 			if (!mainContent) return;
-			var childIndex:int = mainContent.getChildIndex(model.activeEditor as DisplayObject);
-			if (childIndex != mainContent.selectedIndex) 
-			{
-				mainContent.selectedIndex = childIndex;
-			}
-			
+
+            mainContent.setSelectedTab(model.activeEditor as DisplayObject);
 			updateLabel(newActiveEditor);
 		}
 		
@@ -214,14 +217,14 @@ package actionScripts.ui
 		
 		private function addEditor(editor:IContentWindow):void 
 		{
-			mainContent.addChild(editor as DisplayObject);
-			mainContent.selectedIndex = mainContent.getChildIndex(editor as DisplayObject);
+            mainContent.addChild(editor as DisplayObject);
+            mainContent.selectedIndex = _mainContent.getChildIndex(editor as DisplayObject);
 		}
 		
 		private function replaceEditorWith(newEditor:IContentWindow):void 
-		{	
-			mainContent.removeChildAt( mainContent.selectedIndex );
-			mainContent.addChild(newEditor as DisplayObject);
+		{
+            mainContent.removeChildAt( _mainContent.selectedIndex );
+            mainContent.addChild(newEditor as DisplayObject);
 		}
 	}
 }
