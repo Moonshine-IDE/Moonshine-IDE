@@ -61,10 +61,11 @@ package actionScripts.ui.editor.text
 		public var styles:Object; 
 		public var lineNumberWidth:int;
 		
-		private var textBlock:TextBlock = new TextBlock();
+		private var textBlock:TextBlock;
 		private var textLine:TextLine;
 		
-		private var lineNumberTextBlock:TextBlock = new TextBlock();
+		private var lineNumberTextBlock:TextBlock;
+		private var lineNumberTextElement:TextElement;
 		private var lineNumberText:TextLine;
 		private var lineNumberBackground:Sprite;
 		
@@ -192,6 +193,13 @@ package actionScripts.ui.editor.text
 
 		private function init():void 
 		{
+			textBlock = new TextBlock();
+			textBlock.tabStops = tabStops;
+
+			lineNumberTextBlock = new TextBlock();
+			lineNumberTextElement = new TextElement();
+			lineNumberTextBlock.content = lineNumberTextElement;
+			
 			lineSelection = new Sprite();
 			addChild(lineSelection);
 			
@@ -351,6 +359,7 @@ package actionScripts.ui.editor.text
 				return new Rectangle(lineNumberWidth, 0, 0, lineHeight);
 			}
 			
+			if (charIndex == textLine.atomCount) charIndex--;
 			var bounds:Rectangle = textLine.getAtomBounds(charIndex);
 			bounds.x += lineNumberWidth;
 			
@@ -369,12 +378,6 @@ package actionScripts.ui.editor.text
 		
 		public function drawText():void
 		{
-			if (textLine)
-			{
-				removeChild(textLine);
-				textLine = null;
-			}
-			
 			var text:String = model.text;
 			var meta:Vector.<int> = model.meta;
 			var groupElement:GroupElement = new GroupElement();
@@ -384,13 +387,13 @@ package actionScripts.ui.editor.text
 			{
 				var style:int, start:int, end:int;
 				var metaCount:int = meta.length;
-				var textLenght:int = text.length;
+				var textLength:int = text.length;
 				
 				for (var i:int = 0; i < metaCount; i+=2)
 				{
 					start = meta[i];
 					var plusTwoLine:int = i + 2;
-					end = (plusTwoLine < metaCount) ? meta[plusTwoLine] : textLenght;
+					end = (plusTwoLine < metaCount) ? meta[plusTwoLine] : textLength;
 					style = meta[i+1];
 					var textElement:TextElement = new TextElement(text.substring(start, end), styles[style]);
 					contentElements.push(textElement);
@@ -413,17 +416,36 @@ package actionScripts.ui.editor.text
 				model.lastQuoteText = startChar;
 			}
 			
-			textBlock.tabStops = tabStops;
-			textBlock.content = groupElement; 
-			textLine = textBlock.createTextLine();
+			textBlock.content = groupElement;
+
+			var newTextLine:TextLine = null;
+			if(textLine)
+			{
+				//try to reuse the existing TextLine, if it exists already
+				newTextLine = textBlock.recreateTextLine(textLine);
+			}
+			else
+			{
+				newTextLine = textBlock.createTextLine();
+				if(newTextLine)
+				{
+					textLine = newTextLine;
+					textLine.mouseEnabled = false;
+					textLine.cacheAsBitmap = true;
+					addChildAt(textLine, this.getChildIndex(selection) + 2);
+				}
+				
+			}
+			if(textLine && !newTextLine)
+			{
+				removeChild(textLine);
+				textLine = null;
+			}
 			
 			if (textLine) 
 			{
-				textLine.mouseEnabled = false;
-				textLine.cacheAsBitmap = true;
 				textLine.x = lineNumberWidth + horizontalOffset;
 				textLine.y = 12;
-				addChildAt(textLine,this.getChildIndex(selection)+2);
 			}
 			drawDiagnostics();
 		 }
@@ -500,12 +522,6 @@ package actionScripts.ui.editor.text
 		
 		private function drawLineNumber():void
 		{
-			if (lineNumberText)
-			{
-				removeChild(lineNumberText);
-                lineNumberText = null;
-			}
-			
 			if (lineNumberWidth > 0)
 			{
 				lineNumberBackground.graphics.clear();
@@ -526,17 +542,41 @@ package actionScripts.ui.editor.text
 				
 				var style:ElementFormat = (model.breakPoint) ? styles['breakPointLineNumber'] : styles['lineNumber'];
 				//style = (model.traceLine) ? styles['tracingLineColor'] : styles['lineNumber'];
-				lineNumberTextBlock.content = new TextElement((_dataIndex+1).toString(), style);
-				lineNumberText = lineNumberTextBlock.createTextLine(null, lineNumberWidth);
+				lineNumberTextElement.elementFormat = style;
+				lineNumberTextElement.text = (_dataIndex+1).toString();
+				var newLineNumberText:TextLine = null;
+				if(lineNumberText)
+				{
+					//try to reuse the existing TextLine, if it exists already
+					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, lineNumberWidth);
+				}
+				else
+				{
+					newLineNumberText = lineNumberTextBlock.createTextLine(null, lineNumberWidth);
+					if(newLineNumberText)
+					{
+						lineNumberText = newLineNumberText;
+						lineNumberText.mouseEnabled = false;
+						lineNumberText.mouseChildren = false;
+						addChild(lineNumberText);
+					}
+				}
+				if (lineNumberText && !newLineNumberText)
+				{
+					removeChild(lineNumberText);
+					lineNumberText = null;
+				}
 				
 				if (lineNumberText) 
 				{
-					lineNumberText.mouseEnabled = false;
-					lineNumberText.mouseChildren = false;
 					lineNumberText.y = 12;
 					lineNumberText.x = lineNumberWidth-lineNumberText.width-3;
-					addChild(lineNumberText);
 				}
+			}
+			else if (lineNumberText)
+			{
+				removeChild(lineNumberText);
+				lineNumberText = null;
 			}
 		}
 		

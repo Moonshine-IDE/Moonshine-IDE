@@ -110,23 +110,6 @@ package actionScripts.controllers
 					var model: IDEModel = IDEModel.getInstance();
 					// sends delete call to factory classes
 					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
-					// closes all opened file editor instances belongs to the deleted project
-					// closing is IMPORTANT
-					for (var i:int; i < model.editors.length; i ++)
-					{
-						if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == e.wrapper.projectReference.path)
-						{
-							ed = model.editors[i];
-							var parentProjectPath: String = e.wrapper.projectReference.path + IDEModel.getInstance().fileCore.separator;
-							if (ed && ed.currentFile && ed.currentFile.fileBridge.nativePath && (ed.currentFile.fileBridge.nativePath.indexOf(parentProjectPath) != -1))
-							{
-								GlobalEventDispatcher.getInstance().dispatchEvent(
-									new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
-								);
-								i --;
-							}
-						}
-					}
 				}
 			}
 		}

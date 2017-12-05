@@ -93,6 +93,9 @@ package actionScripts.ui.editor.text
 			menuStr = menuStr.split('').reverse().join('');
 			pos -= menuStr.length + 1;
 
+			//make sure this value is lower case for filtering
+			menuStr = menuStr.toLowerCase();
+
 			menuCollection.source = items;
 
             var position:Point = editor.getPointForIndex(pos+1);
@@ -165,6 +168,11 @@ package actionScripts.ui.editor.text
 			if (item.kind != "Class" && item.kind != "Value")
             {
                 hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr();
+				if (item.kind == "Variable" && item.insertText != null)
+				{
+					hasSelectedLineAutoCloseAttr = false;
+				}
+
                 if (hasSelectedLineAutoCloseAttr)
                 {
                     text = item.label + "=\"\"";
@@ -218,6 +226,8 @@ package actionScripts.ui.editor.text
 				else if (e.charCode > 31 && e.charCode < 127)
 				{
 					var ch:String = String.fromCharCode(e.charCode);
+					//we rely on the fact that menuStr is lower case when we
+					//filter the collection elsewhere
 					menuStr += ch.toLowerCase();
 					editor.setCompletionData(caret, caret, ch);
 					if (filterMenu())
@@ -306,7 +316,7 @@ package actionScripts.ui.editor.text
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if (selectedLineText.indexOf("/>") != -1 ||
+                            if ((selectedLineText.indexOf("/>") != -1 && selectedLineText.indexOf("<") != -1) ||
 								selectedLineText.indexOf("<![CDATA[") != -1 ||
 								selectedLineText.indexOf("]]>") != -1)
                             {
@@ -336,8 +346,13 @@ package actionScripts.ui.editor.text
                             selectedLineText = line.text;
                             if (selectedLineText.indexOf(">") != -1 && selectedLineText.indexOf("</") == -1)
                             {
-                                isLineForAutoCloseAttr = true;
-                                break;
+								if (selectedLineText.indexOf("<") == -1 &&
+									selectedLineText.indexOf("<![CDATA[") == -1 &&
+                                    selectedLineText.indexOf("]]>") == -1)
+								{
+                                    isLineForAutoCloseAttr = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -354,7 +369,9 @@ package actionScripts.ui.editor.text
 				//all items are visible
 				return true;
 			}
-            return item.label.toLowerCase().indexOf(menuStr.toLowerCase()) == 0;
+			//we don't need to call toLowerCase() on menuStr here
+			//because it is already lower case
+            return item.label.toLowerCase().indexOf(menuStr) == 0;
         }
     }
 }

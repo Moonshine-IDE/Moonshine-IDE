@@ -296,8 +296,17 @@
 				{
 					if (projectFolders[i] == null)
 					{
-						projectFolders.removeItemAt(i);
-						i--;
+						project = event.items[0] as ProjectVO;
+						// after a project renaming, and updating its internal fields
+						// direct search (i.e. getItemIndex) of fileWrapper object in the collection
+						// returns -1 even the fileWrapper object and object inside the collection has same
+						// instance id. Thus a different approach it needs to parse by its uid value
+						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
+						projectFolders.removeItemAt(tmpFWIndex);
+						// closes all opened file editor instances belongs to the deleted project
+						// closing is IMPORTANT
+						UtilsCore.closeAllRelativeEditors(project.folderLocation.fileBridge.nativePath);
+						break;
 					}
 				}
 			}

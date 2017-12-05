@@ -331,7 +331,7 @@
 				useRollOver="true"
 				doubleClickEnabled="true"
 				labelField="name" labelFunction="getTrimmedPath"
-				itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+				itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
 				showDataTips="true"
 				dataTipFunction="getTreeTooltip"
 				resize="onResizeList(event)"/>
