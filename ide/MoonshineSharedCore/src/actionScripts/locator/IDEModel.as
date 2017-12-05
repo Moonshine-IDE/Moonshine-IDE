@@ -32,7 +32,6 @@ package actionScripts.locator
 	import actionScripts.ui.MainView;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.UserAuthVO;
 
 	[Bindable] public class IDEModel
 	{
@@ -74,8 +73,6 @@ package actionScripts.locator
 		public var recentSaveProjectPath:ArrayCollection = new ArrayCollection();
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
-		public var userAuth:UserAuthVO = new UserAuthVO();
-		public var isAuthenticated:Boolean = false;
 		public var isIndividualCloseTabAlertShowing:Boolean;
 		public var saveFilesBeforeBuild:Boolean = false;
 		

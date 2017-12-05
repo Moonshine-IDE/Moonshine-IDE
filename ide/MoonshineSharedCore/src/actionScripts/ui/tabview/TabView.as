@@ -44,7 +44,7 @@ package actionScripts.ui.tabview
 		private var shadow:UIComponent;
 
         private var hamburgerMenuTabs:HamburgerMenuTabs;
-		private var tabsModel:TabsModel;
+		private var _model:TabsModel;
 		
 		private var tabLookup:Dictionary = new Dictionary(true); // child:tab
 		
@@ -102,12 +102,17 @@ package actionScripts.ui.tabview
 			
 			invalidateLayoutTabs();
 		}
-		
+
+		public function get model():TabsModel
+		{
+			return _model;
+		}
+
 		public function TabView()
 		{
 			super();
 
-			tabsModel = new TabsModel();
+			_model = new TabsModel();
 			addEventListener(ResizeEvent.RESIZE, handleResize);
 		}
 
@@ -120,10 +125,10 @@ package actionScripts.ui.tabview
             }
 			else
 			{
-			    var hamburgerMenuCount:int = tabsModel.hamburgerTabs.length;
+			    var hamburgerMenuCount:int = _model.hamburgerTabs.length;
 				for (var i:int = 0; i < hamburgerMenuCount; i++)
 				{
-					var hamburgerMenuTabsVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.getItemAt(i) as HamburgerMenuTabsVO;
+					var hamburgerMenuTabsVO:HamburgerMenuTabsVO = _model.hamburgerTabs.getItemAt(i) as HamburgerMenuTabsVO;
 					if (hamburgerMenuTabsVO.tabData == editor)
 					{
 						addTabFromHamburgerMenu(hamburgerMenuTabsVO);
@@ -165,7 +170,7 @@ package actionScripts.ui.tabview
 			hamburgerMenuTabs.right = 0;
 			hamburgerMenuTabs.top = 0;
 			hamburgerMenuTabs.visible = hamburgerMenuTabs.includeInLayout = false;
-			hamburgerMenuTabs.model = tabsModel;
+			hamburgerMenuTabs.model = _model;
 			hamburgerMenuTabs.addEventListener(Event.CHANGE, onHamburgerMenuTabsChange);
 			
 			super.addChild(hamburgerMenuTabs);
@@ -294,7 +299,7 @@ package actionScripts.ui.tabview
 
         private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
         {
-            tabsModel.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
+            _model.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
 			addChild(hamburgerMenuTabsVO.tabData);
         }
 
@@ -324,7 +329,7 @@ package actionScripts.ui.tabview
 					var tabData:DisplayObject = tab.data as DisplayObject;
 					if (!tab.selected && tabData)
 					{
-						tabsModel.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
+						_model.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
 						removeChild(tabData);
 						needsNewSelectedTab = false;
                         validateDisplayList();
@@ -358,13 +363,13 @@ package actionScripts.ui.tabview
 		{
 			if (!canTabFitIntoAvailableSpace())
 			{
-                tabsModel.hamburgerTabs.refresh();
+                _model.hamburgerTabs.refresh();
                 return;
             }
 
-			if (tabsModel.hamburgerTabs.length > 0)
+			if (_model.hamburgerTabs.length > 0)
 			{
-				var hamburgerMenuVO:HamburgerMenuTabsVO = tabsModel.hamburgerTabs.source.shift();
+				var hamburgerMenuVO:HamburgerMenuTabsVO = _model.hamburgerTabs.source.shift();
 				addChildTab(hamburgerMenuVO.tabData);
 
 				shiftHamburgerMenuTabsIfSpaceAvailable();
@@ -404,7 +409,7 @@ package actionScripts.ui.tabview
 		{
             var availableWidth:int = width + 1;
             var numTabs:int = tabContainer.numChildren;
-            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+            var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
 
             return allTabsWidth > availableWidth;
         }
@@ -413,7 +418,7 @@ package actionScripts.ui.tabview
 		{
             var availableWidth:int = width + 1;
             var numTabs:int = tabContainer.numChildren;
-            var allTabsWidth:Number = (numTabs + tabsModel.hamburgerTabs.length) * tabSizeDefault;
+            var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
 
             return !(allTabsWidth > availableWidth && currentTabsWidth > availableWidth);

@@ -18,11 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.display.DisplayObject;
+    import actionScripts.ui.tabview.TabView;
+    import actionScripts.ui.tabview.TabsModel;
+    import actionScripts.valueObjects.HamburgerMenuTabsVO;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	
-	import mx.core.FlexGlobals;
+
+    import mx.collections.ArrayCollection;
+
+    import mx.core.FlexGlobals;
 	import mx.events.ResizeEvent;
 	import mx.managers.PopUpManager;
 	
@@ -56,7 +62,7 @@ package actionScripts.controllers
 			var forceClose:Boolean;
 			if (event.hasOwnProperty('forceClose'))
 				forceClose = event['forceClose'];
-			
+
 			if (!forceClose && tabToClose.isChanged())
 			{	
 				pop = new StandardPopup();
@@ -163,8 +169,23 @@ package actionScripts.controllers
 			tabToClose.dispatchEvent(
 				new CloseTabEvent(CloseTabEvent.EVENT_TAB_CLOSED, tabToClose as DisplayObject)
 			);
-			
-			cleanUp();
+
+            var tabView:TabView = model.mainView.mainContent;
+            if (tabView)
+            {
+                var hamburgerMenuTabs:ArrayCollection = tabView.model.hamburgerTabs;
+                for (var i:int = 0; i < hamburgerMenuTabs.length; i++)
+				{
+					var item:HamburgerMenuTabsVO = hamburgerMenuTabs.getItemAt(i) as HamburgerMenuTabsVO;
+					if (item.tabData == tabToClose)
+					{
+						hamburgerMenuTabs.removeItemAt(i);
+						break;
+					}
+				}
+            }
+
+            cleanUp();
 			
 			// If we have a default tab that should be displayed, give it a shot now
 			if (model.editors.length == 0)

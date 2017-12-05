@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Matrix;
@@ -43,7 +42,6 @@ package actionScripts.ui.menu
 		private var bar:HGroup;
 		private var lastActiveMenuBarItem:MenuBarItemRenderer;
 
-		private var background:Sprite;
 		private var model:MenuModel;
 
 		public function MenuBar()
