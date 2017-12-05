@@ -359,6 +359,7 @@ package actionScripts.ui.editor.text
 				return new Rectangle(lineNumberWidth, 0, 0, lineHeight);
 			}
 			
+			if (charIndex == textLine.atomCount) charIndex--;
 			var bounds:Rectangle = textLine.getAtomBounds(charIndex);
 			bounds.x += lineNumberWidth;
 			
