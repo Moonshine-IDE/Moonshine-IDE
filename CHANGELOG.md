@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.7.0-Pending]
+## Moonshine IDE [1.7.0]
 
 ### Added 
 * Code Editor: Auto close quotes for XML attributes.
@@ -15,14 +15,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.8.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.8.0).
 * Project Tree: Double click to Expand/Collapse branches.
-* Updated Setting > Templating to allow users to create new file and project templates that will appear in File > New
+* Updated Setting > Templating to allow users to create new file and project templates that will appear in File > New.
 
 ### Fixed
 * Find Resources: Button "Open" is now default, which allows user to confirm choice with "Enter" 
 * Project directory defaults to directory used for the previous new project
 * Project Creation: Fixed issue where project name was highlighted, but didn't have focus.
 * Fixed issue where first import in the MXML file was inserted at the beginning of file.
-* Debugging: Fixed null pointer exception which occurred while debugging MXML code
+* Debugging: Fixed null pointer exception which occurred while debugging MXML code.
+* Fixed issue "The supplied index is out of bounds".
 
 ## Moonshine IDE [1.6.1]
 
