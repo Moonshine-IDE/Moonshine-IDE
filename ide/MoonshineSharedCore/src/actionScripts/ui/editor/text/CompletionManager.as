@@ -168,6 +168,11 @@ package actionScripts.ui.editor.text
 			if (item.kind != "Class" && item.kind != "Value")
             {
                 hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr();
+				if (item.kind == "Variable" && item.insertText != null)
+				{
+					hasSelectedLineAutoCloseAttr = false;
+				}
+
                 if (hasSelectedLineAutoCloseAttr)
                 {
                     text = item.label + "=\"\"";
@@ -311,7 +316,7 @@ package actionScripts.ui.editor.text
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if (selectedLineText.indexOf("/>") != -1 ||
+                            if ((selectedLineText.indexOf("/>") != -1 && selectedLineText.indexOf("<") != -1) ||
 								selectedLineText.indexOf("<![CDATA[") != -1 ||
 								selectedLineText.indexOf("]]>") != -1)
                             {
