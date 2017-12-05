@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.8.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.8.0).
 * Project Tree: Double click to Expand/Collapse branches.
+* Updated Setting > Templating to allow users to create new file and project templates that will appear in File > New
 
 ### Fixed
 * Find Resources: Button "Open" is now default, which allows user to confirm choice with "Enter" 
