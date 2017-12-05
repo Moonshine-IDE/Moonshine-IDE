@@ -205,7 +205,10 @@ package actionScripts.ui.tabview
 			
 			var te:TabEvent = new TabEvent(TabEvent.EVENT_TAB_CLOSE, child);
 			dispatchEvent(te);
-			if (te.isDefaultPrevented()) return;
+			if (te.isDefaultPrevented())
+			{
+				return;
+            }
 
 			removeChild(child);
 

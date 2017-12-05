@@ -36,8 +36,10 @@ package actionScripts.ui
 	import actionScripts.ui.tabview.TabView;
 	
 	import components.views.project.TreeView;
-	
-	// TODO: Make this an all-in-one flexible layout thing
+
+    import mx.events.CollectionEventKind;
+
+    // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox
 	{
 		public var isProjectViewAdded:Boolean;
@@ -103,7 +105,7 @@ package actionScripts.ui
 		{
 			switch (event.kind)
 			{
-				case 'remove':
+				case CollectionEventKind.REMOVE:
 				{
 					var editor:DisplayObject = event.items[0] as DisplayObject;
 					if (!(editor is SplashScreen))
@@ -117,7 +119,7 @@ package actionScripts.ui
 					}
 					break;
 				}
-				case 'add':
+				case CollectionEventKind.ADD:
 				{
 					editor = model.editors.getItemAt(event.location) as DisplayObject;
 					mainContent.addChild(editor);
