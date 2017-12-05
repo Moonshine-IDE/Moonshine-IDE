@@ -314,7 +314,7 @@ package actionScripts.ui.tabview
 		protected function updateTabLayout():void
 		{
 			// Each item draws vertical separators on both sides, overlap by 1 px to not have duplicate lines.
-			var availableWidth:int = width + 1;
+			var availableWidth:int = width - hamburgerMenuTabs.width;
 
 			var tab:TabViewTab = null;
             var i:int;
@@ -407,7 +407,7 @@ package actionScripts.ui.tabview
 
 		private function isHamburgerMenuWithTabsVisible():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
             var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
 
@@ -416,7 +416,7 @@ package actionScripts.ui.tabview
 
 		private function canAllTabsFitIntoAvailableSpace():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
             var allTabsWidth:Number = (numTabs + _model.hamburgerTabs.length) * tabSizeDefault;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
@@ -426,7 +426,7 @@ package actionScripts.ui.tabview
 
 		private function canTabFitIntoAvailableSpace():Boolean
 		{
-            var availableWidth:int = width + 1;
+            var availableWidth:int = width - hamburgerMenuTabs.width;
             var numTabs:int = tabContainer.numChildren;
             var currentTabsWidth:Number = numTabs * tabSizeDefault;
 
