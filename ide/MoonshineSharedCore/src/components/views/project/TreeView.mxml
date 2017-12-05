@@ -292,26 +292,17 @@
 			// is a fix to the probelm for now
 			if (!ConstantsCoreVO.IS_AIR)
 			{
-				for (var i:int = 0; i < projectFolders.length; i++)
+				for (var i:int=0; i < projectFolders.length; i ++)
 				{
 					if (projectFolders[i] == null)
 					{
-						project = event.items[0] as ProjectVO;
-						// after a project renaming, and updating its internal fields
-						// direct search (i.e. getItemIndex) of fileWrapper object in the collection
-						// returns -1 even the fileWrapper object and object inside the collection has same
-						// instance id. Thus a different approach it needs to parse by its uid value
-						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
-						projectFolders.removeItemAt(tmpFWIndex);
-						// closes all opened file editor instances belongs to the deleted project
-						// closing is IMPORTANT
-						UtilsCore.closeAllRelativeEditors(project.folderLocation.fileBridge.nativePath);
-						break;
+						projectFolders.removeItemAt(i);
+						i--;
 					}
 				}
 			}
 
-			model.selectedprojectFolders = projectFolders;
+			IDEModel.getInstance().selectedprojectFolders = projectFolders;
 		}
 
 		private function onProjectFilesUpdates(event:ProjectEvent):void
@@ -872,6 +863,14 @@
 				tree.saveItemForOpen(event.item);
 			}
 		}
+
+		private function onTreeItemClose(event:TreeEvent):void
+		{
+			if (event.type == TreeEvent.ITEM_CLOSE)
+			{
+				tree.removeFromOpenedItems(event.item);
+			}
+		}
 		]]>
 	</mx:Script>
 	
@@ -882,29 +881,31 @@
 		creationComplete="initHeader()" />
 	
 	<utils:CustomTree
-		id="tree"
-		width="100%" height="100%"
-		dataProvider="{projectFolders}"
-		itemKeyForSave="nativePath"
-		color="0xEEEEEE"
-		contentBackgroundColor="0x0"
-		rollOverColor="0x393939"
-		selectionColor="0xc165b8"
-		alternatingItemColors="[0x444444, 0x4d4c4c]"
-		verticalScrollBarStyleName="black"
-		showDataTips="true"
-		dataTipFunction="getTreeTooltip"
-		keyNav="true"
-		borderVisible="false"
-		rowHeight="18"
-		useRollOver="true"
-		doubleClickEnabled="true"
-		labelField="name"
-		itemOpen="onTreeItemOpen(event)"
-		iconFunction="{getIconForFile}"
-		itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
-		itemDoubleClick="onTreeItemDoubleClick(event)"
-		itemClick="onTreeItemClick(event)"
-		creationComplete="initTree()"/>
+			id="tree"
+			width="100%" height="100%"
+			dataProvider="{projectFolders}"
+			propertyNameKey="name"
+			propertyNameKeyValue="nativePath"
+			color="0xEEEEEE"
+			contentBackgroundColor="0x0"
+			rollOverColor="0x393939"
+			selectionColor="0xc165b8"
+			alternatingItemColors="[0x444444, 0x4d4c4c]"
+			verticalScrollBarStyleName="black"
+			showDataTips="true"
+			dataTipFunction="getTreeTooltip"
+			keyNav="true"
+			borderVisible="false"
+			rowHeight="18"
+			useRollOver="true"
+			doubleClickEnabled="true"
+			labelField="name"
+			itemOpen="onTreeItemOpen(event)"
+			itemClose="onTreeItemClose(event)"
+			iconFunction="{getIconForFile}"
+			itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
+			itemDoubleClick="onTreeItemDoubleClick(event)"
+			itemClick="onTreeItemClick(event)"
+			creationComplete="initTree()"/>
 	
 </mx:VBox>

@@ -26,9 +26,11 @@ package actionScripts.utils {
 
     public class CustomTree extends Tree
 	{
-        public var itemKeyForSave:String;
+		public var propertyNameKey:String;
+        public var propertyNameKeyValue:String;
 		private var cookie:SharedObject;
-
+		private var itemsOpenedAtStart:Array;
+		
 		public function CustomTree():void
 		{
 			super();
@@ -45,18 +47,18 @@ package actionScripts.utils {
 				cookie.data.projectTree = [];
 			}
 
-			if (item && item.hasOwnProperty(itemKeyForSave))
+			if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
             {
                 var hasItemForOpen:Boolean = cookie.data.projectTree.some(
 						function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean
 						{
-                    		return itemForOpen.hasOwnProperty(item[itemKeyForSave]);
+                    		return itemForOpen.hasOwnProperty(item[propertyNameKey]) && itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
                 		});
 
-                if (itemKeyForSave && !hasItemForOpen)
+                if (!hasItemForOpen)
                 {
                     var itemForSave:Object = {};
-                    itemForSave[item[itemKeyForSave]] = item[itemKeyForSave];
+                    itemForSave[item[propertyNameKey]] = item[propertyNameKeyValue];
                     cookie.data.projectTree.push(itemForSave);
 
                     cookie.flush();
@@ -64,7 +66,28 @@ package actionScripts.utils {
             }
 		}
 
-		override protected function keyDownHandler(event:KeyboardEvent):void 
+        public function removeFromOpenedItems(item:Object):void
+        {
+			var projectTree:Array = cookie.data.projectTree;
+			if (!projectTree) return;
+			
+            if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
+            {
+                for (var i:int = 0; i < projectTree.length; i++)
+                {
+					var itemForRemove:Object = projectTree[i];
+					if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
+							itemForRemove[item[propertyNameKey]] == item[propertyNameKeyValue])
+					{
+                        cookie.data.projectTree.removeAt(i);
+						cookie.flush();
+						break;
+					}
+                }
+            }
+        }
+
+        override protected function keyDownHandler(event:KeyboardEvent):void
 		{
 			if (keyNav) super.keyDownHandler(event);
 		}
@@ -72,15 +95,27 @@ package actionScripts.utils {
         override protected function collectionChangeHandler(event:Event):void
         {
             super.collectionChangeHandler(event);
-			if (event["kind"] == CollectionEventKind.RESET || event["kind"] == CollectionEventKind.ADD)
+			if (event["kind"] == CollectionEventKind.ADD || event["kind"] == CollectionEventKind.RESET)
 			{
-				setItemsAsOpen(event["items"]);
+                itemsOpenedAtStart = event["items"];
+				invalidateDisplayList();
+			}
+        }
+
+        override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+        {
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+			if (itemsOpenedAtStart)
+			{
+			    setItemsAsOpen(itemsOpenedAtStart);
+                itemsOpenedAtStart = null;
 			}
         }
 
         private function setItemsAsOpen(items:Array):void
 		{
-			var projectTree:Array = cookie.data.projectTree;
+            var projectTree:Array = cookie.data.projectTree;
             var itemsCount:int = items.length;
 			if (itemsCount == 0)
 			{
@@ -94,7 +129,7 @@ package actionScripts.utils {
                 {
 					var item:Object = items[i];
                     var hasItemForOpen:Boolean = projectTree.some(function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
-                        return itemForOpen.hasOwnProperty(item[itemKeyForSave]);
+                        return itemForOpen.hasOwnProperty(item[propertyNameKey]) && itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
                     });
 
                     if (hasItemForOpen)
