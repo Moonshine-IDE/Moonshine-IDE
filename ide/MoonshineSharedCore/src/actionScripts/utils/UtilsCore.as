@@ -32,6 +32,7 @@ package actionScripts.utils
 	import mx.managers.PopUpManager;
 	import mx.utils.UIDUtil;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
@@ -39,6 +40,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.DataHTMLType;
 	import actionScripts.valueObjects.FileWrapper;
@@ -54,8 +56,11 @@ package actionScripts.utils
 	public class UtilsCore 
 	{
 		public static var wrappersFoundThroughFindingAWrapper:Vector.<FileWrapper>;
+		
 		private static var sdkPopup:SDKSelectorPopup;
 		private static var sdkPathPopup:SDKDefinePopup;
+		private static var model:IDEModel = IDEModel.getInstance();
+		
 		/**
 		 * Get data agent error type
 		 */
@@ -99,7 +104,7 @@ package actionScripts.utils
 		 */
 		public static function checkProjectIfAlreadyOpened(value:String):Boolean
 		{
-			for each (var file:AS3ProjectVO in IDEModel.getInstance().projects)
+			for each (var file:AS3ProjectVO in model.projects)
 			{
 				if (file.folderLocation.fileBridge.nativePath == value)
 				{
@@ -239,7 +244,7 @@ package actionScripts.utils
 			if (!path) return null;
 			
 			//path = path.replace(/\//g, IDEModel.getInstance().fileCore.separator);
-			if (ConstantsCoreVO.IS_MACOS) path = path.replace(/\\/g, IDEModel.getInstance().fileCore.separator);
+			if (ConstantsCoreVO.IS_MACOS) path = path.replace(/\\/g, model.fileCore.separator);
 			return path;
 		}
 		
@@ -264,7 +269,7 @@ package actionScripts.utils
 		
 		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):ProjectReferenceVO
 		{
-			for each (var i:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
 			{
 				if (i[searchByField] == searchByValue)
 				{
@@ -280,7 +285,7 @@ package actionScripts.utils
 		 */
 		public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO
 		{
-			for each (var p:ProjectVO in IDEModel.getInstance().projects)
+			for each (var p:ProjectVO in model.projects)
 			{
 				if (p.folderPath == projectFolder.projectReference.path)
 					return p;
@@ -294,7 +299,7 @@ package actionScripts.utils
 		 */
 		public static function getCurrentSDK(pvo:AS3ProjectVO):Object 
 		{
-			return pvo.buildOptions.customSDK ? pvo.buildOptions.customSDK.fileBridge.getFile : (IDEModel.getInstance().defaultSDK ? IDEModel.getInstance().defaultSDK.fileBridge.getFile : null);
+			return pvo.buildOptions.customSDK ? pvo.buildOptions.customSDK.fileBridge.getFile : (model.defaultSDK ? model.defaultSDK.fileBridge.getFile : null);
 		}
 
 		/**
@@ -306,7 +311,7 @@ package actionScripts.utils
 			if (fileWrapper) filePath = fileWrapper.nativePath;
 			else if (fileLocation) filePath = fileLocation.fileBridge.nativePath;
 			
-			var separator:String = IDEModel.getInstance().fileCore.separator;
+			var separator:String = model.fileCore.separator;
 			var projectPathSplit:Array = projectPath.split(separator);
 			filePath = filePath.replace(projectPath, "");
 			if (appendProjectNameAsPrefix) return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
@@ -433,7 +438,7 @@ package actionScripts.utils
 			var unsavedEditor:ArrayCollection = new ArrayCollection();
 			var pop:UnsaveFileMessagePopup;
 			var sett:SaveFilesPlugin = new SaveFilesPlugin();
-			for each (var tab:IContentWindow in IDEModel.getInstance().editors)
+			for each (var tab:IContentWindow in model.editors)
 			{
 				var ed:BasicTextEditor = tab as BasicTextEditor;
 				if (ed 
@@ -450,7 +455,7 @@ package actionScripts.utils
 					}
 				}
 			}
-			if(!IDEModel.getInstance().saveFilesBeforeBuild)// ask to save file before build if the flag value is false
+			if(!model.saveFilesBeforeBuild)// ask to save file before build if the flag value is false
 			{
 				if(unsavedEditorVal)
 				{
@@ -542,7 +547,6 @@ package actionScripts.utils
 		public static function checkCodeCompletionFlexJSSDK():String
 		{
 			var hasFlex:Boolean = false;
-			var model:IDEModel = IDEModel.getInstance();
 			var FLEXJS_NAME_PREFIX:String = "Apache Flex (FlexJS) ";
 			
 			var path:String;
@@ -602,7 +606,7 @@ package actionScripts.utils
 			// to ensure addition of new compiler argument '-compiler.targets' 
 			// which do not works with SDK < 0.8.0
 			var sdkFullName:String;
-			for each (var project:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+			for each (var project:ProjectReferenceVO in model.userSavedSDKs)
 			{
 				if (sdkPath == project.path)
 				{
@@ -685,7 +689,6 @@ package actionScripts.utils
 		public static function getJavaPath():FileLocation
 		{
 			var executableFile:FileLocation;
-			var model:IDEModel = IDEModel.getInstance();
 			
 			if (ConstantsCoreVO.IS_MACOS) executableFile = new FileLocation("/usr/bin/java");
 			else 
@@ -716,6 +719,32 @@ package actionScripts.utils
 			
 			// finally
 			return executableFile;
+		}
+		
+		/**
+		 * Closes all the opened editors relative to a certain project path
+		 */
+		public static function closeAllRelativeEditors(projectReferencePath:String):void
+		{
+			var ed:BasicTextEditor;
+			
+			// closes all opened file editor instances belongs to the deleted project
+			// closing is IMPORTANT
+			for (var i:int; i < model.editors.length; i ++)
+			{
+				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == projectReferencePath)
+				{
+					ed = model.editors[i];
+					var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
+					if (ed && ed.currentFile && ed.currentFile.fileBridge.nativePath && (ed.currentFile.fileBridge.nativePath.indexOf(parentProjectPath) != -1))
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
+						);
+						i --;
+					}
+				}
+			}
 		}
 	}
 }

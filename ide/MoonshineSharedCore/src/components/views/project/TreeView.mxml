@@ -267,6 +267,9 @@
 						// instance id. Thus a different approach it needs to parse by its uid value
 						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 						projectFolders.removeItemAt(tmpFWIndex);
+						// closes all opened file editor instances belongs to the deleted project
+						// closing is IMPORTANT
+						UtilsCore.closeAllRelativeEditors(project.folderLocation.fileBridge.nativePath);
 						break;
 					}
 					case 'add':
