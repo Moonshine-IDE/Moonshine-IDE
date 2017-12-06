@@ -726,22 +726,28 @@ package actionScripts.utils
 		 */
 		public static function closeAllRelativeEditors(projectReferencePath:String):void
 		{
-			var ed:BasicTextEditor;
-			
 			// closes all opened file editor instances belongs to the deleted project
 			// closing is IMPORTANT
-			for (var i:int; i < model.editors.length; i ++)
+			var editorsCount:int = model.editors.length;
+			for (var i:int = 0; i < editorsCount; i++)
 			{
 				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == projectReferencePath)
 				{
-					ed = model.editors[i];
+                    var editor:BasicTextEditor = model.editors[i];
 					var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
-					if (ed && ed.currentFile && ed.currentFile.fileBridge.nativePath && (ed.currentFile.fileBridge.nativePath.indexOf(parentProjectPath) != -1))
+					if (editor && editor.currentFile &&
+						editor.currentFile.fileBridge.nativePath &&
+						(editor.currentFile.fileBridge.nativePath.indexOf(parentProjectPath) != -1))
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
+							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, editor, true)
 						);
-						i --;
+
+						if (editorsCount > model.editors.length)
+                        {
+							editorsCount = model.editors.length;
+                            i--;
+                        }
 					}
 				}
 			}
