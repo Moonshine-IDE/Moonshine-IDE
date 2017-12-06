@@ -135,7 +135,10 @@ s|CheckBox
 	color: #444444;
 }
 
-
+s|TitleWindow
+{
+	skinClass:ClassReference("components.skins.ResizableTitleWindowSkin");
+}
 
 .settingsGroup
 {
