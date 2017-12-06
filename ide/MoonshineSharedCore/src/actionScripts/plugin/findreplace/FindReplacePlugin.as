@@ -143,7 +143,7 @@ package actionScripts.plugin.findreplace
 		{
 			if (!resourceSearchView)
 			{
-				resourceSearchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, FindResourcePopup, false) as FindResourcePopup;
+				resourceSearchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, FindResourcePopup, true) as FindResourcePopup;
 				resourceSearchView.addEventListener(CloseEvent.CLOSE, handleResourceSearchViewClose);
 				
 				PopUpManager.centerPopUp(resourceSearchView);

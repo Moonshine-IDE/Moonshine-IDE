@@ -24,6 +24,7 @@ package actionScripts.utils
 	import flash.system.Capabilities;
 	
 	import mx.collections.ArrayCollection;
+	import mx.collections.ArrayList;
 	import mx.collections.ICollectionView;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
@@ -38,6 +39,7 @@ package actionScripts.utils
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -48,6 +50,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
+	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
 	import components.popup.SDKSelectorPopup;
 	import components.popup.UnsaveFileMessagePopup;
@@ -724,32 +727,62 @@ package actionScripts.utils
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */
-		public static function closeAllRelativeEditors(projectReferencePath:String):void
+		public static function closeAllRelativeEditors(projectReferencePath:String, isForceClose:Boolean=false, completionHandler:Function=null):void
 		{
 			// closes all opened file editor instances belongs to the deleted project
 			// closing is IMPORTANT
 			var editorsCount:int = model.editors.length;
+			var hasChangesEditors:ArrayCollection = new ArrayCollection();
+			var editorsToClose:Array = [];
 			for (var i:int = 0; i < editorsCount; i++)
 			{
 				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == projectReferencePath)
 				{
                     var editor:BasicTextEditor = model.editors[i];
-					var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
-					if (editor && editor.currentFile &&
-						editor.currentFile.fileBridge.nativePath &&
-						(editor.currentFile.fileBridge.nativePath.indexOf(parentProjectPath) != -1))
+					//var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
+					if (editor)
 					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, editor, true)
-						);
-
-						if (editorsCount > model.editors.length)
-                        {
-							editorsCount = model.editors.length;
-                            i--;
-                        }
+						editorsToClose.push(editor);
+						if (!isForceClose && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
 					}
 				}
+				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath)
+				{
+					editorsToClose.push(model.editors[i]);
+					if (!isForceClose && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+				}
+			}
+			
+			// check if the editors has any changes
+			if (!isForceClose && hasChangesEditors.length > 0)
+			{
+				var modListPopup:ModifiedFileListPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ModifiedFileListPopup, true) as ModifiedFileListPopup;
+				modListPopup.collection = hasChangesEditors;
+				modListPopup.addEventListener(CloseEvent.CLOSE, onModListClosed);
+				PopUpManager.centerPopUp(modListPopup);
+			}
+			else
+			{
+				onModListClosed(null);
+			}
+			
+			/*
+			 * @local
+			 */
+			function onModListClosed(event:CloseEvent):void
+			{
+				if (event) event.target.removeEventListener(CloseEvent.CLOSE, onModListClosed);
+				
+				// close all the tabs without waiting for anything further
+				for each (var j:IContentWindow in editorsToClose)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, j as DisplayObject, true)
+					);
+				}
+				
+				// notify the caller
+				if (completionHandler != null) completionHandler();
 			}
 		}
 	}

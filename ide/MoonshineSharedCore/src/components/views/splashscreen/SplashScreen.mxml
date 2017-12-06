@@ -212,6 +212,13 @@
 				{
 					var projectName:String = refVO.name;
 					recentOpenedProjectObject = new FileLocation(refVO.path);
+					
+					if (!FileLocation(recentOpenedProjectObject).fileBridge.exists)
+					{
+						Alert.show("Can't import: The file does not exist anymore.", "Error!");
+						return;
+					}
+					
 					if (recentOpenedProjectObject.fileBridge.isDirectory)
 					{
 						var project:AS3ProjectVO;

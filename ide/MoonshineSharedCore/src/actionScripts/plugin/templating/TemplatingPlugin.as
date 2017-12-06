@@ -55,7 +55,6 @@ package actionScripts.plugin.templating
     import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.menu.MenuUtils;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
@@ -1019,7 +1018,7 @@ package actionScripts.plugin.templating
 				
 				// opens the file after writing done
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
 				);
 				
 				// notify the tree view if it needs to refresh
@@ -1051,7 +1050,7 @@ package actionScripts.plugin.templating
 				
 				// opens the file after writing done
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
 				);
 				
 				// notify the tree view if it needs to refresh
@@ -1075,7 +1074,7 @@ package actionScripts.plugin.templating
 				
 				// opens the file after writing done
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
 				);
 				
 				// notify the tree view if it needs to refresh
@@ -1100,7 +1099,7 @@ package actionScripts.plugin.templating
 				
 				// opens the file after writing done
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
 				);
 				
 				// notify the tree view if it needs to refresh
@@ -1124,7 +1123,7 @@ package actionScripts.plugin.templating
 				
 				// opens the file after writing done
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
 				);
 				
 				// notify the tree view if it needs to refresh

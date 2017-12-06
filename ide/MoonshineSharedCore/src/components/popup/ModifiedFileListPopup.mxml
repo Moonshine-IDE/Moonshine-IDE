@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   backgroundColor="0xf5f5f5"
+				   width="600" minWidth="400" height="400" minHeight="200" title="Save Resources"
+				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   skinClass="components.skins.ResizableTitleWindowSkin">
+	<!--<fx:Metadata>
+		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
+	</fx:Metadata>-->
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.ui.editor.BasicTextEditor;
+			import actionScripts.ui.menu.MenuPlugin;
+			
+			[Bindable] public var collection:ArrayCollection;
+			
+			override protected function closeByCrossSign(event:Event):void
+			{
+				doBeforeExit();
+				super.closeByCrossSign(event);
+			}
+			
+			override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
+			{
+				doBeforeExit();
+				super.onResizeKeyDownEvent(event);
+			}
+			
+			protected function doBeforeExit():void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
+			}
+			
+			protected function onSelectAllItems(value:Boolean):void
+			{
+				for each (var i:Object in collection)
+				{
+					i.isSelected = value;
+				}
+				
+				collection.refresh();
+			}
+			
+			protected function onSaveRequest(event:MouseEvent):void
+			{
+				for each (var i:Object in collection)
+				{
+					if (i.isSelected)
+					{
+						i.file.save();
+					}
+				}
+				
+				// close when done
+				closeThis();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+		<s:Label text="Select the resources to save:"/>
+		<s:List id="lstResources"
+				width="100%" height="100%"
+				dataProvider="{collection}" styleName="multiLineList">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer minHeight="25">
+						<fx:Script>
+							<![CDATA[
+								import actionScripts.plugin.settings.SettingsView;
+								override public function set data(value:Object):void
+								{
+									if (value)
+									{
+										super.data = value;
+										labelDisplay.text = (data.file is SettingsView) ? "Settings - "+ data.file.associatedData.name : data.file.currentFile.name +' - '+ data.file.currentFile.fileBridge.nativePath;
+									}
+								}
+							]]>
+						</fx:Script>
+						<s:HGroup height="100%" paddingRight="4" paddingLeft="4" verticalAlign="middle">
+							<s:CheckBox id="cbSelected"
+										selected="{data.isSelected}" change="data.isSelected=cbSelected.selected"/>
+							<s:Label id="labelDisplay" height="100%"
+									 verticalCenter="0" paddingLeft="5" verticalAlign="middle"/>
+						</s:HGroup>
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:List>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Select All"
+				  styleName="darkButton"
+				  click="onSelectAllItems(true)"/>
+		<s:Button label="Deselect All"
+				  styleName="darkButton"
+				  click="onSelectAllItems(false)"/>
+		<s:Spacer width="100%"/>
+		<s:Button label="Save"
+				  styleName="darkButton"
+				  click="onSaveRequest(event)"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>
