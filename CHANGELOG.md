@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where first import in the MXML file was inserted at the beginning of file.
 * Debugging: Fixed null pointer exception which occurred while debugging MXML code.
 * Fixed issue "The supplied index is out of bounds".
+* Fixed issue when saved custom SDK path was not showing in macOS after a restart.
+* Opened editors related to particular project now closes properly upon project close/delete.
 
 ## Moonshine IDE [1.6.1]
 
