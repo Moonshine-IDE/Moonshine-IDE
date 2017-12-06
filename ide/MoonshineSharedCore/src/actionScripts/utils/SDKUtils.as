@@ -149,7 +149,8 @@ package actionScripts.utils
 				if (!downloadsFolder.fileBridge.exists) return [];
 				
 				var totalBundledSDKs:Array = [];
-				IDEModel.getInstance().userSavedSDKs = new ArrayCollection();
+				var model:IDEModel = IDEModel.getInstance();
+				if (!model.userSavedSDKs) model.userSavedSDKs = new ArrayCollection();
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
@@ -180,10 +181,10 @@ package actionScripts.utils
 				// set one as default sdk if requires
 				var timeoutValue:uint = setTimeout(function():void
 				{
-					if (isFound && IDEModel.getInstance().defaultSDK == null)
+					if (isFound && model.defaultSDK == null)
 					{
 						setDefaultSDKByBundledSDK();
-						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, IDEModel.getInstance().userSavedSDKs[0]));
+						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, model.userSavedSDKs[0]));
 					}
 
 					clearTimeout(timeoutValue);
@@ -201,7 +202,7 @@ package actionScripts.utils
 					tmpPR.name = String(value.xml.name);
 					tmpPR.path = value.nativePath;
 					tmpPR.status = BUNDLED;
-					IDEModel.getInstance().userSavedSDKs.addItemAt(tmpPR, 0);
+					model.userSavedSDKs.addItemAt(tmpPR, 0);
 					isFound = true;
 				}
 			}
