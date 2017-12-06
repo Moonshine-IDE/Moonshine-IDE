@@ -267,9 +267,6 @@
 						// instance id. Thus a different approach it needs to parse by its uid value
 						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 						projectFolders.removeItemAt(tmpFWIndex);
-						// closes all opened file editor instances belongs to the deleted project
-						// closing is IMPORTANT
-						UtilsCore.closeAllRelativeEditors(project.folderLocation.fileBridge.nativePath);
 						break;
 					}
 					case 'add':
@@ -366,7 +363,7 @@
 					}
 					case FTETreeItemRenderer.CLOSE:
 					{
-						onFileDeletedOnServer(fileWrapper);
+						onFileDeletedOnServer(fileWrapper, event.menuLabel);
 						break;
 					}
 					case FTETreeItemRenderer.DELETE:
@@ -600,7 +597,7 @@
 				return null;
 			}
 	
-			private function onFileDeletedOnServer(value:FileWrapper):void
+			private function onFileDeletedOnServer(value:FileWrapper, removalType:String=null):void
 			{
 				if (!value) return;
 				deleteFileWrapper = value;
@@ -612,14 +609,18 @@
 				// if the file/folder is a project root
 				if (value.isRoot)
 				{
-					for each (var as3Project:AS3ProjectVO in projects)
+					UtilsCore.closeAllRelativeEditors(value.projectReference.path, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function():void
 					{
-						if (as3Project.projectFolder == value)
+						for each (var as3Project:AS3ProjectVO in projects)
 						{
-							projects.removeItem(as3Project);
-							break;
+							if (as3Project.projectFolder == value)
+							{
+								projects.removeItem(as3Project);
+								updateTreeView();
+								break;
+							}
 						}
-					}
+					});
 				}
 				else
 				{
@@ -636,11 +637,18 @@
 					
 					var parent:FileWrapper = FileWrapper(tree.getParentItem(value));
 					if (parent) parent.updateChildren();
+					updateTreeView();
 				}
 				
-				projectFolders.refresh();
-				tree.openItems = openItems;
-				tree.invalidateList();
+				/*
+				 *@local
+				 */
+				function updateTreeView():void
+				{
+					projectFolders.refresh();
+					tree.openItems = openItems;
+					tree.invalidateList();
+				}
 			}
 			
 			private function findFilePosition(value:FileWrapper):Array
