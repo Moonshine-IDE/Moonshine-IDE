@@ -53,7 +53,7 @@
 			{
 				if (!sdkPathPopup)
 				{
-					sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, false) as SDKDefinePopup;
+					sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, true) as SDKDefinePopup;
 					sdkPathPopup.addEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
 					sdkPathPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 					if (!isNew) sdkPathPopup.editedSDKPath = dgSDKs.selectedItem as ProjectReferenceVO;
