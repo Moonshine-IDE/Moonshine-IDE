@@ -37,6 +37,7 @@
 		import mx.events.CollectionEvent;
 		import mx.events.FlexEvent;
 		import mx.events.ListEvent;
+		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
 
 		import actionScripts.events.AddFolderEvent;
@@ -879,6 +880,15 @@
 			refreshActiveProject(tree.selectedItem as FileWrapper);
 		}
 
+		private function onTreeItemOpen(event:TreeEvent):void
+		{
+			 tree.saveItemForOpen(event.item);
+		}
+
+		private function onTreeItemClose(event:TreeEvent):void
+		{
+			 tree.removeFromOpenedItems(event.item);
+		}
 		]]>
 	</mx:Script>
 
@@ -908,6 +918,8 @@
 			useRollOver="true"
 			doubleClickEnabled="true"
 			labelField="name"
+			itemOpen="onTreeItemOpen(event)"
+			itemClose="onTreeItemClose(event)"
 			iconFunction="{getIconForFile}"
 			itemRenderer="{new ClassFactory(FTETreeItemRenderer)}"
 			itemDoubleClick="fileDoubleClickedInTree(event)"

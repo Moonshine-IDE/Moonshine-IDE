@@ -20,25 +20,28 @@ package actionScripts.utils {
     import flash.events.Event;
     import flash.events.KeyboardEvent;
     import flash.net.SharedObject;
-
     import mx.controls.Tree;
     import mx.events.CollectionEventKind;
+    import mx.events.TreeEvent;
 
     public class CustomTree extends Tree
 	{
 		public var propertyNameKey:String;
         public var propertyNameKeyValue:String;
-		private var cookie:SharedObject;
-		private var itemsOpenedAtStart:Array;
-		
+        public var keyNav:Boolean = true;
+
+        private var cookie:SharedObject;
+		private var isItemOpening:Boolean;
+        
 		public function CustomTree():void
 		{
 			super();
 
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT_TREE);
+            addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
+            addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
+            addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
 		}
-
-		public var keyNav:Boolean = true;
 
 		public function saveItemForOpen(item:Object):void
 		{
@@ -95,51 +98,66 @@ package actionScripts.utils {
         override protected function collectionChangeHandler(event:Event):void
         {
             super.collectionChangeHandler(event);
-			if (event["kind"] == CollectionEventKind.ADD || event["kind"] == CollectionEventKind.RESET)
-			{
-                itemsOpenedAtStart = event["items"];
-				invalidateDisplayList();
-			}
+
+            reopenPreviouslyClosedItems(event["kind"], event["items"]);
         }
 
-        override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+        private function onCustomTreeItemEventHandler(event:TreeEvent):void
         {
-            super.updateDisplayList(unscaledWidth, unscaledHeight);
+            isItemOpening = event.type == TreeEvent.ITEM_OPENING;
+        }
 
-			if (itemsOpenedAtStart)
-			{
-			    setItemsAsOpen(itemsOpenedAtStart);
-                itemsOpenedAtStart = null;
-			}
+        private function reopenPreviouslyClosedItems(eventKind:String, items:Array):void
+        {
+            if (!this.dataProvider || isItemOpening)
+            {
+                return;
+            }
+
+            var itemsCount:int = this.dataProvider.length;
+            if (itemsCount > 0)
+            {
+                if (eventKind == CollectionEventKind.ADD || eventKind == CollectionEventKind.RESET)
+                {
+                    itemsCount = items.length;
+                    if (eventKind == CollectionEventKind.RESET)
+                    {
+                        if (itemsCount == 0)
+                        {
+                            items = this.dataProvider.source.slice();
+                            itemsCount = items.length;
+                        }
+                    }
+
+                    if (itemsCount > 0)
+                    {
+                        setItemsAsOpen(items);
+                    }
+                }
+            }
         }
 
         private function setItemsAsOpen(items:Array):void
 		{
             var projectTree:Array = cookie.data.projectTree;
-            var itemsCount:int = items.length;
-			if (itemsCount == 0)
+			if (projectTree && items.length > 0)
 			{
-				items = dataProvider.source;
-				itemsCount = items.length;
-			}
-
-			if (projectTree && itemsCount > 0)
-			{
-				for (var i:int = 0; i < itemsCount; i++)
+                var item:Object = items.shift();
+                if (!isItemOpen(item))
                 {
-					var item:Object = items[i];
-                    var hasItemForOpen:Boolean = projectTree.some(function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
-                        return itemForOpen.hasOwnProperty(item[propertyNameKey]) && itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
-                    });
+                    var hasItemForOpen:Boolean = projectTree.some(
+                            function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
+                                return itemForOpen.hasOwnProperty(item[propertyNameKey]) &&
+                                        itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
+                            });
 
                     if (hasItemForOpen)
                     {
-                        if (!isItemOpen(item))
-                        {
-                            expandItem(item, true);
-                        }
+                        expandItem(item, true);
                     }
                 }
+
+                setItemsAsOpen(items);
 			}
 		}
     }
