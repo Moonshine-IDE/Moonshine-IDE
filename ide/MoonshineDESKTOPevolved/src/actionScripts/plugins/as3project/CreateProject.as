@@ -199,7 +199,7 @@ package actionScripts.plugins.as3project
                 }
 				else
 				{
-					project.projectName = event.exportProject ? event.exportProject.name : "New"+tempName;
+					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
                 }
 			}
 			
