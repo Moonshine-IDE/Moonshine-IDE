@@ -731,7 +731,7 @@ package actionScripts.utils
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */
-		public static function closeAllRelativeEditors(projectReferencePath:String, isForceClose:Boolean=false,
+		public static function closeAllRelativeEditors(projectReferencePath:String, isSkipSaveConfirmation:Boolean=false,
 													   completionHandler:Function=null, isCloseWhenDone:Boolean=true):void
 		{
 			// closes all opened file editor instances belongs to the deleted project
@@ -748,18 +748,18 @@ package actionScripts.utils
 					if (editor)
 					{
 						editorsToClose.push(editor);
-						if (!isForceClose && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
+						if (!isSkipSaveConfirmation && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
 					}
 				}
 				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath)
 				{
 					editorsToClose.push(model.editors[i]);
-					if (!isForceClose && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+					if (!isSkipSaveConfirmation && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
 				}
 			}
 			
 			// check if the editors has any changes
-			if (!isForceClose && hasChangesEditors.length > 0)
+			if (!isSkipSaveConfirmation && hasChangesEditors.length > 0)
 			{
 				var modListPopup:ModifiedFileListPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ModifiedFileListPopup, true) as ModifiedFileListPopup;
 				modListPopup.collection = hasChangesEditors;
