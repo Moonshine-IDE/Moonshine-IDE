@@ -731,8 +731,8 @@ package actionScripts.utils
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */
-		public static function closeAllRelativeEditors(projectReferencePath:String, isForceCloseAfterSave:Boolean=false,
-													   completionHandler:Function=null, isForceClose:Boolean = true):void
+		public static function closeAllRelativeEditors(projectReferencePath:String, isForceClose:Boolean=false,
+													   completionHandler:Function=null, isCloseWhenDone:Boolean=true):void
 		{
 			// closes all opened file editor instances belongs to the deleted project
 			// closing is IMPORTANT
@@ -748,18 +748,18 @@ package actionScripts.utils
 					if (editor)
 					{
 						editorsToClose.push(editor);
-						if (!isForceCloseAfterSave && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
+						if (!isForceClose && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
 					}
 				}
 				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath)
 				{
 					editorsToClose.push(model.editors[i]);
-					if (!isForceCloseAfterSave && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+					if (!isForceClose && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
 				}
 			}
 			
 			// check if the editors has any changes
-			if (!isForceCloseAfterSave && hasChangesEditors.length > 0)
+			if (!isForceClose && hasChangesEditors.length > 0)
 			{
 				var modListPopup:ModifiedFileListPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ModifiedFileListPopup, true) as ModifiedFileListPopup;
 				modListPopup.collection = hasChangesEditors;
@@ -777,8 +777,11 @@ package actionScripts.utils
 			function onModListClosed(event:CloseEvent):void
 			{
 				if (event) event.target.removeEventListener(CloseEvent.CLOSE, onModListClosed);
-
-				if (isForceClose)
+				
+				// in case we just want save process to the unsaved editors
+				// but not to close the editors when done 
+				// default - true
+				if (isCloseWhenDone)
                 {
                     // close all the tabs without waiting for anything further
                     for each (var j:IContentWindow in editorsToClose)
