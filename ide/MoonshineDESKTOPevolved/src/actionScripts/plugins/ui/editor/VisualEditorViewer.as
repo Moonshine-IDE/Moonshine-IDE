@@ -38,6 +38,7 @@ package actionScripts.plugins.ui.editor
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
+        private var hasChangedProperties:Boolean;
         
         public function VisualEditorViewer()
         {
@@ -92,7 +93,8 @@ package actionScripts.plugins.ui.editor
         {
             visualEditorView.visualEditor.saveEditedFile();
             editor.dataProvider = getMxmlCode();
-            
+            hasChangedProperties = false;
+
             super.save();
         }
 
@@ -105,12 +107,19 @@ package actionScripts.plugins.ui.editor
 
         override protected function updateChangeStatus():void
         {
-            _isChanged = editor.hasChanged;
-            if (!_isChanged)
+            if (hasChangedProperties)
             {
-                _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+                _isChanged = true;
             }
-
+            else
+            {
+                _isChanged = editor.hasChanged;
+                if (!_isChanged)
+                {
+                    _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+                }
+            }
+            
             dispatchEvent(new Event('labelChanged'));
         }
 
@@ -121,7 +130,7 @@ package actionScripts.plugins.ui.editor
 
         private function onPropertyEditorChanged(event:Event):void
         {
-            _isChanged = true;
+            hasChangedProperties = _isChanged = true;
             dispatchEvent(new Event('labelChanged'));
         }
 

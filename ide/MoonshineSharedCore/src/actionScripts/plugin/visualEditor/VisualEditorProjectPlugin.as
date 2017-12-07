@@ -21,7 +21,9 @@ package actionScripts.plugin.visualEditor
     import actionScripts.events.NewProjectEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.utils.UtilsCore;
 
     import flash.events.Event;
 
@@ -67,7 +69,12 @@ package actionScripts.plugin.visualEditor
 
         private function visualEditorExportVisualEditorProjectHandler(event:Event):void
         {
-            dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, model.activeProject));
+            UtilsCore.checkForUnsavedEdior(model.activeProject, exportProject);
+        }
+
+        private function exportProject(project:AS3ProjectVO):void
+        {                                                                                            
+            dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, project));
         }
     }
 }

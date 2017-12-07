@@ -462,7 +462,11 @@ package actionScripts.utils
 			{
 				if(unsavedEditorVal)
 				{
+					var visualEditorProject:AS3ProjectVO = activeProject as AS3ProjectVO;
+
 					pop = new UnsaveFileMessagePopup();
+					pop.title = visualEditorProject && visualEditorProject.isVisualEditorProject
+							? "Save & Export" : "Save & Launch";
 					PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, false);
 					PopUpManager.centerPopUp(pop);
 					pop.addEventListener(UnsaveFileMessagePopup.SAVE_SELECTED, saveUnsavedFileHandler);
