@@ -1036,9 +1036,8 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				debug("%s", data);
 				print(data);
-				startShell(false);//new fix by D per Moon-84
+				reset();
 			}
-			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 

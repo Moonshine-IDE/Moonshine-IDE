@@ -200,6 +200,7 @@ package actionScripts.plugins.as3project.mxmlc
 			fcsh = null;
 			
 			targets = new Dictionary();
+			resourceCopiedIndex = 0;
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -657,10 +658,8 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
 							var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
-							resourceCopiedIndex = 0;
 							getResourceCopied(currentProject as AS3ProjectVO, swfFile);
 						}
-						reset();	
 					}
 				}
 				
@@ -673,8 +672,8 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				
+				reset();
 				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
-				
 				debug("%s", data);
 			}
 		}
@@ -793,8 +792,8 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				debug("%s", data);
 				print(data);
+				reset();
 			}
-			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
