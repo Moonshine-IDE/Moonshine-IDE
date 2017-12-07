@@ -78,7 +78,7 @@ package actionScripts.plugins.ui.editor
         {
             editor.dataProvider = getMxmlCode();
 
-            refreshIsChanged();
+            updateChangeStatus()
         }
 
         override protected function createChildren():void
@@ -103,14 +103,26 @@ package actionScripts.plugins.ui.editor
             createVisualEditorFile();
         }
 
+        override protected function updateChangeStatus():void
+        {
+            _isChanged = editor.hasChanged;
+            if (!_isChanged)
+            {
+                _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+            }
+
+            dispatchEvent(new Event('labelChanged'));
+        }
+
         private function onEditingSurfaceChange(event:Event):void
         {
-            refreshIsChanged();
+            updateChangeStatus();
         }
 
         private function onPropertyEditorChanged(event:Event):void
         {
             _isChanged = true;
+            dispatchEvent(new Event('labelChanged'));
         }
 
         private function onTabAdd(event:Event):void
@@ -183,14 +195,6 @@ package actionScripts.plugins.ui.editor
             }
 
             return null;
-        }
-
-        private function refreshIsChanged():void
-        {
-            if (!_isChanged)
-            {
-                _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
-            }
         }
     }
 }
