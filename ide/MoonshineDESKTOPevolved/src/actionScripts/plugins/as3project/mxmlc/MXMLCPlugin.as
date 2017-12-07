@@ -296,7 +296,6 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			targets = new Dictionary();
 			errors = "";
-			resourceCopiedIndex = 0;
 		}
 		
 		private function onDefaultSDKUpdatedOutside(event:ProjectEvent):void
@@ -889,16 +888,20 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 					else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 					{
+						resourceCopiedIndex = 0;
 						getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
 					}
+					
+					reset();	
 				}
 				
 				if (errors != "") 
 				{
 					compilerError(errors);
+					targets = new Dictionary();
+					errors = "";
 				}
 				
-				reset();
 				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
 				debug("%s", data);
 			}
@@ -919,10 +922,14 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
-			if (pvo.resourcePaths.length != 0)
+			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
 			{
 				getResourceCopied(pvo, swfFile);
 				return;
+			}
+			else
+			{
+				resourceCopiedIndex = 0;
 			}
 			
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
@@ -1036,8 +1043,9 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				debug("%s", data);
 				print(data);
-				reset();
+				startShell(false);//new fix by D per Moon-84
 			}
+			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
