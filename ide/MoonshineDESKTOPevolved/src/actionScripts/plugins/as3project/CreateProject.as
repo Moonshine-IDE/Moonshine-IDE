@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+    import actionScripts.utils.SharedObjectConst;
+
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
@@ -159,7 +161,7 @@ package actionScripts.plugins.as3project
 
             setProjectType(event.templateDir.fileBridge.name);
 
-            cookie = SharedObject.getLocal("moonshine-ide-local");
+            cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			//Read recent project path from shared object
 			
 			// if opened by Open project, event.settingsFile will be false
@@ -407,7 +409,7 @@ package actionScripts.plugins.as3project
 			var targetFolder:FileLocation = project.folderLocation;
 
 			//save  project path in shared object
-			cookie = SharedObject.getLocal("moonshine-ide-local");
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			var tmpParent:FileLocation;
 			if (_isProjectFromExistingSource)
 			{

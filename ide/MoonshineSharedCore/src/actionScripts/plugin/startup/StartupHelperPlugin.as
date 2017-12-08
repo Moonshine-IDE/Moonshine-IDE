@@ -145,7 +145,7 @@ package actionScripts.plugin.startup
 			else if (!model.defaultSDK)
 			{
 				// lets show up the default sdk requirement strip at bottom
-				setTimeout(function():void
+                changeMenuSDKTimeout = setTimeout(function():void
 				{
 					clearTimeout(changeMenuSDKTimeout);
                     changeMenuSDKTimeout = 0;

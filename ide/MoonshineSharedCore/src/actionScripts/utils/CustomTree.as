@@ -17,19 +17,148 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils {
-	
-	import flash.events.KeyboardEvent;
-	
-	import mx.controls.Tree;
-	
-	public class CustomTree extends Tree {
-		
-		public var keyNav:Boolean = true;
-		
-		override protected function keyDownHandler(event:KeyboardEvent):void 
+    import flash.events.Event;
+    import flash.events.KeyboardEvent;
+    import flash.net.SharedObject;
+    import mx.controls.Tree;
+    import mx.events.CollectionEventKind;
+    import mx.events.TreeEvent;
+
+    public class CustomTree extends Tree
+	{
+		public var propertyNameKey:String;
+        public var propertyNameKeyValue:String;
+        public var keyNav:Boolean = true;
+
+        private var cookie:SharedObject;
+		private var isItemOpening:Boolean;
+        
+		public function CustomTree():void
+		{
+			super();
+
+            cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT_TREE);
+            addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
+            addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
+            addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
+		}
+
+		public function saveItemForOpen(item:Object):void
+		{
+			if (!cookie.data.projectTree)
+			{
+				cookie.data.projectTree = [];
+			}
+
+			if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
+            {
+                var hasItemForOpen:Boolean = cookie.data.projectTree.some(
+						function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean
+						{
+                    		return itemForOpen.hasOwnProperty(item[propertyNameKey]) && itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
+                		});
+
+                if (!hasItemForOpen)
+                {
+                    var itemForSave:Object = {};
+                    itemForSave[item[propertyNameKey]] = item[propertyNameKeyValue];
+                    cookie.data.projectTree.push(itemForSave);
+
+                    cookie.flush();
+                }
+            }
+		}
+
+        public function removeFromOpenedItems(item:Object):void
+        {
+			var projectTree:Array = cookie.data.projectTree;
+			if (!projectTree) return;
+			
+            if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
+            {
+                for (var i:int = 0; i < projectTree.length; i++)
+                {
+					var itemForRemove:Object = projectTree[i];
+					if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
+							itemForRemove[item[propertyNameKey]] == item[propertyNameKeyValue])
+					{
+                        cookie.data.projectTree.removeAt(i);
+						cookie.flush();
+						break;
+					}
+                }
+            }
+        }
+
+        override protected function keyDownHandler(event:KeyboardEvent):void
 		{
 			if (keyNav) super.keyDownHandler(event);
 		}
-		
-	}
+
+        override protected function collectionChangeHandler(event:Event):void
+        {
+            super.collectionChangeHandler(event);
+
+            reopenPreviouslyClosedItems(event["kind"], event["items"]);
+        }
+
+        private function onCustomTreeItemEventHandler(event:TreeEvent):void
+        {
+            isItemOpening = event.type == TreeEvent.ITEM_OPENING;
+        }
+
+        private function reopenPreviouslyClosedItems(eventKind:String, items:Array):void
+        {
+            if (!this.dataProvider || isItemOpening)
+            {
+                return;
+            }
+
+            var itemsCount:int = this.dataProvider.length;
+            if (itemsCount > 0)
+            {
+                if (eventKind == CollectionEventKind.ADD || eventKind == CollectionEventKind.RESET)
+                {
+                    itemsCount = items.length;
+                    if (eventKind == CollectionEventKind.RESET)
+                    {
+                        if (itemsCount == 0)
+                        {
+                            items = this.dataProvider.source.slice();
+                            itemsCount = items.length;
+                        }
+                    }
+
+                    if (itemsCount > 0)
+                    {
+                        setItemsAsOpen(items);
+                    }
+                }
+            }
+        }
+
+        private function setItemsAsOpen(items:Array):void
+		{
+            var projectTree:Array = cookie.data.projectTree;
+			if (projectTree && items.length > 0)
+			{
+                var item:Object = items.shift();
+                if (!isItemOpen(item))
+                {
+                    var hasItemForOpen:Boolean = projectTree.some(
+                            function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
+                                return itemForOpen.hasOwnProperty(item[propertyNameKey]) &&
+                                        itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
+                            });
+
+                    if (hasItemForOpen)
+                    {
+                        expandItem(item, true);
+                    }
+                }
+
+                setItemsAsOpen(items);
+			}
+		}
+    }
 }

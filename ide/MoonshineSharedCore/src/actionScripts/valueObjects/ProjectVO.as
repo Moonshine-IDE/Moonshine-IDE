@@ -20,7 +20,8 @@ package actionScripts.valueObjects
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -56,6 +57,8 @@ package actionScripts.valueObjects
 		private var isFlashBuilderProject:Boolean;
 		private var rootFound:Boolean;
 
+		private var timeoutProjectConfigValue:uint;
+		
         protected var projectReference: ProjectReferenceVO;
 
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
@@ -126,7 +129,6 @@ package actionScripts.valueObjects
 		{
 			if ((wrapper.children is Array) && (wrapper.children as Array).length > 0) 
 			{
-				var tmpSubChildren:Array = [];
 				for each (var c:FileWrapper in wrapper.children)
 				{
 					if (c.file.fileBridge.name == value) 
@@ -187,7 +189,7 @@ package actionScripts.valueObjects
 			else if (isFlashBuilderProject) tmpConfigName = ".actionScriptProperties";
 			else return;
 			getFileByName(projectFolder, tmpConfigName);
-			setTimeout(loadConfiguration, 1000);
+            timeoutProjectConfigValue = setTimeout(loadConfiguration, 1000);
 		}
 		
 		private function loadConfiguration():void
@@ -197,6 +199,8 @@ package actionScripts.valueObjects
 			var successFunction:Function;
 			successFunction = (isFlashDevelopProject) ? onFDProjectLoaded : onFBProjectLoaded;
 			loader = new DataAgent(URLDescriptorVO.FILE_OPEN, successFunction, onFault, {path:projectConfigurationFile.file.fileBridge.nativePath});
+
+			clearTimeout(timeoutProjectConfigValue);
 		}
 		
 		private function onFDProjectLoaded(value:Object, message:String=null):void

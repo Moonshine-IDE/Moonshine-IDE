@@ -68,10 +68,12 @@ package actionScripts.plugin.settings
 	 * */
 
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
+    import actionScripts.utils.SharedObjectConst;
 
     import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.getQualifiedClassName;
+    import flash.net.SharedObject;
+    import flash.utils.getQualifiedClassName;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GeneralEvent;
@@ -163,7 +165,12 @@ package actionScripts.plugin.settings
 			{
 				plug.resetSettings();
 			}
-			
+
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT_TREE);
+            delete cookie.data["projectTree"];
+
+			cookie.flush();
+
 			// restarting all startup process again
 			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
 		}

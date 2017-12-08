@@ -24,6 +24,8 @@ package actionScripts.plugin.settings.providers
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.utils.SharedObjectConst;
+
     import flash.net.SharedObject;
 
     public class JavaSettingsProvider implements ISettingsProvider
@@ -67,7 +69,7 @@ package actionScripts.plugin.settings.providers
         {
             if (!model.javaPathForTypeAhead) return;
 
-            var cookie:SharedObject = SharedObject.getLocal("moonshine-ide-local");
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
             if (model.activeEditor)
             {
                 delete cookie.data["javaPathForTypeahead"];
