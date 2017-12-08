@@ -293,7 +293,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			startShell(false);
 			//exiting = true;
-			
+			resourceCopiedIndex = 0;
 			targets = new Dictionary();
 			errors = "";
 		}
@@ -882,7 +882,7 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						print("1 in MXMLCPlugin debugafterBuild");
 						GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-						dispatcher.addEventListener(CompilerEventBase.RUN_AFTER_DEBUG,runAfterDebugHandler);
+						dispatcher.addEventListener(CompilerEventBase.RUN_AFTER_DEBUG, runAfterDebugHandler);
 						dispatcher.dispatchEvent(
 							//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
 							new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
@@ -890,18 +890,16 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 					else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 					{
-						resourceCopiedIndex = 0;
 						getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
 					}
 					
-					reset();	
+					reset();
 				}
 				
-				if (errors != "") 
+				if (errors != "")
 				{
 					compilerError(errors);
-					targets = new Dictionary();
-					errors = "";
+					reset();
 				}
 				
 				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
@@ -912,9 +910,9 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function runAfterDebugHandler(e:CompilerEventBase):void
 		{
+			dispatcher.removeEventListener(CompilerEventBase.RUN_AFTER_DEBUG,runAfterDebugHandler);
 			debugAfterBuild = false;
 			testMovie();
-			dispatcher.removeEventListener(CompilerEventBase.RUN_AFTER_DEBUG,runAfterDebugHandler);
 		}
 		
 		private function testMovie():void 
@@ -928,10 +926,6 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				getResourceCopied(pvo, swfFile);
 				return;
-			}
-			else
-			{
-				resourceCopiedIndex = 0;
 			}
 			
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
@@ -1045,9 +1039,8 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				debug("%s", data);
 				print(data);
-				startShell(false);//new fix by D per Moon-84
+				reset();
 			}
-			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 

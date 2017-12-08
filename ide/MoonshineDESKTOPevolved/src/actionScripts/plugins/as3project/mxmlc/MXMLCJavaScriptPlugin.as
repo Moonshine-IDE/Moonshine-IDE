@@ -198,8 +198,9 @@ package actionScripts.plugins.as3project.mxmlc
 			if(fcsh)
 				fcsh.exit(true);
 			fcsh = null;
-			
+			resourceCopiedIndex = 0;
 			targets = new Dictionary();
+			errors = "";
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -282,6 +283,8 @@ package actionScripts.plugins.as3project.mxmlc
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
 			if (!activeProject) activeProject = model.activeProject;
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
+			
+			reset();
 			
 			CONFIG::OSX
 			{
@@ -659,10 +662,9 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
 							var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
-							resourceCopiedIndex = 0;
 							getResourceCopied(currentProject as AS3ProjectVO, swfFile);
 						}
-						reset();	
+						reset();
 					}
 				}
 				
@@ -670,13 +672,10 @@ package actionScripts.plugins.as3project.mxmlc
 				if (errors != "") 
 				{
 					compilerError(errors);
-					targets = new Dictionary();
-					errors = "";
+					reset();
 				}
 				
-				
 				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
-				
 				debug("%s", data);
 			}
 		}
@@ -693,10 +692,6 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				getResourceCopied(pvo, swfFile);
 				return;
-			}
-			else
-			{
-				resourceCopiedIndex = 0;
 			}
 			
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
