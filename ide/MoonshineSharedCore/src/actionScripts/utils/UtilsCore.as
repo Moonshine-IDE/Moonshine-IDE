@@ -432,88 +432,6 @@ package actionScripts.utils
 			return true;
 		}
 		
-		/**
-		 * check for unsaved file before Build
-		 */ 
-		public static function checkForUnsavedEdior(activeProject:ProjectVO,saveFunction:Function):void
-		{
-			var unsavedEditorVal:Boolean;
-			var unsavedEditor:ArrayCollection = new ArrayCollection();
-			var pop:UnsaveFileMessagePopup;
-			var sett:SaveFilesPlugin = new SaveFilesPlugin();
-			for each (var tab:IContentWindow in model.editors)
-			{
-				var ed:BasicTextEditor = tab as BasicTextEditor;
-				if (ed 
-					&& ed.currentFile
-					&& ed.currentFile.fileBridge.nativePath.indexOf(activeProject.name) != -1)
-				{
-					if(ed.isChanged())
-					{
-						if(!unsavedEditorVal)unsavedEditorVal = true;
-						unsavedEditor.addItem(tab);
-						//save file before Build n run
-						trace("changed"+ed.currentFile.fileBridge.name);
-						//ed.saveAs(ed.currentFile);
-					}
-				}
-			}
-			if(!model.saveFilesBeforeBuild)// ask to save file before build if the flag value is false
-			{
-				if(unsavedEditorVal)
-				{
-					var visualEditorProject:AS3ProjectVO = activeProject as AS3ProjectVO;
-
-					pop = new UnsaveFileMessagePopup();
-					pop.title = visualEditorProject && visualEditorProject.isVisualEditorProject
-							? "Save & Export" : "Save & Launch";
-					PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, false);
-					PopUpManager.centerPopUp(pop);
-					pop.addEventListener(UnsaveFileMessagePopup.SAVE_SELECTED, saveUnsavedFileHandler);
-					pop.addEventListener(UnsaveFileMessagePopup.CANCELLED, CancelHandler);
-					pop.addEventListener(UnsaveFileMessagePopup.CONTINUE, ContinueHandler);
-				}
-				else
-					saveFunction(activeProject);
-				//Save unsaved file
-				function saveUnsavedFileHandler(evt:Event):void{
-					for each (var tab:IContentWindow in unsavedEditor)
-					{
-						var ed:BasicTextEditor = tab as BasicTextEditor;
-						ed.saveAs(ed.currentFile);
-					}
-					ContinueHandler(null);	
-				}
-				//Build without save file
-				function CancelHandler(evt:Event):void{
-					pop.removeEventListener(UnsaveFileMessagePopup.SAVE_SELECTED, saveUnsavedFileHandler);
-					pop.removeEventListener(UnsaveFileMessagePopup.CONTINUE, ContinueHandler);
-					pop.removeEventListener(UnsaveFileMessagePopup.CANCELLED, CancelHandler);
-					pop = null;
-				}
-				function ContinueHandler(evt:Event):void{
-					pop.removeEventListener(UnsaveFileMessagePopup.SAVE_SELECTED, saveUnsavedFileHandler);
-					pop.removeEventListener(UnsaveFileMessagePopup.CONTINUE, ContinueHandler);
-					pop.removeEventListener(UnsaveFileMessagePopup.CANCELLED, CancelHandler);
-					pop = null;
-					saveFunction(activeProject);
-				}
-			}
-			else
-			{
-			    //save automatically before build without asking if the flag value is true
-				if(unsavedEditorVal)
-				{
-					for each (var editorTab:IContentWindow in unsavedEditor)
-					{
-						var editor:BasicTextEditor = editorTab as BasicTextEditor;
-						editor.saveAs(editor.currentFile);
-					}
-				}
-				saveFunction(activeProject);
-			}
-		}
-		
 		public static function sdkSelection():void
 		{
 			if (!sdkPathPopup)
@@ -731,17 +649,20 @@ package actionScripts.utils
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */
-		public static function closeAllRelativeEditors(projectReferencePath:String, isSkipSaveConfirmation:Boolean=false,
+		public static function closeAllRelativeEditors(project:ProjectVO, isSkipSaveConfirmation:Boolean=false,
 													   completionHandler:Function=null, isCloseWhenDone:Boolean=true):void
 		{
 			// closes all opened file editor instances belongs to the deleted project
 			// closing is IMPORTANT
+			// if project==null, it'll close all opened editors irrespective of 
+			// any particular project (example usage in 'Close All' option in File menu)
+			var projectReferencePath:String = project ? project.folderLocation.fileBridge.nativePath : null;
 			var editorsCount:int = model.editors.length;
 			var hasChangesEditors:ArrayCollection = new ArrayCollection();
 			var editorsToClose:Array = [];
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && model.editors[i].projectPath == projectReferencePath)
+				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && (!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
 				{
                     var editor:BasicTextEditor = model.editors[i];
 					//var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
@@ -751,7 +672,7 @@ package actionScripts.utils
 						if (!isSkipSaveConfirmation && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
 					}
 				}
-				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath)
+				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
 				{
 					editorsToClose.push(model.editors[i]);
 					if (!isSkipSaveConfirmation && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});

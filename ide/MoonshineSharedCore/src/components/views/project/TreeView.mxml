@@ -609,7 +609,7 @@
 				// if the file/folder is a project root
 				if (value.isRoot)
 				{
-					UtilsCore.closeAllRelativeEditors(value.projectReference.path, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function():void
+					UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function():void
 					{
 						for each (var as3Project:AS3ProjectVO in projects)
 						{

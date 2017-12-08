@@ -71,7 +71,7 @@ package actionScripts.plugin.visualEditor
         private function visualEditorExportVisualEditorProjectHandler(event:Event):void
         {
             var currentActiveProject:ProjectVO = model.activeProject;
-            UtilsCore.closeAllRelativeEditors(model.activeProject.folderLocation.fileBridge.nativePath, false,
+            UtilsCore.closeAllRelativeEditors(model.activeProject, false,
                     function():void
                     {
                         dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, currentActiveProject));

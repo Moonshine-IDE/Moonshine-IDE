@@ -427,18 +427,20 @@ package actionScripts.plugins.as3project.mxmlc
 			*/
 			function checkForUnsavedEdior(activeProject:ProjectVO):void
 			{
-				UtilsCore.checkForUnsavedEdior(activeProject, proceedWithBuild);
+				model.activeProject = activeProject;
+				UtilsCore.closeAllRelativeEditors(activeProject, false, proceedWithBuild, false);
+				//UtilsCore.checkForUnsavedEdior(activeProject, proceedWithBuild);
 				//proceedWithBuild(activeProject);
 			}
 		}
 		
-		private function proceedWithBuild(activeProject:ProjectVO):void
+		private function proceedWithBuild(activeProject:ProjectVO=null):void
 		{
-			reset();
-			
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
-			if (!activeProject) return;
-			if (!(activeProject is AS3ProjectVO)) return;
+			if (!activeProject) activeProject = model.activeProject;
+			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
+			
+			reset();
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 			if(as3Pvo.targets.length==0)
