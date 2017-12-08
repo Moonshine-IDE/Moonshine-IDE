@@ -272,11 +272,17 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		private function checkForUnsavedEdior(activeProject:ProjectVO):void
 		{
-			UtilsCore.checkForUnsavedEdior(activeProject,proceedWithBuild);
+			model.activeProject = activeProject;
+			UtilsCore.closeAllRelativeEditors(activeProject, false, proceedWithBuild, false);
+			//UtilsCore.checkForUnsavedEdior(activeProject,proceedWithBuild);
 		}
 		
-		private function proceedWithBuild(activeProject:ProjectVO):void 
+		private function proceedWithBuild(activeProject:ProjectVO=null):void 
 		{
+			// Don't compile if there is no project. Don't warn since other compilers might take the job.
+			if (!activeProject) activeProject = model.activeProject;
+			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
+			
 			CONFIG::OSX
 			{
 				// before proceed, check file access dependencies
@@ -286,10 +292,6 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 			}
-			
-			// Don't compile if there is no project. Don't warn since other compilers might take the job.
-			if (!activeProject) return;
-			if (!(activeProject is AS3ProjectVO)) return;
 			
 			if (!fcsh || activeProject.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
 				|| usingInvalidSDK(activeProject as AS3ProjectVO)) 

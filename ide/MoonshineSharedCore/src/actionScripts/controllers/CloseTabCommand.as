@@ -18,31 +18,30 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.MouseEvent;
+    
+    import mx.collections.ArrayCollection;
+    import mx.core.FlexGlobals;
+    import mx.events.ResizeEvent;
+    import mx.managers.PopUpManager;
+    
+    import spark.components.Button;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabView;
     import actionScripts.ui.tabview.TabsModel;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;
-
-    import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-
-    import mx.collections.ArrayCollection;
-
-    import mx.core.FlexGlobals;
-	import mx.events.ResizeEvent;
-	import mx.managers.PopUpManager;
-	
-	import spark.components.Button;
-	
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.popup.StandardPopup;
+    
+    import components.popup.StandardPopup;
 
 	public class CloseTabCommand implements ICommand
 	{
@@ -54,6 +53,12 @@ package actionScripts.controllers
 
 		public function execute(event:Event):void
 		{
+			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_TABS)
+			{
+				UtilsCore.closeAllRelativeEditors(null);
+				return;
+			}
+			
 			if (event.hasOwnProperty('tab'))
 				tabToClose = event['tab'];
 			else
@@ -137,7 +142,7 @@ package actionScripts.controllers
 			if (pop) pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
 		}
 		
-		private function onForceCloseRequest(event:CloseTabEvent):void
+		private function onForceCloseRequest(event:Event):void
 		{
 			if (pop) cleanUp();
 		}

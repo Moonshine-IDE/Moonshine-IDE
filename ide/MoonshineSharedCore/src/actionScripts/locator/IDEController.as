@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
+	import flash.events.Event;
+	
 	import actionScripts.controllers.AddTabCommand;
 	import actionScripts.controllers.CloseTabCommand;
 	import actionScripts.controllers.DeleteFileCommand;
@@ -34,8 +36,6 @@ package actionScripts.locator
 	import actionScripts.events.RenameFileFolderEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	
-	import flash.events.Event;
 	
 	public class IDEController
 	{
@@ -55,6 +55,7 @@ package actionScripts.locator
 		public function setupBindings():void 
 		{	
 			commands[CloseTabEvent.EVENT_CLOSE_TAB] = CloseTabCommand;
+			commands[CloseTabEvent.EVENT_CLOSE_ALL_TABS] = CloseTabCommand;
 			commands[OpenFileEvent.OPEN_FILE] = OpenFileCommand;
 			commands[OpenFileEvent.TRACE_LINE] = OpenFileCommand;
 			commands[AddTabEvent.EVENT_ADD_TAB] = AddTabCommand;

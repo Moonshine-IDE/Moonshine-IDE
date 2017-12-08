@@ -582,7 +582,7 @@
 		public function getProjectBySelection(orByProjectPath:String=null):AS3ProjectVO
 		{
 			if (!tree.selectedItem && !orByProjectPath) return null;
-
+			
 			for (var i:int; i < projects.length; i++)
 			{
 				if (!orByProjectPath)
@@ -594,7 +594,7 @@
 					if (orByProjectPath == projects[i].folderPath) return projects[i];
 				}
 			}
-
+			
 			return null;
 		}
 
@@ -602,15 +602,15 @@
 		{
 			if (!value) return;
 			deleteFileWrapper = value;
-
+			
 			var openItems:Object = tree.openItems;
 			var parentCollection:Array;
 			var project:FileWrapper;
-
+			
 			// if the file/folder is a project root
 			if (value.isRoot)
 			{
-				UtilsCore.closeAllRelativeEditors(value.projectReference.path, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function():void
+				UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function():void
 				{
 					for each (var as3Project:AS3ProjectVO in projects)
 					{
@@ -632,18 +632,18 @@
 					parentCollection = findFilePosition(project);
 					if (parentCollection) break;
 				}
-
+				
 				parentCollection.splice(parentCollection.indexOf(value), 1);
 				fileCollection = null;
-
+				
 				var parent:FileWrapper = FileWrapper(tree.getParentItem(value));
 				if (parent) parent.updateChildren();
 				updateTreeView();
 			}
-
+			
 			/*
-             *@local
-             */
+			 *@local
+			 */
 			function updateTreeView():void
 			{
 				projectFolders.refresh();

@@ -39,7 +39,6 @@ package actionScripts.ui.editor.text
     import actionScripts.events.LayoutEvent;
     import actionScripts.events.LineEvent;
     import actionScripts.events.OpenFileEvent;
-    import actionScripts.ui.editor.text.change.TextChangeInsert;
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.ui.parser.ILineParser;
     import actionScripts.utils.TextUtil;

@@ -246,6 +246,7 @@ package actionScripts.impls
 					new MenuItem(close, null, CloseTabEvent.EVENT_CLOSE_TAB,
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
+					new MenuItem("Close All", null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [

@@ -6,12 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.7.0]
 
 ### Added 
+* Basic Visual Editor which allows you to build Flex applications mockups and export them as Flex desktop projects
+* Added support for creating Apache Royale projects.
+* Added support for creating [Away3D](http://away3d.com/) projects.
 * Code Editor: Auto close quotes for XML attributes.
 * Code Completion List: Added icons, tooltips and documentation popup to have more information in completion list.
 * Code Completion List: Open tooltip details and documentation popup (if available) of selected item by shortcuts (Windows: Ctrl + Q, Mac: Shift + F1).
-* Added support for creating Apache Royale projects.
-* Added support for creating [Away3D](http://away3d.com/) projects.
-* Added hamburger menu to hold tabs which are not fitting into the window.
+* Added hamburger menu to hold tabs which do not fit into the window.
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.8.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.8.0).
@@ -25,6 +26,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where first import in the MXML file was inserted at the beginning of file.
 * Debugging: Fixed null pointer exception which occurred while debugging MXML code.
 * Fixed issue "The supplied index is out of bounds".
+* Fixed issue where custom SDK path was not showing in macOS after a restart.
+* When a project is closed or deleted, close all related editor tabs.
 
 ## Moonshine IDE [1.6.1]
 

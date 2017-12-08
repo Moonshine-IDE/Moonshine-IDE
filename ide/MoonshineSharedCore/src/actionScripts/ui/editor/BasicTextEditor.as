@@ -386,7 +386,7 @@ package actionScripts.ui.editor
 			}
 		}
 		
-		private function updateChangeStatus():void
+		protected function updateChangeStatus():void
 		{
 			_isChanged = editor.hasChanged;
 			dispatchEvent(new Event('labelChanged'));

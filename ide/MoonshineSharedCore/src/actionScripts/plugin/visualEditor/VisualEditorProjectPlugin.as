@@ -21,7 +21,10 @@ package actionScripts.plugin.visualEditor
     import actionScripts.events.NewProjectEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ProjectVO;
 
     import flash.events.Event;
 
@@ -67,7 +70,12 @@ package actionScripts.plugin.visualEditor
 
         private function visualEditorExportVisualEditorProjectHandler(event:Event):void
         {
-            dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, model.activeProject));
+            var currentActiveProject:ProjectVO = model.activeProject;
+            UtilsCore.closeAllRelativeEditors(model.activeProject, false,
+                    function():void
+                    {
+                        dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, currentActiveProject));
+                    }, false);
         }
     }
 }

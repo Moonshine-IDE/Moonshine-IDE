@@ -38,6 +38,7 @@ package actionScripts.plugins.ui.editor
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
+        private var hasChangedProperties:Boolean;
         
         public function VisualEditorViewer()
         {
@@ -78,7 +79,7 @@ package actionScripts.plugins.ui.editor
         {
             editor.dataProvider = getMxmlCode();
 
-            refreshIsChanged();
+            updateChangeStatus()
         }
 
         override protected function createChildren():void
@@ -92,7 +93,8 @@ package actionScripts.plugins.ui.editor
         {
             visualEditorView.visualEditor.saveEditedFile();
             editor.dataProvider = getMxmlCode();
-            
+            hasChangedProperties = false;
+
             super.save();
         }
 
@@ -103,14 +105,33 @@ package actionScripts.plugins.ui.editor
             createVisualEditorFile();
         }
 
+        override protected function updateChangeStatus():void
+        {
+            if (hasChangedProperties)
+            {
+                _isChanged = true;
+            }
+            else
+            {
+                _isChanged = editor.hasChanged;
+                if (!_isChanged)
+                {
+                    _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
+                }
+            }
+            
+            dispatchEvent(new Event('labelChanged'));
+        }
+
         private function onEditingSurfaceChange(event:Event):void
         {
-            refreshIsChanged();
+            updateChangeStatus();
         }
 
         private function onPropertyEditorChanged(event:Event):void
         {
-            _isChanged = true;
+            hasChangedProperties = _isChanged = true;
+            dispatchEvent(new Event('labelChanged'));
         }
 
         private function onTabAdd(event:Event):void
@@ -183,14 +204,6 @@ package actionScripts.plugins.ui.editor
             }
 
             return null;
-        }
-
-        private function refreshIsChanged():void
-        {
-            if (!_isChanged)
-            {
-                _isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
-            }
         }
     }
 }
