@@ -70,8 +70,6 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
-	import actionScripts.plugins.fdb.FDBPlugin;
-	import actionScripts.plugins.fdb.event.FDBEvent;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.problems.ProblemsPlugin;
 	import actionScripts.plugins.references.ReferencesPlugin;

@@ -882,7 +882,7 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						print("1 in MXMLCPlugin debugafterBuild");
 						GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-						dispatcher.addEventListener(CompilerEventBase.RUN_AFTER_DEBUG, runAfterDebugHandler);
+						getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
 						dispatcher.dispatchEvent(
 							//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
 							new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
@@ -906,13 +906,6 @@ package actionScripts.plugins.as3project.mxmlc
 				debug("%s", data);
 			}
 			
-		}
-		
-		private function runAfterDebugHandler(e:CompilerEventBase):void
-		{
-			dispatcher.removeEventListener(CompilerEventBase.RUN_AFTER_DEBUG,runAfterDebugHandler);
-			debugAfterBuild = false;
-			testMovie();
 		}
 		
 		private function testMovie():void 
@@ -973,7 +966,7 @@ package actionScripts.plugins.as3project.mxmlc
 				resourceCopiedIndex++;
 				event.target.removeEventListener(Event.COMPLETE, onFileCopiedHandler);
 				if (resourceCopiedIndex < pvo.resourcePaths.length) getResourceCopied(pvo, swfFile);
-				else if (runAfterBuild || debugAfterBuild) 
+				else if (runAfterBuild) 
 				{
 					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
 					testMovie();
