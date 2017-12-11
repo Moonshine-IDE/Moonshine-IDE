@@ -18,14 +18,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
-	import flash.display.Sprite;
-	import flash.events.Event;
+    import actionScripts.utils.UtilsCore;
+
+    import flash.display.NativeMenu;
+    import flash.display.Sprite;
+    import flash.events.ContextMenuEvent;
+    import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.filters.DropShadowFilter;
 	import flash.filters.GlowFilter;
 	import flash.geom.Matrix;
-	
-	import mx.core.UIComponent;
+    import flash.ui.ContextMenu;
+    import flash.ui.ContextMenuItem;
+
+    import mx.core.UIComponent;
 	
 	import spark.components.Label;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -56,7 +62,21 @@ package actionScripts.ui.tabview
 			width = 200;
 			height = 25;
 		}
-		
+
+        private function createContextMenu():ContextMenu
+        {
+            var tabContextMenu:ContextMenu = new ContextMenu();
+            var cutItem:ContextMenuItem = new ContextMenuItem("Close");
+            cutItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemClose);
+            tabContextMenu.customItems.push(cutItem);
+
+            var copyItem:ContextMenuItem = new ContextMenuItem("Close All");
+            copyItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemCloseAll);
+            tabContextMenu.customItems.push(copyItem);
+
+            return tabContextMenu;
+        }
+
 		public var showCloseButton:Boolean = true;
 
 		override public function set width(value:Number):void
@@ -84,6 +104,7 @@ package actionScripts.ui.tabview
 					var editor:BasicTextEditor = value as BasicTextEditor;
 					if (editor.currentFile)
                     {
+                        this.contextMenu = createContextMenu();
                         SharedObjectUtil.saveLocationOfOpenedProjectFile(editor.currentFile.name,
                                 editor.currentFile.fileBridge.nativePath);
                     }
@@ -240,7 +261,7 @@ package actionScripts.ui.tabview
 				background.graphics.moveTo(width-1, 0);
 				background.graphics.lineTo(width-1, height);
 			}
-			
+
 			labelViewMask.graphics.clear();
 			labelViewMask.graphics.beginFill(0x0, 1);
 			labelViewMask.graphics.drawRect(0, 0, labelMaskWidth, height);
@@ -255,15 +276,7 @@ package actionScripts.ui.tabview
 		
 		protected function closeButtonClicked(event:Event):void
 		{
-			dispatchEvent( new Event(EVENT_TAB_CLOSE) );
-			
-			if (data is BasicTextEditor)
-			{
-				var editor:BasicTextEditor = data as BasicTextEditor;
-
-				SharedObjectUtil.removeLocationOfClosingProjectFile(editor.currentFile.name, 
-					editor.currentFile.fileBridge.nativePath); 
-			}
+			closeThisTab();
 		}
 		
 		protected function tabClicked(event:Event):void
@@ -279,6 +292,29 @@ package actionScripts.ui.tabview
 			{
 				drawButtonState();
 			}
+		}
+
+        private function onMenuItemCloseAll(event:ContextMenuEvent):void
+        {
+            UtilsCore.closeAllRelativeEditors(null);
+        }
+
+        private function onMenuItemClose(event:ContextMenuEvent):void
+        {
+            closeThisTab();
+        }
+
+        private function closeThisTab():void
+		{
+            dispatchEvent(new Event(EVENT_TAB_CLOSE));
+
+            if (data is BasicTextEditor)
+            {
+                var editor:BasicTextEditor = data as BasicTextEditor;
+
+                SharedObjectUtil.removeLocationOfClosingProjectFile(editor.currentFile.name,
+                        editor.currentFile.fileBridge.nativePath);
+            }
 		}
 	}
 }
