@@ -28,6 +28,8 @@ package actionScripts.ui.tabview
 	import mx.core.UIComponent;
 	
 	import spark.components.Label;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.utils.SharedObjectUtil;
 
 	public class TabViewTab extends UIComponent
 	{	
@@ -56,14 +58,37 @@ package actionScripts.ui.tabview
 		}
 		
 		public var showCloseButton:Boolean = true;
-		public var data:Object;
-		
+
 		override public function set width(value:Number):void
 		{
 			super.width = value;
 			
 			needsRedrawing = true;
 			invalidateDisplayList();
+		}
+		
+		private var _data:Object;
+		
+		public function get data():Object
+		{
+			return _data;	
+		}		
+		
+		public function set data(value:Object):void
+		{
+			if (_data != value)
+			{
+				_data = value;
+				if (value is BasicTextEditor)
+				{
+					var editor:BasicTextEditor = value as BasicTextEditor;
+					if (editor.currentFile)
+                    {
+                        SharedObjectUtil.saveLocationOfOpenedProjectFile(editor.currentFile.name,
+                                editor.currentFile.fileBridge.nativePath);
+                    }
+				}
+			}
 		}
 		
 		protected var _label:String;
@@ -231,6 +256,14 @@ package actionScripts.ui.tabview
 		protected function closeButtonClicked(event:Event):void
 		{
 			dispatchEvent( new Event(EVENT_TAB_CLOSE) );
+			
+			if (data is BasicTextEditor)
+			{
+				var editor:BasicTextEditor = data as BasicTextEditor;
+
+				SharedObjectUtil.removeLocationOfClosingProjectFile(editor.currentFile.name, 
+					editor.currentFile.fileBridge.nativePath); 
+			}
 		}
 		
 		protected function tabClicked(event:Event):void
@@ -247,6 +280,5 @@ package actionScripts.ui.tabview
 				drawButtonState();
 			}
 		}
-		
 	}
 }

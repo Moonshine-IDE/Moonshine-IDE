@@ -19,12 +19,10 @@
 package actionScripts.utils
 {
 	import flash.display.DisplayObject;
-	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	
 	import mx.collections.ArrayCollection;
-	import mx.collections.ArrayList;
 	import mx.collections.ICollectionView;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
@@ -37,7 +35,6 @@ package actionScripts.utils
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
@@ -53,7 +50,6 @@ package actionScripts.utils
 	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
 	import components.popup.SDKSelectorPopup;
-	import components.popup.UnsaveFileMessagePopup;
 	import components.renderers.CustomToolTipGBA;
 
 	public class UtilsCore 

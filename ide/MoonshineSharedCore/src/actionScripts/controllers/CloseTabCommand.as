@@ -36,7 +36,6 @@ package actionScripts.controllers
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabView;
-    import actionScripts.ui.tabview.TabsModel;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;

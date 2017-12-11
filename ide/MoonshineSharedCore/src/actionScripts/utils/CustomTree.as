@@ -23,21 +23,18 @@ package actionScripts.utils {
     import mx.controls.Tree;
     import mx.events.CollectionEventKind;
     import mx.events.TreeEvent;
-
+    
     public class CustomTree extends Tree
 	{
 		public var propertyNameKey:String;
         public var propertyNameKeyValue:String;
         public var keyNav:Boolean = true;
-
-        private var cookie:SharedObject;
 		private var isItemOpening:Boolean;
         
 		public function CustomTree():void
 		{
 			super();
 
-            cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT_TREE);
             addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
             addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
             addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
@@ -45,49 +42,12 @@ package actionScripts.utils {
 
 		public function saveItemForOpen(item:Object):void
 		{
-			if (!cookie.data.projectTree)
-			{
-				cookie.data.projectTree = [];
-			}
-
-			if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
-            {
-                var hasItemForOpen:Boolean = cookie.data.projectTree.some(
-						function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean
-						{
-                    		return itemForOpen.hasOwnProperty(item[propertyNameKey]) && itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
-                		});
-
-                if (!hasItemForOpen)
-                {
-                    var itemForSave:Object = {};
-                    itemForSave[item[propertyNameKey]] = item[propertyNameKeyValue];
-                    cookie.data.projectTree.push(itemForSave);
-
-                    cookie.flush();
-                }
-            }
+			SharedObjectUtil.saveProjectTreeItemForOpen(item, propertyNameKey, propertyNameKeyValue);
 		}
 
         public function removeFromOpenedItems(item:Object):void
         {
-			var projectTree:Array = cookie.data.projectTree;
-			if (!projectTree) return;
-			
-            if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
-            {
-                for (var i:int = 0; i < projectTree.length; i++)
-                {
-					var itemForRemove:Object = projectTree[i];
-					if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
-							itemForRemove[item[propertyNameKey]] == item[propertyNameKeyValue])
-					{
-                        cookie.data.projectTree.removeAt(i);
-						cookie.flush();
-						break;
-					}
-                }
-            }
+			SharedObjectUtil.removeProjectTreeItemFromOpenedItems(item, propertyNameKey, propertyNameKeyValue);
         }
 
         override protected function keyDownHandler(event:KeyboardEvent):void
@@ -139,6 +99,7 @@ package actionScripts.utils {
 
         private function setItemsAsOpen(items:Array):void
 		{
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
             var projectTree:Array = cookie.data.projectTree;
 			if (projectTree && items.length > 0)
 			{

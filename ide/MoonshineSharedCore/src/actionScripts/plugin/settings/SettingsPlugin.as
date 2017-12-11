@@ -166,7 +166,7 @@ package actionScripts.plugin.settings
 				plug.resetSettings();
 			}
 
-            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT_TREE);
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
             delete cookie.data["projectTree"];
 
 			cookie.flush();

@@ -210,7 +210,6 @@
 				// desktop
 				if (ConstantsCoreVO.IS_AIR)
 				{
-					var projectName:String = refVO.name;
 					recentOpenedProjectObject = new FileLocation(refVO.path);
 					
 					if (!FileLocation(recentOpenedProjectObject).fileBridge.exists)
@@ -223,7 +222,6 @@
 					{
 						var project:AS3ProjectVO;
 						var lastOpenedOption:String;
-						var flashDevelopProjectFile: FileLocation;
 						
 						// check if any last opend option is associated with the project
 						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
@@ -372,7 +370,7 @@
 
 			private function onDefaultSDKStateChanged(event:Event):void
 			{
-				var isSDKAvailable:Boolean = IDEModel.getInstance().defaultSDK ? true : false;
+				var isSDKAvailable:Boolean = model.defaultSDK ? true : false;
 				if (!isSDKAvailable && !isNoSDKMessageShown)
 				{
 					isNoSDKMessageShown = true;

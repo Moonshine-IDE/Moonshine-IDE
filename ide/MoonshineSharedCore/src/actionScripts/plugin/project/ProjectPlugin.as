@@ -18,7 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.project
 {
-	import flash.events.Event;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.utils.SharedObjectConst;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+
+    import flash.events.Event;
 
 	import __AS3__.vec.Vector;
 	
@@ -26,7 +33,6 @@ package actionScripts.plugin.project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.ShowSettingsEvent;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
@@ -40,8 +46,10 @@ package actionScripts.plugin.project
 	
 	import components.views.project.OpenResourceView;
 	import components.views.project.TreeView;
-	
-	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
+
+    import flash.net.SharedObject;
+
+    public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const EVENT_PROJECT_SETTINGS:String = "projectSettingsEvent";
 		public static const EVENT_SHOW_OPEN_RESOURCE:String = "showOpenResource";
@@ -68,7 +76,6 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 			
 			dispatcher.addEventListener(ProjectEvent.SHOW_PROJECT_VIEW, handleShowProjectView);
-			dispatcher.addEventListener(ProjectEvent.HIDE_PROJECT_VIEW, handleHideProjectView);
 			
 			dispatcher.addEventListener(EVENT_SHOW_OPEN_RESOURCE, handleShowOpenResource);
 			
@@ -211,6 +218,8 @@ package actionScripts.plugin.project
 				model.activeProject = event.project;
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
 			}
+
+            openRecentlyUsedFiles(event.project);
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void
@@ -274,15 +283,41 @@ package actionScripts.plugin.project
 		{
 			showProjectPanel();
 		}
-		
-		private function handleHideProjectView(event:ProjectEvent):void
-		{
-			
-		}
-		
+
 		private function handleTreeRefresh(event:RefreshTreeEvent):void
 		{
 			treeView.refresh(event.dir);
+		}
+
+		private function openRecentlyUsedFiles(project:ProjectVO):void
+		{
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var projectFilesForOpen:Array = cookie.data["projectFiles" + project.name];
+            if (projectFilesForOpen)
+            {
+                for (var i:int = 0; i < projectFilesForOpen.length; i++)
+                {
+                    var itemForOpen:Object = projectFilesForOpen[i];
+                    for (var item:Object in itemForOpen)
+                    {
+                        var fileLocation:FileLocation = new FileLocation(itemForOpen[item]);
+                        if (fileLocation.fileBridge.exists)
+                        {
+                            var as3Project:AS3ProjectVO = (project as AS3ProjectVO);
+                            var customSDKPath:String = as3Project ? as3Project.buildOptions.customSDKPath : "";
+                            var projectReferenceVO: ProjectReferenceVO = new ProjectReferenceVO();
+                            projectReferenceVO.name = project.name;
+                            projectReferenceVO.sdk = customSDKPath ? customSDKPath :
+                                    (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
+                            
+                            projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
+
+                            var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
+                            dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileLocation, 0, fileWrapper));
+                        }
+                    }
+                }
+            }
 		}
 	}
 }

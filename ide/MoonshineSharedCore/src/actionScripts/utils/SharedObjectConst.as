@@ -22,6 +22,6 @@ package actionScripts.utils
     {
         public static const MOONSHINE_IDE_LOCAL:String = "moonshine-ide-local";
         public static const CONSOLE_HISTORY:String = "consoleHistory";
-        public static const MOONSHINE_IDE_PROJECT_TREE:String = "moonshine-ide-project-tree";
+        public static const MOONSHINE_IDE_PROJECT:String = "moonshine-ide-project";
     }
 }

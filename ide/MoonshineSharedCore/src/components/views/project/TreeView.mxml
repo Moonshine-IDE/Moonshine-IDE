@@ -118,7 +118,7 @@
 			DataSort.fields = [dataSortField];
 			projectFolders.sort = DataSort;
 			projectFolders.refresh();
-			IDEModel.getInstance().selectedprojectFolders = projectFolders;
+			model.selectedprojectFolders = projectFolders;
 		}
 
 		private function refreshByWrapperItem(fileWrapper:FileWrapper):void
@@ -278,7 +278,7 @@
 				}
 			}
 
-			IDEModel.getInstance().selectedprojectFolders = projectFolders;
+			model.selectedprojectFolders = projectFolders;
 		}
 
 		private function onProjectTreeUpdates(event:ProjectEvent):void
@@ -830,18 +830,19 @@
 			var item:FileWrapper = tree.selectedItem as FileWrapper;
 			if (tree.dataDescriptor.isBranch(item))
 			{
+			
+				refreshActiveProject(item);
 				tree.expandItem(item, !tree.isItemOpen(item), true);
 			}
 			else
 			{
 				if (item.file.fileBridge.isDirectory || item.isWorking) return;
 
+				refreshActiveProject(item);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 						new OpenFileEvent(OpenFileEvent.OPEN_FILE, item.file, -1, item)
 				);
 			}
-
-			refreshActiveProject(item);
 		}
 
 		private function getIconForFile(object:Object):Class
