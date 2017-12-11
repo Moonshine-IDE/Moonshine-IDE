@@ -36,7 +36,7 @@ package actionScripts.valueObjects
 		{
 			if (detail)
 			{
-				return kind == "Function" && detail.indexOf("property") > -1;
+				return kind == "Function" && detail.indexOf("(property)") > -1;
 			}
 
 			return false;
