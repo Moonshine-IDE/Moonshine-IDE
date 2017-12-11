@@ -168,6 +168,10 @@ package actionScripts.plugin.settings
 
             var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
             delete cookie.data["projectTree"];
+			for (var item:Object in cookie.data)
+			{
+				delete cookie.data[item];
+			}
 
 			cookie.flush();
 
