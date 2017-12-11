@@ -214,9 +214,11 @@ package actionScripts.plugins.as3project
 				project.projectName = "ExternalProject";
 				project.isProjectFromExistingSource = true;
 			}
-			
-			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
-			project.folderLocation = new FileLocation(tmpProjectSourcePath);
+			else
+			{
+				var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+				project.folderLocation = new FileLocation(tmpProjectSourcePath);
+			}
 			
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
@@ -426,10 +428,14 @@ package actionScripts.plugins.as3project
 			{
 				model.recentSaveProjectPath.addItem(tmpParent.fileBridge.nativePath);
             }
-
-			cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
-			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
-			cookie.flush();
+			
+			// don't save this if from a open project call
+			if (!isOpenProjectCall)
+			{
+				cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
+				cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
+				cookie.flush();
+			}
 
             project = createFileSystemBeforeSave(project, view.exportProject);
 
