@@ -19,15 +19,46 @@
 package actionScripts.utils
 {
     import flash.net.SharedObject;
-    import actionScripts.interfaces.IFileBridge;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.locator.IDEModel;
 
     public class SharedObjectUtil
 	{
+        public static function getMoonshineIDEProjectSO(name:String):SharedObject
+        {
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var model:IDEModel = IDEModel.getInstance();
+            if (name.indexOf("projectTree") > -1 && !model.openPreviouslyOpenedProjectBranches) return null;
+            if (name.indexOf("projectFiles") > -1 && !model.openPreviouslyOpenedFiles) return null;
+            
+            for (var item:Object in cookie.data)
+            {
+                if (item.indexOf(name) > -1)
+                {
+                    return cookie;
+                }
+            }
+
+            return null;
+        }
+
+        public static function resetMoonshineIdeProjectSO():void
+        {
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            delete cookie.data["projectTree"];
+            for (var item:Object in cookie.data)
+            {
+                delete cookie.data[item];
+            }
+
+            cookie.flush();
+        }
+
 		public static function saveProjectTreeItemForOpen(item:Object, propertyNameKey:String,
                                                           propertyNameKeyValue:String):void
 		{
+            if (!IDEModel.getInstance().openPreviouslyOpenedProjectBranches) return;
+
 			var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
 			if (!cookie.data.projectTree)
 			{
@@ -40,6 +71,8 @@ package actionScripts.utils
 		public static function removeProjectTreeItemFromOpenedItems(item:Object, propertyNameKey:String,
                                                                     propertyNameKeyValue:String):void
 		{
+            if (!IDEModel.getInstance().openPreviouslyOpenedProjectBranches) return;
+            
             var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
             var projectTree:Array = cookie.data.projectTree;
             if (!projectTree) return;
@@ -49,8 +82,11 @@ package actionScripts.utils
 
 		public static function saveLocationOfOpenedProjectFile(fileName:String, filePath:String):void
 		{
+            var model:IDEModel = IDEModel.getInstance();
+            if (!model.openPreviouslyOpenedFiles) return;
+
             var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
-			var activeProject:ProjectVO = IDEModel.getInstance().activeProject;
+			var activeProject:ProjectVO = model.activeProject;
 			if (!activeProject) return;
 			
 			var cookieName:String = "projectFiles" + activeProject.name;
@@ -64,8 +100,10 @@ package actionScripts.utils
 
 		public static function removeLocationOfClosingProjectFile(fileName:String, filePath:String):void
 		{
-            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
-            var activeProject:ProjectVO = IDEModel.getInstance().activeProject;
+            var model:IDEModel = IDEModel.getInstance();
+            if (!model.openPreviouslyOpenedFiles) return;
+
+            var activeProject:ProjectVO = model.activeProject;
 			if (!activeProject) return;
 
 			removeProjectItem({name: fileName, path: filePath}, "name", "path", "projectFiles" + activeProject.name);

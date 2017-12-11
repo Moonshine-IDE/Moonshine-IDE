@@ -75,7 +75,10 @@ package actionScripts.locator
 		public var userSavedTempSDKPath:String;
 		public var isIndividualCloseTabAlertShowing:Boolean;
 		public var saveFilesBeforeBuild:Boolean = false;
-		
+
+		public var openPreviouslyOpenedProjectBranches:Boolean;
+		public var openPreviouslyOpenedFiles:Boolean;
+
 		public var version: String = "1.0.0";
 		public var build: String = "";
 		

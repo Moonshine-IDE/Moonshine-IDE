@@ -52,6 +52,8 @@ package actionScripts.plugin.actionscript.as3project.save
 		
 		private var _workspacePath:String;
 		private var _isSaveFiles:Boolean = false;
+		private var _openPreviouslyOpenedProjectBranches:Boolean;
+		private var _openPreviouslyOpenedFiles:Boolean;
 		
 		public function SaveFilesPlugin()
 		{
@@ -72,11 +74,34 @@ package actionScripts.plugin.actionscript.as3project.save
 		{
 			return _workspacePath;
 		}
+
 		public function set workspacePath(value:String):void
 		{
 			_workspacePath = value;
 			OSXBookmarkerNotifiers.workspaceLocation = value ? new FileLocation(_workspacePath) : null;
 		}
+
+        public function get openPreviouslyOpenedProjectBranches():Boolean
+        {
+            return _openPreviouslyOpenedProjectBranches;
+        }
+
+        public function set openPreviouslyOpenedProjectBranches(value:Boolean):void
+        {
+            _openPreviouslyOpenedProjectBranches = value;
+			model.openPreviouslyOpenedProjectBranches = value;
+        }
+
+        public function get openPreviouslyOpenedFiles():Boolean
+        {
+            return _openPreviouslyOpenedFiles;
+        }
+
+        public function set openPreviouslyOpenedFiles(value:Boolean):void
+        {
+            _openPreviouslyOpenedFiles = value;
+            model.openPreviouslyOpenedFiles = value;
+        }
 
 		override public function activate():void 
 		{
@@ -109,7 +134,9 @@ package actionScripts.plugin.actionscript.as3project.save
 			
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
-				new BooleanSetting(this,'isSaveFiles', 'Save automatically Before Build'),
+				new BooleanSetting(this,"isSaveFiles", "Save automatically Before Build"),
+				new BooleanSetting(this, "openPreviouslyOpenedFiles", "Open previously opened files for project"),
+				new BooleanSetting(this, "openPreviouslyOpenedProjectBranches", "Open previously opened project branches"),
 				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "resetApplication", ButtonSetting.STYLE_DANGER)
 			])
 		}

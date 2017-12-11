@@ -99,7 +99,9 @@ package actionScripts.utils {
 
         private function setItemsAsOpen(items:Array):void
 		{
-            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectTree");
+            if (!cookie) return;
+
             var projectTree:Array = cookie.data.projectTree;
 			if (projectTree && items.length > 0)
 			{

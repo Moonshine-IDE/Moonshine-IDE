@@ -22,6 +22,7 @@ package actionScripts.plugin.project
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.utils.SharedObjectConst;
+    import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
 
@@ -291,7 +292,9 @@ package actionScripts.plugin.project
 
 		private function openRecentlyUsedFiles(project:ProjectVO):void
 		{
-            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectFiles");
+			if (!cookie) return;
+
             var projectFilesForOpen:Array = cookie.data["projectFiles" + project.name];
             if (projectFilesForOpen)
             {
@@ -309,7 +312,7 @@ package actionScripts.plugin.project
                             projectReferenceVO.name = project.name;
                             projectReferenceVO.sdk = customSDKPath ? customSDKPath :
                                     (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
-                            
+
                             projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
 
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
