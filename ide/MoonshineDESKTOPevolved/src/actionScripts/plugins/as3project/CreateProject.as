@@ -463,7 +463,7 @@ package actionScripts.plugins.as3project
 
 			if (view.exportProject)
 			{
-                GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.sourceFolder));
+                GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
 		}
 
