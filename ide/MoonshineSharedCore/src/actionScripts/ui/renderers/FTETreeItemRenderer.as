@@ -246,11 +246,12 @@ package actionScripts.ui.renderers
 	   				
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_FILE_FOLDER, redispatch, Event.SELECT));
 	   				
-					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 					
 					if (fw.file.fileBridge.extension=="xml")
 					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+						
 						var str:String = fw.file.fileBridge.read().toString();
 						if ((str.search("<project ")!=-1) || (str.search("<project>")!=-1))
 							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
