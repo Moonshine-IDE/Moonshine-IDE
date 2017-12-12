@@ -138,14 +138,15 @@ package actionScripts.utils
 		 */
 		public static function isAIR(project:AS3ProjectVO):Boolean
 		{
-			if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
+			if (project.targets.length > 0)
 			{
+				// considering that application descriptor file should exists in the same
+				// root where application source file is exist
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
-				var descriptorFile:FileLocation = project.sourceFolder.resolvePath("application.xml");
-				if (descriptorFile.fileBridge.exists) return true;
+				if (project.targets[0].fileBridge.parent.fileBridge.resolvePath("application.xml").fileBridge.exists) return true;
 				else
 				{
-					return project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
+					return project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
 				}
 			}
 			

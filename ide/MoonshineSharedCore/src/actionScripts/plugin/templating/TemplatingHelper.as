@@ -18,9 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.utils.TextUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.FileWrapper;
 
 	public class TemplatingHelper
 	{
@@ -156,5 +161,58 @@ package actionScripts.plugin.templating
 			return null;
 		}
 		
+		public static function setFileAsDefaultApplication(fw:FileWrapper):void
+		{
+			var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
+			
+			var nameOnlyPreviousSourceFileArray:Array = project.targets[0].fileBridge.name.split(".");
+			nameOnlyPreviousSourceFileArray.pop();
+			var nameOnlyPreviousSourceFile:String = nameOnlyPreviousSourceFileArray.join(".");
+
+			var nameOnlyRequestedSourceFileArray:Array = fw.file.name.split(".");
+			nameOnlyRequestedSourceFileArray.pop();
+			var nameOnlyRequestedSourceFile:String = nameOnlyRequestedSourceFileArray.join(".");
+			
+			if (project.air)
+			{
+				var tmpAppDescData:String = project.targets[0].fileBridge.parent.resolvePath(nameOnlyPreviousSourceFile +"-app.xml").fileBridge.read() as String;
+				tmpAppDescData = tmpAppDescData.replace(/<id>(.*?)<\/id>/, "<id>"+ nameOnlyRequestedSourceFile +"<\/id>");
+				tmpAppDescData = tmpAppDescData.replace(/<filename>(.*?)<\/filename>/, "<filename>"+ nameOnlyRequestedSourceFile +"<\/filename>");
+				tmpAppDescData = tmpAppDescData.replace(/<name>(.*?)<\/name>/, "<name>"+ nameOnlyRequestedSourceFile +"<\/name>");
+				
+				fw.file.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFileArray.join(".") +"-app.xml").fileBridge.save(tmpAppDescData);
+			}
+			else
+			{
+				var htmlFile:FileLocation = project.folderLocation.resolvePath("bin-debug");
+				if (htmlFile.fileBridge.exists)
+				{
+					htmlFile = htmlFile.resolvePath(nameOnlyPreviousSourceFile +".html");
+					if (htmlFile.fileBridge.exists)
+					{
+						var htmlData:String = htmlFile.fileBridge.read() as String;
+						var searchExp:RegExp = new RegExp(TextUtil.escapeRegex(nameOnlyPreviousSourceFile), "g");
+						htmlData = htmlData.replace(searchExp, nameOnlyRequestedSourceFile);
+						
+						htmlFile.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFile +".html").fileBridge.save(htmlData);
+						
+						// refresh bin-debug folder
+						var binDebugWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, htmlFile.fileBridge.parent);
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, binDebugWrapper.file.fileBridge.nativePath, binDebugWrapper)
+						);
+					}
+				}
+			}
+			
+			project.targets[0] = fw.file;
+			project.swfOutput.path = project.swfOutput.path.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFile +".swf");
+			project.saveSettings();
+			
+			// refresh to project tree UI
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fw.file.fileBridge.nativePath, fw)
+			);
+		}
 	}
 }

@@ -77,6 +77,10 @@ package actionScripts.plugins.as3project.importer
             parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
 
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
+			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)
 			{
 				project.projectFolder.updateChildren();
@@ -105,7 +109,16 @@ package actionScripts.plugins.as3project.importer
 					finalPath += File.separator + pathSplit[j];
 				}
 				
-				project.sourceFolder = new FileLocation(finalPath);
+				// even before deciding, go for some more checks -
+				// which needs in case user used 'set as default application'
+				// to a file exists in different path
+				for each (var i:FileLocation in project.classpaths)
+				{
+					if ((finalPath + File.separator).indexOf(i.fileBridge.nativePath + File.separator) != -1) project.sourceFolder = i;
+				}
+				
+				// if yet not decided from above approach
+				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
 			}
 
 			if (project.isVisualEditorProject)
@@ -124,9 +137,6 @@ package actionScripts.plugins.as3project.importer
             project.buildOptions.parse(data.build);
             project.swfOutput.parse(data.output, project);
 			
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
-			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
 			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
 			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)

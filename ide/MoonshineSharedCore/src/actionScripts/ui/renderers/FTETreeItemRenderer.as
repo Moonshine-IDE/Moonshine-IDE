@@ -62,6 +62,7 @@ package actionScripts.ui.renderers
 		public static const NEW:String = "New";
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const RENAME:String = "Rename";
+		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
 		public static const DELETE_FILE_FOLDER:String = "Delete File/Folder";
 		public static const REFRESH:String = "Refresh";
@@ -228,6 +229,18 @@ package actionScripts.ui.renderers
 				{
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
 					
+					// avail only for .as and .mxml files
+					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
+					{
+						// make this option available for the files Only inside the source folder location
+						var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
+						if (!project.isVisualEditorProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
+						{
+							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
+								model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
+						}
+					}
+					
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 	   				
@@ -246,7 +259,8 @@ package actionScripts.ui.renderers
 					label2.setStyle("color", 0xe0e0e0);
 				}
 				
-				if (fw.isRoot || ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
+				// avail the refresh option against folders only
+				if ((fw.isRoot || ConstantsCoreVO.IS_AIR) && fw.children != null) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
 				
 				if (fw.isRoot)
 				{

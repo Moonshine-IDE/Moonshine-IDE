@@ -30,7 +30,7 @@ package actionScripts.utils
 		// Guesstimate app-xml name
 		var rootPath:String = File(project.folderLocation.fileBridge.getFile).getRelativePath(file.parent);
 		var descriptorName:String = project.swfOutput.path.fileBridge.name.split(".")[0] +"-app.xml";
-		var appXML:String = project.sourceFolder.fileBridge.nativePath + File.separator + descriptorName;
+		var appXML:String = project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
 		var descriptorFile:File = new File(appXML);
 
 		// in case /src/app-xml present update to bin-debug folder
