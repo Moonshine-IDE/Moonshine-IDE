@@ -326,8 +326,15 @@ package actionScripts.ui.renderers
 		private function populateTemplatingMenu(e:Event):void
 		{
 			model.contextMenuCore.removeAll(e.target);
-			
-			var isVisualEditorProject:Boolean = (UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO).isVisualEditorProject;
+
+			var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
+			var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
+			if (activeProject)
+			{
+				model.activeProject = activeProject;
+			}
+
+			var isVisualEditorProject:Boolean = as3ProjectVO && as3ProjectVO.isVisualEditorProject;
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);

@@ -35,7 +35,6 @@
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.events.CollectionEvent;
-			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			import mx.events.TreeEvent;
 			import mx.managers.PopUpManager;
@@ -67,7 +66,7 @@
 			import components.popup.NewFolderPopup;
 			import components.popup.RenamePopup;
 
-		private var renameWindow:RenamePopup;
+			private var renameWindow:RenamePopup;
 		private var newFolderWindow:NewFolderPopup;
 
 		// Renaming
@@ -145,9 +144,9 @@
 			{
 				if (ConstantsCoreVO.IS_AIR)
 				{
-					if (dir.fileBridge.nativePath.indexOf(fw.nativePath) != -1)
+					if (dir.fileBridge.nativePath.indexOf(fw.nativePath) > -1)
 					{
-						refreshItem( UtilsCore.findFileWrapperAgainstFileLocation(fw, dir) );
+						refreshItem(UtilsCore.findFileWrapperAgainstFileLocation(fw, dir));
 						return;
 					}
 				}
@@ -221,15 +220,10 @@
 
 		private function refreshItem(fw:FileWrapper):void
 		{
-			var previousSelectedItem:Object = tree.selectedItem;
 			var openItems:Object = tree.openItems;
 			fw.updateChildren();
 			tree.openItems = openItems;
 			tree.invalidateList();
-			/*tree.callLater(function():void
-            {
-                tree.selectedItem = previousSelectedItem;
-            });*/
 		}
 
 		private function setSelectedItem(fw:FileWrapper):void
@@ -300,7 +294,7 @@
 				}
 			}
 
-			IDEModel.getInstance().selectedprojectFolders = projectFolders;
+			model.selectedprojectFolders = projectFolders;
 		}
 
 		private function onProjectFilesUpdates(event:ProjectEvent):void
@@ -854,12 +848,6 @@
 		private function getIconForFile(object:Object):Class
 		{
 			return null;
-		}
-
-		protected function vbox1_creationCompleteHandler(event:FlexEvent):void
-		{
-			// TODO Auto-generated method stub
-			focusManager.setFocus(tree);
 		}
 
 		private function getTreeTooltip(item:Object):String
