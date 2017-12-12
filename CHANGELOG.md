@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.7.1]
+
+### Added
+* Added action to close all tabs from both the File menu and the tab context menu
+* Tabs and project tree status are saved and restored when reopening a project.  This behavior can be disabled from the General tab in the application settings.
+* Quickly switch between different default application classes by right-clicking and selecting "Set as Default Application"
+
+
+### Changed
+
+
+### Fixed
+* Fixed bug where "Open Apache Flex/JS Project.." action did not work for an existing project
+* Fixed bug where new Visual Editor files were opening in the text editor
+* Fixed bug where additional Visual Editor files did not show up immediately in the exported project
+* Fixed bug where configured resources were not being properly copied when building a project
+
 ## Moonshine IDE [1.7.0]
 
 ### Added 
