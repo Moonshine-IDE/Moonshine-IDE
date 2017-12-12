@@ -144,7 +144,7 @@
 			{
 				if (ConstantsCoreVO.IS_AIR)
 				{
-					if (dir.fileBridge.nativePath.indexOf(fw.nativePath) > -1)
+					if ((dir.fileBridge.nativePath + dir.fileBridge.separator).indexOf(fw.nativePath + dir.fileBridge.separator) != -1)
 					{
 						refreshItem(UtilsCore.findFileWrapperAgainstFileLocation(fw, dir));
 						return;
