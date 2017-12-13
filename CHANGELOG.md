@@ -16,9 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 * Fixed bug where "Open Apache Flex/JS Project.." action did not work for an existing project
-* Fixed bug where new Visual Editor files were opening in the text editor
-* Fixed bug where additional Visual Editor files did not show up immediately in the exported project
 * Fixed bug where configured resources were not being properly copied when building a project
+* Visual Editor: Fixed bug where new Visual Editor files were opening in the text editor
+* Visual Editor: Fixed bug where additional Visual Editor files did not show up immediately in the exported project
+* Visual Editor: Fixed bug where values width/height did not change in editing panel during component resize
 
 ## Moonshine IDE [1.7.0]
 
