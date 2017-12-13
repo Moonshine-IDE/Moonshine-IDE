@@ -69,15 +69,14 @@ package actionScripts.controllers
 			}
 
 			// One editor is auto-created when last is removed
-			if (editors.length == 1 
-				&& editors.getItemAt(0).isChanged() == false)
+			if (editors.length <= 1)
 			{
 				onApplicationClosing();
 			}
 			else
 			{
 				event.preventDefault();
-				askToSave(editors.length);
+				askToSave(editors.length-1);
 			}
 		}
 		

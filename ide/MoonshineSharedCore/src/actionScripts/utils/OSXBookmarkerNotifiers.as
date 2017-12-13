@@ -20,6 +20,7 @@
 package actionScripts.utils
 {
 	import flash.display.DisplayObject;
+	import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -228,7 +229,7 @@ package actionScripts.utils
 			workspacePopup = null;
 		}
 		
-		private static function onAccessManagerClosed(event:CloseTabEvent):void
+		private static function onAccessManagerClosed(event:Event):void
 		{
 			accessManagerPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAccessManagerClosed);
 			accessManagerPopup = null;

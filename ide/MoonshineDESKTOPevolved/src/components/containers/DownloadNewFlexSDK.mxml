@@ -29,6 +29,7 @@
 	<fx:Script>
 		<![CDATA[
         import mx.controls.Alert;
+        
         import actionScripts.events.GlobalEventDispatcher;
         import actionScripts.factory.FileLocation;
         import actionScripts.locator.IDEModel;
@@ -37,7 +38,7 @@
         import actionScripts.utils.SDKUtils;
         import actionScripts.valueObjects.ConstantsCoreVO;
         import actionScripts.valueObjects.ProjectReferenceVO;
-
+        
         import org.as3commons.asblocks.utils.FileUtil;
 
         public var selectedSDKDir:File;
@@ -166,7 +167,7 @@
             );
         }
 
-        protected function onThisClosing(event:CloseTabEvent):void
+        protected function onThisClosing(event:Event):void
         {
             removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
             if (installerView) removeListeners();

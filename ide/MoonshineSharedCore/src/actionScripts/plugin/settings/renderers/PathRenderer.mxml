@@ -40,9 +40,9 @@
         import mx.events.MenuEvent;
         import mx.managers.PopUpManager;
         import mx.utils.ObjectUtil;
-
+        
         import spark.events.IndexChangeEvent;
-
+        
         import actionScripts.events.AddTabEvent;
         import actionScripts.events.GlobalEventDispatcher;
         import actionScripts.events.ProjectEvent;
@@ -56,7 +56,7 @@
         import actionScripts.utils.UtilsCore;
         import actionScripts.valueObjects.ConstantsCoreVO;
         import actionScripts.valueObjects.ProjectReferenceVO;
-
+        
         import components.popup.SDKDefinePopup;
         import components.popup.SDKSelectorPopup;
 
@@ -127,7 +127,7 @@
             );
         }
 
-        private function onDefineSDKClosed(event:CloseTabEvent):void
+        private function onDefineSDKClosed(event:Event):void
         {
 			if (model.userSavedTempSDKPath)
 			{

@@ -19,8 +19,8 @@
 package actionScripts.plugin.startup
 {
 	import flash.events.Event;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CollectionEvent;
@@ -347,12 +347,16 @@ package actionScripts.plugin.startup
 		 * When settings tab closed after default SDK setup
 		 * done in Windows process
 		 */
-		private function onSettingsTabClosed(event:CloseTabEvent):void
+		private function onSettingsTabClosed(event:Event):void
 		{
-			if ((event.tab is SettingsView) && (SettingsView(event.tab).longLabel == "Settings") && SettingsView(event.tab).isSaved)
+			if (event is CloseTabEvent)
 			{
-				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
-				startHelping();
+				var tmpEvent:CloseTabEvent = event as CloseTabEvent;
+				if ((tmpEvent.tab is SettingsView) && (SettingsView(tmpEvent.tab).longLabel == "Settings") && SettingsView(tmpEvent.tab).isSaved)
+				{
+					dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
+					startHelping();
+				}
 			}
 		}
 		

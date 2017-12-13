@@ -18,22 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
+    import flash.events.Event;
+    import flash.filesystem.File;
+    
+    import mx.events.FlexEvent;
+    
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ChangeEvent;
     import actionScripts.interfaces.IVisualEditorViewer;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugins.help.view.VisualEditorView;
     import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-    import actionScripts.ui.editor.*;
+    import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
-
-    import flash.events.Event;
-
-    import flash.filesystem.File;
-
-    import mx.events.FlexEvent;
 
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
@@ -141,16 +140,20 @@ package actionScripts.plugins.ui.editor
             visualEditorView.visualEditor.editingSurface.selectedItem = null;
         }
 
-        private function onTabOpenClose(event:CloseTabEvent):void
+        private function onTabOpenClose(event:Event):void
         {
             if (!visualEditorView.visualEditor) return;
             
-            if (event.tab.hasOwnProperty("editor") && event.tab["editor"] == this.editor)
-            {
-                visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
-                visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
-                visualEditorView.visualEditor.editingSurface.selectedItem = null;
-            }
+			if (event is CloseTabEvent)
+			{
+				var tmpEvent:CloseTabEvent = event as CloseTabEvent;
+	            if (tmpEvent.tab.hasOwnProperty("editor") && tmpEvent.tab["editor"] == this.editor)
+	            {
+	                visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+	                visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
+	                visualEditorView.visualEditor.editingSurface.selectedItem = null;
+	            }
+			}
         }
 
         private function onTabSelect(event:TabEvent):void

@@ -19,7 +19,7 @@
 package actionScripts.plugin.help
 {
 	import flash.events.Event;
-
+	
 	import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.events.AddTabEvent;
@@ -91,9 +91,13 @@ package actionScripts.plugin.help
 			);
 		}
 		
-		private function handleTreeRefresh(event:CloseTabEvent):void
+		private function handleTreeRefresh(event:Event):void
 		{
-			if (!event.tab || (event.tab is IPanelWindow)) Object(tourdeContentView).refresh();
+			if (event is CloseTabEvent)
+			{
+				var tmpEvent:CloseTabEvent = event as CloseTabEvent;
+				if (!tmpEvent.tab || (tmpEvent.tab is IPanelWindow)) Object(tourdeContentView).refresh();
+			}
 		}
 		
 		/**
@@ -122,7 +126,7 @@ package actionScripts.plugin.help
 		/**
 		 * On SDK Downloader view closed
 		 */
-		private function onDefineSDKClosed(event:CloseTabEvent):void
+		private function onDefineSDKClosed(event:Event):void
 		{
 			model.sdkInstallerView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
 			model.sdkInstallerView = null;

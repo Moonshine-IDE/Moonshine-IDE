@@ -67,41 +67,40 @@ package actionScripts.plugin.settings
 	 *
 	 * */
 
-    import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
-    import actionScripts.utils.SharedObjectConst;
-    import actionScripts.utils.SharedObjectUtil;
-
     import flash.display.DisplayObject;
-	import flash.events.Event;
+    import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.getQualifiedClassName;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GeneralEvent;
-	import actionScripts.events.SettingsEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.PluginEvent;
-	import actionScripts.plugin.PluginManager;
-	import actionScripts.plugin.fullscreen.FullscreenPlugin;
-	import actionScripts.plugin.settings.event.RequestSettingEvent;
-	import actionScripts.plugin.settings.event.SetSettingsEvent;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PluginSetting;
-	import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
-	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-	import actionScripts.plugin.startup.StartupHelperPlugin;
-	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
-	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
-	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-	import actionScripts.plugin.syntax.JSSyntaxPlugin;
-	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
-	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.moonshine_internal;
-	import actionScripts.valueObjects.ConstantsCoreVO;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.GeneralEvent;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.PluginEvent;
+    import actionScripts.plugin.PluginManager;
+    import actionScripts.plugin.fullscreen.FullscreenPlugin;
+    import actionScripts.plugin.settings.event.RequestSettingEvent;
+    import actionScripts.plugin.settings.event.SetSettingsEvent;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.PluginSetting;
+    import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
+    import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+    import actionScripts.plugin.startup.StartupHelperPlugin;
+    import actionScripts.plugin.syntax.AS3SyntaxPlugin;
+    import actionScripts.plugin.syntax.CSSSyntaxPlugin;
+    import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
+    import actionScripts.plugin.syntax.JSSyntaxPlugin;
+    import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
+    import actionScripts.plugin.syntax.XMLSyntaxPlugin;
+    import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.SharedObjectConst;
+    import actionScripts.utils.SharedObjectUtil;
+    import actionScripts.utils.moonshine_internal;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
 	use namespace moonshine_internal;
 
@@ -309,13 +308,16 @@ package actionScripts.plugin.settings
 		}
 
 		// Did the app settings view close?
-		private function handleTabClose(event:CloseTabEvent):void
+		private function handleTabClose(event:Event):void
 		{
-			if (event.tab == appSettings)
+			if (event is CloseTabEvent)
 			{
-				appSettings.removeEventListener(SettingsView.EVENT_SAVE, handleAppSettingsSave);
-				appSettings.removeEventListener(SettingsView.EVENT_CLOSE, handleAppSettingsClose);
-				appSettings = null;
+				if (CloseTabEvent(event).tab == appSettings)
+				{
+					appSettings.removeEventListener(SettingsView.EVENT_SAVE, handleAppSettingsSave);
+					appSettings.removeEventListener(SettingsView.EVENT_CLOSE, handleAppSettingsClose);
+					appSettings = null;
+				}
 			}
 		}
 

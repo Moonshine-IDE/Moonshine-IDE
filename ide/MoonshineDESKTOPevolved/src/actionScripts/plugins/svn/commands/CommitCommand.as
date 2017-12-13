@@ -111,32 +111,35 @@ package actionScripts.plugins.svn.commands
 		}
 		
 		
-		protected function handleCommitEditorClose(event:CloseTabEvent):void
+		protected function handleCommitEditorClose(event:Event):void
 		{
-			var editor:CommitMessageEditor = event.tab as CommitMessageEditor;
-			if (editor.isSaved)
+			if (event is CloseTabEvent)
 			{
-				message = editor.text;
-			}
-			else
-			{
-				error("No commit message given, aborting.");
-				return;
-			}
-			
-			// We'll need to add some files
-			toAdd = [];
-			for each (var wrap:SVNFileWrapper in affectedFiles)
-			{
-				if (wrap.ignore) continue;
-				
-				if (wrap.status.status == "unversioned")
+				var editor:CommitMessageEditor = CloseTabEvent(event).tab as CommitMessageEditor;
+				if (editor.isSaved)
 				{
-					toAdd.push(wrap.file);	
+					message = editor.text;
 				}
+				else
+				{
+					error("No commit message given, aborting.");
+					return;
+				}
+				
+				// We'll need to add some files
+				toAdd = [];
+				for each (var wrap:SVNFileWrapper in affectedFiles)
+				{
+					if (wrap.ignore) continue;
+					
+					if (wrap.status.status == "unversioned")
+					{
+						toAdd.push(wrap.file);	
+					}
+				}
+				
+				addFiles();
 			}
-			
-			addFiles();
 		}
 		
 		// Start adding files

@@ -38,7 +38,7 @@
         import mx.events.CloseEvent;
         import mx.events.FlexEvent;
         import mx.managers.PopUpManager;
-
+        
         import actionScripts.events.GlobalEventDispatcher;
         import actionScripts.events.ProjectEvent;
         import actionScripts.factory.FileLocation;
@@ -47,7 +47,7 @@
         import actionScripts.utils.NoSDKNotifier;
         import actionScripts.utils.SDKUtils;
         import actionScripts.valueObjects.ProjectReferenceVO;
-
+        
         import components.popup.SDKDefinePopup;
         import components.popup.SDKSelectorPopup;
 
@@ -164,7 +164,7 @@
             currentState = "selectionState";
         }
 
-        protected function onThisClosing(event:CloseTabEvent):void
+        protected function onThisClosing(event:Event):void
         {
             removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
             if (sdkDownloaderView) sdkDownloaderView.removeListeners();
