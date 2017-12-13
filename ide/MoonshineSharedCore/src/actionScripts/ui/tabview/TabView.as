@@ -194,7 +194,7 @@ package actionScripts.ui.tabview
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
 			tab.addEventListener(TabViewTab.EVENT_TABP_CLOSE_ALL, onTabCloseAll);
-			
+
 			invalidateLayoutTabs();
         }
 
@@ -227,18 +227,7 @@ package actionScripts.ui.tabview
 
         private function onTabCloseAll(event:Event):void
         {
-            var numTabs:int = tabContainer.numChildren;
-            for (var i:int = numTabs - 2; i > -1; i--)
-            {
-                var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
-				removeCachedTab(tab.data as BasicTextEditor);
-            }
-
-			for each (var item:HamburgerMenuTabsVO in model.hamburgerTabs)
-			{
-                removeCachedTab(item.tabData as BasicTextEditor);
-			}
-
+            removeTabsFromCache();
 			UtilsCore.closeAllRelativeEditors(null);
         }
 
@@ -317,6 +306,24 @@ package actionScripts.ui.tabview
             }
 
 			return null;
+		}
+
+		public function removeTabsFromCache():void
+		{
+            var numTabs:int = tabContainer.numChildren;
+            for (var i:int = numTabs - 2; i > -1; i--)
+			{
+                var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
+                removeTabFromCache(tab.data as BasicTextEditor);
+			}
+
+			for each (var item:HamburgerMenuTabsVO in model.hamburgerTabs)
+			{
+				if (item.tabData is BasicTextEditor)
+				{
+                    removeTabFromCache(item.tabData as BasicTextEditor);
+				}
+			}
 		}
 
         private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
@@ -476,7 +483,7 @@ package actionScripts.ui.tabview
             invalidateDisplayList();
         }
 
-		private function removeCachedTab(editor:BasicTextEditor):void
+		private function removeTabFromCache(editor:BasicTextEditor):void
 		{
             if (editor)
             {

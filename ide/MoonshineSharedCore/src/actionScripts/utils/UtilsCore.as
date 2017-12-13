@@ -666,13 +666,19 @@ package actionScripts.utils
 					if (editor)
 					{
 						editorsToClose.push(editor);
-						if (!isSkipSaveConfirmation && editor.isChanged()) hasChangesEditors.addItem({file:editor, isSelected:true});
+						if (!isSkipSaveConfirmation && editor.isChanged())
+						{
+							hasChangesEditors.addItem({file:editor, isSelected:true});
+                        }
 					}
 				}
 				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
 				{
 					editorsToClose.push(model.editors[i]);
-					if (!isSkipSaveConfirmation && model.editors[i].isChanged()) hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+					if (!isSkipSaveConfirmation && model.editors[i].isChanged())
+					{
+						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+                    }
 				}
 			}
 			

@@ -26,13 +26,12 @@ package actionScripts.controllers
     import mx.core.FlexGlobals;
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
-    
+
     import spark.components.Button;
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.locator.IDEModel;
     import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabView;
@@ -54,6 +53,11 @@ package actionScripts.controllers
 		{
 			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_TABS)
 			{
+                var tabView:TabView = model.mainView.mainContent;
+				if (tabView)
+				{
+					tabView.removeTabsFromCache();
+				}
 				UtilsCore.closeAllRelativeEditors(null);
 				return;
 			}
