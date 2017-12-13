@@ -18,9 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
-    import actionScripts.utils.UtilsCore;
-
-    import flash.display.NativeMenu;
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
     import flash.events.Event;
@@ -41,6 +38,7 @@ package actionScripts.ui.tabview
 	{	
 		public static const EVENT_TAB_CLICK:String = "tabClick";
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
+		public static const EVENT_TABP_CLOSE_ALL:String = "tabCloseAll";
 		
 		protected var closeButton:Sprite;
 		protected var background:Sprite;
@@ -296,7 +294,7 @@ package actionScripts.ui.tabview
 
         private function onMenuItemCloseAll(event:ContextMenuEvent):void
         {
-            UtilsCore.closeAllRelativeEditors(null);
+			dispatchEvent(new Event(EVENT_TABP_CLOSE_ALL));
         }
 
         private function onMenuItemClose(event:ContextMenuEvent):void

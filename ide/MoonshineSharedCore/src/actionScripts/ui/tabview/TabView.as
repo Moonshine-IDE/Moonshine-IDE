@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.utils.SharedObjectUtil;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;
 
     import flash.display.DisplayObject;
@@ -190,9 +193,11 @@ package actionScripts.ui.tabview
 
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
+			tab.addEventListener(TabViewTab.EVENT_TABP_CLOSE_ALL, onTabCloseAll);
+			
 			invalidateLayoutTabs();
         }
-		
+
 		private function removeTabFor(child:DisplayObject):void
 		{
 			var tab:DisplayObject = tabLookup[child];
@@ -220,7 +225,24 @@ package actionScripts.ui.tabview
 			invalidateLayoutTabs();
 		}
 
-		private function updateTabLabel(event:Event):void
+        private function onTabCloseAll(event:Event):void
+        {
+            var numTabs:int = tabContainer.numChildren;
+            for (var i:int = numTabs - 2; i > -1; i--)
+            {
+                var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
+				removeCachedTab(tab.data as BasicTextEditor);
+            }
+
+			for each (var item:HamburgerMenuTabsVO in model.hamburgerTabs)
+			{
+                removeCachedTab(item.tabData as BasicTextEditor);
+			}
+
+			UtilsCore.closeAllRelativeEditors(null);
+        }
+
+        private function updateTabLabel(event:Event):void
 		{
 			var child:DisplayObject = event.target as DisplayObject;
 			var tab:TabViewTab = tabLookup[child];
@@ -453,5 +475,14 @@ package actionScripts.ui.tabview
             needsTabLayout = true;
             invalidateDisplayList();
         }
+
+		private function removeCachedTab(editor:BasicTextEditor):void
+		{
+            if (editor)
+            {
+                SharedObjectUtil.removeLocationOfClosingProjectFile(editor.currentFile.name,
+                        editor.currentFile.fileBridge.nativePath);
+            }
+		}
     }
 }
