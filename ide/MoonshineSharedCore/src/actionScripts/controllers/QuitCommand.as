@@ -40,6 +40,7 @@ package actionScripts.controllers
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.popup.StandardPopup;
+	import components.views.splashscreen.SplashScreen;
 
 	public class QuitCommand implements ICommand
 	{
@@ -54,7 +55,7 @@ package actionScripts.controllers
 			var editorsToClose:Array = [];
 			for each (var tab:IContentWindow in editors)
 			{
-				if (!tab.isChanged())
+				if (!(tab is SplashScreen) && !tab.isChanged())
 				{
 					editorsToClose.push(tab);
 				}

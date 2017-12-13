@@ -199,12 +199,11 @@ package actionScripts.controllers
 				);
 			}
 			// If we removed all editors, add a blank.
-			if (model.editors.length == 0)
+			/*if (model.editors.length == 0)
 			{
 				var e:BasicTextEditor = new BasicTextEditor();
 				model.editors.addItem(e);
-			}
+			}*/
 		}
-		
 	}
 }

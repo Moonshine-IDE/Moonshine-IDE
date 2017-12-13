@@ -856,10 +856,13 @@ package actionScripts.plugins.vscodeDebug
 			}
 		}
 		
-		private function dispatcher_closeTabHandler(event:CloseTabEvent):void
+		private function dispatcher_closeTabHandler(event:Event):void
 		{
-			var editor:BasicTextEditor = event.tab as BasicTextEditor;
-			this.saveEditorBreakpoints(editor);
+			if (event is CloseTabEvent)
+			{
+				var editor:BasicTextEditor = CloseTabEvent(event).tab as BasicTextEditor;
+				this.saveEditorBreakpoints(editor);
+			}
 		}
 		
 		private function dispatcher_setDebugLineHandler(event:DebugLineEvent):void

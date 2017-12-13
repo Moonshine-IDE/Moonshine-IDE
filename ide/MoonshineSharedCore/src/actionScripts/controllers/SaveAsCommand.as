@@ -28,7 +28,7 @@ package actionScripts.controllers
 		public function execute(event:Event):void 
 		{
 			var editor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
-			editor.saveAs();
+			if (editor)	editor.saveAs();
 		}
 	}
 }

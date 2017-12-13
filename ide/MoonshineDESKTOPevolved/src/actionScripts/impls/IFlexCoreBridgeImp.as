@@ -226,7 +226,6 @@ package actionScripts.impls
 		public function getWindowsMenu():Vector.<MenuItem>
 		{
 			var resourceManager:IResourceManager = ResourceManager.getInstance();
-			var close:String = resourceManager.getString('resources','CLOSE');
 
 			var wmn:Vector.<MenuItem> = Vector.<MenuItem>([
 				new MenuItem(resourceManager.getString('resources','FILE'), [
@@ -241,7 +240,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','SAVE_AS'), null, MenuPlugin.MENU_SAVE_AS_EVENT,
 						's', [Keyboard.COMMAND, Keyboard.SHIFT],
 						's', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem(close, null, CloseTabEvent.EVENT_CLOSE_TAB,
+					new MenuItem(resourceManager.getString('resources','CLOSE'), null, CloseTabEvent.EVENT_CLOSE_TAB,
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
@@ -337,7 +336,7 @@ package actionScripts.impls
 					var firstMenuItems:Vector.<MenuItem> = wmn[0].items;
 					for (var i:int; i < firstMenuItems.length; i++)
 					{
-						if (firstMenuItems[i].label == close)
+						if (firstMenuItems[i].label == "Close All")
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
 							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, ProjectEvent.ACCESS_MANAGER)));
