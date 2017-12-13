@@ -52,8 +52,8 @@ package actionScripts.plugin.actionscript.as3project.save
 		
 		private var _workspacePath:String;
 		private var _isSaveFiles:Boolean = false;
-		private var _openPreviouslyOpenedProjectBranches:Boolean;
-		private var _openPreviouslyOpenedFiles:Boolean;
+		private var _openPreviouslyOpenedProjectBranches:Boolean = true;
+		private var _openPreviouslyOpenedFiles:Boolean = true;
 		
 		public function SaveFilesPlugin()
 		{

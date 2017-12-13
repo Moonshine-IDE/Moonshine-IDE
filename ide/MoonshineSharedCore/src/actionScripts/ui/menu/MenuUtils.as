@@ -34,6 +34,7 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'SAVE'),
             resourceManager.getString('resources', 'SAVE_AS'),
             resourceManager.getString('resources', 'CLOSE'),
+			resourceManager.getString('resources', 'CLOSE_ALL'),
             resourceManager.getString('resources', 'QUIT'),
             resourceManager.getString('resources', 'FIND'),
             resourceManager.getString('resources', 'FINDE_PREV'),
