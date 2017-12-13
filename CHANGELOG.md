@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Added action to close all tabs from both the File menu and the tab context menu
 * Tabs and project tree status are saved and restored when reopening a project.  This behavior can be disabled from the General tab in the application settings.
-* Quickly switch between different default application classes by right-clicking and selecting "Set as Default Application"
+* Quickly switch between different application files by right-clicking and selecting "Set as Default Application"
 
 
 ### Changed
