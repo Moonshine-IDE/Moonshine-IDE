@@ -37,7 +37,6 @@ package actionScripts.plugin
 		private var defaultPlugins:Array = model.flexCore.getDefaultPlugins();
         private var registeredPlugins:Vector.<IPlugin> = new Vector.<IPlugin>();
         private var settingsPlugin:SettingsPlugin;
-        private var menuPlugins:Array = [MenuPlugin];
         private var pendingPlugMenuItems:Vector.<MenuItem> = new Vector.<MenuItem>();
 
         public function PluginManager()

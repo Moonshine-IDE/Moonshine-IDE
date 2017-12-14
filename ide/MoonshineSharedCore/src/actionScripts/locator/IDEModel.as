@@ -76,6 +76,7 @@ package actionScripts.locator
 		public var isIndividualCloseTabAlertShowing:Boolean;
 		public var saveFilesBeforeBuild:Boolean = false;
 
+		public var openPreviouslyOpenedProjects:Boolean;
 		public var openPreviouslyOpenedProjectBranches:Boolean;
 		public var openPreviouslyOpenedFiles:Boolean;
 

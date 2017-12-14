@@ -52,6 +52,7 @@ package actionScripts.plugin.actionscript.as3project.save
 		
 		private var _workspacePath:String;
 		private var _isSaveFiles:Boolean = false;
+		private var _openPreviouslyOpenedProjects:Boolean;
 		private var _openPreviouslyOpenedProjectBranches:Boolean;
 		private var _openPreviouslyOpenedFiles:Boolean;
 		
@@ -59,8 +60,9 @@ package actionScripts.plugin.actionscript.as3project.save
 		{
 			super();
 
-			openPreviouslyOpenedProjectBranches = true;
+			openPreviouslyOpenedProjects = true;
 			openPreviouslyOpenedFiles = true;
+			openPreviouslyOpenedProjectBranches = true;
 		}
 		
 		public function get isSaveFiles():Boolean
@@ -82,6 +84,17 @@ package actionScripts.plugin.actionscript.as3project.save
 		{
 			_workspacePath = value;
 			OSXBookmarkerNotifiers.workspaceLocation = value ? new FileLocation(_workspacePath) : null;
+		}
+
+		public function get openPreviouslyOpenedProjects():Boolean
+		{
+			return _openPreviouslyOpenedProjects;
+		}
+
+		public function set openPreviouslyOpenedProjects(value:Boolean):void
+		{
+            _openPreviouslyOpenedProjects = value;
+            model.openPreviouslyOpenedProjects = value;
 		}
 
         public function get openPreviouslyOpenedProjectBranches():Boolean
@@ -138,6 +151,7 @@ package actionScripts.plugin.actionscript.as3project.save
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
 				new BooleanSetting(this,"isSaveFiles", "Save automatically Before Build"),
+				new BooleanSetting(this, "openPreviouslyOpenedProjects", "Open previously opened projects on startup"),
 				new BooleanSetting(this, "openPreviouslyOpenedFiles", "Open previously opened files for project"),
 				new BooleanSetting(this, "openPreviouslyOpenedProjectBranches", "Open previously opened project branches"),
 				new ButtonSetting(this, "resetLabel", "Reset all Settings (Hard)", "resetApplication", ButtonSetting.STYLE_DANGER)

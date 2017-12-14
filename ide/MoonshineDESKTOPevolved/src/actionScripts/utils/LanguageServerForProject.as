@@ -39,7 +39,6 @@ package actionScripts.utils
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;

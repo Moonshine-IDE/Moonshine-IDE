@@ -172,7 +172,7 @@ package actionScripts.impls
 				ConsolePlugin,
 				//AntConfigurePlugin,
 				FullscreenPlugin,
-				AntBuildPlugin,
+				AntBuildPlugin
 			];
 		}
 		

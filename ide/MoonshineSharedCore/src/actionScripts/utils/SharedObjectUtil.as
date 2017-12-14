@@ -30,6 +30,7 @@ package actionScripts.utils
             var model:IDEModel = IDEModel.getInstance();
             if (name.indexOf("projectTree") > -1 && !model.openPreviouslyOpenedProjectBranches) return null;
             if (name.indexOf("projectFiles") > -1 && !model.openPreviouslyOpenedFiles) return null;
+            if (name.indexOf("projects") > -1 && !model.openPreviouslyOpenedProjects) return null;
             
             for (var item:Object in cookie.data)
             {
@@ -108,6 +109,28 @@ package actionScripts.utils
 
 			removeProjectItem({name: fileName, path: filePath}, "name", "path", "projectFiles" + activeProject.name);
 		}
+
+        public static function saveProjectForOpen(projectFolderPath:String, projectName:String):void
+        {
+            var model:IDEModel = IDEModel.getInstance();
+            if (!model.openPreviouslyOpenedProjects) return;
+
+            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            if (!cookie.data["projects"])
+            {
+                cookie.data["projects"] = [];
+            }
+
+            saveProjectItem({name: projectFolderPath, path: projectName}, "name", "path", "projects");
+        }
+
+        public static function removeProjectFromOpen(projectFolderPath:String, projectName:String):void
+        {
+            var model:IDEModel = IDEModel.getInstance();
+            if (!model.openPreviouslyOpenedProjects) return;
+
+            removeProjectItem({name: projectFolderPath, path: projectName}, "name", "path", "projects");
+        }
 
 		private static function saveProjectItem(item:Object, propertyNameKey:String,
                                                 propertyNameKeyValue:String, cookieName:String):void

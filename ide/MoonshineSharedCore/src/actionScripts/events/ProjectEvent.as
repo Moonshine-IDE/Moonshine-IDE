@@ -30,6 +30,7 @@ package actionScripts.events
 		public static const ADD_PROJECT:String = "addProjectEvent";
 		public static const OPEN_PROJECT_AWAY3D:String = "openProjectEventAway3D";
 		public static const REMOVE_PROJECT:String = "removeProjectEvent";
+		public static const SHOW_PREVIOUSLY_OPENED_PROJECTS:String = "showPreviouslyOpenedProjects";
 		
 		public static const TREE_DATA_UPDATES: String = "TREE_DATA_UPDATES";
 		public static const PROJECT_FILES_UPDATES: String = "PROJECT_FILES_UPDATES";

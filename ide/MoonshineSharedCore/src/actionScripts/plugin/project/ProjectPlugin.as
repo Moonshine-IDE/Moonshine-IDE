@@ -21,11 +21,9 @@ package actionScripts.plugin.project
     import actionScripts.events.OpenFileEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
-
     import flash.events.Event;
 
 	import __AS3__.vec.Vector;
@@ -61,13 +59,13 @@ package actionScripts.plugin.project
 		
 		private var treeView:TreeView;
 		private var openResourceView:OpenResourceView;
-		
+
 		public function ProjectPlugin()
 		{
 			treeView = new TreeView();
 			treeView.projects = model.projects;
 		}
-		
+
 		override public function activate():void
 		{
 			super.activate(); 
@@ -75,7 +73,8 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
-			
+
+			dispatcher.addEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
 			dispatcher.addEventListener(ProjectEvent.SHOW_PROJECT_VIEW, handleShowProjectView);
 			
 			dispatcher.addEventListener(EVENT_SHOW_OPEN_RESOURCE, handleShowOpenResource);
@@ -85,6 +84,7 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
 		}
+
 		override public function deactivate():void
 		{
 			super.deactivate();
@@ -157,8 +157,8 @@ package actionScripts.plugin.project
 				new AddTabEvent(settingsView)
 			);
 		}
-		
-		private function settingsClose(event:Event):void
+
+        private function settingsClose(event:Event):void
 		{
 			var settings:SettingsView = event.target as SettingsView;
 			
@@ -221,6 +221,7 @@ package actionScripts.plugin.project
 			}
 
             openRecentlyUsedFiles(event.project);
+			SharedObjectUtil.saveProjectForOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void
@@ -256,6 +257,8 @@ package actionScripts.plugin.project
 
                 dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 			}
+
+            SharedObjectUtil.removeProjectFromOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
 		}
 		
 		private function handleShowOpenResource(event:Event):void
@@ -290,7 +293,12 @@ package actionScripts.plugin.project
 			treeView.refresh(event.dir);
 		}
 
-		private function openRecentlyUsedFiles(project:ProjectVO):void
+        private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void
+        {
+            openPreviouslyOpenedProject();
+        }
+
+        private function openRecentlyUsedFiles(project:ProjectVO):void
 		{
             var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectFiles");
 			if (!cookie) return;
@@ -322,5 +330,50 @@ package actionScripts.plugin.project
                 }
             }
 		}
-	}
+
+        private function openPreviouslyOpenedProject():void
+        {
+            dispatcher.removeEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
+			
+            var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projects");
+            if (!cookie) return;
+
+            var projectsForOpen:Array = cookie.data["projects"];
+            if (projectsForOpen && projectsForOpen.length > 0)
+            {
+                var projectLocationInfo:Array = [];
+                for (var i:int = 0; i < projectsForOpen.length; i++)
+                {
+                    var project:ProjectVO;
+                    for (var item:Object in projectsForOpen[i])
+                    {
+                        projectLocationInfo.push(item);
+                        projectLocationInfo.push(projectsForOpen[i][item]);
+                    }
+
+                    var projectLocation:FileLocation = new FileLocation(projectLocationInfo[0]);
+                    var projectFile:Object = projectLocation.fileBridge.getFile;
+                    var projectFileLocation:FileLocation = model.flexCore.testFlashDevelop(projectFile);
+
+                    if (projectFileLocation)
+                    {
+                        project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo[1]);
+                    }
+
+                    projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
+                    if (projectFileLocation)
+                    {
+                        project = model.flexCore.parseFlashBuilder(projectLocation);
+                    }
+
+                    projectLocationInfo.splice(0, projectLocationInfo.length);
+                    if (project)
+                    {
+                        dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
+                        project = null;
+                    }
+                }
+            }
+        }
+    }
 }

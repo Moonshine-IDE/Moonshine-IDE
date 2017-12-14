@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.startup
 {
-	import flash.events.Event;
+    import actionScripts.events.ProjectEvent;
+
+    import flash.events.Event;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -59,7 +61,7 @@ package actionScripts.plugin.startup
 		private var isSDKSetupShowing:Boolean;
 
 		private var javaSetupPathTimeout:uint;
-		private var startHelpintTimeout:uint;
+		private var startHelpingTimeout:uint;
 		private var changeMenuSDKTimeout:uint;
 		
 		/**
@@ -92,7 +94,7 @@ package actionScripts.plugin.startup
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK];
 
 			// just a little delay to see things visually right
-            startHelpintTimeout = setTimeout(startHelping, 1000);
+            startHelpingTimeout = setTimeout(startHelping, 1000);
 		}
 		
 		/**
@@ -101,8 +103,8 @@ package actionScripts.plugin.startup
 		 */
 		private function startHelping():void
 		{
-			clearTimeout(startHelpintTimeout);
-			startHelpintTimeout = 0;
+			clearTimeout(startHelpingTimeout);
+			startHelpingTimeout = 0;
 
 			var tmpSequence:String = sequences[sequenceIndex];
 			
@@ -123,6 +125,11 @@ package actionScripts.plugin.startup
 					checkSDKPrsenceForTypeahead();
 					break;
 				}
+			}
+
+			if (sequenceIndex == sequences.length)
+			{
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
 			}
 		}
 		
