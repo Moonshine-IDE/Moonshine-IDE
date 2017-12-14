@@ -618,6 +618,7 @@
 						{
 							projects.removeItem(as3Project);
 							updateTreeView();
+							GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, as3Project));
 							break;
 						}
 					}

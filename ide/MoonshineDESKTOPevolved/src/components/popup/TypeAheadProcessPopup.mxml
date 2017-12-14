@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" close="onCloseWindow(event)"
-			   xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="200" title="Set JAVA Path">
+			   width="400" height="200" title="Set JAVA Path">
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.factory.FileLocation;
