@@ -615,7 +615,7 @@
 	<target name="CompileSWFWindows" depends="compileLibrary" unless="${isOSX}">
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="33" 
+			   swf-version="39" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -644,7 +644,7 @@
 		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="33" 
+			   swf-version="39" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -683,7 +683,7 @@
 		<mxmlc fork="true" 
 			   file="${webMainSource}" 
 			   output="${deploy_dir}/Moonshine.swf" 
-			   swf-version="33" 
+			   swf-version="39" 
 			   locale="${locale.list}" 
 			   static-rsls="true" 
 			   optimize="true" 
