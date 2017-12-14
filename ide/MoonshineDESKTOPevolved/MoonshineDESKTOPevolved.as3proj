@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <output>
-    <movie disabled="False"/>
-    <movie version="25"/>
-    <movie fps="24"/>
-    <movie width="100"/>
     <movie height="100"/>
+    <movie fps="24"/>
     <movie path="bin-debug/MoonshineDESKTOP.swf"/>
+    <movie disabled="False"/>
+    <movie version="28"/>
     <movie background="#000000"/>
     <movie input=""/>
+    <movie width="100"/>
   </output>
   &lt;!-- Other classes to be compiled into your SWF --&gt;
   <classpaths>
@@ -17,32 +17,31 @@
     <class path="src"/>
   </classpaths>
   <moonshineResourcePaths>
-    <class path="\Users\santanu\Documents\Adobe Flash Builder 4.7\ProminicSVNBranch\MoonshineMultiCodeBase\Balsamiq2FlexJSConverterLib\templates"/>
-    <class path="\Users\santanu\Documents\Adobe Flash Builder 4.7\ProminicSVNBranch\MoonshineMultiCodeBase\MoonshineSharedCore\src\elements"/>
+    <class path="../../../ProminicSVNBranch/MoonshineMultiCodeBase/MoonshineSharedCore/src/elements"/>
   </moonshineResourcePaths>
   <build>
-    <option customSDK=""/>
-    <option useNetwork="True"/>
-    <option accessible="True"/>
-    <option showBindingWarnings="True"/>
-    <option es="False"/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 33 -define+=CONFIG::OSX,false  +configname=air"/>
-    <option showUnusedTypeSelectorWarnings="True"/>
     <option showDeprecationWarnings="True"/>
-    <option optimize="True"/>
-    <option staticLinkRSL="False"/>
-    <option linkReport=""/>
-    <option allowSourcePathOverlap="False"/>
-    <option verboseStackTraces="False"/>
-    <option benchmark="False"/>
-    <option warnings="True"/>
-    <option useResourceBundleMetadata="True"/>
-    <option loadConfig=""/>
-    <option strict="True"/>
     <option locale=""/>
-    <option antBuildPath=""/>
+    <option linkReport=""/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+    <option es="False"/>
+    <option strict="True"/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,true  +configname=air -external-library-path+=extensions/SSB.ane"/>
+    <option staticLinkRSL="False"/>
+    <option allowSourcePathOverlap="False"/>
+    <option useNetwork="True"/>
+    <option optimize="True"/>
     <option compilerConstants=""/>
+    <option customSDK="/Users/santanu/Downloads/MoonshineSDKs/Flex_SDK/4.16.1_AIR.28.0"/>
+    <option loadConfig=""/>
     <option showActionScriptWarnings="True"/>
+    <option antBuildPath=""/>
+    <option accessible="True"/>
+    <option warnings="True"/>
+    <option showBindingWarnings="True"/>
+    <option useResourceBundleMetadata="True"/>
+    <option benchmark="False"/>
+    <option verboseStackTraces="False"/>
   </build>
   <includeLibraries></includeLibraries>
   <libraryPaths>
@@ -66,4 +65,15 @@
     <option defaultBuildTargets=""/>
     <option showHiddenPaths="False"/>
   </options>
+  <moonshineRunCustomization>
+    <option projectType="1"/>
+    <option launchMethod="Simulator"/>
+    <option targetPlatform="1"/>
+    <option urlToLaunch=""/>
+    <option deviceSimulator="null"/>
+    <deviceSimulator>null</deviceSimulator>
+    <certAndroid>null</certAndroid>
+    <certIos>null</certIos>
+    <certIosProvisioning>null</certIosProvisioning>
+  </moonshineRunCustomization>
 </project>
