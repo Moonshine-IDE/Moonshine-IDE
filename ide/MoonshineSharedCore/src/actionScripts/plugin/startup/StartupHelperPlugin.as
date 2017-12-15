@@ -128,8 +128,9 @@ package actionScripts.plugin.startup
 
 			if (sequenceIndex == sequences.length)
 			{
-				setTimeout(function():void
+				var timeoutValue:uint = setTimeout(function():void
 				{
+					clearTimeout(timeoutValue);
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
 				}, 2000);
 			}
