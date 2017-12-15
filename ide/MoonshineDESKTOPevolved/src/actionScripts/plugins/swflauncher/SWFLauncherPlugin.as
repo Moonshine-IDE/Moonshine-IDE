@@ -170,7 +170,7 @@ package actionScripts.plugins.swflauncher
 			//	customInfo.executable = executable;
 			
 			// Find air debug launcher
-			print("Launch Applcation");
+			print("Launch Application");
 			
 			//var executableFile: File = new File("C:\\Program Files\\Adobe\\Adobe Flash Builder 4.6\\sdks\\4.14\\bin\\adl.exe");
 			customInfo.executable = executableFile;
