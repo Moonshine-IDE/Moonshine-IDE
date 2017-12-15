@@ -32,6 +32,8 @@ package actionScripts.plugins.as3project.importer
 	{
 		public static function test(file:File):FileLocation
 		{
+			if (!file.exists) return null;
+			
 			var listing:Array = file.getDirectoryListing();
 			for each (var i:File in listing)
 			{

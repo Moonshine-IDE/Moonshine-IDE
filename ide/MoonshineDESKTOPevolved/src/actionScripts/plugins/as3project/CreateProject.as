@@ -502,12 +502,11 @@ package actionScripts.plugins.as3project
 			var sourceFileWithExtension:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name : pvo.projectName + ((isActionScriptProject || isFeathersProject || isAway3DProject) ? ".as" : ".mxml");
 			var sourcePath:String = _isProjectFromExistingSource ? pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) : "src";
 			var targetFolder:FileLocation = pvo.folderLocation;
-			
-			var movieVersion:String = "10.0";
+
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
-			movieVersion = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
+            var movieVersion:String = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
 			
 			// Create project root directory
 			if (!_isProjectFromExistingSource)

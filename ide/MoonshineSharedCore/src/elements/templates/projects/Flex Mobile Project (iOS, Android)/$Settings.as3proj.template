@@ -42,7 +42,7 @@
     <option linkReport="" />
     <option loadExterns="" />
     <option staticLinkRSL="True" />
-    <option additional="" />
+    <option additional="+configname=airmobile" />
     <option compilerConstants="" />
     <option minorVersion="" />
     <option antBuildPath="build/build.xml"/>
