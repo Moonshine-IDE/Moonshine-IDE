@@ -18,25 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.startup
 {
-    import actionScripts.events.ProjectEvent;
-
     import flash.events.Event;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-	
-	import mx.core.FlexGlobals;
-	import mx.events.CollectionEvent;
-	
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.popup.JavaPathSetupPopup;
-	import components.popup.SDKUnzipConfirmPopup;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+    
+    import mx.core.FlexGlobals;
+    import mx.events.CollectionEvent;
+    
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    
+    import components.popup.JavaPathSetupPopup;
+    import components.popup.SDKUnzipConfirmPopup;
 
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
@@ -129,7 +128,10 @@ package actionScripts.plugin.startup
 
 			if (sequenceIndex == sequences.length)
 			{
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
+				setTimeout(function():void
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
+				}, 2000);
 			}
 		}
 		
