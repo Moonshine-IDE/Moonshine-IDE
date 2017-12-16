@@ -116,7 +116,7 @@ package actionScripts.ui.editor
 
 		private function onTextInput(event:TextEvent):void
 		{
-			if(dispatchTypeAheadPending)
+			if(dispatchTypeAheadPending && canShowCodeCompletion(event.text))
 			{
 				dispatchTypeAheadPending = false;
 				dispatchTypeAheadEvent();
@@ -143,19 +143,10 @@ package actionScripts.ui.editor
 
 		private function onKeyDown(event:KeyboardEvent):void
 		{
-			var fromCharCode:String = String.fromCharCode(event.charCode);
-			
 			var ctrlSpace:Boolean = String.fromCharCode(event.keyCode) == " " && event.ctrlKey;
-			var memberAccess:Boolean = fromCharCode == ".";
-			var typeAnnotation:Boolean = fromCharCode == ":";
-			var space:Boolean = fromCharCode == " ";
-			var openTag:Boolean = fromCharCode == "<";
-			/*var openingBracket:Boolean = String.fromCharCode(event.charCode) == "(";
-			var openingSingleQuote:Boolean = String.fromCharCode(event.charCode) == "'";
-			var openingDoubleQuote:Boolean = String.fromCharCode(event.charCode) == '"';*/
 			var enterKey:Boolean = event.keyCode == 13;
 			
-			if (ctrlSpace || memberAccess || typeAnnotation || space || openTag)
+			if (ctrlSpace || canShowCodeCompletion(event.charCode))
 			{
 				if(!ctrlSpace)
 				{
@@ -169,6 +160,7 @@ package actionScripts.ui.editor
 				dispatchTypeAheadEvent();
 			}
 
+            var fromCharCode:String = String.fromCharCode(event.charCode);
 			var parenOpen:Boolean = fromCharCode == "(";
 			var comma:Boolean = fromCharCode == ",";
 			var activeAndBackspace:Boolean = editor.signatureHelpActive && event.keyCode === Keyboard.BACKSPACE;
@@ -376,6 +368,18 @@ package actionScripts.ui.editor
             }
 
 			return document;
+		}
+
+		private function canShowCodeCompletion(char:Object):Boolean
+		{
+			var charCode:Number = char is String ? char.charCodeAt(0) : char as uint;
+            var fromCharCode:String = String.fromCharCode(charCode);
+
+            var memberAccess:Boolean = fromCharCode == ".";
+            var typeAnnotation:Boolean = fromCharCode == ":";
+            var openTag:Boolean = fromCharCode == "<";
+
+			return memberAccess || typeAnnotation || openTag;
 		}
 	}
 }
