@@ -25,19 +25,17 @@ package actionScripts.events
 	public class ProjectEvent extends Event
 	{
 		public static const SHOW_PROJECT_VIEW:String = "showProjectViewEvent";
-		public static const HIDE_PROJECT_VIEW:String = "hideProjectViewEvent";
 		
 		public static const ADD_PROJECT:String = "addProjectEvent";
 		public static const OPEN_PROJECT_AWAY3D:String = "openProjectEventAway3D";
 		public static const REMOVE_PROJECT:String = "removeProjectEvent";
 		public static const SHOW_PREVIOUSLY_OPENED_PROJECTS:String = "showPreviouslyOpenedProjects";
+		public static const SCROLL_FROM_SOURCE:String = "scrollFromSource";
 		
 		public static const TREE_DATA_UPDATES: String = "TREE_DATA_UPDATES";
 		public static const PROJECT_FILES_UPDATES: String = "PROJECT_FILES_UPDATES";
 		
-		public static const SAVE_PROJECT_SETTINGS:String = "SAVE_PROJECT_SETTINGS"; 
-		public static const PROJECT_REFRESH: String = "PROJECT_REFRESH";
-		public static const PROJECT_OPEN_REQUEST: String = "PROJECT_OPEN_REQUEST";
+		public static const SAVE_PROJECT_SETTINGS:String = "SAVE_PROJECT_SETTINGS";
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
 		public static const INIT_EXPORT_VISUALEDITOR_PROJECT:String = "INIT_EXPORT_VISUALEDITOR_PROJECT";
 		public static const EXPORT_VISUALEDITOR_PROJECT:String = "EXPORT_VISUAL_EDITOR_PROJECT";
@@ -55,7 +53,6 @@ package actionScripts.events
 		public var project:ProjectVO;
 		public var anObject:Object;
 		public var extras:Array;
-		public var lastOpenedAs:String;
 		
 		public function ProjectEvent(type:String, project:Object=null, ...args)
 		{

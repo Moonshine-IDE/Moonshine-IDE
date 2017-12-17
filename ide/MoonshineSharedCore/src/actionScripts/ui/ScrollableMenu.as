@@ -13,20 +13,14 @@
 
 package actionScripts.ui
 {
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
-	import flash.geom.Point;
 	
 	import mx.controls.Menu;
 	import mx.controls.listClasses.IListItemRenderer;
-	import mx.controls.menuClasses.IMenuBarItemRenderer;
 	import mx.controls.menuClasses.IMenuItemRenderer;
 	import mx.controls.scrollClasses.ScrollBar;
-	import mx.core.Application;
-	import mx.core.EdgeMetrics;
 	import mx.core.FlexGlobals;
-	import mx.core.ScrollPolicy;
 	import mx.core.mx_internal;
 	import mx.managers.PopUpManager;
 	

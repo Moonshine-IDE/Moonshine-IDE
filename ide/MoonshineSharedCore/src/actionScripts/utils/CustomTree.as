@@ -20,10 +20,16 @@ package actionScripts.utils {
     import flash.events.Event;
     import flash.events.KeyboardEvent;
     import flash.net.SharedObject;
+
+    import mx.collections.ICollectionView;
+    import mx.collections.IViewCursor;
     import mx.controls.Tree;
+    import mx.core.mx_internal;
     import mx.events.CollectionEventKind;
     import mx.events.TreeEvent;
-    
+
+    use namespace mx_internal;
+
     public class CustomTree extends Tree
 	{
 		public var propertyNameKey:String;
@@ -50,6 +56,85 @@ package actionScripts.utils {
 			SharedObjectUtil.removeProjectTreeItemFromOpenedItems(item, propertyNameKey, propertyNameKeyValue);
         }
 
+        public function expandChildrenByName(itemPropertyName:String, childrenForOpen:Array):void
+        {
+            var childrenForOpenCount:int = childrenForOpen.length;
+            for (var i:int = 0; i < childrenForOpenCount; i++)
+            {
+                var item:Object = childrenForOpen[i];
+                for each (var childForOpen:Object in dataProvider)
+                {
+                    if (childForOpen.hasOwnProperty(itemPropertyName) && childForOpen[itemPropertyName] == item)
+                    {
+                        if (!isItemOpen(childForOpen))
+                        {
+                            expandItem(childForOpen, true);
+                        }
+
+                        childrenForOpen = childrenForOpen.slice(i + 1, childrenForOpenCount);
+                        expandChildrenOfByName(getChildren(childForOpen, iterator.view), itemPropertyName, childrenForOpen);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private function expandChildrenOfByName(children:ICollectionView, itemPropertyName:String, childrenForOpen:Array):void
+        {
+            if (children)
+            {
+                var childrenForOpenCount:int = childrenForOpen.length;
+                for (var i:int = 0; i < childrenForOpenCount; i++)
+                {
+                    var cursor:IViewCursor = children.createCursor();
+                    var currentItem:Object;
+
+                    if (childrenForOpenCount == 1)
+                    {
+                        while (!cursor.afterLast)
+                        {
+                            currentItem = cursor.current;
+                            if (currentItem[itemPropertyName] == childrenForOpen[i])
+                            {
+                                selectedItem = currentItem;
+                                scrollToIndex(getItemIndex(currentItem));
+                                break;
+                            }
+                            cursor.moveNext();
+                        }
+                    }
+                    else
+                    {
+                        var itemForOpenFound:Boolean = false;
+                        while (!cursor.afterLast)
+                        {
+                            currentItem = cursor.current;
+                            if (dataDescriptor.isBranch(currentItem) && currentItem[itemPropertyName] == childrenForOpen[i])
+                            {
+                                if (!isItemOpen(currentItem))
+                                {
+                                    expandItem(currentItem, true);
+                                }
+                                childrenForOpen = childrenForOpen.slice(i + 1, childrenForOpen.length);
+                                expandChildrenOfByName(getChildren(currentItem, iterator.view), itemPropertyName, childrenForOpen);
+                                itemForOpenFound = true;
+                                break;
+                            }
+                            else
+                            {
+                                cursor.moveNext();
+                            }
+                        }
+
+                        if (itemForOpenFound)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
         override protected function keyDownHandler(event:KeyboardEvent):void
 		{
 			if (keyNav) super.keyDownHandler(event);

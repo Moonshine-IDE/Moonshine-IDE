@@ -18,14 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.project
 {
-	import flash.events.MouseEvent;
+    import flash.events.Event;
+    import flash.events.MouseEvent;
 	import flash.filters.DropShadowFilter;
 	import flash.filters.GlowFilter;
 	import flash.geom.Matrix;
 	
 	import actionScripts.ui.tabview.TabViewTab;
 
-	public class ProjectViewHeader extends TabViewTab
+    import spark.components.Image;
+
+	[Event(name="scrollFromSource", type="flash.events.Event")]
+    public class ProjectViewHeader extends TabViewTab
 	{
 		public function ProjectViewHeader()
 		{
@@ -38,7 +42,18 @@ package actionScripts.ui.project
 			innerGlowColor = 0xFFFFFF;
 			selected = false;
 		}
-		
+
+        [Embed(source='/elements/images/scroll_from_source.png')]
+		private var _scrollFromSourceIcon:Class;
+
+		private var _scrollFromSource:Image;
+
+		private var _showScrollFromSrouceIcon:Boolean;
+		public function set showScrollFromSourceIcon(value:Boolean):void
+		{
+			_showScrollFromSrouceIcon = value;
+		}
+
 		private function mouseOut(event:MouseEvent):void
 		{
 			if (event.relatedObject == closeButton) return;
@@ -58,17 +73,36 @@ package actionScripts.ui.project
 			background.filters = [	new GlowFilter(0xFFFFFF, 1, 6, 6, 1, 1, true),
 								  	new DropShadowFilter(2, -90, 0x0, 0.15, 5, 6, 1, 1, true)
 								 ];
-								 
+
+			if (_showScrollFromSrouceIcon)
+			{
+                _scrollFromSource = new Image();
+				_scrollFromSource.source = _scrollFromSourceIcon;
+				_scrollFromSource.verticalCenter = 0;
+				_scrollFromSource.width = _scrollFromSource.height = 16;
+				_scrollFromSource.buttonMode = true;
+				_scrollFromSource.toolTip = resourceManager.getString('resources', 'SCROLL_FROM_SOURCE');
+				_scrollFromSource.addEventListener(MouseEvent.CLICK, onScrollToSourceIconClick);
+				
+				addChild(_scrollFromSource);
+			}
+
 			background.addEventListener(MouseEvent.MOUSE_OVER, mouseOver);
 			background.addEventListener(MouseEvent.MOUSE_OUT, mouseOut);
 			closeButton.addEventListener(MouseEvent.MOUSE_OUT, mouseOut); 
 		}
-		
+
 		override protected function drawButtonState():void
 		{
 			if (!background) return;
 			
 			closeButton.x = width-closeButtonWidth;
+
+			if (_scrollFromSource)
+            {
+				_scrollFromSource.y = (height - _scrollFromSource.height) / 2;
+                _scrollFromSource.x = width - _scrollFromSource.width - closeButtonWidth - 5;
+            }
 			
 			background.graphics.clear();
 			
@@ -93,29 +127,7 @@ package actionScripts.ui.project
 			background.graphics.beginFill(selectedBackgroundColor);
 			background.graphics.drawRect(0, 0, width, height);
 			background.graphics.endFill();
-			
-			/* display close button on mouse over 
-			if (_selected)
-			{
-				if (showCloseButton) closeButton.visible = true;
-				
-				labelMaskWidth -= closeButtonWidth;
-				
-				background.graphics.beginFill(selectedBackgroundColor);
-				background.graphics.drawRect(0, 0, width, height);
-				background.graphics.endFill();
-			}
-			else
-			{
-				closeButton.visible = false;				
-				
-				labelMaskWidth -= 5;
-				
-				background.graphics.beginFill(backgroundColor);
-				background.graphics.drawRect(0, 0, width, height);
-				background.graphics.endFill();
-			}*/
-			
+
 			labelViewMask.graphics.clear();
 			labelViewMask.graphics.beginFill(0x0, 1);
 			labelViewMask.graphics.drawRect(0, 0, labelMaskWidth, height);
@@ -127,6 +139,10 @@ package actionScripts.ui.project
 			labelViewMask.graphics.drawRect(labelMaskWidth, 0, gradWidth, height);
 			labelViewMask.graphics.endFill();
 		}
-		
-	}
+
+        private function onScrollToSourceIconClick(event:MouseEvent):void
+        {
+		    dispatchEvent(new Event("scrollFromSource"));
+        }
+    }
 }

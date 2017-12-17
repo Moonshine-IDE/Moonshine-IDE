@@ -75,6 +75,7 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 
 			dispatcher.addEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
+            dispatcher.addEventListener(ProjectEvent.SCROLL_FROM_SOURCE, handleScrollFromSource);
 			dispatcher.addEventListener(ProjectEvent.SHOW_PROJECT_VIEW, handleShowProjectView);
 			
 			dispatcher.addEventListener(EVENT_SHOW_OPEN_RESOURCE, handleShowOpenResource);
@@ -84,6 +85,18 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
 		}
+
+        private function handleScrollFromSource(event:ProjectEvent):void
+        {
+            var basicTextEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+            if (basicTextEditor)
+            {
+                var activeEditorFile:FileLocation = basicTextEditor.currentFile;
+                var activeFilePath:String = activeEditorFile.fileBridge.nativePath;
+                var childrenForOpen:Array = activeFilePath.split(activeEditorFile.fileBridge.separator);
+                treeView.tree.expandChildrenByName("name", childrenForOpen);
+            }
+        }
 
 		override public function deactivate():void
 		{
