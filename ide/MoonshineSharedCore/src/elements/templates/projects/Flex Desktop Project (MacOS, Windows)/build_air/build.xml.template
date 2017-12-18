@@ -123,7 +123,7 @@
 		</if>
 		<copy file="${DESKTOP_DESCRIPTOR_ORIGINAL}" todir="${DEBUG_DIR}" overwrite="true"/>
 		<copy file="${DESKTOP_SELFSIGNED_CERTIFICATE}" todir="${DEBUG_DIR}" overwrite="true"/>
-		<replace file="${DESKTOP_DESCRIPTOR}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${SWF_FILE_PATH}" />
+		<replaceregexp file="${DESKTOP_DESCRIPTOR}" byline="true" match="((?&lt;=content\&gt;)[\S\s]*?(?=\&lt;\/content))" replace='${SWF_FILE_PATH}'/>
 		<if>
 			<os family="unix"/>
 			<then>
