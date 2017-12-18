@@ -22,6 +22,8 @@
 	<node label="Resources">
 		<node label="Apache Flex" link="http://flex.apache.org/"/>
 		<node label="FlexJS Summit at ApacheCon Miami 2017" link="https://www.youtube.com/playlist?list=PL4EsaSA9xpnnraJX7NzpX6eh_P95RO8Pj"/>
+		<node label="Awesome ActionScript 3 (1)" link="https://github.com/robinrodricks/awesome-actionscript3"/>
+		<node label="Awesome ActionScript 3 (2)" link="https://github.com/uhub/awesome-actionscript"/>
 		<node label="Flash iOS Apps Cookbook" link="http://www.yeahbutisitflash.com/?page_id=3371"/>
 		<node label="Adobe Forums List" link="https://forums.adobe.com/welcome"/>
 		<node label="Monster Debugger" link="http://demonsters.nl/nl/projects/monsterdebugger/"/>
