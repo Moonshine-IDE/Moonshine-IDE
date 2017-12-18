@@ -46,6 +46,7 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'TOUR_DE_FLEX'),
             resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
+			resourceManager.getString('resources', 'SEARCH_IN_PROJECTS'),
             resourceManager.getString('resources', 'USEFUL_LINKS'),
             resourceManager.getString('resources', 'REFRESH'),
             resourceManager.getString('resources', 'SETTINGS'),
