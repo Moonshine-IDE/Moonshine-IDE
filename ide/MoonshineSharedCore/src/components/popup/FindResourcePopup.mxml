@@ -98,7 +98,7 @@
 			{
 				return (extension == "as" || extension == "mxml" || 
 					extension == "css" || extension == "xml" || extension == "bat" || extension == "txt"
-					 || extension == "as3proj" || extension == "actionScriptProperties");
+					 || extension == "as3proj" || extension == "actionScriptProperties" || extension == "html" || extension == "js");
 			}
 			
 			private function getResourceName(item:Object): String 
