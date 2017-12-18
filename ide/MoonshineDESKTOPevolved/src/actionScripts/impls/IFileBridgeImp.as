@@ -512,7 +512,7 @@ package actionScripts.impls
 		
 		public function get creationDate():Date
 		{
-			if (_file) return _file.creationDate;
+			if (_file && _file.exists) return _file.creationDate;
 			return (new Date());
 		}
 		
@@ -522,7 +522,8 @@ package actionScripts.impls
 		
 		public function get modificationDate():Date
 		{
-			return _file.modificationDate;
+			if (_file && _file.exists) _file.modificationDate;
+			return null;
 		}
 		
 		public function set modificationDate(value:Date):void

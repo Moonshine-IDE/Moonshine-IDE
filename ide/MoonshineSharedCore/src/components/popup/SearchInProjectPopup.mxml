@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   backgroundColor="0xf5f5f5"
+				   width="500" minWidth="400" minHeight="200" autoLayout="true" title="Search"
+				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+			import mx.utils.StringUtil;
+			
+			import actionScripts.plugin.search.SearchPlugin;
+			
+			public var isClosedAsSubmit:Boolean;
+			
+			private function onSearchRequest(showReplaceWhenDone:Boolean=false):void
+			{
+				if (StringUtil.trim(txtSearch.text).length != 0)
+				{
+					isClosedAsSubmit = true;
+					closeThis();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="rbgScope"/>
+	</fx:Declarations>
+	
+	<s:VGroup height="100%" width="100%" 
+			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+		<view:PromptTextInput id="txtSearch"
+							  width="100%" styleName="textInput"
+							  prompt="Containing text"
+							  enter="onSearchRequest()" creationComplete="txtSearch.setFocus()"/>
+		<s:HGroup width="100%"
+				  verticalAlign="middle">
+			<s:CheckBox
+				id="optionMatchCase"
+				label="Match case"/>
+			<s:CheckBox
+				id="optionRegExp"
+				label="RegExp"/>
+		</s:HGroup>
+		<s:VGroup width="100%">
+			<s:Label text="File name patterns:"/>
+			<s:HGroup width="100%" verticalAlign="middle">
+				<view:PromptTextInput id="txtPatterns"
+									  width="100%" styleName="textInput" editable="false"
+									  text="*"/>
+				<s:Button label="Select"
+						  styleName="lightButton"/>
+			</s:HGroup>
+		</s:VGroup>
+		<s:VGroup width="100%" paddingBottom="9">
+			<s:Label text="Scope:"/>
+			<s:HGroup width="100%" verticalAlign="middle">
+				<s:RadioButton label="Workspace" value="{SearchPlugin.WORKSPACE}" group="{rbgScope}"/>
+				<s:RadioButton label="Selected project" value="{SearchPlugin.PROJECT}" group="{rbgScope}" selected="true"/>
+				<s:RadioButton label="Enclosing projects" value="{SearchPlugin.LINKED_PROJECTS}" group="{rbgScope}"/>
+			</s:HGroup>
+		</s:VGroup>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button label="Replace"
+				  styleName="darkButton"
+				  click="onSearchRequest(true)"/>
+		<s:Button label="Search"
+				  styleName="darkButton"
+				  click="onSearchRequest()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

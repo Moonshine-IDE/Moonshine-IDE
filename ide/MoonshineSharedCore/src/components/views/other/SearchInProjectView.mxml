@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  implements="actionScripts.ui.IContentWindow" 
+		  backgroundColor="0xf5f5f5" width="100%" height="100%"
+		  creationComplete="onCreationCompletes()" xmlns:utils="actionScripts.utils.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.ListEvent;
+			
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.WorkerEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.locator.IDEWorker;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.search.SearchPlugin;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.utils.SearchInProjectTree;
+			
+			[Bindable] public var valueToSearch:String;
+			
+			public var patterns:String;
+			public var scope:String;
+			public var isMatchCase:Boolean;
+			public var isRegexp:Boolean;
+			
+			private var worker:IDEWorker = IDEWorker.getInstance();
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			/**
+			 * IContentWindow Inteface Methods
+			 */
+			public function get longLabel():String {	return label;	}
+			public function isChanged():Boolean	{	return false;	}
+			public function isEmpty():Boolean {	return false;	}
+			public function save():void {	}
+			
+			private function onCreationCompletes():void
+			{
+				this.label = "Search /"+ valueToSearch +"/";
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				
+				// @note
+				// sending over a full-fledged typed 'projectFolder' (FileWrapper)
+				// object having a huge file list (i.e. FlexJS project with its all js-bin folder/files)
+				// to worker thread is very expensive. Sending as BytesArray also very expensive
+				// in such cases when converting a big typed object to BytesArray.
+				// thus sending the paths to the projects and parse the folders again at the
+				// worker side is far more economic. We must remember that sending
+				// objects over worker is copying all the bytes. It's better to balance
+				// between convention and the output
+				worker.sendProjectToSearchString(getSearchObject());
+			}
+			
+			private function getSearchObject():Object
+			{
+				var tmpObj:Object = new Object();
+				tmpObj.valueToSearch = valueToSearch;
+				tmpObj.patterns = patterns;
+				tmpObj.isMatchCase = isMatchCase;
+				tmpObj.isRegexp = isRegexp;
+				
+				tmpObj.projects = getProjectPaths();
+				
+				return tmpObj;
+			}
+			
+			private function getProjectPaths():Array
+			{
+				var tmpArr:Array = [];
+				switch(scope)
+				{
+					case SearchPlugin.WORKSPACE:
+					{
+						for each (var i:AS3ProjectVO in model.projects)
+						{
+							tmpArr.push(i.folderLocation.fileBridge.nativePath);
+						}
+						break;
+					}
+					case SearchPlugin.LINKED_PROJECTS:
+					{
+						tmpArr.push(model.activeProject.folderLocation.fileBridge.nativePath);
+						for each (var j:FileLocation in AS3ProjectVO(model.activeProject).classpaths)
+						{
+							if (AS3ProjectVO(model.activeProject).sourceFolder.fileBridge.nativePath != j.fileBridge.nativePath && j.fileBridge.nativePath.indexOf("{locale}") == -1)
+							{
+								tmpArr.push(j.fileBridge.nativePath);
+							}
+						}
+						break;
+					}	
+					default:
+					{
+						tmpArr.push(model.activeProject.folderLocation.fileBridge.nativePath);
+						break;
+					}
+				}
+				
+				return tmpArr;
+			}
+			
+			private function onWorkerValueIncoming(event:GeneralEvent):void
+			{
+				switch (event.value.event)
+				{
+					case WorkerEvent.TOTAL_FILE_COUNT:
+						pbFiles.setProgress(0, event.value.value);
+						break;
+					case WorkerEvent.FILE_PROCESSED_COUNT:
+						pbFiles.setProgress(event.value.value, pbFiles.maximum);
+						break;
+					case WorkerEvent.FILTERED_FILE_COLLECTION:
+						var tmpObj:Object = event.value.value;
+						generateSearchTree(tmpObj);
+						break;
+				}
+			}
+			
+			private function generateSearchTree(value:Object):void
+			{
+				var tmpTree:SearchInProjectTree = new SearchInProjectTree();
+				tmpTree.dataProvider = value;
+				tmpTree.percentWidth = tmpTree.percentHeight = 100;
+				tmpTree.setStyle("verticalScrollBarStyleName", "black");
+				tmpTree.setStyle("color", 0xEEEEEE);
+				tmpTree.setStyle("contentBackgroundColor", 0x0);
+				tmpTree.setStyle("selectionColor", 0xc165b8);
+				tmpTree.setStyle("alternatingItemColors", [0x444444, 0x4d4c4c]);
+				tmpTree.setStyle("borderVisible", false);
+				tmpTree.rowHeight = 18;
+				tmpTree.doubleClickEnabled = true;
+				tmpTree.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, onTreeItemClicked, false, 0, true);
+				tmpTree.labelFunction = function(item:Object):String
+				{
+					if (!item.children) return (item["name"] +" ("+ item.searchCount +" matches)");
+					return item["name"];
+				}
+				//tmpTree.showDataTips = true;
+				//tmpTree.dataTipFunction = "getTreeTooltip";
+				
+				vgContent.addElement(tmpTree);
+			}
+			
+			private function getTreeTooltip(item:Object):String 
+			{
+				if (!item.isRoot) return null;
+				return item.file.nativePath;
+			}
+			
+			private function onTreeItemClicked(event:ListEvent):void
+			{
+				var tmpFL:FileLocation = new FileLocation(event.target.selectedItem.file.nativePath);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL)
+				);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="vgContent" 
+			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
+			  width="100%" height="100%">
+		<s:VGroup width="100%" gap="4">
+			<s:Label text="{'Searching for pattern /'+ valueToSearch +'/'}"
+					 fontWeight="bold"/>
+			<mx:ProgressBar id="pbFiles" 
+							mode="manual"
+							width="100%" fontSize="11" fontWeight="bold"/>
+		</s:VGroup>
+	</s:VGroup>
+</mx:Canvas>
