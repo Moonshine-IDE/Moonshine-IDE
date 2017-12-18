@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark" visible.normal="false" includeInLayout.normal="false"
-         toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true"
-         visible.info="{hasDocumentation}" includeInLayout.info="{hasDocumentation}">
+         toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true">
     <s:states>
         <s:State name="normal" />
         <s:State name="Function" />
@@ -46,7 +45,6 @@
         [Bindable]
         private var _data:CompletionItem;
 
-        [Bindable(event="dataChanged")]
         public function get hasDocumentation():Boolean
         {
             return _data && _data.documentation != null && _data.documentation != "";
@@ -54,19 +52,18 @@
 
         public function set data(value:CompletionItem):void
         {
-            _data = value;
-            if (value)
+            if (_data != value)
             {
+                _data = value;
+
                 if (currentState == "info")
                 {
-                    currentState = "info";
+                    this.visible = this.includeInLayout = hasDocumentation;
                 }
-                else
+                else if (value)
                 {
                     currentState = value.isProperty ? "Property" : value.kind;
                 }
-
-                dispatchEvent(new Event("dataChanged"));
             }
         }
 
