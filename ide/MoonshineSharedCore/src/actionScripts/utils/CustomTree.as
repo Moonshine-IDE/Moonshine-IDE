@@ -68,6 +68,7 @@ package actionScripts.utils {
                     {
                         if (!isItemOpen(childForOpen))
                         {
+                            saveItemForOpen(childrenForOpen);
                             expandItem(childForOpen, true);
                         }
 
@@ -113,6 +114,7 @@ package actionScripts.utils {
                             {
                                 if (!isItemOpen(currentItem))
                                 {
+                                    saveItemForOpen(currentItem);
                                     expandItem(currentItem, true);
                                 }
                                 childrenForOpen = childrenForOpen.slice(i + 1, childrenForOpen.length);
