@@ -175,21 +175,13 @@ package actionScripts.plugins.as3project.importer
 			stream.close();
 			
 			var replacement:String = p.projectName + ".swf";
-			
-			var flashBuilder:String = "[This value will be overwritten by Flash Builder in the output app.xml]";
-			var flexBuilder:String = "[This value will be overwritten by Flex Builder in the output app.xml]";
-			
 			p.isMobile = UtilsCore.isMobile(p);
 			
 			// Try to not mess up the formatting of the XML first
 			//  by just string replacing
-			if (data.indexOf(flashBuilder) > -1)
+			if (data.indexOf("<content>") > -1)
 			{
-				data = data.replace(flashBuilder, replacement);
-			}
-			else if (data.indexOf(flexBuilder) > -1)
-			{
-				data = data.replace(flexBuilder, replacement);
+				data = data.replace(/<content>.*?<\/content>/, "<content>"+ replacement +"</content>");
 			}
 			// If that fails we change up the XML
 			else
