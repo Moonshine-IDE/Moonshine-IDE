@@ -50,10 +50,23 @@ package actionScripts.ui.editor.text
 				var start:Position = range.start;
 				var end:Position = range.end;
 				var startLine:int = start.line;
+				var startLineOneBeforeEnd:int = startLine - 1;
 				var endLine:int = end.line;
+				var endLineOneBeforeEnd:int = endLine - 1;
 				var startChar:int = start.character;
 				var endChar:int = end.character;
-				if(startLine === endLine && endChar === startChar)
+
+                if (startLineOneBeforeEnd == linesCount)
+                {
+                    startLine = linesCount - 1;
+                }
+
+                if (endLineOneBeforeEnd == linesCount)
+                {
+                    endLine = linesCount - 1;
+                }
+
+                if(startLine === endLine && endChar === startChar)
 				{
 					//if the start and end are the same, try to extend the
 					//underline to the end of the current word
@@ -70,14 +83,17 @@ package actionScripts.ui.editor.text
 					end.character = TextUtil.endOfWord(line.text, startChar);
 				}
 
-				line = lines[startLine];
-				line.diagnostics.push(diagnostic);
-				if(startLine !== endLine)
-				{
-					//the diagnostic is on two lines!
-					line = lines[endLine];
-					line.diagnostics.push(diagnostic);
-				}
+				if (startLine < linesCount)
+                {
+                    line = lines[startLine];
+                    line.diagnostics.push(diagnostic);
+                    if (startLine !== endLine)
+                    {
+                        //the diagnostic is on two lines!
+                        line = lines[endLine];
+                        line.diagnostics.push(diagnostic);
+                    }
+                }
 			}
 			editor.invalidateLines();
 
