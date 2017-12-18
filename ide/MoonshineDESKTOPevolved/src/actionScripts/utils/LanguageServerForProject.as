@@ -602,14 +602,8 @@ package actionScripts.utils
 				_connected = false;
 				_connecting = false;
 				_xmlSocket.close();
-                _xmlSocket.removeEventListener(Event.CONNECT, onSocketConnect);
-                _xmlSocket.removeEventListener(DataEvent.DATA, onIncomingData);
-                _xmlSocket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-                _xmlSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-                _xmlSocket.removeEventListener(Event.CLOSE,closeHandler);
-				_xmlSocket = null;
+                cleanUpXmlSocket();
 			}
-
 		}
 
 		private function onSocketConnect(event:Event):void
@@ -803,12 +797,7 @@ package actionScripts.utils
 				_connected = false;
 				_connecting = false;
 				_xmlSocket.send("SHUTDOWN");
-                _xmlSocket.removeEventListener(Event.CONNECT, onSocketConnect);
-                _xmlSocket.removeEventListener(DataEvent.DATA, onIncomingData);
-                _xmlSocket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-                _xmlSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-                _xmlSocket.removeEventListener(Event.CLOSE,closeHandler);
-				_xmlSocket = null;
+                cleanUpXmlSocket();
 			}
 		}
 
@@ -1235,6 +1224,18 @@ package actionScripts.utils
 
 			var jsonstr:String = JSON.stringify(obj);
 			_xmlSocket.send(jsonstr);
+		}
+
+		private function cleanUpXmlSocket():void
+		{
+			if (!_xmlSocket) return;
+			
+            _xmlSocket.removeEventListener(Event.CONNECT, onSocketConnect);
+            _xmlSocket.removeEventListener(DataEvent.DATA, onIncomingData);
+            _xmlSocket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
+            _xmlSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
+            _xmlSocket.removeEventListener(Event.CLOSE,closeHandler);
+            _xmlSocket = null;
 		}
 	}
 }
