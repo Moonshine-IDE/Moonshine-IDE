@@ -7,6 +7,7 @@
 		  creationComplete="onCreationCompletes()" xmlns:utils="actionScripts.utils.*">
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Tree;
 			import mx.events.ListEvent;
 			
 			import actionScripts.events.GeneralEvent;
@@ -19,7 +20,6 @@
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.IContentWindow;
-			import actionScripts.utils.SearchInProjectTree;
 			
 			[Bindable] public var valueToSearch:String;
 			
@@ -123,7 +123,7 @@
 			
 			private function generateSearchTree(value:Object):void
 			{
-				var tmpTree:SearchInProjectTree = new SearchInProjectTree();
+				var tmpTree:Tree = new Tree();
 				tmpTree.dataProvider = value;
 				tmpTree.percentWidth = tmpTree.percentHeight = 100;
 				tmpTree.setStyle("verticalScrollBarStyleName", "black");
