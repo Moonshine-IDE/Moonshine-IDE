@@ -50,7 +50,7 @@ package actionScripts.utils
 			var currentAIRNamespaceVersion:String = data.substring(firstNamespaceQuote, lastNamespaceQuote);
 
 			// replace if appropriate
-			data = data.replace("[This value will be overwritten by Flash Builder in the output app.xml]", project.swfOutput.path.fileBridge.name);
+			data = data.replace(/<content>.*?<\/content>/, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
 			data = data.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ project.swfOutput.swfVersion +".0");
 			if (data.indexOf("_") != -1)
 			{
