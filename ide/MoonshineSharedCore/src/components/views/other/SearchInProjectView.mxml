@@ -155,7 +155,7 @@
 				var projectCount:int;
 				for (var i:String in foundCountsDict)
 				{
-					currentCount += foundCountsDict[i];
+					currentCount += int(foundCountsDict[i]);
 					projectCount++;
 				}
 				
