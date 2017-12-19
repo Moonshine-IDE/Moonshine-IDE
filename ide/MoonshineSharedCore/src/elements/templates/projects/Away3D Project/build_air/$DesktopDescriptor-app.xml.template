@@ -5,7 +5,7 @@
 	<name>$SourceNameOnly</name>
 	<versionNumber>0.0</versionNumber>
 	<initialWindow>
-		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
+		<content>[This value will be overwritten by Moonshine in the output app.xml]</content>
 		<visible>true</visible>
 		<renderMode>direct</renderMode>
 		<depthAndStencil>true</depthAndStencil>
