@@ -33,7 +33,7 @@
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
-			private var foundCountsDic:Dictionary = new Dictionary();
+			private var foundCountsDict:Dictionary = new Dictionary();
 			
 			/**
 			 * IContentWindow Inteface Methods
@@ -49,6 +49,7 @@
 				pbFiles.includeInLayout = pbFiles.visible = true;
 				pbFiles.setProgress(0, 0);
 				tree.dataProvider = null;
+				foundCountsDict = new Dictionary();
 				
 				this.label = "Search /"+ valueToSearch +"/";
 				
@@ -138,7 +139,7 @@
 						break;
 					case WorkerEvent.TOTAL_FOUND_COUNT:
 						var tmpArr:Array = event.value.value.split(":");
-						foundCountsDic[tmpArr[0]] = tmpArr[1];
+						foundCountsDict[tmpArr[0]] = tmpArr[1];
 						break;
 					case WorkerEvent.PROCESS_ENDS:
 						updateLabel();
@@ -152,9 +153,9 @@
 				
 				var currentCount:int;
 				var projectCount:int;
-				for (var i:String in foundCountsDic)
+				for (var i:String in foundCountsDict)
 				{
-					currentCount += foundCountsDic[i];
+					currentCount += foundCountsDict[i];
 					projectCount++;
 				}
 				
@@ -209,7 +210,7 @@
 							if (i.file.nativePath == project.folderLocation.fileBridge.nativePath)
 							{
 								ArrayCollection(tree.dataProvider).removeItem(i);
-								delete foundCountsDic[i.file.nativePath];
+								delete foundCountsDict[i.file.nativePath];
 								updateLabel();
 								i = null;
 								break;
