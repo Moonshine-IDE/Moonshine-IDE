@@ -287,11 +287,11 @@ package actionScripts.plugin.console
 					toggleConsole(event);
 				}*/
 			}
-			else if (consoleTriggerKeyPropertyName=="keyCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
+			/*else if (consoleTriggerKeyPropertyName=="keyCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
 			{
 				// For function key
 				toggleConsole(event);
-			}
+			}*/
 			
 		}
 		
