@@ -61,6 +61,7 @@ package actionScripts.ui.renderers
 		public static const OPEN_FILE_FOLDER:String = "Open File/Folder";
 		public static const NEW:String = "New";
 		public static const NEW_FOLDER:String = "New Folder";
+		public static const COPY_PATH:String = "Copy Path";
 		public static const RENAME:String = "Rename";
 		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
@@ -224,7 +225,8 @@ package actionScripts.ui.renderers
 				{
 					model.contextMenuCore.addItem(contextMenu, fw.sourceController.getTreeRightClickMenu(fw.file));
 				}
-				
+
+				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
 				if (!fw.isRoot)
 				{
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));

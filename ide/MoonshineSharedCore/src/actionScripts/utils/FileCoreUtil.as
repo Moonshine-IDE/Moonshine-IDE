@@ -20,19 +20,18 @@
 package actionScripts.utils
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.interfaces.IFileBridge;
-	import actionScripts.locator.IDEModel;
 
-	public class FileCoreUtil
+    import flash.desktop.Clipboard;
+    import flash.desktop.ClipboardFormats;
+
+    public class FileCoreUtil
 	{
-		public static function newIFileBridge(filePathInString:String=null): IFileBridge
+		public static function copyPathToClipboard(file:FileLocation):void
 		{
-			var newImplementer:Object = IDEModel.getInstance().fileCore;
-			var newFile: IFileBridge = new newImplementer();
-			newFile.nativePath = filePathInString;
-			return newFile;
+			Clipboard.generalClipboard.clear();
+			Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, file.fileBridge.nativePath);
 		}
-		
+
 		public static function contains(dir:FileLocation, file:FileLocation):Boolean
 		{
 			if (file.fileBridge.nativePath.indexOf(dir.fileBridge.nativePath) == 0) return true;

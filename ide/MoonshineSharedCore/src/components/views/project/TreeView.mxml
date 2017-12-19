@@ -28,6 +28,8 @@
 
 	<mx:Script>
 		<![CDATA[
+		import actionScripts.utils.FileCoreUtil;
+
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
 		import mx.collections.SortField;
@@ -414,6 +416,11 @@
 				{
 					model.antScriptFile = new FileLocation(fileWrapper.file.fileBridge.nativePath);
 					dispatcher.dispatchEvent(new RunANTScriptEvent(RunANTScriptEvent.ANT_BUILD));
+					break;
+				}
+				case FTETreeItemRenderer.COPY_PATH:
+				{
+					FileCoreUtil.copyPathToClipboard(fileWrapper.file);
 					break;
 				}
 			}
