@@ -46,7 +46,7 @@ package
 		{
 			// receive from main
 			mainToWorker = Worker.current.getSharedProperty("mainToWorker");
-			mainToWorker.addEventListener(Event.CHANNEL_MESSAGE, onMainToWorker);
+			if (mainToWorker) mainToWorker.addEventListener(Event.CHANNEL_MESSAGE, onMainToWorker);
 			
 			// Send to main
 			workerToMain = Worker.current.getSharedProperty("workerToMain");
