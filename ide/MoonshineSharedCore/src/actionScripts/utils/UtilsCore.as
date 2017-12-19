@@ -51,6 +51,7 @@ package actionScripts.utils
 	import components.popup.SDKDefinePopup;
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
+	import components.views.other.SearchInProjectView;
 
 	public class UtilsCore 
 	{
@@ -679,6 +680,10 @@ package actionScripts.utils
 					{
 						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
                     }
+				}
+				else if (model.editors[i] is SearchInProjectView && !projectReferencePath)
+				{
+					editorsToClose.push(model.editors[i]);
 				}
 			}
 			

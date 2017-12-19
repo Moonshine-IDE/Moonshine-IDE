@@ -23,7 +23,9 @@ package actionScripts.events
 	{
 		public static const SEARCH_IN_PROJECTS:String = "SEARCH_IN_PROJECTS";
 		public static const TOTAL_FILE_COUNT:String = "TOTAL_FILE_COUNT";
+		public static const TOTAL_FOUND_COUNT:String = "TOTAL_FOUND_COUNT";
 		public static const FILE_PROCESSED_COUNT:String = "FILE_PROCESSED_COUNT";
 		public static const FILTERED_FILE_COLLECTION:String = "FILTERED_FILE_COLLECTION";
+		public static const PROCESS_ENDS:String = "PROCESS_ENDS";
 	}
 }

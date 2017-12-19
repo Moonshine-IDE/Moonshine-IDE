@@ -25,9 +25,11 @@
 				   backgroundColor="0xf5f5f5"
 				   width="500" minWidth="400" minHeight="200" autoLayout="true" title="Search"
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+				   skinClass="components.skins.ResizableTitleWindowSkin"
+				   creationComplete="onInitialized(event)">
 	<fx:Script>
 		<![CDATA[
+			import mx.events.FlexEvent;
 			import mx.utils.StringUtil;
 			
 			import actionScripts.plugin.search.SearchPlugin;
@@ -41,6 +43,11 @@
 					isClosedAsSubmit = true;
 					closeThis();
 				}
+			}
+			
+			protected function onInitialized(event:FlexEvent):void
+			{
+				rbgScope.selectedIndex = SearchPlugin.LAST_SCOPE_INDEX;
 			}
 			
 		]]>
@@ -78,7 +85,7 @@
 			<s:Label text="Scope:"/>
 			<s:HGroup width="100%" verticalAlign="middle">
 				<s:RadioButton label="Workspace" value="{SearchPlugin.WORKSPACE}" group="{rbgScope}"/>
-				<s:RadioButton label="Selected project" value="{SearchPlugin.PROJECT}" group="{rbgScope}" selected="true"/>
+				<s:RadioButton label="Selected project" value="{SearchPlugin.PROJECT}" group="{rbgScope}"/>
 				<s:RadioButton label="Enclosing projects" value="{SearchPlugin.LINKED_PROJECTS}" group="{rbgScope}"/>
 			</s:HGroup>
 		</s:VGroup>

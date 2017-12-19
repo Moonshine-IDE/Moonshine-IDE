@@ -4,13 +4,13 @@
 		  xmlns:mx="library://ns.adobe.com/flex/mx"
 		  implements="actionScripts.ui.IContentWindow" 
 		  backgroundColor="0xf5f5f5" width="100%" height="100%"
-		  creationComplete="onCreationCompletes()">
+		  creationComplete="onCreationCompletes()" remove="onTabRemoved(event)">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.plugin.search.SearchPlugin;
-
-		import mx.controls.Tree;
-			import mx.events.ListEvent;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Tree;
+			import mx.events.CollectionEvent;
+			import mx.events.FlexEvent;
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
@@ -20,6 +20,9 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.locator.IDEWorker;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.search.SearchPlugin;
+			import actionScripts.ui.renderers.GenericTreeItemRenderer;
+			import actionScripts.ui.tabview.TabEvent;
 			
 			[Bindable] public var valueToSearch:String;
 			
@@ -30,6 +33,7 @@
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
+			private var foundCountsDic:Dictionary = new Dictionary();
 			
 			/**
 			 * IContentWindow Inteface Methods
@@ -39,10 +43,24 @@
 			public function isEmpty():Boolean {	return false;	}
 			public function save():void {	}
 			
+			public function resetSearch():void
+			{
+				txtFoundMessage.includeInLayout = txtFoundMessage.visible = false;
+				pbFiles.includeInLayout = pbFiles.visible = true;
+				pbFiles.setProgress(0, 0);
+				tree.dataProvider = null;
+				
+				this.label = "Search /"+ valueToSearch +"/";
+				
+				// re-initiate worker 
+				worker.sendProjectToSearchString(getSearchObject());
+			}
+			
 			private function onCreationCompletes():void
 			{
 				this.label = "Search /"+ valueToSearch +"/";
 				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
 				
 				// @note
 				// sending over a full-fledged typed 'projectFolder' (FileWrapper)
@@ -118,32 +136,44 @@
 						var tmpObj:Object = event.value.value;
 						generateSearchTree(tmpObj);
 						break;
+					case WorkerEvent.TOTAL_FOUND_COUNT:
+						var tmpArr:Array = event.value.value.split(":");
+						foundCountsDic[tmpArr[0]] = tmpArr[1];
+						break;
+					case WorkerEvent.PROCESS_ENDS:
+						updateLabel();
+						break;
 				}
+			}
+			
+			private function updateLabel():void
+			{
+				txtFoundMessage.includeInLayout = txtFoundMessage.visible = true;
+				
+				var currentCount:int;
+				var projectCount:int;
+				for (var i:String in foundCountsDic)
+				{
+					currentCount += foundCountsDic[i];
+					projectCount++;
+				}
+				
+				txtFoundMessage.text = "Found "+ currentCount +" matches across "+ projectCount +" project(s).";
+				pbFiles.includeInLayout = pbFiles.visible = false;
 			}
 			
 			private function generateSearchTree(value:Object):void
 			{
-				var tmpTree:Tree = new Tree();
-				tmpTree.dataProvider = value;
-				tmpTree.percentWidth = tmpTree.percentHeight = 100;
-				tmpTree.setStyle("verticalScrollBarStyleName", "black");
-				tmpTree.setStyle("color", 0xEEEEEE);
-				tmpTree.setStyle("contentBackgroundColor", 0x0);
-				tmpTree.setStyle("selectionColor", 0xc165b8);
-				tmpTree.setStyle("alternatingItemColors", [0x444444, 0x4d4c4c]);
-				tmpTree.setStyle("borderVisible", false);
-				tmpTree.rowHeight = 18;
-				tmpTree.doubleClickEnabled = true;
-				tmpTree.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, onTreeItemClicked, false, 0, true);
-				tmpTree.labelFunction = function(item:Object):String
+				if (!tree.dataProvider || ArrayCollection(tree.dataProvider).length == 0) 
 				{
-					if (!item.children) return (item["name"] +" ("+ item.searchCount +" matches)");
-					return item["name"];
+					tree.dataProvider = value;
+					// lets expand this for the first time only
+					tree.callLater(function():void {	tree.expandItem(value, true);	});
 				}
-				//tmpTree.showDataTips = true;
-				//tmpTree.dataTipFunction = "getTreeTooltip";
-				
-				vgContent.addElement(tmpTree);
+				else
+				{
+					ArrayCollection(tree.dataProvider).addItem(value);
+				}
 			}
 			
 			private function getTreeTooltip(item:Object):String 
@@ -152,12 +182,52 @@
 				return item.file.nativePath;
 			}
 			
-			private function onTreeItemClicked(event:ListEvent):void
+			private function onTreeItemClicked(event:MouseEvent):void
 			{
-				var tmpFL:FileLocation = new FileLocation(event.target.selectedItem.file.nativePath);
+				var tmpFL:FileLocation = new FileLocation(tree.selectedItem.file.nativePath);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL)
 				);
+			}
+			
+			private function getCountingLabel(item:Object):String
+			{
+				if (item.isRoot)  return item["name"]+"     ("+item.file.nativePath+")";
+				if (!item.children) return item["name"]+" ("+item["searchCount"]+" matches)";
+				return item["name"];
+			}
+			
+			private function handleProjectsChange(event:CollectionEvent):void
+			{
+				switch (event.kind)
+				{
+					case 'remove':
+					{
+						var project:AS3ProjectVO = event.items[0] as AS3ProjectVO;
+						for each (var i:Object in tree.dataProvider)
+						{
+							if (i.file.nativePath == project.folderLocation.fileBridge.nativePath)
+							{
+								ArrayCollection(tree.dataProvider).removeItem(i);
+								delete foundCountsDic[i.file.nativePath];
+								updateLabel();
+								i = null;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			protected function onTabRemoved(event:FlexEvent):void
+			{
+				worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+				model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
+				
+				// to-do - need tabView to dispatch this event against each closing tab
+				// some components already dispatching this event manually while closing to 
+				// owner classes - need to carefully remove them so no duplicate event dispatch occurs  
+				dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_CLOSE, null));
 			}
 			
 		]]>
@@ -169,9 +239,30 @@
 		<s:VGroup width="100%" gap="4">
 			<s:Label text="{'Searching for pattern /'+ valueToSearch +'/'}"
 					 fontWeight="bold"/>
+			<s:Label id="txtFoundMessage" 
+					 height="{pbFiles.height}" verticalAlign="middle"
+					 includeInLayout="false" visible="false"/>
 			<mx:ProgressBar id="pbFiles" 
 							mode="manual"
-							width="100%" fontSize="11" fontWeight="bold"/>
+							width="100%" labelPlacement="right" labelWidth="0"
+							barSkin="elements.skins.IDEProgressBarSkin"/>
 		</s:VGroup>
+		<mx:Tree
+			id="tree"
+			width="100%" height="100%"
+			color="0xEEEEEE"
+			contentBackgroundColor="0x0"
+			rollOverColor="0x393939"
+			selectionColor="0xc165b8"
+			alternatingItemColors="[0x444444, 0x4d4c4c]"
+			verticalScrollBarStyleName="black"
+			borderVisible="false"
+			rowHeight="18"
+			useRollOver="true"
+			doubleClickEnabled="true"
+			showDataTips="true"
+			itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
+			dataTipFunction="getTreeTooltip" labelFunction="getCountingLabel"
+			doubleClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 </mx:Canvas>

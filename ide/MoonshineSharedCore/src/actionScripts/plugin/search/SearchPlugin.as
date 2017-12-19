@@ -29,6 +29,7 @@ package actionScripts.plugin.search
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.plugin.PluginBase;
     import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.tabview.TabEvent;
     
     import components.popup.SearchInProjectPopup;
     import components.views.other.SearchInProjectView;
@@ -40,7 +41,10 @@ package actionScripts.plugin.search
 		public static const PROJECT:String = "PROJECT";
 		public static const LINKED_PROJECTS:String = "LINKED_PROJECTS";
 		
+		public static var LAST_SCOPE_INDEX:int = 1;
+		
 		private var searchPopup:SearchInProjectPopup;
+		private var searchResultView:SearchInProjectView;
 		
         override public function get name():String 	{return "Search in Projects";}
         override public function get author():String {return "Moonshine Project Team";}
@@ -91,19 +95,47 @@ package actionScripts.plugin.search
 				return;
 			}
 			
-			var tmpTab:SearchInProjectView = new SearchInProjectView();
-			tmpTab.valueToSearch = searchPopup.txtSearch.text;
-			tmpTab.patterns = searchPopup.txtPatterns.text;
-			tmpTab.scope = String(searchPopup.rbgScope.selectedValue);
-			tmpTab.isMatchCase = searchPopup.optionMatchCase.selected;
-			tmpTab.isRegexp = searchPopup.optionRegExp.selected;
+			LAST_SCOPE_INDEX = searchPopup.rbgScope.selectedIndex;
+			
+			if (!searchResultView)
+			{
+				searchResultView = new SearchInProjectView();
+				searchResultView.addEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);
+				updateProperties();	
+				
+				// adding as a tab
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(searchResultView as IContentWindow)
+				);
+			}
+			else
+			{
+				// another new search initiated
+				// while existing search tab already opens
+				updateProperties();
+				model.activeEditor = searchResultView;
+				searchResultView.resetSearch();
+			}
 			
 			searchPopup = null;
 			
-			// adding as a tab
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new AddTabEvent(tmpTab as IContentWindow)
-			);
+			/*
+			 * @local
+			 */
+			function updateProperties():void
+			{
+				searchResultView.valueToSearch = searchPopup.txtSearch.text;
+				searchResultView.patterns = searchPopup.txtPatterns.text;
+				searchResultView.scope = String(searchPopup.rbgScope.selectedValue);
+				searchResultView.isMatchCase = searchPopup.optionMatchCase.selected;
+				searchResultView.isRegexp = searchPopup.optionRegExp.selected;
+			}
+		}
+		
+		private function onSearchResultsClosed(event:TabEvent):void
+		{
+			event.target.removeEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);
+			searchResultView = null;
 		}
     }
 }
