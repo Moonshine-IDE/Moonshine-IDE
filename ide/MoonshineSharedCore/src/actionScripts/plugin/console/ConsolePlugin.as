@@ -282,10 +282,10 @@ package actionScripts.plugin.console
 				{
 					toggleConsole(event);
 				}
-				if(!cmd && !alt && !ctrl) //  for single char
+				/*if(!cmd && !alt && !ctrl) //  for single char
 				{
 					toggleConsole(event);
-				}
+				}*/
 			}
 			else if (consoleTriggerKeyPropertyName=="keyCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
 			{
