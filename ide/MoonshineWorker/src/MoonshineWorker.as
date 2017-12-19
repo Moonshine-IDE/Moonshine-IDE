@@ -40,6 +40,7 @@ package
 		private var workerToMain:MessageChannel;
 		private var projectSearchObject:Object;
 		private var projects:Array;
+		private var totalFoundCount:int;
 		
 		public function MoonshineWorker()
 		{
@@ -66,9 +67,14 @@ package
 		private function parseProjectsTree():void
 		{
 			// probable termination
-			if (projects.length == 0) return;
+			if (projects.length == 0) 
+			{
+				workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:null});
+				return;
+			}
 			
 			FILES_COUNT = FILE_PROCESSED_COUNT = 0;
+			totalFoundCount = 0;
 			var tmpWrapper:WorkerFileWrapper = new WorkerFileWrapper(new File(projects[0]), true);
 			workerToMain.send({event:WorkerEvent.TOTAL_FILE_COUNT, value:FILES_COUNT});
 			parseChildrens(tmpWrapper);
@@ -100,6 +106,7 @@ package
 						else
 						{
 							value.children[c].searchCount = tmpReturnCount;
+							totalFoundCount += tmpReturnCount;
 						}
 					}
 					else if (!value.children[c].file.isDirectory && !isAcceptable)
@@ -127,6 +134,7 @@ package
 				if (value.isRoot)
 				{
 					notifyFileCountCompletionToMain();
+					workerToMain.send({event:WorkerEvent.TOTAL_FOUND_COUNT, value:value.file.nativePath +":"+ totalFoundCount});
 					workerToMain.send({event:WorkerEvent.FILTERED_FILE_COLLECTION, value:value});
 					
 					// restart with available next project (if any)
