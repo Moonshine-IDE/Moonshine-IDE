@@ -22,10 +22,10 @@ package actionScripts.plugin.settings.vo
 	
 	import actionScripts.plugin.settings.renderers.PathRenderer;
 	
-	[Event(name="PATH_SELECTED", type="flash.events.Event")]
+	[Event(name="pathSelected", type="flash.events.Event")]
 	public class PathSetting extends AbstractSetting
 	{
-		public static const PATH_SELECTED:String = "PATH_SELECTED";
+		public static const PATH_SELECTED:String = "pathSelected";
 		
 		[Bindable]
 		public var directory:Boolean;

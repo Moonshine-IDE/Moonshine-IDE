@@ -324,6 +324,7 @@
         {
             // TODO Auto-generated method stub
             setting.stringValue = cmbPath.selectedItem;
+			setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
         }
 
         protected function onRemovedFromStage(event:Event):void
