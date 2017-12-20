@@ -62,6 +62,7 @@ package actionScripts.plugin.startup
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
 		private var changeMenuSDKTimeout:uint;
+		private var didShowPreviouslyOpenedTabs:Boolean;
 		
 		/**
 		 * INITIATOR
@@ -126,8 +127,9 @@ package actionScripts.plugin.startup
 				}
 			}
 
-			if (sequenceIndex == sequences.length)
+			if (sequenceIndex == sequences.length && !didShowPreviouslyOpenedTabs)
 			{
+                didShowPreviouslyOpenedTabs = true;
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					clearTimeout(timeoutValue);

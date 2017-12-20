@@ -103,8 +103,10 @@ package actionScripts.ui.tabview
 					if (editor.currentFile)
                     {
                         this.contextMenu = createContextMenu();
-                        SharedObjectUtil.saveLocationOfOpenedProjectFile(editor.currentFile.name,
-                                editor.currentFile.fileBridge.nativePath);
+                        SharedObjectUtil.saveLocationOfOpenedProjectFile(
+								editor.currentFile.name,
+                                editor.currentFile.fileBridge.nativePath,
+								editor.projectPath);
                     }
 				}
 			}

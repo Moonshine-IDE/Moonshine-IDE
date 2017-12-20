@@ -21,7 +21,6 @@ package actionScripts.ui
     import components.views.splashscreen.SplashScreen;
 
     import flash.display.DisplayObject;
-	import flash.events.Event;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.containers.VBox;
@@ -117,11 +116,6 @@ package actionScripts.ui
                     {
                         _mainContent.removeChild(editor);
                     }
-					// This is the only thing that changes when user saves as
-					if (editor is IContentWindow)
-					{
-						IContentWindow(editor).removeEventListener('labelChanged', handleUpdateLabel);
-					}
 					break;
 				}
 				case CollectionEventKind.ADD:
@@ -130,10 +124,6 @@ package actionScripts.ui
                     mainContent.addChild(editor);
                     mainContent.selectedIndex = _mainContent.getChildIndex(editor);
 					model.activeEditor = editor as IContentWindow;
-					if (editor is IContentWindow)
-					{
-						IContentWindow(editor).addEventListener('labelChanged', handleUpdateLabel);
-					}
 					break;
 				}
 			} 
@@ -158,21 +148,8 @@ package actionScripts.ui
 			if (!mainContent) return;
 
             mainContent.setSelectedTab(model.activeEditor as DisplayObject);
-			updateLabel(newActiveEditor);
 		}
-		
-		protected function handleUpdateLabel(event:Event):void
-		{
-			/*var e:IContentWindow = event.target as IContentWindow;
-			updateLabel(event.target as IContentWindow); */
-		}
-		
-		protected function updateLabel(editor:IContentWindow):void
-		{
-			/*var editorLabel:String = editor.label;
-			FlexGlobals.topLevelApplication.title = "Moonshine — " + editor.longLabel;	*/
-		}
-		
+
 		public function handleTabClose(event:TabEvent):void
 		{
 			// We handle this by ourselves.
@@ -205,26 +182,6 @@ package actionScripts.ui
 			}
 			
 			return null;
-		}
-		
-		public function rotatePanel(panel:IPanelWindow, newPanel:IPanelWindow):void
-		{
-			/*if (!sidebar || !panel.stage) return;
-			
-			var effect:PanelRotationEffect = new PanelRotationEffect(sidebar, panel, newPanel);
-			effect.play();*/
-		}
-		
-		private function addEditor(editor:IContentWindow):void 
-		{
-            mainContent.addChild(editor as DisplayObject);
-            mainContent.selectedIndex = _mainContent.getChildIndex(editor as DisplayObject);
-		}
-		
-		private function replaceEditorWith(newEditor:IContentWindow):void 
-		{
-            mainContent.removeChildAt( _mainContent.selectedIndex );
-            mainContent.addChild(newEditor as DisplayObject);
 		}
 	}
 }

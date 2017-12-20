@@ -285,14 +285,7 @@ package actionScripts.plugin.project
 			if (!openResourceView.stage)
 			{
 				openResourceView.setFileList(treeView.projectFolders);
-				model.mainView.rotatePanel(treeView, openResourceView);
-				
 				openResourceView.setFocus();
-			}
-				// Otherwise spin it out of view
-			else
-			{
-				model.mainView.rotatePanel(openResourceView, treeView);
 			}
 		}
 		
@@ -339,6 +332,10 @@ package actionScripts.plugin.project
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
                             dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileLocation, 0, fileWrapper));
                         }
+						else
+						{
+							SharedObjectUtil.removeLocationOfClosingProjectFile(fileLocation.name, fileLocation.fileBridge.nativePath);
+						}
                     }
                 }
             }

@@ -37,6 +37,7 @@
 		import mx.core.FlexGlobals;
 		import mx.events.CloseEvent;
 		import mx.events.CollectionEvent;
+		import mx.events.CollectionEventKind;
 		import mx.events.ListEvent;
 		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
@@ -258,7 +259,7 @@
 
 			switch (event.kind)
 			{
-				case 'remove':
+				case CollectionEventKind.REMOVE:
 				{
 					project = event.items[0] as ProjectVO;
 					// after a project renaming, and updating its internal fields
@@ -269,7 +270,7 @@
 					projectFolders.removeItemAt(tmpFWIndex);
 					break;
 				}
-				case 'add':
+				case CollectionEventKind.ADD:
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
 					projectFolders.addItemAt(project.projectFolder, 0);

@@ -18,6 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+    import actionScripts.factory.FileLocation;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+
     import flash.net.SharedObject;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.locator.IDEModel;
@@ -81,16 +86,21 @@ package actionScripts.utils
 			removeProjectItem(item, propertyNameKey, propertyNameKeyValue, "projectTree");
 		}
 
-		public static function saveLocationOfOpenedProjectFile(fileName:String, filePath:String):void
+		public static function saveLocationOfOpenedProjectFile(fileName:String, filePath:String, projectPath:String):void
 		{
             var model:IDEModel = IDEModel.getInstance();
             if (!model.openPreviouslyOpenedFiles) return;
 
             var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
-			var activeProject:ProjectVO = model.activeProject;
-			if (!activeProject) return;
+            var projectLocation:FileLocation = new FileLocation(projectPath);
+            var projectReferenceVO: ProjectReferenceVO = new ProjectReferenceVO();
+            projectReferenceVO.path = projectPath;
+            var fileProjectWrapper:FileWrapper = new FileWrapper(projectLocation, false, projectReferenceVO, false);
+
+			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileProjectWrapper);
+			if (!project) return;
 			
-			var cookieName:String = "projectFiles" + activeProject.name;
+			var cookieName:String = "projectFiles" + project.name;
             if (!cookie.data[cookieName])
             {
                 cookie.data[cookieName] = [];
