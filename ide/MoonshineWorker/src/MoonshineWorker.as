@@ -33,6 +33,8 @@ package
 	
 	public class MoonshineWorker extends Sprite
 	{
+		public static const READABLE_FILES:Array = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj"];
+		
 		public static var FILES_COUNT:int;
 		public static var FILE_PROCESSED_COUNT:int;
 		
@@ -162,9 +164,20 @@ package
 		
 		private function isAcceptableResource(extension:String):Boolean
 		{
-			return (extension == "as" || extension == "mxml" || 
-				extension == "css" || extension == "xml" || extension == "bat" || extension == "txt"
-				|| extension == "as3proj" || extension == "html" || extension == "js");
+			if (projectSearchObject.value.patterns != "*")
+			{
+				var filtered:String = projectSearchObject.value.patterns.replace(/(\*.)/g, "");
+				var tmpArr:Array = filtered.split(",");
+				return tmpArr.some(
+					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+						return item == extension;
+					});
+			}
+			
+			return READABLE_FILES.some(
+				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+					return item == extension;
+				});
 		}
 		
 		private function testFilesForValueExist(value:String):int
@@ -175,9 +188,11 @@ package
 			var content:String = r.readUTFBytes(f.size);
 			r.close();
 			
+			var searchString:String = projectSearchObject.value.isEscapeChars ? escapeRegex(projectSearchObject.value.valueToSearch) : projectSearchObject.value.valueToSearch;
 			var flags:String = 'g';
 			if (!projectSearchObject.value.isMatchCase) flags += 'i';
-			var searchRegExp:RegExp = new RegExp(escapeRegex(projectSearchObject.value.valueToSearch), flags);
+			var searchRegExp:RegExp = new RegExp(searchString, flags);
+			
 			var foundMatches:Array = content.match(searchRegExp);
 			content = null;
 			
