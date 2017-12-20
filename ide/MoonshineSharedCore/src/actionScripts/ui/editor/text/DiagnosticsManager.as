@@ -77,6 +77,7 @@ package actionScripts.ui.editor.text
 					{
 						startLine = startLine - 1;
 					}
+					if (startLine > (lines.length - 1)) return;
 					line = lines[startLine];
 					//update the end character so that it matches what is
 					//displayed in the UI
