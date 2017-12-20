@@ -21,6 +21,7 @@ package actionScripts.plugin.search
     import flash.display.DisplayObject;
     import flash.events.Event;
     
+    import mx.collections.ArrayCollection;
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
@@ -42,6 +43,7 @@ package actionScripts.plugin.search
 		public static const LINKED_PROJECTS:String = "LINKED_PROJECTS";
 		
 		public static var LAST_SCOPE_INDEX:int = 1;
+		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
 		
 		private var searchPopup:SearchInProjectPopup;
 		private var searchResultView:SearchInProjectView;
@@ -129,6 +131,7 @@ package actionScripts.plugin.search
 				searchResultView.scope = String(searchPopup.rbgScope.selectedValue);
 				searchResultView.isMatchCase = searchPopup.optionMatchCase.selected;
 				searchResultView.isRegexp = searchPopup.optionRegExp.selected;
+				searchResultView.isEscapeChars = searchPopup.optionEscapeChars.selected;
 			}
 		}
 		

@@ -29,9 +29,7 @@
 										   creationComplete="onCreationComplete()">
 	<fx:Script>
 		<![CDATA[
-		import elements.skins.DarkButtonSkin;
-
-		import mx.collections.ArrayCollection;
+			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.controls.Image;
 			import mx.core.IVisualElementContainer;
@@ -39,9 +37,12 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.OpenFileEvent;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.valueObjects.ResourceVO;
+			
+			import elements.skins.DarkButtonSkin;
 			
 			[Bindable] private var resources:ArrayCollection = new ArrayCollection();
 			
@@ -96,9 +97,10 @@
 			
 			private function isAcceptableResource(extension:String):Boolean
 			{
-				return (extension == "as" || extension == "mxml" || 
-					extension == "css" || extension == "xml" || extension == "bat" || extension == "txt"
-					 || extension == "as3proj" || extension == "actionScriptProperties" || extension == "html" || extension == "js");
+				return ConstantsCoreVO.READABLE_FILES.some(
+					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+						return item == extension;
+					});
 			}
 			
 			private function getResourceName(item:Object): String 

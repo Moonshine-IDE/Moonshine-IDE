@@ -20,16 +20,14 @@
 package actionScripts.valueObjects
 {
     import flash.system.Security;
-	
-	import mx.collections.ArrayCollection;
-	import mx.collections.ArrayList;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	
-
+    
+    import mx.collections.ArrayCollection;
+    import mx.collections.ArrayList;
     import mx.resources.IResourceManager;
     import mx.resources.ResourceManager;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
 
     /**
 	 * ConstantsCoreVO
@@ -81,6 +79,7 @@ package actionScripts.valueObjects
 		public static var FLEXJS_PROJECT:FileLocation;
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
+		public static var READABLE_FILES:Array;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
 		  <!-- Output SWF options -->
@@ -242,6 +241,8 @@ package actionScripts.valueObjects
 	<fx:Declarations>
 	</fx:Declarations>
 </s:Group>]]></root>;
+			
+			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";

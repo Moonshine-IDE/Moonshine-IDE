@@ -30,6 +30,7 @@
 			public var scope:String;
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
+			public var isEscapeChars:Boolean;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
@@ -82,6 +83,7 @@
 				tmpObj.patterns = patterns;
 				tmpObj.isMatchCase = isMatchCase;
 				tmpObj.isRegexp = isRegexp;
+				tmpObj.isEscapeChars = isEscapeChars;
 				
 				tmpObj.projects = getProjectPaths();
 				
@@ -165,6 +167,13 @@
 			
 			private function generateSearchTree(value:Object):void
 			{
+				// terminate if project with no matches
+				if (value.children.length == 0) 
+				{
+					delete foundCountsDict[value.file.nativePath];
+					return;
+				}
+				
 				if (!tree.dataProvider || ArrayCollection(tree.dataProvider).length == 0) 
 				{
 					tree.dataProvider = value;

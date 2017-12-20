@@ -16,7 +16,7 @@
 	<!-- layer 1: fill -->
 	<s:Rect left="1" right="1" top="1" bottom="1">
 		<s:fill>
-			<s:SolidColor color="0x353535"/>
+			<s:SolidColor color="0xc165b8"/>
 		</s:fill>
 	</s:Rect>
 	

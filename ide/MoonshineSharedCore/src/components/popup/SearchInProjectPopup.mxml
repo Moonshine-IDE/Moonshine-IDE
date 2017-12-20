@@ -29,7 +29,12 @@
 				   creationComplete="onInitialized(event)">
 	<fx:Script>
 		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
 			import mx.utils.StringUtil;
 			
 			import actionScripts.plugin.search.SearchPlugin;
@@ -48,6 +53,41 @@
 			protected function onInitialized(event:FlexEvent):void
 			{
 				rbgScope.selectedIndex = SearchPlugin.LAST_SCOPE_INDEX;
+				updatePatterns(SearchPlugin.LAST_SELECTED_PATTERNS);
+			}
+			
+			protected function onSelectPatterns(event:MouseEvent):void
+			{
+				var patternPopup: SearchPatternsPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchPatternsPopup, true) as SearchPatternsPopup;
+				if (SearchPlugin.LAST_SELECTED_PATTERNS) 
+				{
+					patternPopup.pattens = SearchPlugin.LAST_SELECTED_PATTERNS;
+					SearchPlugin.LAST_SELECTED_PATTERNS = null;
+				}
+				patternPopup.addEventListener(CloseEvent.CLOSE, onPatternsPopupClosed);
+				PopUpManager.centerPopUp(patternPopup);
+			}
+			
+			private function onPatternsPopupClosed(event:CloseEvent):void
+			{
+				event.target.removeEventListener(CloseEvent.CLOSE, onPatternsPopupClosed);
+				updatePatterns(ObjectUtil.clone(SearchPatternsPopup(event.target).pattens) as ArrayCollection);
+			}
+			
+			private function updatePatterns(collection:ArrayCollection):void
+			{
+				var tmpArr:Array = [];
+				for each (var i:Object in collection)
+				{
+					if (i.isSelected) tmpArr.push("*."+ i.label);
+				}
+				
+				if (tmpArr.length > 0) 
+				{
+					txtPatterns.text = tmpArr.join(",");
+					SearchPlugin.LAST_SELECTED_PATTERNS = collection;
+				}
+				else txtPatterns.text = "*";
 			}
 			
 		]]>
@@ -70,15 +110,18 @@
 			<s:CheckBox
 				id="optionRegExp"
 				label="RegExp"/>
+			<s:CheckBox
+				id="optionEscapeChars"
+				label="Escape chars"/>
 		</s:HGroup>
 		<s:VGroup width="100%">
 			<s:Label text="File name patterns:"/>
 			<s:HGroup width="100%" verticalAlign="middle">
 				<view:PromptTextInput id="txtPatterns"
-									  width="100%" styleName="textInput" editable="false"
-									  text="*"/>
+									  width="100%" styleName="textInput" editable="false"/>
 				<s:Button label="Select"
-						  styleName="lightButton"/>
+						  styleName="lightButton"
+						  click="onSelectPatterns(event)"/>
 			</s:HGroup>
 		</s:VGroup>
 		<s:VGroup width="100%" paddingBottom="9">
