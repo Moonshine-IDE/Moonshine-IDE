@@ -109,15 +109,20 @@ package actionScripts.utils
             saveProjectItem({name: fileName, path: filePath}, "name", "path", cookieName);
 		}
 
-		public static function removeLocationOfClosingProjectFile(fileName:String, filePath:String):void
+		public static function removeLocationOfClosingProjectFile(fileName:String, filePath:String, projectPath:String):void
 		{
             var model:IDEModel = IDEModel.getInstance();
             if (!model.openPreviouslyOpenedFiles) return;
 
-            var activeProject:ProjectVO = model.activeProject;
-			if (!activeProject) return;
+            var projectLocation:FileLocation = new FileLocation(projectPath);
+            var projectReferenceVO: ProjectReferenceVO = new ProjectReferenceVO();
+            projectReferenceVO.path = projectPath;
+            var fileProjectWrapper:FileWrapper = new FileWrapper(projectLocation, false, projectReferenceVO, false);
 
-			removeProjectItem({name: fileName, path: filePath}, "name", "path", "projectFiles" + activeProject.name);
+            var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileProjectWrapper);
+            if (!project) return;
+
+			removeProjectItem({name: fileName, path: filePath}, "name", "path", "projectFiles" + project.name);
 		}
 
         public static function saveProjectForOpen(projectFolderPath:String, projectName:String):void

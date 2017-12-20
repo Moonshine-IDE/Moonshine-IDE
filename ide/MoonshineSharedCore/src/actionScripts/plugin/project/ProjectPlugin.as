@@ -334,7 +334,10 @@ package actionScripts.plugin.project
                         }
 						else
 						{
-							SharedObjectUtil.removeLocationOfClosingProjectFile(fileLocation.name, fileLocation.fileBridge.nativePath);
+							SharedObjectUtil.removeLocationOfClosingProjectFile(
+									fileLocation.name,
+									fileLocation.fileBridge.nativePath,
+									project.projectFolder.nativePath);
 						}
                     }
                 }

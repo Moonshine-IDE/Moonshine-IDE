@@ -487,8 +487,10 @@ package actionScripts.ui.tabview
 		{
             if (editor)
             {
-                SharedObjectUtil.removeLocationOfClosingProjectFile(editor.currentFile.name,
-                        editor.currentFile.fileBridge.nativePath);
+                SharedObjectUtil.removeLocationOfClosingProjectFile(
+						editor.currentFile.name,
+                        editor.currentFile.fileBridge.nativePath,
+						editor.projectPath);
             }
 		}
     }
