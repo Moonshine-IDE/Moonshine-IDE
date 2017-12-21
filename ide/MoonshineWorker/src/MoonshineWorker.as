@@ -165,7 +165,7 @@ package
 				if (value.isRoot)
 				{
 					notifyFileCountCompletionToMain();
-					workerToMain.send({event:WorkerEvent.TOTAL_FOUND_COUNT, value:value.file.nativePath +":"+ totalFoundCount});
+					workerToMain.send({event:WorkerEvent.TOTAL_FOUND_COUNT, value:value.file.nativePath +"\:/"+ totalFoundCount});
 					workerToMain.send({event:WorkerEvent.FILTERED_FILE_COLLECTION, value:value});
 					
 					// restart with available next project (if any)
