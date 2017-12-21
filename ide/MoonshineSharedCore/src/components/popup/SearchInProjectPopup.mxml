@@ -120,11 +120,14 @@
 			<s:Label text="File name patterns:"/>
 			<s:HGroup width="100%" verticalAlign="middle">
 				<view:PromptTextInput id="txtPatterns"
-									  width="100%" styleName="textInput" editable="false"/>
+									  width="100%" styleName="textInput"
+									  restrict="0-9a-zA-Z*\-_,. "/>
 				<s:Button label="Select"
 						  styleName="lightButton"
 						  click="onSelectPatterns(event)"/>
 			</s:HGroup>
+			<s:Label text="(Separate patterns with comma (,) sign)" fontSize="11"
+					 paddingTop="0"/>
 		</s:VGroup>
 		<s:VGroup width="100%" paddingBottom="9">
 			<s:Label text="Scope:"/>
