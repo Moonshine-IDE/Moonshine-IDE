@@ -22,15 +22,12 @@ package actionScripts.plugins.ant
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
-	import flash.errors.IOError;
 	import flash.events.Event;
-	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
-	import flash.net.FileReference;
 	import flash.utils.ByteArray;
 	import flash.utils.IDataInput;
 	
@@ -53,7 +50,6 @@ package actionScripts.plugins.ant
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.ant.events.AntBuildEvent;
@@ -86,7 +82,6 @@ package actionScripts.plugins.ant
 		private var exiting:Boolean = false;
 		private var _antHomePath:String;
 		private var antPath:String = "ant";
-		private var _instance:AntBuildPlugin;
 		private var workingDir:FileLocation;
 		private var file:FileLocation;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -95,7 +90,7 @@ package actionScripts.plugins.ant
 		private var currentSDK:FileLocation;
 		private var _buildWithAnt:Boolean;
 		private var selectedProject:AS3ProjectVO;
-		private var  antBuildScreen:IFlexDisplayObject
+		private var  antBuildScreen:IFlexDisplayObject;
 		private var isASuccessBuild:Boolean;
 		//private var antConfigureVo:AntConfigureVo;
 		// test at master added
@@ -265,7 +260,7 @@ package actionScripts.plugins.ant
 			
 			function onProjectSelected(event:Event):void
 			{
-				checkForAntFile(selectProjectPopup.selectedProject);
+				checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
 				onProjectSelectionCancelled(null);
 			}
 			
@@ -294,7 +289,7 @@ package actionScripts.plugins.ant
 							if(projectReference.projectFolder.children[i].children[j].file.fileBridge.extension == "xml"){
 								var str:String = projectReference.projectFolder.children[i].children[j].file.fileBridge.read().toString();
 								if((str.search("<project ")!=-1) || (str.search("<project>")!=-1)) {
-									// Add xml files in AC.	
+									// Add xml files in AC.
 									AntFlag = true;
 									antFiles.addItem(projectReference.projectFolder.children[i].children[j].file);
 								}
@@ -368,7 +363,7 @@ package actionScripts.plugins.ant
 						Alert.show("There is no Build folder in selected Project");
 					}
 				}
-			
+
 		}
 		function onAntFileSelected(event:Event):void
 		{
@@ -526,7 +521,6 @@ package actionScripts.plugins.ant
 			nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			nativeProcess.start(shellInfo);
 			print("Ant build Running");
-			flush();
 			
 			// @for test purpose
 			/*setTimeout(function():void
@@ -545,14 +539,11 @@ package actionScripts.plugins.ant
 		{
 			var output:IDataInput = nativeProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			
-			var match:Array;
-			
-			match = data.match(/nativeProcess: Target \d not found/);
+
+            var match:Array = data.match(/nativeProcess: Target \d not found/);
 			if (match)
 			{
 				error("Target not found. Try again.");
-				
 			}
 			
 			match = data.match(/nativeProcess: Assigned (\d) as the compile target id/);
@@ -577,7 +568,7 @@ package actionScripts.plugins.ant
 			}
 			
 			match = data.match(/BUILD SUCCESSFUL/);
-			if (data)
+			if (match)
 			{
 				isASuccessBuild = true;
 			}
@@ -599,7 +590,6 @@ package actionScripts.plugins.ant
 			if (syntaxMatch) {
 				var pathStr:String = syntaxMatch[1];
 				var lineNum:int = syntaxMatch[2];
-				var colNum:int = syntaxMatch[3];
 				var errorStr:String = syntaxMatch[4];
 				pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
 				errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
@@ -637,11 +627,7 @@ package actionScripts.plugins.ant
 			reset();
 			
 		}
-		private function flush():void 
-		{
-			
-			
-		}
+
 		protected function compilerError(...msg):void 
 		{
 			var text:String = msg.join(" ");
