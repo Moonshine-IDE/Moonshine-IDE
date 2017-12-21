@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+    import actionScripts.events.ApplicationEvent;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -88,6 +89,8 @@ package actionScripts.controllers
 
 		private function internalExecute(event:Event = null):void
 		{
+			dispatcher.dispatchEvent(new ApplicationEvent(ApplicationEvent.APPLICATION_EXIT));
+			
             var editors:ArrayCollection = model.editors;
 
             var editorsToClose:Array = [];

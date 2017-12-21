@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vscodeDebug
 {
-	import flash.desktop.NativeProcess;
+    import actionScripts.events.ApplicationEvent;
+
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -56,7 +58,6 @@ package actionScripts.plugins.vscodeDebug
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.utils.findOpenPort;
@@ -140,7 +141,7 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER, stepOverExecutionHandler);
 			dispatcher.addEventListener(CompilerEventBase.CONTINUE_EXECUTION, continueExecutionHandler);
 			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION, terminateExecutionHandler);
-			dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, dispatcher_quitHandler);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
 			
 			DebugHighlightManager.init();
@@ -163,7 +164,7 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.removeEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
-			dispatcher.removeEventListener(MenuPlugin.MENU_QUIT_EVENT, dispatcher_quitHandler);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
 		}
 		
 		private function saveEditorBreakpoints(editor:BasicTextEditor):void

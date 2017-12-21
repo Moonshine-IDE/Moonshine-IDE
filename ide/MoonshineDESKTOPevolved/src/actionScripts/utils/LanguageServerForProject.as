@@ -19,7 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.events.CompletionItemsEvent;
+    import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -126,7 +127,7 @@ package actionScripts.utils
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_dispatcher.addEventListener(TypeAheadEvent.EVENT_RENAME, renameHandler);
 			_dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
-			_dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, shutdownHandler);
+			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, shutdownHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//removeProjectHandler()
 
@@ -154,7 +155,7 @@ package actionScripts.utils
 			_dispatcher.removeEventListener(TypeAheadEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
-			_dispatcher.removeEventListener(MenuPlugin.MENU_QUIT_EVENT, shutdownHandler);
+			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, shutdownHandler);
 			shutdownHandler(null);
 		}
 

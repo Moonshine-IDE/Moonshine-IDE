@@ -18,12 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findreplace
 {
-	import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.findreplace.view.SearchView;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.text.vo.SearchResult;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.TextUtil;
 	
 	import components.popup.FindResourcePopup;
@@ -42,14 +42,11 @@ package actionScripts.plugin.findreplace
 		public static const EVENT_REPLACE_ONE:String = "replaceOneEvent";
 		public static const EVENT_REPLACE_ALL:String = "replaceAllEvent";
 		public static const EVENT_FIND_RESOURCE: String = "fineResource";
-		
-		private var lastSearchQuery:String;
-		private var lastSearchNumResults:int;
-		
+
 		private var searchView:SearchView;
 		private var resourceSearchView:FindResourcePopup;
 		
-		private var searchReplaceRe:RegExp = /^(?:\/)?((?:\\[^\/]|\\\/|\[(?:\\[^\]]|\\\]|[^\\\]])+\]|[^\[\]\\\/])+)\/((?:\\[^\/]|\\\/|[^\\\/])+)?(?:\/([gismx]*))?$/
+		private var searchReplaceRe:RegExp = /^(?:\/)?((?:\\[^\/]|\\\/|\[(?:\\[^\]]|\\\]|[^\\\]])+\]|[^\[\]\\\/])+)\/((?:\\[^\/]|\\\/|[^\\\/])+)?(?:\/([gismx]*))?$/;
 		private var tempObj:Object;
 		
 		public function FindReplacePlugin()
@@ -63,7 +60,7 @@ package actionScripts.plugin.findreplace
 		
 		override public function activate():void
 		{
-			super.activate()
+			super.activate();
 			
 			tempObj = new Object();
 			tempObj.callback = search;
@@ -134,7 +131,7 @@ package actionScripts.plugin.findreplace
 				searchView.addEventListener(EVENT_REPLACE_ONE, dialogSearch);
 				
 				// Close window when app is closed
-				dispatcher.addEventListener(MenuPlugin.MENU_QUIT_EVENT, closeSearchView);
+				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, closeSearchView);
 				PopUpManager.centerPopUp(searchView);
 			}
 		}
@@ -163,7 +160,7 @@ package actionScripts.plugin.findreplace
 			searchView.removeEventListener(EVENT_REPLACE_ALL, dialogSearch);
 			searchView.removeEventListener(EVENT_REPLACE_ONE, dialogSearch);
 			
-			dispatcher.removeEventListener(MenuPlugin.MENU_QUIT_EVENT, closeSearchView);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, closeSearchView);
 			
 			searchView = null;
 		}
