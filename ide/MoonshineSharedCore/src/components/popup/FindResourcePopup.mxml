@@ -23,121 +23,138 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				   						   xmlns:s="library://ns.adobe.com/flex/spark"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*" 										   										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-										   backgroundColor="0xf5f5f5"
-										   width="600" height="500" title="Find Resources" skinClass="components.skins.ResizableTitleWindowSkin"
-										   minWidth="300" minHeight="300" defaultButton="{openBtn}"
-										   creationComplete="onCreationComplete()">
+										   backgroundColor="0xf5f5f5" width="600" height="500" minWidth="300" minHeight="300"
+										   title="Find Resources" skinClass="components.skins.ResizableTitleWindowSkin"
+										   defaultButton="{openBtn}"
+										   keyDown="onFindResourcesKeyDown(event)" creationComplete="onCreationComplete()">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.controls.Alert;
-			import mx.controls.Image;
-			import mx.core.IVisualElementContainer;
-			
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.OpenFileEvent;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.FileWrapper;
-			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.valueObjects.ResourceVO;
-			
-			import elements.skins.DarkButtonSkin;
-			
-			[Bindable] private var resources:ArrayCollection = new ArrayCollection();
-			
-			private var model:IDEModel = IDEModel.getInstance();
-			private var loaderIcon: Image;
-			
-			private function onCreationComplete():void
-			{
-				for each (var i:ProjectVO in model.projects)
-				{
-					parseChildrens(i.projectFolder);
-				}
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+		import mx.controls.Image;
+		import mx.core.IVisualElementContainer;
 
-				//Workaround for unresolved issue https://issues.apache.org/jira/browse/FLEX-26797
-				openBtn.setStyle("skinClass", DarkButtonSkin);
-			}
-			
-			/**
-			 * Remove loader icon from its parent
-			 */
-			private function removeLoaderIcon():void
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.FileWrapper;
+		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.ResourceVO;
+
+		import elements.skins.DarkButtonSkin;
+
+		[Bindable]
+		private var resources:ArrayCollection = new ArrayCollection();
+
+		private var model:IDEModel = IDEModel.getInstance();
+		private var loaderIcon:Image;
+
+		private function onCreationComplete():void
+		{
+			for each (var i:ProjectVO in model.projects)
 			{
-				IVisualElementContainer(loaderIcon.owner).removeElement(loaderIcon);
-				loaderIcon = null;
+				parseChildrens(i.projectFolder);
 			}
-			
-			private function parseChildrens(value:FileWrapper):void
+
+			//Workaround for unresolved issue https://issues.apache.org/jira/browse/FLEX-26797
+			openBtn.setStyle("skinClass", DarkButtonSkin);
+		}
+
+		/**
+		 * Remove loader icon from its parent
+		 */
+		private function removeLoaderIcon():void
+		{
+			IVisualElementContainer(loaderIcon.owner).removeElement(loaderIcon);
+			loaderIcon = null;
+		}
+
+		private function parseChildrens(value:FileWrapper):void
+		{
+			if (!value) return;
+
+			var extension:String = value.file.fileBridge.extension;
+			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
 			{
-				if (!value) return;
-				
-				var extension: String = value.file.fileBridge.extension;
-				if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+				resources.addItem(new ResourceVO(value.file.fileBridge.name, value));
+				return;
+			}
+
+			if ((value.children is Array) && (value.children as Array).length > 0)
+			{
+				for each (var c:FileWrapper in value.children)
 				{
-					resources.addItem(new ResourceVO(value.file.fileBridge.name, value));
-					return;
-				}
-				
-				if ((value.children is Array) && (value.children as Array).length > 0) 
-				{
-					var tmpSubChildren:Array = [];
-					for each (var c:FileWrapper in value.children)
+					extension = c.file.fileBridge.extension;
+					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
 					{
-						extension = c.file.fileBridge.extension;
-						if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
-						{
-							resources.addItem(new ResourceVO(c.file.fileBridge.name, c));
-						}
-						else if (c.file.fileBridge.isDirectory) parseChildrens(c);
+						resources.addItem(new ResourceVO(c.file.fileBridge.name, c));
+					}
+					else if (c.file.fileBridge.isDirectory)
+					{
+						parseChildrens(c);
 					}
 				}
 			}
-			
-			private function isAcceptableResource(extension:String):Boolean
-			{
-				return ConstantsCoreVO.READABLE_FILES.some(
+		}
+
+		private function isAcceptableResource(extension:String):Boolean
+		{
+			return ConstantsCoreVO.READABLE_FILES.some(
 					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
 						return item == extension;
 					});
-			}
-			
-			private function getResourceName(item:Object): String 
+		}
+
+		private function getResourceName(item:Object):String
+		{
+			return item.name + " - " + item.resourcePath;
+		}
+
+		private function filterSearch(filter:Boolean = true):void
+		{
+			if (filter) resources.filterFunction = matchResource;
+			else resources.filterFunction = null;
+			resources.refresh();
+		}
+
+		private function matchResource(item:Object):Boolean
+		{
+			var tmpDataString:String = item.name.toLowerCase();
+			return tmpDataString.indexOf(fileNameTextInput.text.toLowerCase()) != -1;
+		}
+
+		protected function onListDoubleClicked(event:MouseEvent):void
+		{
+			if (!lstResources.selectedItem)
 			{
-				return item.name +" - "+ item.resourcePath;
+				Alert.show("Please select an item to open.");
+				return;
 			}
-			
-			private function filterSearch(filter:Boolean=true): void
+
+			var tmpObject:ResourceVO = lstResources.selectedItem as ResourceVO;
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpObject.sourceWrapper.file, -1, tmpObject.sourceWrapper)
+			);
+
+			super.closeThis();
+		}
+
+		private function onFindResourcesKeyDown(event:KeyboardEvent):void
+		{
+			if (event.keyCode == Keyboard.DOWN || event.keyCode == Keyboard.UP)
 			{
-				if (filter) resources.filterFunction = matchResource;
-				else resources.filterFunction = null;
-				resources.refresh();
+				lstResources.setFocus();
 			}
-			
-			private function matchResource(item:Object):Boolean 
+			else
 			{
-				var tmpDataString: String = item.name.toLowerCase();
-				if (tmpDataString.indexOf(txt_fileName.text.toLowerCase()) != -1 ) return true;
-				return false;
-			}
-			
-			protected function onListDoubleClicked(event:MouseEvent):void
-			{
-				if(!lstResources.selectedItem)
+				fileNameTextInput.setFocus();
+				if (fileNameTextInput.text)
 				{
-					Alert.show("Please select an item to open.");
-					return;
+					fileNameTextInput.selectRange(fileNameTextInput.text.length, fileNameTextInput.text.length);
 				}
-				
-				var tmpObject: ResourceVO = lstResources.selectedItem as ResourceVO;
-				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpObject.sourceWrapper.file, -1, tmpObject.sourceWrapper) 
-				);
-				
-				super.closeThis();
 			}
-			
+		}
 		]]>
 	</fx:Script>
 	
@@ -146,10 +163,10 @@
 			  horizontalAlign="center">
 		<s:VGroup width="100%">
 			<s:Label text="Search an select an item to open:"/>
-			<view:PromptTextInput id="txt_fileName"
+			<view:PromptTextInput id="fileNameTextInput"
 								  prompt="File Name" width="100%" styleName="textInput"
 								  maxChars="129"
-								  change="filterSearch()" creationComplete="txt_fileName.setFocus()"/>
+								  change="filterSearch()" creationComplete="fileNameTextInput.setFocus()"/>
 		</s:VGroup>
 		<s:VGroup width="100%" height="100%">
 			<s:Label text="Matching items:"/>
