@@ -33,16 +33,21 @@ package
 	
 	public class MoonshineWorker extends Sprite
 	{
-		public static const READABLE_FILES:Array = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj"];
+		public static const READABLE_FILES_PATTERNS:Array = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj"];
 		
 		public static var FILES_COUNT:int;
 		public static var FILE_PROCESSED_COUNT:int;
+		public static var FILES_FOUND_IN_COUNT:int;
 		
 		private var mainToWorker:MessageChannel;
 		private var workerToMain:MessageChannel;
 		private var projectSearchObject:Object;
 		private var projects:Array;
 		private var totalFoundCount:int;
+		private var customFilePatterns:Array = [];
+		private var isCustomFilePatterns:Boolean;
+		private var isStorePathsForProbableReplace:Boolean;
+		private var storedPathsForProbableReplace:Array;
 		
 		public function MoonshineWorker()
 		{
@@ -61,7 +66,11 @@ package
 			{
 				case WorkerEvent.SEARCH_IN_PROJECTS:
 					projects = projectSearchObject.value.projects;
+					isStorePathsForProbableReplace = projectSearchObject.value.isShowReplaceWhenDone;
 					parseProjectsTree();
+					break;
+				case WorkerEvent.REPLACE_FILE_WITH_VALUE:
+					startReplacing();
 					break;
 			}
 		}
@@ -71,14 +80,26 @@ package
 			// probable termination
 			if (projects.length == 0) 
 			{
-				workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:null});
+				workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:FILES_FOUND_IN_COUNT});
 				return;
 			}
 			
-			FILES_COUNT = FILE_PROCESSED_COUNT = 0;
+			FILES_COUNT = FILE_PROCESSED_COUNT = FILES_FOUND_IN_COUNT = 0;
 			totalFoundCount = 0;
+			isCustomFilePatterns = false;
+			storedPathsForProbableReplace = null;
+			storedPathsForProbableReplace = [];
+			
 			var tmpWrapper:WorkerFileWrapper = new WorkerFileWrapper(new File(projects[0]), true);
 			workerToMain.send({event:WorkerEvent.TOTAL_FILE_COUNT, value:FILES_COUNT});
+			
+			if (projectSearchObject.value.patterns != "*")
+			{
+				var filtered:String = projectSearchObject.value.patterns.replace(/( )/g, "");
+				customFilePatterns = filtered.split(",");
+				isCustomFilePatterns = true;
+			}
+			
 			parseChildrens(tmpWrapper);
 		}
 		
@@ -109,6 +130,8 @@ package
 						{
 							value.children[c].searchCount = tmpReturnCount;
 							totalFoundCount += tmpReturnCount;
+							FILES_FOUND_IN_COUNT++;
+							if (isStorePathsForProbableReplace) storedPathsForProbableReplace.push(value.children[c].file.nativePath);
 						}
 					}
 					else if (!value.children[c].file.isDirectory && !isAcceptable)
@@ -164,23 +187,33 @@ package
 		
 		private function isAcceptableResource(extension:String):Boolean
 		{
-			if (projectSearchObject.value.patterns != "*")
+			if (isCustomFilePatterns)
 			{
-				var filtered:String = projectSearchObject.value.patterns.replace(/(\*.)/g, "");
-				var tmpArr:Array = filtered.split(",");
-				return tmpArr.some(
+				return customFilePatterns.some(
 					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
 						return item == extension;
 					});
 			}
 			
-			return READABLE_FILES.some(
+			return READABLE_FILES_PATTERNS.some(
 				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
 					return item == extension;
 				});
 		}
 		
-		private function testFilesForValueExist(value:String):int
+		private function startReplacing():void
+		{
+			for each (var i:String in storedPathsForProbableReplace)
+			{
+				testFilesForValueExist(i, projectSearchObject.value.valueToReplace);
+				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:i});
+			}
+			
+			// once done 
+			workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:null});
+		}
+		
+		private function testFilesForValueExist(value:String, replace:String=null):int
 		{
 			var r:FileStream = new FileStream();
 			var f:File = new File(value); 
@@ -194,14 +227,29 @@ package
 			var searchRegExp:RegExp = new RegExp(searchString, flags);
 			
 			var foundMatches:Array = content.match(searchRegExp);
-			content = null;
 			
 			if (foundMatches.length > 0)
 			{
+				if (replace) replaceAndSaveFile();
+				content = null;
 				return foundMatches.length;
 			}
 			
+			content = null;
 			return -1;
+			
+			/*
+			 * @local
+			 */
+			function replaceAndSaveFile():void
+			{
+				content = content.replace(searchRegExp, replace);
+				
+				r = new FileStream();
+				r.open(f, FileMode.WRITE);
+				r.writeUTFBytes(content);
+				r.close();
+			}
 		}
 		
 		private function escapeRegex(str:String):String 
