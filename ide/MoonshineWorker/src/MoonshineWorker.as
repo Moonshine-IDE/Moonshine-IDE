@@ -97,7 +97,13 @@ package
 			{
 				var filtered:String = projectSearchObject.value.patterns.replace(/( )/g, "");
 				customFilePatterns = filtered.split(",");
-				isCustomFilePatterns = true;
+				
+				var hasGloablSearchSign:Boolean = customFilePatterns.some(
+					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+						return item == "*";
+					});
+				
+				isCustomFilePatterns = !hasGloablSearchSign;
 			}
 			
 			parseChildrens(tmpWrapper);
