@@ -27,5 +27,6 @@ package actionScripts.events
 		public static const FILE_PROCESSED_COUNT:String = "FILE_PROCESSED_COUNT";
 		public static const FILTERED_FILE_COLLECTION:String = "FILTERED_FILE_COLLECTION";
 		public static const PROCESS_ENDS:String = "PROCESS_ENDS";
+		public static const REPLACE_FILE_WITH_VALUE:String = "REPLACE_FILE_WITH_VALUE";
 	}
 }

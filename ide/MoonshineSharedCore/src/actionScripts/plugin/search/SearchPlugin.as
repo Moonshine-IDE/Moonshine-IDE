@@ -132,6 +132,7 @@ package actionScripts.plugin.search
 				searchResultView.isMatchCase = searchPopup.optionMatchCase.selected;
 				searchResultView.isRegexp = searchPopup.optionRegExp.selected;
 				searchResultView.isEscapeChars = searchPopup.optionEscapeChars.selected;
+				searchResultView.isShowReplaceWhenDone = searchPopup.isShowReplaceWhenDone;
 			}
 		}
 		

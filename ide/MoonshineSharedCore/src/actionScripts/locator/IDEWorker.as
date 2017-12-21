@@ -67,9 +67,9 @@ package actionScripts.locator
 			worker.start();
 		}
 		
-		public function sendProjectToSearchString(value:Object):void
+		public function sendToWorker(type:String, value:Object):void
 		{
-			mainToWorker.send({event: WorkerEvent.SEARCH_IN_PROJECTS, value: value});
+			mainToWorker.send({event: type, value: value});
 		}
 		
 		private function onWorkerToMain(event:Event): void

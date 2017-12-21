@@ -9,8 +9,10 @@
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.controls.Tree;
+			import mx.core.FlexGlobals;
 			import mx.events.CollectionEvent;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
@@ -24,6 +26,8 @@
 			import actionScripts.ui.renderers.GenericTreeItemRenderer;
 			import actionScripts.ui.tabview.TabEvent;
 			
+			import components.popup.ReplaceProjectSearchPopup;
+			
 			[Bindable] public var valueToSearch:String;
 			
 			public var patterns:String;
@@ -31,10 +35,13 @@
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
+			public var isShowReplaceWhenDone:Boolean;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
 			private var foundCountsDict:Dictionary = new Dictionary();
+			private var currentCount:int;
+			private var filesFoundInCount:int;
 			
 			/**
 			 * IContentWindow Inteface Methods
@@ -49,13 +56,18 @@
 				txtFoundMessage.includeInLayout = txtFoundMessage.visible = false;
 				pbFiles.includeInLayout = pbFiles.visible = true;
 				pbFiles.setProgress(0, 0);
+				currentCount = filesFoundInCount = 0;
 				tree.dataProvider = null;
 				foundCountsDict = new Dictionary();
 				
 				this.label = "Search /"+ valueToSearch +"/";
 				
 				// re-initiate worker 
-				worker.sendProjectToSearchString(getSearchObject());
+				// remove worker in case less-patience user initiate another
+				// search process even before the current is over
+				worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				worker.sendToWorker(WorkerEvent.SEARCH_IN_PROJECTS, getSearchObject());
 			}
 			
 			private function onCreationCompletes():void
@@ -73,7 +85,7 @@
 				// worker side is far more economic. We must remember that sending
 				// objects over worker is copying all the bytes. It's better to balance
 				// between convention and the output
-				worker.sendProjectToSearchString(getSearchObject());
+				worker.sendToWorker(WorkerEvent.SEARCH_IN_PROJECTS, getSearchObject());
 			}
 			
 			private function getSearchObject():Object
@@ -84,6 +96,7 @@
 				tmpObj.isMatchCase = isMatchCase;
 				tmpObj.isRegexp = isRegexp;
 				tmpObj.isEscapeChars = isEscapeChars;
+				tmpObj.isShowReplaceWhenDone = isShowReplaceWhenDone;
 				
 				tmpObj.projects = getProjectPaths();
 				
@@ -144,7 +157,10 @@
 						foundCountsDict[tmpArr[0]] = tmpArr[1];
 						break;
 					case WorkerEvent.PROCESS_ENDS:
+						filesFoundInCount = event.value.value;
+						worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
 						updateLabel();
+						testReplaceRequest();
 						break;
 				}
 			}
@@ -153,7 +169,6 @@
 			{
 				txtFoundMessage.includeInLayout = txtFoundMessage.visible = true;
 				
-				var currentCount:int;
 				var projectCount:int;
 				for (var i:String in foundCountsDict)
 				{
@@ -163,6 +178,23 @@
 				
 				txtFoundMessage.text = "Found "+ currentCount +" matches across "+ projectCount +" project(s).";
 				pbFiles.includeInLayout = pbFiles.visible = false;
+			}
+			
+			private function testReplaceRequest():void
+			{
+				if (isShowReplaceWhenDone && currentCount != 0)
+				{
+					var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
+					replacePopup.replaceValue = valueToSearch;
+					replacePopup.matchCount = currentCount;
+					replacePopup.filesCount = filesFoundInCount;
+					replacePopup.isMatchCase = isMatchCase;
+					replacePopup.isRegexp = isRegexp;
+					replacePopup.isEscapeChars = isEscapeChars;
+					
+					PopUpManager.centerPopUp(replacePopup);
+					replacePopup.y = 91;
+				}
 			}
 			
 			private function generateSearchTree(value:Object):void
