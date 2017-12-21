@@ -43,7 +43,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -62,14 +61,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
-
-    import mx.utils.StringUtil;
 
     public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -114,8 +110,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var fcsh:NativeProcess;
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
-		
-		private var lastTarget:File;
+
 		private var targets:Dictionary;
 		
 		private var currentSDK:File = flexSDK;

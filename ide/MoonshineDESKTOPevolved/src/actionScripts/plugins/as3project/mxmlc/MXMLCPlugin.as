@@ -760,7 +760,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function send(msg:String):void 
 		{
-			debug("Sending to mxmlx: %s", msg);
+			debug("Sending to mxmlc: %s", msg);
 			if (!fcsh) {
 				queue.push(msg);
 			} else {
@@ -1007,8 +1007,7 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				var syntaxMatch:Array;
 				var generalMatch:Array;
-				var initMatch:Array;
-				
+
 				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
 				if (syntaxMatch) {
 					var pathStr:String = syntaxMatch[1];
