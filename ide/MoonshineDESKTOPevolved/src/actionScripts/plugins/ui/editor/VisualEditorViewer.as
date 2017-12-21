@@ -169,19 +169,9 @@ package actionScripts.plugins.ui.editor
         private function getMxmlCode():String
         {
             var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
-            var mxmlCodeList:XMLList = mxmlCode.children();
-
-            var mxmlEditor:XML = new XML(editor.dataProvider);
-            mxmlEditor.setChildren("");
-
-            for each (var child:XML in mxmlCodeList)
-            {
-                mxmlEditor.appendChild(child);
-            }
-
             var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
             
-            return markAsXml + mxmlEditor.toXMLString();
+            return markAsXml + mxmlCode.toXMLString();
         }
 
         private function createVisualEditorFile():void

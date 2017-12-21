@@ -2,8 +2,8 @@
 <project>
   <output>
     <movie path="bin-debug/$ProjectSWF"/>
-    <movie width="800"/>
-    <movie height="600"/>
+    <movie width="725"/>
+    <movie height="450"/>
     <movie version="$MovieVersion"/>
     <movie input=""/>
     <movie disabled="False"/>
