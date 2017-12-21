@@ -153,7 +153,7 @@
 						generateSearchTree(tmpObj);
 						break;
 					case WorkerEvent.TOTAL_FOUND_COUNT:
-						var tmpArr:Array = event.value.value.split(":");
+						var tmpArr:Array = event.value.value.split("\:/");
 						foundCountsDict[tmpArr[0]] = tmpArr[1];
 						break;
 					case WorkerEvent.PROCESS_ENDS:
