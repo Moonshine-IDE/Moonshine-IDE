@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<resizabletitlewindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+                                           xmlns:s="library://ns.adobe.com/flex/spark"
+                                           xmlns:resizabletitlewindow="actionScripts.ui.resizableTitleWindow.*"
+                                           title="Confirm Exit" defaultButton="{exitButton}"
+                                           creationComplete="onQuitPopupCreationComplete(event)"
+                                           width="310" height="150">
+    <fx:Metadata>
+        [Event(name="quitConfirmed", type="flash.events.Event")]
+    </fx:Metadata>
+    <resizabletitlewindow:layout>
+        <s:VerticalLayout verticalAlign="middle" horizontalAlign="left"
+                          paddingLeft="10" paddingRight="10"/>
+    </resizabletitlewindow:layout>
+    <s:Label text="Are you sure you want to exit Moonshine IDE?" fontWeight="bold"/>
+    <s:CheckBox label="Do not ask me again" left="10" selected="@{_doNotAskMeAgain}"/>
+    <resizabletitlewindow:controlBarContent>
+        <s:Spacer width="100%"/>
+        <s:Button label="Cancel"
+                  styleName="darkButton" click="onCancelButtonClick(event)"/>
+        <s:Button id="exitButton" label="Exit"
+                  styleName="darkButton" click="onExitButtonClick(event)"/>
+    </resizabletitlewindow:controlBarContent>
+    <fx:Script><![CDATA[
+        import elements.skins.DarkButtonSkin;
+
+        import mx.events.FlexEvent;
+
+        [Bindable]
+        private var _doNotAskMeAgain:Boolean;
+
+        public function get doNotAskMeAgain():Boolean
+        {
+            return _doNotAskMeAgain;
+        }
+
+        private function onExitButtonClick(event:MouseEvent):void
+        {
+            dispatchEvent(new Event("quitConfirmed"));
+            closeThis();
+        }
+
+        private function onCancelButtonClick(event:MouseEvent):void
+        {
+            closeThis();
+        }
+
+        private function onQuitPopupCreationComplete(event:FlexEvent):void
+        {
+            removeEventListener(FlexEvent.CREATION_COMPLETE, onQuitPopupCreationComplete);
+            exitButton.setStyle("skinClass", DarkButtonSkin);
+        }
+        ]]></fx:Script>
+</resizabletitlewindow:ResizableTitleWindow>

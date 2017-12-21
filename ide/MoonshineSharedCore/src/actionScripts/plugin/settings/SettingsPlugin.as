@@ -69,7 +69,6 @@ package actionScripts.plugin.settings
 
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.net.SharedObject;
     import flash.utils.getQualifiedClassName;
     
     import actionScripts.events.AddTabEvent;
@@ -97,7 +96,6 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.moonshine_internal;
     import actionScripts.valueObjects.ConstantsCoreVO;

@@ -55,7 +55,7 @@ package actionScripts.plugin.actionscript.as3project.save
 		private var _openPreviouslyOpenedProjects:Boolean;
 		private var _openPreviouslyOpenedProjectBranches:Boolean;
 		private var _openPreviouslyOpenedFiles:Boolean;
-		
+
 		public function SaveFilesPlugin()
 		{
 			super();
@@ -119,6 +119,16 @@ package actionScripts.plugin.actionscript.as3project.save
             model.openPreviouslyOpenedFiles = value;
         }
 
+        public function get confirmApplicationExit():Boolean
+        {
+            return model.confirmApplicationExit;
+        }
+
+        public function set confirmApplicationExit(value:Boolean):void
+        {
+			model.confirmApplicationExit = value;
+        }
+
 		override public function activate():void 
 		{
 			super.activate();
@@ -151,6 +161,7 @@ package actionScripts.plugin.actionscript.as3project.save
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
 				new BooleanSetting(this,"isSaveFiles", "Save automatically Before Build"),
+				new BooleanSetting(this, "confirmApplicationExit", "Confirm application exit"),
 				new BooleanSetting(this, "openPreviouslyOpenedProjects", "Open previously opened projects on startup"),
 				new BooleanSetting(this, "openPreviouslyOpenedFiles", "Open previously opened files for project"),
 				new BooleanSetting(this, "openPreviouslyOpenedProjectBranches", "Open previously opened project branches"),

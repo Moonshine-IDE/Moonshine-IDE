@@ -21,7 +21,6 @@ package actionScripts.ui.resizableTitleWindow
 {
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
-	import flash.geom.Point;
 	import flash.ui.Keyboard;
 	
 	import mx.events.CloseEvent;
@@ -59,8 +58,6 @@ package actionScripts.ui.resizableTitleWindow
 		//  Variables
 		//
 		//--------------------------------------------------------------------------
-		
-		private var clickOffset:Point;
 		
 		//--------------------------------------------------------------------------
 		//

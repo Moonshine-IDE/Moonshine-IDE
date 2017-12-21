@@ -18,12 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.display.DisplayObject;
+    import actionScripts.plugin.settings.event.SetSettingsEvent;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+
+    import components.popup.QuitPopup;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import flash.utils.setTimeout;
-	
-	import mx.collections.ArrayCollection;
+
+    import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.events.ResizeEvent;
 	import mx.managers.PopUpManager;
@@ -44,42 +49,82 @@ package actionScripts.controllers
 
 	public class QuitCommand implements ICommand
 	{
-		private var ged:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		private static var pop:StandardPopup;
+		private var quitPopup:QuitPopup;
+
+		private var commandEvent:Event;
 		
 		public function execute(event:Event):void
 		{
-			var editors:ArrayCollection = IDEModel.getInstance().editors;
-			
-			var editorsToClose:Array = [];
-			for each (var tab:IContentWindow in editors)
-			{
-				if (!(tab is SplashScreen) && !tab.isChanged())
-				{
-					editorsToClose.push(tab);
-				}
-			}
-			
-			for each (tab in editorsToClose)
-			{
-				ged.dispatchEvent(
-					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, tab as DisplayObject)
-				);
-			}
+            if (!quitPopup && model.confirmApplicationExit)
+            {
+                commandEvent = event;
+                quitPopup = new QuitPopup();
+                quitPopup.addEventListener("quitConfirmed", onQuitPopupConfirmed);
+                quitPopup.addEventListener(Event.CLOSE, onQuitPopupClose);
 
-			// One editor is auto-created when last is removed
-			if (editors.length <= 1)
-			{
-				onApplicationClosing();
-			}
+                PopUpManager.addPopUp(quitPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
+				PopUpManager.centerPopUp(quitPopup);
+            }
 			else
 			{
-				event.preventDefault();
-				askToSave(editors.length-1);
+				internalExecute(event);
 			}
 		}
-		
+
+        private function onQuitPopupClose(event:Event):void
+        {
+            saveStateOfQuitPopup();
+		   	cleanUpQuitPopup();
+        }
+
+        private function onQuitPopupConfirmed(event:Event):void
+        {
+            saveStateOfQuitPopup();
+			internalExecute();
+        }
+
+		private function internalExecute(event:Event = null):void
+		{
+            var editors:ArrayCollection = model.editors;
+
+            var editorsToClose:Array = [];
+            for each (var tab:IContentWindow in editors)
+            {
+                if (!(tab is SplashScreen) && !tab.isChanged())
+                {
+                    editorsToClose.push(tab);
+                }
+            }
+
+            for each (tab in editorsToClose)
+            {
+                dispatcher.dispatchEvent(
+                        new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, tab as DisplayObject)
+                );
+            }
+
+            // One editor is auto-created when last is removed
+            if (editors.length <= 1)
+            {
+                onApplicationClosing();
+            }
+            else
+            {
+                if (commandEvent)
+				{
+					commandEvent.preventDefault();
+                }
+				else
+				{
+					event.preventDefault();
+				}
+
+                askToSave(editors.length-1);
+            }
+		}
 		/**
 		 * Moved from application file to this file
 		 * as unknown reason demonstrated Event.CLOSING never fired
@@ -94,10 +139,10 @@ package actionScripts.controllers
 			// we also needs to close any scope bookmarked opened
 			CONFIG::OSX
 			{
-				var tmpText:String = IDEModel.getInstance().fileCore.getSSBInterface().closeAllPaths();
+				var tmpText:String = model.fileCore.getSSBInterface().closeAllPaths();
 				if (tmpText == "Closed Scoped Paths.")
 				{
-					IDEModel.getInstance().fileCore.getSSBInterface().dispose();
+                    model.fileCore.getSSBInterface().dispose();
 					FlexGlobals.topLevelApplication.stage.nativeWindow.close();
 				}
 				
@@ -113,7 +158,7 @@ package actionScripts.controllers
 			if (pop) return;
 			pop = new StandardPopup();
 			pop.data = this; // Keep the command from getting GC'd
-			if (IDEModel.getInstance().editors.length == 1)
+			if (model.editors.length == 1)
 			{
 				// show this only when there's no individual close alert already showing
 				if (model.isIndividualCloseTabAlertShowing) 
@@ -122,12 +167,12 @@ package actionScripts.controllers
 					return;
 				}
 				
-				pop.text = IDEModel.getInstance().editors[0].label + " is changed.";
+				pop.text = model.editors[0].label + " is changed.";
 			}
 			else
 			{
 				// show this but by closing any existing individual close alert first
-				if (model.isIndividualCloseTabAlertShowing) ged.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT, null));
+				if (model.isIndividualCloseTabAlertShowing) dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT, null));
 				
 				pop.text = num + " files are changed.";
 			}
@@ -160,7 +205,7 @@ package actionScripts.controllers
 			// opened, the alert didn't make it's position at center of the application but static
 			FlexGlobals.topLevelApplication.addEventListener(ResizeEvent.RESIZE, onApplicationResized);
 			// disable file menus in OSX
-			ged.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_NO_MENU_STATE));
+			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_NO_MENU_STATE));
 		}
 		
 		private function onApplicationResized(event:ResizeEvent):void
@@ -173,7 +218,7 @@ package actionScripts.controllers
 			cleanUp();
 			
 			var saveAs:Boolean;
-			var editors:Array = IDEModel.getInstance().editors.source.concat();
+			var editors:Array = model.editors.source.concat();
 			for each (var tab:IContentWindow in editors)
 			{
 				var editor:BasicTextEditor = tab as BasicTextEditor;
@@ -189,7 +234,7 @@ package actionScripts.controllers
 					else
 					{
 						editor.save();
-						ged.dispatchEvent(
+						dispatcher.dispatchEvent(
 							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, tab as DisplayObject)
 						);
 					}
@@ -197,7 +242,7 @@ package actionScripts.controllers
 				else
 				{
 					tab.save();
-					ged.dispatchEvent(
+					dispatcher.dispatchEvent(
 						new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, tab as DisplayObject)
 					);
 				}
@@ -205,14 +250,15 @@ package actionScripts.controllers
 			
 			if (!saveAs)
 			{
-				IDEModel.getInstance().flexCore.exitApplication();
+                model.flexCore.exitApplication();
 			}
 		}
 		
 		private function closeFiles(event:Event):void
 		{
-			IDEModel.getInstance().flexCore.exitApplication();
+            model.flexCore.exitApplication();
 		}
+		
 		private function cancelQuit(event:Event):void
 		{
 			cleanUp();	
@@ -222,12 +268,36 @@ package actionScripts.controllers
 		{
 			if (pop)
 			{
+                cleanUpQuitPopup();
+
 				FlexGlobals.topLevelApplication.removeEventListener(ResizeEvent.RESIZE, onApplicationResized);
-				ged.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
 				PopUpManager.removePopUp(pop);
 				pop.data = null;
 				pop = null;
 			}
+		}
+
+		private function saveStateOfQuitPopup():void
+		{
+			if (!quitPopup.doNotAskMeAgain) return;
+
+			var settings:Vector.<ISetting> = Vector.<ISetting>([
+				new BooleanSetting({confirmApplicationExit: false}, "confirmApplicationExit", "")
+			]);
+
+			model.confirmApplicationExit = false;
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugin.actionscript.as3project.save::SaveFilesPlugin", settings));
+        }
+
+		private function cleanUpQuitPopup():void
+		{
+			if (!quitPopup) return;
+
+            quitPopup.removeEventListener(Event.CLOSE, onQuitPopupClose);
+            quitPopup.removeEventListener("quitConfirmed", onQuitPopupConfirmed);
+            quitPopup = null;
 		}
 	}
 }
