@@ -40,11 +40,13 @@
 			import actionScripts.plugin.search.SearchPlugin;
 			
 			public var isClosedAsSubmit:Boolean;
+			public var isShowReplaceWhenDone:Boolean;
 			
 			private function onSearchRequest(showReplaceWhenDone:Boolean=false):void
 			{
 				if (StringUtil.trim(txtSearch.text).length != 0)
 				{
+					isShowReplaceWhenDone = showReplaceWhenDone;
 					isClosedAsSubmit = true;
 					closeThis();
 				}
@@ -79,12 +81,12 @@
 				var tmpArr:Array = [];
 				for each (var i:Object in collection)
 				{
-					if (i.isSelected) tmpArr.push("*."+ i.label);
+					if (i.isSelected) tmpArr.push(i.label);
 				}
 				
 				if (tmpArr.length > 0) 
 				{
-					txtPatterns.text = tmpArr.join(",");
+					txtPatterns.text = tmpArr.join(", ");
 					SearchPlugin.LAST_SELECTED_PATTERNS = collection;
 				}
 				else txtPatterns.text = "*";

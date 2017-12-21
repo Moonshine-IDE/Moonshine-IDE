@@ -227,6 +227,13 @@ package actionScripts.ui.editor
 			callLater(file.fileBridge.load);
 		}
 		
+		public function reload():void
+		{
+			loadingFile = true;
+			file.fileBridge.getFile.addEventListener(Event.COMPLETE, openHandler);
+			callLater(file.fileBridge.load);
+		}
+		
 		protected function openFileAsStringHandler(data:String):void
 		{
 			loadingFile = false;
