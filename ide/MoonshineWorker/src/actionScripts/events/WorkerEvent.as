@@ -28,5 +28,6 @@ package actionScripts.events
 		public static const FILTERED_FILE_COLLECTION:String = "FILTERED_FILE_COLLECTION";
 		public static const PROCESS_ENDS:String = "PROCESS_ENDS";
 		public static const REPLACE_FILE_WITH_VALUE:String = "REPLACE_FILE_WITH_VALUE";
+		public static const GET_FILE_LIST:String = "GET_FILE_LIST";
 	}
 }

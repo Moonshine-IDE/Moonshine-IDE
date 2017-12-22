@@ -72,6 +72,9 @@ package
 				case WorkerEvent.REPLACE_FILE_WITH_VALUE:
 					startReplacing();
 					break;
+				case WorkerEvent.GET_FILE_LIST:
+					workerToMain.send({event:WorkerEvent.GET_FILE_LIST, value:storedPathsForProbableReplace});
+					break;
 			}
 		}
 		
