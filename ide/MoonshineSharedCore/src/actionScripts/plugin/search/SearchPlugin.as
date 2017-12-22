@@ -44,6 +44,7 @@ package actionScripts.plugin.search
 		
 		public static var LAST_SCOPE_INDEX:int = 1;
 		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
+		public static var LAST_SEARCH:String;
 		
 		private var searchPopup:SearchInProjectPopup;
 		private var searchResultView:SearchInProjectView;
@@ -98,6 +99,7 @@ package actionScripts.plugin.search
 			}
 			
 			LAST_SCOPE_INDEX = searchPopup.rbgScope.selectedIndex;
+			LAST_SEARCH = searchPopup.txtSearch.text;
 			
 			if (!searchResultView)
 			{

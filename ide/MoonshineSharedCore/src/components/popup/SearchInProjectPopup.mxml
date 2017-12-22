@@ -54,6 +54,13 @@
 			
 			protected function onInitialized(event:FlexEvent):void
 			{
+				if (SearchPlugin.LAST_SEARCH)
+				{
+					txtSearch.text = SearchPlugin.LAST_SEARCH;
+					txtSearch.selectRange(0, txtSearch.text.length);
+					txtSearch.setFocus();
+				}
+				
 				rbgScope.selectedIndex = SearchPlugin.LAST_SCOPE_INDEX;
 				updatePatterns(SearchPlugin.LAST_SELECTED_PATTERNS);
 			}

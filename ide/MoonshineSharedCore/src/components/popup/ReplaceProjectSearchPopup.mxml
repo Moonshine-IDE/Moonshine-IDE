@@ -29,7 +29,9 @@
 				   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
 			import mx.utils.StringUtil;
 			
 			import actionScripts.events.GeneralEvent;
@@ -37,7 +39,6 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.locator.IDEWorker;
 			import actionScripts.ui.editor.BasicTextEditor;
-			import actionScripts.utils.TextUtil;
 			
 			import elements.skins.IDEProgressBarSkin;
 			
@@ -121,6 +122,16 @@
 				}
 			}
 			
+			private function openPreview():void
+			{
+				var tmpPopup:SearchInProjectPreviewPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPreviewPopup, true) as SearchInProjectPreviewPopup;
+				tmpPopup.replaceValue = replaceValue;
+				tmpPopup.width = screen.width * .6;
+				tmpPopup.height = screen.height * .8;
+				PopUpManager.centerPopUp(tmpPopup);
+				closeThis();
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -145,9 +156,10 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button label="Preview"
-				  styleName="darkButton" enabled="false"/>
 		<s:Spacer width="100%"/>
+		<s:Button label="Preview"
+				  styleName="darkButton"
+				  click="openPreview()"/>
 		<s:Button id="btnReplace" 
 				  label="Replace"
 				  styleName="darkButton"
