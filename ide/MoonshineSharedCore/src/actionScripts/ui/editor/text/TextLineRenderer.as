@@ -467,6 +467,14 @@ package actionScripts.ui.editor.text
 				for(var i:int = 0; i < diagnosticsCount; i++)
 				{
 					var diagnostic:Diagnostic = diagnostics[i];
+					if(diagnostic.severity == Diagnostic.SEVERITY_HINT)
+					{
+						//skip hints because they are not meant to be displayed
+						//to the user like regular problems. they're used
+						//internally by the language server or the editor for
+						//other types of things, such as code actions.
+						continue;
+					}
 					var startChar:int = diagnostic.range.start.character;
 					var endChar:int = diagnostic.range.end.character;
 					var maxChar:int = textLine.rawTextLength - 1;
