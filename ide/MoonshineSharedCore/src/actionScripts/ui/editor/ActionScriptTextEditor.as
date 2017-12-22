@@ -144,14 +144,13 @@ package actionScripts.ui.editor
 		private function onKeyDown(event:KeyboardEvent):void
 		{
 			var fromCharCode:String = String.fromCharCode(event.charCode);
-			var ctrlSpace:Boolean = String.fromCharCode(event.keyCode) == " " && event.ctrlKey;
+			var ctrlSpace:Boolean = event.keyCode == Keyboard.SPACE && event.ctrlKey;
 			var memberAccess:Boolean = fromCharCode == ".";
 			var typeAnnotation:Boolean = fromCharCode == ":";
-			var space:Boolean = fromCharCode == " ";
 			var openTag:Boolean = fromCharCode == "<";
 			var enterKey:Boolean = event.keyCode == 13;
 			
-			if (ctrlSpace || memberAccess || typeAnnotation || space || openTag)
+			if (ctrlSpace || memberAccess || typeAnnotation || openTag)
 			{
 				if(!ctrlSpace)
 				{
