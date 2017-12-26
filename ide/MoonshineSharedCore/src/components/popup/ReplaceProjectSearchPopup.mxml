@@ -100,6 +100,7 @@
 						updateOpenEditor(event.value.value);
 						break;
 					case WorkerEvent.PROCESS_ENDS:
+						btnPreview.enabled = false;
 						btnReplace.label = "Finish";
 						btnReplace.enabled = true;
 						isWorking = false;
@@ -124,8 +125,16 @@
 			
 			private function openPreview():void
 			{
+				// validation check for Enter key
+				if (StringUtil.trim(txtReplaceWith.text).length == 0) return;
+				
 				var tmpPopup:SearchInProjectPreviewPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPreviewPopup, true) as SearchInProjectPreviewPopup;
 				tmpPopup.replaceValue = replaceValue;
+				tmpPopup.replaceWithValue = txtReplaceWith.text;
+				tmpPopup.filesCount = filesCount;
+				tmpPopup.isMatchCase = isMatchCase;
+				tmpPopup.isRegexp = isRegexp;
+				tmpPopup.isEscapeChars = isEscapeChars;
 				tmpPopup.width = screen.width * .6;
 				tmpPopup.height = screen.height * .8;
 				PopUpManager.centerPopUp(tmpPopup);
@@ -157,7 +166,8 @@
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
-		<s:Button label="Preview"
+		<s:Button id="btnPreview" 
+				  label="Preview"
 				  styleName="darkButton"
 				  click="openPreview()"/>
 		<s:Button id="btnReplace" 

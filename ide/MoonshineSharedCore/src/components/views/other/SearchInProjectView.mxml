@@ -10,6 +10,7 @@
 			import mx.collections.ArrayCollection;
 			import mx.controls.Tree;
 			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
 			import mx.events.CollectionEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -153,7 +154,7 @@
 						generateSearchTree(tmpObj);
 						break;
 					case WorkerEvent.TOTAL_FOUND_COUNT:
-						var tmpArr:Array = event.value.value.split("\:/");
+						var tmpArr:Array = event.value.value.split("::");
 						foundCountsDict[tmpArr[0]] = tmpArr[1];
 						break;
 					case WorkerEvent.PROCESS_ENDS:
@@ -184,6 +185,8 @@
 			{
 				if (isShowReplaceWhenDone && currentCount != 0)
 				{
+					btnReplae.enabled = false;
+					
 					var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
 					replacePopup.replaceValue = valueToSearch;
 					replacePopup.matchCount = currentCount;
@@ -191,10 +194,17 @@
 					replacePopup.isMatchCase = isMatchCase;
 					replacePopup.isRegexp = isRegexp;
 					replacePopup.isEscapeChars = isEscapeChars;
+					replacePopup.addEventListener(CloseEvent.CLOSE, onReplacePopupClosed, false, 0, true);
 					
 					PopUpManager.centerPopUp(replacePopup);
 					replacePopup.y = 91;
 				}
+			}
+			
+			private function onReplacePopupClosed(event:CloseEvent):void
+			{
+				event.target.removeEventListener(CloseEvent.CLOSE, onReplacePopupClosed);
+				btnReplae.enabled = true;
 			}
 			
 			private function generateSearchTree(value:Object):void
@@ -278,17 +288,24 @@
 	<s:VGroup id="vgContent" 
 			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
 			  width="100%" height="100%">
-		<s:VGroup width="100%" gap="4">
-			<s:Label text="{'Searching for pattern /'+ valueToSearch +'/'}"
-					 fontWeight="bold"/>
-			<s:Label id="txtFoundMessage" 
-					 height="{pbFiles.height}" verticalAlign="middle"
-					 includeInLayout="false" visible="false"/>
-			<mx:ProgressBar id="pbFiles" 
-							mode="manual"
-							width="100%" labelPlacement="right" labelWidth="0"
-							barSkin="elements.skins.IDEProgressBarSkin"/>
-		</s:VGroup>
+		<s:HGroup width="100%" verticalAlign="bottom">
+			<s:VGroup width="100%" gap="4">
+				<s:Label text="{'Searching for pattern /'+ valueToSearch +'/'}"
+						 fontWeight="bold"/>
+				<s:Label id="txtFoundMessage" 
+						 height="{pbFiles.height}" verticalAlign="middle"
+						 includeInLayout="false" visible="false"/>
+				<mx:ProgressBar id="pbFiles" 
+								mode="manual"
+								width="100%" labelPlacement="right" labelWidth="0"
+								barSkin="elements.skins.IDEProgressBarSkin"/>
+			</s:VGroup>
+			<s:Button id="btnReplae" 
+					  label="Replace"
+					  styleName="lightButton"
+					  includeInLayout="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}" visible="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}"
+					  enabled="false" click="testReplaceRequest()"/>
+		</s:HGroup>
 		<mx:Tree
 			id="tree"
 			width="100%" height="100%"

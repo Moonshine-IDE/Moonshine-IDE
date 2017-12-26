@@ -3,10 +3,14 @@ package actionScripts.ui.marker
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
-	import mx.core.UIComponent;
+	import mx.events.ResizeEvent;
+	import mx.graphics.SolidColor;
 	
 	import spark.components.Group;
 	import spark.components.TextArea;
+	import spark.primitives.Rect;
+	
+	import actionScripts.events.GeneralEvent;
 	
 	import components.skins.TransparentTextAreaSkin;
 	
@@ -14,6 +18,8 @@ package actionScripts.ui.marker
 	import flashx.textLayout.compose.TextFlowLine;
 	import flashx.textLayout.formats.TextLayoutFormat;
 	
+	[Event(name="VSCrollUpdate", type="actionScripts.events.GeneralEvent")]
+	[Event(name="HSCrollUpdate", type="actionScripts.events.GeneralEvent")]
 	public class MarkerTextArea extends Group
 	{
 		private static var LINE_HEIGHT:Number;
@@ -43,6 +49,11 @@ package actionScripts.ui.marker
 		{
 			super.createChildren();
 			
+			var bg:Rect = new Rect();
+			bg.fill = new SolidColor(0xf5f5f5);
+			bg.left = bg.right = bg.top = bg.bottom = 0;
+			addElement(bg);
+			
 			lineHighlightContainer = new Group();
 			lineHighlightContainer.percentWidth = lineHighlightContainer.percentHeight = 100;
 			addElement(lineHighlightContainer);
@@ -57,10 +68,20 @@ package actionScripts.ui.marker
 		
 		public function highlight(search:String):void
 		{
-			this.search = search;
-			textArea.scroller.verticalScrollBar.addEventListener(Event.CHANGE, onScrollUpdate);
+			highlightDict = new Dictionary();
+			isAllLinesRendered = false;
+			lineHighlightContainer.graphics.clear();
+			textArea.scroller.verticalScrollBar.value = 0;
+			this.search = search.toLowerCase();
+			textArea.setFormatOfRange(new TextLayoutFormat());
 			
-			var positions:Array = getPositions(textArea.text, search);
+			if (!textArea.scroller.verticalScrollBar.hasEventListener(Event.CHANGE)) 
+			{
+				textArea.scroller.verticalScrollBar.addEventListener(Event.CHANGE, onVScrollUpdate);
+				textArea.scroller.horizontalScrollBar.addEventListener(Event.CHANGE, onHScrollUpdate);
+			}
+			
+			var positions:Array = getPositions(textArea.text.toLowerCase(), search);
 			var len:uint = positions.length;
 			
 			for(var i:int = 0; i<len; i++)
@@ -69,6 +90,10 @@ package actionScripts.ui.marker
 				textLayoutFormat.backgroundColor = 0xFF00FF;
 				textArea.setFormatOfRange(textLayoutFormat, positions[i].posStart, positions[i].posEnd);
 			}
+			
+			// adding necessary listeners
+			this.addEventListener(ResizeEvent.RESIZE, onStageResized);
+			this.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 		}
 		
 		public function getPositions(original:String, search:String):Array 
@@ -85,7 +110,7 @@ package actionScripts.ui.marker
 			
 			var updateLastIndex:Boolean = true;
 			var composer:StandardFlowComposer = textArea.textFlow.flowComposer as StandardFlowComposer;
-
+			
 			lineHighlightContainer.graphics.beginFill(0xffff00, .35); 
 			lineHighlightContainer.graphics.lineStyle(1, 0xffff00, .65, true);
 			
@@ -94,9 +119,9 @@ package actionScripts.ui.marker
 				var tfl:TextFlowLine = composer.lines[i];
 				
 				if (i == 1) LINE_HEIGHT = tfl.y - composer.lines[0].y;
-				if (tfl.paragraph && tfl.paragraph.mxmlChildren[0].text.indexOf(search) != -1)
+				if (tfl.paragraph && tfl.paragraph.mxmlChildren[0].text.toLowerCase().indexOf(search) != -1)
 				{
-					lineHighlightContainer.graphics.drawRect(0, tfl.y, width, tfl.height);
+					lineHighlightContainer.graphics.drawRect(0, tfl.y-1, width, tfl.height);
 					highlightDict[i] = true;
 				}
 				
@@ -113,7 +138,7 @@ package actionScripts.ui.marker
 			
 			var positions:Array = [];
 			var startPosition:Number;
-			var endPosition:Number;
+			var endPosition:Number = 0;
 			
 			while (startPosition != -1) {
 				startPosition = original.indexOf(search, endPosition);
@@ -124,7 +149,18 @@ package actionScripts.ui.marker
 			return positions;
 		}
 		
-		private function onScrollUpdate(event:Event):void
+		public function updateVScrollByNeighbour(event:GeneralEvent):void
+		{
+			textArea.scroller.viewport.verticalScrollPosition = event.value as Number;
+			onVScrollUpdate(null, false);
+		}
+		
+		public function updateHScrollByNeighbour(event:GeneralEvent):void
+		{
+			textArea.scroller.viewport.horizontalScrollPosition = event.value as Number;
+		}
+		
+		private function onVScrollUpdate(event:Event, isDispatchEvent:Boolean=true):void
 		{
 			if (!isAllLinesRendered)
 			{
@@ -141,7 +177,7 @@ package actionScripts.ui.marker
 						var tfl:TextFlowLine = composer.lines[i];
 						if (highlightDict[i] == undefined && contentInLineBreaks[i].indexOf(search) != -1)
 						{
-							lineHighlightContainer.graphics.drawRect(0, (i * LINE_HEIGHT)+5, width, LINE_HEIGHT);
+							lineHighlightContainer.graphics.drawRect(0, (i * LINE_HEIGHT)+4, width, LINE_HEIGHT);
 							highlightDict[i] = true;
 						}
 						
@@ -159,6 +195,25 @@ package actionScripts.ui.marker
 			}
 			
 			lineHighlightContainer.y = -textArea.scroller.viewport.verticalScrollPosition;
+			if (isDispatchEvent) dispatchEvent(new GeneralEvent("VSCrollUpdate", textArea.scroller.viewport.verticalScrollPosition));
+		}
+		
+		private function onHScrollUpdate(event:Event):void
+		{
+			dispatchEvent(new GeneralEvent("HSCrollUpdate", textArea.scroller.viewport.horizontalScrollPosition));
+		}
+		
+		private function onRemovedFromStage(event:Event):void
+		{
+			textArea.scroller.verticalScrollBar.removeEventListener(Event.CHANGE, onVScrollUpdate);
+			textArea.scroller.horizontalScrollBar.removeEventListener(Event.CHANGE, onHScrollUpdate);
+			this.removeEventListener(ResizeEvent.RESIZE, onStageResized);
+			this.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+		}
+		
+		private function onStageResized(event:ResizeEvent):void
+		{
+			trace("gandu2");
 		}
 	}
 }

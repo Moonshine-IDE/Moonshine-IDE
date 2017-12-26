@@ -6,21 +6,30 @@
 		 initialize="onInit(event)">
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.setTimeout;
-			
+			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.WorkerEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEWorker;
+			import actionScripts.utils.TextUtil;
 			
 			import components.skins.ResizableTitleWindowSkin;
 			
+			[Bindable] public var filesCount:int;
+			
 			public var replaceValue:String;
+			public var replaceWithValue:String;
+			public var isMatchCase:Boolean;
+			public var isRegexp:Boolean;
+			public var isEscapeChars:Boolean;
+			
+			[Bindable] private var storedPathsForProbableReplace:ArrayCollection;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
-			private var storedPathsForProbableReplace:Array;
 			
 			override protected function closeByCrossSign(event:Event):void
 			{
@@ -39,7 +48,7 @@
 				switch (event.value.event)
 				{
 					case WorkerEvent.GET_FILE_LIST:
-						storedPathsForProbableReplace = event.value.value;
+						storedPathsForProbableReplace = new ArrayCollection(event.value.value);
 						generateUI();
 						break;
 				}
@@ -47,11 +56,44 @@
 			
 			protected function generateUI():void
 			{
-				// ** Test **
 				if (!storedPathsForProbableReplace || storedPathsForProbableReplace.length == 0) return;
-				var tmpContent:String = new FileLocation(storedPathsForProbableReplace[0]).fileBridge.read() as String;
+				
+				// pre-load the first instance from the list
+				updateMarkers(storedPathsForProbableReplace[0].label);
+			}
+			
+			protected function onListSelectionChanged(event:IndexChangeEvent):void
+			{
+				updateMarkers(lstFiles.selectedItem.label);
+			}
+			
+			private function updateMarkers(filePath:String):void
+			{
+				var tmpContent:String = new FileLocation(filePath).fileBridge.read() as String;
 				marker1.text = tmpContent;
 				marker1.highlight(replaceValue);
+				
+				var searchString:String = isEscapeChars ? TextUtil.escapeRegex(replaceValue) : replaceValue;
+				var flags:String = 'g';
+				if (!isMatchCase) flags += 'i';
+				var searchRegExp:RegExp = new RegExp(searchString, flags);
+				tmpContent = tmpContent.replace(searchRegExp, replaceWithValue);
+				
+				marker2.text = tmpContent;
+				marker2.highlight(replaceWithValue);
+			}
+			
+			protected function onReplaceSelectedFiles(event:MouseEvent):void
+			{
+				// update file list array in worker 
+				worker.sendToWorker(WorkerEvent.SET_FILE_LIST, storedPathsForProbableReplace.source);
+				// request to start replacing
+				worker.sendToWorker(WorkerEvent.REPLACE_FILE_WITH_VALUE, getReplaceObject());
+			}
+			
+			private function getReplaceObject():Object
+			{
+				return {valueToSearch:replaceValue, valueToReplace:replaceWithValue, isMatchCase:isMatchCase, isRegexp:isRegexp, isEscapeChars:isEscapeChars};
 			}
 			
 		]]>
@@ -59,20 +101,49 @@
 	
 	<s:VGroup height="100%" width="100%" 
 			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
-		<s:Label text="Changes to be performed in:"/>
+		<s:Label text="Changes can be performed in {filesCount} files:"/>
 		<s:List id="lstFiles"
-				width="100%" height="{this.height*.2}" styleName="multiLineList"/>
+				width="100%" height="{this.height*.2}" styleName="multiLineList"
+				dataProvider="{storedPathsForProbableReplace}" change="onListSelectionChanged(event)"
+				requireSelection="true">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer width="100%" height="22">
+						<fx:Script>
+							<![CDATA[
+								override public function set data(value:Object):void
+								{
+									if (value) super.data = value;
+								}
+								
+							]]>
+						</fx:Script>
+						
+						<s:layout>
+							<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="10"/>
+						</s:layout>
+						
+						<s:CheckBox id="cbSelect"
+									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+						<s:Label text="{data.label}"/>
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:List>
 		<s:HGroup width="100%" height="100%">
 			<marker:MarkerTextArea id="marker1"
-								   width="50%" height="100%"/>
+								   width="50%" height="100%"
+								   VSCrollUpdate="{marker2.updateVScrollByNeighbour(event)}" HSCrollUpdate="{marker2.updateHScrollByNeighbour(event)}"/>
 			<marker:MarkerTextArea id="marker2"
-								   width="50%" height="100%"/>
+								   width="50%" height="100%"
+								   VSCrollUpdate="{marker1.updateVScrollByNeighbour(event)}" HSCrollUpdate="{marker1.updateHScrollByNeighbour(event)}"/>
 		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnCreate" label="Create"
+		<s:Button id="btnReplace" label="Replace All Selected"
 				  styleName="darkButton"
-				  enabled="false"/>
+				  enabled="false"
+				  click="onReplaceSelectedFiles(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
