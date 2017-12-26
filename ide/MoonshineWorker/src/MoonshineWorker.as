@@ -61,19 +61,27 @@ package
 		
 		private function onMainToWorker(event:Event):void
 		{
-			projectSearchObject = mainToWorker.receive();
-			switch (projectSearchObject.event)
+			var incomingObject:Object = mainToWorker.receive();
+			switch (incomingObject.event)
 			{
 				case WorkerEvent.SEARCH_IN_PROJECTS:
+					projectSearchObject = incomingObject;
 					projects = projectSearchObject.value.projects;
 					isStorePathsForProbableReplace = projectSearchObject.value.isShowReplaceWhenDone;
+					FILES_FOUND_IN_COUNT = 0;
+					storedPathsForProbableReplace = null;
+					storedPathsForProbableReplace = [];
 					parseProjectsTree();
 					break;
 				case WorkerEvent.REPLACE_FILE_WITH_VALUE:
+					projectSearchObject = incomingObject;
 					startReplacing();
 					break;
 				case WorkerEvent.GET_FILE_LIST:
 					workerToMain.send({event:WorkerEvent.GET_FILE_LIST, value:storedPathsForProbableReplace});
+					break;
+				case WorkerEvent.SET_FILE_LIST:
+					storedPathsForProbableReplace = incomingObject as Array;
 					break;
 			}
 		}
@@ -87,11 +95,9 @@ package
 				return;
 			}
 			
-			FILES_COUNT = FILE_PROCESSED_COUNT = FILES_FOUND_IN_COUNT = 0;
+			FILES_COUNT = FILE_PROCESSED_COUNT = 0;
 			totalFoundCount = 0;
 			isCustomFilePatterns = false;
-			storedPathsForProbableReplace = null;
-			storedPathsForProbableReplace = [];
 			
 			var tmpWrapper:WorkerFileWrapper = new WorkerFileWrapper(new File(projects[0]), true);
 			workerToMain.send({event:WorkerEvent.TOTAL_FILE_COUNT, value:FILES_COUNT});
@@ -140,7 +146,7 @@ package
 							value.children[c].searchCount = tmpReturnCount;
 							totalFoundCount += tmpReturnCount;
 							FILES_FOUND_IN_COUNT++;
-							if (isStorePathsForProbableReplace) storedPathsForProbableReplace.push(value.children[c].file.nativePath);
+							if (isStorePathsForProbableReplace) storedPathsForProbableReplace.push({label:value.children[c].file.nativePath, isSelected:true});
 						}
 					}
 					else if (!value.children[c].file.isDirectory && !isAcceptable)
@@ -168,7 +174,7 @@ package
 				if (value.isRoot)
 				{
 					notifyFileCountCompletionToMain();
-					workerToMain.send({event:WorkerEvent.TOTAL_FOUND_COUNT, value:value.file.nativePath +"\:/"+ totalFoundCount});
+					workerToMain.send({event:WorkerEvent.TOTAL_FOUND_COUNT, value:value.file.nativePath +"::"+ totalFoundCount});
 					workerToMain.send({event:WorkerEvent.FILTERED_FILE_COLLECTION, value:value});
 					
 					// restart with available next project (if any)
@@ -212,10 +218,10 @@ package
 		
 		private function startReplacing():void
 		{
-			for each (var i:String in storedPathsForProbableReplace)
+			for each (var i:Object in storedPathsForProbableReplace)
 			{
-				testFilesForValueExist(i, projectSearchObject.value.valueToReplace);
-				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:i});
+				testFilesForValueExist(i.label, projectSearchObject.value.valueToReplace);
+				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:i.label}); // sending path value instead of completion count in case of replace 
 			}
 			
 			// once done 
