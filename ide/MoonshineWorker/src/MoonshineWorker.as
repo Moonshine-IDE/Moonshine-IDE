@@ -81,7 +81,7 @@ package
 					workerToMain.send({event:WorkerEvent.GET_FILE_LIST, value:storedPathsForProbableReplace});
 					break;
 				case WorkerEvent.SET_FILE_LIST:
-					storedPathsForProbableReplace = incomingObject as Array;
+					storedPathsForProbableReplace = incomingObject.value as Array;
 					break;
 			}
 		}
@@ -220,8 +220,11 @@ package
 		{
 			for each (var i:Object in storedPathsForProbableReplace)
 			{
-				testFilesForValueExist(i.label, projectSearchObject.value.valueToReplace);
-				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:i.label}); // sending path value instead of completion count in case of replace 
+				if (i.isSelected)
+				{
+					testFilesForValueExist(i.label, projectSearchObject.value.valueToReplace);
+					workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:i.label}); // sending path value instead of completion count in case of replace 
+				}
 			}
 			
 			// once done 
