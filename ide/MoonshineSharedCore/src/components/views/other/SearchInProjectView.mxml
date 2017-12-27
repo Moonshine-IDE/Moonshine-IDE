@@ -30,13 +30,13 @@
 			import components.popup.ReplaceProjectSearchPopup;
 			
 			[Bindable] public var valueToSearch:String;
+			[Bindable] public var isShowReplaceWhenDone:Boolean;
 			
 			public var patterns:String;
 			public var scope:String;
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
-			public var isShowReplaceWhenDone:Boolean;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
