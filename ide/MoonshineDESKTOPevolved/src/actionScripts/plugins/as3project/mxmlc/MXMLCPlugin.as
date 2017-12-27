@@ -953,6 +953,8 @@ package actionScripts.plugins.as3project.mxmlc
 		private var resourceCopiedIndex:int;
 		private function getResourceCopied(pvo:AS3ProjectVO, swfFile:File):void
 		{
+			if (pvo.resourcePaths.length == 0) return;
+			
 			var destination:File = swfFile.parent;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
 			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopiedHandler, false, 0, true);
