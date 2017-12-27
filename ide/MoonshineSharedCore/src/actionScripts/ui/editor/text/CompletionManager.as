@@ -273,6 +273,7 @@ package actionScripts.ui.editor.text
 				editor.setFocus();
 				clearTimeout(timeoutValue);
 			}, 1);
+			menuCollection.removeAll();
 		}
 
 		private function rePositionMenu():void
