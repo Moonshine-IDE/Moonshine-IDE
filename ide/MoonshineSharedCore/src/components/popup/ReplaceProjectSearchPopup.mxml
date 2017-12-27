@@ -26,7 +26,7 @@
 				   backgroundColor="0xf5f5f5"
 				   width="400" minWidth="250" minHeight="150" autoLayout="true"
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+				   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
 			import mx.core.FlexGlobals;
@@ -49,12 +49,23 @@
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
+			public var replaceWithValue:String;
+			public var isStartReplaceImmediately:Boolean;
 			
 			[Bindable] private var matchCountProcessed:int;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
 			private var isWorking:Boolean;
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (isStartReplaceImmediately && replaceWithValue)
+				{
+					txtReplaceWith.text = replaceWithValue;
+					onChangeButton(null);
+				}
+			}
 			
 			protected function onChangeButton(event:MouseEvent):void
 			{
@@ -68,6 +79,7 @@
 				// validation check for Enter key
 				if (StringUtil.trim(txtReplaceWith.text).length == 0) return;
 				
+				replaceWithValue = txtReplaceWith.text;
 				btnReplace.enabled = false;
 				currentState = "progress";
 				pbProgress.setProgress(0, filesCount);
@@ -80,7 +92,7 @@
 			
 			private function getReplaceObject():Object
 			{
-				return {valueToSearch:replaceValue, valueToReplace:txtReplaceWith.text, isMatchCase:isMatchCase, isRegexp:isRegexp, isEscapeChars:isEscapeChars};
+				return {valueToSearch:replaceValue, valueToReplace:replaceWithValue, isMatchCase:isMatchCase, isRegexp:isRegexp, isEscapeChars:isEscapeChars};
 			}
 			
 			override protected function closeByCrossSign(event:Event):void
@@ -131,6 +143,7 @@
 				var tmpPopup:SearchInProjectPreviewPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPreviewPopup, true) as SearchInProjectPreviewPopup;
 				tmpPopup.replaceValue = replaceValue;
 				tmpPopup.replaceWithValue = txtReplaceWith.text;
+				tmpPopup.matchCount = matchCount;
 				tmpPopup.filesCount = filesCount;
 				tmpPopup.isMatchCase = isMatchCase;
 				tmpPopup.isRegexp = isRegexp;
@@ -140,6 +153,7 @@
 				PopUpManager.centerPopUp(tmpPopup);
 				closeThis();
 			}
+			
 			
 		]]>
 	</fx:Script>

@@ -7,7 +7,9 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
 			
 			import spark.events.IndexChangeEvent;
 			
@@ -21,6 +23,7 @@
 			
 			[Bindable] public var filesCount:int;
 			
+			public var matchCount:int;
 			public var replaceValue:String;
 			public var replaceWithValue:String;
 			public var isMatchCase:Boolean;
@@ -58,6 +61,10 @@
 			{
 				if (!storedPathsForProbableReplace || storedPathsForProbableReplace.length == 0) return;
 				
+				marker1.isEscapeChars = marker2.isEscapeChars = isEscapeChars;
+				marker1.isMatchCase = marker2.isMatchCase = isMatchCase;
+				marker1.isRegexp = marker2.isRegexp = isRegexp;
+				
 				// pre-load the first instance from the list
 				updateMarkers(storedPathsForProbableReplace[0].label);
 			}
@@ -77,23 +84,43 @@
 				var flags:String = 'g';
 				if (!isMatchCase) flags += 'i';
 				var searchRegExp:RegExp = new RegExp(searchString, flags);
-				tmpContent = tmpContent.replace(searchRegExp, replaceWithValue);
 				
-				marker2.text = tmpContent;
+				marker2.text = tmpContent.replace(searchRegExp, replaceWithValue);
 				marker2.highlight(replaceWithValue);
 			}
 			
 			protected function onReplaceSelectedFiles(event:MouseEvent):void
 			{
+				var selectedFilesCount:int = getSelectedFilesCount();
+				if (selectedFilesCount == 0) return;
+							
 				// update file list array in worker 
 				worker.sendToWorker(WorkerEvent.SET_FILE_LIST, storedPathsForProbableReplace.source);
-				// request to start replacing
-				worker.sendToWorker(WorkerEvent.REPLACE_FILE_WITH_VALUE, getReplaceObject());
+				
+				// open progress smaller window
+				var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
+				replacePopup.replaceValue = replaceValue;
+				replacePopup.replaceWithValue = replaceWithValue;
+				replacePopup.matchCount = matchCount;
+				replacePopup.filesCount = selectedFilesCount;
+				replacePopup.isMatchCase = isMatchCase;
+				replacePopup.isRegexp = isRegexp;
+				replacePopup.isEscapeChars = isEscapeChars;
+				replacePopup.isStartReplaceImmediately = true;
+				
+				PopUpManager.centerPopUp(replacePopup);
+				closeThis();
 			}
 			
-			private function getReplaceObject():Object
+			private function getSelectedFilesCount():int
 			{
-				return {valueToSearch:replaceValue, valueToReplace:replaceWithValue, isMatchCase:isMatchCase, isRegexp:isRegexp, isEscapeChars:isEscapeChars};
+				var tmp:int;
+				for each (var i:Object in storedPathsForProbableReplace)
+				{
+					if (i.isSelected) tmp++;
+				}
+				
+				return tmp;
 			}
 			
 		]]>
@@ -143,7 +170,6 @@
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnReplace" label="Replace All Selected"
 				  styleName="darkButton"
-				  enabled="false"
 				  click="onReplaceSelectedFiles(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

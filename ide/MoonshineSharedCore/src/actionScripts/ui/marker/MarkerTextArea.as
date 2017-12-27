@@ -24,13 +24,9 @@ package actionScripts.ui.marker
 	{
 		private static var LINE_HEIGHT:Number;
 		
-		private var textArea:TextArea;
-		private var lineHighlightContainer:Group;
-		private var search:String;
-		private var lastLinesIndex:int;
-		private var highlightDict:Dictionary = new Dictionary();
-		private var contentInLineBreaks:Array;
-		private var isAllLinesRendered:Boolean;
+		public var isMatchCase:Boolean;
+		public var isRegexp:Boolean;
+		public var isEscapeChars:Boolean;
 		
 		private var _text:String;
 		public function get text():String {	return _text;	}
@@ -38,6 +34,14 @@ package actionScripts.ui.marker
 			_text = value;
 			if (textArea) textArea.text = _text;
 		};
+		
+		private var textArea:TextArea;
+		private var lineHighlightContainer:Group;
+		private var search:String;
+		private var lastLinesIndex:int;
+		private var highlightDict:Dictionary = new Dictionary();
+		private var contentInLineBreaks:Array;
+		private var isAllLinesRendered:Boolean;
 		
 		public function MarkerTextArea()
 		{
@@ -72,8 +76,8 @@ package actionScripts.ui.marker
 			isAllLinesRendered = false;
 			lineHighlightContainer.graphics.clear();
 			textArea.scroller.verticalScrollBar.value = 0;
-			this.search = search.toLowerCase();
 			textArea.setFormatOfRange(new TextLayoutFormat());
+			this.search = !isMatchCase ? search.toLowerCase() : search;
 			
 			if (!textArea.scroller.verticalScrollBar.hasEventListener(Event.CHANGE)) 
 			{
@@ -81,7 +85,7 @@ package actionScripts.ui.marker
 				textArea.scroller.horizontalScrollBar.addEventListener(Event.CHANGE, onHScrollUpdate);
 			}
 			
-			var positions:Array = getPositions(textArea.text.toLowerCase(), search);
+			var positions:Array = getPositions(!isMatchCase ? textArea.text.toLowerCase() : textArea.text);
 			var len:uint = positions.length;
 			
 			for(var i:int = 0; i<len; i++)
@@ -96,7 +100,7 @@ package actionScripts.ui.marker
 			this.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 		}
 		
-		public function getPositions(original:String, search:String):Array 
+		public function getPositions(original:String):Array 
 		{
 			// @note
 			// we can do the highlight generation in two ways -
@@ -114,25 +118,23 @@ package actionScripts.ui.marker
 			lineHighlightContainer.graphics.beginFill(0xffff00, .35); 
 			lineHighlightContainer.graphics.lineStyle(1, 0xffff00, .65, true);
 			
-			for (var i:int; i < composer.lines.length; i++)
+			composer.lines.forEach(function(element:TextFlowLine, index:int, arr:Array):void
 			{
-				var tfl:TextFlowLine = composer.lines[i];
-				
-				if (i == 1) LINE_HEIGHT = tfl.y - composer.lines[0].y;
-				if (tfl.paragraph && tfl.paragraph.mxmlChildren[0].text.toLowerCase().indexOf(search) != -1)
+				if (index == 1) LINE_HEIGHT = element.y - composer.lines[0].y;
+				if (element.paragraph && (!isMatchCase ? element.paragraph.mxmlChildren[0].text.toLowerCase().indexOf(search) != -1 : element.paragraph.mxmlChildren[0].text.indexOf(search) != -1))
 				{
-					lineHighlightContainer.graphics.drawRect(0, tfl.y-1, width, tfl.height);
-					highlightDict[i] = true;
+					lineHighlightContainer.graphics.drawRect(0, element.y-1, width, element.height);
+					highlightDict[index] = true;
 				}
 				
-				if (!tfl.paragraph && updateLastIndex)
+				if (!element.paragraph && updateLastIndex)
 				{
-					lastLinesIndex = i;
+					lastLinesIndex = index;
 					updateLastIndex = false;
 				}
 				else if (updateLastIndex)
-					lastLinesIndex = i;
-			}
+					lastLinesIndex = index;
+			});
 			
 			lineHighlightContainer.graphics.endFill();
 			
