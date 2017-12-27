@@ -29,11 +29,10 @@ package actionScripts.ui.editor.text
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 
 	import mx.collections.ArrayCollection;
-    import mx.collections.SortFieldCompareTypes;
-
     import mx.managers.PopUpManager;
     import mx.utils.ObjectUtil;
 
@@ -270,10 +269,9 @@ package actionScripts.ui.editor.text
 
 		private function onMenuRemoved(event:Event):void
 		{
-			setTimeout(function():void {
+			var timeoutValue:uint = setTimeout(function():void {
 				editor.setFocus();
-				//stage.focus = editor;
-				//FocusManager.getManager(stage).setFocusOwner(editor as Component);
+				clearTimeout(timeoutValue);
 			}, 1);
 		}
 
