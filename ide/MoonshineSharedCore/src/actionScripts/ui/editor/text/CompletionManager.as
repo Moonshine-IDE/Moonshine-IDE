@@ -32,10 +32,16 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayCollection;
-	
-    import mx.managers.PopUpManager;
+    import mx.collections.SortFieldCompareTypes;
 
-	public class CompletionManager
+    import mx.managers.PopUpManager;
+    import mx.utils.ObjectUtil;
+
+    import spark.collections.Sort;
+
+    import spark.collections.SortField;
+
+    public class CompletionManager
 	{
 		private static const MIN_CODECOMPLETION_LIST_HEIGHT:int = 8;
 		
@@ -56,6 +62,8 @@ package actionScripts.ui.editor.text
 			completionList = new CodeCompletionList();
 			menuCollection = new ArrayCollection();
 			menuCollection.filterFunction = filterCodeCompletionMenu;
+			menuCollection.sort = new Sort([new SortField("label")], sortCodeCompletionMenu);
+			
 			completionList.dataProvider = menuCollection;
 		}
 
@@ -371,7 +379,20 @@ package actionScripts.ui.editor.text
 			}
 			//we don't need to call toLowerCase() on menuStr here
 			//because it is already lower case
-            return item.label.toLowerCase().indexOf(menuStr) == 0;
+			return item.label.toLowerCase().indexOf(menuStr) > -1;
         }
+
+		private function sortCodeCompletionMenu(itemA:CompletionItem, itemB:CompletionItem, fields:Array):int
+		{
+			if (menuStr.length == 0)
+			{
+				return ObjectUtil.stringCompare(itemA.label, itemB.label, true);
+			}
+			
+			var indexOfLabelItemA:int = itemA.label.toLowerCase().indexOf(menuStr);
+            var indexOfLabelItemB:int = itemB.label.toLowerCase().indexOf(menuStr);
+
+			return ObjectUtil.numericCompare(indexOfLabelItemA, indexOfLabelItemB);
+		}
     }
 }
