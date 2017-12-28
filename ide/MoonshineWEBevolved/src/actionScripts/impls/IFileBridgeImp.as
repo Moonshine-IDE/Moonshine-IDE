@@ -191,6 +191,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function openWithDefaultApplication():void
+		{
+			
+		}
+		
 		public function get url():String
 		{
 			//TODO: implement function
