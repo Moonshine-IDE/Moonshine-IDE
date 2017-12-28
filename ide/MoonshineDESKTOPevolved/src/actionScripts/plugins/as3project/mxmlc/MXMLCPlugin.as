@@ -291,7 +291,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function reset():void 
 		{
-			startShell(false);
+			stopShell();
 			//exiting = true;
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
@@ -782,50 +782,56 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function initShell():void 
 		{
-			if (fcsh) {
-				startShell(false);
+			if (fcsh)
+			{
+				stopShell();
 				exiting = true;
 				reset();
-			} else {
-				startShell(true);
-			}
-		}
-		
-		private function startShell(start:Boolean):void 
-		{
-			if (start)
-			{
-				// stop running debug process for run/build if debug process in running
-				if (!debugAfterBuild) GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
-				
-				fcsh = new NativeProcess();
-				fcsh.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				fcsh.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-				fcsh.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
-				fcsh.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
-				fcsh.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				fcsh.start(shellInfo);
-				
-				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, currentProject.projectName, runAfterBuild ? "Launching " : "Building "));
-				dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
-				flush();
 			}
 			else
 			{
-				if (!fcsh) return;
-				if (fcsh.running) fcsh.exit();
-				fcsh.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				fcsh.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-				fcsh.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
-				fcsh.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
-				fcsh.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				fcsh = null;
-				
-				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-				dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
+				startShell();
 			}
 		}
 		
+		private function startShell():void
+		{
+			// stop running debug process for run/build if debug process in running
+			if (!debugAfterBuild)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG, false));
+			}
+
+			fcsh = new NativeProcess();
+			fcsh.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			fcsh.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			fcsh.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
+			fcsh.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
+			fcsh.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			fcsh.start(shellInfo);
+
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
+					currentProject.projectName,
+					runAfterBuild ? "Launching " : "Building "));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
+			flush();
+		}
+
+		private function stopShell():void
+		{
+            if (!fcsh) return;
+            if (fcsh.running) fcsh.exit();
+            fcsh.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+            fcsh.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+            fcsh.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
+            fcsh.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
+            fcsh.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+            fcsh = null;
+
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
+		}
+
 		private function onTerminateBuildRequest(event:StatusBarEvent):void
 		{
 			if (fcsh && fcsh.running)
@@ -840,6 +846,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
+                trace("Start building project with data " + data);
 				var match:Array;
 				var isSuccessBuild:Boolean;
 				
@@ -902,7 +909,10 @@ package actionScripts.plugins.as3project.mxmlc
 					reset();
 				}
 				
-				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
+				if (data.charAt(data.length-1) == "\n")
+				{
+					data = data.substr(0, data.length-1);
+                }
 				debug("%s", data);
 			}
 			
@@ -1014,7 +1024,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (syntaxMatch) {
 					var pathStr:String = syntaxMatch[1];
 					var lineNum:int = syntaxMatch[2];
-					var colNum:int = syntaxMatch[3];
 					var errorStr:String = syntaxMatch[4];
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
 					errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
@@ -1041,27 +1050,13 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			//debug("MCMLC exit code: %s", e.exitCode);
 			reset();
-			if (exiting) {
-				exiting = false;
-				startShell(true);
-			}
-		}
-		
-		protected function compilerWarning(...msg):void 
-		{
-			var text:String = msg.join(" ");
-			var textLines:Array = text.split("\n");
-			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
-			for (var i:int = 0; i < textLines.length; i++)
+			if (exiting)
 			{
-				if (textLines[i] == "") continue;
-				text = "<warning> ⚠  </warning>" + textLines[i]; 
-				var lineModel:TextLineModel = new MarkupTextLineModel(text);
-				lines.push(lineModel);
+				exiting = false;
+				startShell();
 			}
-			outputMsg(lines);
 		}
-		
+
 		protected function compilerError(...msg):void 
 		{
 			var text:String = msg.join(" ");

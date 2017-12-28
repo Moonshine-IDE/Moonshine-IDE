@@ -22,8 +22,7 @@ package actionScripts.ui.menu.renderers
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 	import actionScripts.utils.moonshine_internal;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import flash.display.Shape;
+
 	import flash.display.Sprite;
 	import flash.filters.DropShadowFilter;
 	import flash.utils.getTimer;
@@ -34,11 +33,8 @@ package actionScripts.ui.menu.renderers
 	public class MenuRenderer extends Canvas
 	{
 		private var needsRedrawing:Boolean = false;
-		private var background:Shape;
 		private var itemContainer:VBox;
-		private var needsShadow:Boolean;
 		private var needsRendererLayout:Boolean = false;
-		private var startTime:Number;
 
 		public function MenuRenderer()
 		{
@@ -125,9 +121,7 @@ package actionScripts.ui.menu.renderers
 			var renderer:MenuItemRenderer;
 			var numOfItems:int = _items.length;
 
-			startTime = getTimer();
 			var tmpRenderers:Vector.<MenuItemRenderer> = _model.getMenuItemRenderers(numOfItems);
-			trace("Get Menu Item Renderers 1", getTimer() - startTime);
 			var currMenuItem:ICustomMenuItem;
 
 			for (var i:int = 0; i < numOfItems; i++)
@@ -145,14 +139,10 @@ package actionScripts.ui.menu.renderers
 				itemContainer.addChildAt(renderer, i);
 			}
 
-			
-
 			if (itemContainer.numChildren > numOfItems)
 			{
 				_model.freeMenuItemRenderer(itemContainer, numOfItems);
 			}
-
-
 			
 			needsRendererLayout = true;
 		}

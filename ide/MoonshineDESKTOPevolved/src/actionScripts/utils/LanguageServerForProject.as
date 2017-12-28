@@ -575,7 +575,7 @@ package actionScripts.utils
 			if(match)
 			{
 				trace(data);
-				parseData(output.readUTFBytes(output.bytesAvailable));
+				parseData(data);
 			}
 			else
 			{

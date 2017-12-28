@@ -190,9 +190,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function reset():void 
 		{
-			if(fcsh)
-				fcsh.exit(true);
-			fcsh = null;
+			stopShell();
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
 			errors = "";
@@ -331,7 +329,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (as3Pvo.isFlexJS)
 				{
 					// FlexJS Application
-					var processArgs:Vector.<String> = new Vector.<String>;
 					shellInfo = new NativeProcessStartupInfo();
 					fschstr = fschFile.nativePath;
 					fschstr = UtilsCore.convertString(fschstr);
@@ -341,9 +338,7 @@ package actionScripts.plugins.as3project.mxmlc
 					// update build config file
 					as3Pvo.updateConfig();
 
-					processArgs = getBuildArgs(as3Pvo);
-
-					shellInfo.arguments = processArgs;
+					shellInfo.arguments = getBuildArgs(as3Pvo);
 					shellInfo.executable = cmdFile;
 					shellInfo.workingDirectory = activeProject.folderLocation.fileBridge.getFile as File;
 					initShell();
@@ -565,11 +560,14 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function initShell():void 
 		{
-			if (fcsh) {
+			if (fcsh)
+			{
 				fcsh.exit();
 				exiting = true;
 				reset();
-			} else {
+			}
+			else
+			{
 				startShell();
 			}
 		}
@@ -585,11 +583,31 @@ package actionScripts.plugins.as3project.mxmlc
 			fcsh.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			fcsh.start(shellInfo);
 			
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, currentProject.projectName, runAfterBuild ? "Launching " : "Building "));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
+					currentProject.projectName,
+					runAfterBuild ? "Launching " : "Building "));
 			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
 			flush();
 		}
-		
+
+        private function stopShell():void
+        {
+            if (!fcsh) return;
+            if (fcsh.running)
+			{
+				fcsh.exit(true);
+            }
+            fcsh.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+            fcsh.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+            fcsh.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
+            fcsh.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
+            fcsh.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+            fcsh = null;
+
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
+        }
+
 		private function onTerminateBuildRequest(event:StatusBarEvent):void
 		{
 			if (fcsh && fcsh.running)
@@ -662,7 +680,6 @@ package actionScripts.plugins.as3project.mxmlc
 						reset();
 					}
 				}
-				
 				
 				if (errors != "") 
 				{
@@ -757,16 +774,13 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
 				var syntaxMatch:Array;
 				var generalMatch:Array;
-				var initMatch:Array;
 				
 				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
 				if (syntaxMatch) {
 					var pathStr:String = syntaxMatch[1];
 					var lineNum:int = syntaxMatch[2];
-					var colNum:int = syntaxMatch[3];
 					var errorStr:String = syntaxMatch[4];
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
 					errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
@@ -793,29 +807,13 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			//debug("MXMLC exit code: %s", e.exitCode);
 			reset();
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
-			if (exiting) {
+			if (exiting)
+			{
 				exiting = false;
 				startShell();
 			}
 		}
-		
-		protected function compilerWarning(...msg):void 
-		{
-			var text:String = msg.join(" ");
-			var textLines:Array = text.split("\n");
-			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
-			for (var i:int = 0; i < textLines.length; i++)
-			{
-				if (textLines[i] == "") continue;
-				text = "<warning> ⚠  </warning>" + textLines[i]; 
-				var lineModel:TextLineModel = new MarkupTextLineModel(text);
-				lines.push(lineModel);
-			}
-			outputMsg(lines);
-		}
-		
+
 		protected function compilerError(...msg):void 
 		{
 			var text:String = msg.join(" ");
