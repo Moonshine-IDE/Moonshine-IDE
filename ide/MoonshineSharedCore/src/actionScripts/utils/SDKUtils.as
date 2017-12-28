@@ -462,6 +462,47 @@ package actionScripts.utils
             return currentSdkMinorVersion;
         }
 
+		public static function isJSOnlyRoyaleSDK(sdkLocation:FileLocation):Boolean
+		{
+			var isJSOnlySDK:Boolean;
+            var sdk:FileLocation = null;
+            if (sdkLocation)
+            {
+                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkLocation.fileBridge.nativePath, "path");
+                if (isFound)
+				{
+					sdk = sdkLocation;
+                }
+            }
+            else
+            {
+                sdk = IDEModel.getInstance().defaultSDK;
+            }
+
+            if (sdk && sdk.fileBridge.exists)
+            {
+                var configFile:FileLocation = sdk.resolvePath("frameworks/royale-config.xml");
+                if (configFile.fileBridge.exists)
+                {
+                    var tmpConfigXML:XML = XML(configFile.fileBridge.read());
+                    var compilerXMLList:XMLList = tmpConfigXML.compiler;
+					var compilerXML:XML = compilerXMLList[0];
+					var compilationTargets:XMLList = compilerXML.targets;
+					compilationTargets = compilationTargets.target;
+
+					if (compilationTargets.length() == 1)
+					{
+                        if (compilationTargets[0].text() == "JSRoyale")
+                        {
+                            isJSOnlySDK = true;
+                        }
+					}
+                }
+            }
+
+			return isJSOnlySDK;
+		}
+
 		private static function onExtractionFailed(event:Event):void
 		{
 			isSDKExtractionFailed = true;

@@ -429,8 +429,6 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				model.activeProject = activeProject;
 				UtilsCore.closeAllRelativeEditors(activeProject, false, proceedWithBuild, false);
-				//UtilsCore.checkForUnsavedEdior(activeProject, proceedWithBuild);
-				//proceedWithBuild(activeProject);
 			}
 		}
 		
@@ -464,10 +462,19 @@ package actionScripts.plugins.as3project.mxmlc
 			// Read file content to indentify the project type regular flex application or flexjs applicatino
 			if (as3Pvo.isFlexJS)
 			{
+				if (as3Pvo.isRoyale)
+				{
+					if (SDKUtils.isJSOnlyRoyaleSDK(as3Pvo.buildOptions.customSDK))
+					{
+						error("This SDK only supports JavaScript Builds.");
+						return;
+					}
+				}
+
 				// terminate if it's a debug call against FlexJS
 				if (debugAfterBuild)
 				{
-					Alert.show("Moonshine does not currently support FlexJS project debugging.", "Note!");
+					Alert.show("Moonshine does not currently support FlexJS/Royale project debugging.", "Note!");
 					return;
 				}
 				
