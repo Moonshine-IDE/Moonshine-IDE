@@ -331,7 +331,9 @@ package actionScripts.impls
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				var projectMenuItems:Vector.<MenuItem> = wmn[3].items;
-				projectMenuItems.splice(0, 0, new MenuItem(resourceManager.getString('resources','SEARCH_IN_PROJECTS'), null, SearchPlugin.SEARCH_IN_PROJECTS));
+				projectMenuItems.splice(0, 0, new MenuItem(resourceManager.getString('resources','SEARCH_IN_PROJECTS'), null, SearchPlugin.SEARCH_IN_PROJECTS,
+					'g', [Keyboard.COMMAND, Keyboard.SHIFT],
+					'g', [Keyboard.CONTROL, Keyboard.SHIFT]));
 			}
 			
 			// add a new menuitem after Access Manager
