@@ -76,16 +76,18 @@
 			
 			private function updateMarkers(filePath:String):void
 			{
-				var tmpContent:String = new FileLocation(filePath).fileBridge.read() as String;
-				marker1.text = tmpContent;
-				marker1.highlight(replaceValue);
-				
 				var searchString:String = isEscapeChars ? TextUtil.escapeRegex(replaceValue) : replaceValue;
 				var flags:String = 'g';
 				if (!isMatchCase) flags += 'i';
 				var searchRegExp:RegExp = new RegExp(searchString, flags);
 				
+				var tmpContent:String = new FileLocation(filePath).fileBridge.read() as String;
+				marker1.text = tmpContent;
+				marker1.searchRegExp = searchRegExp;
+				marker1.highlight(replaceValue);
+				
 				marker2.text = tmpContent.replace(searchRegExp, replaceWithValue);
+				marker2.searchRegExp = new RegExp(replaceWithValue, flags);;
 				marker2.highlight(replaceWithValue);
 			}
 			

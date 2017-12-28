@@ -27,6 +27,7 @@ package actionScripts.ui.marker
 		public var isMatchCase:Boolean;
 		public var isRegexp:Boolean;
 		public var isEscapeChars:Boolean;
+		public var searchRegExp:RegExp;
 		
 		private var _text:String;
 		public function get text():String {	return _text;	}
@@ -37,7 +38,6 @@ package actionScripts.ui.marker
 		
 		private var textArea:TextArea;
 		private var lineHighlightContainer:Group;
-		private var search:String;
 		private var lastLinesIndex:int;
 		private var highlightDict:Dictionary = new Dictionary();
 		private var contentInLineBreaks:Array;
@@ -77,7 +77,6 @@ package actionScripts.ui.marker
 			lineHighlightContainer.graphics.clear();
 			textArea.scroller.verticalScrollBar.value = 0;
 			textArea.setFormatOfRange(new TextLayoutFormat());
-			this.search = !isMatchCase ? search.toLowerCase() : search;
 			
 			if (!textArea.scroller.verticalScrollBar.hasEventListener(Event.CHANGE)) 
 			{
@@ -85,7 +84,7 @@ package actionScripts.ui.marker
 				textArea.scroller.horizontalScrollBar.addEventListener(Event.CHANGE, onHScrollUpdate);
 			}
 			
-			var positions:Array = getPositions(!isMatchCase ? textArea.text.toLowerCase() : textArea.text);
+			var positions:Array = getPositions(textArea.text);
 			var len:uint = positions.length;
 			
 			for(var i:int = 0; i<len; i++)
@@ -121,10 +120,10 @@ package actionScripts.ui.marker
 			composer.lines.forEach(function(element:TextFlowLine, index:int, arr:Array):void
 			{
 				if (index == 1) LINE_HEIGHT = element.y - composer.lines[0].y;
-				if (element.paragraph && (!isMatchCase ? element.paragraph.mxmlChildren[0].text.toLowerCase().indexOf(search) != -1 : element.paragraph.mxmlChildren[0].text.indexOf(search) != -1))
+				if (element.paragraph && searchRegExp.exec(element.paragraph.mxmlChildren[0].text))
 				{
-					lineHighlightContainer.graphics.drawRect(0, element.y-1, width, element.height);
-					highlightDict[index] = true;
+						lineHighlightContainer.graphics.drawRect(0, element.y-1, width, element.height);
+						highlightDict[index] = true;
 				}
 				
 				if (!element.paragraph && updateLastIndex)
@@ -139,14 +138,12 @@ package actionScripts.ui.marker
 			lineHighlightContainer.graphics.endFill();
 			
 			var positions:Array = [];
-			var startPosition:Number;
-			var endPosition:Number = 0;
-			
-			while (startPosition != -1) {
-				startPosition = original.indexOf(search, endPosition);
-				endPosition = startPosition + search.length;
-				if (startPosition > -1) positions.push({posStart:startPosition, posEnd:endPosition});
-			}
+			var results:Array = searchRegExp.exec(original);
+			while (results != null)
+			{ 
+				positions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
+				results = searchRegExp.exec(original); 
+			} 
 			
 			return positions;
 		}
@@ -177,7 +174,7 @@ package actionScripts.ui.marker
 					for (var i:int=lastLinesIndex; i < composer.lines.length; i++)
 					{
 						var tfl:TextFlowLine = composer.lines[i];
-						if (highlightDict[i] == undefined && contentInLineBreaks[i].indexOf(search) != -1)
+						if (highlightDict[i] == undefined && searchRegExp.exec(contentInLineBreaks[i]))
 						{
 							lineHighlightContainer.graphics.drawRect(0, (i * LINE_HEIGHT)+4, width, LINE_HEIGHT);
 							highlightDict[i] = true;
@@ -215,7 +212,7 @@ package actionScripts.ui.marker
 		
 		private function onStageResized(event:ResizeEvent):void
 		{
-			trace("gandu2");
+			trace("Resized");
 		}
 	}
 }
