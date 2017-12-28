@@ -53,7 +53,8 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'DELETE'),
             resourceManager.getString('resources', 'RENAME'),
             "Visual Editor Flex File",
-            "Copy Path"
+            "Copy Path",
+            "Show in Explorer"
         ];
 
         private static var menuItemsDisabledNoneVEProject:Array = [

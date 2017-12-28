@@ -213,8 +213,15 @@ package actionScripts.ui.renderers
 			{
 				contextMenu = model.contextMenuCore.getContextMenu();
 				contextMenu.addEventListener(ContextMenuEvent.MENU_SELECT, contextMenuSelectHandler);
-				
-				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
+
+                model.contextMenuCore.addItem(contextMenu,
+                        model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
+                model.contextMenuCore.addItem(contextMenu,
+                        model.contextMenuCore.getContextMenuItem(SHOW_IN_EXPLORER, redispatch, Event.SELECT));
+
+                model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+
+                model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
 				
 				if (ConstantsCoreVO.IS_AIR)
 				{
@@ -226,11 +233,6 @@ package actionScripts.ui.renderers
 				{
 					model.contextMenuCore.addItem(contextMenu, fw.sourceController.getTreeRightClickMenu(fw.file));
 				}
-
-				model.contextMenuCore.addItem(contextMenu,
-						model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
-				model.contextMenuCore.addItem(contextMenu,
-						model.contextMenuCore.getContextMenuItem(SHOW_IN_EXPLORER, redispatch, Event.SELECT));
 
 				if (!fw.isRoot)
 				{
