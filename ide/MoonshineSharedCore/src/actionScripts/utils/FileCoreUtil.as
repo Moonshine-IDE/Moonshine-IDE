@@ -32,6 +32,19 @@ package actionScripts.utils
 			Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, file.fileBridge.nativePath);
 		}
 
+		public static function showInExplorer(file:FileLocation):void
+		{
+			if (file.fileBridge.isDirectory)
+			{
+				file.fileBridge.openWithDefaultApplication();
+			}
+			else
+			{
+				file = file.fileBridge.parent;
+				file.fileBridge.openWithDefaultApplication();
+			}
+		}
+
 		public static function contains(dir:FileLocation, file:FileLocation):Boolean
 		{
 			if (file.fileBridge.nativePath.indexOf(dir.fileBridge.nativePath) == 0) return true;

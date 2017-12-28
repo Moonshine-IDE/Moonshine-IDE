@@ -169,10 +169,9 @@ package actionScripts.impls
 		
 		public function copyFileTemplate(dst:FileLocation, data:Object=null):void
 		{
-			var content:String;
 			var r:FileStream = new FileStream();
 			r.open(_file, FileMode.READ);
-			content = r.readUTFBytes(_file.size);
+            var content:String = r.readUTFBytes(_file.size);
 			r.close();
 			
 			content = replace(content, data);
@@ -309,7 +308,7 @@ package actionScripts.impls
 			var filtersForExt:Array = [];
 			if (fileFilters)
 			{
-				filters = new Array();
+				filters = [];
 				//"*.as;*.mxml;*.css;*.txt;*.js;*.xml"
 				for each (var i:String in fileFilters)
 				{
@@ -369,7 +368,12 @@ package actionScripts.impls
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
 			}
 		}
-		
+
+		public function openWithDefaultApplication():void
+		{
+			_file.openWithDefaultApplication();
+		}
+
 		public function get url():String
 		{
 			return _file.url;
