@@ -265,7 +265,6 @@
 		public function handleProjectsChange(event:CollectionEvent):void
 		{
 			var project:ProjectVO = null;
-			var timeoutValue:uint;
 			
 			switch (event.kind)
 			{
@@ -276,11 +275,13 @@
 					// direct search (i.e. getItemIndex) of fileWrapper object in the collection
 					// returns -1 even the fileWrapper object and object inside the collection has same
 					// instance id. Thus a different approach it needs to parse by its uid value
+					var lastSelectedItem:Object = tree.selectedItem;
 					var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 					projectFolders.removeItemAt(tmpFWIndex);
-					timeoutValue = setTimeout(function():void
+					var timeoutValue:uint = setTimeout(function():void
 					{
-						if (--tmpFWIndex != -1) tree.selectedItem = projectFolders[tmpFWIndex];
+						if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
+						else if (projectFolders.length != 0) tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
 						clearTimeout(timeoutValue);
 					}, 300);
 					break;
@@ -289,11 +290,6 @@
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
 					projectFolders.addItemAt(project.projectFolder, 0);
-					var timeoutValue:uint = setTimeout(function():void
-					{
-						tree.selectedItem = project.projectFolder;
-						clearTimeout(timeoutValue);
-					}, 300);
 					break;
 				}
 			}
