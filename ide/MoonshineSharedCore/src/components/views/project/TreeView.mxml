@@ -28,46 +28,48 @@
 
 	<mx:Script>
 		<![CDATA[
-		import actionScripts.utils.FileCoreUtil;
-
-		import mx.collections.ArrayCollection;
-		import mx.collections.Sort;
-		import mx.collections.SortField;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.CollectionEvent;
-		import mx.events.CollectionEventKind;
-		import mx.events.ListEvent;
-		import mx.events.TreeEvent;
-		import mx.managers.PopUpManager;
-
-		import actionScripts.events.AddFolderEvent;
-		import actionScripts.events.DeleteFileEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.events.OpenFileEvent;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.events.RenameApplicationEvent;
-		import actionScripts.events.RenameFileFolderEvent;
-		import actionScripts.events.RunANTScriptEvent;
-		import actionScripts.events.ShowSettingsEvent;
-		import actionScripts.events.TreeMenuItemEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-		import actionScripts.plugin.templating.TemplatingHelper;
-		import actionScripts.ui.LayoutModifier;
-		import actionScripts.ui.renderers.FTETreeItemRenderer;
-		import actionScripts.ui.tabview.TabViewTab;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
-		import actionScripts.valueObjects.URLDescriptorVO;
-
-		import components.popup.NewFolderPopup;
-		import components.popup.RenamePopup;
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.ListEvent;
+			import mx.events.TreeEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.AddFolderEvent;
+			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.RenameApplicationEvent;
+			import actionScripts.events.RenameFileFolderEvent;
+			import actionScripts.events.RunANTScriptEvent;
+			import actionScripts.events.ShowSettingsEvent;
+			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.ui.tabview.TabViewTab;
+			import actionScripts.utils.FileCoreUtil;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.NewFolderPopup;
+			import components.popup.RenamePopup;
 
 		private var renameWindow:RenamePopup;
 		private var newFolderWindow:NewFolderPopup;
@@ -225,10 +227,17 @@
 
 		private function refreshItem(fw:FileWrapper):void
 		{
+			var lastSelectedItem:Object = tree.selectedItem;
 			var openItems:Object = tree.openItems;
 			fw.updateChildren();
 			tree.openItems = openItems;
 			tree.invalidateList();
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
+				else setSelectedItem(lastSelectedItem as FileWrapper);
+				clearTimeout(timeoutValue);
+			}, 300);
 		}
 
 		private function setSelectedItem(fw:FileWrapper):void
@@ -256,7 +265,8 @@
 		public function handleProjectsChange(event:CollectionEvent):void
 		{
 			var project:ProjectVO = null;
-
+			var timeoutValue:uint;
+			
 			switch (event.kind)
 			{
 				case CollectionEventKind.REMOVE:
@@ -268,12 +278,22 @@
 					// instance id. Thus a different approach it needs to parse by its uid value
 					var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 					projectFolders.removeItemAt(tmpFWIndex);
+					timeoutValue = setTimeout(function():void
+					{
+						if (--tmpFWIndex != -1) tree.selectedItem = projectFolders[tmpFWIndex];
+						clearTimeout(timeoutValue);
+					}, 300);
 					break;
 				}
 				case CollectionEventKind.ADD:
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
 					projectFolders.addItemAt(project.projectFolder, 0);
+					var timeoutValue:uint = setTimeout(function():void
+					{
+						tree.selectedItem = project.projectFolder;
+						clearTimeout(timeoutValue);
+					}, 300);
 					break;
 				}
 			}
@@ -502,7 +522,7 @@
 
 			// refresh the folder section and select
 			refreshByWrapperItem(event.insideLocation);
-			setTimeout(function ():void {
+			var timeoutValue:uint = setTimeout(function ():void {
 				// after a refresh new fileWrapper being created,
 				// so we need new instance of the wrapper so we can
 				// select and scroll-to-index
@@ -511,6 +531,7 @@
 
 				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
 				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				clearTimeout(timeoutValue);
 			}, 300);
 		}
 
@@ -531,12 +552,13 @@
 			var tmpParent:FileWrapper = tree.getParentItem(event.insideLocation);
 			refreshByWrapperItem(tmpParent);
 
-			setTimeout(function ():void {
+			var timeoutValue:uint = setTimeout(function ():void {
 				var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
 				tree.selectedItem = tmpFileW;
 
 				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
 				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				clearTimeout(timeoutValue);
 			}, 300);
 		}
 
@@ -552,11 +574,12 @@
 
 					refreshByWrapperItem(as3Project.projectFolder);
 
-					setTimeout(function ():void {
+					var timeoutValue:uint = setTimeout(function ():void {
 						tree.selectedItem = as3Project.projectFolder;
 
 						var indexToItemRenderer:int = tree.getItemIndex(as3Project.projectFolder);
 						tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+						clearTimeout(timeoutValue);
 					}, 300);
 					break;
 				}
@@ -574,12 +597,13 @@
 			refreshByWrapperItem(event.data);
 
 			// selection
-			setTimeout(function ():void {
+			var timeoutValue:uint = setTimeout(function ():void {
 				var tmpFileW:FileWrapper = UtilsCore.findFileWrapperInDepth(event.data, event.menuLabel);
 				tree.selectedItem = tmpFileW;
 
 				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
 				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				clearTimeout(timeoutValue);
 			}, 300);
 		}
 
