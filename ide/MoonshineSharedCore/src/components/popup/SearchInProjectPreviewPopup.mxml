@@ -136,7 +136,7 @@
 		<s:List id="lstFiles"
 				width="100%" height="{this.height*.2}" styleName="multiLineList"
 				dataProvider="{storedPathsForProbableReplace}" change="onListSelectionChanged(event)"
-				requireSelection="true">
+				requireSelection="true" labelField="label">
 			<s:itemRenderer>
 				<fx:Component>
 					<s:ItemRenderer width="100%" height="22">
@@ -156,7 +156,7 @@
 						
 						<s:CheckBox id="cbSelect"
 									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
-						<s:Label text="{data.label}"/>
+						<s:Label id="labelDisplay"/>
 					</s:ItemRenderer>
 				</fx:Component>
 			</s:itemRenderer>
