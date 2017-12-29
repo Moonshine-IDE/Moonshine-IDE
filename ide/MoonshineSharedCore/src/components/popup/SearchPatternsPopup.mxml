@@ -24,7 +24,7 @@
 				   xmlns:s="library://ns.adobe.com/flex/spark"
 				   backgroundColor="0xf5f5f5"
 				   width="350" height="450" minWidth="300" minHeight="200" autoLayout="true" title="Select Pattern"
-				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 				   skinClass="components.skins.ResizableTitleWindowSkin"
 				   creationComplete="onInitialized(event)">
 	<fx:Script>
@@ -80,14 +80,13 @@
 				styleName="multiLineList">
 			<s:itemRenderer>
 				<fx:Component>
-					<s:ItemRenderer width="100%" height="22">
+					<s:ItemRenderer width="100%" height="22" label="*.{data.label}">
 						<fx:Script>
 							<![CDATA[
 								override public function set data(value:Object):void
 								{
 									if (value) super.data = value;
 								}
-								
 							]]>
 						</fx:Script>
 						
@@ -97,7 +96,6 @@
 						
 						<s:CheckBox id="cbSelect"
 									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
-						<s:Label text="*.{data.label}"/>
 					</s:ItemRenderer>
 				</fx:Component>
 			</s:itemRenderer>
