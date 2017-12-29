@@ -21,9 +21,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-			   width="500" autoLayout="true" title="Define a SDK Path" skinClass="components.skins.ResizableTitleWindowSkin"
-			   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)" xmlns:view="actionScripts.plugin.findreplace.view.*">
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   width="500" autoLayout="true" title="Define a SDK Path"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
         import mx.events.CloseEvent;
@@ -72,7 +75,9 @@
             if (tmpXML)
             {
                 txtPath.text = tmpXML.nativePath;
-                txtLabel.text = String(tmpXML.xml.name);
+                txtLabel.text = SDKUtils.isJSOnlyRoyaleSDK(new FileLocation(tmpXML.nativePath)) ?
+								String(tmpXML.xml.name) + " (JSOnly)" :
+								String(tmpXML.xml.name);
                 btnCreate.enabled = true;
             }
             else

@@ -465,23 +465,14 @@ package actionScripts.utils
 		public static function isJSOnlyRoyaleSDK(sdkLocation:FileLocation):Boolean
 		{
 			var isJSOnlySDK:Boolean;
-            var sdk:FileLocation = null;
-            if (sdkLocation)
+            if (!sdkLocation)
             {
-                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkLocation.fileBridge.nativePath, "path");
-                if (isFound)
-				{
-					sdk = sdkLocation;
-                }
-            }
-            else
-            {
-                sdk = IDEModel.getInstance().defaultSDK;
+                sdkLocation = IDEModel.getInstance().defaultSDK;
             }
 
-            if (sdk && sdk.fileBridge.exists)
+            if (sdkLocation && sdkLocation.fileBridge.exists)
             {
-                var configFile:FileLocation = sdk.resolvePath("frameworks/royale-config.xml");
+                var configFile:FileLocation = sdkLocation.resolvePath("frameworks/royale-config.xml");
                 if (configFile.fileBridge.exists)
                 {
                     var tmpConfigXML:XML = XML(configFile.fileBridge.read());

@@ -21,13 +21,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark"
-			   xmlns:mx="library://ns.adobe.com/flex/mx" 
-			   width="600" height="240" minWidth="300" minHeight="150" title="Select SDK" skinClass="components.skins.ResizableTitleWindowSkin"
-			   creationComplete="onCreateionCompletes()" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
+			  							   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   width="600" height="240" minWidth="300" minHeight="150" title="Select SDK"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreateionCompletes()" >
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
+		import actionScripts.factory.FileLocation;
+
+		import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
@@ -39,7 +42,7 @@
 			import actionScripts.valueObjects.ProjectReferenceVO;
 			
 			import components.renderers.GeneralListRenderer;
-			
+
 			[Bindable] private var model:IDEModel = IDEModel.getInstance();
 			
 			private var sdkPathPopup:SDKDefinePopup;
@@ -114,7 +117,17 @@
 				dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, dgSDKs.selectedItem));
 				super.closeThis();
 			}
-			
+
+			private function sdkLabelFunction(item:ProjectReferenceVO, column:GridColumn):String
+			{
+				var sdkPath:FileLocation = new FileLocation(item.path);
+				if (SDKUtils.isJSOnlyRoyaleSDK(sdkPath))
+				{
+					return item.name + " (JSOnly)";
+				}
+
+				return item.name;
+			}
 		]]>
 	</fx:Script>
 
@@ -126,7 +139,8 @@
 				rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
 		<s:columns>
 			<s:ArrayList>
-				<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"/>
+				<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"
+							  labelFunction="{sdkLabelFunction}" dataTipFunction="{sdkLabelFunction}"/>
 				<s:GridColumn headerText="Path" dataField="path" width="300"/>
 				<s:GridColumn headerText="" dataField="status" minWidth="100"/>
 			</s:ArrayList>

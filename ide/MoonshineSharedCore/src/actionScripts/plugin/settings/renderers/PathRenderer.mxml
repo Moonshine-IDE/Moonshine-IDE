@@ -265,7 +265,7 @@
                 var tmp:ProjectReferenceVO = new ProjectReferenceVO();
                 tmp.name = event.anObject.label;
                 tmp.path = event.anObject.path;
-                IDEModel.getInstance().userSavedSDKs.addItem(tmp);
+                model.userSavedSDKs.addItem(tmp);
                 GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
             }
             // check if newly added matches with customSDKpath
