@@ -86,8 +86,10 @@
 				marker1.searchRegExp = searchRegExp;
 				marker1.highlight(replaceValue);
 				
+				marker2.positions = marker1.positions;
+				
 				marker2.text = tmpContent.replace(searchRegExp, replaceWithValue);
-				marker2.searchRegExp = new RegExp(replaceWithValue, flags);;
+				marker2.searchRegExp = new RegExp(replaceWithValue, 'g');
 				marker2.highlight(replaceWithValue);
 			}
 			
@@ -159,6 +161,11 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
+		<s:HGroup width="100%">
+			<s:Label text="Original source:"
+					 width="50%"/>
+			<s:Label text="Refactored source:"/>
+		</s:HGroup>
 		<s:HGroup width="100%" height="100%">
 			<marker:MarkerTextArea id="marker1"
 								   width="50%" height="100%"

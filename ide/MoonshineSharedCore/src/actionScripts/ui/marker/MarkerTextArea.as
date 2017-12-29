@@ -29,6 +29,8 @@ package actionScripts.ui.marker
 		public var isEscapeChars:Boolean;
 		public var searchRegExp:RegExp;
 		
+		public var positions:Array;
+		
 		private var _text:String;
 		public function get text():String {	return _text;	}
 		public function set text(value:String):void {
@@ -84,7 +86,7 @@ package actionScripts.ui.marker
 				textArea.scroller.horizontalScrollBar.addEventListener(Event.CHANGE, onHScrollUpdate);
 			}
 			
-			var positions:Array = getPositions(textArea.text);
+			positions = getPositions(textArea.text);
 			var len:uint = positions.length;
 			
 			for(var i:int = 0; i<len; i++)
@@ -137,15 +139,31 @@ package actionScripts.ui.marker
 			
 			lineHighlightContainer.graphics.endFill();
 			
-			var positions:Array = [];
-			var results:Array = searchRegExp.exec(original);
-			while (results != null)
-			{ 
-				positions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
-				results = searchRegExp.exec(original); 
-			} 
+			var tmpPositions:Array = [];
+			var results:Array;
+			if (this.positions)
+			{
+				// in case of right pane
+				var replaceValue:String = searchRegExp.source;
+				var replaceValueLength:int = replaceValue.length;
+				var startIndex:int;
+				positions.forEach(function(element:Object, index:int, arr:Array):void
+				{
+					startIndex = original.indexOf(replaceValue, element.posStart);
+					tmpPositions.push({posStart:startIndex, posEnd:startIndex + replaceValueLength});
+				});
+			}
+			else
+			{
+				results = searchRegExp.exec(original);
+				while (results != null)
+				{ 
+					positions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
+					results = searchRegExp.exec(original); 
+				}
+			}
 			
-			return positions;
+			return tmpPositions;
 		}
 		
 		public function updateVScrollByNeighbour(event:GeneralEvent):void
