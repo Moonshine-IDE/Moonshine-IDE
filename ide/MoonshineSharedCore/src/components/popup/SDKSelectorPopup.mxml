@@ -28,8 +28,6 @@
 										   creationComplete="onCreateionCompletes()" >
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.factory.FileLocation;
-
 		import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
@@ -117,17 +115,6 @@
 				dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, dgSDKs.selectedItem));
 				super.closeThis();
 			}
-
-			private function sdkLabelFunction(item:ProjectReferenceVO, column:GridColumn):String
-			{
-				var sdkPath:FileLocation = new FileLocation(item.path);
-				if (SDKUtils.isJSOnlyRoyaleSDK(sdkPath))
-				{
-					return item.name + " (JSOnly)";
-				}
-
-				return item.name;
-			}
 		]]>
 	</fx:Script>
 
@@ -139,10 +126,9 @@
 				rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
 		<s:columns>
 			<s:ArrayList>
-				<s:GridColumn headerText="Description" dataField="name" width="200" minWidth="200"
-							  labelFunction="{sdkLabelFunction}" dataTipFunction="{sdkLabelFunction}"/>
-				<s:GridColumn headerText="Path" dataField="path" width="300"/>
-				<s:GridColumn headerText="" dataField="status" minWidth="100"/>
+				<s:GridColumn headerText="Description" dataField="name" minWidth="280"/>
+				<s:GridColumn headerText="Path" dataField="path" />
+				<s:GridColumn headerText="" dataField="status" width="80"/>
 			</s:ArrayList>
 		</s:columns>
 	</s:DataGrid>
