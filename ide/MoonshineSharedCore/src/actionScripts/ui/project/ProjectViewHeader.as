@@ -81,7 +81,7 @@ package actionScripts.ui.project
 				_scrollFromSource.verticalCenter = 0;
 				_scrollFromSource.width = _scrollFromSource.height = 16;
 				_scrollFromSource.buttonMode = true;
-				_scrollFromSource.toolTip = resourceManager.getString('resources', 'SCROLL_FROM_SOURCE');
+				_scrollFromSource.toolTip = resourceManager.getString('resources', 'SELECT_OPEN_FILE');
 				_scrollFromSource.addEventListener(MouseEvent.CLICK, onScrollToSourceIconClick);
 				
 				addChild(_scrollFromSource);
