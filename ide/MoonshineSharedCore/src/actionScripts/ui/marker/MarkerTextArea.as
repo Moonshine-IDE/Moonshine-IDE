@@ -29,7 +29,7 @@ package actionScripts.ui.marker
 		public var isEscapeChars:Boolean;
 		public var searchRegExp:RegExp;
 		
-		public var positions:Array;
+		//public var positions:Array;
 		
 		private var _text:String;
 		public function get text():String {	return _text;	}
@@ -86,7 +86,7 @@ package actionScripts.ui.marker
 				textArea.scroller.horizontalScrollBar.addEventListener(Event.CHANGE, onHScrollUpdate);
 			}
 			
-			positions = getPositions(textArea.text);
+			var positions:Array = getPositions(textArea.text);
 			var len:uint = positions.length;
 			
 			for(var i:int = 0; i<len; i++)
@@ -124,8 +124,9 @@ package actionScripts.ui.marker
 				if (index == 1) LINE_HEIGHT = element.y - composer.lines[0].y;
 				if (element.paragraph && searchRegExp.exec(element.paragraph.mxmlChildren[0].text))
 				{
-						lineHighlightContainer.graphics.drawRect(0, element.y-1, width, element.height);
-						highlightDict[index] = true;
+					lineHighlightContainer.graphics.drawRect(0, element.y-1, width, element.height);
+					highlightDict[index] = true;
+					searchRegExp.lastIndex = 0;
 				}
 				
 				if (!element.paragraph && updateLastIndex)
@@ -141,7 +142,7 @@ package actionScripts.ui.marker
 			
 			var tmpPositions:Array = [];
 			var results:Array;
-			if (this.positions)
+			/*if (this.positions)
 			{
 				// in case of right pane
 				var replaceValue:String = searchRegExp.source;
@@ -149,19 +150,20 @@ package actionScripts.ui.marker
 				var startIndex:int;
 				positions.forEach(function(element:Object, index:int, arr:Array):void
 				{
+					trace(element.posStart);
 					startIndex = original.indexOf(replaceValue, element.posStart);
 					tmpPositions.push({posStart:startIndex, posEnd:startIndex + replaceValueLength});
 				});
 			}
 			else
-			{
+			{*/
 				results = searchRegExp.exec(original);
 				while (results != null)
 				{ 
-					positions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
+					tmpPositions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
 					results = searchRegExp.exec(original); 
 				}
-			}
+			//}
 			
 			return tmpPositions;
 		}
@@ -196,6 +198,7 @@ package actionScripts.ui.marker
 						{
 							lineHighlightContainer.graphics.drawRect(0, (i * LINE_HEIGHT)+4, width, LINE_HEIGHT);
 							highlightDict[i] = true;
+							searchRegExp.lastIndex = 0;
 						}
 						
 						if (!tfl.paragraph && updateLastIndex)

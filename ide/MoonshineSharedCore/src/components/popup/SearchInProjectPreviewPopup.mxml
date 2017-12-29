@@ -86,7 +86,7 @@
 				marker1.searchRegExp = searchRegExp;
 				marker1.highlight(replaceValue);
 				
-				marker2.positions = marker1.positions;
+				//marker2.positions = marker1.positions;
 				
 				marker2.text = tmpContent.replace(searchRegExp, replaceWithValue);
 				marker2.searchRegExp = new RegExp(replaceWithValue, 'g');
