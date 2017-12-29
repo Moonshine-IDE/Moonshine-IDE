@@ -22,7 +22,7 @@
 <s:ItemRenderer name="CustomListSkin"
         xmlns:fx="http://ns.adobe.com/mxml/2009"
         xmlns:s="library://ns.adobe.com/flex/spark"
-        autoDrawBackground="true">
+        autoDrawBackground="true" label="{data.name}">
 
     <s:states>
         <s:State name="normal" />
@@ -36,7 +36,6 @@
  
  	<s:Rect x="-1" width="100%" height="100%"
  		alpha="1">
- 		
  		<s:fill.selected>
  			<s:SolidColor alpha="1" color="0xc165b8" />
  		</s:fill.selected>
@@ -45,13 +44,12 @@
  		</s:stroke.selected>
  	</s:Rect>
  
-    <s:Label text="{data.name}"
-    		styleName="uiTextWhite"
-    		fontSize="11"
-            paddingLeft="20"
-            paddingTop="9"
-            paddingBottom="7"
-            width="100%"
-			/>
+    <s:Label id="labelDisplay"
+    		 styleName="uiTextWhite"
+    		 fontSize="11"
+             paddingLeft="20"
+             paddingTop="9"
+             paddingBottom="7"
+             width="100%"/>
  
 </s:ItemRenderer>

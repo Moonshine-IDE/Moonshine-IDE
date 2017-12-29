@@ -21,19 +21,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
 				   backgroundColor="0xf5f5f5"
-				   width="500" height="230"
-				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+				   width="500" height="230" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 				   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.controls.Image;
-			import mx.managers.PopUpManager;
-			
+
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			

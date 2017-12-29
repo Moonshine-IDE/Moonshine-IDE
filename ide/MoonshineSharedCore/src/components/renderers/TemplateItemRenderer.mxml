@@ -18,10 +18,9 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:ItemRenderer 
-	xmlns:fx="http://ns.adobe.com/mxml/2009" 
-	xmlns:s="library://ns.adobe.com/flex/spark"
-	creationComplete="init()" autoDrawBackground="false" width="100%">
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				creationComplete="init()" autoDrawBackground="false" width="100%">
 	
 	<fx:Script>
 		<![CDATA[
@@ -30,8 +29,8 @@
 			
 			private function init():void
 			{
-				lbl.removeEventListener(MouseEvent.CLICK, handleClick);
-				lbl.addEventListener(MouseEvent.CLICK, handleClick);
+				labelDisplay.removeEventListener(MouseEvent.CLICK, handleClick);
+				labelDisplay.addEventListener(MouseEvent.CLICK, handleClick);
 			}
 			
 			private function handleClick(event:Event):void
@@ -45,7 +44,7 @@
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					// desc.text = value.description;
-					lbl.text = value.title;
+					label = value.title;
 					if(value.logoImagePath)
 					{
 						fileIcon.includeInLayout = true;
@@ -60,37 +59,32 @@
 				}
 				else
 				{
-					lbl.text = value.fileBridge.name;
-					//	desc.text = value.fileBridge.data;
+					label = value.fileBridge.name;
 				}
 			}
-			private function doneLoad(e:Event):void {
+			private function doneLoad(e:Event):void
+			{
 				fileIcon.source = e.currentTarget.content;
 			}
 		]]>
 	</fx:Script>
-	
-	<!--<s:states>
-		<s:State name="normal"/>
-		<s:State name="hovered"/>
-	</s:states>-->
-	
+
 	<s:layout>
 		<s:HorizontalLayout  />
 	</s:layout>
 	
 	<s:Image id="fileIcon" height="20" width="20"  />
-	<s:Label 
-		id="lbl"
-		paddingTop="4"
-		paddingLeft="3"
-		paddingRight="3"
-		paddingBottom="0"
-		fontFamily="DejaVuSans"
-		fontSize="15"
-		baseline="50"
-		height="100%"
-		verticalAlign="middle"
-		mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
-		useHandCursor="true" buttonMode="true" mouseChildren="false"/>	
+	<s:Label id="labelDisplay"
+			paddingTop="4"
+			paddingLeft="3"
+			paddingRight="3"
+			paddingBottom="0"
+			fontFamily="DejaVuSans"
+			fontSize="15"
+			baseline="50"
+			height="100%"
+			verticalAlign="middle"
+			mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)"
+			 creationComplete="event.target.setStyle('color', 0XD6D6D6)"
+			useHandCursor="true" buttonMode="true" mouseChildren="false"/>
 </s:ItemRenderer>

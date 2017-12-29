@@ -20,10 +20,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:ItemRenderer name="FadingItemRenderer"
-        xmlns:fx="http://ns.adobe.com/mxml/2009"
-        xmlns:s="library://ns.adobe.com/flex/spark"
-        xmlns:mx="library://ns.adobe.com/flex/mx"
-        width="100%">
+        		xmlns:fx="http://ns.adobe.com/mxml/2009"
+        		xmlns:s="library://ns.adobe.com/flex/spark"
+        		width="100%" label="{data.relativePath}">
     
     <s:states>
         <s:State name="normal" />
@@ -43,13 +42,11 @@
     	<s:CheckBox id="checkBox"
     		selected="true"/>
     		
-    	<s:Label
-    		paddingTop="2" paddingBottom="1"
-    		width="100%"
-    		styleName="uiText"
-    		color="0xe0e0e0"
-    		fontSize="12"
-    		text="{data.relativePath}" />
+    	<s:Label id="labelDisplay" paddingTop="2" paddingBottom="1"
+				width="100%"
+				styleName="uiText"
+				color="0xe0e0e0"
+				fontSize="12"/>
 
     	<s:Label
     		paddingTop="2" paddingBottom="1"
@@ -59,5 +56,4 @@
             text="{data.status.status}" />
             
     </s:HGroup>
- 
 </s:ItemRenderer>

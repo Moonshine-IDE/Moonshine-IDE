@@ -20,15 +20,7 @@
 -->
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				xmlns:s="library://ns.adobe.com/flex/spark" 
-				xmlns:mx="library://ns.adobe.com/flex/mx" minHeight="25"  >
-	
-	<fx:Script>
-		<![CDATA[
-			
-			
-		]]>
-	</fx:Script>
-	
+				xmlns:mx="library://ns.adobe.com/flex/mx" minHeight="25">
 	<s:HGroup height="100%" width="100%"  paddingRight="10" verticalAlign="middle">
 		<s:Label id="labelDisplay" width="100%" height="100%"
 				 verticalCenter="0" paddingLeft="5" verticalAlign="middle" textAlign="justify" />	

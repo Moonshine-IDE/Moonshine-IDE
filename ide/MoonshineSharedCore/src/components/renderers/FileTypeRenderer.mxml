@@ -21,8 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				xmlns:s="library://ns.adobe.com/flex/spark" 
-				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				xmlns:s="library://ns.adobe.com/flex/spark"
 				autoDrawBackground="true" height="20">
 	<fx:Script>
 		<![CDATA[
@@ -36,17 +35,17 @@
 			/**
 			 * Set DATA
 			 */
-			override public function set data(value:Object):void {
-				
-				if ( value ) {
+			override public function set data(value:Object):void
+			{
+				if (value)
+				{
 					super.data = value;
-					lbl.text = (!(value is String) ? value.name.split(".")[0] : "")
+					label = (!(value is String) ? value.name.split(".")[0] : "")
 				}
 			}
-			
 		]]>
 	</fx:Script>
 	
-	<s:Label id="lbl" 
+	<s:Label id="labelDisplay"
 			 width="100%" paddingLeft="10" paddingRight="10" verticalCenter="0"/>
 </s:ItemRenderer>

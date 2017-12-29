@@ -40,7 +40,6 @@ package actionScripts.ui.renderers
 		private var label2:Label;
 		
 		private var model:IDEModel;
-		private var isOpenIcon:Sprite;
 		private var hitareaSprite:Sprite;
 		private var sourceControlBackground:UIComponent;
 		private var sourceControlText:Label;
