@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 * Code Completion List: Show items on the list which contains searched words at any position.
 * Visual Editor: Newly created project will contains representation of main application window. User will be able to change basic properties.
+* Show Tab close button ("x") on hover.
 
 ### Fixed
 * Fixed issue where newly created Flex Mobile project was not properly recognized.
