@@ -128,7 +128,7 @@
 			<s:ArrayList>
 				<s:GridColumn headerText="Description" dataField="name" minWidth="330"/>
 				<s:GridColumn headerText="Path" dataField="path" />
-				<s:GridColumn headerText="" dataField="status" width="80"/>
+				<s:GridColumn headerText="" dataField="status" minWidth="60"/>
 			</s:ArrayList>
 		</s:columns>
 	</s:DataGrid>
