@@ -251,7 +251,7 @@
 			/>-->
 		
 		<view:ConsoleViewTextArea id="history" width="100%" editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto" 
-									 height="80%" lineBreak="toFit" color="0Xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
+									 height="80%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
 		<mx:Canvas width="100%" height="20%" >
 			<mx:HRule 
 				width="100%" 
