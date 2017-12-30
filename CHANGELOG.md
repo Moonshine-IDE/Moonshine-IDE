@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 * Fixed issue where newly created Flex Mobile project was not properly recognized.
 * Console: Fixed issue where prompt background color makes command unreadable.
+* Fixed issue where "Clean Project" causes hang of IDE.
 
 ## Moonshine IDE [1.7.1]
 
