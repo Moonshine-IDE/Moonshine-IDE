@@ -21,13 +21,13 @@ package actionScripts.plugin.actionscript.as3project.clean
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.controllers.DataAgent;
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
@@ -45,7 +45,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 	{
 		private var loader: DataAgent;
 		private var selectProjectPopup:SelectOpenedFlexProject;
-		
+
 		override public function get name():String { return "Clean Project"; }
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "Clean swf file from output dir."; }
@@ -72,6 +72,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 			//check if any project is selected in project view or not
 			checkProjectCount();	
 		}
+		
 		private function checkProjectCount():void
 		{
 			if (model.projects.length > 1)
@@ -120,16 +121,16 @@ package actionScripts.plugin.actionscript.as3project.clean
 		{
 			//var pvo:ProjectVO = IDEModel.getInstance().activeProject;
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
-			if (!pvo) return  
+			if (!pvo) return;
 			
 			if (!ConstantsCoreVO.IS_AIR && !loader)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Clean project: "+ pvo.name +". Invoking compiler on remote server..."));
+				dispatcher.dispatchEvent(new ConsoleOutputEvent("Clean project: "+ pvo.name +". Invoking compiler on remote server..."));
 				//	loader = new DataAgent(URLDescriptorVO.PROJECT_COMPILE, onBuildCompleted, onFault);
 			}
 			else if (ConstantsCoreVO.IS_AIR)
 			{
-				if (!(pvo is actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO)) return;
+				if (!(pvo is AS3ProjectVO)) return;
 				
 				var as3Provo:AS3ProjectVO = pvo as AS3ProjectVO; 
 				var outputFile:FileLocation;
@@ -144,10 +145,16 @@ package actionScripts.plugin.actionscript.as3project.clean
 				if (swfPath.fileBridge.exists) 
 				{
 					var directoryItems:Array = swfPath.fileBridge.getDirectoryListing();
-					for each (var i:Object in directoryItems)
+					for each (var directory:Object in directoryItems)
 					{
-						if (i.isDirectory) i.deleteDirectory(true);
-						else i.deleteFile();
+						if (directory.isDirectory)
+						{
+							directory.deleteDirectory(true);
+                        }
+						else
+						{
+							directory.deleteFile();
+                        }
 					}
 					
 					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath));
@@ -158,18 +165,58 @@ package actionScripts.plugin.actionscript.as3project.clean
 					var binFolder:FileLocation = as3Provo.folderLocation.fileBridge.resolvePath("bin");
 					if (binFolder.fileBridge.exists)
 					{
-						setTimeout(function():void
+						var timeoutValue:uint = setTimeout(function():void
 						{
-							var deletableFolder:FileLocation = binFolder.resolvePath("js-debug");
-							if (deletableFolder.fileBridge.exists) deletableFolder.fileBridge.deleteDirectory(true);
-							deletableFolder = binFolder.resolvePath("js-release");
-							if (deletableFolder.fileBridge.exists) deletableFolder.fileBridge.deleteDirectory(true);
-							dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder));
+							var folderCount:int = 0;
+							var jsDebugFolder:FileLocation = binFolder.resolvePath("js-debug");
+							var jsDebugFolderExists:Boolean = jsDebugFolder.fileBridge.exists;
+							if (jsDebugFolderExists) folderCount++;
+							
+                            var jsReleaseFolder:FileLocation = binFolder.resolvePath("js-release");
+                            var jsReleaseFolderExists:Boolean = jsReleaseFolder.fileBridge.exists;
+                            if (jsReleaseFolderExists) folderCount++;
+
+							var onJSFolderCompleteHandler:Function = null;
+                            if (folderCount > 0)
+                            {
+                                onJSFolderCompleteHandler = function(event:Event):void
+                                {
+									event.target.removeEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
+                                    folderCount--;
+                                    if (folderCount == 0)
+                                    {
+                                        dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder));
+                                        dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                                    }
+                                }
+                            }
+
+							if (jsDebugFolderExists)
+							{
+                                jsDebugFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
+                                jsDebugFolder.fileBridge.deleteDirectoryAsync(true);
+                            }
+
+							if (jsReleaseFolderExists)
+							{
+                                jsReleaseFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
+                                jsReleaseFolder.fileBridge.deleteDirectoryAsync(true);
+                            }
+
+							if (folderCount == 0)
+							{
+                                dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder));
+                                dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+							}
+
+							clearTimeout(timeoutValue);
 						}, 300);
 					}
 				}
-				
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : "+ pvo.name ));
+				else
+                {
+                    dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                }
 			}				
 		}
 	}
