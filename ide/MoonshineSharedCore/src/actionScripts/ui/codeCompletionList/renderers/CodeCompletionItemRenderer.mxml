@@ -6,8 +6,9 @@
 
     <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
     <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
-             textAlign="left" maxDisplayedLines="1" left="25" right="{detailsGroup.width + 7}"/>
-    <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false" includeInLayout="false"
+             textAlign="left" showTruncationTip="true" maxDisplayedLines="1" left="25" right="{detailsGroup.width + 7}"
+             maxWidth="300"/>
+    <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false"
               verticalAlign="middle">
         <s:Label color="0x606060" textAlign="right"
                  maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.kind}"/>
@@ -60,7 +61,7 @@
         {
             if (detailsGroup)
             {
-                detailsGroup.visible = detailsGroup.includeInLayout = visible;
+                detailsGroup.visible = visible;
             }
         }
 
