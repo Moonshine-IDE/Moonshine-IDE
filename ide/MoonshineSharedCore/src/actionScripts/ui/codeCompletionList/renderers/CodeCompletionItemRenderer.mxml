@@ -6,7 +6,7 @@
 
     <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
     <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
-             textAlign="left" maxDisplayedLines="1" left="25"/>
+             textAlign="left" maxDisplayedLines="1" left="25" right="{detailsGroup.width + 7}"/>
     <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false" includeInLayout="false"
               verticalAlign="middle">
         <s:Label color="0x606060" textAlign="right"
