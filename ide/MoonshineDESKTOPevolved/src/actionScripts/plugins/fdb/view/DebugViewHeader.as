@@ -51,7 +51,7 @@ package actionScripts.plugins.fdb.view
 		{
 			selected = true;
 		}
-		
+
 		override protected function createChildren():void
 		{
 			super.createChildren();
@@ -93,30 +93,7 @@ package actionScripts.plugins.fdb.view
 			background.graphics.beginFill(selectedBackgroundColor);
 			background.graphics.drawRect(0, 0, width, height);
 			background.graphics.endFill();
-			
-			/*
-			Display close button on mouse over
-			if (_selected)
-			{
-				if (showCloseButton) closeButton.visible = true;
-				
-				labelMaskWidth -= closeButtonWidth;
-				
-				background.graphics.beginFill(selectedBackgroundColor);
-				background.graphics.drawRect(0, 0, width, height);
-				background.graphics.endFill();
-			}
-			else
-			{
-				closeButton.visible = false;				
-				
-				labelMaskWidth -= 5;
-				
-				background.graphics.beginFill(backgroundColor);
-				background.graphics.drawRect(0, 0, width, height);
-				background.graphics.endFill();
-			}*/
-			
+
 			labelViewMask.graphics.clear();
 			labelViewMask.graphics.beginFill(0x0, 1);
 			labelViewMask.graphics.drawRect(0, 0, labelMaskWidth, height);
@@ -127,6 +104,11 @@ package actionScripts.plugins.fdb.view
 			labelViewMask.graphics.beginGradientFill('linear', [0x0, 0x0], [1, 0], [0, 255], mtr);
 			labelViewMask.graphics.drawRect(labelMaskWidth, 0, gradWidth, height);
 			labelViewMask.graphics.endFill();
-		}	
+		}
+
+		override protected function onTabViewTabMouseOverOut(event:MouseEvent):void
+		{
+
+		}
 	}
 }

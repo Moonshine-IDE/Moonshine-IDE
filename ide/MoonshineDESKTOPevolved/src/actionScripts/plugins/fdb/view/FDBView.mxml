@@ -40,8 +40,7 @@
 			import mx.collections.XMLListCollection;
 			import mx.events.AdvancedDataGridEvent;
 			import mx.events.ListEvent;
-			
-			import actionScripts.locator.IDEModel;
+
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.tabview.TabViewTab;
 			
@@ -86,10 +85,6 @@
 		
 			return myString;
 		}
-		//public function update():void {
-			//debugTree.invalidateList();
-		//}
-		
 		]]>
 	</mx:Script>
 	

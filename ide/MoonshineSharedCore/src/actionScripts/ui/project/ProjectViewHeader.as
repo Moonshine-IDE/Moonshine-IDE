@@ -140,6 +140,11 @@ package actionScripts.ui.project
 			labelViewMask.graphics.endFill();
 		}
 
+		override protected function onTabViewTabMouseOverOut(event:MouseEvent):void
+		{
+
+		}
+		
         private function onScrollToSourceIconClick(event:MouseEvent):void
         {
 		    dispatchEvent(new Event("scrollFromSource"));

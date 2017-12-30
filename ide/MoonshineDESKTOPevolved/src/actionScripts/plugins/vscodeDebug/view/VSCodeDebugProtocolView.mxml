@@ -38,8 +38,6 @@
 		import mx.collections.IHierarchicalData;
 		import mx.events.AdvancedDataGridEvent;
 		import mx.events.ListEvent;
-
-		import actionScripts.locator.IDEModel;
 		import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
 		import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
 		import actionScripts.plugins.vscodeDebug.vo.BaseVariablesReference;

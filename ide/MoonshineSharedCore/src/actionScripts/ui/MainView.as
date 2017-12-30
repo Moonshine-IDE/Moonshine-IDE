@@ -93,6 +93,8 @@ package actionScripts.ui
 			_mainContent.percentHeight = 100;
 			_mainContent.addEventListener(TabEvent.EVENT_TAB_CLOSE, handleTabClose);
 			_mainContent.addEventListener(TabEvent.EVENT_TAB_SELECT, focusNewEditor);
+			_mainContent.buttonMode = true;
+
 			mainPanel.addChild(_mainContent);
 			
 			sidebar = new IDEVDividedBox();

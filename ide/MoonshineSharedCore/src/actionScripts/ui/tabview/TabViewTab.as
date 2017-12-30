@@ -59,6 +59,9 @@ package actionScripts.ui.tabview
 		{
 			width = 200;
 			height = 25;
+
+			addEventListener(MouseEvent.MOUSE_OVER, onTabViewTabMouseOverOut);
+			addEventListener(MouseEvent.MOUSE_OUT, onTabViewTabMouseOverOut);
 		}
 
         private function createContextMenu():ContextMenu
@@ -129,6 +132,7 @@ package actionScripts.ui.tabview
 		{
 			return _selected;
 		}
+
 		public function set selected(value:Boolean):void
 		{
 			if (value == _selected) return;
@@ -283,7 +287,15 @@ package actionScripts.ui.tabview
 		{
 			dispatchEvent( new Event(EVENT_TAB_CLICK) );
 		}
-		
+
+        protected function onTabViewTabMouseOverOut(event:MouseEvent):void
+        {
+			if (!showCloseButton) return;
+			if (selected) return;
+
+			closeButton.visible = event.type == MouseEvent.MOUSE_OVER;
+        }
+
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
 		{
 			super.updateDisplayList(unscaledWidth, unscaledHeight);
@@ -318,5 +330,5 @@ package actionScripts.ui.tabview
                         editor.projectPath);
             }
 		}
-	}
+    }
 }
