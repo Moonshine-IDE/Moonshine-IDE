@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
+    import actionScripts.valueObjects.SdkDescriptionVO;
+
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
@@ -464,7 +466,8 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				if (as3Pvo.isRoyale)
 				{
-					if (SDKUtils.isJSOnlyRoyaleSDK(as3Pvo.buildOptions.customSDK))
+					var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(as3Pvo.buildOptions.customSDK);
+					if (sdkDescription && sdkDescription.isJSOnlySdk)
 					{
 						error("This SDK only supports JavaScript Builds.");
 						return;

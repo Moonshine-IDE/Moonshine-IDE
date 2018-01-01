@@ -19,7 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import flash.events.Event;
+    import actionScripts.valueObjects.RoyaleOutputTarget;
+    import actionScripts.valueObjects.SdkDescriptionVO;
+
+    import flash.events.Event;
 	import flash.events.EventDispatcher;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -154,7 +157,7 @@ package actionScripts.utils
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:Object = isSDKDirectory(targetDir);
+					var bundledFlexSDK:SdkDescriptionVO = getSdkDescription(targetDir);
 					if (bundledFlexSDK)
 					{
 						addSDKDirectory(bundledFlexSDK);
@@ -167,7 +170,7 @@ package actionScripts.utils
 						{
 							if (j.isDirectory && (j.name.indexOf("Flex") != -1))
 							{
-								bundledFlexSDK = isSDKDirectory(new FileLocation(j.nativePath));
+								bundledFlexSDK = getSdkDescription(new FileLocation(j.nativePath));
 								if (bundledFlexSDK)
 								{
 									addSDKDirectory(bundledFlexSDK);
@@ -196,11 +199,11 @@ package actionScripts.utils
 				/**
 				 * @local
 				 */
-				function addSDKDirectory(value:Object):void
+				function addSDKDirectory(value:SdkDescriptionVO):void
 				{
 					var tmpPR:ProjectReferenceVO = new ProjectReferenceVO();
-					tmpPR.name = String(value.xml.name);
-					tmpPR.path = value.nativePath;
+					tmpPR.name = String(value.name);
+					tmpPR.path = value.sdkPath;
 					tmpPR.status = BUNDLED;
 					model.userSavedSDKs.addItemAt(tmpPR, 0);
 					isFound = true;
@@ -230,107 +233,36 @@ package actionScripts.utils
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(HelpPlugin.EVENT_CHECK_MINIMUM_SDK_REQUIREMENT)); 
 			}
 		}
-		
-		public static function checkMoonshineRequisiteSDKAvailability():Object
-		{
-			var model:IDEModel = IDEModel.getInstance();
-			var isFlexJSSDKAvailable:Boolean;
-			var isFlexSDKAvailable:Boolean;
-			var requiresFlexJSVersionParts:Array;
-			var requiredFlexVersionParts:Array;
-			
-			if (ConstantsCoreVO.REQUIRED_FLEX_SDK_VERION_MINIMUM)
-			{
-				requiredFlexVersionParts = ConstantsCoreVO.REQUIRED_FLEX_SDK_VERION_MINIMUM.split(".");
-			}
-			else isFlexSDKAvailable = true;
-			
-			if (ConstantsCoreVO.REQUIRED_FLEXJS_SDK_VERION_MINIMUM)
-			{
-				requiresFlexJSVersionParts = ConstantsCoreVO.REQUIRED_FLEXJS_SDK_VERION_MINIMUM.split(".");
-			}
-			else isFlexJSSDKAvailable = true;
-			
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
-			{
-				// in case both requisite sdks already found
-				if (isFlexSDKAvailable && isFlexJSSDKAvailable) break;
-				
-				// @NOTE
-				// <version> value in FlexJS SDKs are broken; read details at,
-				// http://apache-flex-development.2333347.n4.nabble.com/How-Apache-manages-FlexJS-version-in-flex-sdk-description-td56851.html
-				//
-				// Thus we're closing <version> field parsing as it'll come always wrong in FlexJS case
-				// replaced with manual **bad** way of version parsing by substr it's name value
-				
-				var sdkDirDescription:Object = isSDKDirectory(new FileLocation(i.path));
-				// continue only if the saved path is still valid
-				if (sdkDirDescription)
-				{
-					CONFIG::OSX
-						{
-							var userDownloadLocation:FileLocation = getUserDownloadsSDKFolder(true);
-						}
-					
-					var firstSubstrIndex:int;
-					// in case of Flex SDK
-					if (String(sdkDirDescription.xml.name).indexOf("FlexJS") == -1) firstSubstrIndex = 12; // "Apache Flex "
-					// in case of FlexJS SDK
-					else firstSubstrIndex = 21; // "Apache Flex (FlexJS) "
-					// bottle the parts splitting by spaces
-					var splittedChars:Array = String(sdkDirDescription.xml.name).substring(firstSubstrIndex).split(" ");
-					// now first index of above array should be the version number
-					var versionParts:Array = splittedChars[0].split(".");
-					
-					// version number in sdk-description file comes as 4.12.0
-					// so we shall have 3 indexed array every time if we split by "."
-					var index:int;
-					while (!isFlexSDKAvailable && (i.name.indexOf("FlexJS") == -1) && (index < 3))
-					{
-						if (ConstantsCoreVO.REQUIRED_FLEX_SDK_VERION_MINIMUM == splittedChars[0]) isFlexSDKAvailable = true;
-						//else if (Number(versionParts[index]) > Number(requiredFlexVersionParts[index])) isFlexSDKAvailable = true;
-						index++;
-						
-						// in case of OSX an added check if the SDK's location is inside ~/Downloads
-						CONFIG::OSX
-							{
-								if (isFlexSDKAvailable && (i.path.search(userDownloadLocation.fileBridge.nativePath) == -1)) isFlexSDKAvailable = false;
-							}
-					}
-					index = 0;
-					while (!isFlexJSSDKAvailable && (i.name.indexOf("FlexJS") != -1) && (index < 3))
-					{
-						if (ConstantsCoreVO.REQUIRED_FLEXJS_SDK_VERION_MINIMUM == splittedChars[0]) isFlexJSSDKAvailable = true;
-						//else if (Number(versionParts[index]) > Number(requiresFlexJSVersionParts[index])) isFlexJSSDKAvailable = true;
-						index++;
-						
-						// in case of OSX an added check if the SDK's location is inside ~/Downloads
-						CONFIG::OSX
-							{
-								if (isFlexJSSDKAvailable && (i.path.search(userDownloadLocation.fileBridge.nativePath) == -1)) isFlexJSSDKAvailable = false;
-							}
-					}
-				}
-			}
-			
-			return {"flex":isFlexSDKAvailable, "flexjs":isFlexJSSDKAvailable};
-		}
-		
+
 		public static function setDefaultSDKByBundledSDK():void
 		{
 			var model:IDEModel = IDEModel.getInstance();
 			model.defaultSDK = new FileLocation(model.userSavedSDKs[0].path);
 		}
 		
-		public static function isSDKDirectory(location:FileLocation):Object
+		public static function getSdkDescription(location:FileLocation):SdkDescriptionVO
 		{
 			// lets load flex-sdk-description.xml to get it's label
-			var description:FileLocation = location.fileBridge.resolvePath("flex-sdk-description.xml");
+			var description:FileLocation = location.fileBridge.resolvePath("royale-sdk-description.xml");
+			if (!description.fileBridge.exists)
+			{
+				description = location.fileBridge.resolvePath("flex-sdk-description.xml");
+			}
+
 			if (description.fileBridge.exists)
 			{
 				// read the xml value to get SDK name
-				var tmpXML:Object = description.fileBridge.read();
-				return {nativePath:description.fileBridge.parent.fileBridge.nativePath, xml:XML(tmpXML)};
+				var tmpXML:XML = XML(description.fileBridge.read());
+				var outputTargetsXml:XMLList = tmpXML["output-targets"]["output-target"];
+				var outputTargets:Array = [];
+
+				for each (var item:XML in outputTargetsXml)
+				{
+					outputTargets.push(new RoyaleOutputTarget(item.@name, item.@version, item.@AIR, item.@Flash));
+				}
+
+				return new SdkDescriptionVO(description.fileBridge.parent.fileBridge.nativePath,
+							tmpXML["name"], tmpXML.version, tmpXML.build, outputTargets);
 			}
 			
 			// non-sdk case
@@ -461,38 +393,6 @@ package actionScripts.utils
 
             return currentSdkMinorVersion;
         }
-
-		public static function isJSOnlyRoyaleSDK(sdkLocation:FileLocation):Boolean
-		{
-			var isJSOnlySDK:Boolean;
-            if (!sdkLocation)
-            {
-                sdkLocation = IDEModel.getInstance().defaultSDK;
-            }
-
-            if (sdkLocation && sdkLocation.fileBridge.exists)
-            {
-                var configFile:FileLocation = sdkLocation.resolvePath("frameworks/royale-config.xml");
-                if (configFile.fileBridge.exists)
-                {
-                    var tmpConfigXML:XML = XML(configFile.fileBridge.read());
-                    var compilerXMLList:XMLList = tmpConfigXML.compiler;
-					var compilerXML:XML = compilerXMLList[0];
-					var compilationTargets:XMLList = compilerXML.targets;
-					compilationTargets = compilationTargets.target;
-
-					if (compilationTargets.length() == 1)
-					{
-                        if (compilationTargets[0].text() == "JSRoyale")
-                        {
-                            isJSOnlySDK = true;
-                        }
-					}
-                }
-            }
-
-			return isJSOnlySDK;
-		}
 
 		private static function onExtractionFailed(event:Event):void
 		{

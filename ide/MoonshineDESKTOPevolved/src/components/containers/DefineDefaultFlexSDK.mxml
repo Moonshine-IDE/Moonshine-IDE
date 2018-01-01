@@ -33,143 +33,150 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-        import mx.controls.Alert;
-        import mx.core.FlexGlobals;
-        import mx.events.CloseEvent;
-        import mx.events.FlexEvent;
-        import mx.managers.PopUpManager;
-        
-        import actionScripts.events.GlobalEventDispatcher;
-        import actionScripts.events.ProjectEvent;
-        import actionScripts.factory.FileLocation;
-        import actionScripts.plugin.settings.vo.PluginSetting;
-        import actionScripts.ui.tabview.CloseTabEvent;
-        import actionScripts.utils.NoSDKNotifier;
-        import actionScripts.utils.SDKUtils;
-        import actionScripts.valueObjects.ProjectReferenceVO;
-        
-        import components.popup.SDKDefinePopup;
-        import components.popup.SDKSelectorPopup;
+		import actionScripts.valueObjects.SdkDescriptionVO;
 
-        private var sdkPopup:SDKSelectorPopup;
-        private var sdkPathPopup:SDKDefinePopup;
+		import mx.controls.Alert;
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.events.FlexEvent;
+		import mx.managers.PopUpManager;
 
-        public static const SET_FLEXSDK:String = "SET_FLEXSDK";
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.ProjectEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.plugin.settings.vo.PluginSetting;
+		import actionScripts.ui.tabview.CloseTabEvent;
+		import actionScripts.utils.NoSDKNotifier;
+		import actionScripts.utils.SDKUtils;
+		import actionScripts.valueObjects.ProjectReferenceVO;
 
-        public function get longLabel():String
-        {
-            return SET_FLEXSDK;
-        }
+		import components.popup.SDKDefinePopup;
+		import components.popup.SDKSelectorPopup;
 
-        public function isChanged():Boolean
-        {
-            return false;
-        }
+		private var sdkPopup:SDKSelectorPopup;
+		private var sdkPathPopup:SDKDefinePopup;
 
-        public function isEmpty():Boolean
-        {
-            return false;
-        }
+		public static const SET_FLEXSDK:String = "SET_FLEXSDK";
 
-        public function save():void
-        {
-        }
+		public function get longLabel():String
+		{
+			return SET_FLEXSDK;
+		}
 
-        private function DefineSDKCreationComplete(event:FlexEvent):void
-        {
-            var ps:PluginSetting = new PluginSetting("Flex SDKs", "Moonshine Project Team", "Define Default Flex SDKs", false);
-            vgContainer.addElementAt(ps.renderer, 0);
+		public function isChanged():Boolean
+		{
+			return false;
+		}
 
-            addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
-        }
+		public function isEmpty():Boolean
+		{
+			return false;
+		}
 
-        private function onDownload(event:MouseEvent):void
-        {
-            currentState = "downloadState";
-            this.callLater(sdkDownloaderView.initThis);
-        }
+		public function save():void
+		{
+		}
 
-        // open SDK selectable list popup
-        private function onSelect(event:MouseEvent):void
-        {
-            if (!sdkPathPopup)
-            {
-                sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
-                sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-                sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-                PopUpManager.centerPopUp(sdkPopup);
-            }
-            else
-            {
-                PopUpManager.bringToFront(sdkPathPopup);
-            }
-        }
+		private function DefineSDKCreationComplete(event:FlexEvent):void
+		{
+			var ps:PluginSetting = new PluginSetting("Flex SDKs", "Moonshine Project Team", "Define Default Flex SDKs", false);
+			vgContainer.addElementAt(ps.renderer, 0);
 
-        private function onFlexSDKUpdated(event:ProjectEvent):void
-        {
-            // in case user deleted the entry
-            txtsdkPath.text = event.anObject.path;
-            btnSave.enabled = true;
-            onSDKPopupClosed(null);
-        }
+			addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+		}
 
-        private function onSDKPopupClosed(event:CloseEvent):void
-        {
-            sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-            sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-            sdkPopup = null;
-        }
+		private function onDownload(event:MouseEvent):void
+		{
+			currentState = "downloadState";
+			this.callLater(sdkDownloaderView.initThis);
+		}
 
-        private function onSave(event:MouseEvent):void
-        {
-            // check if valid SDK directory
-            var tmpXML:Object = SDKUtils.isSDKDirectory(new FileLocation(txtsdkPath.text));
-            if (!tmpXML || !tmpXML.xml || tmpXML.xml == "")
-            {
-                Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
-                return;
-            }
+		// open SDK selectable list popup
+		private function onSelect(event:MouseEvent):void
+		{
+			if (!sdkPathPopup)
+			{
+				sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
+				sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+				sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+				PopUpManager.centerPopUp(sdkPopup);
+			}
+			else
+			{
+				PopUpManager.bringToFront(sdkPathPopup);
+			}
+		}
 
-            // check if already added in saved SDKs list
-            var tmp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({label: tmpXML.xml.name, path: tmpXML.nativePath});
-            GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, tmp ? tmp : SDKUtils.getSDKFromSavedList(tmpXML.nativePath)));
+		private function onFlexSDKUpdated(event:ProjectEvent):void
+		{
+			// in case user deleted the entry
+			txtsdkPath.text = event.anObject.path;
+			btnSave.enabled = true;
+			onSDKPopupClosed(null);
+		}
 
-            // close will close the tab
-            //IDEModel.getInstance().defaultSDK = new FileLocation(txtsdkPath.text);
-            dispatchEvent(new Event(NoSDKNotifier.SDK_SAVED));
-            GlobalEventDispatcher.getInstance().dispatchEvent(
-                    new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
-            );
-        }
+		private function onSDKPopupClosed(event:CloseEvent):void
+		{
+			sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
+			sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+			sdkPopup = null;
+		}
 
-        private function onCancel(event:MouseEvent):void
-        {
-            // close will close the tab
-            // Close the tab
-            dispatchEvent(new Event(NoSDKNotifier.SDK_SAVE_CANCELLED));
-            GlobalEventDispatcher.getInstance().dispatchEvent(
-                    new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
-            );
-        }
+		private function onSave(event:MouseEvent):void
+		{
+			// check if valid SDK directory
+			var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(new FileLocation(txtsdkPath.text));
+			if (!sdkDescription)
+			{
+				Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
+				return;
+			}
 
-        protected function onSDKDownloadSelected(event:Event):void
-        {
-            txtsdkPath.text = sdkDownloaderView.selectedSDKDir.nativePath;
-            btnSave.enabled = true;
-            currentState = "selectionState";
-        }
+			// check if already added in saved SDKs list
+			var projectRefTemp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({
+				label: sdkDescription.name,
+				path: sdkDescription.sdkPath
+			});
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE,
+							projectRefTemp ? projectRefTemp : SDKUtils.getSDKFromSavedList(sdkDescription.sdkPath)));
 
-        protected function onSDKDownloadCancel(event:Event):void
-        {
-            currentState = "selectionState";
-        }
+			// close will close the tab
+			//IDEModel.getInstance().defaultSDK = new FileLocation(txtsdkPath.text);
+			dispatchEvent(new Event(NoSDKNotifier.SDK_SAVED));
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+			);
+		}
 
-        protected function onThisClosing(event:Event):void
-        {
-            removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
-            if (sdkDownloaderView) sdkDownloaderView.removeListeners();
-        }
-        ]]>
+		private function onCancel(event:MouseEvent):void
+		{
+			// close will close the tab
+			// Close the tab
+			dispatchEvent(new Event(NoSDKNotifier.SDK_SAVE_CANCELLED));
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
+			);
+		}
+
+		protected function onSDKDownloadSelected(event:Event):void
+		{
+			txtsdkPath.text = sdkDownloaderView.selectedSDKDir.nativePath;
+			btnSave.enabled = true;
+			currentState = "selectionState";
+		}
+
+		protected function onSDKDownloadCancel(event:Event):void
+		{
+			currentState = "selectionState";
+		}
+
+		protected function onThisClosing(event:Event):void
+		{
+			removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
+			if (sdkDownloaderView) sdkDownloaderView.removeListeners();
+		}
+		]]>
 	</fx:Script>
 	
 	<mx:states>

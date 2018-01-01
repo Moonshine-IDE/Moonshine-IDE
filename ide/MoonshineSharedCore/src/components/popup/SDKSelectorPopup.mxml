@@ -126,7 +126,7 @@
 				rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
 		<s:columns>
 			<s:ArrayList>
-				<s:GridColumn headerText="Description" dataField="name" minWidth="330"/>
+				<s:GridColumn headerText="Description" dataField="name" minWidth="290"/>
 				<s:GridColumn headerText="Path" dataField="path" />
 				<s:GridColumn headerText="" dataField="status" minWidth="60"/>
 			</s:ArrayList>
