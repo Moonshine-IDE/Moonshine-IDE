@@ -639,16 +639,24 @@ package actionScripts.plugins.as3project.mxmlc
 				AS3ProjectVO(pvo).updateConfig();
 				
 				var processArgs:Vector.<String> = new Vector.<String>;
+				var javaPath:FileLocation = UtilsCore.getJavaPath();
+				if (javaPath && javaPath.fileBridge.exists) javaPath = javaPath.fileBridge.parent.resolvePath("java.exe");
 				shellInfo = new NativeProcessStartupInfo();
 				if(Settings.os == "win")
 				{
-					processArgs.push("/c");
-					processArgs.push("set FLEX_HOME="+SDKstr+"&& "+fschstr);
+					//processArgs.push("/c");
+					processArgs.push("set FLEX_HOME=".concat(
+						SDKstr, "&& ", '"'+ javaPath.fileBridge.nativePath +'"', ' -Xmx384m -Dsun.io.useCanonCaches=false -Dapplication.home="'+ SDKstr +'" -Duser.language=fr -Duser.region=fr -jar "'+ SDKstr +'\\lib\\fcsh.jar"'
+					));
+					//processArgs.push("set FLEX_HOME="+SDKstr+"&& "+fschstr);
 				}
 				else
 				{
 					processArgs.push("-c");
-					processArgs.push("export FLEX_HOME="+SDKstr+";"+fschstr);
+					processArgs.push("export FLEX_HOME=".concat(
+						SDKstr, ";", "export SETUP_SH_VMARGS=-Duser.language=fr -Duser.region=fr", ";", fschstr
+					));
+					//processArgs.push("export FLEX_HOME="+SDKstr+";"+fschstr);
 				}
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				shellInfo.arguments = processArgs;
