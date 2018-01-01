@@ -362,6 +362,7 @@ package actionScripts.plugins.as3project.mxmlc
             var processArgs:Vector.<String> = new Vector.<String>();
 
 			var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
 			var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
 			var compilerArg:String = "&& " + fschstr;
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
@@ -392,7 +393,7 @@ package actionScripts.plugins.as3project.mxmlc
             {
                 processArgs.push("-c");
                 processArgs.push("export ".concat(
-                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+                        sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
                 ));
             }
 

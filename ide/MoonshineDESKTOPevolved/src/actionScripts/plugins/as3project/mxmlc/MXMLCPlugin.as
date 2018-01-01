@@ -571,6 +571,7 @@ package actionScripts.plugins.as3project.mxmlc
             var processArgs:Vector.<String> = new Vector.<String>();
 
             var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
             var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
             var compilerArg:String = "&& " + fschstr;
 
@@ -599,7 +600,7 @@ package actionScripts.plugins.as3project.mxmlc
             {
                 processArgs.push("-c");
                 processArgs.push("export ".concat(
-                        sdkPathHomeArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
+                        sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
                 ));
             }
 
@@ -654,9 +655,8 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					processArgs.push("-c");
 					processArgs.push("export FLEX_HOME=".concat(
-						SDKstr, ";", "export SETUP_SH_VMARGS=-Duser.language=fr -Duser.region=fr", ";", fschstr
+						SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", fschstr
 					));
-					//processArgs.push("export FLEX_HOME="+SDKstr+";"+fschstr);
 				}
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				shellInfo.arguments = processArgs;
