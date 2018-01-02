@@ -27,6 +27,7 @@ package actionScripts.ui.marker
 		public var isMatchCase:Boolean;
 		public var isRegexp:Boolean;
 		public var isEscapeChars:Boolean;
+		public var isRefactoredView:Boolean;
 		public var searchRegExp:RegExp;
 		
 		//public var positions:Array;
@@ -70,8 +71,11 @@ package actionScripts.ui.marker
 			addElement(textArea);
 		}
 		
+		private var replaceValue:String;
 		public function highlight(search:String):void
 		{
+			replaceValue = search;
+			
 			highlightDict = new Dictionary();
 			isAllLinesRendered = false;
 			textArea.scroller.verticalScrollBar.value = 0;
@@ -146,28 +150,32 @@ package actionScripts.ui.marker
 			
 			var tmpPositions:Array = [];
 			var results:Array;
-			/*if (this.positions)
+			if (!isRefactoredView)
 			{
-				// in case of right pane
-				var replaceValue:String = searchRegExp.source;
-				var replaceValueLength:int = replaceValue.length;
-				var startIndex:int;
-				positions.forEach(function(element:Object, index:int, arr:Array):void
-				{
-					trace(element.posStart);
-					startIndex = original.indexOf(replaceValue, element.posStart);
-					tmpPositions.push({posStart:startIndex, posEnd:startIndex + replaceValueLength});
-				});
-			}
-			else
-			{*/
 				results = searchRegExp.exec(original);
 				while (results != null)
 				{ 
 					tmpPositions.push({posStart:results.index, posEnd:searchRegExp.lastIndex});
 					results = searchRegExp.exec(original); 
 				}
-			//}
+			}
+			else
+			{
+				var replaceValueLength:int = replaceValue.length;
+				var t1:String = "";
+				var t2:String;
+				results = searchRegExp.exec(original);
+				while (results != null)
+				{
+					tmpPositions.push({posStart:results.index, posEnd:results.index + replaceValueLength});
+					t2 = (t1 != "") ? t1.substring(0, searchRegExp.lastIndex) : original.substring(0, searchRegExp.lastIndex);
+					t2 = t2.replace(searchRegExp, replaceValue);
+					t1 = t2 + ((t1 != "") ? t1.substr(searchRegExp.lastIndex, t1.length) : original.substr(searchRegExp.lastIndex, original.length));
+					results = searchRegExp.exec(t1);
+				}
+				
+				this.text = t1;
+			}
 			
 			return tmpPositions;
 		}
