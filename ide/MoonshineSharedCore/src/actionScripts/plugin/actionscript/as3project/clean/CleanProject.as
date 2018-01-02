@@ -156,7 +156,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 							directory.deleteFile();
                         }
 					}
-					
+
 					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath));
 				}
 				
@@ -211,6 +211,10 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 							clearTimeout(timeoutValue);
 						}, 300);
+					}
+					else
+					{
+                        dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
 					}
 				}
 				else
