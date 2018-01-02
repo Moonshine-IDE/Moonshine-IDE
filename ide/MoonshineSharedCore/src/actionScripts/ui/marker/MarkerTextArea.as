@@ -80,6 +80,7 @@ package actionScripts.ui.marker
 			{
 				var tmpIndex:int = getElementIndex(lineHighlightContainer);
 				removeElement(lineHighlightContainer);
+				lineHighlightContainer = null;
 				addElementAt(getHighlighterBase(), tmpIndex);
 			}
 			
