@@ -236,7 +236,7 @@
 				if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
 				else setSelectedItem(lastSelectedItem as FileWrapper);
 				clearTimeout(timeoutValue);
-			}, 300);
+			}, 100);
 		}
 
 		private function setSelectedItem(fw:FileWrapper):void
