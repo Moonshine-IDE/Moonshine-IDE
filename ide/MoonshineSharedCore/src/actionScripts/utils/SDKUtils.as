@@ -261,8 +261,14 @@ package actionScripts.utils
 					outputTargets.push(new RoyaleOutputTarget(item.@name, item.@version, item.@AIR, item.@Flash));
 				}
 
+				var displayName:String = tmpXML["name"];
+				if (description.fileBridge.name.indexOf("royale") > -1)
+				{
+                    displayName += " " + tmpXML.version;
+				}
+
 				return new SdkDescriptionVO(description.fileBridge.parent.fileBridge.nativePath,
-							tmpXML["name"], tmpXML.version, tmpXML.build, outputTargets);
+                        displayName, tmpXML.version, tmpXML.build, outputTargets);
 			}
 			
 			// non-sdk case
