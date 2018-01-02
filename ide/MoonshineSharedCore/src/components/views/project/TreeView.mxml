@@ -264,7 +264,7 @@
 		public function handleProjectsChange(event:CollectionEvent):void
 		{
 			var project:ProjectVO = null;
-
+			var timeoutValue:uint;
 			switch (event.kind)
 			{
 				case CollectionEventKind.REMOVE:
@@ -277,17 +277,21 @@
 					var lastSelectedItem:Object = tree.selectedItem;
 					var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 					projectFolders.removeItemAt(tmpFWIndex);
-					var timeoutValue:uint = setTimeout(function ():void {
+					timeoutValue = setTimeout(function ():void {
 						if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
 						else if (projectFolders.length != 0) tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
 						clearTimeout(timeoutValue);
-					}, 300);
+					}, 100);
 					break;
 				}
 				case CollectionEventKind.ADD:
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
 					projectFolders.addItemAt(project.projectFolder, 0);
+					timeoutValue = setTimeout(function ():void {
+						tree.selectedItem = project.projectFolder;
+						clearTimeout(timeoutValue);
+					}, 1000);
 					break;
 				}
 			}
@@ -674,8 +678,9 @@
 			function updateTreeView():void
 			{
 				projectFolders.refresh();
-				tree.openItems = openItems;
-				tree.invalidateList();
+				/*tree.openItems = openItems;
+				tree.invalidateList();*/
+				model.selectedprojectFolders = projectFolders;
 			}
 		}
 
