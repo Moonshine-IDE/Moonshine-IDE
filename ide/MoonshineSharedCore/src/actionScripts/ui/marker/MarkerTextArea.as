@@ -60,9 +60,7 @@ package actionScripts.ui.marker
 			bg.left = bg.right = bg.top = bg.bottom = 0;
 			addElement(bg);
 			
-			lineHighlightContainer = new Group();
-			lineHighlightContainer.percentWidth = lineHighlightContainer.percentHeight = 100;
-			addElement(lineHighlightContainer);
+			addElement(getHighlighterBase());
 			
 			textArea = new TextArea();
 			textArea.editable = false;
@@ -76,9 +74,14 @@ package actionScripts.ui.marker
 		{
 			highlightDict = new Dictionary();
 			isAllLinesRendered = false;
-			lineHighlightContainer.graphics.clear();
 			textArea.scroller.verticalScrollBar.value = 0;
 			textArea.setFormatOfRange(new TextLayoutFormat());
+			if (lineHighlightContainer)
+			{
+				var tmpIndex:int = getElementIndex(lineHighlightContainer);
+				removeElement(lineHighlightContainer);
+				addElementAt(getHighlighterBase(), tmpIndex);
+			}
 			
 			if (!textArea.scroller.verticalScrollBar.hasEventListener(Event.CHANGE)) 
 			{
@@ -177,6 +180,14 @@ package actionScripts.ui.marker
 		public function updateHScrollByNeighbour(event:GeneralEvent):void
 		{
 			textArea.scroller.viewport.horizontalScrollPosition = event.value as Number;
+		}
+		
+		private function getHighlighterBase():Group
+		{
+			lineHighlightContainer = new Group();
+			lineHighlightContainer.percentWidth = lineHighlightContainer.percentHeight = 100;
+			
+			return lineHighlightContainer;
 		}
 		
 		private function onVScrollUpdate(event:Event, isDispatchEvent:Boolean=true):void
