@@ -169,8 +169,7 @@ package actionScripts.ui.marker
 				{
 					tmpPositions.push({posStart:results.index, posEnd:results.index + replaceValueLength});
 					t2 = (t1 != "" ) ? t1.substring(0, results.index) : original.substring(0, results.index);
-					t3 = (t1 != "") ? t1.substring(results.index, searchRegExp.lastIndex) : original.substring(results.index, searchRegExp.lastIndex);
-					t2 += t3.replace(searchRegExp, replaceValue);
+					t2 += replaceValue;
 					t1 = t2 + ((t1 != "") ? t1.substr(searchRegExp.lastIndex, t1.length) : original.substr(searchRegExp.lastIndex, original.length));
 					results = searchRegExp.exec(t1);
 				}
