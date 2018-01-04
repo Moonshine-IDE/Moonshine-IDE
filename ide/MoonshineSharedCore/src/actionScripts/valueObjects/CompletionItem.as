@@ -42,6 +42,16 @@ package actionScripts.valueObjects
 			return false;
 		}
 
+		public function get displayKind():String
+		{
+			if (isProperty)
+			{
+				return "Property";
+			}
+
+			return kind;
+		}
+
 		public function get labelWithPrefix():String
 		{
 			if (command && command.command == "nextgenas.addMXMLNamespace")

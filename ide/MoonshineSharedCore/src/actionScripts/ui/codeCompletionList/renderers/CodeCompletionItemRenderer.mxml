@@ -11,7 +11,7 @@
     <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false"
               verticalAlign="middle">
         <s:Label color="0x606060" textAlign="right"
-                 maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.kind}"/>
+                 maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.displayKind}"/>
         <codecompletionlist:CodeIconIndicator id="infoIndicator" currentState="info" data="{data}"
                                               click="onCodeIconIndicatorClick(event)" />
     </s:HGroup>
