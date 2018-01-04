@@ -38,6 +38,7 @@
 			import actionScripts.events.WorkerEvent;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.locator.IDEWorker;
+			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.editor.BasicTextEditor;
 			
 			import elements.skins.IDEProgressBarSkin;
@@ -57,6 +58,7 @@
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
 			private var isWorking:Boolean;
+			private var isReplaceApplied:Boolean;
 			
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
@@ -99,6 +101,7 @@
 			{
 				if (isWorking) return;
 				
+				SearchPlugin.IS_REPLACE_APPLIED = isReplaceApplied;
 				worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
 				super.closeByCrossSign(event);
 			}
@@ -116,6 +119,7 @@
 						btnReplace.label = "Finish";
 						btnReplace.enabled = true;
 						isWorking = false;
+						isReplaceApplied = true;
 						break;
 				}
 			}

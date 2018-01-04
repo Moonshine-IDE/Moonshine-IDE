@@ -161,7 +161,7 @@
 						filesFoundInCount = event.value.value;
 						worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
 						updateLabel();
-						testReplaceRequest();
+						onReplaceRequest();
 						break;
 				}
 			}
@@ -181,11 +181,11 @@
 				pbFiles.includeInLayout = pbFiles.visible = false;
 			}
 			
-			private function testReplaceRequest():void
+			private function onReplaceRequest():void
 			{
 				if (isShowReplaceWhenDone && currentCount != 0)
 				{
-					btnReplae.enabled = false;
+					SearchPlugin.IS_REPLACE_APPLIED = true;
 					
 					var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
 					replacePopup.replaceValue = valueToSearch;
@@ -204,7 +204,6 @@
 			private function onReplacePopupClosed(event:CloseEvent):void
 			{
 				event.target.removeEventListener(CloseEvent.CLOSE, onReplacePopupClosed);
-				btnReplae.enabled = true;
 			}
 			
 			private function generateSearchTree(value:Object):void
@@ -304,7 +303,7 @@
 					  label="Replace"
 					  styleName="lightButton"
 					  includeInLayout="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}" visible="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}"
-					  enabled="false" click="testReplaceRequest()"/>
+					  enabled="{!SearchPlugin.IS_REPLACE_APPLIED}" click="onReplaceRequest()"/>
 		</s:HGroup>
 		<mx:Tree
 			id="tree"

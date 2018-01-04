@@ -84,7 +84,6 @@ package actionScripts.ui.marker
 			{
 				var tmpIndex:int = getElementIndex(lineHighlightContainer);
 				removeElement(lineHighlightContainer);
-				lineHighlightContainer = null;
 				addElementAt(getHighlighterBase(), tmpIndex);
 			}
 			
@@ -164,12 +163,14 @@ package actionScripts.ui.marker
 				var replaceValueLength:int = replaceValue.length;
 				var t1:String = "";
 				var t2:String;
+				var t3:String;
 				results = searchRegExp.exec(original);
 				while (results != null)
 				{
 					tmpPositions.push({posStart:results.index, posEnd:results.index + replaceValueLength});
-					t2 = (t1 != "") ? t1.substring(0, searchRegExp.lastIndex) : original.substring(0, searchRegExp.lastIndex);
-					t2 = t2.replace(searchRegExp, replaceValue);
+					t2 = (t1 != "" ) ? t1.substring(0, results.index) : original.substring(0, results.index);
+					t3 = (t1 != "") ? t1.substring(results.index, searchRegExp.lastIndex) : original.substring(results.index, searchRegExp.lastIndex);
+					t2 += t3.replace(searchRegExp, replaceValue);
 					t1 = t2 + ((t1 != "") ? t1.substr(searchRegExp.lastIndex, t1.length) : original.substr(searchRegExp.lastIndex, original.length));
 					results = searchRegExp.exec(t1);
 				}

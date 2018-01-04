@@ -42,6 +42,8 @@ package actionScripts.plugin.search
 		public static const PROJECT:String = "PROJECT";
 		public static const LINKED_PROJECTS:String = "LINKED_PROJECTS";
 		
+		[Bindable] public static var IS_REPLACE_APPLIED:Boolean;
+		
 		public static var LAST_SCOPE_INDEX:int = 1;
 		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
 		public static var LAST_SEARCH:String;
@@ -100,6 +102,7 @@ package actionScripts.plugin.search
 			
 			LAST_SCOPE_INDEX = searchPopup.rbgScope.selectedIndex;
 			LAST_SEARCH = searchPopup.txtSearch.text;
+			IS_REPLACE_APPLIED = false;
 			
 			if (!searchResultView)
 			{
