@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import actionScripts.valueObjects.SdkDescriptionVO;
-
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
@@ -75,6 +73,7 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.SdkDescriptionVO;
     import actionScripts.valueObjects.Settings;
     
     import components.popup.SelectOpenedFlexProject;
@@ -189,7 +188,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if (Settings.os == "win")
 			{
-				fcshPath += ".bat";
+				fcshPath = "fcsh_moonshine.bat";
 				mxmlcPath +=".bat";
 				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 			}
@@ -541,7 +540,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc");
 				
 				//If application is flexJS and sdk is flex sdk then error popup alert
-				var fcshFile:File = currentSDK.resolvePath(fcshPath);
+				var fcshFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
 				if (fcshFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
@@ -626,7 +625,7 @@ package actionScripts.plugins.as3project.mxmlc
 					error("No Flex SDK found. Setup one in Settings menu.");
 					return;
 				}
-				var fschFile:File = currentSDK.resolvePath(fcshPath);
+				var fschFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
 				if (!fschFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a Flex SDK instead.","Error!");
@@ -646,13 +645,10 @@ package actionScripts.plugins.as3project.mxmlc
 				var javaPath:FileLocation = UtilsCore.getJavaPath();
 				if (javaPath && javaPath.fileBridge.exists) javaPath = javaPath.fileBridge.parent.resolvePath("java.exe");
 				shellInfo = new NativeProcessStartupInfo();
-				if(Settings.os == "win")
+				if (Settings.os == "win")
 				{
-					//processArgs.push("/c");
-					processArgs.push("set FLEX_HOME=".concat(
-						SDKstr, "&& ", '"'+ javaPath.fileBridge.nativePath +'"', ' -Xmx384m -Dsun.io.useCanonCaches=false -Dapplication.home="'+ SDKstr +'" -Duser.language=fr -Duser.region=fr -jar "'+ SDKstr +'\\lib\\fcsh.jar"'
-					));
-					//processArgs.push("set FLEX_HOME="+SDKstr+"&& "+fschstr);
+					processArgs.push("/c");
+					processArgs.push("set FLEX_HOME="+SDKstr+"&& "+fschstr);
 				}
 				else
 				{

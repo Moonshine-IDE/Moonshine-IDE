@@ -19,19 +19,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.valueObjects.FileWrapper;
-
     import flash.display.DisplayObject;
-	
-	import mx.core.IFlexDisplayObject;
-	import mx.core.IVisualElement;
-
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.ui.IPanelWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.menu.vo.MenuItem;
+    
+    import mx.core.IFlexDisplayObject;
+    import mx.core.IVisualElement;
+    
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.IPanelWindow;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.valueObjects.FileWrapper;
 
 	/**
 	 * IFlexCoreBridge
@@ -74,7 +73,6 @@ package actionScripts.interfaces
 		function getJavaPath(completionHandler:Function):void;
 		function startTypeAheadWithJavaPath(path:String):void;
 		function reAdjustApplicationSize(width:Number, height:Number):void;
-
         function createProject(event:NewProjectEvent):void;
 
         /**
