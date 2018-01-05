@@ -114,12 +114,12 @@ package actionScripts.plugins.as3project.mxmlc
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
-		
+
 		public function get flexSDK():File
 		{
 			return currentSDK;
 		}
-		
+
 		public function get defaultFlexSDK():String
 		{
 			return _defaultFlexSDK;
@@ -540,7 +540,9 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc");
 				
 				//If application is flexJS and sdk is flex sdk then error popup alert
-				var fcshFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
+				var fcshFile:File = ConstantsCoreVO.IS_MACOS ?
+                        currentSDK.resolvePath(fcshPath) :
+                        File.applicationDirectory.resolvePath("elements/"+ fcshPath);
 				if (fcshFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
@@ -642,8 +644,6 @@ package actionScripts.plugins.as3project.mxmlc
 				AS3ProjectVO(pvo).updateConfig();
 				
 				var processArgs:Vector.<String> = new Vector.<String>;
-				var javaPath:FileLocation = UtilsCore.getJavaPath();
-				if (javaPath && javaPath.fileBridge.exists) javaPath = javaPath.fileBridge.parent.resolvePath("java.exe");
 				shellInfo = new NativeProcessStartupInfo();
 				if (Settings.os == "win")
 				{
