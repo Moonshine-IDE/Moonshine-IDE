@@ -20,16 +20,13 @@
 package actionScripts.utils
 {
 	import actionScripts.factory.FileLocation;
-
-    import flash.desktop.Clipboard;
-    import flash.desktop.ClipboardFormats;
+    import actionScripts.locator.IDEModel;
 
     public class FileCoreUtil
 	{
 		public static function copyPathToClipboard(file:FileLocation):void
 		{
-			Clipboard.generalClipboard.clear();
-			Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, file.fileBridge.nativePath);
+			IDEModel.getInstance().clipboardCore.copyText(file.fileBridge.nativePath);
 		}
 
 		public static function showInExplorer(file:FileLocation):void

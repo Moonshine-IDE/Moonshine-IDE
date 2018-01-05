@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.factory
 {
+    import actionScripts.interfaces.IClipboardBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
 
     import flash.system.ApplicationDomain;
@@ -65,7 +66,14 @@ package actionScripts.factory
 			var gb: IContextMenuBridge = new clsToCreate();
 			return gb;
 		}
-		
+
+		public static function getClipboardInstance():IClipboardBridge
+		{
+            var clsToCreate : Object = getClassToCreate("actionScripts.impls.IClipboardBridgeImp");
+            var gb: IClipboardBridge = new clsToCreate();
+            return gb;
+		}
+
 		public static function getNativeMenuItemInstance(): Object 
 		{
 			return getClassToCreate("actionScripts.impls.INativeMenuItemBridgeImp");

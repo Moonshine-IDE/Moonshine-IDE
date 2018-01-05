@@ -62,6 +62,7 @@
 				ideModel.flexCore = BridgeFactory.getFlexCoreInstance();
 				ideModel.aboutCore = BridgeFactory.getAboutInstance();
 				ideModel.visualEditorCore = BridgeFactory.getVisualEditorInstance();
+				ideModel.clipboardCore = BridgeFactory.getClipboardInstance();
 			}
 			
 			/**

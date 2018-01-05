@@ -29,9 +29,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.impls.IClipboardBridgeImp;
 		import actionScripts.impls.IVisualEditorProjectBridgeImpl;
 
-		import mx.core.FlexGlobals;
 		import mx.events.FlexEvent;
 		
 		import actionScripts.events.GlobalEventDispatcher;
@@ -66,6 +66,7 @@
 		private static const NEEDED_FOR_COMPILATION4:INativeMenuItemBridgeImp = null;
 		private static const NEEDED_FOR_COMPILATION5:IAboutBridgeImp = null;
         private static const NEEDED_FOR_COMPILATION6: IVisualEditorProjectBridgeImpl = null;
+        private static const NEEDED_FOR_COMPILATION7: IClipboardBridgeImp = null;
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC API

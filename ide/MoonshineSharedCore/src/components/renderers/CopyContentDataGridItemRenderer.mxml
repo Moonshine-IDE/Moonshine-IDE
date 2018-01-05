@@ -11,6 +11,7 @@
              click="onImageClick(event)"/>
     <fx:Script><![CDATA[
         import actionScripts.factory.FileLocation;
+        import actionScripts.locator.IDEModel;
         import actionScripts.valueObjects.Range;
         import actionScripts.valueObjects.Position;
 
@@ -32,8 +33,7 @@
         {
             event.stopImmediatePropagation();
 
-            Clipboard.generalClipboard.clear();
-            Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, getValueToCopy());
+            IDEModel.getInstance().clipboardCore.copyText(getValueToCopy());
         }
 
         private function onRollOverOut(event:MouseEvent):void
