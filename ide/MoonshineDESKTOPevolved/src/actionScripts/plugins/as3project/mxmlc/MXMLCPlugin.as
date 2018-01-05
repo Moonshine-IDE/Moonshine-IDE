@@ -102,7 +102,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var lastTarget:File;
 		private var targets:Dictionary;
 		
-		private var currentSDK:File = flexSDK;
+		private var currentSDK:File;
 		
 		/** Project currently under compilation */
 		private var currentProject:ProjectVO;
@@ -114,11 +114,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
-
-		public function get flexSDK():File
-		{
-			return currentSDK;
-		}
 
 		public function get defaultFlexSDK():String
 		{
@@ -496,8 +491,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function usingInvalidSDK(pvo:AS3ProjectVO):Boolean 
 		{
 			var customSDK:File = pvo.buildOptions.customSDK.fileBridge.getFile as File;
-			if ((customSDK && (currentSDK.nativePath != customSDK.nativePath))
-				|| (!customSDK && currentSDK.nativePath != flexSDK.nativePath)) 
+			if (customSDK && (currentSDK.nativePath != customSDK.nativePath))
 			{
 				return true;
 			}

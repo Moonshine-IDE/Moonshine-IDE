@@ -28,7 +28,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.events.OutputProgressEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
@@ -74,28 +73,11 @@ package actionScripts.plugins.as3project.mxmlc
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlcjs'); }
 		
 		public var incrementalCompile:Boolean = true;
-			
-		private static const ASCRIPTLINESGBAUTH 				: XML = <root><![CDATA[
-							#!/bin/bash
-							on run argv
-							do shell script "/bin/blah > /dev/null 2>&1 &"
-							set userHomePath to POSIX path of (path to home folder)
-							do shell script "'/usr/local/apache-flexjs/apache-flexjs-sdk-0.6.0/js/bin/mxmlc'"
-						end run]]></root>
 
-		//do shell script "xattr -d com.apple.quarantine /Users/<userName>/ApacheFlexSDK/FlexJS_0.6_AIR.21.0/js/bin/compc"
-			
-		private static var isQuarantined:Boolean;
-		
 		private var fcshPath:String = "js/bin/mxmlc";
 		private var cmdFile:File;
 		private var _defaultFlexSDK:String;
-		
-		public function get flexSDK():File
-		{
-			return currentSDK;
-		}
-		
+
 		public function get defaultFlexSDK():String
 		{
 			return _defaultFlexSDK;
@@ -113,7 +95,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private var targets:Dictionary;
 		
-		private var currentSDK:File = flexSDK;
+		private var currentSDK:File;
 		
 		/** Project currently under compilation */
 		private var currentProject:ProjectVO;
@@ -405,48 +387,9 @@ package actionScripts.plugins.as3project.mxmlc
 			if (ConstantsCoreVO.IS_CONSOLE_CLEARED_ONCE) clearOutput();
 			ConstantsCoreVO.IS_CONSOLE_CLEARED_ONCE = true;
 		}
-		
-		private function quarantineExecutables(value:AS3ProjectVO, filePathToQuarantine:String):void
-		{
-			/*var processArgs:Vector.<String> = new Vector.<String>;
-			shellInfo = new NativeProcessStartupInfo();
-			
-			// @call 1
-			processArgs.push( "-c" );
-			processArgs.push( "chmod +x "+ filePathToQuarantine);
-			shellInfo.arguments = processArgs;
-			shellInfo.executable = cmdFile;
-			
-			debug("Quarantine path: %s", filePathToQuarantine);
-			initShell();
-			isQuarantined = true;
-			
-			setTimeout(proceedWithBuild, 1000, value);*/
-			
-			isQuarantined = true;
-			holdProject = value;
-			var tmpScript : String = ASCRIPTLINESGBAUTH;
-			
-			// starts writing .scpt file
-			file = File.applicationStorageDirectory.resolvePath( "spawn/linker2.scpt" );
-			if (file.exists)
-			{
-				onGBAWriteFileCompleted(null);
-				return;
-			}
-			
-			
-			fs = new FileStream();
-			fs.addEventListener(IOErrorEvent.IO_ERROR, handleFSError );
-			fs.addEventListener(Event.CLOSE, onFileStreamCompletes );
-			fs.addEventListener(OutputProgressEvent.OUTPUT_PROGRESS, onGBAWriteFileCompleted );
-			fs.openAsync(file, FileMode.WRITE);
-			fs.writeUTFBytes( tmpScript );
-		}
-		
+
 		private var file:File;
 		private var fs:FileStream;
-		private var holdProject:AS3ProjectVO;
 		
 		/**
 		 * In the process of copying GBAuth file systems
@@ -508,8 +451,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function usingInvalidSDK(pvo:AS3ProjectVO):Boolean 
 		{
 			var customSDK:File = pvo.buildOptions.customSDK.fileBridge.getFile as File;
-			if ((customSDK && (currentSDK.nativePath != customSDK.nativePath))
-				|| (!customSDK && currentSDK.nativePath != flexSDK.nativePath)) 
+			if (customSDK && (currentSDK.nativePath != customSDK.nativePath))
 			{
 				return true;
 			}
