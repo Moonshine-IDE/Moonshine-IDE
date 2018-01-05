@@ -1053,8 +1053,7 @@ package actionScripts.plugins.as3project.mxmlc
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
 					errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
 				}
-				
-				debug("%s", data);
+
 				print(data);
 				reset();
 			}

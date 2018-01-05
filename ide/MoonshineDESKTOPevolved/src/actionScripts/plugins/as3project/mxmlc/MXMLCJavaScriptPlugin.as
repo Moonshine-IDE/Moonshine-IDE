@@ -798,7 +798,6 @@ package actionScripts.plugins.as3project.mxmlc
 					errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
 				}
 				
-				debug("%s", data);
 				print(data);
 			}
 			targets = new Dictionary();
