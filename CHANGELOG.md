@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Console: Fixed issue where prompt background color makes command unreadable.
 * Fixed issue where "Clean Project" causes hang of IDE.
 * Fixed issue where "Clean Project" clears project selection.
+* Fixed issue with "Build & Run" command when user has different system language than English.
 
 ## Moonshine IDE [1.7.1]
 
