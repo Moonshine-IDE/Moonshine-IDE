@@ -29,7 +29,7 @@
             {
                 this.toolTip = null;
             }
-            else
+            else if (data)
             {
                 this.toolTip = data.detail;
             }
