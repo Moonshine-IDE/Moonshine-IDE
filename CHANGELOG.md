@@ -7,24 +7,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 * Reopen previously opened projects. This behavior can be disabled from the General tab in the application settings.
-* Added popup "Confirm Exit" to prompt user about exit. Visibility of popup can be configured from the General tab in the application settings.
+* Added "Confirm Exit" popup to prompt user before exiting. This feature is disabled by default, but can be enabled in the General tab in the application settings.
 * Problems view: Added option to copy contents of columns "Problem" and "Location" to system clipboard.
-* Projects tree: Added option "Select open file" in the header of projects tree. It allows automatically expand tree and select currently opened file.
+* Projects tree: Added option "Select open file" in the header of projects tree.  This will show the file from the current tab in the project tree
 * Projects tree: Added option "Copy path" to context menu in project tree.
 * Projects tree: Added option "Show in Explorer" to context menu in project tree.
-* Added global string search/replace. Available in menu "Project" -> "Search".
+* Added global string search/replace. Available in menu:  Project -> Search.
 
 ### Changed
-* Code Completion List: Show items on the list which contains searched words at any position.
-* Visual Editor: Newly created project will contains representation of main application window. User will be able to change basic properties.
-* Show Tab close button ("x") on hover.
+* Code Completion List: Show items in the list which contain the entered characters at any position.
+* Visual Editor: Newly created project contains representation of main application window. User can change the basic application window properties.
+* Show Tab close button ("x") on hover over unfocused tab.
 
 ### Fixed
 * Fixed issue where newly created Flex Mobile project was not properly recognized.
 * Console: Fixed issue where prompt background color makes command unreadable.
 * Fixed issue where "Clean Project" causes hang of IDE.
 * Fixed issue where "Clean Project" clears project selection.
-* Fixed issue with "Build & Run" command when user has different system language than English.
+* Fixed issue with "Build & Run" command when user has a system language other than English.
 
 ## Moonshine IDE [1.7.1]
 
