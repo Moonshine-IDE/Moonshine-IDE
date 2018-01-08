@@ -457,6 +457,10 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Adobe\ AIR.vch'/>
 		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
+		</exec>
 		<!--exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
