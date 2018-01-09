@@ -518,7 +518,8 @@ package actionScripts.plugins.as3project.mxmlc
 				// determine if the sdk version is lower than 0.8.0 or not
 				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
 				
-				var mxmlcFile:File = currentSDK.resolvePath(ConstantsCoreVO.IS_MACOS ? "js/bin/mxmlc" : "js/bin/mxmlc.bat");
+				var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc"+ compilerExtension);
 				if (!mxmlcFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
@@ -531,12 +532,12 @@ package actionScripts.plugins.as3project.mxmlc
 				// We've found js/bin/mxmlc compiletion do not produce
 				// valid swf with prior 0.8 version; we shall need following
 				// executable for version less than 0.8
-				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc");
+				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc"+ compilerExtension);
 				
 				//If application is flexJS and sdk is flex sdk then error popup alert
 				var fcshFile:File = ConstantsCoreVO.IS_MACOS ?
                         currentSDK.resolvePath(fcshPath) :
-                        File.applicationDirectory.resolvePath("elements/"+ fcshPath);
+						currentSDK.resolvePath("bin/fcsh.bat");
 				if (fcshFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
