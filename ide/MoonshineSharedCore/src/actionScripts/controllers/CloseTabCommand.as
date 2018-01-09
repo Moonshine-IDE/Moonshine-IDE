@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+    import actionScripts.ui.editor.BasicTextEditor;
+
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -96,7 +98,7 @@ package actionScripts.controllers
 				var cancel:Button = new Button();
 				cancel.styleName = "lightButton";
 				cancel.label = "See file again";
-				cancel.addEventListener(MouseEvent.CLICK, cancelAction, false, 0, false);
+				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, false);
 				 
 				pop.buttons = [save, close, cancel];
 				
@@ -150,8 +152,12 @@ package actionScripts.controllers
 			if (pop) cleanUp();
 		}
 		
-		private function cancelAction(event:Event=null):void
+		private function seeFileAgain(event:Event=null):void
 		{
+            if (tabToClose is BasicTextEditor)
+            {
+                model.mainView.mainContent.setSelectedTab(tabToClose as DisplayObject);
+            }
 			cleanUp();
 		}
 		
@@ -202,12 +208,6 @@ package actionScripts.controllers
 					new CloseTabEvent(CloseTabEvent.EVENT_ALL_TABS_CLOSED, null)
 				);
 			}
-			// If we removed all editors, add a blank.
-			/*if (model.editors.length == 0)
-			{
-				var e:BasicTextEditor = new BasicTextEditor();
-				model.editors.addItem(e);
-			}*/
 		}
 	}
 }
