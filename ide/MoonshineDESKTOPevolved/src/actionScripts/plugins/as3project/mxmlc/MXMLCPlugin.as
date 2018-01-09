@@ -518,7 +518,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// determine if the sdk version is lower than 0.8.0 or not
 				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
 				
-				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc");
+				var mxmlcFile:File = currentSDK.resolvePath(ConstantsCoreVO.IS_MACOS ? "js/bin/mxmlc" : "js/bin/mxmlc.bat");
 				if (!mxmlcFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
