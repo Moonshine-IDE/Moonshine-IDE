@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
+    import actionScripts.valueObjects.ConstantsCoreVO;
+
     import flash.display.NativeMenuItem;
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
@@ -63,6 +65,7 @@ package actionScripts.ui.renderers
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const COPY_PATH:String = "Copy Path";
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
+		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const RENAME:String = "Rename";
 		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
@@ -217,7 +220,9 @@ package actionScripts.ui.renderers
                 model.contextMenuCore.addItem(contextMenu,
                         model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
                 model.contextMenuCore.addItem(contextMenu,
-                        model.contextMenuCore.getContextMenuItem(SHOW_IN_EXPLORER, redispatch, Event.SELECT));
+                        model.contextMenuCore.getContextMenuItem(
+								ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
+								redispatch, Event.SELECT));
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
