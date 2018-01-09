@@ -443,6 +443,7 @@
 					break;
 				}
 				case FTETreeItemRenderer.SHOW_IN_EXPLORER:
+				case FTETreeItemRenderer.SHOW_IN_FINDER:
 				{
 					FileCoreUtil.showInExplorer(fileWrapper.file);
 					break;
