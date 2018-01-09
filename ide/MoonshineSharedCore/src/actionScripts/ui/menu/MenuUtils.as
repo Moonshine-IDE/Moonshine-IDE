@@ -54,7 +54,8 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'RENAME'),
             "Visual Editor Flex File",
             "Copy Path",
-            "Show in Explorer"
+            "Show in Explorer",
+            "Show in Finder"
         ];
 
         private static var menuItemsDisabledNoneVEProject:Array = [
