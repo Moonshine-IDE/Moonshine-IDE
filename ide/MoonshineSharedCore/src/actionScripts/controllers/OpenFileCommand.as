@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.events.Event;
-	
+    import actionScripts.utils.UtilsCore;
+
+    import flash.events.Event;
+
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.events.FileChangeEvent;
@@ -231,10 +233,15 @@ package actionScripts.controllers
 			}
 			else
 			{
-				var activeProject:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-				if (activeProject && activeProject.isVisualEditorProject)
+				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper) as AS3ProjectVO;
+				if (!project)
 				{
-					 editor = model.visualEditorCore.getVisualEditor();
+					project = model.activeProject as AS3ProjectVO;
+                }
+
+				if (project && project.isVisualEditorProject)
+				{
+					 editor = model.visualEditorCore.getVisualEditor(project);
 				}
 				else
                 {

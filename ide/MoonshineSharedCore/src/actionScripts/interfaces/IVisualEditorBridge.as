@@ -18,10 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
 
     public interface IVisualEditorBridge extends IProject
     {
-        function getVisualEditor():BasicTextEditor;
+        function getVisualEditor(visualEditorProject:AS3ProjectVO):BasicTextEditor;
     }
 }

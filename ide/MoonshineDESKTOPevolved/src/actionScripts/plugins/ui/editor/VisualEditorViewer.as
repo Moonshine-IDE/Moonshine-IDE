@@ -38,10 +38,14 @@ package actionScripts.plugins.ui.editor
     {
         private var visualEditorView:VisualEditorView;
         private var hasChangedProperties:Boolean;
+
+        private var visualEditorProject:AS3ProjectVO;
         
-        public function VisualEditorViewer()
+        public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
         {
             super();
+
+            this.visualEditorProject = visualEditorProject;
         }
 
         override protected function initializeChildrens():void
@@ -190,8 +194,7 @@ package actionScripts.plugins.ui.editor
             if (splittedFileName.length == 2)
             {
                 var cleanFileName:String = splittedFileName[0];
-                var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-                return as3Project.visualEditorSourceFolder
+                return visualEditorProject.visualEditorSourceFolder
                         .fileBridge.nativePath
                         .concat(File.separator, cleanFileName, ".xml");
             }

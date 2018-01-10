@@ -19,6 +19,7 @@
 package actionScripts.impls
 {
     import actionScripts.interfaces.IVisualEditorBridge;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
     import actionScripts.plugins.ui.editor.VisualEditorViewer;
@@ -31,9 +32,9 @@ package actionScripts.impls
             super();
         }
 
-        public function getVisualEditor():BasicTextEditor
+        public function getVisualEditor(visualEditorProject:AS3ProjectVO):BasicTextEditor
         {
-            return new VisualEditorViewer();
+            return new VisualEditorViewer(visualEditorProject);
         }
 
         public function getCorePlugins():Array
