@@ -6,12 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.8.0]
 
 ### Added
-* Reopen previously opened projects. This behavior can be disabled from the General tab in the application settings.
+* Reopen previously opened projects on startup. This behavior can be disabled from the General tab in the application settings.
 * Added "Confirm Exit" popup to prompt user before exiting. This feature is disabled by default, but can be enabled in the General tab in the application settings.
-* Problems view: Added option to copy contents of columns "Problem" and "Location" to system clipboard.
+* Problems view: Added option to copy the contents of a cell to the system clipboard.
 * Projects tree: Added option "Select open file" in the header of projects tree.  This will show the file from the current tab in the project tree
 * Projects tree: Added option "Copy path" to context menu in project tree.
-* Projects tree: Added option "Show in Explorer" to context menu in project tree.
+* Projects tree: Added option "Show in Explorer/Finder" to context menu in project tree.
 * Added global string search/replace. Available in menu:  Project -> Search.
 
 ### Changed
@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where "Clean Project" causes hang of IDE.
 * Fixed issue where "Clean Project" clears project selection.
 * Fixed issue with "Build & Run" command when user has a system language other than English.
+* Sidebar position no longer resets after build.
 
 ## Moonshine IDE [1.7.1]
 
