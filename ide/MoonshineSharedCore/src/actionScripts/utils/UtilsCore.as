@@ -286,6 +286,8 @@ package actionScripts.utils
 		 */
 		public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO
 		{
+			if (!projectFolder) return null;
+			
 			for each (var p:ProjectVO in model.projects)
 			{
 				if (p.folderPath == projectFolder.projectReference.path)
