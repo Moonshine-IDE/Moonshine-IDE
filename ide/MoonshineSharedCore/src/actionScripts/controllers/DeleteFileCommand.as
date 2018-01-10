@@ -83,6 +83,7 @@ package actionScripts.controllers
 				}
 				
 				// removing the wrapper in tree view
+				e.wrapper.isDeleting = true;
 				e.treeViewCompletionHandler(e.wrapper);
 			}
 				// for web
