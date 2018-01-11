@@ -44,6 +44,8 @@
 
 		import elements.skins.DarkButtonSkin;
 
+		import mx.managers.IFocusManagerComponent;
+
 		[Bindable]
 		private var resources:ArrayCollection = new ArrayCollection();
 
@@ -142,9 +144,33 @@
 
 		private function onFindResourcesKeyDown(event:KeyboardEvent):void
 		{
-			if (event.keyCode == Keyboard.DOWN || event.keyCode == Keyboard.UP)
+			var isKeyDown:Boolean = event.keyCode == Keyboard.DOWN;
+			var isKeyUp:Boolean = event.keyCode == Keyboard.UP;
+
+			if (isKeyDown || isKeyUp)
 			{
-				lstResources.setFocus();
+				var focusedComponent:IFocusManagerComponent = lstResources.focusManager.getFocus();
+				if (lstResources != focusedComponent)
+				{
+					lstResources.setFocus();
+					var resourceSelectedIndex:int = lstResources.selectedIndex + 1;
+
+					if (isKeyDown)
+					{
+						if (resourceSelectedIndex < resources.length)
+						{
+							lstResources.selectedIndex = resourceSelectedIndex;
+						}
+					}
+					else 
+					{
+						resourceSelectedIndex = lstResources.selectedIndex - 1;
+						if (resourceSelectedIndex > -1)
+						{
+							lstResources.selectedIndex = resourceSelectedIndex;
+						}
+					}
+				}
 			}
 			else
 			{
