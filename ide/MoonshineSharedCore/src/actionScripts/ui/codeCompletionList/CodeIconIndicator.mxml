@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
-         xmlns:s="library://ns.adobe.com/flex/spark" visible.normal="false" includeInLayout.normal="false"
-         toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true" currentState="{data.displayKind}">
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         visible.normal="false" includeInLayout.normal="false"
+         toolTip.info="Read more..." buttonMode.info="true" useHandCursor.info="true">
     <s:states>
         <s:State name="normal" />
         <s:State name="Function" />
@@ -45,11 +46,6 @@
         [Bindable]
         private var _data:CompletionItem;
 
-        public function get hasDocumentation():Boolean
-        {
-            return _data && _data.documentation != null && _data.documentation != "";
-        }
-
         [Bindable]
         public function get data():CompletionItem
         {
@@ -58,15 +54,21 @@
 
         public function set data(value:CompletionItem):void
         {
-            if (_data != value)
-            {
-                _data = value;
+            _data = value;
 
-                if (currentState == "info")
-                {
-                    this.visible = this.includeInLayout = hasDocumentation;
-                }
+            if (currentState == "info")
+            {
+                this.visible = this.includeInLayout = hasDocumentation;
             }
+            else if (value)
+            {
+                currentState = value.displayKind;
+            }
+        }
+
+        private function get hasDocumentation():Boolean
+        {
+            return data && data.documentation;
         }
 
         override public function set currentState(value:String):void

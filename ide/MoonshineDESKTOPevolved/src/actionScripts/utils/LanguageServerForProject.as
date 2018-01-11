@@ -261,18 +261,15 @@ package actionScripts.utils
 
 		private function parseCompletionItem(original:Object):CompletionItem
 		{
-			var vo:CompletionItem = new CompletionItem();
-			vo.label = original.label;
-			vo.insertText = original.insertText;
-			vo.detail  = original.detail;
-			vo.kind = original.kind;
-			vo.documentation = original.documentation;
-			
-			if("command" in original)
-			{
-				vo.command = parseCommand(original.command);
-			}
-			return vo;
+			var command:Command = null;
+            if("command" in original)
+            {
+                command = parseCommand(original.command);
+            }
+
+			return new CompletionItem(original.label, original.insertText,
+                    original.kind, original.detail,
+					original.documentation, command);
 		}
 
 		private function parseCommand(original:Object):Command

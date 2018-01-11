@@ -1,19 +1,18 @@
 <?xml version="1.0"?>
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
                 xmlns:s="library://ns.adobe.com/flex/spark"
-                xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*"
+                xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*" maxWidth="650"
                 addedToStage="onItemAddedToStage(event)" removedFromStage="onItemRemovedFromStage(event)">
 
     <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
-    <s:Label id="labelDisplay" color="0x101010" verticalCenter="0"
-             textAlign="left" showTruncationTip="true" maxDisplayedLines="1" left="25" right="{detailsGroup.width + 7}"
-             maxWidth="300"/>
-    <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2" visible="false"
-              verticalAlign="middle">
-        <s:Label color="0x606060" textAlign="right"
-                 maxWidth="80" showTruncationTip="true" maxDisplayedLines="1" text="{data.displayKind}"/>
+    <s:Label id="labelDisplay" color="0x101010" verticalCenter="0" fontSize="12"
+             textAlign="left" showTruncationTip="true" maxDisplayedLines="1" left="25" maxWidth="410"/>
+    <s:HGroup id="detailsGroup" left="{labelDisplay.width + 28}" right="4" verticalCenter="0" gap="2"
+              verticalAlign="middle" horizontalAlign="right">
+        <s:Label color="0x606060" textAlign="right" fontSize="12" maxWidth="220"
+                 showTruncationTip="true" maxDisplayedLines="1" text="{data.displayType}"/>
         <codecompletionlist:CodeIconIndicator id="infoIndicator" currentState="info" data="{data}"
-                                              click="onCodeIconIndicatorClick(event)" />
+                                              click="onCodeIconIndicatorClick(event)" width="20"/>
     </s:HGroup>
     <fx:Script><![CDATA[
         import actionScripts.events.GlobalEventDispatcher;
@@ -35,17 +34,11 @@
             }
 
             super.hovered = value;
-
-            if (!selected)
-            {
-                refreshVisibilityOfDetails(value);
-            }
         }
 
         override public function set selected(value:Boolean):void
         {
             super.selected = value;
-            refreshVisibilityOfDetails(value);
             if (signatureToolTip && !selected)
             {
                 signatureToolTip.close();
@@ -55,14 +48,6 @@
         private function onCodeIconIndicatorClick(event:MouseEvent):void
         {
             dispatcher.dispatchEvent(new Event("showDocumentation"));
-        }
-
-        private function refreshVisibilityOfDetails(visible:Boolean):void
-        {
-            if (detailsGroup)
-            {
-                detailsGroup.visible = visible;
-            }
         }
 
         private function showSignatureToolTip():void

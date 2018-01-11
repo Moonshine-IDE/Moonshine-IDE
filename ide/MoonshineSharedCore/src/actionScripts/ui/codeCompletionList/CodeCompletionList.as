@@ -48,9 +48,10 @@ package actionScripts.ui.codeCompletionList
             this.keyboardShortcutManager = KeyboardShortcutManager.getInstance();
             this.styleName = "completionList";
             this.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
-            this.labelField = "labelWithPrefix";
+            this.labelField = "displayLabel";
             this.minWidth = 350;
-
+            this.maxWidth = 650;
+            
             var layout:VerticalLayout = new VerticalLayout();
             layout.requestedMaxRowCount = 8;
             layout.gap = 0;
