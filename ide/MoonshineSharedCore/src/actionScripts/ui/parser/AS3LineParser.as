@@ -30,7 +30,8 @@ package actionScripts.ui.parser
 		public static const AS_VAR_KEYWORD:int =			0xB;
 		public static const AS_FUNCTION_KEYWORD:int =		0xC;
 		public static const AS_PACKAGE_CLASS_KEYWORDS:int =	0xD;
-		
+		public static const AS_METADATA:int               = 0xE;
+
 		public function AS3LineParser():void
 		{
 			context = AS_CODE;
@@ -44,7 +45,8 @@ package actionScripts.ui.parser
 				[AS_STRING2, 			/^\'(?:\\\\|\\\'|[^\n])*?(?:\'|\\\n|(?=\n))/		],
 				[AS_COMMENT, 			/^\/\/.*/									],
 				[AS_MULTILINE_COMMENT, 	/^\/\*.*?(?:\*\/|\n)/						],
-				[AS_REGULAR_EXPRESSION,	/^\/(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|[^*\/])(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|.)*?\/[gismx]*/	]
+				[AS_REGULAR_EXPRESSION,	/^\/(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|[^*\/])(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|.)*?\/[gismx]*/	],
+                [AS_METADATA, /^\[.*.\]$/]
 			];
 			
 			endPatterns = [

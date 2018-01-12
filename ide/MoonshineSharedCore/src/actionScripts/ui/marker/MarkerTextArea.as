@@ -163,7 +163,6 @@ package actionScripts.ui.marker
 				var replaceValueLength:int = replaceValue.length;
 				var t1:String = "";
 				var t2:String;
-				var t3:String;
 				results = searchRegExp.exec(original);
 				while (results != null)
 				{

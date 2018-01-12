@@ -65,7 +65,8 @@ package actionScripts.plugin.syntax
 			formats['breakPointLineNumber'] =					new ElementFormat(fontDescription, fontSize, 0xffffff);
 			formats['breakPointBackground'] =					0xdea5dd;
 			formats['tracingLineColor']=						0xc6dbae;
-			
+			formats[AS3LineParser.AS_METADATA] =                new ElementFormat(fontDescription, fontSize, 0x808000);
+
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}
 		
