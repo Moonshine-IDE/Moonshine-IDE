@@ -26,7 +26,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.parser.XMLLineParser;
+	import actionScripts.ui.parser.XMLContextSwitchLineParser;
 	import actionScripts.valueObjects.Settings;
 	
 	public class XMLSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
@@ -59,16 +59,16 @@ package actionScripts.plugin.syntax
 			var fontDescription:FontDescription = Settings.font.defaultFontDescription;
 			var fontSize:Number = Settings.font.defaultFontSize;
 			
-			formats[XMLLineParser.XML_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x3322dd);
-			formats[XMLLineParser.XML_TAG] =					new ElementFormat(fontDescription, fontSize, 0x202020);
-			formats[XMLLineParser.XML_COMMENT] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
-			formats[XMLLineParser.XML_CDATA] =					new ElementFormat(fontDescription, fontSize, 0x9b0000);
-			formats[XMLLineParser.XML_ATTR_NAME] =				new ElementFormat(fontDescription, fontSize, 0x404040);
-			formats[XMLLineParser.XML_ATTR_VAL1] =
-			formats[XMLLineParser.XML_ATTR_VAL2] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[XMLLineParser.XML_ATTR_OPER] =
-			formats[XMLLineParser.XML_BACKETOPEN] =
-			formats[XMLLineParser.XML_BACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x4e022f);
+			formats[XMLContextSwitchLineParser.XML_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x3322dd);
+			formats[XMLContextSwitchLineParser.XML_TAG] =					new ElementFormat(fontDescription, fontSize, 0x202020);
+			formats[XMLContextSwitchLineParser.XML_COMMENT] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
+			formats[XMLContextSwitchLineParser.XML_CDATA] =					new ElementFormat(fontDescription, fontSize, 0x9b0000);
+			formats[XMLContextSwitchLineParser.XML_ATTR_NAME] =				new ElementFormat(fontDescription, fontSize, 0x404040);
+			formats[XMLContextSwitchLineParser.XML_ATTR_VAL1] =
+			formats[XMLContextSwitchLineParser.XML_ATTR_VAL2] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
+			formats[XMLContextSwitchLineParser.XML_ATTR_OPER] =
+			formats[XMLContextSwitchLineParser.XML_BACKETOPEN] =
+			formats[XMLContextSwitchLineParser.XML_BACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x4e022f);
 			formats['lineNumber'] =								new ElementFormat(fontDescription, fontSize, 0x888888);
 			formats['breakPointLineNumber'] =					new ElementFormat(fontDescription, fontSize, 0xffffff);
 			formats['breakPointBackground'] =					0xdea5dd;
@@ -81,7 +81,7 @@ package actionScripts.plugin.syntax
 		{
 			if (event.fileExtension == "xml")
 			{
-				event.editor.setParserAndStyles(new XMLLineParser(), formats);
+				event.editor.setParserAndStyles(new XMLContextSwitchLineParser(), formats);
 			}
 		}
 		

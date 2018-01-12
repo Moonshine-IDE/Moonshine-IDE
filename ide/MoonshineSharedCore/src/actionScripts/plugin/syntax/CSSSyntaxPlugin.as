@@ -26,7 +26,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.parser.CSSLineParser;
+	import actionScripts.ui.parser.CSSContextSwitchLineParser;
 	import actionScripts.valueObjects.Settings;
 	
 	public class CSSSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
@@ -59,22 +59,22 @@ package actionScripts.plugin.syntax
 			var fontDescription:FontDescription = Settings.font.defaultFontDescription;
 			var fontSize:Number = Settings.font.defaultFontSize;
 			
-			formats[CSSLineParser.CSS_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x011282);
-			formats[CSSLineParser.CSS_PROPERTY] =				new ElementFormat(fontDescription, fontSize, 0x202020);
-			formats[CSSLineParser.CSS_VALUE] =
-			formats[CSSLineParser.CSS_MEDIA] =					new ElementFormat(fontDescription, fontSize, 0x97039C);
-			formats[CSSLineParser.CSS_BRACEOPEN] =
-			formats[CSSLineParser.CSS_BRACECLOSE] =
-			formats[CSSLineParser.CSS_COLON1] =
-			formats[CSSLineParser.CSS_COLON2] =
-			formats[CSSLineParser.CSS_COLON3] =					new ElementFormat(fontDescription, fontSize, 0x000000);
-			formats[CSSLineParser.CSS_STRING1] =
-			formats[CSSLineParser.CSS_STRING2] =
-			formats[CSSLineParser.CSS_STRING3] =
-			formats[CSSLineParser.CSS_STRING4] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[CSSLineParser.CSS_COMMENT1] =
-			formats[CSSLineParser.CSS_COMMENT2] =
-			formats[CSSLineParser.CSS_COMMENT3] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
+			formats[CSSContextSwitchLineParser.CSS_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x011282);
+			formats[CSSContextSwitchLineParser.CSS_PROPERTY] =				new ElementFormat(fontDescription, fontSize, 0x202020);
+			formats[CSSContextSwitchLineParser.CSS_VALUE] =
+			formats[CSSContextSwitchLineParser.CSS_MEDIA] =					new ElementFormat(fontDescription, fontSize, 0x97039C);
+			formats[CSSContextSwitchLineParser.CSS_BRACEOPEN] =
+			formats[CSSContextSwitchLineParser.CSS_BRACECLOSE] =
+			formats[CSSContextSwitchLineParser.CSS_COLON1] =
+			formats[CSSContextSwitchLineParser.CSS_COLON2] =
+			formats[CSSContextSwitchLineParser.CSS_COLON3] =					new ElementFormat(fontDescription, fontSize, 0x000000);
+			formats[CSSContextSwitchLineParser.CSS_STRING1] =
+			formats[CSSContextSwitchLineParser.CSS_STRING2] =
+			formats[CSSContextSwitchLineParser.CSS_STRING3] =
+			formats[CSSContextSwitchLineParser.CSS_STRING4] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
+			formats[CSSContextSwitchLineParser.CSS_COMMENT1] =
+			formats[CSSContextSwitchLineParser.CSS_COMMENT2] =
+			formats[CSSContextSwitchLineParser.CSS_COMMENT3] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
 			formats['lineNumber'] =								new ElementFormat(fontDescription, fontSize, 0x888888);
 			formats['breakPointLineNumber'] =					new ElementFormat(fontDescription, fontSize, 0xffffff);
 			formats['breakPointBackground'] =					0xdea5dd;
@@ -87,7 +87,7 @@ package actionScripts.plugin.syntax
 		{
 			if (event.fileExtension == "css")
 			{
-				event.editor.setParserAndStyles(new CSSLineParser(), formats);
+				event.editor.setParserAndStyles(new CSSContextSwitchLineParser(), formats);
 			}
 		}
 		

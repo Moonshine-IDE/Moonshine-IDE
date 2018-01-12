@@ -27,8 +27,8 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.ui.parser.AS3LineParser;
-	import actionScripts.ui.parser.CSSLineParser;
-	import actionScripts.ui.parser.XMLLineParser;
+	import actionScripts.ui.parser.CSSContextSwitchLineParser;
+	import actionScripts.ui.parser.XMLContextSwitchLineParser;
 	import actionScripts.ui.parser.context.ContextSwitch;
 	import actionScripts.ui.parser.context.InlineParser;
 	import actionScripts.ui.parser.context.InlineParserManager;
@@ -78,18 +78,18 @@ package actionScripts.plugin.syntax
 			formats['breakPointBackground'] =					0xdea5dd;
 			formats['tracingLineColor']=						0xc6dbae;
 			
-			formats[XMLLineParser.XML_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x101010);
-			formats[XMLLineParser.XML_TAG] =
+			formats[XMLContextSwitchLineParser.XML_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x101010);
+			formats[XMLContextSwitchLineParser.XML_TAG] =
 			formats[STYLE_OPEN_TAG] =
 			formats[STYLE_CLOSE_TAG] =							new ElementFormat(fontDescription, fontSize, 0x003DF5);
-			formats[XMLLineParser.XML_COMMENT] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
-			formats[XMLLineParser.XML_CDATA] =					new ElementFormat(fontDescription, fontSize, 0x606060);
-			formats[XMLLineParser.XML_ATTR_NAME] =				new ElementFormat(fontDescription, fontSize, 0x101010);
-			formats[XMLLineParser.XML_ATTR_VAL1] =
-			formats[XMLLineParser.XML_ATTR_VAL2] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[XMLLineParser.XML_ATTR_OPER] =
-			formats[XMLLineParser.XML_BACKETOPEN] =
-			formats[XMLLineParser.XML_BACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x144d9b);
+			formats[XMLContextSwitchLineParser.XML_COMMENT] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
+			formats[XMLContextSwitchLineParser.XML_CDATA] =					new ElementFormat(fontDescription, fontSize, 0x606060);
+			formats[XMLContextSwitchLineParser.XML_ATTR_NAME] =				new ElementFormat(fontDescription, fontSize, 0x101010);
+			formats[XMLContextSwitchLineParser.XML_ATTR_VAL1] =
+			formats[XMLContextSwitchLineParser.XML_ATTR_VAL2] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
+			formats[XMLContextSwitchLineParser.XML_ATTR_OPER] =
+			formats[XMLContextSwitchLineParser.XML_BACKETOPEN] =
+			formats[XMLContextSwitchLineParser.XML_BACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x144d9b);
 			
 			// Populate AS3 parser formats for all inline masks
 			for each (var mask:int in [SCRIPT_MASK,BIND1_MASK,BIND2_MASK,BIND3_MASK])
@@ -107,22 +107,22 @@ package actionScripts.plugin.syntax
 				formats[mask | AS3LineParser.AS_METADATA] =                 new ElementFormat(fontDescription, fontSize, 0x808000);
 			}
 			
-			formats[STYLE_MASK | CSSLineParser.CSS_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x011282);
-			formats[STYLE_MASK | CSSLineParser.CSS_PROPERTY] =				new ElementFormat(fontDescription, fontSize, 0x202020);
-			formats[STYLE_MASK | CSSLineParser.CSS_VALUE] =
-			formats[STYLE_MASK | CSSLineParser.CSS_MEDIA] =					new ElementFormat(fontDescription, fontSize, 0x97039C);
-			formats[STYLE_MASK | CSSLineParser.CSS_BRACEOPEN] =
-			formats[STYLE_MASK | CSSLineParser.CSS_BRACECLOSE] =
-			formats[STYLE_MASK | CSSLineParser.CSS_COLON1] =
-			formats[STYLE_MASK | CSSLineParser.CSS_COLON2] =
-			formats[STYLE_MASK | CSSLineParser.CSS_COLON3] =				new ElementFormat(fontDescription, fontSize, 0x000000);
-			formats[STYLE_MASK | CSSLineParser.CSS_STRING1] =
-			formats[STYLE_MASK | CSSLineParser.CSS_STRING2] =
-			formats[STYLE_MASK | CSSLineParser.CSS_STRING3] =
-			formats[STYLE_MASK | CSSLineParser.CSS_STRING4] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[STYLE_MASK | CSSLineParser.CSS_COMMENT1] =
-			formats[STYLE_MASK | CSSLineParser.CSS_COMMENT2] =
-			formats[STYLE_MASK | CSSLineParser.CSS_COMMENT3] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x011282);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_PROPERTY] =				new ElementFormat(fontDescription, fontSize, 0x202020);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_VALUE] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_MEDIA] =					new ElementFormat(fontDescription, fontSize, 0x97039C);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_BRACEOPEN] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_BRACECLOSE] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COLON1] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COLON2] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COLON3] =				new ElementFormat(fontDescription, fontSize, 0x000000);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_STRING1] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_STRING2] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_STRING3] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_STRING4] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COMMENT1] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COMMENT2] =
+			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_COMMENT3] =				new ElementFormat(fontDescription, fontSize, 0x39c02f);
 			
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}
@@ -131,7 +131,7 @@ package actionScripts.plugin.syntax
 		{
 			if (event.fileExtension == "mxml")
 			{
-				var lineParser:XMLLineParser = new XMLLineParser();
+				var lineParser:XMLContextSwitchLineParser = new XMLContextSwitchLineParser();
 				
 				// Add inline parsers
 				lineParser.parserManager = new InlineParserManager(
@@ -140,24 +140,24 @@ package actionScripts.plugin.syntax
 						new InlineParser(BIND1_MASK, new AS3LineParser()),
 						new InlineParser(BIND2_MASK, new AS3LineParser()),
 						new InlineParser(BIND3_MASK, new AS3LineParser()),
-						new InlineParser(STYLE_MASK, new CSSLineParser())
+						new InlineParser(STYLE_MASK, new CSSContextSwitchLineParser())
 					])
 				);
 				// Add context switches for inline AS3 parsing
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLLineParser.XML_CDATA]), SCRIPT_MASK));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([SCRIPT_MASK]), XMLLineParser.XML_CDATA, /(?=\]\]>)/));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLContextSwitchLineParser.XML_CDATA]), SCRIPT_MASK));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([SCRIPT_MASK]), XMLContextSwitchLineParser.XML_CDATA, /(?=\]\]>)/));
 				// Inline parsing for data binding
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLLineParser.XML_ATTR_VAL1]), BIND1_MASK, /\{/, true));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND1_MASK]), XMLLineParser.XML_ATTR_VAL1, /(?=\})/));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLLineParser.XML_ATTR_VAL2]), BIND2_MASK, /\{/, true));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND2_MASK]), XMLLineParser.XML_ATTR_VAL2, /(?=\})/));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLLineParser.XML_TEXT]), BIND3_MASK, /\{/, true));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND3_MASK]), XMLLineParser.XML_TEXT, /(?=\})/));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLContextSwitchLineParser.XML_ATTR_VAL1]), BIND1_MASK, /\{/, true));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND1_MASK]), XMLContextSwitchLineParser.XML_ATTR_VAL1, /(?=\})/));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLContextSwitchLineParser.XML_ATTR_VAL2]), BIND2_MASK, /\{/, true));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND2_MASK]), XMLContextSwitchLineParser.XML_ATTR_VAL2, /(?=\})/));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLContextSwitchLineParser.XML_TEXT]), BIND3_MASK, /\{/, true));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([BIND3_MASK]), XMLContextSwitchLineParser.XML_TEXT, /(?=\})/));
 				// Inline style context switches
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLLineParser.XML_TEXT]), STYLE_OPEN_TAG, /<(?:[^\x00-\x39\x3A-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7][^\x00-\x2C\x2F\x3A-\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]*:)?style(?:>|\s>|\s[^>]*[^>\/]>)/i), true);
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([XMLContextSwitchLineParser.XML_TEXT]), STYLE_OPEN_TAG, /<(?:[^\x00-\x39\x3A-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7][^\x00-\x2C\x2F\x3A-\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]*:)?style(?:>|\s>|\s[^>]*[^>\/]>)/i), true);
 				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([STYLE_OPEN_TAG]), STYLE_MASK));
 				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([STYLE_MASK]), STYLE_CLOSE_TAG, /<\/(?:[^\x00-\x39\x3A-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7][^\x00-\x2C\x2F\x3A-\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]*:)?style\s*>/i));
-				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([STYLE_CLOSE_TAG]), XMLLineParser.XML_TEXT));
+				lineParser.switchManager.addSwitch(new ContextSwitch(Vector.<int>([STYLE_CLOSE_TAG]), XMLContextSwitchLineParser.XML_TEXT));
 				
 				event.editor.setParserAndStyles(lineParser, formats);
 			}
