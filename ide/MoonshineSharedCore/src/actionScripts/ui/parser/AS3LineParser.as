@@ -46,7 +46,7 @@ package actionScripts.ui.parser
 				[AS_COMMENT, 			/^\/\/.*/									],
 				[AS_MULTILINE_COMMENT, 	/^\/\*.*?(?:\*\/|\n)/						],
 				[AS_REGULAR_EXPRESSION,	/^\/(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|[^*\/])(?:\\\\|\\\/|\[(?:\\\\|\\\]|.)+?\]|.)*?\/[gismx]*/	],
-                [AS_METADATA, /^\[.*.\]$/]
+                [AS_METADATA, /^\[.+.\]/]
 			];
 			
 			endPatterns = [
