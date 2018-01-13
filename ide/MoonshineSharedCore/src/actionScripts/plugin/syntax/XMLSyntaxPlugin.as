@@ -67,8 +67,8 @@ package actionScripts.plugin.syntax
 			formats[XMLContextSwitchLineParser.XML_ATTR_VAL1] =
 			formats[XMLContextSwitchLineParser.XML_ATTR_VAL2] =				new ElementFormat(fontDescription, fontSize, 0xca2323);
 			formats[XMLContextSwitchLineParser.XML_ATTR_OPER] =
-			formats[XMLContextSwitchLineParser.XML_BACKETOPEN] =
-			formats[XMLContextSwitchLineParser.XML_BACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x4e022f);
+			formats[XMLContextSwitchLineParser.XML_BRACKETOPEN] =
+			formats[XMLContextSwitchLineParser.XML_BRACKETCLOSE] =			new ElementFormat(fontDescription, fontSize, 0x4e022f);
 			formats['lineNumber'] =								new ElementFormat(fontDescription, fontSize, 0x888888);
 			formats['breakPointLineNumber'] =					new ElementFormat(fontDescription, fontSize, 0xffffff);
 			formats['breakPointBackground'] =					0xdea5dd;

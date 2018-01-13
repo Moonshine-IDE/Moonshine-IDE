@@ -32,8 +32,8 @@ package actionScripts.ui.parser
 		public static const XML_ATTR_VAL1:int =		0x5;
 		public static const XML_ATTR_VAL2:int =		0x6;
 		public static const XML_ATTR_OPER:int =		0x7;
-		public static const XML_BACKETOPEN:int =	0x8;
-		public static const XML_BACKETCLOSE:int =	0x9;
+		public static const XML_BRACKETOPEN:int =	0x8;
+		public static const XML_BRACKETCLOSE:int =	0x9;
 
 		public function XMLContextSwitchLineParser():void
 		{
@@ -51,10 +51,10 @@ package actionScripts.ui.parser
 					new ContextSwitch(Vector.<int>([XML_TEXT]),XML_CDATA,/<!\[CDATA\[/),
 					new ContextSwitch(Vector.<int>([XML_CDATA]),XML_TEXT,/\]\]>/, true),
 					// Tags
-					new ContextSwitch(Vector.<int>([XML_TEXT]),XML_BACKETOPEN,/</),
-					new ContextSwitch(Vector.<int>([XML_BACKETOPEN]),XML_TAG,/[^\x00-\x39\x3B-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7][^\x00-\x2C\x2F\x3B-\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]*/),
-					new ContextSwitch(Vector.<int>([XML_TAG]),XML_BACKETCLOSE,/>/),
-					new ContextSwitch(Vector.<int>([XML_BACKETCLOSE]),XML_TEXT),
+					new ContextSwitch(Vector.<int>([XML_TEXT]),XML_BRACKETOPEN,/</),
+					new ContextSwitch(Vector.<int>([XML_BRACKETOPEN]),XML_TAG,/[^\x00-\x39\x3B-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7][^\x00-\x2C\x2F\x3B-\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]*/),
+					new ContextSwitch(Vector.<int>([XML_TAG]),XML_BRACKETCLOSE,/>/),
+					new ContextSwitch(Vector.<int>([XML_BRACKETCLOSE]),XML_TEXT),
 					// Attributes
 					new ContextSwitch(Vector.<int>([XML_TAG]),XML_ATTR_NAME,/[^\x00-\x39\x3B-\x40\x5B-\x5E\x60\x7B-\xBF\xD7\xF7]+/),
 					new ContextSwitch(Vector.<int>([XML_TAG,XML_ATTR_NAME]),XML_ATTR_OPER,/[\x00-\x21\x23-\x26\x28-\x2C\x2F\x3B-\x3D\x3F\x40\x5B-\x5E\x60\x7B-\xB6\xB8-\xBF\xD7\xF7]+/),
