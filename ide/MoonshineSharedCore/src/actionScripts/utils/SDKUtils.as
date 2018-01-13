@@ -242,6 +242,8 @@ package actionScripts.utils
 		
 		public static function getSdkDescription(location:FileLocation):SdkDescriptionVO
 		{
+			if (!location) return null;
+
 			// lets load flex-sdk-description.xml to get it's label
 			var description:FileLocation = location.fileBridge.resolvePath("royale-sdk-description.xml");
 			if (!description.fileBridge.exists)

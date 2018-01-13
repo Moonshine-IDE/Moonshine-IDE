@@ -300,9 +300,9 @@ package actionScripts.utils
 		/**
 		 * Returns the probable SDK against a project
 		 */
-		public static function getCurrentSDK(pvo:AS3ProjectVO):Object 
+		public static function getCurrentSDK(pvo:AS3ProjectVO):FileLocation
 		{
-			return pvo.buildOptions.customSDK ? pvo.buildOptions.customSDK.fileBridge.getFile : (model.defaultSDK ? model.defaultSDK.fileBridge.getFile : null);
+			return pvo.buildOptions.customSDK ? pvo.buildOptions.customSDK : model.defaultSDK;
 		}
 
 		/**

@@ -275,9 +275,9 @@ package actionScripts.plugins.as3project.mxmlc
 				|| usingInvalidSDK(activeProject as AS3ProjectVO)) 
 			{
 				currentProject = activeProject;
-				var tmpSDKLocation:Object = UtilsCore.getCurrentSDK(activeProject as AS3ProjectVO); 
-				currentSDK = tmpSDKLocation ? tmpSDKLocation as File : null;
-				if (!currentSDK)
+				var tempCurrentSDK:FileLocation = UtilsCore.getCurrentSDK(activeProject as AS3ProjectVO);
+				currentSDK = null;
+				if (!tempCurrentSDK)
 				{
 					model.noSDKNotifier.notifyNoFlexSDK(false);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
@@ -286,6 +286,7 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 
+				currentSDK = tempCurrentSDK.fileBridge.getFile as File;
 				var fschFile:File = currentSDK.resolvePath(fcshPath);
 				if (!fschFile.exists)
 				{

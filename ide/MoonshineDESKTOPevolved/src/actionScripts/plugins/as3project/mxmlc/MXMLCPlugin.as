@@ -454,13 +454,14 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			
 			UtilsCore.checkIfFlexJSApplication(as3Pvo);
-			
+
 			// Read file content to indentify the project type regular flex application or flexjs applicatino
 			if (as3Pvo.isFlexJS)
 			{
 				if (as3Pvo.isRoyale)
 				{
-					var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(as3Pvo.buildOptions.customSDK);
+                    var tmpSDKLocation:FileLocation = UtilsCore.getCurrentSDK(as3Pvo as AS3ProjectVO);
+					var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(tmpSDKLocation);
 					if (sdkDescription && sdkDescription.isJSOnlySdk)
 					{
 						error("This SDK only supports JavaScript Builds.");
@@ -504,9 +505,9 @@ package actionScripts.plugins.as3project.mxmlc
 				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
 			{
 				currentProject = pvo;
-				var tmpSDKLocation:Object = UtilsCore.getCurrentSDK(pvo as AS3ProjectVO); 
-				currentSDK = tmpSDKLocation ? tmpSDKLocation as File : null;
-				if (!currentSDK)
+				var tempCurrentSdk:FileLocation = UtilsCore.getCurrentSDK(pvo as AS3ProjectVO);
+				currentSDK = null;
+				if (!tempCurrentSdk)
 				{
 					model.noSDKNotifier.notifyNoFlexSDK(false);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
@@ -514,7 +515,8 @@ package actionScripts.plugins.as3project.mxmlc
 					error("No Flex SDK found. Setup one in Settings menu.");
 					return;
 				}
-				
+
+				currentSDK = tempCurrentSdk.fileBridge.getFile as File;
 				// determine if the sdk version is lower than 0.8.0 or not
 				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
 				
@@ -612,9 +614,9 @@ package actionScripts.plugins.as3project.mxmlc
 				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
 			{
 				currentProject = pvo;
-				var tmpSDKLocation:Object = UtilsCore.getCurrentSDK(pvo as AS3ProjectVO); 
-				currentSDK = tmpSDKLocation ? tmpSDKLocation as File : null;
-				if (!currentSDK)
+				var tempCurrentSdk:FileLocation = UtilsCore.getCurrentSDK(pvo as AS3ProjectVO);
+				currentSDK = null;
+				if (!tempCurrentSdk)
 				{
 					model.noSDKNotifier.notifyNoFlexSDK(false);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
@@ -622,6 +624,8 @@ package actionScripts.plugins.as3project.mxmlc
 					error("No Flex SDK found. Setup one in Settings menu.");
 					return;
 				}
+
+				currentSDK = tempCurrentSdk.fileBridge.getFile as File;
 				var fschFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
 				if (!fschFile.exists)
 				{
