@@ -234,18 +234,19 @@ package actionScripts.controllers
 			else
 			{
 				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper) as AS3ProjectVO;
+                var extension:String = file.fileBridge.extension;
+
 				if (!project)
 				{
 					project = model.activeProject as AS3ProjectVO;
                 }
 
-				if (project && project.isVisualEditorProject)
+				if (project && project.isVisualEditorProject && extension == "mxml")
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project);
 				}
 				else
                 {
-                    var extension:String = file.fileBridge.extension;
                     if (extension === "as" || extension === "mxml")
                     {
                         editor = new ActionScriptTextEditor();
