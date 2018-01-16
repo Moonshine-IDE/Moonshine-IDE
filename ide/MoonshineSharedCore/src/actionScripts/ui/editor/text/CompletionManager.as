@@ -172,9 +172,9 @@ package actionScripts.ui.editor.text
 			}
 
             var hasSelectedLineAutoCloseAttr:Boolean = false;
-			if (item.kind != "Class" && item.kind != "Value")
+			if (item.kind != "Class" && item.kind != "Value" && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
             {
-                hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr();
+                hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
 				if (item.kind == "Variable" && item.insertText != null)
 				{
 					hasSelectedLineAutoCloseAttr = false;
@@ -295,7 +295,7 @@ package actionScripts.ui.editor.text
 				completionList.y = (menuRefY + 15);
 		}
 
-        private function checkSelectedLineIfItIsForAutoCloseAttr():Boolean
+        private function checkSelectedLineIfItIsForAutoCloseAttr(startIndex:int, endIndex:int):Boolean
         {
             var line:TextLineModel = editor.model.selectedLine;
             var selectedLineText:String = line.text;
@@ -364,10 +364,25 @@ package actionScripts.ui.editor.text
                         }
                     }
                 }
+
+
+
             }
 
             return isLineForAutoCloseAttr;
         }
+
+		private function isPlaceInLineAllowedToAutoCloseAttr(startIndex:int, endIndex:int):Boolean
+		{
+            var line:TextLineModel = editor.model.selectedLine;
+
+			if (!line) return false;
+
+            var partOfSelectedLine:String = line.text.substring(startIndex - 1, endIndex + 1);
+			var hasQuotations:Boolean = new RegExp(/^\".+.\"/).test(partOfSelectedLine);
+
+			return !hasQuotations;
+		}
 
         private function filterCodeCompletionMenu(item:CompletionItem):Boolean
         {
