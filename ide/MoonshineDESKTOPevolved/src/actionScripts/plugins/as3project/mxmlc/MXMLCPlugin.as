@@ -881,7 +881,10 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				match = data.match(/.* bytes.*/);
-				if (match) isSuccessBuild = true;
+				if (match)
+				{
+					isSuccessBuild = true;
+                }
 				else 
 				{
 					match = data.match(/.*successfully compiled and optimized.*/);
@@ -1029,11 +1032,8 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
-				var syntaxMatch:Array;
-				var generalMatch:Array;
 
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
 				if (syntaxMatch) {
 					var pathStr:String = syntaxMatch[1];
 					var lineNum:int = syntaxMatch[2];
@@ -1042,15 +1042,22 @@ package actionScripts.plugins.as3project.mxmlc
 					errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
 						pathStr, lineNum, errorStr); 
 				}
-				
-				//generalMatch = data.match(/(.*?): Error: (.*).*/);
-				generalMatch = data.match(/(.*?):[\s*]* Error: (.*).*/);
+
+                var generalMatch:Array = data.match(/(.*?):[\s*]* Error: (.*).*/);
 				if (!syntaxMatch && generalMatch)
 				{ 
 					pathStr = generalMatch[1];
 					errorStr  = generalMatch[2];
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
 					errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
+				}
+
+				//Build should be continued with there are only warnings
+				var warningMatch = data.match(/(.*?):[\s*]* Warning: (.*).*/);
+				if (warningMatch && !generalMatch && !syntaxMatch)
+				{
+                    print(data);
+					return;
 				}
 
 				print(data);
