@@ -28,45 +28,45 @@
 
 	<mx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.collections.Sort;
-			import mx.collections.SortField;
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.events.CloseEvent;
-			import mx.events.CollectionEvent;
-			import mx.events.CollectionEventKind;
-			import mx.events.ListEvent;
-			import mx.events.TreeEvent;
-			import mx.managers.PopUpManager;
-			
-			import actionScripts.events.AddFolderEvent;
-			import actionScripts.events.DeleteFileEvent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.events.OpenFileEvent;
-			import actionScripts.events.ProjectEvent;
-			import actionScripts.events.RenameApplicationEvent;
-			import actionScripts.events.RenameFileFolderEvent;
-			import actionScripts.events.RunANTScriptEvent;
-			import actionScripts.events.ShowSettingsEvent;
-			import actionScripts.events.TreeMenuItemEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.templating.TemplatingHelper;
-			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.renderers.FTETreeItemRenderer;
-			import actionScripts.ui.tabview.TabViewTab;
-			import actionScripts.utils.FileCoreUtil;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.FileWrapper;
-			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.valueObjects.URLDescriptorVO;
-			
-			import components.popup.NewFolderPopup;
-			import components.popup.RenamePopup;
+		import mx.collections.ArrayCollection;
+		import mx.collections.Sort;
+		import mx.collections.SortField;
+		import mx.controls.Alert;
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.events.CollectionEvent;
+		import mx.events.CollectionEventKind;
+		import mx.events.ListEvent;
+		import mx.events.TreeEvent;
+		import mx.managers.PopUpManager;
+
+		import actionScripts.events.AddFolderEvent;
+		import actionScripts.events.DeleteFileEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.events.ProjectEvent;
+		import actionScripts.events.RenameApplicationEvent;
+		import actionScripts.events.RenameFileFolderEvent;
+		import actionScripts.events.RunANTScriptEvent;
+		import actionScripts.events.ShowSettingsEvent;
+		import actionScripts.events.TreeMenuItemEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.plugin.templating.TemplatingHelper;
+		import actionScripts.ui.LayoutModifier;
+		import actionScripts.ui.renderers.FTETreeItemRenderer;
+		import actionScripts.ui.tabview.TabViewTab;
+		import actionScripts.utils.FileCoreUtil;
+		import actionScripts.utils.UtilsCore;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.FileWrapper;
+		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.URLDescriptorVO;
+
+		import components.popup.NewFolderPopup;
+		import components.popup.RenamePopup;
 
 		private var renameWindow:RenamePopup;
 		private var newFolderWindow:NewFolderPopup;
@@ -230,20 +230,27 @@
 			fw.updateChildren();
 			tree.openItems = openItems;
 			tree.invalidateList();
-			
-			tree.callLater(function():void
-			{
+
+			tree.callLater(function ():void {
 				tree.verticalScrollPosition = lastScrollPosition;
 			});
-			
+
 			var timeoutValue:uint = setTimeout(function ():void {
-				if (lastSelectedItem.isDeleting)
+				if (lastSelectedItem && lastSelectedItem.isDeleting)
 				{
-					if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
-					else setSelectedItem(lastSelectedItem as FileWrapper);
+					if (tree.isItemVisible(lastSelectedItem))
+					{
+						tree.selectedItem = lastSelectedItem;
+					}
+					else
+					{
+						setSelectedItem(lastSelectedItem as FileWrapper);
+					}
 				}
 				else
+				{
 					tree.selectedItem = lastSelectedItem;
+				}
 				clearTimeout(timeoutValue);
 			}, 100);
 		}
