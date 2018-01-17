@@ -1,0 +1,859 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+
+<!-- NOTE: this file format looks like this so it can be parsed by Ant's xmlproperty task.
+           The basic rule is that there can be no repeat tags as in:
+            <sometag>
+               <oneormoreofthistag />
+               <oneormoreofthistag />
+            </sometag>
+-->
+<config>
+    <version>
+        <latest>3.1.0</latest>
+    </version>
+    <languages>
+        <locale1 id="de_DE" name="Deutsch" path="http://flex.apache.org/installer/properties/de_DE.properties"/>
+        <locale2 id="en_US" name="English (US)" path="http://flex.apache.org/installer/properties/en_US.properties"/>
+        <locale3 id="en_AU" name="English (AU)" path="http://flex.apache.org/installer/properties/en_AU.properties"/>
+        <locale4 id="en_GB" name="English (GB)" path="http://flex.apache.org/installer/properties/en_GB.properties"/>
+        <locale5 id="es_ES" name="Espa√±ol (ES)" path="http://flex.apache.org/installer/properties/es_ES.properties"/>
+        <locale6 id="fr_FR" name="Fran√ßais" path="http://flex.apache.org/installer/properties/fr_FR.properties"/>
+        <locale7 id="el_GR" name="Greek" path="http://flex.apache.org/installer/properties/el_GR.properties"/>
+        <locale5 id="ko_KR" name="Korean" path="http://flex.apache.org/installer/properties/ko_KR.properties"/>
+        <locale8 id="nl_NL" name="Nederlands" path="http://flex.apache.org/installer/properties/nl_NL.properties"/>
+        <locale9 id="pl_PL" name="Poland" path="http://flex.apache.org/installer/properties/pl_PL.properties"/>
+        <locale10 id="pt_BR" name="Portugu√™s" path="http://flex.apache.org/installer/properties/pt_BR.properties"/>
+        <locale11 id="ru_RU" name="Russian" path="http://flex.apache.org/installer/properties/ru_RU.properties"/>
+        <locale12 id="zh_CN" name="简体中文" path="http://flex.apache.org/installer/properties/zh_CN.properties"/>
+        <locale13 id="zh_TW" name="繁體中文" path="http://flex.apache.org/installer/properties/zh_TW.properties"/>
+    </languages>
+    <!-- SDK Installer Application binary distribution
+     Notes:
+     - use full URL when binaries are NOT released yet, else use
+     path relative to mirror
+     - if path is relative, don't use starting slash -->
+    <installer name="SDKInstallerApp" path="flex/installer/3.3/binaries/" file="apache-flex-sdk-installer-3.3.0-bin"/>
+    <!-- Mirror URL CGI -->
+    <mirror name="MirrorURLCGI" path="" file="single-mirror-url--xml.cgi"/>
+    <products>
+        <!-- Apache Flex binary distribution
+         Notes:
+         - path is relative to mirror URL; don't use starting slash
+         - use http based url if you want to use an absolute url instead of mirror
+         - remove the extension from the file name -->
+        <ApacheFlexSDK name="Apache Flex SDK" prefix="apache-flex-sdk-" icon="http://flex.apache.org/installer/icons/apache_flex_logo_text.png" latestVersion="4.16.1">
+            <versions>
+                <versionA id="4.9.1" version="4.9.1" path="http://archive.apache.org/dist/flex/4.9.1/binaries/" file="apache-flex-sdk-4.9.1-bin" legacy="true"/>
+                <versionB id="4.10.0" version="4.10.0" path="http://archive.apache.org/dist/flex/4.10.0/binaries/" file="apache-flex-sdk-4.10.0-bin" legacy="true"/>
+                <versionC id="4.11.0" version="4.11.0" path="http://archive.apache.org/dist/flex/4.11.0/binaries/" file="apache-flex-sdk-4.11.0-bin" legacy="true"/>
+                <versionD id="4.12.0" version="4.12.0" path="http://archive.apache.org/dist/flex/4.12.0/binaries/" file="apache-flex-sdk-4.12.0-bin" legacy="true"/>
+                <versionE id="4.12.1" version="4.12.1" path="http://archive.apache.org/dist/flex/4.12.1/binaries/" file="apache-flex-sdk-4.12.1-bin" legacy="true"/>
+                <versionF id="4.13.0" version="4.13.0" path="http://archive.apache.org/dist/flex/4.13.0/binaries/" file="apache-flex-sdk-4.13.0-bin"/>
+                <versionG id="4.14.0" version="4.14.0" path="http://archive.apache.org/dist/flex/4.14.0/binaries/" file="apache-flex-sdk-4.14.0-bin"/>
+                <versionG id="4.14.1" version="4.14.1" path="http://archive.apache.org/dist/flex/4.14.1/binaries/" file="apache-flex-sdk-4.14.1-bin"/>
+                <versionG id="4.15.0" version="4.15.0" path="http://archive.apache.org/dist/flex/4.15.0/binaries/" file="apache-flex-sdk-4.15.0-bin"/>
+                <versionH id="4.16.0" version="4.16.0" path="flex/4.16.0/binaries/" file="apache-flex-sdk-4.16.0-bin" default="true"/>
+                <versionI id="4.16.1" version="4.16.1" path="flex/4.16.1/binaries/" file="apache-flex-sdk-4.16.1-bin" default="true"/>
+                <!--<rc id="FlexSDKRC" version="4.16.0 RC3" path="https://dist.apache.org/repos/dist/dev/flex/sdk/4.16.0/rc3/binaries/" file="apache-flex-sdk-4.16.0-bin" dev="true"/>-->
+                <!--<Nightly id="SDKPreRelease" version="4.16.0 RC Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-sdk_release-candidate/lastSuccessfulBuild/artifact/out/" file="apache-flex-sdk-4.16.0-bin" dev="true" nocache="true"/>-->
+                <!--	<rc id="FlexSDKRC" version="4.16.1 RC2" path="http://dist.apache.org/repos/dist/dev/flex/sdk/4.16.1/rc2/binaries/" file="apache-flex-sdk-4.16.1-bin" dev="true" nocache="true"/>-->
+                <Nightly id="Nightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-sdk_nightly/lastSuccessfulBuild/artifact/out/" file="apache-flex-sdk-4.17.0-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexSDK>
+        <ApacheFlexJS name="Apache FlexJS" prefix="apache-flex-flexjs-" icon="http://flex.apache.org/installer/icons/apache_flexjs_logo_text.png" developmentVersion="0.9.0" latestVersion="0.8.0">
+            <versions>
+                <!--<versionAA id="FlexJS0.0.1" version="0.0.1" path="http://archive.apache.org/dist/flex/flexjs/0.0.1/binaries/" file="apache-flex-flexjs-0.0.1-bin"/>
+                <versionBB id="FlexJS0.0.2" version="0.0.2" path="flex/flexjs/0.0.2/binaries/" file="apache-flex-flexjs-0.0.2-bin"/>
+                <versionCC id="FlexJS0.0.2a" version="0.0.2 (with JBurg)" path="http://apacheflexbuild.cloudapp.net:8080/job/FlexJS002Workaround/ws/" file="apache-flex-flexjs-0.0.2-bin"/> -->
+                <versionDD id="FlexJS0.5.0" version="0.5.0" path="http://archive.apache.org/dist/flex/flexjs/0.5.0/binaries/" file="apache-flex-flexjs-0.5.0-bin"/>
+                <VersionEE id="FlexJS0.6.0" version="0.6.0" path="http://archive.apache.org/dist/flex/flexjs/0.6.0/binaries/" file="apache-flex-flexjs-0.6.0-bin"/>
+                <VersionFF id="FlexJS0.7.0" version="0.7.0" path="http://archive.apache.org/dist/flex/flexjs/0.7.0/binaries/" file="apache-flex-flexjs-0.7.0-bin"/>
+                <VersionX id="0.8.0" version="0.8.0" path="flex/flexjs/0.8.0/binaries/" file="apache-flex-flexjs-0.8.0-bin"/>
+                <!--<rc id="FlexJSRC" version="0.8.0 RC2" path="http://dist.apache.org/repos/dist/dev/flex/flexjs/0.8.0/rc2/binaries/" file="apache-flex-flexjs-0.8.0-bin" dev="true"/>-->
+                <!--<Nightly id="FlexJSNightly" version="Nightly Build" path="http://people.apache.org/~aharui/nightly/flexjs/" file="apache-flex-flexjs-0.5.0-bin" dev="true" nocache="true"/> -->
+                <Nightly id="FlexJSNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-asjs/lastSuccessfulBuild/artifact/out/" file="apache-flex-flexjs-0.9.0-bin" dev="true" nocache="true"/>
+                <!--<ReleaseBranch id="FlexJSReleaseBranch" version="ReleaseBranch" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-asjs_release_branch/lastSuccessfulBuild/artifact/out/" file="apache-flex-flexjs-0.8.0-bin" dev="true" nocache="true"/>-->
+            </versions>
+        </ApacheFlexJS>
+        <ApacheFlexFalcon name="Apache Flex Falcon" prefix="apache-flex-falcon-" overlay="true" needsAIR="false" needsFlash="false" icon="http://flex.apache.org/installer/icons/apache_flexfalcon_logo_text.png">
+            <versions>
+                <Nightly id="FlexFalconNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-falcon/lastSuccessfulBuild/artifact/out/" file="apache-flex-falcon-0.9.0-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexFalcon>
+        <ApacheFlexFalconJX name="Apache Flex FalconJX" prefix="apache-flex-falconjx-" overlay="true" needsAIR="false" needsFlash="false" icon="http://flex.apache.org/installer/icons/apache_flexfalcon_logo_text.png" developmentVersion="0.9.0" rc="rc2" latestVersion="0.8.0">
+            <versions>
+                <Nightly id="FlexFalconJXNightly" version="Nightly" path="http://apacheflexbuild.cloudapp.net:8080/job/flex-falcon/lastSuccessfulBuild/artifact/out/" file="apache-flex-falconjx-0.9.0-bin" dev="true" nocache="true"/>
+            </versions>
+        </ApacheFlexFalconJX>
+    </products>
+    <airsdk>
+        <linux>
+            <versions default="2.6">
+                <versionA id="air.sdk.version.linux.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.linux.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.linux.2.6">air/lin/download/2.6/</folder>
+                    <path id="air.sdk.path.linux.2.6">http://airdownload.adobe.com/air/lin/download/2.6/</path>
+                    <file id="air.sdk.file.linux.2.6">AdobeAIRSDK.tbz2</file>
+                </versionA>
+            </versions>
+        </linux>
+        <windows>
+            <versions default="28.0">
+                <versionA id="air.sdk.version.windows.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.windows.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.2.6">air/win/download/2.6/</folder>
+                    <path id="air.sdk.path.windows.2.6">http://airdownload.adobe.com/air/win/download/2.6/</path>
+                    <file id="air.sdk.file.windows.2.6">AdobeAIRSDK.zip</file>
+                </versionA>
+                <versionB id="air.sdk.version.windows.2.7" version="2.7" displayVersion="2.7">
+                    <server id="air.sdk.server.windows.2.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.2.7">air/win/download/2.7/</folder>
+                    <path id="air.sdk.path.windows.2.7">http://airdownload.adobe.com/air/win/download/2.7/</path>
+                    <file id="air.sdk.file.windows.2.7">AdobeAIRSDK.zip</file>
+                </versionB>
+                <versionC id="air.sdk.version.windows.3.0" version="3.0" displayVersion="3.0">
+                    <server id="air.sdk.server.windows.3.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.0">air/win/download/3.0/</folder>
+                    <path id="air.sdk.path.windows.3.0">http://airdownload.adobe.com/air/win/download/3.0/</path>
+                    <file id="air.sdk.file.windows.3.0">AdobeAIRSDK.zip</file>
+                </versionC>
+                <versionD id="air.sdk.version.windows.3.1" version="3.1" displayVersion="3.1" label="tested">
+                    <server id="air.sdk.server.windows.3.1">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.1">air/win/download/3.1/</folder>
+                    <path id="air.sdk.path.windows.3.1">http://airdownload.adobe.com/air/win/download/3.1/</path>
+                    <file id="air.sdk.file.windows.3.1">AdobeAIRSDK.zip</file>
+                </versionD>
+                <versionE id="air.sdk.version.windows.3.2" version="3.2" displayVersion="3.2">
+                    <server id="air.sdk.server.windows.3.2">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.2">air/win/download/3.2/</folder>
+                    <path id="air.sdk.path.windows.3.2">http://airdownload.adobe.com/air/win/download/3.2/</path>
+                    <file id="air.sdk.file.windows.3.2">AdobeAIRSDK.zip</file>
+                </versionE>
+                <versionF id="air.sdk.version.windows.3.3" version="3.3" displayVersion="3.3">
+                    <server id="air.sdk.server.windows.3.3">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.3">air/win/download/3.3/</folder>
+                    <path id="air.sdk.path.windows.3.3">http://airdownload.adobe.com/air/win/download/3.3/</path>
+                    <file id="air.sdk.file.windows.3.3">AdobeAIRSDK.zip</file>
+                </versionF>
+                <versionG id="air.sdk.version.windows.3.4" version="3.4" displayVersion="3.4" label="tested">
+                    <server id="air.sdk.server.windows.3.4">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.4">air/win/download/3.4/</folder>
+                    <path id="air.sdk.path.windows.3.4">http://airdownload.adobe.com/air/win/download/3.4/</path>
+                    <file id="air.sdk.file.windows.3.4">AdobeAIRSDK.zip</file>
+                </versionG>
+                <versionH id="air.sdk.version.windows.3.5" version="3.5" displayVersion="3.5" cacheID="a2e2b43-4d1af20b41f40">
+                    <server id="air.sdk.server.windows.3.5">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.5">air/win/download/3.5/</folder>
+                    <path id="air.sdk.path.windows.3.5">http://airdownload.adobe.com/air/win/download/3.5/</path>
+                    <file id="air.sdk.file.windows.3.5">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.3.5">b055484ca84cccac6a22f38ed5d80a8e</md5>
+                </versionH>
+                <versionI id="air.sdk.version.windows.3.6" version="3.6" displayVersion="3.6">
+                    <server id="air.sdk.server.windows.3.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.6">air/win/download/3.6/</folder>
+                    <path id="air.sdk.path.windows.3.6">http://airdownload.adobe.com/air/win/download/3.6/</path>
+                    <file id="air.sdk.file.windows.3.6">AdobeAIRSDK.zip</file>
+                </versionI>
+                <versionJ id="air.sdk.version.windows.3.7" version="3.7" displayVersion="3.7" label="tested">
+                    <server id="air.sdk.server.windows.3.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.7">air/win/download/3.7/</folder>
+                    <path id="air.sdk.path.windows.3.7">http://airdownload.adobe.com/air/win/download/3.7/</path>
+                    <file id="air.sdk.file.windows.3.7">AdobeAIRSDK.zip</file>
+                </versionJ>
+                <versionK id="air.sdk.version.windows.3.8" version="3.8" displayVersion="3.8" label="tested">
+                    <server id="air.sdk.server.windows.3.8">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.8">air/win/download/3.8/</folder>
+                    <path id="air.sdk.path.windows.3.8">http://airdownload.adobe.com/air/win/download/3.8/</path>
+                    <file id="air.sdk.file.windows.3.8">AdobeAIRSDK.zip</file>
+                </versionK>
+                <versionL id="air.sdk.version.windows.3.9" version="3.9" displayVersion="3.9">
+                    <server id="air.sdk.server.windows.3.9">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.3.9">air/win/download/3.9/</folder>
+                    <path id="air.sdk.path.windows.3.9">http://airdownload.adobe.com/air/win/download/3.9/</path>
+                    <file id="air.sdk.file.windows.3.9">AdobeAIRSDK.zip</file>
+                </versionL>
+                <versionM id="air.sdk.version.windows.4.0" version="4.0" displayVersion="4.0" cacheID="bcc2d4a-4f207dcaf2000">
+                    <server id="air.sdk.server.windows.4.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.4.0">air/win/download/4.0/</folder>
+                    <path id="air.sdk.path.windows.4.0">http://airdownload.adobe.com/air/win/download/4.0/</path>
+                    <file id="air.sdk.file.windows.4.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.4.0">a0c9c87603f2cd5bc9a80c0646713add</md5>
+                </versionM>
+                <versionN id="air.sdk.version.windows.13.0" version="13.0" displayVersion="13" cacheID="bd03322-4f8262c359f40">
+                    <server id="air.sdk.server.windows.13.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.13.0">air/win/download/13.0/</folder>
+                    <path id="air.sdk.path.windows.13.0">http://airdownload.adobe.com/air/win/download/13.0/</path>
+                    <file id="air.sdk.file.windows.13.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.13.0">1fd676eb1bdd17ac8ab814a1ecc4001a</md5>
+                </versionN>
+                <versionO id="air.sdk.version.windows.14.0" version="14.0" displayVersion="14" cacheID="cf9597a-4ffc6cd035dc0">
+                    <server id="air.sdk.server.windows.14.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.14.0">air/win/download/14.0/</folder>
+                    <path id="air.sdk.path.windows.14.0">http://airdownload.adobe.com/air/win/download/14.0/</path>
+                    <file id="air.sdk.file.windows.14.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.14.0">d9c566ad03f83d7fb2a518489a6999c9</md5>
+                </versionO>
+                <versionP id="air.sdk.version.windows.15.0" version="15.0" displayVersion="15">
+                    <server id="air.sdk.server.windows.15.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.15.0">air/win/download/15.0/</folder>
+                    <path id="air.sdk.path.windows.15.0">http://airdownload.adobe.com/air/win/download/15.0/</path>
+                    <file id="air.sdk.file.windows.15.0">AdobeAIRSDK.zip</file>
+                </versionP>
+                <versionQ id="air.sdk.version.windows.16.0" version="16.0" displayVersion="16.0" cacheID="b50b65a-50e6bd470b900">
+                    <server id="air.sdk.server.windows.16.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.16.0">air/win/download/16.0/</folder>
+                    <path id="air.sdk.path.windows.16.0">http://airdownload.adobe.com/air/win/download/16.0/</path>
+                    <file id="air.sdk.file.windows.16.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.16.0">f1714a61e6a159c60ca0955babc42b7b</md5>
+                </versionQ>
+                <versionR id="air.sdk.version.windows.17.0" version="17.0" displayVersion="17.0" cacheID="b4ca168-5154196866180">
+                    <server id="air.sdk.server.windows.17.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.17.0">air/win/download/17.0/</folder>
+                    <path id="air.sdk.path.windows.17.0">http://airdownload.adobe.com/air/win/download/17.0/</path>
+                    <file id="air.sdk.file.windows.17.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.17.0">3e1b006f95d4f30594290a866fd44f32</md5>
+                </versionR>
+                <versionS id="air.sdk.version.windows.18.0" version="18.0" displayVersion="18.0" cacheID="bc66a78-51c611ddd4880">
+                    <server id="air.sdk.server.windows.18.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.18.0">air/win/download/18.0/</folder>
+                    <path id="air.sdk.path.windows.18.0">http://airdownload.adobe.com/air/win/download/18.0/</path>
+                    <file id="air.sdk.file.windows.18.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.18.0">b8aef99bb74f664d79a3e5de0d70a691</md5>
+                </versionS>
+                <versionT id="air.sdk.version.windows.19.0" version="19.0" displayVersion="19.0" cacheID="bf8f5ee-5355d10f17899">
+                    <server id="air.sdk.server.windows.19.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.19.0">air/win/download/19.0/</folder>
+                    <path id="air.sdk.path.windows.19.0">http://airdownload.adobe.com/air/win/download/19.0/</path>
+                    <file id="air.sdk.file.windows.19.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.19.0">79f0f8710b227633613d7138acc04611</md5>
+                </versionT>
+                <versionU id="air.sdk.version.windows.20.0" version="20.0" displayVersion="20.0" cacheID="c44fa74-52b4e9f9f1640" cacheID2="c44fa74-52b4e9fadb78b">
+                    <server id="air.sdk.server.windows.20.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.20.0">air/win/download/20.0/</folder>
+                    <path id="air.sdk.path.windows.20.0">http://airdownload.adobe.com/air/win/download/20.0/</path>
+                    <file id="air.sdk.file.windows.20.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.20.0">83e5adfe4c6b8288f7155968957bfd96</md5>
+                </versionU>
+                <versionV id="air.sdk.version.windows.21.0" version="21.0" displayVersion="21.0" cacheID="c9d7235-5329d63929630" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.21.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.21.0">air/win/download/21.0/</folder>
+                    <path id="air.sdk.path.windows.21.0">http://airdownload.adobe.com/air/win/download/21.0/</path>
+                    <file id="air.sdk.file.windows.21.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.21.0">1fb3586eea71962e366689fdd59840d1</md5>
+                </versionV>
+                <versionW id="air.sdk.version.windows.22.0" version="22.0" displayVersion="22.0" cacheID="ba85279-5355d11e69e2b" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.22.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.22.0">air/win/download/22.0/</folder>
+                    <path id="air.sdk.path.windows.22.0">http://airdownload.adobe.com/air/win/download/22.0/</path>
+                    <file id="air.sdk.file.windows.22.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.22.0">82fbd2d6cdb162040c8c4bdb1bfffffa</md5>
+                </versionW>
+                <versionX id="air.sdk.version.windows.23.0" version="23.0" displayVersion="23.0" cacheID="be06410-53c5c857daf54" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.23.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.23.0">air/win/download/23.0/</folder>
+                    <path id="air.sdk.path.windows.23.0">http://airdownload.adobe.com/air/win/download/23.0/</path>
+                    <file id="air.sdk.file.windows.23.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.23.0">d40671f391702fe1d91266516c3de43a</md5>
+                </versionX>
+                <versionY id="air.sdk.version.windows.24.0" version="24.0" displayVersion="24.0" cacheID="c1c4525-54382e269f0eb" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.24.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.24.0">air/win/download/24.0/</folder>
+                    <path id="air.sdk.path.windows.24.0">http://airdownload.adobe.com/air/win/download/24.0/</path>
+                    <file id="air.sdk.file.windows.24.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.24.0">1888aa6b8e13df7668fa14a6d497db09</md5>
+                </versionY>
+                <versionZ id="air.sdk.version.windows.25.0" version="25.0" displayVersion="25.0" cacheID="157222ed-54aa92c6d5ef4" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.25.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.25.0">air/win/download/25.0/</folder>
+                    <path id="air.sdk.path.windows.25.0">http://airdownload.adobe.com/air/win/download/25.0/</path>
+                    <file id="air.sdk.file.windows.25.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.25.0">ec48d6f7ea9e2b8cacef78c6a6ecbaad</md5>
+                </versionZ>
+                <versionAA id="air.sdk.version.windows.26.0" version="26.0" displayVersion="26.0" cacheID="1b8c1e8e-551d000d9a673" cacheID2="c9d1927-530415cc560c0">
+                    <server id="air.sdk.server.windows.26.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.26.0">air/win/download/26.0/</folder>
+                    <path id="air.sdk.path.windows.26.0">http://airdownload.adobe.com/air/win/download/26.0/</path>
+                    <file id="air.sdk.file.windows.26.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.26.0">103e05c46a3557af7c3991e9f9c9c9c5</md5>
+                </versionAA>
+                <versionAB id="air.sdk.version.windows.27.0" version="27.0" displayVersion="27.0" versionID="27.0" cacheID="1b90c66a-55b290c8a56c0" cacheID2="c9d1927-123415cc560c0">
+                    <server id="air.sdk.server.windows.27.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.27.0">air/win/download/27.0/</folder>
+                    <path id="air.sdk.path.windows.27.0">http://airdownload.adobe.com/air/win/download/27.0/</path>
+                    <file id="air.sdk.file.windows.27.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.27.0">fb9a96d20661f1daf184c45b8848e5b7</md5>
+                </versionAB>
+                <versionAC id="air.sdk.version.windows.28.0" version="28.0" displayVersion="28.0" versionID="28.0" cacheID="1c5b39c5-5601cc04f0754" cacheID2="c9d1927-123415cc560c0">
+                    <server id="air.sdk.server.windows.28.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.windows.28.0">air/win/download/28.0/</folder>
+                    <path id="air.sdk.path.windows.28.0">http://airdownload.adobe.com/air/win/download/28.0/</path>
+                    <file id="air.sdk.file.windows.28.0">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.28.0">54b4b766128d67688da242c5f6d7214a</md5>
+                </versionAC>
+                <!--	<versionAC id="air.sdk.version.windows.28.0b" version="28.0" displayVersion="28.0 Beta" versionID="28.0b" cacheID="1b90c66a-55b290c8a56c0" cacheID2="c9d1927-123415cc560c0">
+                    <server id="air.sdk.server.windows.28.0b">https://fpdownload.macromedia.com</server>
+                    <folder id="air.sdk.folder.windows.28.0b">pub/labs/flashruntimes/air/</folder>
+                    <path id="air.sdk.path.windows.28.0b">https://fpdownload.macromedia.com/pub/labs/flashruntimes/air/</path>
+                    <file id="air.sdk.file.windows.28.0b">AdobeAIRSDK.zip</file>
+                    <md5 id="air.sdk.md5.windows.28.0b">a6a0e0a77a375214dffda4de3f252846</md5>
+                </versionAC>-->
+            </versions>
+        </windows>
+        <mac>
+            <versions default="28.0">
+                <versionA id="air.sdk.version.mac.2.6" version="2.6" displayVersion="2.6">
+                    <server id="air.sdk.server.mac.2.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.2.6">air/mac/download/2.6/</folder>
+                    <path id="air.sdk.path.mac.2.6">http://airdownload.adobe.com/air/mac/download/2.6/</path>
+                    <file id="air.sdk.file.mac.2.6">AdobeAIRSDK.tbz2</file>
+                </versionA>
+                <versionB id="air.sdk.version.mac.2.7" version="2.7" displayVersion="2.7">
+                    <server id="air.sdk.server.mac.2.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.2.7">air/mac/download/2.7/</folder>
+                    <path id="air.sdk.path.mac.2.7">http://airdownload.adobe.com/air/mac/download/2.7/</path>
+                    <file id="air.sdk.file.mac.2.7">AdobeAIRSDK.tbz2</file>
+                </versionB>
+                <versionC id="air.sdk.version.mac.3.0" version="3.0" displayVersion="3.0">
+                    <server id="air.sdk.server.mac.3.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.0">air/mac/download/3.0/</folder>
+                    <path id="air.sdk.path.mac.3.0">http://airdownload.adobe.com/air/mac/download/3.0/</path>
+                    <file id="air.sdk.file.mac.3.0">AdobeAIRSDK.tbz2</file>
+                </versionC>
+                <versionD id="air.sdk.version.mac.3.1" version="3.1" displayVersion="3.1" label="tested">
+                    <server id="air.sdk.server.mac.3.1">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.1">air/mac/download/3.1/</folder>
+                    <path id="air.sdk.path.mac.3.1">http://airdownload.adobe.com/air/mac/download/3.1/</path>
+                    <file id="air.sdk.file.mac.3.1">AdobeAIRSDK.tbz2</file>
+                </versionD>
+                <versionE id="air.sdk.version.mac.3.2" version="3.2" displayVersion="3.2">
+                    <server id="air.sdk.server.mac.3.2">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.2">air/mac/download/3.2/</folder>
+                    <path id="air.sdk.path.mac.3.2">http://airdownload.adobe.com/air/mac/download/3.2/</path>
+                    <file id="air.sdk.file.mac.3.2">AdobeAIRSDK.tbz2</file>
+                </versionE>
+                <versionF id="air.sdk.version.mac.3.3" version="3.3" displayVersion="3.3">
+                    <server id="air.sdk.server.mac.3.3">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.3">air/mac/download/3.3/</folder>
+                    <path id="air.sdk.path.mac.3.3">http://airdownload.adobe.com/air/mac/download/3.3/</path>
+                    <file id="air.sdk.file.mac.3.3">AdobeAIRSDK.tbz2</file>
+                </versionF>
+                <versionG id="air.sdk.version.mac.3.4" version="3.4" displayVersion="3.4" label="tested">
+                    <server id="air.sdk.server.mac.3.4">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.4">air/mac/download/3.4/</folder>
+                    <path id="air.sdk.path.mac.3.4">http://airdownload.adobe.com/air/mac/download/3.4/</path>
+                    <file id="air.sdk.file.mac.3.4">AdobeAIRSDK.tbz2</file>
+                </versionG>
+                <versionH id="air.sdk.version.mac.3.5" version="3.5" displayVersion="3.5">
+                    <server id="air.sdk.server.mac.3.5">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.5">air/mac/download/3.5/</folder>
+                    <path id="air.sdk.path.mac.3.5">http://airdownload.adobe.com/air/mac/download/3.5/</path>
+                    <file id="air.sdk.file.mac.3.5">AdobeAIRSDK.tbz2</file>
+                </versionH>
+                <versionI id="air.sdk.version.mac.3.6" version="3.6" displayVersion="3.6">
+                    <server id="air.sdk.server.mac.3.6">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.6">air/mac/download/3.6/</folder>
+                    <path id="air.sdk.path.mac.3.6">http://airdownload.adobe.com/air/mac/download/3.6/</path>
+                    <file id="air.sdk.file.mac.3.6">AdobeAIRSDK.tbz2</file>
+                </versionI>
+                <versionJ id="air.sdk.version.mac.3.7" version="3.7" displayVersion="3.7" label="tested">
+                    <server id="air.sdk.server.mac.3.7">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.7">air/mac/download/3.7/</folder>
+                    <path id="air.sdk.path.mac.3.7">http://airdownload.adobe.com/air/mac/download/3.7/</path>
+                    <file id="air.sdk.file.mac.3.7">AdobeAIRSDK.tbz2</file>
+                </versionJ>
+                <versionK id="air.sdk.version.mac.3.8" version="3.8" displayVersion="3.8" label="tested">
+                    <server id="air.sdk.server.mac.3.8">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.8">air/mac/download/3.8/</folder>
+                    <path id="air.sdk.path.mac.3.8">http://airdownload.adobe.com/air/mac/download/3.8/</path>
+                    <file id="air.sdk.file.mac.3.8">AdobeAIRSDK.tbz2</file>
+                </versionK>
+                <versionL id="air.sdk.version.mac.3.9" version="3.9" displayVersion="3.9">
+                    <server id="air.sdk.server.mac.3.9">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.3.9">air/mac/download/3.9/</folder>
+                    <path id="air.sdk.path.mac.3.9">http://airdownload.adobe.com/air/mac/download/3.9/</path>
+                    <file id="air.sdk.file.mac.3.9">AdobeAIRSDK.tbz2</file>
+                </versionL>
+                <versionM id="air.sdk.version.mac.4.0" version="4.0" displayVersion="4.0" cacheID="a9e39d1-4f207d7bca540">
+                    <server id="air.sdk.server.mac.4.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.4.0">air/mac/download/4.0/</folder>
+                    <path id="air.sdk.path.mac.4.0">http://airdownload.adobe.com/air/mac/download/4.0/</path>
+                    <file id="air.sdk.file.mac.4.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.4.0">0787bb2edbef4417aeef4ef99f105859</md5>
+                </versionM>
+                <versionN id="air.sdk.version.mac.13.0" version="13.0" displayVersion="13" cacheID="a6f06f8-4f82624b303c0">
+                    <server id="air.sdk.server.mac.13.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.13.0">air/mac/download/13.0/</folder>
+                    <path id="air.sdk.path.mac.13.0">http://airdownload.adobe.com/air/mac/download/13.0/</path>
+                    <file id="air.sdk.file.mac.13.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.13.0">9156e9b92c13b11db91ea9958926060b</md5>
+                </versionN>
+                <versionO id="air.sdk.version.mac.14.0" version="14.0" displayVersion="14" cacheID="bafc5a3-4ffc6c1732940">
+                    <server id="air.sdk.server.mac.14.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.14.0">air/mac/download/14.0/</folder>
+                    <path id="air.sdk.path.mac.14.0">http://airdownload.adobe.com/air/mac/download/14.0/</path>
+                    <file id="air.sdk.file.mac.14.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.14.0">5e60de653ef1958bea37ed853b334aeb</md5>
+                </versionO>
+                <versionP id="air.sdk.version.mac.15.0" version="15.0" displayVersion="15" cacheID="ba279a0-50718df913bc0">
+                    <server id="air.sdk.server.mac.15.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.15.0">air/mac/download/15.0/</folder>
+                    <path id="air.sdk.path.mac.15.0">http://airdownload.adobe.com/air/mac/download/15.0/</path>
+                    <file id="air.sdk.file.mac.15.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.15.0">89047d9ea602813e940b51508e60d145</md5>
+                </versionP>
+                <versionQ id="air.sdk.version.mac.16.0" version="16.0" displayVersion="16" cacheID="a935dd1-50e6c54c4e540">
+                    <server id="air.sdk.server.mac.16.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.16.0">air/mac/download/16.0/</folder>
+                    <path id="air.sdk.path.mac.16.0">http://airdownload.adobe.com/air/mac/download/16.0/</path>
+                    <file id="air.sdk.file.mac.16.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.16.0">df84c962564be5342a3aecb0b562d991</md5>
+                </versionQ>
+                <versionR id="air.sdk.version.mac.17.0" version="17.0" displayVersion="17" cacheID="a949fc0-5154190443540" cacheID2="ba27bca-5060db3a79880">
+                    <server id="air.sdk.server.mac.17.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.17.0">air/mac/download/17.0/</folder>
+                    <path id="air.sdk.path.mac.17.0">http://airdownload.adobe.com/air/mac/download/17.0/</path>
+                    <file id="air.sdk.file.mac.17.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.17.0">f64f4b205de935c9bbaeda249eb0636a</md5>
+                </versionR>
+                <versionS id="air.sdk.version.mac.18.0" version="18.0" displayVersion="18" cacheID="c56dbce-51c6117e76780" cacheID2="ba27bca-5060db3a79880">
+                    <server id="air.sdk.server.mac.18.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.18.0">air/mac/download/18.0/</folder>
+                    <path id="air.sdk.path.mac.18.0">http://airdownload.adobe.com/air/mac/download/18.0/</path>
+                    <file id="air.sdk.file.mac.18.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.18.0">8de755bf960d43618af04c34093d3e02</md5>
+                </versionS>
+                <versionT id="air.sdk.version.mac.19.0" version="19.0" displayVersion="19" cacheID="c7d8c6a-5355d0f2391db" cacheID2="ba27bca-5060db3a79880">
+                    <server id="air.sdk.server.mac.19.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.19.0">air/mac/download/19.0/</folder>
+                    <path id="air.sdk.path.mac.19.0">http://airdownload.adobe.com/air/mac/download/19.0/</path>
+                    <file id="air.sdk.file.mac.19.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.19.0">20806cae9e941eadc3a1de2e5d1267d7</md5>
+                </versionT>
+                <versionU id="air.sdk.version.mac.20.0" version="20.0" displayVersion="20" cacheID="cbfbb6c-52b4e99c7b9c0" cacheID2="cbfbb6c-52b4e99ca2b26">
+                    <server id="air.sdk.server.mac.20.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.20.0">air/mac/download/20.0/</folder>
+                    <path id="air.sdk.path.mac.20.0">http://airdownload.adobe.com/air/mac/download/20.0/</path>
+                    <file id="air.sdk.file.mac.20.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.20.0">e1f9b480ac209505473eb32ed246ab2a</md5>
+                </versionU>
+                <versionV id="air.sdk.version.mac.21.0" version="21.0" displayVersion="21" cacheID="d174980-5329d5f810866" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.21.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.21.0">air/mac/download/21.0/</folder>
+                    <path id="air.sdk.path.mac.21.0">http://airdownload.adobe.com/air/mac/download/21.0/</path>
+                    <file id="air.sdk.file.mac.21.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.21.0">9aa5e0e2d72783232b758671042271b9</md5>
+                </versionV>
+                <versionW id="air.sdk.version.mac.22.0" version="22.0" displayVersion="22" cacheID="bf74a64-5355d0f172806" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.22.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.22.0">air/mac/download/22.0/</folder>
+                    <path id="air.sdk.path.mac.22.0">http://airdownload.adobe.com/air/mac/download/22.0/</path>
+                    <file id="air.sdk.file.mac.22.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.22.0">5721c370528c27ef23e7db79921a70d1</md5>
+                </versionW>
+                <versionX id="air.sdk.version.mac.23.0" version="23.0" displayVersion="23" cacheID="c38532c-53c5c8350c463" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.23.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.23.0">air/mac/download/23.0/</folder>
+                    <path id="air.sdk.path.mac.23.0">http://airdownload.adobe.com/air/mac/download/23.0/</path>
+                    <file id="air.sdk.file.mac.23.0">AdobeAIRSDK.tbz2</file>
+                    <md5 id="air.sdk.md5.mac.23.0">47dff14e80da1ab5d867920d2c0c073e</md5>
+                </versionX>
+                <versionY id="air.sdk.version.mac.24.0" version="24.0" displayVersion="24" cacheID="c74b8fa-54382e03b624f" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.24.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.24.0">air/mac/download/24.0/</folder>
+                    <path id="air.sdk.path.mac.24.0">http://airdownload.adobe.com/air/mac/download/24.0/</path>
+                    <file id="air.sdk.file.mac.24.0">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.24.0">290cbd1d45d91df88d7a45d415eb7c95</md5>
+                </versionY>
+                <versionZ id="air.sdk.version.mac.25.0" version="25.0" displayVersion="25" cacheID="149c4481-54aa92872bb74" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.25.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.25.0">air/mac/download/25.0/</folder>
+                    <path id="air.sdk.path.mac.25.0">http://airdownload.adobe.com/air/mac/download/25.0/</path>
+                    <file id="air.sdk.file.mac.25.0">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.25.0">6b7bbcd6ceb9f088a0824d72d770afad</md5>
+                </versionZ>
+                <versionAA id="air.sdk.version.mac.26.0" version="26.0" displayVersion="26" cacheID="1a0b9ce1-551cff5f4a0b8" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.26.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.26.0">air/mac/download/26.0/</folder>
+                    <path id="air.sdk.path.mac.26.0">http://airdownload.adobe.com/air/mac/download/26.0/</path>
+                    <file id="air.sdk.file.mac.26.0">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.26.0">76d92405d0c22f504b31b9f4a1cf5f5e</md5>
+                </versionAA>
+                <versionAB id="air.sdk.version.mac.27.0" version="27.0" displayVersion="27" versionID="27.0" cacheID="1a142854-558f5fdff6019" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.27.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.27.0">air/mac/download/27.0/</folder>
+                    <path id="air.sdk.path.mac.27.0">http://airdownload.adobe.com/air/mac/download/27.0/</path>
+                    <file id="air.sdk.file.mac.27.0">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.27.0">adbd98936b8a8c1663a885a67d4800ba</md5>
+                </versionAB>
+                <versionAC id="air.sdk.version.mac.28.0" version="28.0" displayVersion="28" versionID="28.0" cacheID="198f73d9-5601cbb11bab8" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.28.0">http://airdownload.adobe.com</server>
+                    <folder id="air.sdk.folder.mac.28.0">air/mac/download/28.0/</folder>
+                    <path id="air.sdk.path.mac.28.0">http://airdownload.adobe.com/air/mac/download/28.0/</path>
+                    <file id="air.sdk.file.mac.28.0">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.28.0">d1d2e34737d01a5c463d9f2d93c1c5e3</md5>
+                </versionAC>
+                <!--<versionAC id="air.sdk.version.mac.28.0b" version="28.0" displayVersion="28 Beta" versionID="28.0b" cacheID="1a142854-558f5fdff6019" cacheID2="d16a2ff-5304155c7d928">
+                    <server id="air.sdk.server.mac.28.0b">https://fpdownload.macromedia.com</server>
+                    <folder id="air.sdk.folder.mac.28.0b">pub/labs/flashruntimes/air/</folder>
+                    <path id="air.sdk.path.mac.28.0b">https://fpdownload.macromedia.com/pub/labs/flashruntimes/air/</path>
+                    <file id="air.sdk.file.mac.28.0b">AdobeAIRSDK.dmg</file>
+                    <md5 id="air.sdk.md5.mac.28.0b">1e3ab6f119aa8c4d961561a98b984158</md5>
+                </versionAC>-->
+            </versions>
+        </mac>
+    </airsdk>
+    <flashsdk>
+        <versions default="28.0">
+            <versionA id="flash.sdk.version.10.2" version="10.2" displayVersion="10.2" cacheID="4a238-4ca7abb2dbb80">
+                <server id="flash.sdk.server.10.2">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.10.2">get/flashplayer/installers/archive/playerglobal/</folder>
+                <path id="flash.sdk.path.10.2">http://fpdownload.macromedia.com/get/flashplayer/installers/archive/playerglobal/</path>
+                <file id="flash.sdk.file.10.2">playerglobal10_2.swc</file>
+                <md5 id="flash.sdk.md5.10.2">aa7d785dd5715626201f5e30fc1deb51</md5>
+                <swfversion id="flash.sdk.swfversion.10.2">11</swfversion>
+                <projectorWin id="flash.sdk.projector.win.10.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/10/flashplayer_10_sa_debug.exe</projectorWin>
+                <!-- The 11 Version can run 10 content too -->
+                <projectorMac id="flash.sdk.projector.mac.10.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+                <!-- The 11 Version can run 10 content too -->
+                <projectorLinux id="flash.sdk.projector.linux.10.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.i386.tar.gz</projectorLinux>
+            </versionA>
+            <versionB id="flash.sdk.version.10.3" version="10.3" displayVersion="10.3" cacheID="4af16-4ca7abe37ee40">
+                <server id="flash.sdk.server.10.3">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.10.3">get/flashplayer/installers/archive/playerglobal/</folder>
+                <path id="flash.sdk.path.10.3">http://fpdownload.macromedia.com/get/flashplayer/installers/archive/playerglobal/</path>
+                <file id="flash.sdk.file.10.3">playerglobal10_3.swc</file>
+                <md5 id="flash.sdk.md5.10.3">6092b3d4e2784212d174ca10904412bd</md5>
+                <swfversion id="flash.sdk.swfversion.10.3">12</swfversion>
+                <projectorWin id="flash.sdk.projector.win.10.3">https://fpdownload.macromedia.com/pub/flashplayer/updaters/10/flashplayer_10_sa_debug.exe</projectorWin>
+                <!-- The 11 Version can run 10 content too -->
+                <projectorMac id="flash.sdk.projector.mac.10.3">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+                <!-- The 11 Version can run 10 content too -->
+                <projectorLinux id="flash.sdk.projector.linux.10.3">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.i386.tar.gz</projectorLinux>
+            </versionB>
+            <versionC id="flash.sdk.version.11.0" version="11.0" displayVersion="11.0" cacheID="5258c-4ca79a6ac35c0">
+                <server id="flash.sdk.server.11.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.0">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.0">playerglobal11_0.swc</file>
+                <md5 id="flash.sdk.md5.11.0">5f5a291f02105cd83fb582b76646e603</md5>
+                <swfversion id="flash.sdk.swfversion.11.0">13</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+                <projectorLinux id="flash.sdk.projector.linux.11.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.i386.tar.gz</projectorLinux>
+            </versionC>
+            <versionD id="flash.sdk.version.11.1" version="11.1" displayVersion="11.1" label="tested" cacheID="52588-4ca79a6ac35c0">
+                <server id="flash.sdk.server.11.1">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.1">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.1">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.1">playerglobal11_1.swc</file>
+                <md5 id="flash.sdk.md5.11.1">e3a0e0e8c703ae5b1847b8ac25bbdc5f</md5>
+                <swfversion id="flash.sdk.swfversion.11.1">14</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.1">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.1">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+                <projectorLinux id="flash.sdk.projector.linux.11.1">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.i386.tar.gz</projectorLinux>
+            </versionD>
+            <versionE id="flash.sdk.version.11.2" version="11.2" displayVersion="11.2" cacheID="52cbf-4ca79a6bb7800">
+                <server id="flash.sdk.server.11.2">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.2">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.2">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.2">playerglobal11_2.swc</file>
+                <md5 id="flash.sdk.md5.11.2">c544a069518897880e0d732457b6fdeb</md5>
+                <swfversion id="flash.sdk.swfversion.11.2">15</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+                <projectorLinux id="flash.sdk.projector.linux.11.2">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.i386.tar.gz</projectorLinux>
+            </versionE>
+            <versionF id="flash.sdk.version.11.3" version="11.3" displayVersion="11.3" cacheID="549b7-4c70ce0545200">
+                <server id="flash.sdk.server.11.3">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.3">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.3">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.3">playerglobal11_3.swc</file>
+                <md5 id="flash.sdk.md5.11.3">e2a9ee439d9660feaf756aa05e7e6412</md5>
+                <swfversion id="flash.sdk.swfversion.11.3">16</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.3">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.3">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionF>
+            <versionG id="flash.sdk.version.11.4" version="11.4" displayVersion="11.4" label="tested" cacheID="55b13-4c9e0274c1f00">
+                <server id="flash.sdk.server.11.4">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.4">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.4">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.4">playerglobal11_4.swc</file>
+                <md5 id="flash.sdk.md5.11.4">e15587856cdb5e21fa1acb6b0610a032</md5>
+                <swfversion id="flash.sdk.swfversion.11.4">17</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.4">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.4">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionG>
+            <versionH id="flash.sdk.version.11.5" version="11.5" displayVersion="11.5" cacheID="55b2b-4d4e6df5fb280">
+                <server id="flash.sdk.server.11.5">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.5">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.5">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.5">playerglobal11_5.swc</file>
+                <md5 id="flash.sdk.md5.11.5">00384b24157442c59ca5d625ecfd11a2</md5>
+                <swfversion id="flash.sdk.swfversion.11.5">18</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.5">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.5">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionH>
+            <versionI id="flash.sdk.version.11.6" version="11.6" displayVersion="11.6" cacheID="55d0c-4d750a906e700">
+                <server id="flash.sdk.server.11.6">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.6">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.6">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.6">playerglobal11_6.swc</file>
+                <md5 id="flash.sdk.md5.11.6">1b841a0a26ada3e5da26eb70c32ab263</md5>
+                <swfversion id="flash.sdk.swfversion.11.6">19</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.6">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.6">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionI>
+            <versionJ id="flash.sdk.version.11.7" version="11.7" displayVersion="11.7" label="tested" cacheID="59b21-4d9608eb29a40">
+                <server id="flash.sdk.server.11.7">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.7">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.7">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.7">playerglobal11_7.swc</file>
+                <md5 id="flash.sdk.md5.11.7">12656571c57b2ad641838e5695a00e27</md5>
+                <swfversion id="flash.sdk.swfversion.11.7">20</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.7">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.7">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionJ>
+            <versionK id="flash.sdk.version.11.8" version="11.8" displayVersion="11.8" label="tested" cacheID="5b635-4e5678cb66b00">
+                <server id="flash.sdk.server.11.8">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.8">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.8">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.8">playerglobal11_8.swc</file>
+                <md5 id="flash.sdk.md5.11.8">35bc69eec5091f70e221b4e63b66b60f</md5>
+                <swfversion id="flash.sdk.swfversion.11.8">21</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.8">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.8">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionK>
+            <versionL id="flash.sdk.version.11.9" version="11.9" displayVersion="11.9" cacheID="5c6de-4ec9afd24aac0">
+                <server id="flash.sdk.server.11.9">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.11.9">get/flashplayer/updaters/11/</folder>
+                <path id="flash.sdk.path.11.9">http://fpdownload.macromedia.com/get/flashplayer/updaters/11/</path>
+                <file id="flash.sdk.file.11.9">playerglobal11_9.swc</file>
+                <md5 id="flash.sdk.md5.11.9">d18244c3c00c61a41f2d4d791d09fedb</md5>
+                <swfversion id="flash.sdk.swfversion.11.9">22</swfversion>
+                <projectorWin id="flash.sdk.projector.win.11.9">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.11.9">https://fpdownload.macromedia.com/pub/flashplayer/updaters/11/flashplayer_11_sa_debug.dmg</projectorMac>
+            </versionL>
+            <versionM id="flash.sdk.version.12.0" version="12.0" displayVersion="12.0" cacheID="5cd41-4f3d5a98cc040">
+                <server id="flash.sdk.server.12.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.12.0">get/flashplayer/updaters/12/</folder>
+                <path id="flash.sdk.path.12.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/12/</path>
+                <file id="flash.sdk.file.12.0">playerglobal12_0.swc</file>
+                <md5 id="flash.sdk.md5.12.0">4db4e934f39f774ba68fcd9a79654971</md5>
+                <swfversion id="flash.sdk.swfversion.12.0">23</swfversion>
+                <projectorWin id="flash.sdk.projector.win.12.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/12/flashplayer_12_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.12.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/12/flashplayer_12_sa_debug.dmg</projectorMac>
+            </versionM>
+            <versionN id="flash.sdk.version.13.0" version="13.0" displayVersion="13" cacheID="5d5df-51af62daad280" cacheID2="5d6d7-50923fdcb0780">
+                <server id="flash.sdk.server.13.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.13.0">get/flashplayer/updaters/13/</folder>
+                <path id="flash.sdk.path.13.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/13/</path>
+                <file id="flash.sdk.file.13.0">playerglobal13_0.swc</file>
+                <md5 id="flash.sdk.md5.13.0">b824fb3db644d065bc27cae2382eb361</md5>
+                <swfversion id="flash.sdk.swfversion.13.0">24</swfversion>
+                <projectorWin id="flash.sdk.projector.win.13.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/13/flashplayer_13_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.13.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/13/flashplayer_13_sa_debug.dmg</projectorMac>
+            </versionN>
+            <versionO id="flash.sdk.version.14.0" version="14.0" displayVersion="14" cacheID="5e5e3-4ffc767175600">
+                <server id="flash.sdk.server.14.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.14.0">get/flashplayer/updaters/14/</folder>
+                <path id="flash.sdk.path.14.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/14/</path>
+                <file id="flash.sdk.file.14.0">playerglobal14_0.swc</file>
+                <md5 id="flash.sdk.md5.14.0">0d7aa820d62ba76fa7bc353ee552bd49</md5>
+                <swfversion id="flash.sdk.swfversion.14.0">25</swfversion>
+                <projectorWin id="flash.sdk.projector.win.14.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.14.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/14/flashplayer_14_sa_debug.dmg</projectorMac>
+            </versionO>
+            <versionP id="flash.sdk.version.15.0" version="15.0" displayVersion="15" cacheID="5ec8a-5085d3c7785c0">
+                <server id="flash.sdk.server.15.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.15.0">get/flashplayer/updaters/15/</folder>
+                <path id="flash.sdk.path.15.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/15/</path>
+                <file id="flash.sdk.file.15.0">playerglobal15_0.swc</file>
+                <md5 id="flash.sdk.md5.15.0">8bb52e65abb4e0c6a357f2ccde1ec626</md5>
+                <swfversion id="flash.sdk.swfversion.15.0">26</swfversion>
+                <projectorWin id="flash.sdk.projector.win.15.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/15/flashplayer_15_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.15.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/15/flashplayer_15_sa_debug.dmg</projectorMac>
+            </versionP>
+            <versionQ id="flash.sdk.version.16.0" version="16.0" displayVersion="16" cacheID="5ed4d-50e30aae66c00">
+                <server id="flash.sdk.server.16.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.16.0">get/flashplayer/updaters/16/</folder>
+                <path id="flash.sdk.path.16.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/16/</path>
+                <file id="flash.sdk.file.16.0">playerglobal16_0.swc</file>
+                <md5 id="flash.sdk.md5.16.0">5bf5a05a4065a247bf65e7342a4c770f</md5>
+                <swfversion id="flash.sdk.swfversion.16.0">27</swfversion>
+                <projectorWin id="flash.sdk.projector.win.16.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/16/flashplayer_16_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.16.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/16/flashplayer_16_sa_debug.dmg</projectorMac>
+            </versionQ>
+            <versionR id="flash.sdk.version.17.0" version="17.0" displayVersion="17" cacheID="5eec9-5153e5b54e800">
+                <server id="flash.sdk.server.17.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.17.0">get/flashplayer/updaters/17/</folder>
+                <path id="flash.sdk.path.17.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/17/</path>
+                <file id="flash.sdk.file.17.0">playerglobal17_0.swc</file>
+                <md5 id="flash.sdk.md5.17.0">e86a0fd5131fe3c2fd1e052314237ca9</md5>
+                <swfversion id="flash.sdk.swfversion.17.0">27</swfversion>
+                <projectorWin id="flash.sdk.projector.win.17.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/17/flashplayer_17_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.17.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/17/flashplayer_17_sa_debug.dmg</projectorMac>
+            </versionR>
+            <versionS id="flash.sdk.version.18.0" version="18.0" displayVersion="18" cacheID="5f2a6-53e8f7b672988" cacheID2="5f29f-52fde78b49235">
+                <server id="flash.sdk.server.18.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.18.0">get/flashplayer/updaters/18/</folder>
+                <path id="flash.sdk.path.18.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/18/</path>
+                <file id="flash.sdk.file.18.0">playerglobal18_0.swc</file>
+                <md5 id="flash.sdk.md5.18.0">371310a916950a7956507bf9cdf1bb63</md5>
+                <swfversion id="flash.sdk.swfversion.18.0">29</swfversion>
+                <projectorWin id="flash.sdk.projector.win.18.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/18/flashplayer_18_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.18.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/18/flashplayer_18_sa_debug.dmg</projectorMac>
+            </versionS>
+            <versionT id="flash.sdk.version.19.0" version="19.0" displayVersion="19" cacheID="5f215-523a055932740">
+                <server id="flash.sdk.server.19.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.19.0">get/flashplayer/updaters/19/</folder>
+                <path id="flash.sdk.path.19.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/19/</path>
+                <file id="flash.sdk.file.19.0">playerglobal19_0.swc</file>
+                <md5 id="flash.sdk.md5.19.0">3f2473dd35a55427886abfc1807eaa98</md5>
+                <swfversion id="flash.sdk.swfversion.19.0">30</swfversion>
+                <projectorWin id="flash.sdk.projector.win.19.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/19/flashplayer_19_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.19.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/19/flashplayer_19_sa_debug.dmg</projectorMac>
+            </versionT>
+            <!-- use versionID if more than one entry has the same version attribute -->
+            <versionU id="flash.sdk.version.20.0" version="20.0" displayVersion="20" cacheID="5ed4e-52b4eccfb0680" cacheID2="5ed4e-52b4eccfc5c16">
+                <server id="flash.sdk.server.20.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.20.0">get/flashplayer/updaters/20/</folder>
+                <path id="flash.sdk.path.20.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/20/</path>
+                <file id="flash.sdk.file.20.0">playerglobal20_0.swc</file>
+                <md5 id="flash.sdk.md5.20.0">444ea8e8f2cddec22ed8b77e0d61bfe2</md5>
+                <swfversion id="flash.sdk.swfversion.20.0">31</swfversion>
+                <projectorWin id="flash.sdk.projector.win.20.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/20/flashplayer_20_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.20.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/20/flashplayer_20_sa_debug.dmg</projectorMac>
+            </versionU>
+            <versionV id="flash.sdk.version.21.0" version="21.0" displayVersion="21" cacheID="72136-5329d4f48cfbf" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.21.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.21.0">get/flashplayer/updaters/21/</folder>
+                <path id="flash.sdk.path.21.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/21/</path>
+                <file id="flash.sdk.file.21.0">playerglobal21_0.swc</file>
+                <md5 id="flash.sdk.md5.21.0">1dd14e80b962327ccd17ce1321dc2135</md5>
+                <swfversion id="flash.sdk.swfversion.21.0">32</swfversion>
+                <projectorWin id="flash.sdk.projector.win.21.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/21/flashplayer_21_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.21.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/21/flashplayer_21_sa_debug.dmg</projectorMac>
+            </versionV>
+            <versionW id="flash.sdk.version.22.0" version="22.0" displayVersion="22" cacheID="72309-53768d60a0060" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.22.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.22.0">get/flashplayer/updaters/22/</folder>
+                <path id="flash.sdk.path.22.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/22/</path>
+                <file id="flash.sdk.file.22.0">playerglobal22_0.swc</file>
+                <md5 id="flash.sdk.md5.22.0">177e7f8cb98bc874b73296791b747128</md5>
+                <swfversion id="flash.sdk.swfversion.22.0">33</swfversion>
+                <projectorWin id="flash.sdk.projector.win.22.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/22/flashplayer_22_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.22.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/22/flashplayer_22_sa_debug.dmg</projectorMac>
+            </versionW>
+            <versionX id="flash.sdk.version.23.0" version="23.0" displayVersion="23" cacheID="72cc3-540c3092f4265" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.23.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.23.0">get/flashplayer/updaters/23/</folder>
+                <path id="flash.sdk.path.23.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/23/</path>
+                <file id="flash.sdk.file.23.0">playerglobal23_0.swc</file>
+                <md5 id="flash.sdk.md5.23.0">1a7cd9b61930be524e9c98e1a85feebe</md5>
+                <swfversion id="flash.sdk.swfversion.23.0">34</swfversion>
+                <projectorWin id="flash.sdk.projector.win.23.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/23/flashplayer_23_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.23.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/23/flashplayer_23_sa_debug.dmg</projectorMac>
+            </versionX>
+            <versionY id="flash.sdk.version.24.0" version="24.0" displayVersion="24" cacheID="72f16-54876230a0890" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.24.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.24.0">get/flashplayer/updaters/24/</folder>
+                <path id="flash.sdk.path.24.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/24/</path>
+                <file id="flash.sdk.file.24.0">playerglobal24_0.swc</file>
+                <md5 id="flash.sdk.md5.24.0">a300ca07b2a6f944901559994168fb0d</md5>
+                <swfversion id="flash.sdk.swfversion.24.0">35</swfversion>
+                <projectorWin id="flash.sdk.projector.win.24.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/24/flashplayer_24_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.24.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/24/flashplayer_24_sa_debug.dmg</projectorMac>
+            </versionY>
+            <versionZ id="flash.sdk.version.25.0" version="25.0" displayVersion="25" cacheID="73005-54f0f077b4ada" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.25.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.25.0">get/flashplayer/updaters/25/</folder>
+                <path id="flash.sdk.path.25.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/25/</path>
+                <file id="flash.sdk.file.25.0">playerglobal25_0.swc</file>
+                <md5 id="flash.sdk.md5.25.0">b3d74e999f24f8e41d38a59cc82e3c52</md5>
+                <swfversion id="flash.sdk.swfversion.25.0">36</swfversion>
+                <projectorWin id="flash.sdk.projector.win.25.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/25/flashplayer_25_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.25.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/25/flashplayer_25_sa_debug.dmg</projectorMac>
+            </versionZ>
+            <versionAA id="flash.sdk.version.26.0" version="26.0" displayVersion="26" cacheID="72f94-55635e78c675d" cacheID2="718f9-52fde7f04570e">
+                <server id="flash.sdk.server.26.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.26.0">get/flashplayer/updaters/26/</folder>
+                <path id="flash.sdk.path.26.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/26/</path>
+                <file id="flash.sdk.file.26.0">playerglobal26_0.swc</file>
+                <md5 id="flash.sdk.md5.26.0">0279becfdd47bd99b25d48d9303b8fc8</md5>
+                <swfversion id="flash.sdk.swfversion.26.0">37</swfversion>
+                <projectorWin id="flash.sdk.projector.win.26.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/26/flashplayer_26_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.26.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/26/flashplayer_26_sa_debug.dmg</projectorMac>
+            </versionAA>
+            <versionAB id="flash.sdk.version.27.0" version="27.0" displayVersion="27.0" versionID="27.0" cacheID="73419-55de91c8e903f" cacheID2="72fca-54b4e03495e86">
+                <server id="flash.sdk.server.27.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.27.0">get/flashplayer/updaters/27/</folder>
+                <path id="flash.sdk.path.27.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/27/</path>
+                <file id="flash.sdk.file.27.0">playerglobal27_0.swc</file>
+                <md5 id="flash.sdk.md5.27.0">2c644f20cf316c1f8895cbfa4f492674</md5>
+                <swfversion id="flash.sdk.swfversion.27.0">38</swfversion>
+                <projectorWin id="flash.sdk.projector.win.27.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/27/flashplayer_27_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.27.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/27/flashplayer_27_sa_debug.dmg</projectorMac>
+            </versionAB>
+            <versionAC id="flash.sdk.version.28.0" version="28.0" displayVersion="28.0" versionID="28.0" cacheID="734a3-5601cc8e4efcb" cacheID2="72fca-54b4e03495e86">
+                <server id="flash.sdk.server.28.0">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.28.0">get/flashplayer/updaters/28/</folder>
+                <path id="flash.sdk.path.28.0">http://fpdownload.macromedia.com/get/flashplayer/updaters/28/</path>
+                <file id="flash.sdk.file.28.0">playerglobal28_0.swc</file>
+                <md5 id="flash.sdk.md5.28.0">0058da6120df4486fb0035329c47d869</md5>
+                <swfversion id="flash.sdk.swfversion.28.0">39</swfversion>
+                <projectorWin id="flash.sdk.projector.win.28.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/28/flashplayer_28_sa_debug.exe</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.28.0">https://fpdownload.macromedia.com/pub/flashplayer/updaters/28/flashplayer_28_sa_debug.dmg</projectorMac>
+            </versionAC>
+            <!--<versionAC id="flash.sdk.version.28.0b" version="28.0" displayVersion="28.0 Beta" versionID="28.0b" cacheID="7342a-55bd656671c70" cacheID2="72fca-54b4e03495e86">
+                <server id="flash.sdk.server.28.0b">http://fpdownload.macromedia.com</server>
+                <folder id="flash.sdk.folder.28.0b">pub/labs/flashruntimes/flashplayer/</folder>
+                <path id="flash.sdk.path.28.0b">http://labsdownload.adobe.com/pub/labs/flashruntimes/flashplayer/</path>
+                <file id="flash.sdk.file.28.0b">playerglobal28_0.swc</file>
+                <md5 id="flash.sdk.md5.28.0b">7d9dc1c135c66eb38ea45a8208319567</md5>
+                <swfversion id="flash.sdk.swfversion.28.0b">39</swfversion>
+                <projectorWin id="flash.sdk.projector.win.28.0b">
+				https://fpdownload.macromedia.com/pub/labs/flashruntimes/flashplayer/flashplayer_28_sa_debug.exe
+				</projectorWin>
+                <projectorMac id="flash.sdk.projector.mac.28.0b">https://fpdownload.macromedia.com/pub/labs/flashruntimes/flashplayer/flashplayer_28_sa_debug.dmg</projectorMac>
+            </versionAC>-->
+        </versions>
+    </flashsdk>
+    <swfobject path="http://apacheflexbuild.cloudapp.net:8080/job/SWFObjectLegacyPackage/lastSuccessfulBuild/artifact/" file="2_2.zip"/>
+    <!-- these are fake URLs.  The .htaccess file should redirect to SourceForge -->
+    <BlazeDS path="http://flex.apache.org/dependencies/" file="flex-messaging-common.jar"/>
+    <!-- FontSWF -->
+    <!-- these are fake URLs.  The .htaccess file should redirect to SourceForge -->
+    <fontswf>
+        <afe path="http://flex.apache.org/dependencies/" file="afe.jar"/>
+        <aglj40 path="http://flex.apache.org/dependencies/" file="aglj40.jar"/>
+        <flex-fontkit path="http://flex.apache.org/dependencies/" file="flex-fontkit.jar"/>
+        <rideau path="http://flex.apache.org/dependencies/" file="rideau.jar"/>
+    </fontswf>
+    <!-- OSMF1.x is a fake URL.  The .htaccess file should redirect to SourceForge -->
+    <!-- For OSMF, we are including the file name along with the url.  This is to support the weird url format for OSMF2.0 which forces us to do the same -->
+    <!-- OSMF 1.x -->
+    <OSMF_SWC path="http://flex.apache.org/dependencies/osmf1/" file="osmf.swc"/>
+    <!-- OSMF 2.0 -->
+    <OSMF_SWC_2.0 path="osmf.adobe/OSMF%202.0%20Release%20%28final%20source%2C%20ASDocs%2C%20pdf%20guides%20and%20release%20notes%29/" file="OSMF.swc"/>
+    <!-- for some reason this isn't updating.  Testing -->
+    <!--<google-closure-library server="https://github.com" folder="google/closure-library/archive" file="master.zip" md5="5d9ceffc1296a318c8cbba84c283d992" cacheID="753975da0979b0bb3b5c9326d93e2dd499a92e76"/>-->
+</config>
