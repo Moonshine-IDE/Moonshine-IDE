@@ -186,13 +186,19 @@ package actionScripts.ui.editor.text
                 }
             }
 
+			if (!hasSelectedLineAutoCloseAttr && item.isMethod)
+			{
+				text = item.label + "()";
+			}
+
             editor.setCompletionData(startIndex, endIndex, text);
 
-			if (hasSelectedLineAutoCloseAttr && item.kind != "Class" && item.kind != "Value")
+			if ((item.isMethod || hasSelectedLineAutoCloseAttr)
+					&& item.kind != "Class" && item.kind != "Value")
 			{
-				var lineIndexWithAutoCloseAttr:int = model.selectedLineIndex;
-				var cursorIndex:int = startIndex + text.length - 1;
-				model.setSelection(lineIndexWithAutoCloseAttr, cursorIndex, lineIndexWithAutoCloseAttr, cursorIndex);
+                var lineIndex:int = model.selectedLineIndex;
+                var cursorIndex:int = startIndex + text.length - 1;
+				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
 			}
 
 			var command:Command = item.command;
