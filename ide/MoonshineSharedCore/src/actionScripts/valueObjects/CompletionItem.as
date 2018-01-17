@@ -107,6 +107,11 @@ package actionScripts.valueObjects
             _displayLabel = value;
 		}
 
+        public function get isMethod():Boolean
+        {
+            return kind == "Function" && detail.indexOf("(method)") > -1;
+        }
+
         private function get isEvent():Boolean
         {
             if (detail)
@@ -125,11 +130,6 @@ package actionScripts.valueObjects
             }
 
             return false;
-        }
-
-        private function get isMethod():Boolean
-        {
-            return kind == "Function" && detail.indexOf("(method)") > -1;
         }
 
         private function get isVariable():Boolean
