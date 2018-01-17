@@ -240,6 +240,9 @@
 	
 	<!-- Windows signed packaging initiator -->
 	<target name="signedSigningBuild" if="${Is.Signed.Build}">
+		<copy todir="${basedir}/installer" overwrite="true">
+			<fileset dir="${applicationSourceDirectory}/installer"/>
+		</copy>
 		<antcall target="CompileSWFWindowsSignedPackage"></antcall>
 	</target>
 
@@ -260,6 +263,7 @@
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
 			<arg line="elements" />
+			<arg line="installer" />
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
@@ -285,6 +289,7 @@
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
 			<arg line="elements" />
+			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
@@ -306,6 +311,7 @@
 			<!--arg line="-extdir"/>
 			<arg line="../extensions"/-->
 			<arg line="elements" />
+			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 		</java>
 	</target>
@@ -786,6 +792,7 @@
 			<then>
 				<delete dir="${debug_dir}" />
 				<delete dir="elements" />
+				<delete dir="installer" />
 			</then>
 		</if>
 	</target>
