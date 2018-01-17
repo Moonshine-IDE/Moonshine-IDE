@@ -32,7 +32,7 @@ package actionScripts.plugin.syntax
 	public class AS3SyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
 	{
 		private var formats:Object = {};
-		
+
 		override public function get name():String 			{return "AS3 Syntax Plugin";}
 		override public function get author():String 		{return "Moonshine Project Team";}
 		override public function get description():String 	{return "Provides highlighting for AS3.";}
@@ -66,6 +66,7 @@ package actionScripts.plugin.syntax
 			formats['breakPointBackground'] =					0xdea5dd;
 			formats['tracingLineColor']=						0xc6dbae;
 			formats[AS3LineParser.AS_METADATA] =                new ElementFormat(fontDescription, fontSize, 0x808000);
+			formats[AS3LineParser.AS_FIELD] =                   new ElementFormat(fontDescription, fontSize, 0x660E7A);
 
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}
