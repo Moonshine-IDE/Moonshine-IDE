@@ -38,10 +38,7 @@
 		import actionScripts.ui.tabview.CloseTabEvent;
 		import actionScripts.utils.NoSDKNotifier;
 		import actionScripts.utils.SDKUtils;
-		import actionScripts.valueObjects.ConstantsCoreVO;
 		import actionScripts.valueObjects.ProjectReferenceVO;
-
-		import org.as3commons.asblocks.utils.FileUtil;
 
 		public var selectedSDKDir:File;
 		public var requestedSDKDownloadVersion:String;
@@ -74,29 +71,10 @@
 		{
 			var sdksFolder:File;
 
-			// platformwise default folder path selection
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				sdksFolder = File.userDirectory;
-
-				var tmpPathSplit:Array = sdksFolder.nativePath.split(FileUtil.separator);
-				tmpPathSplit.shift();
-
-				sdksFolder = new File(FileUtil.separator + tmpPathSplit[0] + FileUtil.separator + tmpPathSplit[1] + FileUtil.separator + "Downloads");
-				if (!sdksFolder.exists) sdksFolder = File.documentsDirectory;
-			}
-			else
-			{
-				sdksFolder = File.documentsDirectory;
-			}
-
 			installerView = new InstallApacheFlex();
-			installerView.defaultInstallPathToSDK = sdksFolder;
-			installerView.requestedSDKDownloadVersion = requestedSDKDownloadVersion;
-			installerView.fileSeparator = FileUtil.separator;
 			installerView.addEventListener("INSTALL_FINISH", onSDKSelected, false, 0, true);
 			installerView.addEventListener("INSTALL_CANCEL", onSDKInstallCancelled, false, 0, true);
-			installerView.addEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse, false, 0, true);
+			//installerView.addEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse, false, 0, true);
 			addElement(installerView);
 
 			addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
@@ -106,7 +84,7 @@
 		{
 			installerView.removeEventListener("INSTALL_FINISH", onSDKSelected);
 			installerView.removeEventListener("INSTALL_CANCEL", onSDKInstallCancelled);
-			installerView.removeEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse);
+			//installerView.removeEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse);
 		}
 
 		/**
@@ -114,7 +92,7 @@
 		 */
 		private function onSDKSelected(event:Event):void
 		{
-			selectedSDKDir = InstallApacheFlex(event.target).flexHomeDir;
+			selectedSDKDir = InstallApacheFlex(event.target).getFlexPath();
 			removeListeners();
 			doSave(null);
 		}
@@ -134,11 +112,11 @@
 		/**
 		 * On SDK directory browse request
 		 */
-		private function onSDKDirBrowse(event:Event):void
+		/*private function onSDKDirBrowse(event:Event):void
 		{
 			var defaultFile:FileLocation = new FileLocation(installerView.defaultInstallPathToSDK.nativePath);
 			defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
-		}
+		}*/
 
 		private function onSDKPathSelected(fileDir:Object):void
 		{
