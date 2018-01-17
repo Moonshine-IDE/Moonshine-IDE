@@ -118,10 +118,10 @@
 			defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
 		}*/
 
-		private function onSDKPathSelected(fileDir:Object):void
+		/*private function onSDKPathSelected(fileDir:Object):void
 		{
 			installerView.flexSDKDirSelected(fileDir);
-		}
+		}*/
 
 		private function doSave(event:Event):void
 		{
