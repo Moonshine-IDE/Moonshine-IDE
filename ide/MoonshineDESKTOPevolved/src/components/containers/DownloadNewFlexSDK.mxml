@@ -24,7 +24,7 @@
 		 xmlns:mx="library://ns.adobe.com/flex/mx" 
 		 implements="actionScripts.ui.IContentWindow"
 		 label="Download a New SDK"
-		 width="100%" backgroundColor="0xf5f5f5"
+		 width="100%" backgroundColor="0xdbdbdb"
 		 height="100%" creationComplete="initThis()">
 	<fx:Script>
 		<![CDATA[
@@ -72,9 +72,11 @@
 			var sdksFolder:File;
 
 			installerView = new InstallApacheFlex();
+			installerView.width = 800;
+			installerView.height = 700;
+			installerView.horizontalCenter = installerView.verticalCenter = 0;
 			installerView.addEventListener("INSTALL_FINISH", onSDKSelected, false, 0, true);
 			installerView.addEventListener("INSTALL_CANCEL", onSDKInstallCancelled, false, 0, true);
-			//installerView.addEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse, false, 0, true);
 			addElement(installerView);
 
 			addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
@@ -84,7 +86,6 @@
 		{
 			installerView.removeEventListener("INSTALL_FINISH", onSDKSelected);
 			installerView.removeEventListener("INSTALL_CANCEL", onSDKInstallCancelled);
-			//installerView.removeEventListener("BROWSE_FOR_SDK_DIR", onSDKDirBrowse);
 		}
 
 		/**
@@ -104,24 +105,12 @@
 		{
 			removeListeners();
 			IDEModel.getInstance().noSDKNotifier.dispatchEvent(new Event(NoSDKNotifier.SDK_SAVE_CANCELLED));
+			removeElement(installerView);
+			installerView = null;
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 					new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, this)
 			);
 		}
-
-		/**
-		 * On SDK directory browse request
-		 */
-		/*private function onSDKDirBrowse(event:Event):void
-		{
-			var defaultFile:FileLocation = new FileLocation(installerView.defaultInstallPathToSDK.nativePath);
-			defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
-		}*/
-
-		/*private function onSDKPathSelected(fileDir:Object):void
-		{
-			installerView.flexSDKDirSelected(fileDir);
-		}*/
 
 		private function doSave(event:Event):void
 		{
