@@ -67,6 +67,7 @@ package actionScripts.plugin.syntax
 			formats['tracingLineColor']=						0xc6dbae;
 			formats[AS3LineParser.AS_METADATA] =                new ElementFormat(fontDescription, fontSize, 0x808000);
 			formats[AS3LineParser.AS_FIELD] =                   new ElementFormat(fontDescription, fontSize, 0x660E7A);
+			formats[AS3LineParser.AS_FUNCTIONS] = 				new ElementFormat(fontDescription, fontSize, 0x7A7A43);
 
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}

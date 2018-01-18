@@ -106,6 +106,7 @@ package actionScripts.plugin.syntax
 				formats[mask | AS3LineParser.AS_PACKAGE_CLASS_KEYWORDS] = 	new ElementFormat(fontDescription, fontSize, 0xa848da);
 				formats[mask | AS3LineParser.AS_METADATA] =                 new ElementFormat(fontDescription, fontSize, 0x808000);
 				formats[mask | AS3LineParser.AS_FIELD] = 				    new ElementFormat(fontDescription, fontSize, 0x660E7A);
+				formats[mask | AS3LineParser.AS_FUNCTIONS] = 				new ElementFormat(fontDescription, fontSize, 0x7A7A43);
 			}
 			
 			formats[STYLE_MASK | CSSContextSwitchLineParser.CSS_TEXT] =					new ElementFormat(fontDescription, fontSize, 0x011282);
