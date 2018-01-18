@@ -90,6 +90,10 @@ package actionScripts.ui.editor.text
                     line.diagnostics.push(diagnostic);
                     if (startLine !== endLine)
                     {
+						if (lines.length == endLine)
+						{
+							endLine = lines.length - 1;
+						}
                         //the diagnostic is on two lines!
                         line = lines[endLine];
                         line.diagnostics.push(diagnostic);
