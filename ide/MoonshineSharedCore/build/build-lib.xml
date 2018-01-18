@@ -238,11 +238,14 @@
 	//==========================================================================
 	-->
 	
-	<!-- Windows signed packaging initiator -->
-	<target name="signedSigningBuild" if="${Is.Signed.Build}">
+	<target name="copyInstallerFolder">
 		<copy todir="${basedir}/installer" overwrite="true">
 			<fileset dir="${applicationSourceDirectory}/installer"/>
 		</copy>
+	</target>
+	
+	<!-- Windows signed packaging initiator -->
+	<target name="signedSigningBuild" depends="copyInstallerFolder" if="${Is.Signed.Build}">
 		<antcall target="CompileSWFWindowsSignedPackage"></antcall>
 	</target>
 
@@ -271,7 +274,7 @@
 	 </target>
 	
 	<!-- Windows self-signed packaging initiator -->
-	<target name="normalSigningBuild" unless="${Is.Signed.Build}">
+	<target name="normalSigningBuild" depends="copyInstallerFolder" unless="${Is.Signed.Build}">
 		<antcall target="CompileSWFWindowsSelfSignedPackage"></antcall>
 	</target>
 
