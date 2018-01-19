@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import actionScripts.utils.SharedObjectConst;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
@@ -51,9 +49,11 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+    import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.TemplateVO;
@@ -79,6 +79,7 @@ package actionScripts.plugins.as3project
 		private var isVisualEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
+		private var isInvalidToSave:Boolean;
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
@@ -122,16 +123,17 @@ package actionScripts.plugins.as3project
 				project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
 				
 				newProjectSourcePathSetting.project = project;
-				newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+				newProjectPathSetting.label = "Existing Project Directory";
 			}
 			else
 			{
-				newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+				newProjectPathSetting.label = "Parent Directory";
 			}
 			
 			newProjectSourcePathSetting.visible = _isProjectFromExistingSource;
-			/*newProjectNameSetting.isEditable = newProjectPathSetting.isEditable = !_isProjectFromExistingSource;
-			if (newProjectTypeSetting) newProjectTypeSetting.isEditable = !_isProjectFromExistingSource;*/
+			
+			if (isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation);
+			else checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
 		}
 		
 		public function set projectTemplateType(value:String):void
@@ -240,11 +242,7 @@ package actionScripts.plugins.as3project
 
 			if (newProjectSourcePathSetting)
             {
-                if (isOpenProjectCall)
-                {
-                    isProjectFromExistingSource = project.isProjectFromExistingSource;
-                }
-
+                if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
                 newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
             }
 			
@@ -333,7 +331,9 @@ package actionScripts.plugins.as3project
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', 'a-zA-Z0-9._');
-            newProjectPathSetting = new PathSetting(project, 'folderPath', 'Project directory', true, null, false, true);
+            newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+			newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
 			if (eventObject.isExport)
 			{
@@ -375,6 +375,17 @@ package actionScripts.plugins.as3project
 				newProjectSourcePathSetting
 			]));
 		}
+		
+		private function checkIfProjectDirectory(value:FileLocation):void
+		{
+			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
+			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
+			
+			if (tmpFile) newProjectPathSetting.setCriticalMessage("(Project can not be created in an existing project directory)\n"+ value.fileBridge.nativePath);
+			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			
+			isInvalidToSave = tmpFile ? true : false;
+		}
 
 		//--------------------------------------------------------------------------
 		//
@@ -387,6 +398,14 @@ package actionScripts.plugins.as3project
 			project.projectFolder = null;
 			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
 			newProjectSourcePathSetting.project = project;
+			
+			if (isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation);
+			else checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+		}
+		
+		private function onProjectNameChanged(event:Event):void
+		{
+			if (!isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
 		}
 		
 		private function createClose(event:Event):void
@@ -395,7 +414,11 @@ package actionScripts.plugins.as3project
 			
 			settings.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
 			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
-			if (newProjectPathSetting) newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+			if (newProjectPathSetting) 
+			{
+				newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
+			}
 			
 			delete templateLookup[settings.associatedData];
 			
@@ -406,6 +429,8 @@ package actionScripts.plugins.as3project
 		
 		private function createSave(event:Event):void
 		{
+			if (isInvalidToSave) return;
+			
 			var view:SettingsView = event.target as SettingsView;
 			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
 			var targetFolder:FileLocation = project.folderLocation;
@@ -465,6 +490,9 @@ package actionScripts.plugins.as3project
 			{
                 GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
+			
+			// close the Settings tab
+			event.target.dispatchEvent(new Event(SettingsView.EVENT_CLOSE));
 		}
 
 		private function exportVisualEditorProject(project:AS3ProjectVO, exportProject:AS3ProjectVO):void

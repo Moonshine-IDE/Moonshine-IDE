@@ -152,11 +152,7 @@
 					}
 					else
 					{
-						// named folder existence check
-						projectFile = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name);
-						if (projectFile.fileBridge.exists) Alert.show("This directory already exists. Please select a different path or project name.", "Error!");
-						else if (project.isProjectFromExistingSource && !project.projectWithExistingSourcePaths) Alert.show("You'll need to select main source folder and main source file.", "Error!");
-						else goSave();
+						goSave();
 					}
 				}
 				
@@ -166,8 +162,6 @@
 				function goSave():void
 				{
 					dispatchEvent(new Event(EVENT_SAVE));
-					isSaved = true;
-					close(true);
 				}
 			}
 			

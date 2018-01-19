@@ -24,6 +24,8 @@ package actionScripts.plugin.settings.vo
 	
 	public class StringSetting extends AbstractSetting
 	{
+		public static const VALUE_UPDATED:String = "VALUE_UPDATED";
+		
 		private var restrict:String;
 		private var rdr:StringRenderer;
 

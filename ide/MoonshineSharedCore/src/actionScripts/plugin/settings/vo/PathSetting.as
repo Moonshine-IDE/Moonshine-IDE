@@ -48,6 +48,16 @@ package actionScripts.plugin.settings.vo
 			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
 		
+		public function setCriticalMessage(value:String):void
+		{
+			if (rdr) rdr.criticalMessage = value;
+		}
+		
+		public function setMessage(value:String):void
+		{
+			if (rdr) rdr.message = value;
+		}
+		
 		override public function get renderer():IVisualElement
 		{
 			rdr = new PathRenderer();

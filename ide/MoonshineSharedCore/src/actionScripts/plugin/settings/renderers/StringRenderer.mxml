@@ -30,8 +30,10 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.utils.StringUtil;
-			import actionScripts.plugin.settings.vo.StringSetting;
+			
 			import spark.components.TextSelectionHighlighting;
+			
+			import actionScripts.plugin.settings.vo.StringSetting;
 
 			[Bindable]
 			public var setting:StringSetting;
@@ -93,7 +95,7 @@
 			contentBackgroundAlpha="1"
 			unfocusedTextSelectionColor="#a8c6ee"
 			focusAlpha="0"
-			change="{setting.stringValue = text.text}"
+			change="{setting.stringValue = text.text}; setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));"
 			focusOut="updatePrompt()" 
 			/>
 		
