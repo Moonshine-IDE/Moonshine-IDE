@@ -380,6 +380,7 @@ package actionScripts.plugins.as3project
 		{
 			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
+			if (!tmpFile && value.fileBridge.exists) tmpFile = value; 
 			
 			if (tmpFile) newProjectPathSetting.setCriticalMessage("(Project can not be created in an existing project directory)\n"+ value.fileBridge.nativePath);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
