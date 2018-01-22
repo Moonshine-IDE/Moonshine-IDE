@@ -39,7 +39,7 @@
 		import mx.events.ListEvent;
 		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
-
+		
 		import actionScripts.events.AddFolderEvent;
 		import actionScripts.events.DeleteFileEvent;
 		import actionScripts.events.GlobalEventDispatcher;
@@ -64,7 +64,7 @@
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.URLDescriptorVO;
-
+		
 		import components.popup.NewFolderPopup;
 		import components.popup.RenamePopup;
 
@@ -129,7 +129,7 @@
 		{
 			if (!fileWrapper.file.fileBridge.isDirectory)
 			{
-				refresh(fileWrapper.file.fileBridge.parent);
+				refresh(fileWrapper.file.fileBridge.parent, fileWrapper.isDeleting);
 			}
 			else
 			{
@@ -142,7 +142,7 @@
 			}
 		}
 
-		public function refresh(dir:FileLocation):void
+		public function refresh(dir:FileLocation, markAsDeletion:Boolean=false):void
 		{
 			for each (var fw:FileWrapper in projectFolders)
 			{
@@ -150,7 +150,17 @@
 				{
 					if ((dir.fileBridge.nativePath + dir.fileBridge.separator).indexOf(fw.nativePath + dir.fileBridge.separator) != -1)
 					{
-						refreshItem(UtilsCore.findFileWrapperAgainstFileLocation(fw, dir));
+						var tmpFW:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
+						if (tmpFW)
+						{
+							if (tree.selectedItem)
+							{
+								var lastSelectedItem:FileWrapper = tree.selectedItem as FileWrapper;
+								if (tmpFW.nativePath == lastSelectedItem.nativePath || lastSelectedItem.nativePath.indexOf(tmpFW.nativePath + tmpFW.file.fileBridge.separator) != -1)
+									tree.selectedItem.isDeleting = markAsDeletion;
+							}
+							refreshItem(tmpFW);
+						}
 						return;
 					}
 				}

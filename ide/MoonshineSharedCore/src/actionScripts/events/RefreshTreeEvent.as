@@ -27,12 +27,14 @@ package actionScripts.events
 		public static const EVENT_REFRESH:String = "refreshEvent";
 		
 		public var dir:FileLocation;
+		public var shallMarkedForDelete:Boolean;
 		
-		public function RefreshTreeEvent(directoryOrFile:FileLocation)
+		public function RefreshTreeEvent(directoryOrFile:FileLocation, shallMarkedForDelete:Boolean=false)
 		{
 			//if (!directoryOrFile.isDirectory) directoryOrFile = directoryOrFile.parent;
 			
 			this.dir = directoryOrFile;
+			this.shallMarkedForDelete = shallMarkedForDelete;
 			super(EVENT_REFRESH, false, false);
 		}
 		

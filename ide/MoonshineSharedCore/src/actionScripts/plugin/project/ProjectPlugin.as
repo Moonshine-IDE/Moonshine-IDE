@@ -296,7 +296,7 @@ package actionScripts.plugin.project
 
 		private function handleTreeRefresh(event:RefreshTreeEvent):void
 		{
-			treeView.refresh(event.dir);
+			treeView.refresh(event.dir, event.shallMarkedForDelete);
 		}
 
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void

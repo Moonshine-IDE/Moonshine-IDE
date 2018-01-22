@@ -157,7 +157,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                         }
 					}
 
-					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath));
+					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath, true));
 				}
 				
 				if (as3Provo.isFlexJS || as3Provo.isRoyale)
@@ -185,7 +185,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                                     folderCount--;
                                     if (folderCount == 0)
                                     {
-                                        dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder));
+                                        dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
                                         dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
                                     }
                                 }
@@ -205,7 +205,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 							if (folderCount == 0)
 							{
-                                dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder));
+                                dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
                                 dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
 							}
 
