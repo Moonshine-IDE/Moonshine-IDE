@@ -20,105 +20,55 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark"
-				   backgroundColor="0xf5f5f5"
-				   width="350" height="450" minWidth="300" minHeight="200" autoLayout="true" title="Select Pattern"
-				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin"
-				   creationComplete="onInitialized(event)">
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:other="components.views.other.*"
+										   backgroundColor="0xf5f5f5"
+										   width="350" height="450" minWidth="300" minHeight="200" autoLayout="true"
+										   title="Select Pattern"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
-			
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			
-			public var isClosedAsSubmit:Boolean;
-			
-			[Bindable] public var pattens:ArrayCollection;
-			
-			protected function onInitialized(event:FlexEvent):void
-			{
-				if (!pattens)
-				{
-					pattens = new ArrayCollection();
-					for each (var i:String in ConstantsCoreVO.READABLE_FILES)
-					{
-						pattens.addItem({label:i, isSelected: false});
-					}
-				}
-			}
-			
-			protected function selectAll(value:Boolean):void
-			{
-				for each (var i:Object in pattens)
-				{
-					i.isSelected = value;
-				}
-				
-				pattens.refresh();
-			}
-			
-			private function onSubmit():void
-			{
-				isClosedAsSubmit = true;
-				closeThis();
-			}
+		import mx.collections.ArrayCollection;
 
-			private function listExtensionsLabelFunction(item:Object):String
-			{
-				if (!item) return "";
+		public var isClosedAsSubmit:Boolean;
 
-				return "*." + item.label;
-			}
+		[Bindable]
+		public var patterns:ArrayCollection;
+
+		private function onOkClick(event:MouseEvent):void
+		{
+			isClosedAsSubmit = true;
+			closeThis();
+		}
+
+		private function onSelectAllClick(event:MouseEvent):void
+		{
+		    filesExtensionFilterView.selectAll();
+		}
+
+		private function onDeselectAllCkick(event:MouseEvent):void
+		{
+			filesExtensionFilterView.deselectAll();
+		}
 		]]>
 	</fx:Script>
-	<fx:Declarations>
-		<s:RadioButtonGroup id="rbgScope"/>
-	</fx:Declarations>
-	
-	<s:VGroup height="100%" width="100%" 
-			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
-		<s:Label text="Reduce selection to only files of type(s):"/>
-		<s:List id="lstExtensions" 
-				width="100%" height="100%" dataProvider="{pattens}"
-				styleName="multiLineList" labelFunction="{listExtensionsLabelFunction}">
-			<s:itemRenderer>
-				<fx:Component>
-					<s:ItemRenderer width="100%" height="22">
-						<fx:Script>
-							<![CDATA[
-								override public function set data(value:Object):void
-								{
-									if (value) super.data = value;
-								}
-							]]>
-						</fx:Script>
-						
-						<s:layout>
-							<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="10"/>
-						</s:layout>
-						
-						<s:CheckBox id="cbSelect"
-									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
-						<s:Label id="labelDisplay"/>
-					</s:ItemRenderer>
-				</fx:Component>
-			</s:itemRenderer>
-		</s:List>
-	</s:VGroup>
-	
+
+	<other:FilesExtensionFilterView id="filesExtensionFilterView"
+									percentWidth="100" percentHeight="100"
+									patterns="{patterns}"/>
+
 	<resizableTitleWindow:controlBarContent>
 		<s:Button label="Select All"
 				  styleName="darkButton"
-				  click="selectAll(true)"/>
+				  click="onSelectAllClick(event)"/>
 		<s:Button label="Deselect All"
 				  styleName="darkButton"
-				  click="selectAll(false)"/>
+				  click="onDeselectAllCkick(event)"/>
 		<s:Spacer width="100%"/>
 		<s:Button label="OK"
 				  styleName="darkButton"
-				  click="onSubmit()"/>
+				  click="onOkClick(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

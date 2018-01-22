@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+          creationComplete="onFileExtensionFilterViewCreationComplete(event)">
+    <s:Label text="Reduce selection to only files of type(s):"/>
+    <s:List id="lstExtensions"
+            width="100%" height="100%" dataProvider="{patterns}"
+            styleName="multiLineList" labelFunction="{listExtensionsLabelFunction}">
+        <s:itemRenderer>
+            <fx:Component>
+                <s:ItemRenderer width="100%" height="22">
+                    <s:layout>
+                        <s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="10"/>
+                    </s:layout>
+
+                    <s:CheckBox id="cbSelect"
+                                change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+                    <s:Label id="labelDisplay"/>
+                </s:ItemRenderer>
+            </fx:Component>
+        </s:itemRenderer>
+    </s:List>
+    <fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayCollection;
+        import mx.events.FlexEvent;
+
+        import actionScripts.valueObjects.ConstantsCoreVO;
+
+        public var isClosedAsSubmit:Boolean;
+
+        [Bindable]
+        public var patterns:ArrayCollection;
+
+        public function selectAll():void
+        {
+            internalSelect(true);
+        }
+
+        public function deselectAll():void
+        {
+            internalSelect(false);
+        }
+
+        private function listExtensionsLabelFunction(item:Object):String
+        {
+            if (!item) return "";
+
+            return "*." + item.label;
+        }
+
+        private function onFileExtensionFilterViewCreationComplete(event:FlexEvent):void
+        {
+            if (!patterns)
+            {
+                patterns = new ArrayCollection();
+                for each (var i:String in ConstantsCoreVO.READABLE_FILES)
+                {
+                    patterns.addItem({label: i, isSelected: false});
+                }
+            }
+        }
+
+        private function internalSelect(selectionValue:Boolean):void
+        {
+            for each (var i:Object in patterns)
+            {
+                i.isSelected = selectionValue;
+            }
+            patterns.refresh();
+        }
+        ]]>
+	</fx:Script>
+</s:VGroup>
