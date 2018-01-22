@@ -160,7 +160,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath));
 				}
 				
-				if (as3Provo.isFlexJS)
+				if (as3Provo.isFlexJS || as3Provo.isRoyale)
 				{
 					var binFolder:FileLocation = as3Provo.folderLocation.fileBridge.resolvePath("bin");
 					if (binFolder.fileBridge.exists)
