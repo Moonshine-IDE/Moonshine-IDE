@@ -20,19 +20,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx" 
-			   xmlns:view="actionScripts.plugin.findreplace.view.*"
-			   width="500" autoLayout="true" minWidth="500"
-			   backgroundColor="0xf5f5f5"
-			   title="Find/Replace" skinClass="components.skins.ResizableTitleWindowSkin"
-			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+			                               xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   width="500" autoLayout="true" minWidth="500"
+										   backgroundColor="0xf5f5f5" defaultButton="{findButton}"
+										   title="Find/Replace" skinClass="components.skins.ResizableTitleWindowSkin"
+                                           creationComplete="onSearchViewCreationComplete(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
-			
 			import actionScripts.plugin.findreplace.FindReplacePlugin;
-			
+
+			import elements.skins.DarkButtonSkin;
+
+			import mx.events.FlexEvent;
+
 			[Bindable] public var initialSearchString:String = "";
 			
 			private function find():void
@@ -56,6 +58,11 @@
 			{
 				findInput.setFocus();
 				findInput.selectRange(findInput.text.length, findInput.text.length);
+			}
+
+			private function onSearchViewCreationComplete(event:FlexEvent):void
+			{
+				findButton.setStyle("skinClass", DarkButtonSkin);
 			}
 			
 		]]>
@@ -105,17 +112,16 @@
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button
-			label="Find"
-			styleName="darkButton"
-			click="find()" />
+				label="Replace/Find"
+				styleName="darkButton"
+				click="replaceOne(true)" />
+		<s:Button
+				label="Replace All"
+				styleName="darkButton"
+				click="replaceAll()" />
 		<s:Spacer width="100%"/>
-		<s:Button
-			label="Replace/Find"
-			styleName="darkButton"
-			click="replaceOne(true)" />
-		<s:Button
-			label="Replace All" 
-			styleName="darkButton"
-			click="replaceAll()" />
+		<s:Button id="findButton"
+				  label="Find" fontFamily="DejaVuSans" fontSize="12"
+				  click="find()" />
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

@@ -5,17 +5,16 @@
 	xmlns:resizabletitlewindow="actionScripts.ui.resizableTitleWindow.*"
 	skinClass="components.skins.ResizableTitleWindowSkin"
 	title="Rename symbol"
-	width="600" height="150" minWidth="300" minHeight="150">
-
-	<fx:Declarations>
-		<s:ArrayCollection id="references"/>
-	</fx:Declarations>
+	width="600" height="150" minWidth="300" minHeight="150" creationComplete="onRenameViewCreationComplete(event)">
 
 	<fx:Script>
 		<![CDATA[
+		import elements.skins.DarkButtonSkin;
+
 		import mx.controls.Alert;
 		import mx.events.CloseEvent;
-		
+		import mx.events.FlexEvent;
+
 		public var newName:String;
 		
 		private var _oldNameChanged:Boolean = false;
@@ -87,6 +86,11 @@
 		{
 			this.saveName();
 		}
+
+		private function onRenameViewCreationComplete(event:FlexEvent):void
+		{
+			cancelButton.setStyle("skinClass", DarkButtonSkin);
+		}
 		
 		]]>
 	</fx:Script>
@@ -103,8 +107,8 @@
 		<s:Button label="Rename"
 				styleName="darkButton"
 				click="renameButton_onClick(event)"/>
-			<s:Button label="Cancel"
-				styleName="darkButton"
+			<s:Button id="cancelButton" label="Cancel"
+				fontFamily="DejaVuSans" fontSize="12"
 				click="cancelButton_onClick(event)"/>
 	</resizabletitlewindow:controlBarContent>
 </resizabletitlewindow:ResizableTitleWindow>
