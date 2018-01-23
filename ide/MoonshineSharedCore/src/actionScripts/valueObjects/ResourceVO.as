@@ -23,15 +23,17 @@ package actionScripts.valueObjects
 
 	public class ResourceVO
 	{
-		public var name: String;
-		public var sourceWrapper: FileWrapper;
+		public var name:String;
+		public var sourceWrapper:FileWrapper;
 		
-		private var _resourcePath: String;
+		private var _resourcePath:String;
+		private var _resourceExtension:String;
 
 		public function ResourceVO(_name:String, _sourceWrapper:FileWrapper)
 		{
 			name = _name;
 			resourcePath = _sourceWrapper.file.fileBridge.nativePath;
+			_resourceExtension = _sourceWrapper.file.fileBridge.extension;
 			sourceWrapper = _sourceWrapper;
 		}
 		
@@ -53,6 +55,11 @@ package actionScripts.valueObjects
 		public function get resourcePath():String
 		{
 			return _resourcePath;
+		}
+
+		public function get resourceExtension():String
+		{
+			return _resourceExtension;
 		}
 	}
 }

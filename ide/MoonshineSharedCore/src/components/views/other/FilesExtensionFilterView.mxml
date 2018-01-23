@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
-          xmlns:s="library://ns.adobe.com/flex/spark"
-          gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
-          creationComplete="onFileExtensionFilterViewCreationComplete(event)">
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark" borderVisible="false"
+          creationComplete="onFileExtensionFilterViewCreationComplete(event)" backgroundColor="0xa0a0a0">
+    <s:layout>
+        <s:VerticalLayout gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"/>
+    </s:layout>
     <s:Label text="Reduce selection to only files of type(s):"/>
     <s:List id="lstExtensions"
             width="100%" height="100%" dataProvider="{patterns}"
@@ -14,13 +16,22 @@
                         <s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="10"/>
                     </s:layout>
 
-                    <s:CheckBox id="cbSelect"
-                                change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+                    <s:CheckBox id="cbSelect" selected="{data.isSelected}" change="onComboBoxChange(event)"/>
                     <s:Label id="labelDisplay"/>
+                    <fx:Script><![CDATA[
+                        private function onComboBoxChange(event:Event):void
+                        {
+                            data.isSelected = cbSelect.selected;
+                            outerDocument.notifyFilterChanged();
+                        }
+                        ]]></fx:Script>
                 </s:ItemRenderer>
             </fx:Component>
         </s:itemRenderer>
     </s:List>
+    <fx:Metadata>
+        [Event(name="filterChanged", type="flash.events.Event")]
+    </fx:Metadata>
     <fx:Script>
 		<![CDATA[
         import mx.collections.ArrayCollection;
@@ -43,6 +54,20 @@
             internalSelect(false);
         }
 
+        public function getSelectedExtensions():Array
+        {
+            var selectedExtensions:Array = [];
+            for each (var extension:Object in patterns)
+            {
+                if (extension.isSelected)
+                {
+                    selectedExtensions.push(extension.label);
+                }
+            }
+
+            return selectedExtensions;
+        }
+
         private function listExtensionsLabelFunction(item:Object):String
         {
             if (!item) return "";
@@ -55,11 +80,16 @@
             if (!patterns)
             {
                 patterns = new ArrayCollection();
-                for each (var i:String in ConstantsCoreVO.READABLE_FILES)
+                for each (var extension:String in ConstantsCoreVO.READABLE_FILES)
                 {
-                    patterns.addItem({label: i, isSelected: false});
+                    patterns.addItem({label: extension, isSelected: false});
                 }
             }
+        }
+
+        public function notifyFilterChanged():void
+        {
+            dispatchEvent(new Event("filterChanged"));
         }
 
         private function internalSelect(selectionValue:Boolean):void
@@ -69,7 +99,8 @@
                 i.isSelected = selectionValue;
             }
             patterns.refresh();
+            dispatchEvent(new Event("filterChanged"));
         }
         ]]>
 	</fx:Script>
-</s:VGroup>
+</s:BorderContainer>

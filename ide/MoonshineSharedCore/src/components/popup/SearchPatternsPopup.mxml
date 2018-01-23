@@ -24,7 +24,7 @@
 										   xmlns:s="library://ns.adobe.com/flex/spark"
 										   xmlns:other="components.views.other.*"
 										   backgroundColor="0xf5f5f5"
-										   width="350" height="450" minWidth="300" minHeight="200" autoLayout="true"
+										   width="350" maxHeight="450" minWidth="300" minHeight="200" autoLayout="true"
 										   title="Select Pattern"
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   skinClass="components.skins.ResizableTitleWindowSkin">
