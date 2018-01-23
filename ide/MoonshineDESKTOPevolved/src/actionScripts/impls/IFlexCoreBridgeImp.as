@@ -272,7 +272,7 @@ package actionScripts.impls
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
-					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW),
+					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW, "f7",[Keyboard.COMMAND], "f7", [Keyboard.ALTERNATE])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
