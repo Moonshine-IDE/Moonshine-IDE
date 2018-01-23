@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-	import flash.events.KeyboardEvent;
+    import flash.events.FocusEvent;
+    import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
 	
 	import mx.utils.StringUtil;
@@ -42,8 +43,9 @@ package actionScripts.plugin.console.view
 			
 			this.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
+			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 		}
-		
+
 		private function handleChange(event:ChangeEvent):void
 		{
 			var change:TextChangeBase = event.change;
@@ -102,8 +104,13 @@ package actionScripts.plugin.console.view
 				}
 			}
 		}
-		
-		private function applyHistory():void
+
+        private function handleFocusOut(event:FocusEvent):void
+        {
+            hasFocus = false;
+        }
+
+        private function applyHistory():void
 		{
 			if (history.length == 0) return;
 			dataProvider = history[historyIndex];

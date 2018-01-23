@@ -27,7 +27,7 @@
 	backgroundColor="0x373737"
 	backgroundAlpha="1"
 	clipContent="false" updateComplete="consoleView_updateCompleteHandler(event)"
-	creationComplete="init()" xmlns:view="actionScripts.plugin.console.view.*">
+	creationComplete="init()" xmlns:view="actionScripts.plugin.console.view.*" >
 	<mx:Script>
 		<![CDATA[
 			import flash.text.engine.ElementFormat;
@@ -144,13 +144,7 @@
 					cursorID = CursorManager.NO_CURSOR;
 				}	
 			}
-			
-			private function mouseDownDivider():void
-			{
-				//parent.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveDivider);
-				//stage.addEventListener(MouseEvent.MOUSE_UP, mouseUpDivider);
-			}
-			
+
 			private function mouseUpDivider(event:Event=null):void
 			{
 				parent.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveDivider);
@@ -229,7 +223,6 @@
 				if(!_consolePopOver)
 				    historyContainerHeight =  this.height ;
 			}
-			
 		]]>
 	</mx:Script>
 	
@@ -237,19 +230,6 @@
 			 width="100%"
 			 backgroundAlpha="0.9"
 			 backgroundColor="0x373737">
-		
-		<!--<view:ConsoleHistoryTextArea id="history"
-			width="100%"
-			
-			height="80%"
-			showLineNumbers="false"
-			showScrollBars="true"
-			backgroundAlpha="0.9"
-			backgroundColor="0x373737"
-			selectedLineColorAlpha="0"
-			dataProvider=""
-			/>-->
-		
 		<view:ConsoleViewTextArea id="history" width="100%" editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto" 
 									 height="80%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
 		<mx:Canvas width="100%" height="20%" >
@@ -294,20 +274,8 @@
 										backgroundAlpha="0"
 										showLineNumbers="false"
 										showScrollBars="false"
-										dataProvider=""
-										/>	
+										dataProvider=""/>
 			</mx:HBox>
 		</mx:Canvas>
-   </mx:VBox>		
-	<!--<mx:Canvas id="divider"
-		y="-1"
-		width="100%"
-		height="2"
-		mouseOver="mouseOverDivider()"
-		mouseOut="mouseOutDivider()"
-		mouseDown="mouseDownDivider()"
-		mouseUp="mouseUpDivider()"
-		borderSkin="{HDividerSkin}"
-		/>-->
-  <!--</s:BorderContainer>-->
+   </mx:VBox>
 </mx:Canvas>

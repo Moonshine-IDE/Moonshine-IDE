@@ -75,8 +75,10 @@ package actionScripts.plugin.console.view
 					tf = TextConverter.importToFlow(String(lines[i]) + "\n", TextConverter.TEXT_FIELD_HTML_FORMAT);
 					pe = tf.mxmlChildren[0];
 					for each (fe in pe.mxmlChildren)
-					p.addChild(fe);
-					
+                    {
+                        p.addChild(fe);
+                    }
+
 					this.textFlow.addChild(p);
 					//model.lines.push( new TextLineModel(lines[i]) );
 					//this.appendText(lines[i] + "\n");
