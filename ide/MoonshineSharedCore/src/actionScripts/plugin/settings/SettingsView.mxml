@@ -162,6 +162,7 @@
 				function goSave():void
 				{
 					dispatchEvent(new Event(EVENT_SAVE));
+					close(true);
 				}
 			}
 			
