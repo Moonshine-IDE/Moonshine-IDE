@@ -93,6 +93,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 				pathStr = folder.fileBridge.getRelativePath(path);
 			}
 			
+			// in case parsing relative path returns null
+			// particularly in scenario when "path" is outside folder
+			// of "folder"
+			if (!pathStr) pathStr = path.fileBridge.nativePath;
+			
 			var outputPairs:Object = {
 				'disabled'	: 	UtilsCore.serializeBoolean(disabled),
 				'fps'		:	frameRate,

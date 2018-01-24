@@ -78,6 +78,7 @@ package actionScripts.plugins.as3project
 		private var isFeathersProject:Boolean;
 		private var isVisualEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
+		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		
@@ -180,6 +181,7 @@ package actionScripts.plugins.as3project
 			}
 			
 			project.isVisualEditorProject = isVisualEditorProject;
+			project.isLibraryProject = isLibraryProject;
 
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
@@ -480,7 +482,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject)
+			if (!isCustomTemplateProject && !isLibraryProject)
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
@@ -555,6 +557,7 @@ package actionScripts.plugins.as3project
 			th.templatingData["$SourceFile"] = sourcePath + File.separator + sourceFileWithExtension;
 			th.templatingData["$SourceNameOnly"] = sourceFile;
 			th.templatingData["$ProjectSWF"] = sourceFile +".swf";
+			th.templatingData["$ProjectSWC"] = sourceFile +".swc";
 			th.templatingData["$ProjectFile"] = sourceFileWithExtension;
 			th.templatingData["$DesktopDescriptor"] = sourceFile;
 			th.templatingData["$Settings"] = projectName;
@@ -646,6 +649,13 @@ package actionScripts.plugins.as3project
 					}
 				}
 			}
+			if (isLibraryProject)
+			{
+				var folderToCreate:FileLocation = targetFolder.resolvePath("src");
+				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+				folderToCreate = targetFolder.resolvePath("bin-debug");
+				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+			}
 			
 			// creating certificate conditional checks
 			if (!descriptorFileLocation || !descriptorFileLocation.fileBridge.exists)
@@ -682,6 +692,7 @@ package actionScripts.plugins.as3project
             // Set some stuff to get the paths right
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
+			pvo.isLibraryProject = isLibraryProject;
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
 
@@ -737,6 +748,11 @@ package actionScripts.plugins.as3project
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
 				isVisualEditorProject = true;
+			}
+			
+			if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT_LIBRARY) != -1)
+			{
+				isLibraryProject = true;
 			}
 
             if (templateName.indexOf(ProjectTemplateType.FEATHERS) != -1)

@@ -107,6 +107,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
+		private var outputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
 		private var targetPlatformSettings:ListSetting;
@@ -188,7 +189,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			var tmpCollection:ArrayCollection;
 			//additional.isEditable = air;
-			htmlFilePath.isEditable = !air;
+			htmlFilePath.isEditable = !air && !isLibraryProject;
 			nativeExtensionPath.isEditable = air;
 			mobileRunSettings.visible = isMobile;
 			
@@ -217,7 +218,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function get getHTMLPath():String
 		{
-			if (!air)
+			if (!air && !isLibraryProject)
 			{
 				if (htmlPath) return htmlPath.fileBridge.nativePath;
 				
@@ -232,6 +233,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set getHTMLPath(value:String):void
 		{
 			if (value) htmlPath = new FileLocation(value);
+		}
+		
+		public function get outputPath():String
+		{
+			var tmpPath:String = this.folderLocation.fileBridge.getRelativePath(swfOutput.path.fileBridge.parent);
+			if (!tmpPath) tmpPath = swfOutput.path.fileBridge.parent.fileBridge.nativePath;
+			return tmpPath;
+		}
+		public function set outputPath(value:String):void
+		{
+			if (!value || value == "") return;
+			
+			var fileNameSplit:Array = swfOutput.path.fileBridge.nativePath.split(folderLocation.fileBridge.separator);
+			swfOutput.path = new FileLocation(value + folderLocation.fileBridge.separator + fileNameSplit[fileNameSplit.length - 1]);
 		}
 		
 		private function onTargetPlatformChanged(event:Event):void
@@ -262,16 +277,19 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			if (additional) additional = null;
 			if (htmlFilePath) htmlFilePath = null;
+			if (outputPathSetting) outputPathSetting = null;
 			if (nativeExtensionPath) nativeExtensionPath = null;
 			if (mobileRunSettings) mobileRunSettings = null;
 			if (targetPlatformSettings) targetPlatformSettings = null;
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			outputPathSetting = new PathSetting(this, "outputPath", "Output Path", true, outputPath);
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
 			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
-			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			if (isLibraryProject) targetPlatformSettings.isEditable = false;
+			else targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 
 			if (isVisualEditorProject)
 			{
@@ -402,6 +420,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         Vector.<ISetting>([
                             targetPlatformSettings,
                             htmlFilePath,
+							outputPathSetting,
                             additional,
                             mobileRunSettings
                         ])
@@ -470,6 +489,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         Vector.<ISetting>([
                             new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
                             htmlFilePath,
+							outputPathSetting,
                             additional,
                             mobileRunSettings
                         ])

@@ -30,7 +30,7 @@ package actionScripts.plugin.settings.vo
 		
 		private var rdr:ListSettingRenderer;
 		
-		private var _isEditable:Boolean;
+		private var _isEditable:Boolean = true;
 		
 		public function ListSetting(provider:Object, name:String, label:String, dataProvider:IList, labelField:String=null)
 		{
@@ -47,6 +47,7 @@ package actionScripts.plugin.settings.vo
 		{
 			rdr = new ListSettingRenderer();
 			rdr.setting = this;
+			rdr.enabled = _isEditable;
 			return rdr;
 		}
 		
@@ -56,6 +57,7 @@ package actionScripts.plugin.settings.vo
 			if (rdr) 
 			{
 				rdr.mouseChildren = _isEditable;
+				rdr.enabled = _isEditable;
 			}
 		}
 		public function get isEditable():Boolean

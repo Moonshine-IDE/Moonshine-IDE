@@ -44,6 +44,9 @@ package actionScripts.plugins.as3project.importer
 		{
 			var p:AS3ProjectVO = new AS3ProjectVO(file);
 			
+			var libSettings:File = file.resolvePath(".flexLibProperties").fileBridge.getFile as File;
+			if (libSettings.exists) p.isLibraryProject = true;
+			
 			var projectSettings:File = file.resolvePath(".project").fileBridge.getFile as File;
 			readProjectSettings(projectSettings, p);
 			
