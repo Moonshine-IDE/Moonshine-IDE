@@ -39,6 +39,7 @@ package actionScripts.events
 		public var fromTemplate:FileLocation;
 		public var insideLocation:FileWrapper;
 		public var extraParameters:Array;
+		public var isFolder:Boolean;
 		
 		public var ofProject:ProjectVO;
 		

@@ -79,6 +79,7 @@
 				btnCreate.enabled = false;
 				
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FOLDER, null, null, wrapperOfFolderLocation);
+				tmpEvent.isFolder = true;
 				tmpEvent.ofProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
 				tmpEvent.fileName = txtFileName.text;
 				dispatchEvent(tmpEvent);

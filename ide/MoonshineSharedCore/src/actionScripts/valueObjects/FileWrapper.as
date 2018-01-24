@@ -56,6 +56,11 @@ package actionScripts.valueObjects
 			}
 		}
 		
+		public function sortChildren():void
+		{
+			_children.sortOn("name", Array.CASEINSENSITIVE);
+		}
+		
 		public function updateChildren():void
 		{
 			if (!ConstantsCoreVO.IS_AIR || !file.fileBridge.isDirectory) return;
