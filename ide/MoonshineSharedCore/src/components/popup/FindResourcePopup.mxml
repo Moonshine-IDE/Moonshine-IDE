@@ -222,7 +222,7 @@
 							  prompt="File Name" width="100%" styleName="textInput"
 							  maxChars="129"
 							  change="onFileFilterChanged(event)" creationComplete="fileNameTextInput.setFocus()"/>
-		<s:CalloutButton
+		<s:CalloutButton icon="@Embed('/elements/images/filter.png')"
 						 width="36" height="20" buttonMode="true"
 						 horizontalPosition="end" verticalPosition="after"
 						 skinClass="components.skins.FilterCalloutButtonSkin">
