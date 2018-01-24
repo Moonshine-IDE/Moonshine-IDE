@@ -223,7 +223,7 @@ package actionScripts.plugin.actionscript.mxmlc
 			currentProject = pvo;
 			if (!loader)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Building project: "+ currentProject.name +". Invoking compiler on remote server..."));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Building project: "+ currentProject.name +". Invoking compiler on remote server..."));
 				loader = new DataAgent(URLDescriptorVO.PROJECT_COMPILE+"?projectName="+currentProject.name, onBuildCompleted, onFault);
 			}
 			else
@@ -240,7 +240,7 @@ package actionScripts.plugin.actionscript.mxmlc
 			
 			ConsoleOutputter.DEBUG = true;
 			debug("Compiler output: %s", jsonObj.output);
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Result: "+ jsonObj.result +" in "+ (int(jsonObj.totalTime)/60000).toFixed(2) +" Minutes."));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Result: "+ jsonObj.result +" in "+ (int(jsonObj.totalTime)/60000).toFixed(2) +" Minutes."));
 			
 			loader = null;
 		}
@@ -248,7 +248,7 @@ package actionScripts.plugin.actionscript.mxmlc
 		
 		private function onFault(message:String):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Server error while build!"));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Server error while build!"));
 			loader = null;
 		}
 	}
