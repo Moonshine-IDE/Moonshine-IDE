@@ -138,7 +138,7 @@ package actionScripts.plugins.as3project.importer
 
             project.buildOptions.parse(data.build);
             project.swfOutput.parse(data.output, project);
-			if (project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
+			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
 			
 			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
 			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
