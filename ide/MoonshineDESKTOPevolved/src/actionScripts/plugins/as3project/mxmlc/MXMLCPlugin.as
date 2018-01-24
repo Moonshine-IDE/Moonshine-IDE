@@ -50,7 +50,6 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.mxmlc.CommandLine;
     import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-    import actionScripts.plugin.console.MarkupTextLineModel;
     import actionScripts.plugin.core.compiler.CompilerEventBase;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
@@ -63,9 +62,7 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
     import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
     import actionScripts.ui.editor.text.DebugHighlightManager;
-    import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.menu.MenuPlugin;
-    import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.utils.OSXBookmarkerNotifiers;
     import actionScripts.utils.SDKUtils;
@@ -107,7 +104,6 @@ package actionScripts.plugins.as3project.mxmlc
 		/** Project currently under compilation */
 		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
-		private var errors:String = "";
 		
 		private var cmdLine:CommandLine;
 		private var	tempObj:Object;
@@ -291,7 +287,6 @@ package actionScripts.plugins.as3project.mxmlc
 			//exiting = true;
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
-			errors = "";
 		}
 		
 		private function onDefaultSDKUpdatedOutside(event:ProjectEvent):void
@@ -918,18 +913,12 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					reset();
 				}
-				
-				if (errors != "")
-				{
-					compilerError(errors);
-					reset();
-				}
-				
+
 				if (data.charAt(data.length-1) == "\n")
 				{
 					data = data.substr(0, data.length-1);
                 }
-				debug("%s", data);
+				print("%s", data);
 			}
 			
 		}
@@ -1034,29 +1023,26 @@ package actionScripts.plugins.as3project.mxmlc
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
                 var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
-				if (syntaxMatch) {
-					var pathStr:String = syntaxMatch[1];
-					var lineNum:int = syntaxMatch[2];
-					var errorStr:String = syntaxMatch[4];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
-						pathStr, lineNum, errorStr); 
+				if (syntaxMatch)
+				{
+					error("%s\n", data);
+                    reset();
+					return;
 				}
 
                 var generalMatch:Array = data.match(/(.*?):[\s*]* Error: (.*).*/);
 				if (!syntaxMatch && generalMatch)
-				{ 
-					pathStr = generalMatch[1];
-					errorStr  = generalMatch[2];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
+				{
+					error("%s\n", data);
+                    reset();
+					return;
 				}
 
 				//Build should be continued with there are only warnings
 				var warningMatch:Array = data.match(/(.*?):[\s*]* Warning: (.*).*/);
 				if (warningMatch && !generalMatch && !syntaxMatch)
 				{
-                    print(data);
+                    warning(data);
 					return;
 				}
 
@@ -1074,22 +1060,6 @@ package actionScripts.plugins.as3project.mxmlc
 				exiting = false;
 				startShell();
 			}
-		}
-
-		protected function compilerError(...msg):void 
-		{
-			var text:String = msg.join(" ");
-			var textLines:Array = text.split("\n");
-			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
-			for (var i:int = 0; i < textLines.length; i++)
-			{
-				if (textLines[i] == "") continue;
-				text = "<error> ⚡  </error>" + textLines[i]; 
-				var lineModel:TextLineModel = new MarkupTextLineModel(text);
-				lines.push(lineModel);
-			}
-			outputMsg(lines);
-			targets = new Dictionary();
 		}
 	}
 }

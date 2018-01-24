@@ -47,15 +47,12 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-	import actionScripts.plugin.console.MarkupTextLineModel;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.utils.HtmlFormatter;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.UtilsCore;
@@ -100,8 +97,7 @@ package actionScripts.plugins.as3project.mxmlc
 		/** Project currently under compilation */
 		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
-		private var errors:String = "";
-		
+
 		private var cmdLine:CommandLine;
 		private var fschstr:String;
 		private var SDKstr:String;
@@ -175,7 +171,6 @@ package actionScripts.plugins.as3project.mxmlc
 			stopShell();
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
-			errors = "";
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -624,13 +619,7 @@ package actionScripts.plugins.as3project.mxmlc
 						reset();
 					}
 				}
-				
-				if (errors != "") 
-				{
-					compilerError(errors);
-					reset();
-				}
-				
+
 				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
 				debug("%s", data);
 			}
@@ -718,30 +707,32 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				var syntaxMatch:Array;
-				var generalMatch:Array;
-				
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
-				if (syntaxMatch) {
-					var pathStr:String = syntaxMatch[1];
-					var lineNum:int = syntaxMatch[2];
-					var errorStr:String = syntaxMatch[4];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					errors += HtmlFormatter.sprintf("%s<weak>:</weak>%s \t %s\n",
-						pathStr, lineNum, errorStr); 
+
+                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+				if (syntaxMatch)
+				{
+                    error("%s\n", data);
+                    reset();
+                    return;
 				}
-				
-				generalMatch = data.match(/(.*?): Error: (.*).*/);
+
+                var generalMatch:Array = data.match(/(.*?): Error: (.*).*/);
 				if (!syntaxMatch && generalMatch)
-				{ 
-					pathStr = generalMatch[1];
-					errorStr  = generalMatch[2];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					
-					errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
+				{
+                    error("%s\n", data);
+                    reset();
+					return;
 				}
-				
+
+                var warningMatch:Array = data.match(new RegExp("WARNING:", "i"));
+                if (warningMatch && !generalMatch && !syntaxMatch)
+                {
+                    warning(data);
+                    return;
+                }
+
 				print(data);
+				reset();
 			}
 			targets = new Dictionary();
 		}
@@ -756,22 +747,5 @@ package actionScripts.plugins.as3project.mxmlc
 				startShell();
 			}
 		}
-
-		protected function compilerError(...msg):void 
-		{
-			var text:String = msg.join(" ");
-			var textLines:Array = text.split("\n");
-			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
-			for (var i:int = 0; i < textLines.length; i++)
-			{
-				if (textLines[i] == "") continue;
-				text = "<error> ⚡  </error>" + textLines[i]; 
-				var lineModel:TextLineModel = new MarkupTextLineModel(text);
-				lines.push(lineModel);
-			}
-			outputMsg(lines);
-			targets = new Dictionary();
-		}
-		
 	}
 }
