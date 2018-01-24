@@ -163,7 +163,8 @@ package actionScripts.controllers
 				{
 					if (htmlType.type == DataHTMLType.SESSION_ERROR)
 					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(htmlType.message));
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+								new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, htmlType.message));
 						
 						//Show login popup again and save current dataagent params
 						pop = new LoginPopUp();

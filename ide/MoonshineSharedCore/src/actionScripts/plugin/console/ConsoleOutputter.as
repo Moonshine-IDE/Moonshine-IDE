@@ -81,14 +81,14 @@ package actionScripts.plugin.console
 			outputMsg(lines);
 		}
 		
-		protected static function outputMsg(msg:*):void 
+		protected static function outputMsg(msg:*):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(msg));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, msg));
 		}
 		
 		protected function clearOutput():void 
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("clearCommand", true));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_CLEAR, null, true));
 		}
 
 	}

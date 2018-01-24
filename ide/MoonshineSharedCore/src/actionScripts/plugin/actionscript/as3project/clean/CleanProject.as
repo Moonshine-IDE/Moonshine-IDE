@@ -125,7 +125,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 			
 			if (!ConstantsCoreVO.IS_AIR && !loader)
 			{
-				dispatcher.dispatchEvent(new ConsoleOutputEvent("Clean project: "+ pvo.name +". Invoking compiler on remote server..."));
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Clean project: "+ pvo.name +". Invoking compiler on remote server..."));
 				//	loader = new DataAgent(URLDescriptorVO.PROJECT_COMPILE, onBuildCompleted, onFault);
 			}
 			else if (ConstantsCoreVO.IS_AIR)
@@ -186,7 +186,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                                     if (folderCount == 0)
                                     {
                                         dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                                        dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                                        dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
                                     }
                                 }
                             }
@@ -206,7 +206,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 							if (folderCount == 0)
 							{
                                 dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                                dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                                dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
 							}
 
 							clearTimeout(timeoutValue);
@@ -214,12 +214,12 @@ package actionScripts.plugin.actionscript.as3project.clean
 					}
 					else
 					{
-                        dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                        dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
 					}
 				}
 				else
                 {
-                    dispatcher.dispatchEvent(new ConsoleOutputEvent("Project cleaned successfully : " + pvo.name));
+                    dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
                 }
 			}				
 		}

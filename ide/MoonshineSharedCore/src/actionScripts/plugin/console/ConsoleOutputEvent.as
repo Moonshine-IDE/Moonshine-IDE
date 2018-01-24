@@ -18,26 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console
 {
-	import flash.events.Event;
+    import flash.events.Event;
 
 	public class ConsoleOutputEvent extends Event
 	{
-		public static const EVENT_CONSOLE_OUTPUT:String = "consoleOutput";
+		public static const CONSOLE_OUTPUT:String = "consoleOutput";
+		public static const CONSOLE_CLEAR:String = "consoleClear";
 		
 		public var text:*;
 		public var hideOtherOutput:Boolean;
-		public var msgType:int;
 		
 		/*
 			Text can be String or array of TextLineModel
 		*/
-		public function ConsoleOutputEvent(text:*, 
-											hideOtherOutput:Boolean=false, 
-											cancelable:Boolean=false)
+		public function ConsoleOutputEvent(type:String,
+										   text:*,
+										   hideOtherOutput:Boolean=false, cancelable:Boolean=false)
 		{
 			this.text = text;
 			this.hideOtherOutput = hideOtherOutput;
-			super(EVENT_CONSOLE_OUTPUT, false, cancelable);
+			super(type, false, cancelable);
 		}
 	}
 }

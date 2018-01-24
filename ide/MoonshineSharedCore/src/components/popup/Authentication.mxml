@@ -258,7 +258,7 @@
 				}
 				else
 				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Successfully authenticated as: "+xData.username));
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Successfully authenticated as: "+xData.username));
 					dispatchEvent(new Event(SUCCESS));
 					loader = null;
 				}
@@ -308,7 +308,7 @@
 				var result:String = String(event);
 				if (status)
 				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Successfully authenticated as: "+txtUsername.text));
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Successfully authenticated as: "+txtUsername.text));
 					dispatchEvent(new Event(SUCCESS));
 				}
 				else
@@ -320,7 +320,7 @@
 			
 			private function onSaveFault(result:Object):void
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent("Login error!"));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Login error!"));
 				btnLogin.enabled = true;
 				releaseBusyView();
 				loader = null;

@@ -286,7 +286,7 @@ package actionScripts.ui.editor
 			}
 			else if (!ConstantsCoreVO.IS_AIR)
 			{
-				dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving in process..."));
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving in process..."));
 				loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault,
 						{path:file.fileBridge.nativePath,text:text});
 			}
@@ -295,7 +295,7 @@ package actionScripts.ui.editor
 		private function onSaveFault(message:String):void
 		{
 			//Alert.show("Save Fault"+message);
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Save error!"));
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Save error!"));
 			loader = null;
 		}
 		
@@ -305,7 +305,8 @@ package actionScripts.ui.editor
 			loader = null;
 			editor.save();
 			updateChangeStatus();
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving successful."));
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving successful."));
 			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
 		}
  

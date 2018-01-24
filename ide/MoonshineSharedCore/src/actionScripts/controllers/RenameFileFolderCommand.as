@@ -38,7 +38,8 @@ package actionScripts.controllers
 			
 			thisEvent.fw.isWorking = true;
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(thisEvent.oldName +": Rename in process..."));
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, thisEvent.oldName +": Rename in process..."));
 			loader = new DataAgent(URLDescriptorVO.FILE_RENAME, onRenameSuccess, onSaveFault, {path:thisEvent.fw.file.fileBridge.nativePath, newName:thisEvent.fw.file.fileBridge.name});
 		}
 		
@@ -53,14 +54,14 @@ package actionScripts.controllers
 			thisEvent.fw.file.fileBridge.nativePath = jsonObj.nativePath;
 			thisEvent.fw.file.fileBridge.extension = jsonObj.extension;
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(thisEvent.fw.file.fileBridge.name +": Renamed successfully."));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, thisEvent.fw.file.fileBridge.name +": Renamed successfully."));
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, thisEvent.fw));
 		}
 		
 		private function onSaveFault(message:String):void
 		{
 			thisEvent.fw.isWorking = false;
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(thisEvent.oldName +": Error while rename!"));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, thisEvent.oldName +": Error while rename!"));
 			
 			// restore old name value
 			thisEvent.fw.file.fileBridge.name = thisEvent.oldName;

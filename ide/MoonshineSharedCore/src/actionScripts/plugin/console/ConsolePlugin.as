@@ -119,7 +119,9 @@ package actionScripts.plugin.console
                 consoleView.addEventListener(Event.ADDED_TO_STAGE, addKeyListener);
             }
 
-            dispatcher.addEventListener(ConsoleOutputEvent.EVENT_CONSOLE_OUTPUT, addOutput);
+            dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, addOutputHandler);
+            dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, clearOutputHandler);
+
             dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
 
             var tempObj:Object = {};
@@ -168,7 +170,9 @@ package actionScripts.plugin.console
 			unregisterCommand("exit");
 			unregisterCommand("help");
 			
-			dispatcher.removeEventListener(ConsoleOutputEvent.EVENT_CONSOLE_OUTPUT, addOutput);
+			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, addOutputHandler);
+            dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, clearOutputHandler);
+
 			dispatcher.removeEventListener(ConsoleModeEvent.CHANGE, changeMode);
 		}
 		
@@ -370,37 +374,37 @@ package actionScripts.plugin.console
 				console::commands[mode](args);
 			}
 		}
-		
-		private function addOutput(event:ConsoleOutputEvent):void
+
+		private function clearOutputHandler(event:ConsoleOutputEvent):void
 		{
-			if(event.text=="clearCommand"){
-				consoleView.history.text = "";
-			}else{
-				var numNewLines:int = consoleView.history.appendtext(event.text);
-				
-				if (event.hideOtherOutput)
-				{ 
-					//consoleView.history.dataProvider = "";
-				}
-				if (!LayoutModifier.isConsoleCollapsed && LayoutModifier.consoleHeight != -1) 
-				{
-					consoleView.setOutputHeight(LayoutModifier.consoleHeight);
-					loadedFirstTime = false;
-				}
-				else if (loadedFirstTime && consoleView.history.numVisibleLines < numNewLines)
-				{
-					consoleView.setOutputHeightByLines(numNewLines);
-					loadedFirstTime = false;
-				}
+            consoleView.history.text = "";
+		}
+
+		private function addOutputHandler(event:ConsoleOutputEvent):void
+		{
+			var numNewLines:int = consoleView.history.appendtext(event.text);
+
+			if (event.hideOtherOutput)
+			{
+				//consoleView.history.dataProvider = "";
+			}
+			if (!LayoutModifier.isConsoleCollapsed && LayoutModifier.consoleHeight != -1)
+			{
+				consoleView.setOutputHeight(LayoutModifier.consoleHeight);
+				loadedFirstTime = false;
+			}
+			else if (loadedFirstTime && consoleView.history.numVisibleLines < numNewLines)
+			{
+				consoleView.setOutputHeightByLines(numNewLines);
+				loadedFirstTime = false;
 			}
 		}
-		
-		
+
 		public function clearCommand(args:Array):void
 		{
-			dispatcher.dispatchEvent( new ConsoleOutputEvent("clearCommand", true) );
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_CLEAR, null, true));
 		}
-		
+
 		public function exitCommand(args:Array):void
 		{
 			dispatcher.dispatchEvent( new Event(MenuPlugin.MENU_QUIT_EVENT) );

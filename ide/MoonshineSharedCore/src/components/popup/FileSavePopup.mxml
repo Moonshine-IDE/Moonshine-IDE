@@ -46,9 +46,7 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.URLDescriptorVO;
-			
-			import components.skins.ResizableTitleWindowSkin;
-			
+	
 			public var file: FileLocation;
 			public var extension:String="";
 			protected var loader: DataAgent;
@@ -167,7 +165,7 @@
 				file.fileBridge.nativePath = tree.selectedItem.file.fileBridge.nativePath;
 				lastSelectedNode = tree.selectedItem as FileWrapper;
 				
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saving in process..."));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving in process..."));
 				loader = new DataAgent(URLDescriptorVO.FILE_NEW, onSaveSuccess, onSaveFault, {path:file.fileBridge.nativePath,name:file.fileBridge.name,type:(file.fileBridge.isDirectory?"folder":"file"),text:editor.text});
 			}
 			
@@ -189,7 +187,7 @@
 				var tmpFW: FileWrapper = new FileWrapper(tmpLocation, false, FileWrapper(lastSelectedNode.originalReference).projectReference);
 				tmpFW.children = null;
 				FileWrapper(lastSelectedNode.originalReference).children.push(tmpFW);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Saved successfully."));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saved successfully."));
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, tmpFW));
 				editor.onFileSaveSuccess(tmpLocation);
 				
@@ -200,7 +198,7 @@
 			private function onSaveFault(message:String):void
 			{
 				removeLoaderIcon();
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(file.fileBridge.name +": Save error!"));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Save error!"));
 				btn_save.enabled = true;
 				loader = null;
 				super.closeThis();
