@@ -21,7 +21,7 @@ package actionScripts.plugin.console
 	public class ConsoleStyle
 	{
 		// Styles guaranteed to be present for Console history.
-		// Use MarkupTextLineModel to create these.
+		// Use ConsoleTextLineModel to create these.
 		public static const NOTICE:uint 	= 10;
 		public static const WARNING:uint	= 11;
 		public static const ERROR:uint 		= 12;

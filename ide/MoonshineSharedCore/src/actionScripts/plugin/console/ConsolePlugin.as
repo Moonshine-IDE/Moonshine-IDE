@@ -21,7 +21,8 @@ package actionScripts.plugin.console
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.containers.dividedBoxClasses.BoxDivider;
 	import mx.events.DividerEvent;
@@ -154,7 +155,10 @@ package actionScripts.plugin.console
 
             // just a demo output
             //About.onCreationCompletes();
-            setTimeout(aboutCommand, 3000, null);
+            var timeoutValue:uint = setTimeout(function():void{
+				aboutCommand(null);
+				clearTimeout(timeoutValue);
+        	}, 3000);
         }
 		
 		override public function deactivate():void
@@ -286,16 +290,7 @@ package actionScripts.plugin.console
 				{
 					toggleConsole(event);
 				}
-				/*if(!cmd && !alt && !ctrl) //  for single char
-				{
-					toggleConsole(event);
-				}*/
 			}
-			/*else if (consoleTriggerKeyPropertyName=="keyCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
-			{
-				// For function key
-				toggleConsole(event);
-			}*/
 			
 		}
 		
@@ -336,10 +331,6 @@ package actionScripts.plugin.console
 				consoleView.commandLine.setFocus();
 				consoleCmd = false;
 				consoleCtrl = false;
-			}
-			else
-			{
-				//model.activeEditor.setFocus();		
 			}
 		}
 		
@@ -384,10 +375,6 @@ package actionScripts.plugin.console
 		{
 			var numNewLines:int = consoleView.history.appendtext(event.text);
 
-			if (event.hideOtherOutput)
-			{
-				//consoleView.history.dataProvider = "";
-			}
 			if (!LayoutModifier.isConsoleCollapsed && LayoutModifier.consoleHeight != -1)
 			{
 				consoleView.setOutputHeight(LayoutModifier.consoleHeight);

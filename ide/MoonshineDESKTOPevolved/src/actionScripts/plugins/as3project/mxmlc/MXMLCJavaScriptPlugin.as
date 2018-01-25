@@ -601,7 +601,9 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 					}
 					else
-						onBinFolderMoveComplete(null);
+                    {
+                        onBinFolderMoveComplete(null);
+                    }
 					
 					/*
 					 *@local
@@ -609,8 +611,6 @@ package actionScripts.plugins.as3project.mxmlc
 					function onBinFolderMoveComplete(event:Event):void
 					{
 						if (event) event.target.removeEventListener(Event.COMPLETE, onBinFolderMoveComplete);
-						
-						print("Project Build Successfully");
 						dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
 					    if(runAfterBuild)
 					    {
@@ -621,12 +621,18 @@ package actionScripts.plugins.as3project.mxmlc
 							var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
 							getResourceCopied(currentProject as AS3ProjectVO, swfFile);
 						}
+
+                        success("%s", data);
 						reset();
 					}
+                    return;
 				}
 
-				if (data.charAt(data.length-1) == "\n") data = data.substr(0, data.length-1);
-				debug("%s", data);
+				if (data.charAt(data.length-1) == "\n")
+				{
+					data = data.substr(0, data.length-1);
+                }
+				print("%s", data);
 			}
 		}
 		

@@ -22,16 +22,39 @@ package actionScripts.plugin.console
 	
 	import actionScripts.ui.editor.text.TextLineModel;
 	
-	public class MarkupTextLineModel extends TextLineModel
+	public class ConsoleTextLineModel extends TextLineModel
 	{
 		protected var markupText:String;
-		
-		public function MarkupTextLineModel(text:String)
+		private var consoleOutputType:String;
+
+		public function ConsoleTextLineModel(text:String, consoleOutputType:String)
 		{
-			markupText = text;
+			this.markupText = text;
+			this.consoleOutputType = consoleOutputType;
+			
 			super( decode(text) );
 		}
-		
+
+		public function getTextColor():uint
+		{
+			var consoleOutType:uint = ConsoleStyle.name2style[consoleOutputType];
+			switch(consoleOutType)
+			{
+				case ConsoleStyle.ERROR:
+					return 0xca2323;
+					break;
+				case ConsoleStyle.WARNING:
+					return 0xFFBF0F;
+					break;
+				case ConsoleStyle.SUCCESS:
+					return 0x348f37;
+                    break;
+				default:
+					return 0xFFFFFF;
+					break;
+			}
+		}
+
 		private function decode(markup:String):String
 		{
 			var t:String = "";

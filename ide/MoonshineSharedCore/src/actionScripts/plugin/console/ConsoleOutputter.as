@@ -35,7 +35,12 @@ package actionScripts.plugin.console
 		{
 			return _name;
 		}
-		
+
+        protected function success(str:String, ...replacements):void
+        {
+            formatOutput(HtmlFormatter.sprintfa(str, replacements), 'success');
+        }
+
 		// Console output functions, use %s for substitution
 		protected function notice(str:String, ...replacements):void
 		{
@@ -75,7 +80,7 @@ package actionScripts.plugin.console
 			{
 				if (textLines[i] == "") continue;
 				var text:String = HtmlFormatter.sprintf("<%x>%x:</%x> %x", style, _name, style, textLines[i]); 
-				var lineModel:TextLineModel = new MarkupTextLineModel(text);
+				var lineModel:TextLineModel = new ConsoleTextLineModel(text, style);
 				lines.push(lineModel);
 			}
 			outputMsg(lines);

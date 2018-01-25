@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-	import spark.components.TextArea;
+    import actionScripts.plugin.console.ConsoleTextLineModel;
+
+    import spark.components.TextArea;
 	import spark.components.VScrollBar;
 	
 	import actionScripts.ui.editor.text.TextEditorModel;
@@ -95,6 +97,11 @@ package actionScripts.plugin.console.view
 				for (i = 0; i < linesCount; i++)
 				{
 					p = new ParagraphElement();
+					if (text[i] is ConsoleTextLineModel)
+					{
+						p.color = (text[i] as ConsoleTextLineModel).getTextColor();
+					}
+
 					tf = TextConverter.importToFlow(String(text[i]) + "\n", TextConverter.PLAIN_TEXT_FORMAT);
 					//tf = TextFlowUtil.importFromString(String("<p>"+text[i])+"</p>");
 					pe = tf.mxmlChildren[0];

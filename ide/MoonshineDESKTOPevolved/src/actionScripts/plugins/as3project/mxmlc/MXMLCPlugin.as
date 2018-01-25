@@ -521,8 +521,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc"+ compilerExtension);
 				if (!mxmlcFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
-					error("Invalid SDK - Please configure a FlexJS SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead");
 					return;
 				}
 				
@@ -539,8 +539,8 @@ package actionScripts.plugins.as3project.mxmlc
 						currentSDK.resolvePath("bin/fcsh.bat");
 				if (fcshFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
-					error("Invalid SDK - Please configure a FlexJS SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead");
 					return;
 				}
 				fschstr = mxmlcFile.nativePath;
@@ -910,7 +910,6 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-                trace("Start building project with data " + data);
 				var match:Array;
 				var isSuccessBuild:Boolean;
 				
@@ -945,8 +944,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (isSuccessBuild) 
 				{ // Successful compile
 					// swfPath = match[1];
-					
-					print("Project Build Successfully");
 					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
 					
 					if (!isLibraryProject)
@@ -957,7 +954,6 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 						else if (debugAfterBuild)
 						{
-							print("1 in MXMLCPlugin debugafterBuild");
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
 							dispatcher.dispatchEvent(
@@ -970,8 +966,11 @@ package actionScripts.plugins.as3project.mxmlc
 							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
 						}
 					}
-					
+
+                    print("%s", data);
+                    success("Project Build Successfully");
 					reset();
+					return;
 				}
 
 				if (data.charAt(data.length-1) == "\n")
