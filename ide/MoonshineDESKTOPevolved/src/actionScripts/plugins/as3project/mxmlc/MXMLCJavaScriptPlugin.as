@@ -253,6 +253,11 @@ package actionScripts.plugins.as3project.mxmlc
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
 			if (!activeProject) activeProject = model.activeProject;
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
+			if (AS3ProjectVO(activeProject).isLibraryProject)
+			{
+				Alert.show("Use 'Build' instead to build library project.", "Error!");
+				return;
+			}
 			
 			reset();
 			

@@ -95,6 +95,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var fcsh:NativeProcess;
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
+		private var isLibraryProject:Boolean;
 		
 		private var lastTarget:File;
 		private var targets:Dictionary;
@@ -432,6 +433,7 @@ package actionScripts.plugins.as3project.mxmlc
 			reset();
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
+			isLibraryProject = as3Pvo.isLibraryProject;
 			if(as3Pvo.targets.length==0)
 			{
 				error("No targets found for compilation.");
@@ -621,6 +623,14 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				currentSDK = tempCurrentSdk.fileBridge.getFile as File;
+				
+				// check if it is a library application
+				if ((pvo as AS3ProjectVO).isLibraryProject)
+				{
+					compileFlexLibrary(pvo as AS3ProjectVO);
+					return;
+				}
+				
 				var fschFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
 				if (!fschFile.exists)
 				{
@@ -628,6 +638,7 @@ package actionScripts.plugins.as3project.mxmlc
 					error("Invalid SDK - Please configure a Flex SDK instead.");
 					return;
 				}
+				
 				fschstr = fschFile.nativePath;
 				fschstr = UtilsCore.convertString(fschstr);
 				
@@ -662,6 +673,51 @@ package actionScripts.plugins.as3project.mxmlc
 			debug("SDK path: %s", currentSDK.nativePath);
 			var compileStr:String = compile(pvo as AS3ProjectVO, release);
 			send(compileStr);
+		}
+		
+		private function compileFlexLibrary(pvo:AS3ProjectVO):void
+		{
+			var compcFile:File = currentSDK.resolvePath("bin/compc");
+			if (!compcFile.exists)
+			{
+				Alert.show("Invalid SDK - Please configure a Flex SDK instead.","Error!");
+				error("Invalid SDK - Please configure a Flex SDK instead.");
+				return;
+			}
+			
+			fschstr = compcFile.nativePath;
+			fschstr = UtilsCore.convertString(fschstr);
+			
+			SDKstr = currentSDK.nativePath;
+			SDKstr = UtilsCore.convertString(SDKstr);
+			
+			// update build config file
+			pvo.updateConfig();
+			
+			var compilerArg:String = fschstr +" -load-config+="+ pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
+			
+			var processArgs:Vector.<String> = new Vector.<String>;
+			shellInfo = new NativeProcessStartupInfo();
+			if (Settings.os == "win")
+			{
+				processArgs.push("/c");
+				processArgs.push("set ".concat(
+					SDKstr, "&& ", compilerArg
+				));
+			}
+			else
+			{
+				processArgs.push("-c");
+				processArgs.push("export FLEX_HOME=".concat(
+					SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compilerArg
+				));
+			}
+			//var workingDirectory:File = currentSDK.resolvePath("bin/");
+			shellInfo.arguments = processArgs;
+			shellInfo.executable = cmdFile;
+			shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
+			
+			initShell();
 		}
 		
 		private function clearConsoleBeforeRun():void
@@ -892,23 +948,27 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					print("Project Build Successfully");
 					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
-					if (this.runAfterBuild && !this.debugAfterBuild)
+					
+					if (!isLibraryProject)
 					{
-						testMovie();
-					}
-					else if (debugAfterBuild)
-					{
-						print("1 in MXMLCPlugin debugafterBuild");
-						GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-						getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
-						dispatcher.dispatchEvent(
-							//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
-							new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
-						);
-					}
-					else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
-					{
-						getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
+						if (this.runAfterBuild && !this.debugAfterBuild)
+						{
+							testMovie();
+						}
+						else if (debugAfterBuild)
+						{
+							print("1 in MXMLCPlugin debugafterBuild");
+							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
+							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
+							dispatcher.dispatchEvent(
+								//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
+								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
+							);
+						}
+						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
+						{
+							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
+						}
 					}
 					
 					reset();
