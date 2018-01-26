@@ -38,12 +38,16 @@ package actionScripts.plugin.core.importer
 			for each (var pathXML:XML in paths)
 			{
 				var path:String = pathXML.attribute(attrName);
-				// file separator fix
-				path = UtilsCore.fixSlashes(path);
-				var f:FileLocation = p.folderLocation.resolvePath(path);;
 				
-				if (ConstantsCoreVO.IS_AIR) f.fileBridge.canonicalize();
-				v.push(f);
+				if (path)
+				{
+					// file separator fix
+					path = UtilsCore.fixSlashes(path);
+					var f:FileLocation = p.folderLocation.resolvePath(path);;
+					
+					if (ConstantsCoreVO.IS_AIR) f.fileBridge.canonicalize();
+					v.push(f);
+				}
 			}
 		}
 	}

@@ -1,0 +1,9 @@
+package
+{
+	public class $ProjectName
+	{
+		public function $ProjectName()
+		{
+		}
+	}
+}

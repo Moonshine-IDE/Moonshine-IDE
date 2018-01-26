@@ -84,6 +84,7 @@ package actionScripts.plugins.as3project
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
+		private var _libraryProjectTemplateType:String;
 		private var _customFlexSDK:String;
 		
 		public function CreateProject(event:NewProjectEvent)
@@ -144,6 +145,15 @@ package actionScripts.plugins.as3project
 		public function get projectTemplateType():String
 		{
 			return _projectTemplateType;
+		}
+		
+		public function set libraryProjectTemplateType(value:String):void
+		{
+			_libraryProjectTemplateType = value;
+		}
+		public function get libraryProjectTemplateType():String
+		{
+			return _libraryProjectTemplateType;
 		}
 		
 		public function get customFlexSDK():String
@@ -264,6 +274,12 @@ package actionScripts.plugins.as3project
                 settings.getSettingsList().splice(3, 0,
 						new ListSetting(this, "projectTemplateType", "Select Template Type",
 								ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
+			}
+			else if (isLibraryProject)
+			{
+				settings.getSettingsList().splice(3, 0,
+					new ListSetting(this, "libraryProjectTemplateType", "Select Project Type",
+						new ArrayCollection([ProjectTemplateType.ACTIONSCRIPT_LIBRARY, ProjectTemplateType.FLEX_LIBRARY])));
 			}
 
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
@@ -482,7 +498,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject && !isLibraryProject)
+			if (!isCustomTemplateProject)
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
@@ -530,9 +546,22 @@ package actionScripts.plugins.as3project
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
 			var sourceFile:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
-			var sourceFileWithExtension:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name : pvo.projectName + ((isActionScriptProject || isFeathersProject || isAway3DProject) ? ".as" : ".mxml");
+			var sourceFileWithExtension:String;
 			var sourcePath:String = _isProjectFromExistingSource ? pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) : "src";
 			var targetFolder:FileLocation = pvo.folderLocation;
+			
+			if (_isProjectFromExistingSource)
+			{
+				sourceFileWithExtension = pvo.projectWithExistingSourcePaths[1].fileBridge.name;
+			}
+			else if (isActionScriptProject || isFeathersProject || isAway3DProject || (isLibraryProject && libraryProjectTemplateType == ProjectTemplateType.ACTIONSCRIPT_LIBRARY))
+			{
+				sourceFileWithExtension = pvo.projectName + ".as";
+			}
+			else
+			{
+				sourceFileWithExtension = pvo.projectName + ".mxml";
+			}
 
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
@@ -651,10 +680,18 @@ package actionScripts.plugins.as3project
 			}
 			if (isLibraryProject)
 			{
-				var folderToCreate:FileLocation = targetFolder.resolvePath("src");
+				var folderToCreate:FileLocation = targetFolder.resolvePath("bin-debug");
 				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
-				folderToCreate = targetFolder.resolvePath("bin-debug");
-				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+				
+				var fileToDelete:FileLocation = (libraryProjectTemplateType == ProjectTemplateType.ACTIONSCRIPT_LIBRARY) ? targetFolder.resolvePath("src/"+ projectName +".mxml") : targetFolder.resolvePath("src/"+ projectName +".as");
+				try
+				{
+					fileToDelete.fileBridge.deleteFile();
+				}
+				catch (e:Error)
+				{
+					// catch error 
+				}
 			}
 			
 			// creating certificate conditional checks
