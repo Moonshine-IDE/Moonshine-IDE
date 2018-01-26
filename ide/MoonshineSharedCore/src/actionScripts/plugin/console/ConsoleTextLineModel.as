@@ -41,7 +41,7 @@ package actionScripts.plugin.console
 			switch(consoleOutType)
 			{
 				case ConsoleStyle.ERROR:
-					return 0xca2323;
+					return 0xFA8072;
 					break;
 				case ConsoleStyle.WARNING:
 					return 0xFFBF0F;
