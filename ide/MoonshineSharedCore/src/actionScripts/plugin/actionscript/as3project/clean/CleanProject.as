@@ -33,7 +33,6 @@ package actionScripts.plugin.actionscript.as3project.clean
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -125,8 +124,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 			
 			if (!ConstantsCoreVO.IS_AIR && !loader)
 			{
-				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Clean project: "+ pvo.name +". Invoking compiler on remote server..."));
-				//	loader = new DataAgent(URLDescriptorVO.PROJECT_COMPILE, onBuildCompleted, onFault);
+				print("Clean project: "+ pvo.name +". Invoking compiler on remote server...");
 			}
 			else if (ConstantsCoreVO.IS_AIR)
 			{
@@ -186,7 +184,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                                     if (folderCount == 0)
                                     {
                                         dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                                        dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
+                                        success("Project cleaned successfully : " + pvo.name);
                                     }
                                 }
                             }
@@ -206,7 +204,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 							if (folderCount == 0)
 							{
                                 dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                                dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
+                    			success("Project cleaned successfully : " + pvo.name);
 							}
 
 							clearTimeout(timeoutValue);
@@ -214,12 +212,12 @@ package actionScripts.plugin.actionscript.as3project.clean
 					}
 					else
 					{
-                        dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
+                        success("Project cleaned successfully : " + pvo.name);
 					}
 				}
 				else
                 {
-                    dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Project cleaned successfully : " + pvo.name));
+                    success("Project cleaned successfully : " + pvo.name);
                 }
 			}				
 		}
