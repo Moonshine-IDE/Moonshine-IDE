@@ -677,7 +677,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function compileFlexLibrary(pvo:AS3ProjectVO):void
 		{
-			var compcFile:File = currentSDK.resolvePath("bin/compc");
+			var compcFile:File = (Settings.os == "win") ? currentSDK.resolvePath("bin/compc.bat") : currentSDK.resolvePath("bin/compc");
 			if (!compcFile.exists)
 			{
 				Alert.show("Invalid SDK - Please configure a Flex SDK instead.","Error!");
@@ -701,7 +701,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if (Settings.os == "win")
 			{
 				processArgs.push("/c");
-				processArgs.push("set ".concat(
+				processArgs.push("set FLEX_HOME=".concat(
 					SDKstr, "&& ", compilerArg
 				));
 			}
