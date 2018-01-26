@@ -293,10 +293,10 @@ package actionScripts.valueObjects
 			FLEXDESKTOP_PROJECT.fileBridge.isDirectory = true;
 			FLEXDESKTOP_PROJECT.fileBridge.data = "Create a Flex project that will generate a desktop application. This can be used to generate .AIR, .EXE (Windows only) and .DMG (OSX) installers.";
 			
-			FLEXJS_PROJECT = new FileLocation("Flex Browser Project (FlexJS)");
-			FLEXJS_PROJECT.fileBridge.name = "Flex Browser Project (FlexJS)";
+			FLEXJS_PROJECT = new FileLocation("Flex Browser Project (FlexJS, Royale)");
+			FLEXJS_PROJECT.fileBridge.name = "Flex Browser Project (FlexJS, Royale)";
 			FLEXJS_PROJECT.fileBridge.isDirectory = true;
-			FLEXJS_PROJECT.fileBridge.data = "Create a FlexJS project that will generate an SWF and HTML files, to run on browser.";
+			FLEXJS_PROJECT.fileBridge.data = "Create a FlexJS/Royale project that will generate an SWF and HTML files, to run on browser.";
 
             ROYALE_PROJECT = new FileLocation("Royale Browser Project");
             ROYALE_PROJECT.fileBridge.name = "Royale Browser Project";
@@ -321,7 +321,7 @@ package actionScripts.valueObjects
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
 			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/JS Project..";
-			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png"
+			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png";
 			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open an ActionScript or Apache® Flex Project in Moonshine.";
 			openTemplateProjectVO.file = openTemplateProject;
 			

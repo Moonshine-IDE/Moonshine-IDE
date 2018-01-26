@@ -127,7 +127,7 @@ package actionScripts.plugin.templating
 			{
 				for each (var m:FileLocation in ConstantsCoreVO.TEMPLATES_FILES)
 				{
-					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."))
+					var fileName:String = m.fileBridge.name.substring(0,m.fileBridge.name.lastIndexOf("."));
 					dispatcher.addEventListener(fileName, handleNewTemplateFile);
 				}
 				
@@ -272,7 +272,7 @@ package actionScripts.plugin.templating
                 {
                     var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
                     var template:TemplateVO = new TemplateVO();
-                    template.title = file.fileBridge.name ;
+                    template.title = file.fileBridge.name;
                     template.file = file;
                     var tmpImageFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".png");
                     template.description = String(tmpDescripFileLocation.fileBridge.read());
@@ -290,9 +290,20 @@ package actionScripts.plugin.templating
 						projectTemplateCollection.addItem(template);
                     }
 
-					if (template.title.indexOf("Royale") != -1 || template.title.indexOf("FlexJS") != -1)
+					if (template.title.indexOf("Royale") != -1 && template.title.indexOf("FlexJS") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
+					}
+
+					if (template.title.indexOf("FlexJS") != -1)
+					{
+						template = new TemplateVO();
+                        template.title = "Flex Browser Project (FlexJS)";
+                        template.file = file;
+                        template.logoImagePath = tmpImageFile.url;
+                        template.description = String(tmpDescripFileLocation.fileBridge.read());
+
+						royaleProjectTemplates.addItem(template);
 					}
                 }
             }
