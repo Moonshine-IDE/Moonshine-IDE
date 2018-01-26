@@ -1098,7 +1098,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				//Build should be continued with there are only warnings
-				var warningMatch:Array = data.match(/(.*?):[\s*]* Warning: (.*).*/);
+				var warningMatch:Array = data.match(new RegExp("Warning:", "i"));
 				if (warningMatch && !generalMatch && !syntaxMatch)
 				{
                     warning(data);
