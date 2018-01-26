@@ -71,6 +71,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
 		public static var ACTIONSCRIPT_PROJECT:FileLocation;
+		public static var ACTIONSCRIPT_LIBRARY_PROJECT:FileLocation;
 		public static var FLEXBROWSER_PROJECT:FileLocation;
 		public static var FLEXDESKTOP_PROJECT:FileLocation;
 		public static var FLEXMOBILE_PROJECT:FileLocation;
@@ -272,10 +273,15 @@ package actionScripts.valueObjects
 																			xmlns:mx="library://ns.adobe.com/flex/mx">
 																	</s:Group>]]></root>;
 
-			ACTIONSCRIPT_PROJECT = new FileLocation("Actionscript Project (SWF, Desktop)");
-			ACTIONSCRIPT_PROJECT.fileBridge.name = "Actionscript Project (SWF, Desktop)";
+			ACTIONSCRIPT_PROJECT = new FileLocation("ActionScript Project (SWF, Desktop)");
+			ACTIONSCRIPT_PROJECT.fileBridge.name = "ActionScript Project (SWF, Desktop)";
 			ACTIONSCRIPT_PROJECT.fileBridge.isDirectory = true;
 			ACTIONSCRIPT_PROJECT.fileBridge.data = "Create a pure ActionScript project.";
+			
+			ACTIONSCRIPT_LIBRARY_PROJECT = new FileLocation("ActionScript Library Project");
+			ACTIONSCRIPT_LIBRARY_PROJECT.fileBridge.name = "ActionScript Library Project";
+			ACTIONSCRIPT_LIBRARY_PROJECT.fileBridge.isDirectory = true;
+			ACTIONSCRIPT_LIBRARY_PROJECT.fileBridge.data = "Create a Flex/ActionScript library project.";
 			
 			FLEXBROWSER_PROJECT = new FileLocation("Flex Browser Project (SWF)");
 			FLEXBROWSER_PROJECT.fileBridge.name = "Flex Browser Project (SWF)";
@@ -321,7 +327,7 @@ package actionScripts.valueObjects
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,ACTIONSCRIPT_LIBRARY_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
