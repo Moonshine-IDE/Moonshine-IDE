@@ -161,6 +161,7 @@
 				 */
 				function goSave():void
 				{
+					isSaved = true;
 					dispatchEvent(new Event(EVENT_SAVE));
 					close(true);
 				}
