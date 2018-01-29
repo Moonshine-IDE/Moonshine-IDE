@@ -3,6 +3,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.9.0 - Pending]
+
+### Added
+* Find Resources: Added filtering options based on files extention.
+* Code Completion List: Added signature method/properties and returned type information.
+* Code Editor: Added brackets for functions choosen from completion list.
+* Visual Editor: Added resize ability to property editor.
+
+### Changed
+* Console: Colorize console output. Success, Warning and Error messages are now colored.
+* Visual Editor: Synchronize selection between property editor and list type of components Drop Down List, List.
+* Project Creation: Prevent from creating project in existing project directory.
+
+### Fixed
+* Visual Editor: Fixed issue where pressing Tab in property editor was not work properly.
+* Visual Editor: Fixed issue where the same editor opened multiple times.
+* Console: Fixed issue where cursor flashes in console without focus.
+* Code Editor: Fixed issue where choosen XML attribute from auto completion inside quotation marks was not closed properly. 
+* Fixed issue where building Flex application with warnings using option "Build & Run", application doesn't start.
+* Fixed issue where building Royale application to SWF wasn't working without setup SDK in the settings of the project.
+* Fixed issue where Tree selection and scroll bar position is being reset after build/delete file/folder.
+* Fixed issue where creating MXML file in Royale project, the FlexJS file template was used.
+
 ## Moonshine IDE [1.8.0]
 
 ### Added
