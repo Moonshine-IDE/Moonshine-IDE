@@ -23,7 +23,6 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ProjectReferenceVO;
 
 	public class SWFOutputVO 
 	{

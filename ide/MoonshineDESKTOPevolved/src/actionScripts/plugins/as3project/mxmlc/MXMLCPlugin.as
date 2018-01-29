@@ -434,7 +434,7 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 			isLibraryProject = as3Pvo.isLibraryProject;
-			if(as3Pvo.targets.length==0)
+			if (as3Pvo.targets.length == 0 && !as3Pvo.isLibraryProject)
 			{
 				error("No targets found for compilation.");
 				return;

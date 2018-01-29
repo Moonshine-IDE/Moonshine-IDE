@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	width="100%"
+  	gap="0"
+  	paddingTop="15"
+  	paddingBottom="5" initialize="onInitialization(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.components.RadioButton;
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
+			
+			[Bindable] public var setting:NewLibraryProjectSetting;
+			
+			[Bindable] private var types:ArrayCollection;
+			[Bindable] private var configOptions:ArrayCollection;
+			
+			private var _librarySettingObject:LibrarySettingsVO = new LibrarySettingsVO();
+			public function get librarySettingObject():LibrarySettingsVO
+			{
+				_librarySettingObject.type = cmbOption.selectedItem;
+				_librarySettingObject.output = radioButtonGroup.selectedValue as String;
+				_librarySettingObject.includeAIR = cbAIR.selected;
+				
+				return _librarySettingObject;
+			}
+			
+			protected function onInitialization(event:FlexEvent):void
+			{
+				types = new ArrayCollection([LibrarySettingsVO.FLEX_LIBRARY, LibrarySettingsVO.ACTIONSCRIPT_LIBRARY, LibrarySettingsVO.MOBILE_LIBRARY]);
+				configOptions = new ArrayCollection([{label:LibrarySettingsVO.GENERIC, selected:true}, {label:LibrarySettingsVO.MOBILE, selected:false}]);
+			}
+			
+			private function itemRendererFunction_handler(item:Object):ClassFactory
+			{	
+				var props:Object = {
+					label : item.label,
+						value : item.label,
+						selected: item.selected,
+						group : radioButtonGroup
+				};
+				
+				var factory:ClassFactory = new ClassFactory(RadioButton);
+				factory.properties = props;
+				return factory;
+			}
+			
+			protected function onTypeChange(event:IndexChangeEvent):void
+			{
+				if (cmbOption.selectedIndex == 2)
+				{
+					radioButtonGroup.selectedIndex = 1;
+					dgOutput.enabled = false;
+					cbAIR.selected = true;
+					cbAIR.enabled = false;
+				}
+				else
+				{
+					dgOutput.enabled = true;
+					cbAIR.enabled = true;
+				}
+			}
+			
+			protected function onOutputChange(event:Event):void
+			{
+				if (radioButtonGroup.selectedIndex == 1)
+				{
+					cbAIR.selected = true;
+					cbAIR.enabled = false;
+				}
+				else
+				{
+					cbAIR.enabled = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="radioButtonGroup" change="onOutputChange(event)"/>
+	</fx:Declarations>
+	
+	<s:VGroup width="100%" paddingLeft="15" paddingBottom="15" paddingRight="15"
+			  verticalAlign="middle">
+		<s:Label id="lbl"
+				 styleName="uiTextSettingsLabel"
+				 text="Select Library Type"/>
+		
+		<s:DropDownList id="cmbOption"
+						width="100%" height="24"
+						dataProvider="{types}" change="onTypeChange(event)"
+						requireSelection="true"/>
+	</s:VGroup>
+	
+	<s:Rect width="100%"
+			alpha="1">
+		<s:stroke>
+			<s:SolidColorStroke weight="1" color="0xdadada"/>
+		</s:stroke>
+	</s:Rect>
+	
+	<s:HGroup width="100%" paddingLeft="15" paddingTop="15" paddingBottom="15" paddingRight="15">
+		<s:Label text="Output Configuration"
+				 styleName="uiTextSettingsLabel" paddingTop="4"/>
+		<s:Spacer width="100%"/>
+		<s:DataGroup id="dgOutput"
+					 styleName="uiTextSettingsValue"
+					 itemRendererFunction="itemRendererFunction_handler"
+					 dataProvider="{configOptions}">
+					<s:layout>
+						<s:VerticalLayout/>
+					</s:layout>
+		</s:DataGroup>
+	</s:HGroup>
+	
+	<s:Rect width="100%"
+			alpha="1">
+		<s:stroke>
+			<s:SolidColorStroke weight="1" color="0xdadada"/>
+		</s:stroke>
+	</s:Rect>
+	
+	<s:HGroup width="100%" paddingLeft="15" paddingTop="15" paddingBottom="10" paddingRight="15" verticalAlign="middle">
+		<s:Label text="Include Adobe AIR Libraries"
+				 styleName="uiTextSettingsLabel"/>
+		<s:Spacer width="100%"/>
+		<s:CheckBox id="cbAIR"/>
+	</s:HGroup>
+</s:VGroup>

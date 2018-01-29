@@ -145,11 +145,10 @@ package actionScripts.utils
 				// root where application source file is exist
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
 				if (project.targets[0].fileBridge.parent.fileBridge.resolvePath("application.xml").fileBridge.exists) return true;
-				else
-				{
-					return project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists;
-				}
+				else if (project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists) return true;
 			}
+			
+			if (project.isLibraryProject && project.testMovie == AS3ProjectVO.TEST_MOVIE_AIR) return true;
 			
 			return false;
 		}

@@ -33,8 +33,10 @@ package actionScripts.plugins.as3project
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.settings.NewLibraryProjectSetting;
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.SettingsView;
@@ -63,6 +65,7 @@ package actionScripts.plugins.as3project
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		private var newProjectSourcePathSetting:NewProjectSourcePathListSetting;
+		private var newLibrarySetting:NewLibraryProjectSetting;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var newProjectTypeSetting:MultiOptionSetting;
@@ -81,6 +84,7 @@ package actionScripts.plugins.as3project
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
 		private var isInvalidToSave:Boolean;
+		private var librarySettingObject:LibrarySettingsVO;
 		
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
@@ -277,9 +281,8 @@ package actionScripts.plugins.as3project
 			}
 			else if (isLibraryProject)
 			{
-				settings.getSettingsList().splice(3, 0,
-					new ListSetting(this, "libraryProjectTemplateType", "Select Project Type",
-						new ArrayCollection([ProjectTemplateType.ACTIONSCRIPT_LIBRARY, ProjectTemplateType.FLEX_LIBRARY])));
+				newLibrarySetting = new NewLibraryProjectSetting(this, "librarySettingObject");
+				settings.getSettingsList().splice(3, 0, newLibrarySetting);
 			}
 
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
@@ -498,7 +501,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject)
+			if (!isCustomTemplateProject && !isLibraryProject)
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
@@ -554,9 +557,14 @@ package actionScripts.plugins.as3project
 			{
 				sourceFileWithExtension = pvo.projectWithExistingSourcePaths[1].fileBridge.name;
 			}
-			else if (isActionScriptProject || isFeathersProject || isAway3DProject || (isLibraryProject && libraryProjectTemplateType == ProjectTemplateType.ACTIONSCRIPT_LIBRARY))
+			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
 			{
 				sourceFileWithExtension = pvo.projectName + ".as";
+			}
+			else if (isLibraryProject)
+			{
+				// we creates library project without any default created file inside
+				sourceFileWithExtension = null;
 			}
 			else
 			{
@@ -583,11 +591,11 @@ package actionScripts.plugins.as3project
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
 			th.templatingData["$SourcePath"] = sourcePath;
-			th.templatingData["$SourceFile"] = sourcePath + File.separator + sourceFileWithExtension;
+			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 			th.templatingData["$SourceNameOnly"] = sourceFile;
 			th.templatingData["$ProjectSWF"] = sourceFile +".swf";
 			th.templatingData["$ProjectSWC"] = sourceFile +".swc";
-			th.templatingData["$ProjectFile"] = sourceFileWithExtension;
+			th.templatingData["$ProjectFile"] = sourceFileWithExtension ? sourceFileWithExtension : "";
 			th.templatingData["$DesktopDescriptor"] = sourceFile;
 			th.templatingData["$Settings"] = projectName;
 			th.templatingData["$Certificate"] = projectName +"Certificate";
@@ -680,18 +688,13 @@ package actionScripts.plugins.as3project
 			}
 			if (isLibraryProject)
 			{
-				var folderToCreate:FileLocation = targetFolder.resolvePath("bin-debug");
-				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+				// get the configuration from the library settings component
+				librarySettingObject = newLibrarySetting.librarySettingObject;
 				
-				var fileToDelete:FileLocation = (libraryProjectTemplateType == ProjectTemplateType.ACTIONSCRIPT_LIBRARY) ? targetFolder.resolvePath("src/"+ projectName +".mxml") : targetFolder.resolvePath("src/"+ projectName +".as");
-				try
-				{
-					fileToDelete.fileBridge.deleteFile();
-				}
-				catch (e:Error)
-				{
-					// catch error 
-				}
+				var folderToCreate:FileLocation = targetFolder.resolvePath("src");
+				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+				folderToCreate = targetFolder.resolvePath("bin-debug");
+				if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
 			}
 			
 			// creating certificate conditional checks
@@ -730,6 +733,15 @@ package actionScripts.plugins.as3project
 			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
 			pvo.projectName = projectName;
 			pvo.isLibraryProject = isLibraryProject;
+			if (pvo.isLibraryProject)
+			{
+				pvo.air = librarySettingObject.includeAIR;
+				pvo.isMobile = (librarySettingObject.type == LibrarySettingsVO.MOBILE_LIBRARY || librarySettingObject.output == LibrarySettingsVO.MOBILE);
+				if (pvo.air) pvo.buildOptions.additional = "+configname=air";
+				if (pvo.isMobile) pvo.buildOptions.additional = "+configname=airmobile";
+				if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
+			}
+			
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
 
@@ -787,7 +799,7 @@ package actionScripts.plugins.as3project
 				isVisualEditorProject = true;
 			}
 			
-			if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT_LIBRARY) != -1)
+			if (templateName.indexOf(ProjectTemplateType.LIBRARY_PROJECT) != -1)
 			{
 				isLibraryProject = true;
 			}

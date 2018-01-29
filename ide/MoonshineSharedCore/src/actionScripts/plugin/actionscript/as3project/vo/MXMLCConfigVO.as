@@ -35,7 +35,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function write(pvo:AS3ProjectVO):void 
 		{
-			if (pvo.targets.length == 0) 
+			if (pvo.targets.length == 0 && !pvo.isLibraryProject) 
 			{
 				// No targets found for config construction.
 				return;
@@ -130,32 +130,107 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var oldIC:Boolean = XML.ignoreComments;
 			XML.ignoreComments = false;
 			
-			var data:XML = <flex-config />;
+			var data:XML = <flex-config xmlns="http://www.adobe.com/2006/flex-config"/>;
 			XML.ignoreComments = oldIC;
 			
 			// re-verify SWF version - crucial part
+			var sdkPath:String;
 			if (!pvo.buildOptions.customSDK && IDEModel.getInstance().defaultSDK)
 			{
 				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion();
+				sdkPath = IDEModel.getInstance().defaultSDK.fileBridge.nativePath;
 			}
 			else if (pvo.buildOptions.customSDK)
 			{
 				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(pvo.buildOptions.customSDKPath);
+				sdkPath = pvo.buildOptions.customSDKPath;
 			}
 			
 			data.appendChild(
-				<swf-version>{pvo.swfOutput.swfVersion}</swf-version>
+				<target-player>{pvo.swfOutput.swfVersion}</target-player>
 			);
-			
 			data.appendChild(
 				<output>{pvo.swfOutput.path.fileBridge.nativePath}</output>
+			);
+			data.appendChild(
+				<static-link-runtime-shared-libraries>false</static-link-runtime-shared-libraries>
 			);
 			
 			data.appendChild(
 				<compiler />
 			);
 			
+			data.compiler.appendChild(
+				<warn-no-constructor>false</warn-no-constructor>
+			);
+			data.compiler.appendChild(
+				<accessible>true</accessible>
+			);
+			data.compiler.appendChild(
+				<fonts>
+				  <managers>
+					<manager-class>flash.fonts.JREFontManager</manager-class>
+					<manager-class>flash.fonts.BatikFontManager</manager-class>
+					<manager-class>flash.fonts.AFEFontManager</manager-class>
+					<manager-class>flash.fonts.CFFFontManager</manager-class>
+				  </managers>
+				</fonts>
+			);
 			data.compiler.appendChild(exportPaths(new <FileLocation>[pvo.sourceFolder], <source-path/>, <path-element/>));
+			data.compiler.appendChild(
+				<debug>true</debug>
+			);
+			data.compiler.appendChild(
+				<locale-element>en_US</locale-element>
+			);
+			data.compiler.appendChild(
+				<namespaces>
+				  <namespace>
+					<uri>http://ns.adobe.com/mxml/2009</uri>
+					<manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest>
+				  </namespace>
+				  <namespace>
+					<uri>library://ns.adobe.com/flex/spark</uri>
+					<manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest>
+				  </namespace>
+				  <namespace>
+					<uri>library://ns.adobe.com/flex/mx</uri>
+					<manifest>{sdkPath}/frameworks/mx-manifest.xml</manifest>
+				  </namespace>
+				  <namespace>
+					<uri>http://www.adobe.com/2006/mxml</uri>
+					<manifest>{sdkPath}/frameworks/mxml-manifest.xml</manifest>
+				  </namespace>
+				</namespaces>
+			);
+			data.compiler.appendChild(
+				<external-library-path>
+				  <path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/spark.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/apache.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/charts.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/framework.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/airspark.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/airframework.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element>
+				  <path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element>
+				</external-library-path>
+			);
 			if (pvo.classpaths.length > 0) data.appendChild(exportPaths(pvo.classpaths, <include-sources/>, <path-element/>));
 			
 			if (ConstantsCoreVO.IS_AIR)

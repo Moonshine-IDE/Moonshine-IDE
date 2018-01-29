@@ -22,10 +22,9 @@ package actionScripts.plugin.project
     {
         public static const FEATHERS:String = "Feathers";
         public static const ACTIONSCRIPT:String = "ActionScript Project";
-		public static const ACTIONSCRIPT_LIBRARY:String = "ActionScript Library Project";
+		public static const LIBRARY_PROJECT:String = "Library Project";
         public static const MOBILE:String = "Mobile Project";
         public static const VISUAL_EDITOR:String = "Visual Editor";
 		public static const AWAY3D:String = "Away3D Project";
-		public static const FLEX_LIBRARY:String = "Flex Library Project";
     }
 }
