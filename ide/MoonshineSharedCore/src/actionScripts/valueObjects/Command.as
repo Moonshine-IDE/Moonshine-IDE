@@ -11,7 +11,7 @@ package actionScripts.valueObjects
 		 * Arguments that the command handler should be
 		 * invoked with.
 		 */
-		public var arguments: *;
+		public var arguments: Array;
 		
 		public function Command()
 		{
