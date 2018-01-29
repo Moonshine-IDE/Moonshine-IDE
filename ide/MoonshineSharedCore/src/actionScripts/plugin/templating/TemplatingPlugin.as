@@ -310,6 +310,7 @@ package actionScripts.plugin.templating
 
             ConstantsCoreVO.TEMPLATES_PROJECTS = projectTemplateCollection;
             ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
+			royaleProjectTemplates.source = royaleProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
         }
 		

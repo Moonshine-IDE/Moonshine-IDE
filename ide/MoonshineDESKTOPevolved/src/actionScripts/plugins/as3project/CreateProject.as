@@ -215,7 +215,7 @@ package actionScripts.plugins.as3project
 				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 				if (isFlexJSTemplate)
 				{
-					project.projectName = "NewFlexJSBrowserProject";
+					project.projectName = "NewRoyaleBrowserProject";
                 }
 				else
 				{
@@ -276,8 +276,7 @@ package actionScripts.plugins.as3project
 			else if (isFlexJSTemplate)
 			{
                 settings.getSettingsList().splice(3, 0,
-						new ListSetting(this, "projectTemplateType", "Select Template Type",
-								ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
+						new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
 			}
 			else if (isLibraryProject)
 			{
