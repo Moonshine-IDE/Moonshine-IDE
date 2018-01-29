@@ -210,6 +210,8 @@
 			else if (currentProject && currentProject.isRoyale)
 			{
 				componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS;
+				//Selects Group which is more common for Royale
+				ddlType.selectedIndex = 1;
 			}
 			else
 			{
