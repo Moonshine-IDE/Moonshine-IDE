@@ -304,8 +304,7 @@
 		<s:VGroup width="100%">
 			<s:Label text="Superclass:"/>
 			<view:PromptTextInput id="txtSuperclass"
-								  prompt="Class to extend with" width="100%" styleName="textInput"
-								  enabled="false"/>
+								  prompt="Class to extend with" width="100%" styleName="textInput"/>
 			<s:HGroup id="hgExistingWarning" 
 					  width="100%" verticalAlign="middle"
 					  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
