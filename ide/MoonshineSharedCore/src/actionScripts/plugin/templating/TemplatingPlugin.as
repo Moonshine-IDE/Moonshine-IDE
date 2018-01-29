@@ -203,16 +203,24 @@ package actionScripts.plugin.templating
 				ConstantsCoreVO.TEMPLATE_TEXT = files;
 			
 			// Just to generate a divider in relevant UI
-			ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
+			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			
 			files = templatesDir.resolvePath("files/mxml/flexjs");
 			list = files.fileBridge.getDirectoryListing();
 			for each (file in list)
 			{
 				if (!file.isHidden && !file.isDirectory)
-					ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem(file);
+					ConstantsCoreVO.TEMPLATES_MXML_FLEXJS_COMPONENTS.addItem(file);
 			}
-			
+
+            files = templatesDir.resolvePath("files/mxml/royale");
+            list = files.fileBridge.getDirectoryListing();
+            for each (file in list)
+            {
+                if (!file.isHidden && !file.isDirectory)
+                    ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS.addItem(file);
+            }
+
 			var projects:FileLocation = templatesDir.resolvePath("projects");
 			list = projects.fileBridge.getDirectoryListing();
 			for each (file in list)

@@ -21,13 +21,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5"
-				   width="600" minWidth="400" title="New MXML Component"
-				   creationComplete="onCreationCompletes(event)" 
-				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+										   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   backgroundColor="0xf5f5f5" width="600" minWidth="400" title="New MXML Component"
+										   creationComplete="onCreationCompletes(event)" skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
@@ -200,11 +198,22 @@
 
 		private function refreshTemplatesBasedOnDropDownList():void
 		{
-			componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS;
 			var currentProject:AS3ProjectVO = wrapperBelongToProject as AS3ProjectVO;
 			if (currentProject && currentProject.isVisualEditorProject)
 			{
 				componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS;
+			}
+			else if (currentProject && currentProject.isFlexJS && !currentProject.isRoyale)
+			{
+				componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_FLEXJS_COMPONENTS;
+			}
+			else if (currentProject && currentProject.isRoyale)
+			{
+				componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS;
+			}
+			else
+			{
+				componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS;
 			}
 		}
 
@@ -217,7 +226,8 @@
 			// 3. scroll to the fileWrapper object
 			UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 			UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
-			tree.callLater(function ():void {
+			tree.callLater(function ():void
+			{
 				var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 				for (var j:int = 0; j < (wrappers.length - 1); j++)
 				{
@@ -227,7 +237,8 @@
 				// selection
 				tree.selectedItem = wrapperOfFolderLocation;
 				// scroll-to
-				tree.callLater(function ():void {
+				tree.callLater(function ():void
+				{
 					tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
 				});
 			});

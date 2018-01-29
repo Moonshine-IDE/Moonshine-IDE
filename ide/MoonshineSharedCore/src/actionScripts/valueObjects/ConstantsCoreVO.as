@@ -66,6 +66,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ROYALE:ArrayCollection;
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
+        public static var TEMPLATES_MXML_FLEXJS_COMPONENTS:ArrayCollection = new ArrayCollection();
+        public static var TEMPLATES_MXML_ROYALE_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_VISUALEDITOR_FILES_COMPONENTS:ArrayCollection = new ArrayCollection();
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;

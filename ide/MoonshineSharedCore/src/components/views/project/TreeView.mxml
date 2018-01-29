@@ -440,7 +440,13 @@
 					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory) ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
 
 					// for new file type creation
-					if (event.extra != FTETreeItemRenderer.NEW_FOLDER) dispatcher.dispatchEvent(new NewFileEvent(event.extra, creatingItemIn.file.fileBridge.nativePath, null, creatingItemIn));
+					if (event.extra != FTETreeItemRenderer.NEW_FOLDER)
+					{
+						var newFileEvent:NewFileEvent = new NewFileEvent(event.extra, creatingItemIn.file.fileBridge.nativePath, null, creatingItemIn);
+						newFileEvent.ofProject = getProjectFromProjectFolder(fileWrapper);
+
+						dispatcher.dispatchEvent(newFileEvent);
+					}
 					else
 					{
 						if (!newFolderWindow)
