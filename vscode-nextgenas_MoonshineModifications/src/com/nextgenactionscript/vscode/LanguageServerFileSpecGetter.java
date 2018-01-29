@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Bowler Hat LLC
+Copyright 2016-2018 Bowler Hat LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.apache.flex.compiler.common.IFileSpecificationGetter;
-import org.apache.flex.compiler.constants.IASKeywordConstants;
-import org.apache.flex.compiler.filespecs.FileSpecification;
-import org.apache.flex.compiler.filespecs.IFileSpecification;
-import org.apache.flex.compiler.internal.filespecs.StringFileSpecification;
-import org.apache.flex.compiler.workspaces.IWorkspace;
+import org.apache.royale.compiler.common.IFileSpecificationGetter;
+import org.apache.royale.compiler.constants.IASKeywordConstants;
+import org.apache.royale.compiler.filespecs.FileSpecification;
+import org.apache.royale.compiler.filespecs.IFileSpecification;
+import org.apache.royale.compiler.internal.filespecs.StringFileSpecification;
+import org.apache.royale.compiler.workspaces.IWorkspace;
 
 /**
- * Returns instances of IFileSpecification to be used by the Apache FlexJS
+ * Returns instances of IFileSpecification to be used by the Apache Royale
  * compiler to get the contents of files. If a file is open, and it is being
  * edited (possibly with changes not saved to the file system), returns a
  * StringFileSpecification. StringFileSpecification stores the code in a String.

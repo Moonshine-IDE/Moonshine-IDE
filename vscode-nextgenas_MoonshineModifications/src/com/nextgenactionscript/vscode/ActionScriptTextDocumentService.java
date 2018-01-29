@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Bowler Hat LLC
+Copyright 2016-2018 Bowler Hat LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,104 +41,106 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.flex.abc.ABCParser;
-import org.apache.flex.abc.Pool;
-import org.apache.flex.abc.PoolingABCVisitor;
-import org.apache.flex.compiler.asdoc.IASDocTag;
-import org.apache.flex.compiler.clients.MXMLJSC;
-import org.apache.flex.compiler.common.ASModifier;
-import org.apache.flex.compiler.common.ISourceLocation;
-import org.apache.flex.compiler.common.PrefixMap;
-import org.apache.flex.compiler.common.XMLName;
-import org.apache.flex.compiler.config.Configurator;
-import org.apache.flex.compiler.config.ICompilerSettingsConstants;
-import org.apache.flex.compiler.constants.IASKeywordConstants;
-import org.apache.flex.compiler.constants.IASLanguageConstants;
-import org.apache.flex.compiler.constants.IMXMLCoreConstants;
-import org.apache.flex.compiler.constants.IMetaAttributeConstants;
-import org.apache.flex.compiler.definitions.IAccessorDefinition;
-import org.apache.flex.compiler.definitions.IClassDefinition;
-import org.apache.flex.compiler.definitions.IConstantDefinition;
-import org.apache.flex.compiler.definitions.IDefinition;
-import org.apache.flex.compiler.definitions.IDocumentableDefinition;
-import org.apache.flex.compiler.definitions.IEventDefinition;
-import org.apache.flex.compiler.definitions.IFunctionDefinition;
-import org.apache.flex.compiler.definitions.IGetterDefinition;
-import org.apache.flex.compiler.definitions.IInterfaceDefinition;
-import org.apache.flex.compiler.definitions.INamespaceDefinition;
-import org.apache.flex.compiler.definitions.IPackageDefinition;
-import org.apache.flex.compiler.definitions.IParameterDefinition;
-import org.apache.flex.compiler.definitions.ISetterDefinition;
-import org.apache.flex.compiler.definitions.IStyleDefinition;
-import org.apache.flex.compiler.definitions.ITypeDefinition;
-import org.apache.flex.compiler.definitions.IVariableDefinition;
-import org.apache.flex.compiler.definitions.IVariableDefinition.VariableClassification;
-import org.apache.flex.compiler.definitions.metadata.IMetaTag;
-import org.apache.flex.compiler.driver.IBackend;
-import org.apache.flex.compiler.filespecs.IFileSpecification;
-import org.apache.flex.compiler.internal.driver.js.flexjs.FlexJSBackend;
-import org.apache.flex.compiler.internal.driver.js.goog.JSGoogConfiguration;
-import org.apache.flex.compiler.internal.driver.js.jsc.JSCBackend;
-import org.apache.flex.compiler.internal.driver.js.node.NodeBackend;
-import org.apache.flex.compiler.internal.driver.js.node.NodeModuleBackend;
-import org.apache.flex.compiler.internal.mxml.MXMLData;
-import org.apache.flex.compiler.internal.parsing.as.ASParser;
-import org.apache.flex.compiler.internal.parsing.as.ASToken;
-import org.apache.flex.compiler.internal.parsing.as.RepairingTokenBuffer;
-import org.apache.flex.compiler.internal.parsing.as.StreamingASTokenizer;
-import org.apache.flex.compiler.internal.projects.CompilerProject;
-import org.apache.flex.compiler.internal.projects.FlexJSProject;
-import org.apache.flex.compiler.internal.projects.FlexProject;
-import org.apache.flex.compiler.internal.scopes.ASScope;
-import org.apache.flex.compiler.internal.scopes.TypeScope;
-import org.apache.flex.compiler.internal.scopes.ASProjectScope.DefinitionPromise;
-import org.apache.flex.compiler.internal.tree.as.FileNode;
-import org.apache.flex.compiler.internal.tree.as.FullNameNode;
-import org.apache.flex.compiler.internal.units.SWCCompilationUnit;
-import org.apache.flex.compiler.internal.workspaces.Workspace;
-import org.apache.flex.compiler.mxml.IMXMLData;
-import org.apache.flex.compiler.mxml.IMXMLDataManager;
-import org.apache.flex.compiler.mxml.IMXMLLanguageConstants;
-import org.apache.flex.compiler.mxml.IMXMLTagAttributeData;
-import org.apache.flex.compiler.mxml.IMXMLTagData;
-import org.apache.flex.compiler.mxml.IMXMLTextData;
-import org.apache.flex.compiler.mxml.IMXMLUnitData;
-import org.apache.flex.compiler.problems.FontEmbeddingNotSupported;
-import org.apache.flex.compiler.problems.ICompilerProblem;
-import org.apache.flex.compiler.scopes.IASScope;
-import org.apache.flex.compiler.targets.ITarget;
-import org.apache.flex.compiler.targets.ITargetSettings;
-import org.apache.flex.compiler.tree.ASTNodeID;
-import org.apache.flex.compiler.tree.as.IASNode;
-import org.apache.flex.compiler.tree.as.IBinaryOperatorNode;
-import org.apache.flex.compiler.tree.as.IClassNode;
-import org.apache.flex.compiler.tree.as.IContainerNode;
-import org.apache.flex.compiler.tree.as.IDefinitionNode;
-import org.apache.flex.compiler.tree.as.IExpressionNode;
-import org.apache.flex.compiler.tree.as.IFileNode;
-import org.apache.flex.compiler.tree.as.IFunctionCallNode;
-import org.apache.flex.compiler.tree.as.IFunctionNode;
-import org.apache.flex.compiler.tree.as.IIdentifierNode;
-import org.apache.flex.compiler.tree.as.IImportNode;
-import org.apache.flex.compiler.tree.as.IInterfaceNode;
-import org.apache.flex.compiler.tree.as.IKeywordNode;
-import org.apache.flex.compiler.tree.as.ILanguageIdentifierNode;
-import org.apache.flex.compiler.tree.as.IMemberAccessExpressionNode;
-import org.apache.flex.compiler.tree.as.INamespaceDecorationNode;
-import org.apache.flex.compiler.tree.as.IPackageNode;
-import org.apache.flex.compiler.tree.as.IScopedDefinitionNode;
-import org.apache.flex.compiler.tree.as.IScopedNode;
-import org.apache.flex.compiler.tree.as.ITypeNode;
-import org.apache.flex.compiler.tree.as.IVariableNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLClassReferenceNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLConcatenatedDataBindingNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLEventSpecifierNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLPropertySpecifierNode;
-import org.apache.flex.compiler.tree.mxml.IMXMLSingleDataBindingNode;
-import org.apache.flex.compiler.units.ICompilationUnit;
-import org.apache.flex.compiler.units.IInvisibleCompilationUnit;
-import org.apache.flex.compiler.workspaces.IWorkspace;
+import org.apache.royale.abc.ABCConstants;
+import org.apache.royale.abc.ABCParser;
+import org.apache.royale.abc.Pool;
+import org.apache.royale.abc.PoolingABCVisitor;
+import org.apache.royale.compiler.asdoc.IASDocTag;
+import org.apache.royale.compiler.clients.MXMLJSC;
+import org.apache.royale.compiler.common.ASModifier;
+import org.apache.royale.compiler.common.ISourceLocation;
+import org.apache.royale.compiler.common.PrefixMap;
+import org.apache.royale.compiler.common.XMLName;
+import org.apache.royale.compiler.config.ICompilerSettingsConstants;
+import org.apache.royale.compiler.constants.IASKeywordConstants;
+import org.apache.royale.compiler.constants.IASLanguageConstants;
+import org.apache.royale.compiler.constants.IMXMLCoreConstants;
+import org.apache.royale.compiler.constants.IMetaAttributeConstants;
+import org.apache.royale.compiler.definitions.IAccessorDefinition;
+import org.apache.royale.compiler.definitions.IClassDefinition;
+import org.apache.royale.compiler.definitions.IConstantDefinition;
+import org.apache.royale.compiler.definitions.IDefinition;
+import org.apache.royale.compiler.definitions.IDocumentableDefinition;
+import org.apache.royale.compiler.definitions.IEventDefinition;
+import org.apache.royale.compiler.definitions.IFunctionDefinition;
+import org.apache.royale.compiler.definitions.IGetterDefinition;
+import org.apache.royale.compiler.definitions.IInterfaceDefinition;
+import org.apache.royale.compiler.definitions.INamespaceDefinition;
+import org.apache.royale.compiler.definitions.IPackageDefinition;
+import org.apache.royale.compiler.definitions.IParameterDefinition;
+import org.apache.royale.compiler.definitions.ISetterDefinition;
+import org.apache.royale.compiler.definitions.IStyleDefinition;
+import org.apache.royale.compiler.definitions.ITypeDefinition;
+import org.apache.royale.compiler.definitions.IVariableDefinition;
+import org.apache.royale.compiler.definitions.IVariableDefinition.VariableClassification;
+import org.apache.royale.compiler.definitions.metadata.IMetaTag;
+import org.apache.royale.compiler.driver.IBackend;
+import org.apache.royale.compiler.filespecs.IFileSpecification;
+import org.apache.royale.compiler.internal.driver.js.royale.RoyaleBackend;
+import org.apache.royale.compiler.internal.driver.js.goog.JSGoogConfiguration;
+import org.apache.royale.compiler.internal.driver.js.jsc.JSCBackend;
+import org.apache.royale.compiler.internal.driver.js.node.NodeBackend;
+import org.apache.royale.compiler.internal.driver.js.node.NodeModuleBackend;
+import org.apache.royale.compiler.internal.mxml.MXMLData;
+import org.apache.royale.compiler.internal.parsing.as.ASParser;
+import org.apache.royale.compiler.internal.parsing.as.ASToken;
+import org.apache.royale.compiler.internal.parsing.as.RepairingTokenBuffer;
+import org.apache.royale.compiler.internal.parsing.as.StreamingASTokenizer;
+import org.apache.royale.compiler.internal.projects.CompilerProject;
+import org.apache.royale.compiler.internal.projects.RoyaleJSProject;
+import org.apache.royale.compiler.internal.projects.RoyaleProject;
+import org.apache.royale.compiler.internal.projects.RoyaleProjectConfigurator;
+import org.apache.royale.compiler.internal.scopes.ASScope;
+import org.apache.royale.compiler.internal.scopes.TypeScope;
+import org.apache.royale.compiler.internal.scopes.ASProjectScope.DefinitionPromise;
+import org.apache.royale.compiler.internal.tree.as.FileNode;
+import org.apache.royale.compiler.internal.tree.as.FullNameNode;
+import org.apache.royale.compiler.internal.units.SWCCompilationUnit;
+import org.apache.royale.compiler.internal.workspaces.Workspace;
+import org.apache.royale.compiler.mxml.IMXMLData;
+import org.apache.royale.compiler.mxml.IMXMLDataManager;
+import org.apache.royale.compiler.mxml.IMXMLLanguageConstants;
+import org.apache.royale.compiler.mxml.IMXMLTagAttributeData;
+import org.apache.royale.compiler.mxml.IMXMLTagData;
+import org.apache.royale.compiler.mxml.IMXMLTextData;
+import org.apache.royale.compiler.mxml.IMXMLUnitData;
+import org.apache.royale.compiler.problems.FontEmbeddingNotSupported;
+import org.apache.royale.compiler.problems.ICompilerProblem;
+import org.apache.royale.compiler.scopes.IASScope;
+import org.apache.royale.compiler.targets.ITarget;
+import org.apache.royale.compiler.targets.ITargetSettings;
+import org.apache.royale.compiler.tree.ASTNodeID;
+import org.apache.royale.compiler.tree.as.IASNode;
+import org.apache.royale.compiler.tree.as.IBinaryOperatorNode;
+import org.apache.royale.compiler.tree.as.IClassNode;
+import org.apache.royale.compiler.tree.as.IContainerNode;
+import org.apache.royale.compiler.tree.as.IDefinitionNode;
+import org.apache.royale.compiler.tree.as.IExpressionNode;
+import org.apache.royale.compiler.tree.as.IFileNode;
+import org.apache.royale.compiler.tree.as.IFunctionCallNode;
+import org.apache.royale.compiler.tree.as.IFunctionNode;
+import org.apache.royale.compiler.tree.as.IIdentifierNode;
+import org.apache.royale.compiler.tree.as.IImportNode;
+import org.apache.royale.compiler.tree.as.IInterfaceNode;
+import org.apache.royale.compiler.tree.as.IKeywordNode;
+import org.apache.royale.compiler.tree.as.ILanguageIdentifierNode;
+import org.apache.royale.compiler.tree.as.IMemberAccessExpressionNode;
+import org.apache.royale.compiler.tree.as.INamespaceDecorationNode;
+import org.apache.royale.compiler.tree.as.IPackageNode;
+import org.apache.royale.compiler.tree.as.IScopedDefinitionNode;
+import org.apache.royale.compiler.tree.as.IScopedNode;
+import org.apache.royale.compiler.tree.as.ITypeNode;
+import org.apache.royale.compiler.tree.as.IVariableNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLClassReferenceNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLConcatenatedDataBindingNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLEventSpecifierNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLPropertySpecifierNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLSingleDataBindingNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLSpecifierNode;
+import org.apache.royale.compiler.units.ICompilationUnit;
+import org.apache.royale.compiler.units.IInvisibleCompilationUnit;
+import org.apache.royale.compiler.workspaces.IWorkspace;
 
 import com.google.common.io.Files;
 import com.google.gson.internal.LinkedTreeMap;
@@ -152,6 +154,7 @@ import com.nextgenactionscript.vscode.project.ProjectOptions;
 import com.nextgenactionscript.vscode.project.ProjectType;
 import com.nextgenactionscript.vscode.project.VSCodeConfiguration;
 import com.nextgenactionscript.vscode.utils.ASTUtils;
+import com.nextgenactionscript.vscode.utils.ActionScriptSDKUtils;
 import com.nextgenactionscript.vscode.utils.ImportTextEditUtils;
 import com.nextgenactionscript.vscode.utils.LSPUtils;
 import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
@@ -210,7 +213,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 /**
  * Handles requests from Visual Studio Code that are at the document level,
  * including things like API completion, function signature help, and find all
- * references. Calls APIs on the Apache FlexJS compiler to get data for the
+ * references. Calls APIs on the Apache Royale compiler to get data for the
  * responses to return to VSCode.
  */
 public class ActionScriptTextDocumentService implements TextDocumentService
@@ -225,6 +228,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private static final String MARKDOWN_CODE_BLOCK_MXML_START = "```mxml\n";
     private static final String MARKDOWN_CODE_BLOCK_END = "\n```";
     private static final String TOKEN_CONFIGNAME = "configname";
+    private static final String CONFIG_ROYALE = "royale";
     private static final String CONFIG_JS = "js";
     private static final String CONFIG_NODE = "node";
     private static final String SDK_FRAMEWORKS_PATH_SIGNATURE = "/frameworks/";
@@ -232,7 +236,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private static final String SDK_LIBRARY_PATH_SIGNATURE_WINDOWS = "\\frameworks\\libs\\";
     private static final String SDK_SOURCE_PATH_SIGNATURE_UNIX = "/frameworks/projects/";
     private static final String SDK_SOURCE_PATH_SIGNATURE_WINDOWS = "\\frameworks\\projects\\";
-    private static final String FLEXLIB = "flexlib";
+    private static final String PROPERTY_FRAMEWORK_LIB = "royalelib";
     private static final String UNDERSCORE_UNDERSCORE_AS3_PACKAGE = "__AS3__.";
     private static final String VECTOR_HIDDEN_PREFIX = "Vector$";
     private static final String ASDOC_TAG_PARAM = "param";
@@ -263,9 +267,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         //Flex
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.MX, "mx");
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.SPARK, "s");
-
+        
         //FlexJS
-        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.BASIC, "js");
+        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.FLEXJS_EXPRESS, "js");
+        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.FLEXJS_BASIC, "js");
+
+        //Royale
+        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.ROYALE_EXPRESS, "js");
+        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.ROYALE_BASIC, "js");
 
         //Feathers
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.FEATHERS, "f");
@@ -279,10 +288,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private Path workspaceRoot;
     private Map<Path, String> sourceByPath = new HashMap<>();
     private Map<Path, List<SavedCodeAction>> codeActionsByPath = new HashMap<>();
+    private List<String> completionTypes = new ArrayList<>();
     private Collection<ICompilationUnit> compilationUnits;
     private ArrayList<IInvisibleCompilationUnit> invisibleUnits = new ArrayList<>();
     private ICompilationUnit currentUnit;
-    private FlexProject currentProject;
+    private RoyaleProject currentProject;
     private IWorkspace currentWorkspace;
     private ProjectOptions currentProjectOptions;
     private int currentOffset = -1;
@@ -291,8 +301,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private int namespaceEndIndex = -1;
     private String namespaceUri;
     private LanguageServerFileSpecGetter fileSpecGetter;
-    private boolean flexLibSDKContainsFalconCompiler = false;
-    private boolean flexLibSDKIsFlexJS = false;
+    private boolean frameworkSDKContainsFalconCompiler = false;
+    private boolean frameworkSDKIsRoyale = false;
+    private boolean frameworkSDKIsFlexJS = false;
     private ProblemTracker codeProblemTracker = new ProblemTracker();
     private ProblemTracker configProblemTracker = new ProblemTracker();
     private Pattern additionalOptionsPattern = Pattern.compile("[^\\s]*'([^'])*?'|[^\\s]*\"([^\"])*?\"|[^\\s]+");
@@ -366,6 +377,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position)
     {
+        //this shouldn't be necessary, but if we ever forget to do this
+        //somewhere, completion results might be missing items.
+        completionTypes.clear();
         String textDocumentUri = position.getTextDocument().getUri();
         if (!textDocumentUri.endsWith(AS_EXTENSION)
                 && !textDocumentUri.endsWith(MXML_EXTENSION))
@@ -381,13 +395,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, position);
             if (embeddedNode != null)
             {
-                return CompletableFuture.completedFuture(Either.forRight(actionScriptCompletionWithNode(position, embeddedNode)));
+                CompletionList result = actionScriptCompletionWithNode(position, embeddedNode);
+                completionTypes.clear();
+                return CompletableFuture.completedFuture(Either.forRight(result));
             }
             //if we're inside an <fx:Script> tag, we want ActionScript completion,
             //so that's why we call isMXMLTagValidForCompletion()
             if (isMXMLTagValidForCompletion(offsetTag))
             {
-                return CompletableFuture.completedFuture(Either.forRight(mxmlCompletion(position, offsetTag)));
+                CompletionList result = mxmlCompletion(position, offsetTag);
+                completionTypes.clear();
+                return CompletableFuture.completedFuture(Either.forRight(result));
             }
         }
         if (offsetTag == null && position.getTextDocument().getUri().endsWith(MXML_EXTENSION))
@@ -402,7 +420,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             result.setItems(new ArrayList<>());
             return CompletableFuture.completedFuture(Either.forRight(result));
         }
-        return CompletableFuture.completedFuture(Either.forRight(actionScriptCompletion(position)));
+        CompletionList result = actionScriptCompletion(position);
+        completionTypes.clear();
+        return CompletableFuture.completedFuture(Either.forRight(result));
     }
 
     /**
@@ -1297,20 +1317,25 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void updateFrameworkSDK()
     {
-        String frameworkSDKPath = System.getProperty(FLEXLIB);
+        String frameworkSDKPath = System.getProperty(PROPERTY_FRAMEWORK_LIB);
         if(frameworkSDKPath.equals(oldFrameworkSDKPath))
         {
             return;
         }
         oldFrameworkSDKPath = frameworkSDKPath;
+
         //if the framework SDK doesn't include the Falcon compiler, we can
         //ignore certain errors from the editor SDK, which includes Falcon.
         Path sdkPath = Paths.get(frameworkSDKPath);
         sdkPath = sdkPath.resolve("../lib/falcon-mxmlc.jar");
-        flexLibSDKContainsFalconCompiler = sdkPath.toFile().exists();
-        sdkPath = Paths.get(System.getProperty(FLEXLIB));
+        frameworkSDKContainsFalconCompiler = sdkPath.toFile().exists();
+
+        sdkPath = Paths.get(System.getProperty(PROPERTY_FRAMEWORK_LIB));
+        frameworkSDKIsRoyale = ActionScriptSDKUtils.isRoyaleFramework(sdkPath);
+
+        sdkPath = Paths.get(System.getProperty(PROPERTY_FRAMEWORK_LIB));
         sdkPath = sdkPath.resolve("../js/bin/asjsc");
-        flexLibSDKIsFlexJS = sdkPath.toFile().exists();
+        frameworkSDKIsFlexJS = !frameworkSDKIsRoyale && sdkPath.toFile().exists();
     }
 
     private void cleanupCurrentProject()
@@ -1664,6 +1689,43 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         }
 
+        //function overrides
+        if (parentNode != null
+            && parentNode instanceof IFunctionNode
+            && offsetNode instanceof IIdentifierNode)
+        {
+            IFunctionNode functionNode = (IFunctionNode) parentNode;
+            if (offsetNode == functionNode.getNameExpressionNode())
+            {
+                if (functionNode.hasModifier(ASModifier.OVERRIDE)
+                    && functionNode.getParametersContainerNode().getAbsoluteStart() == -1
+                    && functionNode.getReturnTypeNode() == null)
+                {
+                    autoCompleteFunctionOverrides(functionNode, result);
+                    return result;
+                }
+            }
+        }
+        if (nodeAtPreviousOffset != null
+                && nodeAtPreviousOffset instanceof IKeywordNode
+                && (nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordFunctionID
+                        || nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordGetID
+                        || nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordSetID))
+        {
+            IASNode previousNodeParent = (IASNode) nodeAtPreviousOffset.getParent();
+            if (previousNodeParent instanceof IFunctionNode)
+            {
+                IFunctionNode functionNode = (IFunctionNode) previousNodeParent;
+                if (functionNode.hasModifier(ASModifier.OVERRIDE)
+                        && functionNode.getParametersContainerNode().getAbsoluteStart() == -1
+                        && functionNode.getReturnTypeNode() == null)
+                {
+                    autoCompleteFunctionOverrides(functionNode, result);
+                    return result;
+                }
+            }
+        }
+
         //local scope
         IASNode currentNodeForScope = offsetNode;
         do
@@ -1682,7 +1744,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IDefinition definitionToSkip = scope.getDefinition();
                 autoCompleteDefinitions(result, false, false, null, definitionToSkip, containingPackageName);
                 autoCompleteKeywords(scopedNode, result);
-                return result;                
+                return result;
             }
             currentNodeForScope = currentNodeForScope.getParent();
         }
@@ -2820,6 +2882,122 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         autoCompleteValue(IASKeywordConstants.NULL, result);
     }
 
+    private void autoCompleteFunctionOverrides(IFunctionNode node, CompletionList result)
+    {
+        String namespace = node.getNamespace();
+        boolean isGetter = node.isGetter();
+        boolean isSetter = node.isSetter();
+        IClassNode classNode = (IClassNode) node.getAncestorOfType(IClassNode.class);
+        IClassDefinition classDefinition = classNode.getDefinition();
+
+        ArrayList<IDefinition> propertyDefinitions = new ArrayList<>();
+        TypeScope typeScope = (TypeScope) classDefinition.getContainedScope();
+        Set<INamespaceDefinition> namespaceSet = typeScope.getNamespaceSet(currentProject);
+        do
+        {
+            classDefinition = classDefinition.resolveBaseClass(currentProject);
+            if (classDefinition == null)
+            {
+                break;
+            }
+            typeScope = (TypeScope) classDefinition.getContainedScope();
+            INamespaceDefinition protectedNamespace = classDefinition.getProtectedNamespaceReference();
+            typeScope.getAllLocalProperties(currentProject, propertyDefinitions, namespaceSet, protectedNamespace);
+        }
+        while (classDefinition instanceof IClassDefinition);
+
+        List<CompletionItem> resultItems = result.getItems();
+        ArrayList<String> functionNames = new ArrayList<>();
+        for (IDefinition definition : propertyDefinitions)
+        {
+            if (!(definition instanceof IFunctionDefinition)
+                    || definition.isStatic())
+            {
+                continue;
+            }
+            IFunctionDefinition functionDefinition = (IFunctionDefinition) definition;
+            boolean otherIsGetter = functionDefinition instanceof IGetterDefinition;
+            boolean otherIsSetter = functionDefinition instanceof ISetterDefinition;
+            String otherNamespace = functionDefinition.getNamespaceReference().getBaseName();
+            if (isGetter != otherIsGetter
+                    || isSetter != otherIsSetter
+                    || !namespace.equals(otherNamespace))
+            {
+                continue;
+            }
+            String functionName = functionDefinition.getBaseName();
+            if (functionNames.contains(functionName))
+            {
+                continue;
+            }
+            functionNames.add(functionName);
+
+            StringBuilder insertText = new StringBuilder();
+            insertText.append(functionName);
+            insertText.append("(");
+            IParameterDefinition[] params = functionDefinition.getParameters();
+            for (int i = 0, length = params.length; i < length; i++)
+            {
+                if (i > 0)
+                {
+                    insertText.append(", ");
+                }
+                IParameterDefinition param = params[i];
+                if (param.isRest())
+                {
+                    insertText.append(IASLanguageConstants.REST);
+                }
+                insertText.append(param.getBaseName());
+                String paramType = param.getTypeAsDisplayString();
+                if(paramType.length() != 0)
+                {
+                    insertText.append(":");
+                    insertText.append(paramType);
+                }
+                if (param.hasDefaultValue())
+                {
+                    insertText.append(" = ");
+                    Object defaultValue = param.resolveDefaultValue(currentProject);
+                    if (defaultValue instanceof String)
+                    {
+                        insertText.append("\"" + defaultValue + "\"");
+                    }
+                    else if(defaultValue == ABCConstants.UNDEFINED_VALUE)
+                    {
+                        insertText.append(IASLanguageConstants.UNDEFINED);
+                    }
+                    else if(defaultValue == ABCConstants.NULL_VALUE)
+                    {
+                        insertText.append(IASLanguageConstants.NULL);
+                    }
+                    else
+                    {
+                        insertText.append(defaultValue);
+                    }
+                }
+            }
+            insertText.append(")");
+            String returnType = functionDefinition.getReturnTypeAsDisplayString();
+            if(returnType.length() != 0)
+            {
+                insertText.append(":");
+                insertText.append(returnType);
+            }
+
+            CompletionItem item = new CompletionItem();
+            item.setKind(getDefinitionKind(functionDefinition));
+            item.setDetail(getDefinitionDetail(functionDefinition));
+            item.setLabel(functionDefinition.getBaseName());
+            item.setInsertText(insertText.toString());
+            String docs = getDocumentationForDefinition(functionDefinition, false);
+            if (docs != null)
+            {
+                item.setDocumentation(docs);
+            }
+            resultItems.add(item);
+        }
+    }
+
     private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, CompletionList result)
     {
         ASScope scope = (ASScope) node.getContainingScope().getScope();
@@ -3382,11 +3560,30 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return prefix;
     }
 
+    private boolean isDuplicateTypeDefinition(IDefinition definition)
+    {
+        if (definition instanceof ITypeDefinition)
+        {
+            String qualifiedName = definition.getQualifiedName();
+            return completionTypes.contains(qualifiedName);
+        }
+        return false;
+    }
+
     private void addDefinitionAutoCompleteActionScript(IDefinition definition, String containingPackageName, CompletionList result)
     {
         if (definition.getBaseName().startsWith(VECTOR_HIDDEN_PREFIX))
         {
             return;
+        }
+        if (isDuplicateTypeDefinition(definition))
+        {
+            return;
+        }
+        if (definition instanceof ITypeDefinition)
+        {
+            String qualifiedName = definition.getQualifiedName();
+            completionTypes.add(qualifiedName);
         }
         CompletionItem item = new CompletionItem();
         item.setKind(getDefinitionKind(definition));
@@ -3414,6 +3611,15 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (definition.getBaseName().startsWith(VECTOR_HIDDEN_PREFIX))
         {
             return;
+        }
+        if (isDuplicateTypeDefinition(definition))
+        {
+            return;
+        }
+        if (definition instanceof ITypeDefinition)
+        {
+            String qualifiedName = definition.getQualifiedName();
+            completionTypes.add(qualifiedName);
         }
         CompletionItem item = new CompletionItem();
         item.setKind(getDefinitionKind(definition));
@@ -3573,7 +3779,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return sourceFilePath;
         }
         sourceFilePath = sourceFilePath.substring(index + SDK_FRAMEWORKS_PATH_SIGNATURE.length());
-        Path frameworkPath = Paths.get(System.getProperty(FLEXLIB));
+        Path frameworkPath = Paths.get(System.getProperty(PROPERTY_FRAMEWORK_LIB));
         Path transformedPath = frameworkPath.resolve(sourceFilePath);
         return transformedPath.toFile().getAbsolutePath();
     }
@@ -4000,7 +4206,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void addCompilerProblem(ICompilerProblem problem, PublishDiagnosticsParams publish)
     {
-        if (!flexLibSDKContainsFalconCompiler)
+        if (!frameworkSDKContainsFalconCompiler)
         {
             //the following errors get special treatment if the framework SDK's
             //compiler isn't Falcon
@@ -4303,9 +4509,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             System.err.println("Interrupted while getting AST");
         }
-        if (ast instanceof IFileNode)
+        if (ast instanceof FileNode)
+        {
+            FileNode fileNode = (FileNode) ast;
+            fileNode.parseRequiredFunctionBodies();
+        }
+        else if (ast instanceof IFileNode)
         {
             IFileNode fileNode = (IFileNode) ast;
+            //ideally, we'd use parseRequiredFunctionBodies(), but if we don't
+            //necessarily know that it exists, this fallback is almost as good
             fileNode.populateFunctionNodes();
         }
         return currentUnit;
@@ -4326,12 +4539,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private boolean isJSConfig(ProjectOptions projectOptions)
     {
-        if(flexLibSDKIsFlexJS)
+        if(frameworkSDKIsRoyale || frameworkSDKIsFlexJS)
         {
             return true;
         }
         String config = projectOptions.config;
-        if (config.equals(CONFIG_JS) || config.equals(CONFIG_NODE))
+        if (config.equals(CONFIG_ROYALE) || config.equals(CONFIG_JS)
+                || config.equals(CONFIG_NODE))
         {
             return true;
         }
@@ -4362,7 +4576,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
     
-    private void publishConfigurationProblems(Configurator configurator)
+    private void publishConfigurationProblems(RoyaleProjectConfigurator configurator)
     {
         Collection<ICompilerProblem> problems = configurator.getConfigurationProblems();
         if (problems.size() > 0)
@@ -4393,7 +4607,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private FlexProject getProject()
+    private RoyaleProject getProject()
     {
         clearInvisibleCompilationUnits();
         refreshProjectOptions();
@@ -4402,7 +4616,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             cleanupCurrentProject();
             return null;
         }
-        FlexProject project = null;
+        RoyaleProject project = null;
         if (currentProject == null)
         {
             //we're going to try to determine if we need a JS project or a SWF one
@@ -4416,7 +4630,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     case SWF:
                     {
-                        //no backend. fall back to FlexProject.
+                        //no backend. fall back to RoyaleProject.
                         backend = null;
                         break;
                     }
@@ -4439,12 +4653,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     {
                         //it actually shouldn't matter too much which JS
                         //backend is used. we just want to rule out SWF.
-                        backend = new FlexJSBackend();
+                        backend = new RoyaleBackend();
                         break;
                     }
                 }
             }
             //if no targets are specified, we can guess JS from some configs
+            else if (currentProjectOptions.config.equals(CONFIG_ROYALE))
+            {
+                backend = new RoyaleBackend();
+            }
             else if (currentProjectOptions.config.equals(CONFIG_JS))
             {
                 backend = new JSCBackend();
@@ -4456,12 +4674,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (backend != null)
             {
                 //if we created a backend, it's a JS project
-                project = new FlexJSProject(new Workspace(), backend);
+                project = new RoyaleJSProject(new Workspace(), backend);
             }
             if (project == null)
             {
                 //if we haven't created the project yet, we default to SWF
-                project = new FlexProject(new Workspace());
+                project = new RoyaleProject(new Workspace());
             }
             project.setProblems(new ArrayList<>());
             currentWorkspace = project.getWorkspace();
@@ -4475,14 +4693,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return currentProject;
         }
         CompilerOptions compilerOptions = currentProjectOptions.compilerOptions;
-        Configurator configurator = null;
+        RoyaleProjectConfigurator configurator = null;
         if (isJSConfig(currentProjectOptions))
         {
-            configurator = new Configurator(JSGoogConfiguration.class);
+            configurator = new RoyaleProjectConfigurator(JSGoogConfiguration.class);
         }
         else //swf only
         {
-            configurator = new Configurator(VSCodeConfiguration.class);
+            configurator = new RoyaleProjectConfigurator(VSCodeConfiguration.class);
         }
         configurator.setToken(TOKEN_CONFIGNAME, currentProjectOptions.config);
         ProjectType type = currentProjectOptions.type;
@@ -4542,7 +4760,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         //this needs to be set before applyToProject() so that it's in the
         //configuration buffer before addExternalLibraryPath() is called
         configurator.setExcludeNativeJSLibraries(false);
-        Path appendConfigPath = Paths.get(System.getProperty(FLEXLIB));
+        Path appendConfigPath = Paths.get(System.getProperty(PROPERTY_FRAMEWORK_LIB));
         appendConfigPath = appendConfigPath.resolve("../ide/vscode-nextgenas/vscode-nextgenas-config.xml");
         File appendConfigFile = appendConfigPath.toFile();
         if (appendConfigFile.exists())
@@ -5679,10 +5897,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 return false;
             }
         }
-        return !isInActionScriptComment(params);
+        int minCommentStartIndex = 0;
+        if (offsetNode instanceof IMXMLSpecifierNode)
+        {
+            IMXMLSpecifierNode mxmlNode = (IMXMLSpecifierNode) offsetNode;
+            //start in the current MXML node and ignore the start of comments
+            //that appear in earlier MXML nodes
+            minCommentStartIndex = mxmlNode.getAbsoluteStart();
+        }
+        return !isInActionScriptComment(params, minCommentStartIndex);
     }
 
-    private boolean isInActionScriptComment(TextDocumentPositionParams params)
+    private boolean isInActionScriptComment(TextDocumentPositionParams params, int minCommentStartIndex)
     {
         TextDocumentIdentifier textDocument = params.getTextDocument();
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
@@ -5692,7 +5918,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         String code = sourceByPath.get(path);
         int startComment = code.lastIndexOf("/*", currentOffset - 1);
-        if (startComment >= 0)
+        if (startComment != -1 && startComment >= minCommentStartIndex)
         {
             int endComment = code.indexOf("*/", startComment);
             if (endComment > currentOffset)
@@ -5706,8 +5932,22 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //we're on the first line
             startLine = 0;
         }
-        startComment = code.indexOf("//", startLine);
-        return startComment != -1 && currentOffset > startComment;
+        //we need to stop searching after the end of the current line
+        int endLine = code.indexOf('\n', currentOffset);
+        do
+        {
+            //we need to check this in a loop because it's possible for
+            //the start of a single line comment to appear inside multiple
+            //MXML attributes on the same line
+            startComment = code.indexOf("//", startLine);
+            if(startComment != -1 && currentOffset > startComment && startComment >= minCommentStartIndex)
+            {
+                return true;
+            }
+            startLine = startComment + 2;
+        }
+        while(startComment != -1 && startLine < endLine);
+        return false;
     }
 
     private boolean isInXMLComment(TextDocumentPositionParams params)

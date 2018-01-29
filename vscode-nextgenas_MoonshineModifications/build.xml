@@ -13,7 +13,7 @@
     <property name="target.property" value="target.path" />
     <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
     <property name="target.path" value="../ide/MoonshineSharedCore/src/elements/" />
-    <property name="flexjs.version" value="0.8.0" />
+    <property name="royale.version" value="0.9.0" />
 
 
     
@@ -60,11 +60,11 @@
                 <attribute name="Main-Class" value="moonshine.Main"/>
                 <attribute name="Class-Path" value="."/>
                 <!--
-                    Moonshine packages JARs from FlexJS instead of loading
+                    Moonshine packages JARs from Royale instead of loading
                     separate JARs from a real SDK. The language server tries to
-                    read the FlexJS version, so we need a valid value.
+                    read the Royale version, so we need a valid value.
                 -->
-                <attribute name="Implementation-Version" value="${flexjs.version}"/> 
+                <attribute name="Implementation-Version" value="${royale.version}"/> 
             </manifest>
             <fileset dir="${build}"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-2.7.7.jar"/>
@@ -80,9 +80,10 @@
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-io-2.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-logging-1.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-validator-1.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-${flexjs.version}.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-${royale.version}.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-common-${royale.version}.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jburg-types-1.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-${flexjs.version}.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-${royale.version}.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/flex-tool-api-1.0.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-0.0-20150902-b129bb9e.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-third-party-0.0-20150902-b129bb9e.jar"/>

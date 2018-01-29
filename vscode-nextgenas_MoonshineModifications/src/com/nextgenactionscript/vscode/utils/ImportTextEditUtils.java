@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Bowler Hat LLC
+Copyright 2016-2018 Bowler Hat LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.flex.compiler.tree.as.IImportNode;
+import org.apache.royale.compiler.tree.as.IImportNode;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;

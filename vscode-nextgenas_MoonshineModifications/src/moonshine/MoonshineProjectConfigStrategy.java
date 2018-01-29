@@ -16,11 +16,9 @@ limitations under the License.
 package moonshine;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.nextgenactionscript.vscode.project.CompilerOptions;
 import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
@@ -55,9 +53,9 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         {
             options = new ProjectOptions();
         }
-        System.clearProperty("flexlib");
-        String flexLibPath = params.get("frameworkSDK").getAsString().concat("/frameworks");
-        System.setProperty("flexlib", flexLibPath);
+        System.clearProperty("royalelib");
+        String royaleLibPath = params.get("frameworkSDK").getAsString().concat("/frameworks");
+        System.setProperty("royalelib", royaleLibPath);
         
         ProjectType type = ProjectType.fromToken(params.get(ProjectOptions.TYPE).getAsString());
         String config = params.get(ProjectOptions.CONFIG).getAsString();

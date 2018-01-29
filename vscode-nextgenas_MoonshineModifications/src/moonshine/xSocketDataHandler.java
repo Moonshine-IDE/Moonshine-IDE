@@ -47,15 +47,10 @@ import org.xsocket.connection.INonBlockingConnection;
 
 public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 {
-    private static final String osName = System.getProperty("os.name").toLowerCase();
-    private static final boolean isMacOs = osName.startsWith("mac os x");
-
     private ActionScriptTextDocumentService txtSrv;
     private String fileUrl = "";
     private MoonshineProjectConfigStrategy projectConfigStrategy;
     private MoonshineLanguageClient languageClient;
-    // ByteBuffer buffer = ByteBuffer.allocate(1024);
-
 
     public String readTextFile(String filePath)
     {
@@ -95,7 +90,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             nbc.setAutoflush(true);
             String data = nbc.readStringByDelimiter("\0");
 
-            //JOptionPane.showMessageDialog(null, "data from flex : " + data);
+            //JOptionPane.showMessageDialog(null, "data from editor client : " + data);
             if (data.equalsIgnoreCase("SHUTDOWN"))
             {
                 Main.shutdownServer();
@@ -113,9 +108,9 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     if(txtSrv == null)
                     {
-                        System.clearProperty("flexlib");
-                        String flexLibPath = param.get("frameworkSDK").getAsString().concat("/frameworks");
-                        System.setProperty("flexlib", flexLibPath);
+                        System.clearProperty("royalelib");
+                        String royaleLibPath = param.get("frameworkSDK").getAsString().concat("/frameworks");
+                        System.setProperty("royalelib", royaleLibPath);
                         txtSrv = new ActionScriptTextDocumentService();
                         Path workspaceRoot = Paths.get(param.get("workspacePath").getAsString());
                         projectConfigStrategy = new MoonshineProjectConfigStrategy();
@@ -130,7 +125,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-
                         TextDocumentItem txtDocItm = g.fromJson(param.get("textDocument"), TextDocumentItem.class);
                         fileUrl = txtDocItm.getUri();
                         txtDocItm.setUri(fileUrl);
@@ -140,7 +134,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 
                         DidOpenTextDocumentParams didOpenTxtParam = new DidOpenTextDocumentParams()
                         {
-                            
                             @Override
                             public TextDocumentItem getTextDocument()
                             {
@@ -154,7 +147,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                                 // TODO Auto-generated method stub
                                 return txtDocItm.getText();
                             }
-
                         };
                         //JOptionPane.showMessageDialog(null, didOpenTxtParam);
                         txtSrv.didOpen(didOpenTxtParam);
@@ -183,7 +175,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 
                         DidChangeTextDocumentParams changeTxtParam = new DidChangeTextDocumentParams()
                         {
-
                             @Override
                             public String getUri()
                             {
@@ -325,5 +316,4 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             return context.serialize(either.getRight());
         }
     }
-
 }
