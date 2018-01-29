@@ -10,3 +10,5 @@ ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 .idea/
 vscode-nextgenas_MoonshineModifications/vscode-nextgenas_MoonshineModifications.iml
+vscode-nextgenas_MoonshineModifications/dist/
+.DS_Store
