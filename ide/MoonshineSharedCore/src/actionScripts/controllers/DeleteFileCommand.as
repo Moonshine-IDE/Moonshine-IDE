@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.events.Event;
+import actionScripts.utils.SharedObjectUtil;
+import actionScripts.valueObjects.ProjectReferenceVO;
+
+import flash.events.Event;
 	
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
@@ -110,6 +113,12 @@ package actionScripts.controllers
 				{
 					var model: IDEModel = IDEModel.getInstance();
 					// sends delete call to factory classes
+
+					var projectRef:ProjectReferenceVO = e.wrapper.projectReference;
+                    SharedObjectUtil.removeCookieByName("projectFiles" + projectRef.name);
+                    SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
+                            {name: projectRef.name, path: projectRef.path}, "name", "path");
+
 					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
 				}
 			}

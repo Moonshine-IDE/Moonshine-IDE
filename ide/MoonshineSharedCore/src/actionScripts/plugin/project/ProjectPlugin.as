@@ -271,10 +271,6 @@ package actionScripts.plugin.project
                 dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 			}
 
-
-            SharedObjectUtil.removeCookieByName("projectFiles" + event.project.projectName);
-            SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
-					{name: event.project.projectName, path: event.project.folderLocation.fileBridge.nativePath}, "name", "path");
             SharedObjectUtil.removeProjectFromOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
 		}
 		
