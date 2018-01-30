@@ -150,7 +150,10 @@ package actionScripts.plugins.as3project.importer
             project.buildOptions.parse(data.build);
             project.swfOutput.parse(data.output, project);
 			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
-			if (project.intrinsicLibraries.length == 0) project.isActionScriptOnly = true;
+			
+			if (project.targets.length > 0 && project.targets[0].fileBridge.extension == "as" && project.intrinsicLibraries.length == 0) project.isActionScriptOnly = true;
+			if (project.targets.length > 0 && project.targets[0].fileBridge.extension == "mxml") project.isActionScriptOnly = false;
+			else if (project.intrinsicLibraries.length == 0) project.isActionScriptOnly = true;
 			
             project.air = UtilsCore.isAIR(project);
             project.isMobile = UtilsCore.isMobile(project);
