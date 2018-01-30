@@ -147,6 +147,16 @@ package actionScripts.utils
             removeProjectItem({name: projectFolderPath, path: projectName}, "name", "path", "projects");
         }
 
+        public static function removeCookieByName(cookieName:String):void
+        {
+            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            if (cookie.data.hasOwnProperty(cookieName))
+            {
+                delete cookie.data[cookieName];
+                cookie.flush();
+            }
+        }
+
 		private static function saveProjectItem(item:Object, propertyNameKey:String,
                                                 propertyNameKeyValue:String, cookieName:String):void
 		{

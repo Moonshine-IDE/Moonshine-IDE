@@ -19,424 +19,439 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:HBox 
-	xmlns:fx="http://ns.adobe.com/mxml/2009"
-  	xmlns:s="library://ns.adobe.com/flex/spark"
-  	xmlns:mx="library://ns.adobe.com/flex/mx"
-	
-	implements="actionScripts.ui.IContentWindow"
-	 
-	width="100%" height="100%"
-	label="Settings"
-	backgroundColor="0x444444"
-	horizontalGap="-1"
-	horizontalScrollPolicy="off"
-	creationComplete="initView()">
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 implements="actionScripts.ui.IContentWindow"
+				 width="100%" height="100%"
+				 backgroundColor="0x444444" creationComplete="onSettingsViewCreationComplete(event)">
+	<s:layout>
+		<s:HorizontalLayout gap="0"/>
+	</s:layout>
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.controls.Alert;
-			import mx.core.IVisualElement;
-			import mx.graphics.SolidColorStroke;
-			
-			import spark.components.Button;
-			import spark.components.Label;
-			import spark.components.List;
-			import spark.primitives.Line;
-			
-			import __AS3__.vec.Vector;
-			
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.settings.vo.ISetting;
-			import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
-			import actionScripts.plugin.settings.vo.SettingsWrapper;
-			
-			public static const EVENT_SAVE:String = "saveSettingsEvent";
-			public static const EVENT_CLOSE:String = "closeSettingsEvent";
-			
-			private var categories:Dictionary = new Dictionary(true);
-			private var forceClose:Boolean;
-			
-			public var buttons:Array = [];
-			public var isNewProjectSettings:Boolean;
-			
-			public var showDefaultButtons:Boolean = true;
-			public var defaultSaveLabel:String = "Save";
-			public var defaultCancelLabel:String = "Cancel";
-			public var defaultCloseLabel:String = "Close";
-			public var currentRequestedSelectedItem:IHasSettings;
-			public var isSaved:Boolean;
-			public var exportProject:AS3ProjectVO;
-			
-			private var currentSelectedItem:IHasSettings;
+		import mx.collections.ArrayCollection;
+		import mx.core.IVisualElement;
+		import mx.core.ScrollPolicy;
+		import mx.events.FlexEvent;
+		import mx.graphics.SolidColorStroke;
 
-			public function get longLabel():String
+		import spark.components.Button;
+		import spark.components.Label;
+		import spark.components.List;
+		import spark.primitives.Line;
+
+		import __AS3__.vec.Vector;
+
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.plugin.settings.vo.ISetting;
+		import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
+		import actionScripts.plugin.settings.vo.SettingsWrapper;
+
+		public static const EVENT_SAVE:String = "saveSettingsEvent";
+		public static const EVENT_CLOSE:String = "closeSettingsEvent";
+
+		private var categories:Dictionary = new Dictionary(true);
+		private var forceClose:Boolean;
+
+		public var buttons:Array = [];
+		public var isNewProjectSettings:Boolean;
+
+		public var showDefaultButtons:Boolean = true;
+		public var defaultSaveLabel:String = "Save";
+		public var defaultCancelLabel:String = "Cancel";
+		public var defaultCloseLabel:String = "Close";
+		public var currentRequestedSelectedItem:IHasSettings;
+		public var isSaved:Boolean;
+		public var exportProject:AS3ProjectVO;
+
+		private var currentSelectedItem:IHasSettings;
+		private var _label:String = "Settings";
+
+		public function set label(value:String):void
+		{
+			_label = value;
+		}
+
+		public function get label():String
+		{
+			return _label;
+		}
+
+		public function get longLabel():String
+		{
+			return "Settings";
+		}
+
+		public function isChanged():Boolean
+		{
+			// Allow tab to be closed without asking to save
+			if (forceClose) return false;
+
+			var setting:IHasSettings;
+			for each(var categoryItems:Array in categories)
 			{
-				return label;
+				for each(setting in categoryItems)
+				{
+					if (setting.hasChanged()) return true;
+				}
 			}
-			
-			public function isChanged():Boolean
+
+			return false;
+		}
+
+		public function isEmpty():Boolean
+		{
+			return false;
+		}
+
+		public function save():void
+		{
+			// Iterate all settings we have & commit changed ones.
+			var settings:Vector.<SettingsWrapper> = getSettingsForAllCategories();
+			for each (var setting:SettingsWrapper in settings)
 			{
-				// Allow tab to be closed without asking to save
-				if (forceClose) return false;
-				
-				var setting:IHasSettings;
-				for each(var categoryItems:Array in categories)
+				if (setting.hasChanged())
 				{
-					for each(setting in categoryItems)
-					{
-						if(setting.hasChanged()) return true;
-					}					
+					setting.commitChanges();
 				}
-				
-				return false; 
 			}
-			
-			public function isEmpty():Boolean
+
+			// when calls by default sdk save settings
+			if (!associatedData)
 			{
-				return false;
+				goSave();
+				return;
 			}
-			
-			public function save():void
+
+			// Moon-106 fix:
+			// @ modified devsena
+			// to determine if this a new project creation call and to check if
+			// same named folder or same named project is not exists to given path
+			// @ note
+			// a project's folder name can differ to it's named .as3proj file,
+			// also a Flash Builder project not suppose to have any .as3proj file as well;
+			// in that case project name contains in it's .project file
+			//
+			// Since in either Flash Builder or Moonshine project type, Moonshine always saves
+			// it's saved data to .as3proj file only, we should check the .as3proj file existence first
+			var project:AS3ProjectVO = associatedData as AS3ProjectVO;
+			var projectFile:FileLocation = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name + ".as3proj");
+			if (projectFile.fileBridge.exists)
 			{
-				// Iterate all settings we have & commit changed ones.
-				var settings:Vector.<SettingsWrapper> = getSettingsForAllCategories();
-				for each (var setting:SettingsWrapper in settings)
+				goSave();
+			}
+			else
+			{
+				// this should be the case in new project creation when .as3proj file not exists
+				// or a same named project exists but it may not have .as3proj file - mainly when Flash Builder project
+
+				// checking .project file existence and it's name in case of Flash Builder project
+				if (!isNewProjectSettings)
 				{
-					if (setting.hasChanged())
-					{
-						setting.commitChanges();
-					}
-				}
-				
-				// when calls by default sdk save settings
-				if (!associatedData)
-				{
-					goSave();
-					return;
-				}
-				
-				// Moon-106 fix: 
-				// @ modified devsena
-				// to determine if this a new project creation call and to check if 
-				// same named folder or same named project is not exists to given path 
-				// @ note
-				// a project's folder name can differ to it's named .as3proj file,
-				// also a Flash Builder project not suppose to have any .as3proj file as well;
-				// in that case project name contains in it's .project file
-				// 
-				// Since in either Flash Builder or Moonshine project type, Moonshine always saves
-				// it's saved data to .as3proj file only, we should check the .as3proj file existence first
-				var project:AS3ProjectVO = associatedData as AS3ProjectVO;
-				var projectFile:FileLocation = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name +".as3proj");
-				if (projectFile.fileBridge.exists)
-				{
-					goSave();
-				}
-				else
-				{
-					// this should be the case in new project creation when .as3proj file not exists
-					// or a same named project exists but it may not have .as3proj file - mainly when Flash Builder project
-					
-					// checking .project file existence and it's name in case of Flash Builder project
-					if (!isNewProjectSettings)
-					{
-						projectFile = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + ".project");
-						if (projectFile.fileBridge.exists)
-						{
-							goSave();
-						}
-					}
-					else
+					projectFile = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + ".project");
+					if (projectFile.fileBridge.exists)
 					{
 						goSave();
 					}
 				}
-				
-				/*
-				 *@private
-				 */
-				function goSave():void
+				else
 				{
-					isSaved = true;
-					dispatchEvent(new Event(EVENT_SAVE));
-					close(true);
+					goSave();
 				}
 			}
-			
-			public var associatedData:*;
-			
-			private var _dataProvider:Object;
-			[Bindable]
-			public function get dataProvider():*
+
+			/*
+             *@private
+             */
+			function goSave():void
 			{
-				return _dataProvider;
+				isSaved = true;
+				dispatchEvent(new Event(EVENT_SAVE));
+				close(true);
 			}
-			public function set dataProvider(v:*):void
+		}
+
+		public var associatedData:*;
+
+		private var _dataProvider:Object;
+		[Bindable]
+		public function get dataProvider():*
+		{
+			return _dataProvider;
+		}
+
+		public function set dataProvider(v:*):void
+		{
+			_dataProvider = v;
+		}
+
+		[Bindable]
+		private var _Width:int = 250;
+		public function set Width(v:int):void
+		{
+			_Width = v;
+		}
+
+		public function getSettingsForAllCategories():Vector.<SettingsWrapper>
+		{
+			var settings:Array = [];
+
+			for (var cat:String in categories)
 			{
-				_dataProvider = v;
+				settings = settings.concat(categories[cat]);
 			}
-			
-			[Bindable] private var _Width:int = 250;
-			public function set Width(v:int):void
+
+			return Vector.<SettingsWrapper>(settings);
+		}
+
+		public function addCategory(name:String):void
+		{
+			categories[name] = [];
+		}
+
+		public function getSettings(forCategory:String):Array
+		{
+			return (categories[forCategory]) ? categories[forCategory] : [];
+		}
+
+		public function addSetting(settingsObject:IHasSettings, forCategory:String):void
+		{
+			categories[forCategory].push(settingsObject);
+		}
+
+		public function close(force:Boolean = false):void
+		{
+			if (force) forceClose = true;
+
+			dispatchEvent(new Event(EVENT_CLOSE));
+		}
+
+		public function forceSelectItem(byQualifiedClassName:String):void
+		{
+			var list:List;
+			for (var i:int; i < listView.numElements; i++)
 			{
-				_Width = v;
-			}
-			
-			public function getSettingsForAllCategories():Vector.<SettingsWrapper>
-			{
-				var settings:Array = [];
-				
-				for (var cat:String in categories)
+				if (listView.getElementAt(i) is List)
 				{
-					settings = settings.concat(categories[cat]);
+					list = listView.getElementAt(i) as List;
+					break;
 				}
-				
-				return Vector.<SettingsWrapper>(settings);
 			}
-			
-			public function addCategory(name:String):void
+
+			if (list && list.dataProvider.length > 0)
 			{
-				categories[name] = [];
-			}
-			
-			public function getSettings(forCategory:String):Array{
-				return (categories[forCategory]) ? categories[forCategory] : [];
-			}
-			public function addSetting(settingsObject:IHasSettings, forCategory:String):void
-			{
-				categories[forCategory].push(settingsObject);	
-			}
-			
-			public function close(force:Boolean=false):void
-			{
-				if (force) forceClose = true;
-				
-				dispatchEvent( new Event(EVENT_CLOSE) );
-			}
-			
-			public function forceSelectItem(byQualifiedClassName:String):void
-			{
-				var list:List;
-				for (var i:int; i < listView.numElements; i++)
+				for each(var j:Object in list.dataProvider)
 				{
-					if (listView.getElementAt(i) is List) 
+					if (j.qualifiedClassName == byQualifiedClassName)
 					{
-						list = listView.getElementAt(i) as List;
+						list.selectedItem = j;
+						currentSelectedItem = j as IHasSettings;
+						buildSettings(currentSelectedItem.getSettingsList());
+						if (IDEModel.getInstance().userSavedTempSDKPath && byQualifiedClassName == "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin")
+						{
+							callLater(forceUpdateMXMLCompilerPlugin);
+						}
 						break;
 					}
 				}
-				
-				if (list && list.dataProvider.length > 0)
+			}
+		}
+
+		private function forceUpdateMXMLCompilerPlugin():void
+		{
+			var settings:Vector.<SettingsWrapper> = getSettingsForAllCategories();
+			for each (var setting:PluginSettingsWrapper in settings)
+			{
+				if (setting.qualifiedClassName == "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin")
 				{
-					for each( var j:Object in list.dataProvider)
+					var mxmlcSettings:Vector.<ISetting> = setting.getSettingsList();
+					for each (var mxmlcSetting:ISetting in mxmlcSettings)
 					{
-						if (j.qualifiedClassName == byQualifiedClassName)
+						if (mxmlcSetting.name == "defaultFlexSDK")
 						{
-							list.selectedItem = j;
-							currentSelectedItem = j as IHasSettings;
-							buildSettings( currentSelectedItem.getSettingsList() );
-							if (IDEModel.getInstance().userSavedTempSDKPath && byQualifiedClassName == "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin")
-							{
-								callLater(forceUpdateMXMLCompilerPlugin);
-							}
-							break;
+							mxmlcSetting.stringValue = IDEModel.getInstance().userSavedTempSDKPath;
+							return;
 						}
 					}
 				}
 			}
-			
-			private function forceUpdateMXMLCompilerPlugin():void
+		}
+
+		private function onSettingsViewCreationComplete(event:FlexEvent):void
+		{
+			var first:IHasSettings;
+
+			for (var category:String in categories)
 			{
-				var settings:Vector.<SettingsWrapper> = getSettingsForAllCategories();
-				for each (var setting:PluginSettingsWrapper in settings)
+				var label:Label = new Label();
+				label.percentWidth = 100;
+				label.text = category;
+				label.styleName = "uiText";
+				label.setStyle('paddingLeft', 15);
+				label.setStyle('paddingTop', 20);
+				label.setStyle('paddingBottom', 1);
+				label.setStyle('fontSize', 13);
+				label.setStyle('color', 0xdb5fce);
+				label.setStyle('backgroundColor', 0x444444);
+
+				listView.addElement(label);
+
+				var list:List = new List();
+				//list.percentWidth = 100; // yeh that didn't work.
+				list.width = 251;
+				list.x = -1;
+				list.setStyle('paddingTop', -5);
+				list.setStyle('contentBackgroundColor', 0x444444);
+				list.setStyle('borderVisible', false);
+				list.setStyle('rollOverColor', 0x555555);
+				list.setStyle('gap', 0);
+				list.labelField = 'name';
+				list.selectedIndex = 0;
+				list.itemRenderer = new ClassFactory(SettingsCategoryItemRenderer);
+
+				list.dataProvider = new ArrayCollection(categories[category]);
+				listView.addElement(list);
+				list.addEventListener(Event.CHANGE, handleItemClick);
+
+				if (!first && list.dataProvider.length > 0)
 				{
-					if (setting.qualifiedClassName == "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin")
+					if (currentRequestedSelectedItem)
 					{
-						var mxmlcSettings:Vector.<ISetting> = setting.getSettingsList();
-						for each (var mxmlcSetting:ISetting in mxmlcSettings)
-						{
-							if (mxmlcSetting.name == "defaultFlexSDK")
-							{
-								mxmlcSetting.stringValue = IDEModel.getInstance().userSavedTempSDKPath;
-								return;
-							}
-						}
+						first = list.dataProvider.getItemAt(list.dataProvider.getItemIndex(currentRequestedSelectedItem)) as IHasSettings;
+						list.selectedItem = first;
+					}
+					else
+					{
+						first = list.dataProvider[0];
+						list.selectedItem = first;
 					}
 				}
 			}
-			
-			private function initView():void
+
+			// Get list for first settings item
+			if (first)
 			{
-				var first:IHasSettings;
-				
-				for (var category:String in categories)
-				{
-					var label:Label = new Label();
-					label.percentWidth = 100;
-					label.text = category;
-					label.styleName = "uiText";
-					label.setStyle('paddingLeft', 15);
-					label.setStyle('paddingTop', 20);
-					label.setStyle('paddingBottom', 1);
-					label.setStyle('fontSize', 13);
-					label.setStyle('color', 0xdb5fce);
-					label.setStyle('backgroundColor', 0x444444);
-					
-					label.filters = [new DropShadowFilter(1, 90, 0x0, 0.2, 1, 1)];
-					listView.addElement(label);
-					
-					var list:List = new List();
-					//list.percentWidth = 100; // yeh that didn't work.
-					list.width = 251;
-					list.x = -1;
-					list.setStyle('paddingTop', -5);
-					list.setStyle('contentBackgroundColor', 0x444444);
-					list.setStyle('borderVisible', false);
-					list.setStyle('rollOverColor', 0x555555);
-					list.setStyle('gap', 0);
-					list.labelField = 'name';
-					list.selectedIndex = 0;
-					list.itemRenderer = new ClassFactory(SettingsCategoryItemRenderer);
-					
-					list.dataProvider = new ArrayCollection(categories[category]);
-					listView.addElement(list);
-					list.addEventListener(Event.CHANGE, handleItemClick);
-					
-					if (!first && list.dataProvider.length > 0)
-					{
-						if (currentRequestedSelectedItem)
-						{
-							first = list.dataProvider.getItemAt(list.dataProvider.getItemIndex(currentRequestedSelectedItem)) as IHasSettings;
-							list.selectedItem = first;
-						}
-						else
-						{
-							first = list.dataProvider[0];
-							list.selectedItem = first;
-						}
-					}
-				}
-				
-				// Get list for first settings item
-				if(first)
-				{
-					currentSelectedItem = first;
-					buildSettings( first.getSettingsList() );
-				}
+				currentSelectedItem = first;
+				buildSettings(first.getSettingsList());
+			}
+			//Moon-105 update handled here
+			if (currentSelectedItem.name == "Templating Plugin")
+			{
+				updateButtons(true, false, false);
+			}
+			else
+			{
+				updateButtons(false, true, true);
+			}
+
+			settingsContent.validateNow()
+			settingsContentScroller.viewport.verticalScrollPosition += 1;
+		}
+
+		private function handleItemClick(event:Event):void
+		{
+			var list:List = event.target as List;
+			var setting:IHasSettings = list.selectedItem;
+			if (setting)
+			{
+				buildSettings(setting.getSettingsList());
+				currentSelectedItem = setting;
+
 				//Moon-105 update handled here
-				if(currentSelectedItem.name =="Templating Plugin")
-					updateButtons(true,false,false);
+				if (currentSelectedItem.name == "Templating Plugin")
+					updateButtons(true, false, false);
 				else
-					updateButtons(false,true,true);
+					updateButtons(false, true, true);
+			}
+		}
+
+		private function buildSettings(settingsList:Vector.<ISetting>):void
+		{
+			settingsContent.removeAllElements();
+
+			var line:Line;
+			var rdr:IVisualElement;
+			for each (var setting:ISetting in settingsList)
+			{
+				rdr = setting.renderer;
+				rdr.addEventListener('refresh', handleRefreshSettings, false, 0, true);
+
+				settingsContent.addElement(rdr);
+
+				line = new Line();
+				line.percentWidth = 100;
+				line.height = 1;
+				line.stroke = new SolidColorStroke(0xdadada);
+				settingsContent.addElement(line);
+			}
+		}
+
+		private function handleRefreshSettings(event:Event):void
+		{
+			if (currentSelectedItem)
+				buildSettings(currentSelectedItem.getSettingsList());
+		}
+
+		private function updateButtons(isClose:Boolean, isSave:Boolean, isCancel:Boolean):void
+		{
+			var buttonBarElement:IVisualElement = buttonBar.getElementAt(2);
+			buttonBarElement.visible = buttonBarElement.includeInLayout = isClose;
+
+			buttonBarElement = buttonBar.getElementAt(1);
+			buttonBarElement.visible = buttonBarElement.includeInLayout = isCancel;
+
+			buttonBarElement = buttonBar.getElementAt(0);
+			buttonBarElement.visible = buttonBarElement.includeInLayout = isSave;
+		}
+
+		private function addButtons():void
+		{
+			if (!showDefaultButtons && buttons.length == 0)
+			{
+				buttonBar.visible = buttonBar.includeInLayout = false;
+				buttonBarLine.visible = buttonBarLine.includeInLayout = false;
+				settingsContentScroller.bottom = 0;
+			}
+			else if (showDefaultButtons && buttons.length == 0)
+			{
+				var save:Button = new Button();
+				save.label = defaultSaveLabel;
+				save.addEventListener(MouseEvent.CLICK, handleSaveClicked);
+				save.styleName = "darkButton";
+				buttonBar.addElement(save);
+
+
+				var cancel:Button = new Button();
+				cancel.label = defaultCancelLabel;
+				cancel.addEventListener(MouseEvent.CLICK, handleCancelClicked);
+				cancel.styleName = "darkButton";
+				buttonBar.addElement(cancel);
+
+				//Moon-105 update handled here
+				var close:Button = new Button();
+				close.label = defaultCloseLabel;
+				close.addEventListener(MouseEvent.CLICK, handleCancelClicked);
+				close.styleName = "darkButton";
+				buttonBar.addElement(close);
 
 			}
-			
-			private function handleItemClick(event:Event):void
-			{
-				var list:List = event.target as List;
-				var setting:IHasSettings = list.selectedItem;
-				if (setting)
-				{
-					buildSettings( setting.getSettingsList() );
-					currentSelectedItem = setting;
-					
-					//Moon-105 update handled here
-					if(currentSelectedItem.name =="Templating Plugin")
-						updateButtons(true,false,false);
-					else
-						updateButtons(false,true,true);
-				}
-			}
-			
-			private function buildSettings(settingsList:Vector.<ISetting>):void
-			{
-				settingsContent.removeAllElements();
-				
-				var line:Line;
-				var rdr:IVisualElement;
-				for each (var setting:ISetting in settingsList)
-				{	
-					rdr = setting.renderer;
-					rdr.addEventListener('refresh', handleRefreshSettings, false, 0, true); 
-					
-					settingsContent.addElement(rdr);
-					
-					line = new Line();
-					line.percentWidth = 100;
-					line.height = 1;
-					line.stroke = new SolidColorStroke(0xdadada);
-					settingsContent.addElement(line);	
-				}	
-			}
-			
-			private function handleRefreshSettings(event:Event):void
-			{
-				if (currentSelectedItem)
-					buildSettings( currentSelectedItem.getSettingsList() );
-			}
-			private function updateButtons(isClose:Boolean,isSave:Boolean,isCancel:Boolean):void{
-				var cnt:int = buttonBar.numChildren;
-				var close:Object = buttonBar.getChildAt(2);
-				close.visible = close.includeInLayout = isClose;
-				
-				var cancel:Object = buttonBar.getChildAt(1);
-				cancel.visible = cancel.includeInLayout = isCancel;
-				
-				var save:Object = buttonBar.getChildAt(0);
-				save.visible = save.includeInLayout = isSave;
-				
-			}
-			
-			private function addButtons():void
-			{
-				if (!showDefaultButtons && buttons.length == 0)
-				{
-					buttonBar.visible = buttonBar.includeInLayout = false;
-					buttonBarLine.visible = buttonBarLine.includeInLayout = false;
-					settingsWrapper.bottom = 0;
-				}
-				else if (showDefaultButtons && buttons.length == 0)
-				{
-					var save:Button = new Button();
-					save.label = defaultSaveLabel;
-					save.addEventListener(MouseEvent.CLICK, handleSaveClicked);
-					save.styleName = "darkButton";
-					buttonBar.addChild(save);
-					
-					
-					var cancel:Button = new Button();
-					cancel.label = defaultCancelLabel;
-					cancel.addEventListener(MouseEvent.CLICK, handleCancelClicked);
-					cancel.styleName = "darkButton";
-					buttonBar.addChild(cancel);
-					
-					//Moon-105 update handled here
-					var close:Button = new Button();
-					close.label = defaultCloseLabel;
-					close.addEventListener(MouseEvent.CLICK, handleCancelClicked);
-					close.styleName = "darkButton";
-					buttonBar.addChild(close);
-					
-				}
-				
-			}
-			
-			private function handleSaveClicked(event:MouseEvent):void
-			{
-				IDEModel.getInstance().userSavedTempSDKPath = null;
-				save();
-			}
-			
-			private function handleCancelClicked(event:MouseEvent):void
-			{
-				IDEModel.getInstance().userSavedTempSDKPath = null;
-				close(true);
-			}
-			
+
+		}
+
+		private function handleSaveClicked(event:MouseEvent):void
+		{
+			IDEModel.getInstance().userSavedTempSDKPath = null;
+			save();
+		}
+
+		private function handleCancelClicked(event:MouseEvent):void
+		{
+			IDEModel.getInstance().userSavedTempSDKPath = null;
+			close(true);
+		}
 		]]>
 	</fx:Script>
 	
@@ -447,84 +462,33 @@
 		height="100%"
 		horizontalScrollPolicy="off"
 		contentBackgroundColor="0x444444">
-		
-		<s:VGroup
-			id="listView"
-			gap="0"
-			/>
-			
+		<s:VGroup id="listView" gap="0"/>
 	</s:Scroller>
-	
-	
-	<mx:VRule 
-		height="100%"
-		strokeWidth="2"
-		strokeColor="0x303030"/>
-	
-	
-	<!-- Settings list -->
-	<mx:Canvas 
-		width="100%" height="100%"
-		verticalScrollPolicy="off"
-		horizontalScrollPolicy="off"
-		backgroundColor="0xFFFFFF">
-		
-		<!--
-		Will IGNORE minWidth. Kinda useless.
-		<s:Scroller 
-			id="settingsWrapper" 
-			width="100%" 
-			top="0" 
-			bottom="42"
-			minWidth="450">
-			</s:Scroller>
-		-->
-		
-		<!-- BUG: Horizontal scrollbar always shows when vertical scrollbar shows. Why? -->	
-		<mx:Canvas id="settingsWrapper" 
-			top="0" bottom="42" 
-			width="100%"
-			minWidth="450" horizontalScrollPolicy="off">
-			
-			<s:VGroup id="settingsContent"
-				width="100%"	
-				gap="0"
-				paddingLeft="20"
-				paddingRight="20"
-				paddingTop="20" />
-		</mx:Canvas>		
-			
-		
-		
-		<!-- Button bar -->
-		<mx:HRule id="buttonBarLine"
-			width="100%"
-			bottom="41"
-			strokeWidth="1"
-			strokeColor="0x303030" />
-	
-		<mx:HBox id="buttonBar"
-			width="100%"
-			height="41"
-			bottom="0"
-			backgroundColor="0x444444"
-			paddingRight="10"
-			paddingTop="0"
-			horizontalAlign="right"
-			verticalAlign="middle"
-			creationComplete="addButtons()"
-			><mx:filters>
-				 <mx:DropShadowFilter 
-					 alpha=".5" 
-					 angle="90" 
-					 blurX="0" 
-					 blurY="7" 
-					 strength="1"
-					 distance="1"
-					 inner="true" />
-			 </mx:filters>
-		</mx:HBox>
-		
-	</mx:Canvas>
 
-</mx:HBox>
+	<!-- Settings list -->
+	<s:BorderContainer id="settingsContainer" width="100%" height="100%" backgroundColor="#FFFFFF">
+		<!-- BUG: Horizontal scrollbar always shows when vertical scrollbar shows. Why? -->
+		<s:Scroller id="settingsContentScroller" width="100%"
+					horizontalScrollPolicy="off" minWidth="450"
+					contentBackgroundColor="0x444444" top="0" bottom="42">
+			<s:VGroup id="settingsContent"
+					  paddingLeft="20" paddingRight="20" paddingTop="20"/>
+		</s:Scroller>
+
+		<s:Line id="buttonBarLine" width="100%" bottom="41">
+			<s:stroke>
+				<s:SolidColorStroke color="0x303030" weight="1"/>
+			</s:stroke>
+		</s:Line>
+	
+		<s:BorderContainer id="buttonBar"
+						   width="100%" height="41"
+					       bottom="0" backgroundColor="0x444444"
+					       creationComplete="addButtons()">
+			<s:layout>
+				<s:HorizontalLayout paddingRight="10" paddingTop="0"
+									horizontalAlign="right" verticalAlign="middle"/>
+			</s:layout>
+		</s:BorderContainer>
+	</s:BorderContainer>
+</s:BorderContainer>

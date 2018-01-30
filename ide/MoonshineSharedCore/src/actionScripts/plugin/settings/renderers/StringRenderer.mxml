@@ -19,13 +19,12 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:VGroup 
-	xmlns:fx="http://ns.adobe.com/mxml/2009"
-  	xmlns:s="library://ns.adobe.com/flex/spark"
-	width="100%"
-	paddingLeft="15"
-	paddingRight="15"
-	creationComplete="init()">
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  width="100%" height="100%"
+		  verticalAlign="middle"
+		  gap="0"
+	      creationComplete="init()">
 	
 	<fx:Script>
 		<![CDATA[
@@ -75,43 +74,36 @@
 			
 		]]>
 	</fx:Script>
-	
-	<s:HGroup width="100%" height="100%"
-		verticalAlign="middle"
-		gap="0">
-		
-		<s:Label id="lbl"
-			styleName="uiTextSettingsLabel"
-			text="{setting.label}"
-			paddingTop="15"
-			paddingBottom="15" paddingRight="50"
-			mouseDown="focusIn()" />
-		
-		<s:TextInput id="text"
-			styleName="uiTextSettingsValue"
-			height="100%" width="100%"
-			textAlign="right"
-			borderVisible="false"
-			contentBackgroundAlpha="1"
-			unfocusedTextSelectionColor="#a8c6ee"
-			focusAlpha="0"
-			change="{setting.stringValue = text.text}; setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));"
-			focusOut="updatePrompt()" 
-			/>
-		
-		<s:TextInput id="textPrompt"
-			styleName="uiTextSettingsLabel"
-			height="100%" width="100%"
-			textAlign="right"
-			borderVisible="false"
-			contentBackgroundAlpha="0"
-			focusAlpha="0"
-			text="No value"
-			visible="false"
-			includeInLayout="false"
-			mouseDown="focusIn()"
-			/>
-			
-	</s:HGroup>
-	
-</s:VGroup>
+
+	<s:Label id="lbl"
+		styleName="uiTextSettingsLabel"
+		text="{setting.label}"
+		paddingTop="15"
+		paddingBottom="15" paddingRight="50"
+		mouseDown="focusIn()" />
+
+	<s:TextInput id="text"
+		styleName="uiTextSettingsValue"
+		height="100%" width="100%"
+		textAlign="right"
+		borderVisible="false"
+		contentBackgroundAlpha="1"
+		unfocusedTextSelectionColor="#a8c6ee"
+		focusAlpha="0"
+		change="{setting.stringValue = text.text}; setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));"
+		focusOut="updatePrompt()"
+		contentBackgroundColor="#FFFFFF"/>
+
+	<s:TextInput id="textPrompt"
+		styleName="uiTextSettingsLabel"
+		height="100%" width="100%"
+		textAlign="right"
+		borderVisible="false"
+		contentBackgroundAlpha="0"
+		focusAlpha="0"
+		text="No value"
+		visible="false"
+		includeInLayout="false"
+		mouseDown="focusIn()"
+		/>
+</s:HGroup>

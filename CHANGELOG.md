@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor: Added resize ability to property editor.
 
 ### Changed
+* Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.9.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.9.0).
 * Console: Colorize console output. Success, Warning and Error messages are now colored.
 * Visual Editor: Synchronize selection between property editor and list type of components Drop Down List, List.
 * Project Creation: Prevent from creating project in existing project directory.
@@ -25,6 +26,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where building Royale application to SWF wasn't working without setup SDK in the settings of the project.
 * Fixed issue where Tree selection and scroll bar position is being reset after build/delete file/folder.
 * Fixed issue where creating MXML file in Royale project, the FlexJS file template was used.
+* Fixed issue where codec completion did not work in the line with URL namespaces.
+* Fixed issue where NPE occurs with Royale code marked as COMPILE::JS.
+* Settings: Fixed issue with unresponsive scrollbar.
+* Fixed issue where after deleting and create project with the same name application open files twice.
 
 ## Moonshine IDE [1.8.0]
 
