@@ -21,12 +21,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   backgroundColor="0xf5f5f5" title="Workspace"
 			   width="900" height="540"
 			   initialize="onInitialize(event)" creationComplete="onCreationCompletes(event)" 
-			   xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" skinClass="components.skins.ResizableTitleWindowSkin">
+			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexEvent;
@@ -37,13 +36,11 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
 			
-			import components.skins.ResizableTitleWindowSkin;
-			
 			[Bindable] private var isPathDefined:Boolean;
 			[Bindable] private var bigMessage:String = "Generally in Mac OS system, to read and write files from user's system, Moonshine needs user's approval to specific folder access to do an uninterrupted file system access to project files. You can locate or set any folder in your system as Moonshine Workspace, and therefore it's encouraged that you keep all your Moonshine project folders/files inside that workspace area to avoid any unexpected fail behavior that might caused by file system access protection in Mac OS.\n\nInside a defined Moonshine Workspace, you can keep all your project files in whichever way you wants. You can keep the projects in folder or it's sub-folders. An example given as below:";
-			
+
 			private var model:IDEModel = IDEModel.getInstance();
-			
+
 			/**
 			 * On close window button
 			 */
@@ -55,7 +52,7 @@
 			
 			protected function onDefineRequest(event:MouseEvent):void
 			{
-				IDEModel.getInstance().fileCore.browseForDirectory("Define Workspace", onFolderSelected, onCancel);
+				model.fileCore.browseForDirectory("Define Workspace", onFolderSelected, onCancel);
 			}
 			
 			protected function onFolderSelected(dir:Object):void
@@ -63,12 +60,12 @@
 				txtPath.text = (dir is FileLocation) ? (dir as FileLocation).fileBridge.nativePath : dir.nativePath;
 				isPathDefined = true;
 			}
-			
+
 			protected function onCancel():void
 			{
-				
+
 			}
-			
+
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				cbDNS.selected = OSXBookmarkerNotifiers.isWorkspaceAcknowledged;
