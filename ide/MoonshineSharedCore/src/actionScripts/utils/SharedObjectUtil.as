@@ -144,6 +144,8 @@ package actionScripts.utils
             var model:IDEModel = IDEModel.getInstance();
             if (!model.openPreviouslyOpenedProjects) return;
 
+            removeCookieByName("projectFiles" + projectName);
+            removeProjectTreeItemFromOpenedItems({name: projectName, path: projectFolderPath}, "name", "path");
             removeProjectItem({name: projectFolderPath, path: projectName}, "name", "path", "projects");
         }
 
@@ -169,6 +171,16 @@ package actionScripts.utils
                 }
             }
 		}
+
+        private static function removeCookieByName(cookieName:String):void
+        {
+            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            if (cookie.data.hasOwnProperty(cookieName))
+            {
+                delete cookie.data[cookieName];
+                cookie.flush();
+            }
+        }
 
 		private static function removeProjectItem(item:Object, propertyNameKey:String,
                                                   propertyNameKeyValue:String, cookieName:String):void

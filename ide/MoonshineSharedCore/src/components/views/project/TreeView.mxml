@@ -414,8 +414,14 @@
 				case FTETreeItemRenderer.DELETE_FILE_FOLDER:
 				{
 					if (fileWrapper.isWorking) return;
-					if (!fileWrapper.isRoot) Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
-					else onFileDeleteConfirm(new CloseEvent("", false, false, Alert.YES));
+					if (!fileWrapper.isRoot)
+					{
+						Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+					}
+					else
+					{
+						onFileDeleteConfirm(new CloseEvent("", false, false, Alert.YES));
+					}
 					break;
 				}
 				case FTETreeItemRenderer.RENAME:
@@ -505,9 +511,7 @@
 			{
 				if (event2.detail == Alert.YES)
 				{
-					dispatcher.dispatchEvent(
-							new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert)
-					);
+					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert));
 				}
 			}
 
