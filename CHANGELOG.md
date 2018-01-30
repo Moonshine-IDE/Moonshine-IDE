@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where creating MXML file in Royale project, the FlexJS file template was used.
 * Fixed issue where codec completion did not work in the line with URL namespaces.
 * Fixed issue where NPE occurs with Royale code marked as COMPILE::JS.
+* Settings: Fixed issue with unresponsive scrollbar.
 
 ## Moonshine IDE [1.8.0]
 
