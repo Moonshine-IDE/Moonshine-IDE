@@ -89,7 +89,12 @@ package actionScripts.ui.menu
                 currentProject = model.activeProject as AS3ProjectVO;
             }
 
-            if (!currentProject || !currentProject.isVisualEditorProject)
+            if (label == "MXML File" && currentProject && currentProject.isActionScriptOnly)
+            {
+                return true;
+            }
+
+            if (!currentProject || !currentProject.isVisualEditorProject || currentProject.isActionScriptOnly)
             {
                 return menuItemsDisabledNoneVEProject.indexOf(label) > -1;
             }

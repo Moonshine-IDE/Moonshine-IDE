@@ -348,7 +348,6 @@ package actionScripts.ui.renderers
 				model.activeProject = activeProject;
 			}
 
-			var isVisualEditorProject:Boolean = as3ProjectVO && as3ProjectVO.isVisualEditorProject;
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
@@ -360,9 +359,7 @@ package actionScripts.ui.renderers
 				var eventType:String = "eventNewFileFromTemplate"+label;
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
-				
-				if (isVisualEditorProject && label.indexOf("Visual Editor Flex") == -1) item.enabled = false;
-				else if (!isVisualEditorProject && label.indexOf("Visual Editor Flex") != -1) item.enabled = false;
+				item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(label, as3ProjectVO);
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
