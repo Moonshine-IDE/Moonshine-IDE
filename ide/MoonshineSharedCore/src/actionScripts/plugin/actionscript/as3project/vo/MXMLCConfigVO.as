@@ -147,16 +147,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			
 			data.appendChild(
-				<target-player>{pvo.swfOutput.swfVersion}</target-player>
-			);
-			data.appendChild(
-				<output>{pvo.swfOutput.path.fileBridge.nativePath}</output>
-			);
-			data.appendChild(
-				<static-link-runtime-shared-libraries>false</static-link-runtime-shared-libraries>
-			);
-			
-			data.appendChild(
 				<compiler />
 			);
 			
@@ -164,72 +154,33 @@ package actionScripts.plugin.actionscript.as3project.vo
 				<warn-no-constructor>false</warn-no-constructor>
 			);
 			data.compiler.appendChild(
-				<accessible>true</accessible>
-			);
-			data.compiler.appendChild(
-				<fonts>
-				  <managers>
-					<manager-class>flash.fonts.JREFontManager</manager-class>
-					<manager-class>flash.fonts.BatikFontManager</manager-class>
-					<manager-class>flash.fonts.AFEFontManager</manager-class>
-					<manager-class>flash.fonts.CFFFontManager</manager-class>
-				  </managers>
-				</fonts>
+				<fonts><managers><manager-class>flash.fonts.JREFontManager</manager-class><manager-class>flash.fonts.BatikFontManager</manager-class><manager-class>flash.fonts.AFEFontManager</manager-class><manager-class>flash.fonts.CFFFontManager</manager-class></managers></fonts>
 			);
 			data.compiler.appendChild(exportPaths(new <FileLocation>[pvo.sourceFolder], <source-path/>, <path-element/>));
 			data.compiler.appendChild(
 				<debug>true</debug>
 			);
 			data.compiler.appendChild(
-				<locale-element>en_US</locale-element>
+				<locale><locale-element>en_US</locale-element></locale>
 			);
-			data.compiler.appendChild(
-				<namespaces>
-				  <namespace>
-					<uri>http://ns.adobe.com/mxml/2009</uri>
-					<manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest>
-				  </namespace>
-				  <namespace>
-					<uri>library://ns.adobe.com/flex/spark</uri>
-					<manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest>
-				  </namespace>
-				  <namespace>
-					<uri>library://ns.adobe.com/flex/mx</uri>
-					<manifest>{sdkPath}/frameworks/mx-manifest.xml</manifest>
-				  </namespace>
-				  <namespace>
-					<uri>http://www.adobe.com/2006/mxml</uri>
-					<manifest>{sdkPath}/frameworks/mxml-manifest.xml</manifest>
-				  </namespace>
-				</namespaces>
+			
+			generateLibraryConfigByProjectType(pvo, data, sdkPath, pvo.swfOutput.swfVersion);
+			
+			for each (var lib:FileLocation in pvo.libraries)
+			{
+				data.compiler["external-library-path"].appendChild(
+					  <path-element>{lib.fileBridge.nativePath}</path-element>
+					);
+			}
+			
+			data.appendChild(
+				<target-player>{pvo.swfOutput.swfVersion}</target-player>
 			);
-			data.compiler.appendChild(
-				<external-library-path>
-				  <path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/spark.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/apache.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/charts.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/framework.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/airspark.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/airframework.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element>
-				  <path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element>
-				</external-library-path>
+			data.appendChild(
+				<output>{pvo.swfOutput.path.fileBridge.nativePath}</output>
+			);
+			data.appendChild(
+				<static-link-runtime-shared-libraries>false</static-link-runtime-shared-libraries>
 			);
 			if (pvo.classpaths.length > 0) data.appendChild(exportPaths(pvo.classpaths, <include-sources/>, <path-element/>));
 			
@@ -271,6 +222,112 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			
 			return container;
+		}
+		
+		private function generateLibraryConfigByProjectType(pvo:AS3ProjectVO, data:XML, sdkPath:String, targetPlayer:uint):void
+		{
+			if (pvo.isActionScriptOnly && pvo.air && pvo.isMobile)
+			{
+				data.compiler.appendChild(
+					<mobile>true</mobile>
+				);
+				data.compiler.appendChild(
+					<preloader>spark.preloaders.SplashScreen</preloader>
+				);
+				data.compiler.appendChild(
+					<accessible>false</accessible>
+				);
+				data.compiler.appendChild(
+					<theme><filename>{sdkPath}/frameworks/themes/Mobile/mobile.swc</filename></theme>
+					);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element></external-library-path>
+					);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
+					);
+			}
+			else if (pvo.air && pvo.isMobile)
+			{
+				data.compiler.appendChild(
+					<mobile>true</mobile>
+				);
+				data.compiler.appendChild(
+					<preloader>spark.preloaders.SplashScreen</preloader>
+				);
+				data.compiler.appendChild(
+					<accessible>false</accessible>
+				);
+				data.compiler.appendChild(
+					<namespaces><namespace><uri>http://ns.adobe.com/mxml/2009</uri><manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/spark</uri><manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest></namespace></namespaces>
+				);
+				data.compiler.appendChild(
+					<theme><filename>{sdkPath}/frameworks/themes/Mobile/mobile.swc</filename></theme>
+					);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental_mobile.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/mobile/mobilecomponents.swc</path-element></external-library-path>
+					);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element><path-element>{sdkPath}/frameworks/themes/Mobile/mobile.swc</path-element></library-path>
+					);
+			}
+			else if (pvo.isActionScriptOnly && pvo.air && !pvo.isMobile)
+			{
+				data.compiler.appendChild(
+					<accessible>true</accessible>
+				);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element></external-library-path>
+				);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
+					);
+			}
+			else if (pvo.air && !pvo.isMobile)
+			{
+				data.compiler.appendChild(
+					<accessible>true</accessible>
+				);
+				data.compiler.appendChild(
+					<namespaces><namespace><uri>http://ns.adobe.com/mxml/2009</uri><manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/spark</uri><manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/mx</uri><manifest>{sdkPath}/frameworks/mx-manifest.xml</manifest></namespace><namespace><uri>http://www.adobe.com/2006/mxml</uri><manifest>{sdkPath}/frameworks/mxml-manifest.xml</manifest></namespace></namespaces>
+				);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element><path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/airspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/airframework.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element></external-library-path>
+				);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
+					);
+			}
+			else if (pvo.isActionScriptOnly && !pvo.air)
+			{
+				data.compiler.appendChild(
+					<accessible>true</accessible>
+				);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/player/{targetPlayer}.0/playerglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element></external-library-path>
+					);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
+					);
+			}
+			else if (!pvo.air)
+			{
+				data.compiler.appendChild(
+					<accessible>true</accessible>
+				);
+				data.compiler.appendChild(
+					<namespaces><namespace><uri>http://ns.adobe.com/mxml/2009</uri><manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/spark</uri><manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/mx</uri><manifest>{sdkPath}/frameworks/mx-manifest.xml</manifest></namespace><namespace><uri>http://www.adobe.com/2006/mxml</uri><manifest>{sdkPath}/frameworks/mxml-manifest.xml</manifest></namespace></namespaces>
+					);
+				data.compiler.appendChild(
+					<theme><filename>{sdkPath}/frameworks/themes/Spark/spark.css</filename></theme>
+					);
+				data.compiler.appendChild(
+					<external-library-path><path-element>{sdkPath}/frameworks/libs/player/{targetPlayer}.0/playerglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element><path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element></external-library-path>
+					);
+				data.compiler.appendChild(
+					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
+					);
+			}
 		}
 	}
 }

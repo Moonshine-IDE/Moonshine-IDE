@@ -104,6 +104,7 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isProjectFromExistingSource:Boolean;
 		public var isVisualEditorProject:Boolean;
 		public var isLibraryProject:Boolean;
+		public var isActionScriptOnly:Boolean;
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;

@@ -78,7 +78,7 @@ package actionScripts.plugins.as3project.importer
             parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
             parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
-
+			
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
 			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
@@ -122,6 +122,20 @@ package actionScripts.plugins.as3project.importer
 				// if yet not decided from above approach
 				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
 			}
+			else if (project.classpaths.length > 0)
+			{
+				// its possible that a project do not have any default application (project.targets[0])
+				// i.e. library project where no default application maintains
+				// we shall try to select the source folder based on its classpaths
+				for each (var k:FileLocation in project.classpaths)
+				{
+					if (k.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + File.separator) != -1) 
+					{
+						project.sourceFolder = k;
+						break;
+					}
+				}
+			}
 
 			if (project.isVisualEditorProject)
 			{
@@ -133,12 +147,13 @@ package actionScripts.plugins.as3project.importer
             project.defaultBuildTargets = data.options.option.@defaultBuildTargets;
             project.testMovie = data.options.option.@testMovie;
 
-            project.air = UtilsCore.isAIR(project);
-            project.isMobile = UtilsCore.isMobile(project);
-
             project.buildOptions.parse(data.build);
             project.swfOutput.parse(data.output, project);
 			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
+			if (project.intrinsicLibraries.length == 0) project.isActionScriptOnly = true;
+			
+            project.air = UtilsCore.isAIR(project);
+            project.isMobile = UtilsCore.isMobile(project);
 			
 			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
 			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)

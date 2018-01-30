@@ -158,7 +158,11 @@ package actionScripts.utils
 		 */
 		public static function isMobile(project:AS3ProjectVO):Boolean
 		{
-			if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
+			if (project.isLibraryProject)
+			{
+				if (project.buildOptions.additional && project.buildOptions.additional.indexOf("airmobile") != -1) return true;
+			}
+			else if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
 			{
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
 				var descriptor:FileLocation = project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml");

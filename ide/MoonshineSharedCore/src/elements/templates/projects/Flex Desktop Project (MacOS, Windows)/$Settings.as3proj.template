@@ -43,7 +43,9 @@
   	<!-- example: <element path="..." /> -->
   </externalLibraryPaths>
   <rslPaths/>
-  <intrinsics/>
+  <intrinsics>
+  	<element path="Library/AS3/frameworks/Flex4"/>
+  </intrinsics>
   <library/>
   <compileTargets>
     <compile path="$SourceFile"/>
