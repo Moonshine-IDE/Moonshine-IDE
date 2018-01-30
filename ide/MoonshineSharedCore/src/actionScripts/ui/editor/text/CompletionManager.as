@@ -61,7 +61,7 @@ package actionScripts.ui.editor.text
 			completionList = new CodeCompletionList();
 			menuCollection = new ArrayCollection();
 			menuCollection.filterFunction = filterCodeCompletionMenu;
-			menuCollection.sort = new Sort([new SortField("label")], sortCodeCompletionMenu);
+			menuCollection.sort = new Sort([new SortField("sortLabel")], sortCodeCompletionMenu);
 			
 			completionList.dataProvider = menuCollection;
 		}
@@ -397,20 +397,25 @@ package actionScripts.ui.editor.text
 				//all items are visible
 				return true;
 			}
-			//we don't need to call toLowerCase() on menuStr here
-			//because it is already lower case
-			return item.label.toLowerCase().indexOf(menuStr) > -1;
+			//we don't need to call toLowerCase() on sortLabel and menuStr here
+			//because they are already lower case
+			return item.sortLabel.indexOf(menuStr) > -1;
         }
 
 		private function sortCodeCompletionMenu(itemA:CompletionItem, itemB:CompletionItem, fields:Array):int
 		{
 			if (menuStr.length == 0)
 			{
-				return ObjectUtil.stringCompare(itemA.label, itemB.label, true);
+				//sortLabel is already lowercase, so telling stringCompare() to
+				//compare case-sensitive can be faster by avoiding a call to
+				//toLowerCase()
+				return ObjectUtil.stringCompare(itemA.sortLabel, itemB.sortLabel, false);
 			}
-			
-			var indexOfLabelItemA:int = itemA.label.toLowerCase().indexOf(menuStr);
-            var indexOfLabelItemB:int = itemB.label.toLowerCase().indexOf(menuStr);
+
+			//we don't need to call toLowerCase() on sortLabel and menuStr here
+			//because they are already lower case
+			var indexOfLabelItemA:int = itemA.sortLabel.indexOf(menuStr);
+            var indexOfLabelItemB:int = itemB.sortLabel.indexOf(menuStr);
 
 			return ObjectUtil.numericCompare(indexOfLabelItemA, indexOfLabelItemB);
 		}

@@ -673,7 +673,6 @@ package actionScripts.utils
 							var resultItem:Object = resultCompletionItems[i];
 							eventCompletionItems[i] = parseCompletionItem(resultItem);
 						}
-						eventCompletionItems.sortOn("label",Array.CASEINSENSITIVE);
 						_dispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
 					}
 				}

@@ -1,6 +1,8 @@
 package actionScripts.valueObjects
 {
-	public class CompletionItem
+	import flash.events.EventDispatcher;
+
+	public class CompletionItem extends EventDispatcher
 	{
 		private var _label:String;
 
@@ -8,6 +10,13 @@ package actionScripts.valueObjects
 		public function get label():String
 		{
 			return this._label;
+		}
+		
+		private var _sortLabel:String;
+		
+		public function get sortLabel():String
+		{
+			return this._sortLabel;
 		}
 		
 		private var _kind:String;
@@ -76,6 +85,7 @@ package actionScripts.valueObjects
 									   documentation:String = "", command:Command = null, data:* = undefined):void
 		{
 			this._label = label;
+			this._sortLabel = label.toLowerCase();
 			this._insertText = insertText;
 			this._kind = kind;
 			this._detail = detail;
@@ -88,6 +98,7 @@ package actionScripts.valueObjects
 			this.displayKind = kind;
 		}
 
+		[Bindable("displayTypeChange")]
 		public function get displayType():String
 		{
 			return _displayType;
@@ -106,7 +117,7 @@ package actionScripts.valueObjects
 			}
 		}
 
-        [Bindable]
+		[Bindable("displayKindChange")]
         public function get displayKind():String
         {
             return _displayKind;
@@ -122,6 +133,7 @@ package actionScripts.valueObjects
 			_displayKind = value;
 		}
 
+		[Bindable("displayLabelChange")]
         public function get displayLabel():String
         {
             return _displayLabel;
