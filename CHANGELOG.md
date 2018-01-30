@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where codec completion did not work in the line with URL namespaces.
 * Fixed issue where NPE occurs with Royale code marked as COMPILE::JS.
 * Settings: Fixed issue with unresponsive scrollbar.
+* Fixed issue where after deleting and create project with the same name application open files twice.
 
 ## Moonshine IDE [1.8.0]
 
