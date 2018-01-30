@@ -452,7 +452,6 @@ package actionScripts.ui.menu
 		
 		private function onNewMenuRenameRequest(event:TemplatingEvent):void
 		{
-			var menuObject:Object;
 			var subItemsInItemOfTopMenu:Object;
 			if (buildingNativeMenu)
 			{

@@ -44,6 +44,7 @@ package actionScripts.plugin.console.view
 			this.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
+			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
 		}
 
 		private function handleChange(event:ChangeEvent):void
