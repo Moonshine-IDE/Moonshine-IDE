@@ -421,13 +421,13 @@ package actionScripts.utils
 		 */
 		public static function validatePathAgainstSourceFolder(project:ProjectVO, wrapperToCompare:FileWrapper=null, locationToCompare:FileLocation=null, pathToCompare:String=null):Boolean
 		{
-			if (wrapperToCompare) pathToCompare = wrapperToCompare.nativePath;
-			else if (locationToCompare) pathToCompare = locationToCompare.fileBridge.nativePath;
+			if (wrapperToCompare) pathToCompare = wrapperToCompare.nativePath + project.folderLocation.fileBridge.separator;
+			else if (locationToCompare) pathToCompare = locationToCompare.fileBridge.nativePath + project.folderLocation.fileBridge.separator;
 			
 			// if no sourceFolder exists at all let add file anywhere
 			if (!(project as AS3ProjectVO).sourceFolder) return true;
 			
-			if (pathToCompare.indexOf((project as AS3ProjectVO).sourceFolder.fileBridge.nativePath) == -1)
+			if (pathToCompare.indexOf((project as AS3ProjectVO).sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 			{
 				return false;
 			}
