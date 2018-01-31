@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.9.0 - Pending]
 
 ### Added
+* Support for AS3 library project creation.
 * Find Resources: Added filtering options based on files extention.
 * Code Completion List: Added signature method/properties and returned type information.
 * Code Editor: Added brackets for functions choosen from completion list.
@@ -30,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where NPE occurs with Royale code marked as COMPILE::JS.
 * Settings: Fixed issue with unresponsive scrollbar.
 * Fixed issue where after deleting and create project with the same name application open files twice.
+* Fixed issue where compilation of Apache Royale express only application failed.
 
 ## Moonshine IDE [1.8.0]
 
