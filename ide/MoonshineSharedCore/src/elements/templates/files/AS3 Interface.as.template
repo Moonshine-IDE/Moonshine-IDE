@@ -1,6 +1,6 @@
 package $packageName
 {
-	$modifierA interface $fileName
+	$modifierA interface $fileName $exstends
 	{
 		
 	}

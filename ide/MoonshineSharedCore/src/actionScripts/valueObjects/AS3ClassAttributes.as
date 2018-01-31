@@ -24,8 +24,8 @@ package actionScripts.valueObjects
 		public var modifierA:String;
 		public var modifierB:String;
 		public var modifierC:String;
-		public var extendsFrom:Object;
-		public var interfaceOf:Object;
+		public var extendsClassInterface:String;
+		public var implementsInterface:String;
 		
 		public function AS3ClassAttributes()
 		{

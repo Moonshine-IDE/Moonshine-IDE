@@ -1023,16 +1023,24 @@ package actionScripts.plugin.templating
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var pattern:RegExp = new RegExp(TextUtil.escapeRegex("$fileName"), "g");
+				var as3FileAttributes:AS3ClassAttributes = event.extraParameters[0] as AS3ClassAttributes;
+
 				content = content.replace(pattern, event.fileName);
 				
 				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
-				content = content.replace("$modifierA", (event.extraParameters[0] as AS3ClassAttributes).modifierA);
+				content = content.replace("$modifierA", as3FileAttributes.modifierA);
 				
-				var tmpModifierBData:String = (event.extraParameters[0] as AS3ClassAttributes).getModifiersB();
+				var tmpModifierBData:String = as3FileAttributes.getModifiersB();
 				content = content.replace(((tmpModifierBData != "") ? "$modifierB" : "$modifierB "), tmpModifierBData);
-				
+
+				var extendClass:String = as3FileAttributes.extendsClassInterface;
+				content = content.replace("$exstends", extendClass ? "extends " + extendClass : "");
+
+                var implementsInterface:String = as3FileAttributes.implementsInterface;
+                content = content.replace("$implements", implementsInterface ? "implements " + implementsInterface : "");
+
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
 				fileToSave.fileBridge.save(content);
 				
@@ -1058,13 +1066,18 @@ package actionScripts.plugin.templating
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var pattern:RegExp = new RegExp(TextUtil.escapeRegex("$fileName"), "g");
+                var as3InterfaceAttributes:AS3ClassAttributes = event.extraParameters[0] as AS3ClassAttributes;
+
 				content = content.replace(pattern, event.fileName);
 				
 				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
-				content = content.replace("$modifierA", (event.extraParameters[0] as AS3ClassAttributes).modifierA);
-				
+				content = content.replace("$modifierA", as3InterfaceAttributes.modifierA);
+
+                var extendClass:String = as3InterfaceAttributes.extendsClassInterface;
+                content = content.replace("$exstends", extendClass ? "extends " + extendClass : "");
+
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
 				fileToSave.fileBridge.save(content);
 				

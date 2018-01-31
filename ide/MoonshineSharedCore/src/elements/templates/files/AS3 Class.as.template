@@ -1,6 +1,6 @@
 package $packageName
 {
-	$modifierA $modifierB class $fileName
+	$modifierA $modifierB class $fileName $exstends $implements
 	{
 		public function $fileName()
 		{
