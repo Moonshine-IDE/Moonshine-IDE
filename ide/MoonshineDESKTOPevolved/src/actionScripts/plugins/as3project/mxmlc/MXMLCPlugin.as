@@ -450,7 +450,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 			}
 			
-			UtilsCore.checkIfFlexJSApplication(as3Pvo);
+			UtilsCore.checkIfRoyaleApplication(as3Pvo);
 
 			// Read file content to indentify the project type regular flex application or flexjs applicatino
 			if (as3Pvo.isFlexJS)

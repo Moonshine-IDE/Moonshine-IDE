@@ -585,7 +585,7 @@ package actionScripts.utils
 		 * Sets requisite flags based on application file's tag
 		 * Required - AS3ProjectVO
 		 */
-		public static function checkIfFlexJSApplication(project:AS3ProjectVO):void
+		public static function checkIfRoyaleApplication(project:AS3ProjectVO):void
 		{
             // probable termination
             if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
@@ -594,9 +594,10 @@ package actionScripts.utils
 			var isMdlApp:Boolean = mainAppContent.indexOf("mdl:Application") > -1;
 		    var hasRoyaleNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/basic") > -1;
 			var hasFlexJSNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/flexjs/basic") > -1;
+			var hasExpressNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/express") > -1;
 
             if ((mainAppContent.indexOf("js:Application") > -1 || isMdlApp) &&
-				(hasFlexJSNamespace || hasRoyaleNamespace))
+				(hasFlexJSNamespace || hasRoyaleNamespace || hasExpressNamespace))
             {
                 // FlexJS Application
                 project.isFlexJS  = true;

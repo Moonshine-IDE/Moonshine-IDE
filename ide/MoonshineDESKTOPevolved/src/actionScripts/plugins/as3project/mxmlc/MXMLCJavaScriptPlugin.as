@@ -308,7 +308,7 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 				
-				UtilsCore.checkIfFlexJSApplication(as3Pvo);
+				UtilsCore.checkIfRoyaleApplication(as3Pvo);
 				if (as3Pvo.isFlexJS)
 				{
 					// FlexJS Application

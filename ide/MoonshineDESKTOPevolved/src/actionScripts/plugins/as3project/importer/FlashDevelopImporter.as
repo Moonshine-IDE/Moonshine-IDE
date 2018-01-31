@@ -176,7 +176,7 @@ package actionScripts.plugins.as3project.importer
 			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
             project.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
 			
-			if (!project.air) UtilsCore.checkIfFlexJSApplication(project);
+			if (!project.air) UtilsCore.checkIfRoyaleApplication(project);
 
             project.buildOptions.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.deviceSimulator));
             project.buildOptions.certAndroid = UtilsCore.deserializeString(data.moonshineRunCustomization.certAndroid);
