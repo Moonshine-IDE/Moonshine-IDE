@@ -400,7 +400,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ),
                 new SettingsWrapper("Paths",
                         Vector.<ISetting>([
-                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
+                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
                             new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
                             new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
                             new PathListSetting(this, "libraries", "Libraries", folderLocation),
@@ -473,7 +473,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ),
                 new SettingsWrapper("Paths",
                         Vector.<ISetting>([
-                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false),
+							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
                             new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
                             new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
                             new PathListSetting(this, "libraries", "Libraries", folderLocation),
@@ -511,7 +511,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                             ])),
 					new SettingsWrapper("Paths",
 							Vector.<ISetting>([
-								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false)
+								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
 							])
 					)
 				]);

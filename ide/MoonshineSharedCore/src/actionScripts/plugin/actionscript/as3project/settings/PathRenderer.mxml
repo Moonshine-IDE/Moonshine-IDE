@@ -55,6 +55,7 @@
 					super.data = value;
 					path.buttonMode = false;
 					path.editable = path.mouseChildren = true;
+					icoMainSourceFolder.includeInLayout = icoMainSourceFolder.visible = value.isMainSourceFolder;
 					onCreationCompletes(null);
 				}
 			}
@@ -95,6 +96,9 @@
 		width="100%" 
 		paddingLeft="15"
 		verticalAlign="middle">
+		<s:Image id="icoMainSourceFolder"
+				 source="@Embed('/elements/images/icoSource.png')"
+				 includeInLayout="false" visible="false"/>
 		<s:TextInput id="path"
 					 width="100%"
 					 styleName="uiTextSettingsValue"

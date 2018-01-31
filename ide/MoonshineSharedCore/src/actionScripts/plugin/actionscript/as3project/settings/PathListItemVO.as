@@ -25,6 +25,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 	{		
 		public var label:String;
 		public var file:FileLocation;
+		public var isMainSourceFolder:Boolean;
 		
 		public function PathListItemVO(file:FileLocation, label:String)
 		{

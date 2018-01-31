@@ -36,6 +36,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 		public var fileMustExist:Boolean;
 		public var relativeRoot:FileLocation;
 		public var customMessage:IVisualElement;
+		public var displaySourceFolder:Boolean;
 		
 		private var rdr:PathListSettingRenderer;
 		
@@ -43,7 +44,8 @@ package actionScripts.plugin.actionscript.as3project.settings
 										relativeRoot:FileLocation=null,
 										allowFiles:Boolean=true,
 										allowFolders:Boolean=true,
-										fileMustExist:Boolean=true)
+										fileMustExist:Boolean=true,
+										displaySourceFolder:Boolean=false)
 		{
 			super();
 			this.provider = provider;
@@ -53,6 +55,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 			this.allowFolders = allowFolders;
 			this.fileMustExist = fileMustExist;
 			this.relativeRoot = relativeRoot;
+			this.displaySourceFolder = displaySourceFolder;
 			defaultValue = "";
 		}
 		
@@ -87,9 +90,12 @@ package actionScripts.plugin.actionscript.as3project.settings
 				copiedPaths = new ArrayCollection();
 				for each (var f:FileLocation in getSetting())
 				{
-					copiedPaths.addItem( 
-						new PathListItemVO(f, getLabelFor(f))
-					);	
+					var tmpPath:PathListItemVO = new PathListItemVO(f, getLabelFor(f));
+					if (displaySourceFolder &&
+						provider.hasOwnProperty("sourceFolder") && 
+						provider["sourceFolder"] &&
+						FileLocation(provider["sourceFolder"]).fileBridge.nativePath == f.fileBridge.nativePath) tmpPath.isMainSourceFolder = true;
+					copiedPaths.addItem(tmpPath);
 				}
 			}
 			return copiedPaths;
