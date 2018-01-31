@@ -316,7 +316,8 @@
 	<s:VGroup width="100%">
 		<s:Label text="{isInterfaceDialog ? 'Interfaces:' : 'Superclass:'}"/>
 		<view:PromptTextInput id="txtSuperclass"
-							  prompt="Class to extend with" width="100%" styleName="textInput"/>
+							  prompt="{isInterfaceDialog ? 'Interfaces to extend with' : 'Class to extend with'}"
+							  width="100%" styleName="textInput"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
 				  includeInLayout="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}"
