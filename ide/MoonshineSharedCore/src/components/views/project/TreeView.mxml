@@ -313,6 +313,10 @@
 				case CollectionEventKind.ADD:
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
+					
+					var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
+					if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
+					
 					projectFolders.addItemAt(project.projectFolder, 0);
 					timeoutValue = setTimeout(function ():void {
 						tree.selectedItem = project.projectFolder;
@@ -699,6 +703,10 @@
 				
 				if (lastSelectedItem && lastSelectedItem == value) tree.selectedItem = tree.getParentItem(value);
 				updateTreeView();
+				
+				// check if the wrapper is the source folder to the project
+				var tmpProject:AS3ProjectVO = getProjectFromProjectFolder(value) as AS3ProjectVO;
+				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
 			}
 
 			/*

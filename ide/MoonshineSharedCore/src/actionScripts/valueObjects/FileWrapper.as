@@ -29,6 +29,7 @@ package actionScripts.valueObjects
 		private var _children: Array = [];
 		
 		protected var _isRoot: Boolean;
+		protected var _isSourceFolder: Boolean;
 		protected var _defaultName: String;
 		protected var _isWorking: Boolean;
 		protected var _isDeleting: Boolean;
@@ -114,6 +115,15 @@ package actionScripts.valueObjects
 		public function set isRoot(value:Boolean):void
 		{
 			_isRoot = value;
+		}
+		
+		public function get isSourceFolder():Boolean
+		{
+			return _isSourceFolder;
+		}
+		public function set isSourceFolder(value:Boolean):void
+		{
+			_isSourceFolder = value;
 		}
 		
 		public function get name():String

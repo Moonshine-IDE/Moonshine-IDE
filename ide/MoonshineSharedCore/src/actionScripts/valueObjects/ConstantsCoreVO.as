@@ -52,6 +52,8 @@ package actionScripts.valueObjects
 		
 		[Embed(source='/elements/swf/loading.swf')]
 		public static var loaderIcon: Class;
+		[Embed(source='/elements/images/icoSource.png')]
+		public static var sourceFolderIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		public static var TEMPLATE_AS3CLASS: FileLocation;

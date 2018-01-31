@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import actionScripts.valueObjects.ConstantsCoreVO;
-
     import flash.display.NativeMenuItem;
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
@@ -82,6 +80,7 @@ package actionScripts.ui.renderers
 		
 		private var model:IDEModel;
 		private var isOpenIcon:Sprite;
+		private var isSourceFolderIcon:Image;
 		private var hitareaSprite:Sprite;
 		private var sourceControlBackground:UIComponent;
 		private var sourceControlText:Label;
@@ -518,6 +517,15 @@ package actionScripts.ui.renderers
 	        		else isOpenIcon.visible = false;
 	        	}
 	        	else isOpenIcon.visible = false;
+				
+				if (data.isSourceFolder && !isSourceFolderIcon)
+				{
+					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
+					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
+					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
+					addChild(isSourceFolderIcon);
+				}
 	        	
 	        	// Update source control status
 	        	sourceControlSystem.visible = false;
