@@ -526,6 +526,14 @@ package actionScripts.ui.renderers
 					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
 					addChild(isSourceFolderIcon);
 				}
+				else if (data.isSourceFolder && isSourceFolderIcon)
+				{
+					isSourceFolderIcon.visible = true;
+				}
+				else if (!data.isSourceFolder && isSourceFolderIcon) 
+				{
+					isSourceFolderIcon.visible = false;
+				}
 	        	
 	        	// Update source control status
 	        	sourceControlSystem.visible = false;
