@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.9.0 - Pending]
 
 ### Added
+* Full support for Apache Royale.
 * Support for AS3 library project creation.
 * Find Resources: Added filtering options based on files extention.
 * Code Completion List: Added signature method/properties and returned type information.
