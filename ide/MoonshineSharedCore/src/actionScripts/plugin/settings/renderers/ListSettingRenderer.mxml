@@ -81,5 +81,5 @@
 	<s:DropDownList id="cmbOption"
 					width="100%" height="24" 
 					change="onOptionChanged(event)" 
-					requireSelection="true"/>
+					requireSelection="true" contentBackgroundAlpha="0"/>
 </s:VGroup>
