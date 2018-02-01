@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.9.0 - Pending]
+## Moonshine IDE [1.9.0]
 
 ### Added
 * Full support for Apache Royale.
@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Console: Colorize console output. Success, Warning and Error messages are now colored.
 * Visual Editor: Synchronize selection between property editor and list type of components Drop Down List, List.
 * Project Creation: Prevent from creating project in existing project directory.
+* Creation of files has been restricted to source folder only.
+* Project Tree: Added new icon indicated source folder.
 
 ### Fixed
 * Visual Editor: Fixed issue where pressing Tab in property editor was not work properly.
