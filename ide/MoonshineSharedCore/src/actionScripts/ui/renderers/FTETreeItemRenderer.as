@@ -240,7 +240,7 @@ package actionScripts.ui.renderers
 
 				if (!fw.isRoot)
 				{
-					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
+					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
 					
 					// avail only for .as and .mxml files
 					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
@@ -257,7 +257,7 @@ package actionScripts.ui.renderers
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 	   				
-					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_FILE_FOLDER, redispatch, Event.SELECT));
+					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_FILE_FOLDER, redispatch, Event.SELECT));
 	   				
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 					
