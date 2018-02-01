@@ -35,7 +35,6 @@ import flash.display.NativeMenu;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.fullscreen.FullscreenPlugin;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
@@ -52,7 +51,6 @@ import flash.display.NativeMenu;
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
-		public static const NATIVE_MENU_DISPLAYING:String = "nativeMenuDisplaying";
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
 		public static const MENU_QUIT_EVENT:String = "menuQuitEvent";
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
@@ -357,11 +355,6 @@ import flash.display.NativeMenu;
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
 
-        private function onNativeMenuDisplaying(event:Event):void
-        {
-			dispatcher.dispatchEvent(new Event(MenuPlugin.NATIVE_MENU_DISPLAYING));
-        }
-		
 		private function disableNewFileMenuOptions():void
 		{
 			if (!topNativeMenuItemsForFileNew)
@@ -661,16 +654,8 @@ import flash.display.NativeMenu;
             // for mac only
             if (buildingNativeMenu)
             {
-                var currentNativeMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-                if (currentNativeMenu is NativeMenu)
-                {
-                    (currentNativeMenu as NativeMenu).removeEventListener(Event.DISPLAYING, onNativeMenuDisplaying);
-                }
-
                 FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
                 FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
-
-                (mainMenu as NativeMenu).addEventListener(Event.DISPLAYING, onNativeMenuDisplaying);
             }
 
             return mainMenu;

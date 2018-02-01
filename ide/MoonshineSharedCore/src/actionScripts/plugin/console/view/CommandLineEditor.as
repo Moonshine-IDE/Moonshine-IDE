@@ -47,7 +47,6 @@ import flash.events.FocusEvent;
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
-			model.addEventListener(MenuPlugin.NATIVE_MENU_DISPLAYING, onNativeMenuDisplaying);
 		}
 
 		private function handleChange(event:ChangeEvent):void
@@ -157,11 +156,6 @@ import flash.events.FocusEvent;
 			
 			dispatchEvent( new ConsoleCommandEvent(c, args) );
 		}
-
-        private function onNativeMenuDisplaying(event:MenuPlugin):void
-        {
-            hasFocus = false;
-        }
 
         private function handleFocusOut(event:FocusEvent):void
         {
