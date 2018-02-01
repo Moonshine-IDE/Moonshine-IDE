@@ -25,6 +25,7 @@ package actionScripts.ui.codeCompletionList
     import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
+    import flash.events.KeyboardEvent;
     import flash.ui.Keyboard;
 
     import mx.core.ClassFactory;
@@ -40,7 +41,9 @@ package actionScripts.ui.codeCompletionList
     {
         private var codeDocumentationPopup:CodeDocumentationPopup;
         private var keyboardShortcutManager:KeyboardShortcutManager;
-        
+
+        private var previousSelectedIndex:int;
+
         public function CodeCompletionList()
         {
             super();
@@ -65,6 +68,13 @@ package actionScripts.ui.codeCompletionList
 
             this.addEventListener(Event.ADDED_TO_STAGE, onCodeCompletionListAddedToStage);
             this.addEventListener(Event.REMOVED_FROM_STAGE, onCodeCompletionListRemovedFromStage);
+            this.addEventListener(KeyboardEvent.KEY_UP, onCodeCompletionListKeyDown);
+        }
+
+        override public function setSelectedIndex(rowIndex:int, dispatchChangeEvent:Boolean = false, changeCaret:Boolean = true):void
+        {
+            previousSelectedIndex = selectedIndex;
+            super.setSelectedIndex(rowIndex, dispatchChangeEvent, changeCaret);
         }
 
         public function closeDocumentation():void
@@ -133,6 +143,26 @@ package actionScripts.ui.codeCompletionList
             else
             {
                 this.keyboardShortcutManager.activate(new KeyboardShortcut("showDocumentation", "F1", [Keyboard.F1]));
+            }
+        }
+
+        private function onCodeCompletionListKeyDown(event:KeyboardEvent):void
+        {
+            if (event.keyCode == Keyboard.UP)
+            {
+                if (isFirstRow && previousSelectedIndex == 0)
+                {
+                    selectedIndex = dataProvider.length - 1;
+                    ensureIndexIsVisible(selectedIndex);
+                }
+            }
+            else if (event.keyCode == Keyboard.DOWN)
+            {
+                if (isLastRow && previousSelectedIndex == dataProvider.length - 1)
+                {
+                    selectedIndex = 0;
+                    ensureIndexIsVisible(0);
+                }
             }
         }
 
