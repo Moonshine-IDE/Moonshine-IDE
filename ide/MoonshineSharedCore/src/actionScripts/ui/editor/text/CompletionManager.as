@@ -21,6 +21,7 @@ package actionScripts.ui.editor.text
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.ui.codeCompletionList.CodeCompletionList;
+    import actionScripts.utils.CompletionListCodeTokens;
     import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
     import flash.events.Event;
@@ -43,7 +44,7 @@ package actionScripts.ui.editor.text
     public class CompletionManager
 	{
 		private static const MIN_CODECOMPLETION_LIST_HEIGHT:int = 8;
-		
+
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 
@@ -174,15 +175,19 @@ package actionScripts.ui.editor.text
             var hasSelectedLineAutoCloseAttr:Boolean = false;
 			if (item.kind != "Class" && item.kind != "Value" && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
             {
-                hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
-				if (item.kind == "Variable" && item.insertText != null)
-				{
-					hasSelectedLineAutoCloseAttr = false;
-				}
-
-                if (hasSelectedLineAutoCloseAttr)
+                var itemWithNamespaceRegExp:RegExp = /\w+(?=:)/;
+                if (!itemWithNamespaceRegExp.test(item.insertText))
                 {
-                    text = item.label + "=\"\"";
+                    hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
+                    if (item.kind == "Variable" && item.insertText != null)
+                    {
+                        hasSelectedLineAutoCloseAttr = false;
+                    }
+
+                    if (hasSelectedLineAutoCloseAttr)
+                    {
+                        text = item.label + "=\"\"";
+                    }
                 }
             }
 
@@ -308,11 +313,11 @@ package actionScripts.ui.editor.text
             var isLineForAutoCloseAttr:Boolean = false;
             if (line && selectedLineText)
             {
-                isLineForAutoCloseAttr = selectedLineText.indexOf("<") != -1 &&
-                        selectedLineText.lastIndexOf(">") != -1 &&
-                        selectedLineText.indexOf("</") == -1 &&
-						selectedLineText.indexOf("<![CDATA[") == -1 &&
-						selectedLineText.indexOf("]]>") == -1;
+                isLineForAutoCloseAttr = selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) != -1 &&
+                        selectedLineText.lastIndexOf(CompletionListCodeTokens.XML_CLOSE_TAG) != -1 &&
+                        selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1 &&
+						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) == -1 &&
+						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) == -1;
 
                 if (!isLineForAutoCloseAttr)
                 {
@@ -329,14 +334,16 @@ package actionScripts.ui.editor.text
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if ((selectedLineText.indexOf("/>") != -1 && selectedLineText.indexOf("<") != -1) ||
-								selectedLineText.indexOf("<![CDATA[") != -1 ||
-								selectedLineText.indexOf("]]>") != -1)
+                            if ((selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) != -1 &&
+								 selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) != -1) ||
+								selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1 ||
+								selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1)
                             {
                                 break;
                             }
 
-                            if (selectedLineText.indexOf("<") != -1 && selectedLineText.indexOf("</") == -1)
+                            if (selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) != -1 &&
+								selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)
                             {
                                 isLineForAutoCloseAttr = true;
                                 break;
@@ -357,11 +364,12 @@ package actionScripts.ui.editor.text
                         {
                             line = editor.model.lines[j];
                             selectedLineText = line.text;
-                            if (selectedLineText.indexOf(">") != -1 && selectedLineText.indexOf("</") == -1)
+                            if (selectedLineText.indexOf(CompletionListCodeTokens.XML_CLOSE_TAG) != -1 &&
+									selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)
                             {
-								if (selectedLineText.indexOf("<") == -1 &&
-									selectedLineText.indexOf("<![CDATA[") == -1 &&
-                                    selectedLineText.indexOf("]]>") == -1)
+								if (selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) == -1 &&
+									selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) == -1 &&
+                                    selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) == -1)
 								{
                                     isLineForAutoCloseAttr = true;
                                     break;
@@ -370,9 +378,6 @@ package actionScripts.ui.editor.text
                         }
                     }
                 }
-
-
-
             }
 
             return isLineForAutoCloseAttr;
