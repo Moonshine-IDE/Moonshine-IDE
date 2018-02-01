@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-    import flash.display.NativeMenu;
+import actionScripts.ui.menu.interfaces.ICustomMenu;
+
+import flash.display.NativeMenu;
     import flash.events.Event;
     import flash.utils.Dictionary;
     
@@ -50,6 +52,7 @@ package actionScripts.ui.menu
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
+		public static const NATIVE_MENU_DISPLAYING:String = "nativeMenuDisplaying";
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
 		public static const MENU_QUIT_EVENT:String = "menuQuitEvent";
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
@@ -59,7 +62,6 @@ package actionScripts.ui.menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
 		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
-		public static const UPDATE_NEW_MENU:String = "UPDATE_NEW_MENU:String";
 		
 		private const BUILD_NATIVE_MENU:uint = 1;
 		private const BUILD_CUSTOM_MENU:uint = 2;
@@ -75,7 +77,7 @@ package actionScripts.ui.menu
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
-		
+
 		public function getSettingsList():Vector.<ISetting>
 		{
 			if (!ConstantsCoreVO.IS_AIR) return Vector.<ISetting>([]);
@@ -334,23 +336,17 @@ package actionScripts.ui.menu
 		
 		private function createMenu():void
 		{
-			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
-			addMenus(windowMenus, mainMenu);
-			
+			var currentMenu:Object = applyNewNativeMenu(windowMenus);
 			var noSDKOptionsRootIndex:int;
-			if (buildingNativeMenu)
+			if (currentMenu is NativeMenu)
 			{
-				// native menu should only come for AIR version
-				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
-				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
-				
 				noSDKOptionsRootIndex = 1;
 			}
 			else
 			{
 				var menuBar:MenuBar = new MenuBar();
-				menuBar.menu = mainMenu;
-				IDEModel.getInstance().mainView.addChildAt(menuBar, 0);
+				menuBar.menu = currentMenu as ICustomMenu;
+				model.mainView.addChildAt(menuBar, 0);
 			}
 			
 			// in case of OSX, top menu append with a new system level menu (i.e. Moonshine) at 0th index
@@ -360,6 +356,11 @@ package actionScripts.ui.menu
 			noSDKOptionsToMenuMapping[4 + noSDKOptionsRootIndex] = [0, 2, 3, 4];
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
+
+        private function onNativeMenuDisplaying(event:Event):void
+        {
+			dispatcher.dispatchEvent(new Event(MenuPlugin.NATIVE_MENU_DISPLAYING));
+        }
 		
 		private function disableNewFileMenuOptions():void
 		{
@@ -375,13 +376,13 @@ package actionScripts.ui.menu
 				}
 				else
 				{
-					var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+					var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 					topNativeMenuItemsForFileNew = (menuBarMenu.items[0] as CustomMenuItem).data.items[0].data.items;
 				}
 			}
 			
 			isFileNewMenuIsEnabled = false;
-			for (var j:int=0; j < TemplatingPlugin.fileTemplates.length; j++)
+			for (var j:int = 0; j < TemplatingPlugin.fileTemplates.length; j++)
 			{
 				topNativeMenuItemsForFileNew[j].enabled = false;
 			}
@@ -411,7 +412,7 @@ package actionScripts.ui.menu
 				}
 				else
 				{
-					var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+					var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 					CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.insertAt(itemToAddAt, menuObject);
 				}
 			}
@@ -428,7 +429,7 @@ package actionScripts.ui.menu
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
 			
@@ -460,7 +461,7 @@ package actionScripts.ui.menu
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
 			
@@ -489,45 +490,21 @@ package actionScripts.ui.menu
 
 		private function onMacDisableStateChange(event:Event):void
 		{
-			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
-			addMenus(windowMenusForDisableStateMac, mainMenu);
-			
-			// for mac only
-			if (buildingNativeMenu)
-			{
-				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
-				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
-			}
+            applyNewNativeMenu(windowMenusForDisableStateMac);
 			
 			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
 		}
 		
 		private function onMacNoMenuStateChange(event:Event):void
 		{
-			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
-			addMenus(new Vector.<MenuItem>(), mainMenu);
-			
-			// for mac only
-			if (buildingNativeMenu)
-			{
-				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
-				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
-			}
+            applyNewNativeMenu(new Vector.<MenuItem>());
 			
 			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
 		}
-		
+
 		private function onMacEnableStateChange(event:Event):void
 		{
-			var mainMenu:* = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
-			addMenus(windowMenus, mainMenu);
-			
-			// for mac only
-			if (buildingNativeMenu)
-			{
-				FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
-				FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
-			}
+			applyNewNativeMenu(windowMenus);
 			
 			// update menus for VE project
 			disableMenuOptionsForVEProject(lastSelectedProjectBeforeMacDisableStateChange);
@@ -545,7 +522,7 @@ package actionScripts.ui.menu
 			}
 			else
 			{
-				itemsInTopMenu = ((IDEModel.getInstance().mainView.getChildAt(0) as MenuBar).menu as CustomMenu).items;
+				itemsInTopMenu = ((model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu).items;
 			}
 			
 			var tmpOptionsArr:Array;
@@ -631,9 +608,9 @@ package actionScripts.ui.menu
 		
 		private function buildShortcut(item:MenuItem):KeyboardShortcut
 		{
-			var key:String
-			var mod:Array
-			var event:String
+			var key:String;
+			var mod:Array;
+			var event:String;
 			
 			if (item[Settings.os + "_key"])
 				key = item[Settings.os + "_key"];
@@ -675,8 +652,31 @@ package actionScripts.ui.menu
 				}
 			}
 		}
-		
-		// Take events and redispatch them through GED.
+
+        private function applyNewNativeMenu(menuItems:Vector.<MenuItem>):Object
+        {
+            var mainMenu:Object = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
+            addMenus(menuItems, mainMenu);
+
+            // for mac only
+            if (buildingNativeMenu)
+            {
+                var currentNativeMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+                if (currentNativeMenu is NativeMenu)
+                {
+                    (currentNativeMenu as NativeMenu).removeEventListener(Event.DISPLAYING, onNativeMenuDisplaying);
+                }
+
+                FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
+                FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
+
+                (mainMenu as NativeMenu).addEventListener(Event.DISPLAYING, onNativeMenuDisplaying);
+            }
+
+            return mainMenu;
+        }
+
+        // Take events and redispatch them through GED.
 		protected function redispatch(event:Event):void
 		{
 			if (event.target && event.target.data)

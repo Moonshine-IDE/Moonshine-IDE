@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-    import flash.events.FocusEvent;
+import actionScripts.ui.menu.MenuPlugin;
+
+import flash.events.FocusEvent;
     import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
 	
@@ -40,11 +42,12 @@ package actionScripts.plugin.console.view
 		public function CommandLineEditor()
 		{
 			super(false);
-			
+
 			this.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
+			model.addEventListener(MenuPlugin.NATIVE_MENU_DISPLAYING, onNativeMenuDisplaying);
 		}
 
 		private function handleChange(event:ChangeEvent):void
@@ -106,11 +109,6 @@ package actionScripts.plugin.console.view
 			}
 		}
 
-        private function handleFocusOut(event:FocusEvent):void
-        {
-            hasFocus = false;
-        }
-
         private function applyHistory():void
 		{
 			if (history.length == 0) return;
@@ -159,5 +157,15 @@ package actionScripts.plugin.console.view
 			
 			dispatchEvent( new ConsoleCommandEvent(c, args) );
 		}
-	}
+
+        private function onNativeMenuDisplaying(event:MenuPlugin):void
+        {
+            hasFocus = false;
+        }
+
+        private function handleFocusOut(event:FocusEvent):void
+        {
+            hasFocus = false;
+        }
+    }
 }

@@ -54,12 +54,7 @@ package actionScripts.plugin.console.view
 		{
 			return 0;
 		}
-		
-		override public function setFocus():void
-		{
-			super.setFocus();
-			// Never allow focus, which means no blinky cursor
-		}
+
 		public function appendtext(text:*):int
 		{
             var linesCount:int;
