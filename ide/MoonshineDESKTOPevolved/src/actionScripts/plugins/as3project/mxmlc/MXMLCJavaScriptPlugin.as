@@ -125,12 +125,12 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			var tempObj:Object  = new Object();
 			tempObj.callback = runCommand;
-			tempObj.commandDesc = "Build and run the currently selected FlexJS project.";
+			tempObj.commandDesc = "Build and run the currently selected Apache FlexJS/Royale® project.";
 			registerCommand('runjs',tempObj);
 			
 			tempObj = new Object();
 			tempObj.callback = buildCommand;
-			tempObj.commandDesc = "Build the currently selected FlexJS project.";
+			tempObj.commandDesc = "Build the currently selected Apache FlexJS/Royale® project.";
 			registerCommand('buildjs',tempObj);
 			
 			
@@ -151,7 +151,7 @@ package actionScripts.plugins.as3project.mxmlc
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex® or FlexJS® SDK', true,null,true),
+				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex/Royale® or Feathers SDK', true,null,true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation')
 			])
 		}
@@ -282,7 +282,7 @@ package actionScripts.plugins.as3project.mxmlc
 					model.noSDKNotifier.notifyNoFlexSDK(false);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVE_CANCELLED, sdkSelectionCancelled);
-					error("No FlexJS SDK found. Setup one in Settings menu.");
+					error("No Apache FlexJS/Royale® SDK found. Setup one in Settings menu.");
 					return;
 				}
 
@@ -290,8 +290,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var fschFile:File = currentSDK.resolvePath(fcshPath);
 				if (!fschFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a FlexJS SDK instead","Error!");
-					error("Invalid SDK - Please configure a FlexJS SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead");
 					return;
 				}
 				

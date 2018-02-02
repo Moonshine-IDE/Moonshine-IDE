@@ -72,7 +72,7 @@ package actionScripts.plugins.ant
 		
 		override public function get name():String			{ return "Ant Build Setup"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
-		override public function get description():String	{ return "Apache® Ant Build Plugin. Esc exits."; }
+		override public function get description():String	{ return "Apache Ant® Build Plugin. Esc exits."; }
 		
 		private var cmdFile:File;
 		private var cmdLine:CommandLine;

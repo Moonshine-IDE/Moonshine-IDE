@@ -259,7 +259,7 @@ package actionScripts.plugins.as3project.mxmlc
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex® or FlexJS® SDK', true, defaultFlexSDK, true),
+				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex/Royale® or Feathers SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
 				new PathSetting(new JavaSettingsProvider(),
 						"currentJavaPath",
@@ -539,8 +539,8 @@ package actionScripts.plugins.as3project.mxmlc
 						currentSDK.resolvePath("bin/fcsh.bat");
 				if (fcshFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache FlexJS/Royale SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead");
 					return;
 				}
 				fschstr = mxmlcFile.nativePath;
