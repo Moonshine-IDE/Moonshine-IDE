@@ -151,7 +151,7 @@ package actionScripts.plugins.as3project.mxmlc
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex/Royale® or Feathers SDK', true,null,true),
+				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache FlexJS/Royale® or Feathers SDK', true,null,true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation')
 			])
 		}
