@@ -291,7 +291,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'),null,CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
 					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, CompilerEventBase.BUILD_RELEASE),
 					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem(resourceManager.getString('resources','BUILD_WITH_ANT'), null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem("Build with Apache® Ant", null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, CompilerEventBase.BUILD_AND_DEBUG,
@@ -309,8 +309,7 @@ package actionScripts.impls
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','ANT'), [
-					new MenuItem(resourceManager.getString('resources','BUILD_ANT_FILE'), null, AntBuildPlugin.EVENT_ANTBUILD)
-					/*	new MenuItem('Configure', null, AntConfigurePlugin.EVENT_ANTCONFIGURE)*/
+					new MenuItem("Build Apache Ant® File", null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, SVNPlugin.CHECKOUT_REQUEST)
