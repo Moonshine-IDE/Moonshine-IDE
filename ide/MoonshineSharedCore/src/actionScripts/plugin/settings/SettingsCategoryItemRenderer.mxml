@@ -29,11 +29,7 @@
         <s:State name="hovered" />
         <s:State name="selected" />
     </s:states>
- 
- 	<s:FilledElement>
- 		
- 	</s:FilledElement>
- 
+
  	<s:Rect x="-1" width="100%" height="100%"
  		alpha="1">
  		<s:fill.selected>

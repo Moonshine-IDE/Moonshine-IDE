@@ -299,7 +299,6 @@
 				listView.addElement(label);
 
 				var list:List = new List();
-				//list.percentWidth = 100; // yeh that didn't work.
 				list.width = 251;
 				list.x = -1;
 				list.setStyle('paddingTop', -5);
@@ -308,7 +307,8 @@
 				list.setStyle('rollOverColor', 0x555555);
 				list.setStyle('gap', 0);
 				list.labelField = 'name';
-				list.selectedIndex = 0;
+				list.requireSelection = true;
+				list.focusEnabled = false;
 				list.itemRenderer = new ClassFactory(SettingsCategoryItemRenderer);
 
 				list.dataProvider = new ArrayCollection(categories[category]);
@@ -346,7 +346,7 @@
 				updateButtons(false, true, true);
 			}
 
-			settingsContent.validateNow()
+			settingsContent.validateNow();
 			settingsContentScroller.viewport.verticalScrollPosition += 1;
 		}
 
@@ -391,7 +391,9 @@
 		private function handleRefreshSettings(event:Event):void
 		{
 			if (currentSelectedItem)
+			{
 				buildSettings(currentSelectedItem.getSettingsList());
+			}
 		}
 
 		private function updateButtons(isClose:Boolean, isSave:Boolean, isCancel:Boolean):void
@@ -461,14 +463,14 @@
 		height="100%"
 		horizontalScrollPolicy="off"
 		contentBackgroundColor="0x444444">
-		<s:VGroup id="listView" gap="0"/>
+		<s:VGroup id="listView" gap="0" focusEnabled="false"/>
 	</s:Scroller>
 
 	<!-- Settings list -->
 	<s:BorderContainer width="100%" height="100%" backgroundColor="#FFFFFF">
 		<!-- BUG: Horizontal scrollbar always shows when vertical scrollbar shows. Why? -->
 		<s:Scroller id="settingsContentScroller" width="100%"
-					horizontalScrollPolicy="off" minWidth="450"
+					horizontalScrollPolicy="off" minWidth="450" bottom="41"
 					contentBackgroundColor="0x444444" top="0" height="100%">
 			<s:VGroup id="settingsContent" verticalAlign="top"
 					  paddingLeft="20" paddingRight="20" paddingTop="20"/>
