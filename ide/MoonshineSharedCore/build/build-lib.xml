@@ -54,6 +54,7 @@
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
 			<property name="svn.revision" value="4899"/>
+			<property name="IsDebug" value="false" />
 		</then>
 		<else>
 			<echo>Reading properties from Bamboo Variables</echo>
@@ -72,6 +73,7 @@
 			<property name="bundledFlexSDK" value="${BUNDLED_FLEX_SDK}" />
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
 			<property name="svn.revision" value="${svn.revision}" />
+			<property name="IsDebug" value="false" />
 		</else>
 	</if>
 	
@@ -626,6 +628,7 @@
 	
 	<!-- Compile SWF to build directory for desktop packaging -->
 	<target name="CompileSWFWindows" depends="compileLibrary" unless="${isOSX}">
+		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
 			   swf-version="39" 
@@ -633,7 +636,7 @@
 			   locale="${locale.list}" 
 			   fork="true" 
 			   optimize="true" 
-			   debug="false" 
+			   debug="{IsDebug}" 
 			   actionscript-file-encoding="UTF-8" 
 			   incremental="false"
 			   keep-generated-actionscript="false"
@@ -652,6 +655,7 @@
 		</mxmlc>
 	</target>
 	<target name="CompileSWFOSX" depends="compileLibrary" if="${isOSX}">
+		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
 		<copy todir="${basedir}/assets" overwrite="true">
 			<fileset dir="${assets_dir}"/>
 		</copy>
@@ -662,7 +666,7 @@
 			   locale="${locale.list}" 
 			   fork="true" 
 			   optimize="true" 
-			   debug="false" 
+			   debug="${IsDebug}" 
 			   actionscript-file-encoding="UTF-8" 
 			   incremental="false"
 			   keep-generated-actionscript="false"
@@ -728,8 +732,8 @@
 	
 	<!-- Compile library project to SWC -->
 	<target name="compileLibrary" description="compiles the Library" depends="createBuildInfoFile">
-		<echo>Compiling MoonshineSharedCore Library SWC To Deploy SWC Folder</echo>
-		<compc debug="false" output="${debug_dir}/MoonshineSharedCore.swc" incremental="true" maxmemory="2048m">
+		<echo>Compiling MoonshineSharedCore Library SWC To Deploy SWC Folder (Debug: ${IsDebug})</echo>
+		<compc debug="{$IsDebug}" output="${debug_dir}/MoonshineSharedCore.swc" incremental="true" maxmemory="2048m">
 			<define name="CONFIG::OSX" value="${isOSX}"/>
 			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
 			<source-path path-element="${LibraryMoonshineCore}/src"/>
