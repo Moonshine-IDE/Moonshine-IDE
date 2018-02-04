@@ -21,6 +21,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+    import flash.events.IOErrorEvent;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
 	
@@ -175,6 +176,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                             if (jsReleaseFolderExists) folderCount++;
 
 							var onJSFolderCompleteHandler:Function = null;
+
                             if (folderCount > 0)
                             {
                                 onJSFolderCompleteHandler = function(event:Event):void
@@ -191,12 +193,14 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 							if (jsDebugFolderExists)
 							{
+                                jsDebugFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
                                 jsDebugFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
                                 jsDebugFolder.fileBridge.deleteDirectoryAsync(true);
                             }
 
 							if (jsReleaseFolderExists)
 							{
+                                jsDebugFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
                                 jsReleaseFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
                                 jsReleaseFolder.fileBridge.deleteDirectoryAsync(true);
                             }
@@ -219,7 +223,13 @@ package actionScripts.plugin.actionscript.as3project.clean
                 {
                     success("Project cleaned successfully : " + pvo.name);
                 }
-			}				
+			}
 		}
+
+        private function onCleanProjectIOException(event:IOErrorEvent):void
+        {
+            event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+			error("Cannot delete file or folder: " + event.text);
+        }
 	}
 }
