@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.9.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.9.0).
 * Console: Colorize console output. Success, Warning and Error messages are now colored.
+* Console: Improvement to the notification about cleaned project files.
 * Visual Editor: Synchronize selection between property editor and list type of components Drop Down List, List.
 * Project Creation: Prevent from creating project in existing project directory.
 * Creation of files has been restricted to source folder only.
