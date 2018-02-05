@@ -21,17 +21,13 @@ package actionScripts.plugin.actionscript.as3project.settings
 	import mx.core.IVisualElement;
 	
 	import __AS3__.vec.Vector;
-	
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
 	import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
-	
-	
+
 	public class NewLibraryProjectSetting extends AbstractSetting
 	{
 		private var rdr:NewLibraryProjectSettingRenderer;
-		
-		private var _project:AS3ProjectVO;
 		private var _isEnabled:Boolean = true;
 
 		public function NewLibraryProjectSetting(provider:Object, name:String)

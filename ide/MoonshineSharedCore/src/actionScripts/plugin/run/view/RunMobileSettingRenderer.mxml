@@ -203,7 +203,7 @@
 	<s:DropDownList id="cmbOption"
 					width="100%" height="24" 
 					change="cmbOption_changeHandler(event)" 
-					requireSelection="true">
+					requireSelection="true" contentBackgroundColor="#FFFFFF">
 	<!--<s:ComboBox id="cmbOption"
 				width="100%" alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
 				selectedIndex="0" change="cmbOption_changeHandler(event)">-->
@@ -229,7 +229,7 @@
 			<s:DropDownList id="cmbModelOption"
 							width="100%" height="24" 
 							change="cmbOption_changeHandler(event)" labelField="name" 
-							requireSelection="true"/>
+							requireSelection="true" contentBackgroundColor="#FFFFFF"/>
 			<s:Button label="Configure"
 					  click="onConfigureDevices(event)"/>
 		</s:HGroup>

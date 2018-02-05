@@ -80,6 +80,6 @@
 		text="{setting.label}"/>
 	<s:DropDownList id="cmbOption"
 					width="100%" height="24" 
-					change="onOptionChanged(event)" 
-					requireSelection="true" contentBackgroundAlpha="0"/>
+					change="onOptionChanged(event)" contentBackgroundColor="#FFFFFF"
+					requireSelection="true" />
 </s:VGroup>

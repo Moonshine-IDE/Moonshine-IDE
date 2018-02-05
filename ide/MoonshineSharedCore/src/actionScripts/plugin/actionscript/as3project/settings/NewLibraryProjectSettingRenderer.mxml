@@ -116,7 +116,7 @@
 		<s:DropDownList id="cmbOption"
 						width="100%" height="24"
 						dataProvider="{types}" change="onTypeChange(event)"
-						requireSelection="true"/>
+						requireSelection="true" contentBackgroundColor="#FFFFFF"/>
 	</s:VGroup>
 	
 	<s:Rect width="100%"
