@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.settings
 {
+	import mx.controls.Alert;
 	import mx.core.IVisualElement;
 	
 	import __AS3__.vec.Vector;
@@ -88,6 +89,14 @@ package actionScripts.plugin.actionscript.as3project.settings
 		public function get project():AS3ProjectVO
 		{
 			return _project;
+		}
+		
+		public function get validate():Boolean
+		{
+			if (stringValue != "") return true;
+			
+			Alert.show("Please provide the source folder and application file location to proceed.", "Error!");
+			return false;
 		}
         
 		// Helper function
