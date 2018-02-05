@@ -592,9 +592,9 @@ package actionScripts.utils
 
             var mainAppContent:String = project.targets[0].fileBridge.read() as String;
 			var isMdlApp:Boolean = mainAppContent.indexOf("mdl:Application") > -1;
-		    var hasRoyaleNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/basic") > -1;
+            var hasExpressNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/express") > -1;
+		    var hasRoyaleNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/basic") > -1 || hasExpressNamespace;
 			var hasFlexJSNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/flexjs/basic") > -1;
-			var hasExpressNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/express") > -1;
 
             if ((mainAppContent.indexOf("js:Application") > -1 || isMdlApp) &&
 				(hasFlexJSNamespace || hasRoyaleNamespace || hasExpressNamespace))
