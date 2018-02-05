@@ -53,7 +53,7 @@ package actionScripts.plugins.swflauncher
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "Opens .swf files externally. Handles AIR launching via ADL."; }
 		
-		private var customProcess:NativeProcess ;
+		private var customProcess:NativeProcess;
 		private var currentAIRNamespaceVersion:String;
 		private var deviceLauncher:DeviceLauncher = new DeviceLauncher();
 		
@@ -105,7 +105,8 @@ package actionScripts.plugins.swflauncher
 		// when user has already one session ins progress and tries to build/run the application again- close current session and start new one
 		protected function unLaunchSwf(event:SWFLaunchEvent):void
 		{
-			if(customProcess){
+			if(customProcess)
+			{
 				customProcess.exit(true);//Forcefully close running SWF
 				addRemoveShellListeners(false);
 				customProcess = null;
@@ -170,13 +171,12 @@ package actionScripts.plugins.swflauncher
 			//	customInfo.executable = executable;
 			
 			// Find air debug launcher
-			print("Launch Application");
+			print("Launching application...");
 			
 			//var executableFile: File = new File("C:\\Program Files\\Adobe\\Adobe Flash Builder 4.6\\sdks\\4.14\\bin\\adl.exe");
 			customInfo.executable = executableFile;
 			var processArgs:Vector.<String> = new Vector.<String>;               
-			
-			var isFlashDevelopProject: Boolean = (project.projectFile && project.projectFile.fileBridge.nativePath.indexOf(".as3proj") != -1) ? true : false;
+
 			if (project.isMobile)
 			{
 				var device:MobileDeviceVO;
@@ -261,32 +261,26 @@ package actionScripts.plugins.swflauncher
 			{
 				var output:IDataInput = customProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
-				var syntaxMatch:Array;
-				var generalMatch:Array;
-				var initMatch:Array;
-				
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
-				if (syntaxMatch) {
-					var pathStr:String = syntaxMatch[1];
-					var lineNum:int = syntaxMatch[2];
-					var colNum:int = syntaxMatch[3];
-					var errorStr:String = syntaxMatch[4];
+
+                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+				if (syntaxMatch)
+				{
+                    error("%s\n", data);
 				}
-				
-				generalMatch = data.match(/(.*?): Error: (.*).*/);
+
+                var generalMatch:Array = data.match(/[^:]*:?\s*Error:\s(.*)/);
 				if (!syntaxMatch && generalMatch)
-				{ 
-					pathStr = generalMatch[1];
-					errorStr  = generalMatch[2];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					debug("%s", data);
+				{
+					error("%s", data);
 				}
+                else if (data.match(/[^:]*:?\s*warning:\s(.*)/))
+                {
+                    warning("%s", data);
+                }
 				else if (!RUN_AS_DEBUGGER)
 				{
 					debug("%s", data);
 				}
-					
 			}
 		}
 		
@@ -294,42 +288,39 @@ package actionScripts.plugins.swflauncher
 		{
 			if(customProcess)
 				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
-			//debug("SWF exit code: %s", e.exitCode);
 		}
 		
 		private function shellData(e:ProgressEvent):void 
 		{
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			
-			var match:Array = data.match(/initial content not found/);
-			if (match)
+
+			if (data.match(/initial content not found/))
 			{
-				print("SWF source not found in application descriptor.");
+				warning("SWF source not found in application descriptor.");
 				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.EXIT_FDB,false));
 			}
 			else if (data.match(/error while loading initial content/))
 			{
-				print('Error while loading SWF source.\nInvalid application descriptor: Unknown namespace: '+ currentAIRNamespaceVersion);
+				error('Error while loading SWF source.\nInvalid application descriptor: Unknown namespace: '+ currentAIRNamespaceVersion);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.EXIT_FDB,false));
 			}
 			else
 			{
-				debug("%s", data);
+				print("%s", data);
 			}
 		}
 		protected function launchExternal(file:File):void
 		{
-			// Start with systems default handler for .swf filetype
-			//file.openWithDefaultApplication();
 			var request: URLRequest = new URLRequest(file.url);
 			try 
 			{
 				navigateToURL(request, '_blank'); // second argument is target
-			} catch (e:Error) {
-				print(e.getStackTrace()+"Error");
 			}
-			
+			catch (e:Error)
+			{
+				error(e.getStackTrace() + " Error");
+			}
 		}
 	}
 }

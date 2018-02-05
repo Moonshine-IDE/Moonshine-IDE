@@ -727,7 +727,7 @@ package actionScripts.plugins.as3project.mxmlc
                     return;
 				}
 
-                var generalMatch:Array = data.match(/(.*?): Error: (.*).*/);
+                var generalMatch:Array = data.match(/[^:]*:?\s*Error:\s(.*)/);
 				if (!syntaxMatch && generalMatch)
 				{
                     error("%s\n", data);
