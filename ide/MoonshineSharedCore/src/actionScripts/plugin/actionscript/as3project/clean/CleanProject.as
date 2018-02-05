@@ -134,29 +134,49 @@ package actionScripts.plugin.actionscript.as3project.clean
 				var as3Provo:AS3ProjectVO = pvo as AS3ProjectVO; 
 				var outputFile:FileLocation;
 				var swfPath:FileLocation;
-				
+
 				if (as3Provo.swfOutput.path)
 				{
 					outputFile = as3Provo.swfOutput.path;
 					swfPath = outputFile.fileBridge.parent;
 				}
-				
+
+				var folderSwfCount:int = 0;
+                var onSWFFolderCompleteHandler:Function = function(event:Event):void
+                {
+                    event.target.removeEventListener(Event.COMPLETE, onSWFFolderCompleteHandler);
+                    folderSwfCount--;
+                    if (folderSwfCount == 0)
+                    {
+                        dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath, true));
+                        success("SWF project files cleaned successfully : " + pvo.name);
+                    }
+                }
+
 				if (swfPath.fileBridge.exists) 
 				{
 					var directoryItems:Array = swfPath.fileBridge.getDirectoryListing();
 					for each (var directory:Object in directoryItems)
 					{
+                        folderSwfCount++;
+                        directory.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+                        directory.addEventListener(Event.COMPLETE, onSWFFolderCompleteHandler);
+
 						if (directory.isDirectory)
 						{
-							directory.deleteDirectory(true);
+							directory.deleteDirectoryAsync(true);
                         }
 						else
 						{
-							directory.deleteFile();
+							directory.deleteFileAsync();
                         }
 					}
 
-					dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath, true));
+                    if (folderSwfCount == 0)
+                    {
+                        dispatcher.dispatchEvent(new RefreshTreeEvent(swfPath, true));
+                        success("SWF project files cleaned successfully : " + pvo.name);
+                    }
 				}
 				
 				if (as3Provo.isFlexJS || as3Provo.isRoyale)
@@ -166,11 +186,11 @@ package actionScripts.plugin.actionscript.as3project.clean
 					{
 						var timeoutValue:uint = setTimeout(function():void
 						{
-							var folderCount:int = 0;
-							var jsDebugFolder:FileLocation = binFolder.resolvePath("js-debug");
+                            var folderCount:int = 0;
+                            var jsDebugFolder:FileLocation = binFolder.resolvePath("js-debug");
 							var jsDebugFolderExists:Boolean = jsDebugFolder.fileBridge.exists;
 							if (jsDebugFolderExists) folderCount++;
-							
+
                             var jsReleaseFolder:FileLocation = binFolder.resolvePath("js-release");
                             var jsReleaseFolderExists:Boolean = jsReleaseFolder.fileBridge.exists;
                             if (jsReleaseFolderExists) folderCount++;
@@ -186,7 +206,7 @@ package actionScripts.plugin.actionscript.as3project.clean
                                     if (folderCount == 0)
                                     {
                                         dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                                        success("Project cleaned successfully : " + pvo.name);
+                                        success("JavaScript project files cleaned successfully : " + pvo.name);
                                     }
                                 }
                             }
@@ -208,28 +228,24 @@ package actionScripts.plugin.actionscript.as3project.clean
 							if (folderCount == 0)
 							{
                                 dispatcher.dispatchEvent(new RefreshTreeEvent(binFolder, true));
-                    			success("Project cleaned successfully : " + pvo.name);
+                    			success("JavaScript project files cleaned successfully : " + pvo.name);
 							}
 
 							clearTimeout(timeoutValue);
 						}, 300);
 					}
-					else
+					else if ((!swfPath || !swfPath.fileBridge.exists) && !binFolder.fileBridge.exists)
 					{
-                        success("Project cleaned successfully : " + pvo.name);
+                        success("Project files cleaned successfully : " + pvo.name);
 					}
 				}
-				else
-                {
-                    success("Project cleaned successfully : " + pvo.name);
-                }
 			}
 		}
 
         private function onCleanProjectIOException(event:IOErrorEvent):void
         {
             event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
-			error("Cannot delete file or folder: " + event.text);
+			error("Cannot delete file or folder: " + event.target.nativePath + "\nError: " + event.text);
         }
 	}
 }
