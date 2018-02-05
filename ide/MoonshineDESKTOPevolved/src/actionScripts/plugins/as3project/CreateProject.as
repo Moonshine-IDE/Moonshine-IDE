@@ -22,6 +22,8 @@ package actionScripts.plugins.as3project
     import flash.events.Event;
     import flash.filesystem.File;
     import flash.net.SharedObject;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
     
     import mx.collections.ArrayCollection;
     
@@ -72,7 +74,6 @@ package actionScripts.plugins.as3project
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
 		private var project:AS3ProjectVO;
-		private var allProjectTemplates:ArrayCollection;
 		private var model:IDEModel = IDEModel.getInstance();
 		
 		private var isActionScriptProject:Boolean;
@@ -86,6 +87,7 @@ package actionScripts.plugins.as3project
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
 		
+		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
 		private var _libraryProjectTemplateType:String;
@@ -95,9 +97,9 @@ package actionScripts.plugins.as3project
 		{
 			if (!allProjectTemplates)
 			{
-				allProjectTemplates = new ArrayCollection();
-				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
-				allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS); 
+				_allProjectTemplates = new ArrayCollection();
+				_allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS);
+				_allProjectTemplates.addAll(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS);
 			}
 			
 			// determine if a given project is custom or Moonshine default
@@ -112,6 +114,21 @@ package actionScripts.plugins.as3project
 			{
 				createAS3Project(event);
             }
+		}
+		
+		public function get allProjectTemplates():ArrayCollection
+		{
+			if (!isOpenProjectCall) return _allProjectTemplates;
+			
+			var tmpCollection:ArrayCollection = new ArrayCollection();
+			for each (var i:TemplateVO in _allProjectTemplates)
+			{
+				// lets not include Library Project option in case of
+				// project with existing source for cutting complexities
+				if (i.title != ProjectTemplateType.LIBRARY_PROJECT) tmpCollection.addItem(i);
+			}
+			
+			return tmpCollection;
 		}
 		
 		public function get isProjectFromExistingSource():Boolean
@@ -461,6 +478,18 @@ package actionScripts.plugins.as3project
 			var tmpParent:FileLocation;
 			if (_isProjectFromExistingSource)
 			{
+				// validate if all requirement supplied
+				if (!newProjectSourcePathSetting.validate)
+				{
+					event.target.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
+					var timeoutValue:uint = setTimeout(function():void
+					{
+						event.target.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+						clearTimeout(timeoutValue);
+					}, 500);
+					return;
+				}
+				
 				var tmpIndex:int = model.recentSaveProjectPath.getItemIndex(project.folderLocation.fileBridge.nativePath);
 				if (tmpIndex != -1) model.recentSaveProjectPath.removeItemAt(tmpIndex);
 				tmpParent = project.folderLocation.fileBridge.parent;
