@@ -90,14 +90,6 @@ package actionScripts.plugin.actionscript.as3project.settings
 		{
 			return _project;
 		}
-		
-		public function get validate():Boolean
-		{
-			if (stringValue != "") return true;
-			
-			Alert.show("Please provide the source folder and application file location to proceed.", "Error!");
-			return false;
-		}
         
 		// Helper function
 		public function getLabelFor(file:Object):String

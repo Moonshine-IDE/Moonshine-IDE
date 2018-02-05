@@ -26,6 +26,7 @@ package actionScripts.plugins.as3project
     import flash.utils.setTimeout;
     
     import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
@@ -479,7 +480,7 @@ package actionScripts.plugins.as3project
 			if (_isProjectFromExistingSource)
 			{
 				// validate if all requirement supplied
-				if (!newProjectSourcePathSetting.validate)
+				if (newProjectSourcePathSetting.stringValue == "")
 				{
 					event.target.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
 					var timeoutValue:uint = setTimeout(function():void
@@ -487,6 +488,8 @@ package actionScripts.plugins.as3project
 						event.target.addEventListener(SettingsView.EVENT_CLOSE, createClose);
 						clearTimeout(timeoutValue);
 					}, 500);
+					
+					Alert.show("Please provide the source folder and application file location to proceed.", "Error!");
 					return;
 				}
 				
