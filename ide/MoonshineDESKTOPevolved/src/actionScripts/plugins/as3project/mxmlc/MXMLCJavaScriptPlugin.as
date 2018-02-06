@@ -734,6 +734,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (syntaxMatch)
 				{
                     error("%s\n", data);
+					reset();
                     return;
 				}
 
@@ -741,6 +742,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!syntaxMatch && generalMatch)
 				{
                     error("%s\n", data);
+					reset();
 					return;
 				}
 
