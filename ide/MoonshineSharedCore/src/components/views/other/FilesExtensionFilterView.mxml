@@ -39,8 +39,6 @@
 
         import actionScripts.valueObjects.ConstantsCoreVO;
 
-        public var isClosedAsSubmit:Boolean;
-
         [Bindable]
         public var patterns:ArrayCollection;
 
