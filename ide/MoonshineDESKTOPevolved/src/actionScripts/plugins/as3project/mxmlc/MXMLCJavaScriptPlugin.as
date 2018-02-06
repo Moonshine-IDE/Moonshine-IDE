@@ -743,14 +743,12 @@ package actionScripts.plugins.as3project.mxmlc
                 }
 
 				print(data);
-				reset();
 			}
 			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
-			//debug("MXMLC exit code: %s", e.exitCode);
 			reset();
 			if (exiting)
 			{
