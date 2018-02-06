@@ -15,40 +15,39 @@
     <class path="../MoonshineSharedCore/src"/>
     <class path="../MoonshineSharedCore/src/locale/{locale}"/>
     <class path="src"/>
-    <class path="../MoonshineWorker/src"/>
   </classpaths>
   <moonshineResourcePaths>
+    <class path="../MoonshineSharedCore/src/elements/templates"/>
     <class path="../MoonshineSharedCore/src/elements"/>
   </moonshineResourcePaths>
   <build>
-    <option verboseStackTraces="False"/>
-    <option loadConfig=""/>
-    <option linkReport=""/>
-    <option optimize="True"/>
-    <option showActionScriptWarnings="True"/>
-    <option staticLinkRSL="False"/>
-    <option showBindingWarnings="True"/>
-    <option compilerConstants=""/>
-    <option locale=""/>
-    <option showDeprecationWarnings="True"/>
-    <option antBuildPath=""/>
-    <option showUnusedTypeSelectorWarnings="True"/>
-    <option customSDK="E:\DevareaLocal\ApacheFlexSDK\4.16.1_AIR_28.0"/>
+    <option customSDK=""/>
     <option strict="True"/>
     <option accessible="True"/>
     <option useNetwork="True"/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,true  +configname=air -external-library-path+=extensions/SSB.ane"/>
     <option allowSourcePathOverlap="False"/>
     <option useResourceBundleMetadata="True"/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false"/>
     <option benchmark="False"/>
     <option warnings="True"/>
     <option es="False"/>
+    <option locale=""/>
+    <option loadConfig=""/>
+    <option linkReport=""/>
+    <option optimize="True"/>
+    <option verboseStackTraces="False"/>
+    <option staticLinkRSL="False"/>
+    <option showBindingWarnings="True"/>
+    <option compilerConstants=""/>
+    <option showDeprecationWarnings="True"/>
+    <option antBuildPath=""/>
+    <option showActionScriptWarnings="True"/>
+    <option showUnusedTypeSelectorWarnings="True"/>
   </build>
   <includeLibraries></includeLibraries>
   <libraryPaths>
     <element path="libs/ApacheFlexSDKInstallerLib.swc"/>
     <element path="libs/VisualEditor-0.2.0.swc"/>
-    <element path="libs/as3commons-zip-1.0.0-alpha.1.swc"/>
     <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
     <element path="../MoonshineSharedCore/libs/Global.swc"/>
   </libraryPaths>
@@ -63,17 +62,17 @@
   <preBuildCommand>null</preBuildCommand>
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <options>
+    <option testMovieCommand=""/>
     <option showHiddenPaths="False"/>
     <option defaultBuildTargets=""/>
     <option testMovie="AIR"/>
-    <option testMovieCommand=""/>
   </options>
   <moonshineRunCustomization>
-    <option deviceSimulator="null"/>
-    <option projectType="1"/>
     <option launchMethod="Simulator"/>
-    <option targetPlatform="1"/>
+    <option deviceSimulator="null"/>
     <option urlToLaunch=""/>
+    <option targetPlatform="1"/>
+    <option projectType="1"/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
     <certIos>null</certIos>
