@@ -29,7 +29,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileStream;
-	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
     import flash.utils.clearTimeout;
@@ -92,8 +91,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
 
-		private var targets:Dictionary;
-		
 		private var currentSDK:File;
 		
 		/** Project currently under compilation */
@@ -175,7 +172,6 @@ package actionScripts.plugins.as3project.mxmlc
 			stopShell();
 			successMessage = null;
 			resourceCopiedIndex = 0;
-			targets = new Dictionary();
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -738,7 +734,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (syntaxMatch)
 				{
                     error("%s\n", data);
-                    reset();
                     return;
 				}
 
@@ -746,7 +741,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!syntaxMatch && generalMatch)
 				{
                     error("%s\n", data);
-                    reset();
 					return;
 				}
 
@@ -759,7 +753,6 @@ package actionScripts.plugins.as3project.mxmlc
 
 				print(data);
 			}
-			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
