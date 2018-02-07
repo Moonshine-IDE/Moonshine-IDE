@@ -19,6 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+    import actionScripts.plugin.findResources.FindResourcesPlugin;
+
+    import components.popup.FindResourcesPopup;
+
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -165,9 +169,9 @@ package actionScripts.impls
 				TemplatingPlugin,
 				HelpPlugin,
 				FindReplacePlugin,
+				FindResourcesPlugin,
 				RecentlyOpenedPlugin,
 				ConsolePlugin,
-				//AntConfigurePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
 				SearchPlugin
@@ -203,7 +207,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin];
+			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -258,7 +262,7 @@ package actionScripts.impls
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, FindReplacePlugin.EVENT_FIND_RESOURCE,
+					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenamePlugin.EVENT_OPEN_RENAME_VIEW),
@@ -291,7 +295,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'),null,CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
 					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, CompilerEventBase.BUILD_RELEASE),
 					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem("Build with Apache® Ant", null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem("Build with Apache Ant®", null,  AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, CompilerEventBase.BUILD_AND_DEBUG,

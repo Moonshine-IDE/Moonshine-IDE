@@ -29,11 +29,12 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileStream;
-	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
-	
-	import mx.collections.ArrayCollection;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+
+    import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
@@ -90,8 +91,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
 
-		private var targets:Dictionary;
-		
 		private var currentSDK:File;
 		
 		/** Project currently under compilation */
@@ -103,7 +102,9 @@ package actionScripts.plugins.as3project.mxmlc
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
 		protected var runAfterBuild:Boolean;
-		
+
+		private var successMessage:String;
+
 		public function MXMLCJavaScriptPlugin() 
 		{
 			if (Settings.os == "win")
@@ -169,8 +170,8 @@ package actionScripts.plugins.as3project.mxmlc
 		private function reset():void 
 		{
 			stopShell();
+			successMessage = null;
 			resourceCopiedIndex = 0;
-			targets = new Dictionary();
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -564,6 +565,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if(fcsh)
 			{
+				var timeoutValue:uint;
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				
@@ -591,40 +593,29 @@ package actionScripts.plugins.as3project.mxmlc
 						sourceFolder = currentProject.folderLocation.fileBridge.resolvePath(sourcePathSplit[0] + "/bin");
 						if (sourceFolder.fileBridge.exists)
 						{
-							sourceFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onBinFolderMoveComplete);
+							successMessage = data;
+							sourceFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
 							sourceFolder.fileBridge.moveToAsync((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin"), true);
 						}
 						else
 						{
 							sourceFolder = currentProject.folderLocation.fileBridge.resolvePath("bin");
-							if (sourceFolder.fileBridge.exists) onBinFolderMoveComplete(null);
+							if (sourceFolder.fileBridge.exists)
+							{
+                                timeoutValue = setTimeout(function():void {
+									onSuccesfullBuildCompleted(null, data);
+									clearTimeout(timeoutValue)
+                                }, 20);
+                            }
 						}
 					}
 					else
                     {
-                        onBinFolderMoveComplete(null);
+                        timeoutValue = setTimeout(function():void {
+                            onSuccesfullBuildCompleted(null, data);
+                            clearTimeout(timeoutValue)
+                        }, 50);
                     }
-					
-					/*
-					 *@local
-					 */
-					function onBinFolderMoveComplete(event:Event):void
-					{
-						if (event) event.target.removeEventListener(Event.COMPLETE, onBinFolderMoveComplete);
-						dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
-					    if(runAfterBuild)
-					    {
-							testMovie();
-					    }
-						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
-						{
-							var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
-							getResourceCopied(currentProject as AS3ProjectVO, swfFile);
-						}
-
-                        success("%s", data);
-						reset();
-					}
                     return;
 				}
 
@@ -636,7 +627,26 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		
+		private function onSuccesfullBuildCompleted(event:Event, message:String = null):void
+		{
+            if (event)
+			{
+				event.target.removeEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
+            }
+
+            dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
+            if(runAfterBuild)
+            {
+                testMovie();
+            }
+            else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
+            {
+                var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+                getResourceCopied(currentProject as AS3ProjectVO, swfFile);
+            }
+            success("%s", message || successMessage);
+		}
+
 		private function testMovie():void 
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
@@ -716,6 +726,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if(fcsh)
 			{
+				successMessage = null;
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
@@ -723,7 +734,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (syntaxMatch)
 				{
                     error("%s\n", data);
-                    reset();
+					reset();
                     return;
 				}
 
@@ -731,7 +742,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!syntaxMatch && generalMatch)
 				{
                     error("%s\n", data);
-                    reset();
+					reset();
 					return;
 				}
 
@@ -743,14 +754,11 @@ package actionScripts.plugins.as3project.mxmlc
                 }
 
 				print(data);
-				reset();
 			}
-			targets = new Dictionary();
 		}
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
-			//debug("MXMLC exit code: %s", e.exitCode);
 			reset();
 			if (exiting)
 			{

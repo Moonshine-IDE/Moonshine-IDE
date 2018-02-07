@@ -39,8 +39,6 @@
 
         import actionScripts.valueObjects.ConstantsCoreVO;
 
-        public var isClosedAsSubmit:Boolean;
-
         [Bindable]
         public var patterns:ArrayCollection;
 
@@ -54,18 +52,23 @@
             internalSelect(false);
         }
 
+        public function hasSelectedExtensions():Boolean
+        {
+            if (!patterns) return false;
+
+            return patterns.source.some(hasSelected);
+        }
+
         public function getSelectedExtensions():Array
         {
-            var selectedExtensions:Array = [];
-            for each (var extension:Object in patterns)
-            {
-                if (extension.isSelected)
-                {
-                    selectedExtensions.push(extension.label);
-                }
-            }
+            if (!patterns) return [];
 
-            return selectedExtensions;
+            return patterns.source.filter(hasSelected);
+        }
+
+        private function hasSelected(item:Object, index:int, arr:Array):Boolean
+        {
+            return item.isSelected;
         }
 
         private function listExtensionsLabelFunction(item:Object):String

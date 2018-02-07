@@ -60,10 +60,10 @@
 		]]>
 	</fx:Script>
 	
-	<s:Label text="Apache® Flex SDK (System): {SoftwareVersionChecker.FLEX_SYSTEM_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
-	<s:Label text="Apache® Flex SDK (Moonshine): {flexSDKPath}" 
+	<s:Label text="SDK (System): {SoftwareVersionChecker.FLEX_SYSTEM_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
+	<s:Label text="SDK (Moonshine): {flexSDKPath}"
 			 maxDisplayedLines="5" />
-	<s:Label text="Apache® Ant (System): {SoftwareVersionChecker.ANT_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
-	<s:Label text="Apache® Ant (Moonshine): {AntPath}"  />
+	<s:Label text="Apache Ant® (System): {SoftwareVersionChecker.ANT_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
+	<s:Label text="Apache Ant® (Moonshine): {AntPath}"  />
 	<s:Label text="Java: {SoftwareVersionChecker.JAVA_VERSION}" />
 </s:VGroup>

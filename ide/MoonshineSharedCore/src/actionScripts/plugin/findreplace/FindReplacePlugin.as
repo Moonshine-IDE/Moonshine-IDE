@@ -19,20 +19,15 @@
 package actionScripts.plugin.findreplace
 {
     import actionScripts.events.ApplicationEvent;
-    import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.findreplace.view.SearchView;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.text.vo.SearchResult;
 	import actionScripts.utils.TextUtil;
-	
-	import components.popup.FindResourcePopup;
-	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
 	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 
 	public class FindReplacePlugin extends PluginBase
@@ -41,10 +36,8 @@ package actionScripts.plugin.findreplace
 		public static const EVENT_FIND_PREV:String = "findPrevEvent";
 		public static const EVENT_REPLACE_ONE:String = "replaceOneEvent";
 		public static const EVENT_REPLACE_ALL:String = "replaceAllEvent";
-		public static const EVENT_FIND_RESOURCE: String = "fineResource";
 
 		private var searchView:SearchView;
-		private var resourceSearchView:FindResourcePopup;
 		
 		private var searchReplaceRe:RegExp = /^(?:\/)?((?:\\[^\/]|\\\/|\[(?:\\[^\]]|\\\]|[^\\\]])+\]|[^\[\]\\\/])+)\/((?:\\[^\/]|\\\/|[^\\\/])+)?(?:\/([gismx]*))?$/;
 		private var tempObj:Object;
@@ -76,32 +69,10 @@ package actionScripts.plugin.findreplace
 			tempObj.callback = searchRegexp;
 			tempObj.commandDesc = "Execute a regular expression in the currently open file.  See http://help.adobe.com/en_US/as3/dev/WS5b3ccc516d4fbf351e63e3d118a9b90204-7ea9.html .  Syntax:  sr /pattern/  -or-  sr /pattern/replacement/flags";
 			registerCommand("sr",tempObj);
-			
-			/*registerCommand('f',"", search);
-			registerCommand('sr', "",search);
-			registerCommand('sr',"", searchRegexp);*/
-			
-			GlobalEventDispatcher.getInstance().addEventListener(EVENT_FIND_NEXT, handleSearch);
-			GlobalEventDispatcher.getInstance().addEventListener(EVENT_FIND_PREV, handleSearch);
-			GlobalEventDispatcher.getInstance().addEventListener(EVENT_FIND_RESOURCE, findResource);
+
+			dispatcher.addEventListener(EVENT_FIND_NEXT, handleSearch);
+            dispatcher.addEventListener(EVENT_FIND_PREV, handleSearch);
 		}
-		
-		/*public function getMenu():MenuItem
-		{
-			// Since plugin will be activated if needed we can return null to block menu
-			if( !_activated ) return null;
-			return new MenuItem(
-					"Search/Replace", 
-					[
-						new MenuItem("Find", null, EVENT_FIND_NEXT,
-							 'f', [Keyboard.COMMAND],
-							 'f', [Keyboard.CONTROL]),
-						new MenuItem("Find previous", null, EVENT_FIND_PREV,
-							 'f', [Keyboard.COMMAND, Keyboard.SHIFT],
-							 'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					]
-			);
-		}*/
 		
 		protected function handleSearch(event:Event):void
 		{
@@ -135,18 +106,7 @@ package actionScripts.plugin.findreplace
 				PopUpManager.centerPopUp(searchView);
 			}
 		}
-		
-		protected function findResource(event:Event):void
-		{
-			if (!resourceSearchView)
-			{
-				resourceSearchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, FindResourcePopup, true) as FindResourcePopup;
-				resourceSearchView.addEventListener(CloseEvent.CLOSE, handleResourceSearchViewClose);
-				
-				PopUpManager.centerPopUp(resourceSearchView);
-			}
-		}
-		
+
 		protected function closeSearchView(event:Event):void
 		{
 			PopUpManager.removePopUp(searchView);
@@ -164,13 +124,7 @@ package actionScripts.plugin.findreplace
 			
 			searchView = null;
 		}
-		
-		protected function handleResourceSearchViewClose(event:CloseEvent):void
-		{
-			resourceSearchView.removeEventListener(CloseEvent.CLOSE, handleResourceSearchViewClose);
-			resourceSearchView = null;
-		}
-		
+
 		protected function search(args:Array):void
 		{
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;

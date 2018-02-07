@@ -942,9 +942,10 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				if (isSuccessBuild) 
-				{ // Successful compile
-					// swfPath = match[1];
-					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
+				{
+					var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
+
+					dispatcher.dispatchEvent(new RefreshTreeEvent(currentSuccessfullProject.swfOutput.path.fileBridge.parent));
 					
 					if (!isLibraryProject)
 					{
@@ -955,7 +956,7 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (debugAfterBuild)
 						{
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
+							getResourceCopied(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
 							dispatcher.dispatchEvent(
 								//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
 								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
@@ -963,13 +964,16 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
-							getResourceCopied(currentProject as AS3ProjectVO, (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File);
+							getResourceCopied(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
 						}
 					}
 
                     print("%s", data);
                     success("Project Build Successfully");
-					reset();
+					if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
+                    {
+                        reset();
+                    }
 					return;
 				}
 
@@ -1112,7 +1116,6 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
-			//debug("MCMLC exit code: %s", e.exitCode);
 			reset();
 			if (exiting)
 			{

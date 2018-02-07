@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:other="components.views.other.*"
+										   backgroundColor="0xf5f5f5" width="600" height="500" minWidth="300"
+										   minHeight="300"
+										   title="Find Resources" skinClass="components.skins.ResizableTitleWindowSkin"
+										   defaultButton="{openBtn}"
+										   keyDown="onFindResourcesKeyDown(event)"
+										   creationComplete="onFindResourcesPopupCreationComplete(event)">
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9"
+						  horizontalAlign="left" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.plugin.findResources.FindResourcesPlugin;
+
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.FileWrapper;
+		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.ResourceVO;
+
+		import elements.skins.DarkButtonSkin;
+
+		import mx.events.FlexEvent;
+
+		import mx.managers.IFocusManagerComponent;
+
+		[Bindable]
+		private var resources:ArrayCollection = new ArrayCollection();
+
+		private var model:IDEModel = IDEModel.getInstance();
+		private function onFindResourcesPopupCreationComplete(event:FlexEvent):void
+		{
+			for each (var i:ProjectVO in model.projects)
+			{
+				parseChildrens(i.projectFolder);
+			}
+
+			//Workaround for unresolved issue https://issues.apache.org/jira/browse/FLEX-26797
+			openBtn.setStyle("skinClass", DarkButtonSkin);
+
+			resources.filterFunction = resourceFilterFunction;
+			resources.refresh();
+		}
+
+		private function parseChildrens(value:FileWrapper):void
+		{
+			if (!value) return;
+
+			var extension:String = value.file.fileBridge.extension;
+			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+			{
+				resources.addItem(new ResourceVO(value.file.fileBridge.name, value));
+				return;
+			}
+
+			if ((value.children is Array) && (value.children as Array).length > 0)
+			{
+				for each (var c:FileWrapper in value.children)
+				{
+					extension = c.file.fileBridge.extension;
+					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+					{
+						resources.addItem(new ResourceVO(c.file.fileBridge.name, c));
+					}
+					else if (c.file.fileBridge.isDirectory)
+					{
+						parseChildrens(c);
+					}
+				}
+			}
+		}
+
+		private function isAcceptableResource(extension:String):Boolean
+		{
+			return ConstantsCoreVO.READABLE_FILES.some(
+					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+						return item == extension;
+					});
+		}
+
+		private function getResourceName(item:Object):String
+		{
+			return item.name + " - " + item.resourcePath;
+		}
+
+		protected function onListDoubleClicked(event:MouseEvent):void
+		{
+			if (!lstResources.selectedItem)
+			{
+				Alert.show("Please select an item to open.");
+				return;
+			}
+
+			var tmpObject:ResourceVO = lstResources.selectedItem as ResourceVO;
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpObject.sourceWrapper.file, -1, tmpObject.sourceWrapper)
+			);
+
+			super.closeThis();
+		}
+
+		private function onFindResourcesKeyDown(event:KeyboardEvent):void
+		{
+			var isKeyDown:Boolean = event.keyCode == Keyboard.DOWN;
+			var isKeyUp:Boolean = event.keyCode == Keyboard.UP;
+
+			if (isKeyDown || isKeyUp)
+			{
+				var focusedComponent:IFocusManagerComponent = lstResources.focusManager.getFocus();
+				if (lstResources != focusedComponent)
+				{
+					lstResources.setFocus();
+					var resourceSelectedIndex:int = lstResources.selectedIndex + 1;
+
+					if (isKeyDown)
+					{
+						if (resourceSelectedIndex < resources.length)
+						{
+							lstResources.selectedIndex = resourceSelectedIndex;
+						}
+					}
+					else
+					{
+						resourceSelectedIndex = lstResources.selectedIndex - 1;
+						if (resourceSelectedIndex > -1)
+						{
+							lstResources.selectedIndex = resourceSelectedIndex;
+						}
+					}
+				}
+			}
+			else
+			{
+				fileNameTextInput.setFocus();
+				if (fileNameTextInput.text)
+				{
+					fileNameTextInput.selectRange(fileNameTextInput.text.length, fileNameTextInput.text.length);
+				}
+			}
+		}
+
+		private function onFileFilterChanged(event:Event):void
+		{
+			resources.refresh();
+		}
+
+		private function resourceFilterFunction(item:ResourceVO):Boolean
+		{
+			var selectedExtension:Array = filesExtensionFilterView.getSelectedExtensions();
+			if (selectedExtension.length == 0 && !fileNameTextInput.text) return true;
+
+			var itemName:String = item.name.toLowerCase();
+			if (selectedExtension.length == 0 && fileNameTextInput.text)
+			{
+				return itemName.indexOf(fileNameTextInput.text.toLowerCase()) != -1;
+			}
+
+			if (selectedExtension.length > 0 && fileNameTextInput.text)
+			{
+				return selectedExtension.some(function (ext:Object, index:int, arr:Array):Boolean {
+					return ext.label == item.resourceExtension;
+				}) && itemName.indexOf(fileNameTextInput.text.toLowerCase()) != -1;
+			}
+
+			return selectedExtension.some(function (ext:Object, index:int, arr:Array):Boolean {
+				return ext.label == item.resourceExtension;
+			});
+		}
+		]]>
+	</fx:Script>
+	
+	<s:Label text="Search an select an item to open:"/>
+	<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="left" gap="5">
+		<view:PromptTextInput id="fileNameTextInput"
+							  prompt="File Name" width="100%" styleName="textInput"
+							  maxChars="129"
+							  change="onFileFilterChanged(event)" creationComplete="fileNameTextInput.setFocus()"/>
+		<s:CalloutButton icon="@Embed('/elements/images/filter.png')"
+						 width="36" height="20" buttonMode="true"
+						 horizontalPosition="end" verticalPosition="after"
+						 skinClass="components.skins.FilterCalloutButtonSkin">
+			<s:calloutContent>
+				<other:FilesExtensionFilterView id="filesExtensionFilterView"
+												width="250" patterns="{FindResourcesPlugin.previouslySelectedPatterns}"
+												filterChanged="onFileFilterChanged(event)"/>
+			</s:calloutContent>
+		</s:CalloutButton>
+	</s:HGroup>
+	<s:VGroup width="100%" height="100%">
+		<s:Label text="Matching items:"/>
+		<s:List id="lstResources"
+				width="100%" height="100%"
+				requireSelection="true"
+				dataProvider="{resources}" labelFunction="getResourceName" styleName="multiLineList"
+				doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="openBtn" label="Open"
+				  styleName="darkButton"
+				  click="onListDoubleClicked(event)"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

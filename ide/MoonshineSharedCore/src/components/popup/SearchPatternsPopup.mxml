@@ -57,7 +57,7 @@
 
 	<other:FilesExtensionFilterView id="filesExtensionFilterView"
 									percentWidth="100" percentHeight="100"
-									patterns="{patterns}"/>
+									patterns="@{patterns}"/>
 
 	<resizableTitleWindow:controlBarContent>
 		<s:Button label="Select All"
