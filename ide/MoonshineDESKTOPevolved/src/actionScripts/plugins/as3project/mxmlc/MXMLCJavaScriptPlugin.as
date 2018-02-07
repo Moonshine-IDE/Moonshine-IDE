@@ -614,7 +614,7 @@ package actionScripts.plugins.as3project.mxmlc
                         timeoutValue = setTimeout(function():void {
                             onSuccesfullBuildCompleted(null, data);
                             clearTimeout(timeoutValue)
-                        }, 20);
+                        }, 50);
                     }
                     return;
 				}
