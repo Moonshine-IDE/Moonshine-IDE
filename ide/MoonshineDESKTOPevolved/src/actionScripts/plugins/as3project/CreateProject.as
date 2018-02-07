@@ -67,7 +67,7 @@ package actionScripts.plugins.as3project
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
-		private var newProjectSourcePathSetting:NewProjectSourcePathListSetting;
+		private var newProjectWithExistingSourcePathSetting:NewProjectSourcePathListSetting;
 		private var newLibrarySetting:NewLibraryProjectSetting;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
@@ -146,7 +146,7 @@ package actionScripts.plugins.as3project
 				project.projectName = newProjectNameSetting.stringValue;
 				project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
 				
-				newProjectSourcePathSetting.project = project;
+				newProjectWithExistingSourcePathSetting.project = project;
 				newProjectPathSetting.label = "Existing Project Directory";
 			}
 			else
@@ -154,7 +154,7 @@ package actionScripts.plugins.as3project
 				newProjectPathSetting.label = "Parent Directory";
 			}
 			
-			newProjectSourcePathSetting.visible = _isProjectFromExistingSource;
+			newProjectWithExistingSourcePathSetting.visible = _isProjectFromExistingSource;
 			
 			if (isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation);
 			else checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
@@ -274,10 +274,10 @@ package actionScripts.plugins.as3project
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 
-			if (newProjectSourcePathSetting)
+			if (newProjectWithExistingSourcePathSetting)
             {
                 if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
-                newProjectSourcePathSetting.visible = project.isProjectFromExistingSource;
+                newProjectWithExistingSourcePathSetting.visible = project.isProjectFromExistingSource;
             }
 			
             if (isActionScriptProject)
@@ -392,7 +392,7 @@ package actionScripts.plugins.as3project
                 ]));
             }
 
-            newProjectSourcePathSetting = new NewProjectSourcePathListSetting(project,
+            newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
 					"projectWithExistingSourcePaths", "Main source folder");
 			
             if (project.isVisualEditorProject && !eventObject.isExport)
@@ -410,7 +410,7 @@ package actionScripts.plugins.as3project
 				newProjectPathSetting,
 				new PathSetting(this,'customFlexSDK', 'Apache Flex®, Apache FlexJS/Royale® or Feathers SDK', true, customFlexSDK, true),
 				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
-				newProjectSourcePathSetting
+				newProjectWithExistingSourcePathSetting
 			]));
 		}
 		
@@ -436,10 +436,15 @@ package actionScripts.plugins.as3project
 		{
 			project.projectFolder = null;
 			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-			newProjectSourcePathSetting.project = project;
-			
-			if (isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation);
-			else checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+			if (isProjectFromExistingSource)
+			{
+                newProjectWithExistingSourcePathSetting.project = project;
+				checkIfProjectDirectory(project.folderLocation);
+            }
+			else
+			{
+				checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+            }
 		}
 		
 		private function onProjectNameChanged(event:Event):void
@@ -480,7 +485,7 @@ package actionScripts.plugins.as3project
 			if (_isProjectFromExistingSource)
 			{
 				// validate if all requirement supplied
-				if (newProjectSourcePathSetting.stringValue == "")
+				if (newProjectWithExistingSourcePathSetting.stringValue == "")
 				{
 					event.target.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
 					var timeoutValue:uint = setTimeout(function():void

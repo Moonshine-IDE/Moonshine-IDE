@@ -46,6 +46,7 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPlugin;
 	import actionScripts.plugin.console.ConsolePlugin;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.findResources.FindResourcesPlugin;
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.project.ProjectPlugin;
@@ -354,7 +355,7 @@ package actionScripts.impls
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem("Find Resource", null, FindReplacePlugin.EVENT_FIND_RESOURCE,
+					new MenuItem("Find Resource", null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT])
 				]),

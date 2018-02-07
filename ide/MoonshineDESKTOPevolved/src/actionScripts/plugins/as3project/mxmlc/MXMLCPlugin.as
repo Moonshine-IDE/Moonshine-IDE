@@ -30,6 +30,7 @@ package actionScripts.plugins.as3project.mxmlc
     import flash.utils.Dictionary;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
+    import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
     import mx.collections.ArrayCollection;
@@ -285,7 +286,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private function reset():void 
 		{
 			stopShell();
-			//exiting = true;
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
 		}
@@ -1082,14 +1082,25 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if(fcsh)
 			{
+				var currentAs3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
+                var timeoutValue:uint;
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
-                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
 				if (syntaxMatch)
 				{
 					error("%s\n", data);
-                    reset();
+
+					//Royale compiler sends exit code, we don't have to reset anything here, Flex compiler not.
+					if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
+                    {
+                        //Let's wait with the reset because compiler may still have something to report
+                        timeoutValue = setTimeout(function():void {
+                            reset();
+                            clearTimeout(timeoutValue);
+                        }, 100);
+                    }
 					return;
 				}
 
@@ -1097,7 +1108,14 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!syntaxMatch && generalMatch)
 				{
 					error("%s\n", data);
-                    reset();
+
+                    if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
+                    {
+                        timeoutValue = setTimeout(function():void {
+                            reset();
+                            clearTimeout(timeoutValue);
+                        }, 100);
+                    }
 					return;
 				}
 
@@ -1110,7 +1128,13 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				print(data);
-				reset();
+                if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
+                {
+                    timeoutValue = setTimeout(function():void {
+                        reset();
+                        clearTimeout(timeoutValue);
+                    }, 100);
+                }
 			}
 		}
 		

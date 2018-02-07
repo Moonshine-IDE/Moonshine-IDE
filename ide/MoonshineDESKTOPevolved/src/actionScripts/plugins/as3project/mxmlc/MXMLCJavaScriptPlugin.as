@@ -730,19 +730,17 @@ package actionScripts.plugins.as3project.mxmlc
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
-                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
 				if (syntaxMatch)
 				{
                     error("%s\n", data);
-					reset();
                     return;
 				}
 
-                var generalMatch:Array = data.match(/[^:]*:?\s*Error:\s(.*)/);
+                var generalMatch:Array = data.match(new RegExp("[^:]*:?\s*Error:\s(.*)", "i"));
 				if (!syntaxMatch && generalMatch)
 				{
                     error("%s\n", data);
-					reset();
 					return;
 				}
 

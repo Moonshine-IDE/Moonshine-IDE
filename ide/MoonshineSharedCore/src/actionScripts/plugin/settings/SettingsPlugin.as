@@ -67,8 +67,11 @@ package actionScripts.plugin.settings
 	 *
 	 * */
 
+    import actionScripts.utils.SharedObjectConst;
+
     import flash.display.DisplayObject;
     import flash.events.Event;
+    import flash.net.SharedObject;
     import flash.utils.getQualifiedClassName;
     
     import actionScripts.events.AddTabEvent;
@@ -165,6 +168,24 @@ package actionScripts.plugin.settings
 			}
 
             SharedObjectUtil.resetMoonshineIdeProjectSO();
+
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+            delete cookie.data["javaPathForTypeahead"];
+            delete cookie.data["userSDKs"];
+            delete cookie.data["moonshineWorkspace"];
+            delete cookie.data["isWorkspaceAcknowledged"];
+            delete cookie.data["isBundledSDKpromptDNS"];
+            delete cookie.data["isSDKhelperPromptDNS"];
+            delete cookie.data["devicesAndroid"];
+            delete cookie.data["devicesIOS"];
+
+            model.javaPathForTypeAhead = null;
+            model.isCodeCompletionJavaPresent = false;
+            ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
+            ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;
+            ConstantsCoreVO.generateDevices();
+
+            cookie.flush();
 
 			// restarting all startup process again
 			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
