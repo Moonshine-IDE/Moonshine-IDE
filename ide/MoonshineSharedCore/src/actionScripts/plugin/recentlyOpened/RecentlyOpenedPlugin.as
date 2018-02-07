@@ -73,7 +73,6 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, onJavaPathForTypeaheadSave);
 			dispatcher.addEventListener(LayoutModifier.SAVE_LAYOUT_CHANGE_EVENT, onSaveLayoutChangeEvent);
 			dispatcher.addEventListener(GeneralEvent.DEVICE_UPDATED, onDeviceListUpdated, false, 0, true);
-			dispatcher.addEventListener(GeneralEvent.RESET_ALL_SETTINGS, onResetApplicationSettings, false, 0, true);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
 		}
@@ -182,38 +181,8 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			LayoutModifier.parseCookie(cookie);
-			
-			// initiate bundled SDK if exists
-			/*setTimeout(function():void
-			{
-				SDKUtils.openSDKUnzipPrompt();
-			}, 2000);*/
 		}
-		
-		private function onResetApplicationSettings(event:GeneralEvent):void
-		{
-			// @note
-			// we're not going to reset complete SO but selective
-			// fields those limited to Settings
-			
-			delete cookie.data["javaPathForTypeahead"];
-			delete cookie.data["userSDKs"];
-			delete cookie.data["moonshineWorkspace"];
-			delete cookie.data["isWorkspaceAcknowledged"];
-			delete cookie.data["isBundledSDKpromptDNS"];
-			delete cookie.data["isSDKhelperPromptDNS"];
-			delete cookie.data["devicesAndroid"];
-			delete cookie.data["devicesIOS"];
-			
-			model.javaPathForTypeAhead = null;
-			model.isCodeCompletionJavaPresent = false;
-			ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
-			ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;
-			ConstantsCoreVO.generateDevices();
-			
-			cookie.flush();
-		}
-		
+
 		private function handleAddProject(event:ProjectEvent):void
 		{
 			// Find & remove project if already present
