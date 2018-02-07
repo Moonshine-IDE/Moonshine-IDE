@@ -77,20 +77,20 @@
 	        private var sdkPathPopup:SDKDefinePopup;
 	        private var pathMenu:ScrollableMenu = new ScrollableMenu();
 				
-			private var _criticalMessage:String
+			private var _criticalMessage:String;
 			public function get criticalMessage():String {	return _criticalMessage;	}
 			public function set criticalMessage(value:String):void
 			{
-				lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = (value && value != "") ? true : false;
+				lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = value && value != "";
 				if (lblMessage.visible) lblMessage.visible = lblMessage.includeInLayout = false;
 				if (lblCriticalMessage.visible) lblCriticalMessage.text = _criticalMessage = value;
 			}
 			
-			private var _message:String
+			private var _message:String;
 			public function get message():String {	return _message;	}
 			public function set message(value:String):void
 			{
-				lblMessage.visible = lblMessage.includeInLayout = (value && value != "") ? true : false;
+				lblMessage.visible = lblMessage.includeInLayout = value && value != "";
 				if (lblCriticalMessage.visible) lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = false;
 				if (lblMessage.visible) lblMessage.text = _message = value;
 			}
