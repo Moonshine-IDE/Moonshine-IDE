@@ -22,7 +22,8 @@ package actionScripts.plugin.recentlyOpened
 
     import flash.events.Event;
 	import flash.net.SharedObject;
-	import flash.utils.setTimeout;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -247,17 +248,22 @@ package actionScripts.plugin.recentlyOpened
 			/*var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 			tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;*/
 			
-			setTimeout(function():void{
+			var timeoutValue:uint = setTimeout(function():void{
 				var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-				if (model.activeProject) tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;
+				if (model.activeProject)
+				{
+					tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;
+                }
+				clearTimeout(timeoutValue);
 			}, 200);
 			
 			save(model.recentlyOpenedProjects.source, 'recentProjects');
 			save(model.recentlyOpenedProjectOpenedOption.source, 'recentProjectsOpenedOption');
-			
-			setTimeout(function():void
+
+            var timeoutRecentProjectListValue:uint = setTimeout(function():void
 			{
 				dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+				clearTimeout(timeoutRecentProjectListValue);
 			}, 300);
 		}
 		
