@@ -345,9 +345,6 @@
 			{
 				updateButtons(false, true, true);
 			}
-
-			settingsContent.validateNow();
-			settingsContentScroller.viewport.verticalScrollPosition += 1;
 		}
 
 		private function handleItemClick(event:Event):void
@@ -386,6 +383,9 @@
 				line.stroke = new SolidColorStroke(0xdadada);
 				settingsContent.addElement(line);
 			}
+
+			settingsContent.validateNow();
+			settingsContentScroller.viewport.verticalScrollPosition += 1;
 		}
 
 		private function handleRefreshSettings(event:Event):void
