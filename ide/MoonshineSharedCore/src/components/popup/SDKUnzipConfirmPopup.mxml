@@ -146,7 +146,7 @@
 
 		protected function onConfirmHelperDownload(event:MouseEvent):void
 		{
-			navigateToURL(new URLRequest("http://moonshine-ide.com/moonshine-app-store-helper/"), "_blank");
+			navigateToURL(new URLRequest("https://moonshine-ide.com/moonshine-app-store-helper/"), "_blank");
 			currentState = "detect";
 		}
 

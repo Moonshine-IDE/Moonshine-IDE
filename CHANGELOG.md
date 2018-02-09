@@ -26,16 +26,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor: Fixed issue where pressing Tab in property editor was not work properly.
 * Visual Editor: Fixed issue where the same editor opened multiple times.
 * Console: Fixed issue where cursor flashes in console without focus.
-* Code Editor: Fixed issue where choosen XML attribute from auto completion inside quotation marks was not closed properly. 
-* Fixed issue where building Flex application with warnings using option "Build & Run", application doesn't start.
+* Code Editor: Fixed auto-completion for functions within XML attributes
+* Fixed issue where a Flex application failed to launch with "Build & Run" when there were compiler warnings.
 * Fixed issue where building Royale application to SWF wasn't working without setup SDK in the settings of the project.
-* Fixed issue where Tree selection and scroll bar position is being reset after build/delete file/folder.
-* Fixed issue where creating MXML file in Royale project, the FlexJS file template was used.
-* Fixed issue where codec completion did not work in the line with URL namespaces.
-* Fixed issue where NPE occurs with Royale code marked as COMPILE::JS.
+* Fixed issue where tree selection and scroll bar position were reset after project build or deleting a file or folder.
+* Fixed issue where FlexJS template was used when creating an MXML file in a Royale project
+* Fixed issue where code completion did not work on a line with URL namespaces.
+* Fixed issue where a null pointer exception triggered for Royale code marked as COMPILE::JS.
 * Settings: Fixed issue with unresponsive scrollbar.
-* Fixed issue where after deleting and create project with the same name application open files twice.
-* Fixed issue where compilation of Apache Royale express only application failed.
+* Fixed issue where where the application file opened twice after deleting and recreating a project.
+* Fixed issue where compilation failed for a Apache Royale express-only application
+
 
 ## Moonshine IDE [1.8.0]
 
