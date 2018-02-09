@@ -41,10 +41,10 @@
 			var shareOnFacebookRequest:URLRequest = new URLRequest("http://www.facebook.com/dialog/share");
 			var urlVariables:URLVariables = new URLVariables();
 			urlVariables.app_id = "249823608417885";
-			urlVariables.href = "http://moonshine-ide.com/";
+			urlVariables.href = "https://moonshine-ide.com/";
 			urlVariables.hashtag = getFirstHashTag();
 			urlVariables.quote = getTextWithoutHashTags();
-			urlVariables.redirect_uri = "http://moonshine-ide.com/";
+			urlVariables.redirect_uri = "https://moonshine-ide.com/";
 			
 			shareOnFacebookRequest.data = urlVariables;
 			navigateToURL(shareOnFacebookRequest, "_blank");
