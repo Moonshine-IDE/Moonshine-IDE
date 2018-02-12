@@ -19,6 +19,7 @@
 package actionScripts.ui.editor.text
 {
 	import flash.events.EventDispatcher;
+	import flash.utils.Dictionary;
 	
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.Settings;
@@ -130,6 +131,8 @@ package actionScripts.ui.editor.text
 		public var selectionStartTraceLineIndex:int=-1;
 		public var selectionStartTraceCharIndex:int=-1;
 		
+		public var allInstancesOfASearchStringDict:Dictionary;
+		
 		public function get hasMultilineSelection():Boolean
 		{
 			return selectionStartLineIndex > -1 && selectedLineIndex != selectionStartLineIndex;
@@ -223,6 +226,7 @@ package actionScripts.ui.editor.text
 				return (caretIndex > selectionStartCharIndex) ? caretIndex:selectionStartCharIndex;
 			}
 		}
+		
 		public function getSelectionTraceCharEnd():int
 		{
 			return (caretTraceIndex > selectionStartTraceCharIndex) ? caretTraceIndex:selectionStartTraceCharIndex;

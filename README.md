@@ -1,15 +1,15 @@
 ## Synopsis
 
-Moonshine-IDE is a free IDE built with Adobe AIR. You can create ActionScript 3, Apache Flex®, Apache FlexJS® and Feathers projects from Moonshine-IDE. It also provides cloud support.
+Moonshine IDE is a free IDE built with Adobe AIR. You can create ActionScript 3, [Apache Flex®](https://flex.apache.org/), Apache FlexJS®, [Apache Royale®](http://royale.apache.org/) and [Feathers](https://feathersui.com/) projects from Moonshine-IDE. It also provides cloud support.
 ## Motivation
 
-We want to provide a free IDE to our community for ActionScript projects. An IDE which is cross platform and provides Apache Flex®, Apache FlexJS®, and cloud support.
+We want to provide a free IDE to our community for ActionScript projects. An IDE which is cross platform and provides Apache Flex®, Apache FlexJS®, Apache Royale® and cloud support.
 
 ## Installation
 
 ### Prerequisites
 
-We build Moonshine-IDE with [Apache Flex® SDK 4.16.1](https://flex.apache.org/installer.html), using [Adobe AIR and Flash Player 28.0](https://helpx.adobe.com/flash-player/release-note/fp_28_air_28_release_notes.html).
+We build Moonshine IDE with [Apache Flex® SDK 4.16.1](https://flex.apache.org/installer.html), using [Adobe AIR and Flash Player 28.0](https://helpx.adobe.com/flash-player/release-note/fp_28_air_28_release_notes.html).
 
 ### Desktop Version
 

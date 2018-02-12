@@ -7,6 +7,9 @@
 		  creationComplete="onCreationCompletes()" remove="onTabRemoved(event)">
 	<fx:Script>
 		<![CDATA[
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Tree;
 			import mx.core.FlexGlobals;
@@ -23,9 +26,11 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.locator.IDEWorker;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.findreplace.FindReplacePlugin;
 			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.renderers.GenericTreeItemRenderer;
 			import actionScripts.ui.tabview.TabEvent;
+			import actionScripts.utils.TextUtil;
 			
 			import components.popup.ReplaceProjectSearchPopup;
 			
@@ -239,6 +244,20 @@
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL)
 				);
+				
+				// this needs some timeout to get the tab open first
+				var timeoutValue:uint = setTimeout(function():void
+				{
+					var searchString:String = isEscapeChars ? TextUtil.escapeRegex(valueToSearch) : valueToSearch;
+					var flags:String = 'g';
+					if (!isMatchCase) flags += 'i';
+					var searchRegExp:RegExp = new RegExp(searchString, flags);
+					
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new GeneralEvent(FindReplacePlugin.EVENT_FIND_SHOW_ALL, searchRegExp)
+					);
+					clearTimeout(timeoutValue);
+				}, 300);
 			}
 			
 			private function getCountingLabel(item:Object):String

@@ -33,11 +33,11 @@ package actionScripts.ui.editor.text
 	import flash.text.engine.TextElement;
 	import flash.text.engine.TextLine;
 	import flash.utils.Timer;
-
+	
 	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.Settings;
-
-    import no.doomsday.utilities.math.MathUtils;
+	
+	import no.doomsday.utilities.math.MathUtils;
 
 
     public class TextLineRenderer extends Sprite
@@ -74,6 +74,7 @@ package actionScripts.ui.editor.text
 		private var lastMarkerPosition:Number;
 		private var diagnosticsShape:Shape;
 		
+		private var allInstancesSelection:Sprite;
 		private var selection:Sprite;
 		private var traceSelection:Sprite;
 		private var lineSelection:Sprite;
@@ -114,7 +115,7 @@ package actionScripts.ui.editor.text
 			_horizontalOffset = value;
 			if (textLine) textLine.x = lineNumberWidth + _horizontalOffset;
 			if (diagnosticsShape) diagnosticsShape.x = lineNumberWidth + _horizontalOffset;
-			selection.x = lineNumberWidth + _horizontalOffset;
+			allInstancesSelection.x = selection.x = lineNumberWidth + _horizontalOffset;
 			drawMarkerAtPosition(lastMarkerPosition, 0);
 		}
 
@@ -203,6 +204,9 @@ package actionScripts.ui.editor.text
 			lineSelection = new Sprite();
 			addChild(lineSelection);
 			
+			allInstancesSelection = new Sprite();
+			addChild(allInstancesSelection);
+			
 			selection = new Sprite();
 			addChild(selection);
 
@@ -249,11 +253,12 @@ package actionScripts.ui.editor.text
 			drawMarkerAtPosition(markerPos, 0);
 		}
 		
-		public function drawSelection(start:int, end:int):void
+		public function drawSelection(start:int, end:int, drawAsAllInstancesOfASearchString:Boolean=false):void
 		{
 			if (start == end || start < 0) 
 			{
 				removeSelection();
+				removeAllInstancesSelection();
 				return;	
 			}
 			if (start > end)
@@ -267,8 +272,10 @@ package actionScripts.ui.editor.text
 			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
 			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
 			
-			drawSelectionRect(selStart, selWidth);
+			if (!drawAsAllInstancesOfASearchString) drawSelectionRect(selStart, selWidth);
+			else drawAllInstancesSelectionRect(selStart, selWidth);
 		}
+		
 		public function drawTraceSelection(start:int, end:int):void
 		{
 			/*if (start == end || start < 0) 
@@ -304,6 +311,12 @@ package actionScripts.ui.editor.text
 		{
 			selection.graphics.clear();
 		}
+		
+		public function removeAllInstancesSelection():void
+		{
+			allInstancesSelection.graphics.clear();
+		}
+		
 		public function removeTraceSelection():void
 		{
 			traceSelection.graphics.clear();
@@ -593,6 +606,15 @@ package actionScripts.ui.editor.text
 			var g:Graphics = selection.graphics;
 			g.clear();
 			g.beginFill(styles['selectionColor'],styles['selectedLineColorAlpha']);
+			g.drawRect(x, 0, w, lineHeight);
+			g.endFill();
+		}
+		
+		private function drawAllInstancesSelectionRect(x:int, w:int):void
+		{
+			var g:Graphics = allInstancesSelection.graphics;
+			g.clear();
+			g.beginFill(styles['selectedAllInstancesOfASearchStringColorAlpha'],styles['selectedLineColorAlpha']);
 			g.drawRect(x, 0, w, lineHeight);
 			g.endFill();
 		}
