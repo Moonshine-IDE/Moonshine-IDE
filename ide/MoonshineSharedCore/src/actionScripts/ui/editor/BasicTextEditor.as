@@ -115,6 +115,13 @@ package actionScripts.ui.editor
 			return editor.search(search, backwards);
 		}
 		
+		// Search all instances and highlight
+		// Preferably used in 'search in project' sequence
+		public function searchAndShowAll(search:*):void
+		{
+			editor.searchAndShowAll(search);
+		}
+		
 		// Search may be RegExp or String
 		public function searchReplace(search:*, replace:String, all:Boolean=false):SearchResult
 		{

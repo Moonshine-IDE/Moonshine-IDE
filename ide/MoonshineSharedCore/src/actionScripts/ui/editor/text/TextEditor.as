@@ -67,6 +67,7 @@ package actionScripts.ui.editor.text
 	[Style(name="selectionColor",type="uint",format="Color",inherit="yes")]
 	[Style(name="selectedLineColor",type="uint",format="Color",inherit="no")]
 	[Style(name="selectedLineColorAlpha",type="Number",format="Number",inherit="no")]
+	[Style(name="selectedAllInstancesOfASearchStringColorAlpha",type="uint",format="Color",inherit="no")]
 	public class TextEditor extends UIComponent implements IFocusManagerComponent
 	{	
 		// Amount to look ahead when horiz-scrolling caret into view (8 characters)
@@ -101,7 +102,8 @@ package actionScripts.ui.editor.text
 		private var _backgroundColor:uint = 			0xfdfdfd;
 		private var _backgroundAlpha:uint = 			1;
 		private var lineNumberBackgroundColor:uint = 	0xf9f9f9;
-		private var _selectionColor:uint =				0xd1e3f9;
+		private var _selectionColor:uint =				0xb3d8fe;
+		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xcecdf6;
 		private var _selectedLineColor:uint =  			0xedfbfb;
 		private var _selectedLineColorAlpha:Number =	1;
 		private var _tracingLineColor:uint=				0xc6dbae;	
@@ -296,6 +298,7 @@ package actionScripts.ui.editor.text
 			{
 				if (!styles['selectedLineColor']) 		styles['selectedLineColor'] = _selectedLineColor;
 				if (!styles['selectionColor']) 			styles['selectionColor'] = _selectionColor;
+				if (!styles['selectedAllInstancesOfASearchStringColorAlpha']) styles['selectedAllInstancesOfASearchStringColorAlpha'] = _selectedAllInstancesOfASearchStringColorAlpha;
 				if (!styles['selectedLineColorAlpha'])	styles['selectedLineColorAlpha'] = _selectedLineColorAlpha;
 				
 				colorManager.styles = styles;
@@ -356,6 +359,7 @@ package actionScripts.ui.editor.text
 			colorManager = new ColorManager(this, model);
 			colorManager.styles['selectedLineColor'] = _selectedLineColor;
 			colorManager.styles['selectionColor'] = _selectionColor;
+			colorManager.styles['selectedAllInstancesOfASearchStringColorAlpha'] = _selectedAllInstancesOfASearchStringColorAlpha;
 			colorManager.styles['selectedLineColorAlpha'] = _selectedLineColorAlpha;
 			
 			editManager = new EditManager(this, model, readOnly);
@@ -385,6 +389,7 @@ package actionScripts.ui.editor.text
 			var backgroundColor:* = getStyle('backgroundColor');
 			var backgroundAlpha:* = getStyle('backgroundAlpha');
 			var selectionColor:* = getStyle('selectionColor');
+			var selectedAllInstancesOfASearchStringColorAlpha:* = getStyle('selectedAllInstancesOfASearchStringColorAlpha');
             var selectedLineColor:* = getStyle('selectedLineColor');
 			var selectedLineColorAlpha:* = getStyle('selectedLineColorAlpha');
 			var tracingLineColor:* = getStyle('tracingLineColor');
@@ -409,6 +414,11 @@ package actionScripts.ui.editor.text
 				_selectionColor = selectionColor;
 				colorManager.styles['selectionColor'] = _selectionColor;
 			}
+			if (selectedAllInstancesOfASearchStringColorAlpha)
+			{
+				_selectedAllInstancesOfASearchStringColorAlpha = selectedAllInstancesOfASearchStringColorAlpha;
+				colorManager.styles['selectedAllInstancesOfASearchStringColorAlpha'] = _selectedAllInstancesOfASearchStringColorAlpha;
+			}
 			if (selectedLineColor)
 			{
 				_selectedLineColor = selectedLineColor;
@@ -420,7 +430,7 @@ package actionScripts.ui.editor.text
 				colorManager.styles['selectedLineColorAlpha'] = _selectedLineColorAlpha;
 			}
 
-			if (selectionColor || selectedLineColor || selectedLineColorAlpha)
+			if (selectionColor || selectedLineColor || selectedLineColorAlpha || selectedAllInstancesOfASearchStringColorAlpha)
 			{
                 invalidateSelection(true);
 			}
@@ -709,6 +719,13 @@ package actionScripts.ui.editor.text
 		public function search(search:*, backwards:Boolean):SearchResult
 		{
 			return searchManager.search(search, null, false, backwards);
+		}
+		
+		// Search all instances and highlight
+		// Preferably used in 'search in project' sequence
+		public function searchAndShowAll(search:*):void
+		{
+			searchManager.searchAndShowAll(search);
 		}
 		
 		// Search may be RegExp or String
@@ -1079,6 +1096,28 @@ package actionScripts.ui.editor.text
 			}
 		}
 		
+		public function updateAllInstancesOfASearchStringSelection():void
+		{
+			if (!model.allInstancesOfASearchStringDict) return;
+			
+			var rdr:TextLineRenderer;
+			var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+			
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
+			{
+				rdr = model.itemRenderersInUse[i];
+				if (model.allInstancesOfASearchStringDict[i+model.scrollPosition] != undefined)
+				{
+					rdr.drawSelection(model.allInstancesOfASearchStringDict[i+model.scrollPosition].startCharIndex, model.allInstancesOfASearchStringDict[i+model.scrollPosition].endCharIndex, true);
+				}
+				else
+				{
+					rdr.removeSelection();
+					rdr.removeAllInstancesSelection();
+				}
+			}
+		}
+		
 		public function updateTraceSelection():void
 		{
 			var rdr:TextLineRenderer;
@@ -1222,6 +1261,7 @@ package actionScripts.ui.editor.text
 					else
 					{
 						updateSelection();
+						updateAllInstancesOfASearchStringSelection();
 					}
 				}
 				if (checkFlag(INVALID_TRACESELECTION, curInvalidFlags))

@@ -19,6 +19,7 @@
 package actionScripts.ui.editor.text
 {
 	import flash.geom.Point;
+	import flash.utils.Dictionary;
 	
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.ui.editor.text.change.TextChangeBase;
@@ -37,7 +38,40 @@ package actionScripts.ui.editor.text
 		{
 			this.editor = editor;
 			this.model = model;
-		}		
+		}
+		
+		// Search all instances and highlight
+		// Preferably used in 'search in project' sequence
+		public function searchAndShowAll(search:*):void
+		{
+			var results:Array;
+			var searchRegExp:RegExp = search as RegExp;
+			var str:String = editor.dataProvider;
+			var res:SearchResult;
+			var tmpDict:Dictionary = new Dictionary();
+			
+			results = searchRegExp.exec(str);
+			while (results != null)
+			{
+				var lc:Point = TextUtil.charIdx2LineCharIdx(str, results.index, editor.lineDelim);
+				
+				res = new SearchResult();
+				res.startLineIndex = lc.x;
+				res.endLineIndex = lc.x;
+				res.startCharIndex = lc.y;
+				res.endCharIndex = lc.y + results[0].length;
+				if (tmpDict[res.startLineIndex] == undefined) tmpDict[res.startLineIndex] = res;
+				//else tmpDict[res.startLineIndex +"_"+ res.startCharIndex] = res;
+				
+				results = searchRegExp.exec(str);
+			}
+			
+			model.allInstancesOfASearchStringDict = tmpDict;
+			
+			// TODO: Have a bit more margin, maybe center the selected textline?	
+			editor.scrollViewIfNeeded();
+			editor.invalidateLines();
+		}
 
 		public function search(search:*, replace:String, all:Boolean=false, backwards:Boolean=false):SearchResult
 		{

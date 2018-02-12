@@ -18,17 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findreplace
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    
+    import mx.core.FlexGlobals;
+    import mx.managers.PopUpManager;
+    
     import actionScripts.events.ApplicationEvent;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.findreplace.view.SearchView;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.vo.SearchResult;
-	import actionScripts.utils.TextUtil;
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	
-	import mx.core.FlexGlobals;
-	import mx.managers.PopUpManager;
+    import actionScripts.events.GeneralEvent;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.findreplace.view.SearchView;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.utils.TextUtil;
 
 	public class FindReplacePlugin extends PluginBase
 	{
@@ -36,6 +38,7 @@ package actionScripts.plugin.findreplace
 		public static const EVENT_FIND_PREV:String = "findPrevEvent";
 		public static const EVENT_REPLACE_ONE:String = "replaceOneEvent";
 		public static const EVENT_REPLACE_ALL:String = "replaceAllEvent";
+		public static const EVENT_FIND_SHOW_ALL:String = "findAndShowAllEvent";
 
 		private var searchView:SearchView;
 		
@@ -72,6 +75,7 @@ package actionScripts.plugin.findreplace
 
 			dispatcher.addEventListener(EVENT_FIND_NEXT, handleSearch);
             dispatcher.addEventListener(EVENT_FIND_PREV, handleSearch);
+			dispatcher.addEventListener(EVENT_FIND_SHOW_ALL, onFindAndShowAll);
 		}
 		
 		protected function handleSearch(event:Event):void
@@ -105,6 +109,15 @@ package actionScripts.plugin.findreplace
 				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, closeSearchView);
 				PopUpManager.centerPopUp(searchView);
 			}
+		}
+		
+		protected function onFindAndShowAll(event:GeneralEvent):void
+		{
+			// No searching for other components than BasicTextEditor
+			if (!model.activeEditor || (model.activeEditor as BasicTextEditor) == null) return;
+			
+			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+			editor.searchAndShowAll(event.value);	
 		}
 
 		protected function closeSearchView(event:Event):void
