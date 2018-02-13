@@ -24,11 +24,14 @@ package actionScripts.plugin.search
     import mx.collections.ArrayCollection;
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
+    import mx.events.CollectionEvent;
+    import mx.events.CollectionEventKind;
     import mx.managers.PopUpManager;
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.tabview.TabEvent;
     
@@ -45,11 +48,14 @@ package actionScripts.plugin.search
 		[Bindable] public static var IS_REPLACE_APPLIED:Boolean;
 		
 		public static var LAST_SCOPE_INDEX:int = 1;
+		public static var LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS:Boolean;
 		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
 		public static var LAST_SEARCH:String;
+		public static var LAST_SELECTED_PROJECT:AS3ProjectVO;
 		
 		private var searchPopup:SearchInProjectPopup;
 		private var searchResultView:SearchInProjectView;
+		private var isCollectionChangeListenerAdded:Boolean;
 		
         override public function get name():String 	{return "Search in Projects";}
         override public function get author():String {return "Moonshine Project Team";}
@@ -82,10 +88,24 @@ package actionScripts.plugin.search
 				searchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPopup, false) as SearchInProjectPopup;
 				searchPopup.addEventListener(CloseEvent.CLOSE, onSearchPopupClosed);
 				PopUpManager.centerPopUp(searchPopup);
+				
+				if (!isCollectionChangeListenerAdded) 
+				{
+					model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
+					isCollectionChangeListenerAdded = true;
+				}
 			}
 			else
 			{
 				PopUpManager.bringToFront(searchPopup);
+			}
+		}
+		
+		private function onProjectsCollectionChanged(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == LAST_SELECTED_PROJECT) 
+			{
+				LAST_SELECTED_PROJECT = null;
 			}
 		}
 		
@@ -94,7 +114,7 @@ package actionScripts.plugin.search
 			event.target.removeEventListener(CloseEvent.CLOSE, onSearchPopupClosed);
 			
 			// probable termination
-			if (!searchPopup.isClosedAsSubmit)
+			if (!searchPopup.isClosedAsSubmit || !searchPopup.ddlProjects.selectedItem)
 			{
 				searchPopup = null;
 				return;
@@ -103,6 +123,8 @@ package actionScripts.plugin.search
 			LAST_SCOPE_INDEX = searchPopup.rbgScope.selectedIndex;
 			LAST_SEARCH = searchPopup.txtSearch.text;
 			IS_REPLACE_APPLIED = false;
+			LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS = searchPopup.cbEnclosingProjects.selected;
+			LAST_SELECTED_PROJECT = searchPopup.ddlProjects.selectedItem ? searchPopup.ddlProjects.selectedItem as AS3ProjectVO : null;
 			
 			if (!searchResultView)
 			{
@@ -134,10 +156,12 @@ package actionScripts.plugin.search
 				searchResultView.valueToSearch = searchPopup.txtSearch.text;
 				searchResultView.patterns = searchPopup.txtPatterns.text;
 				searchResultView.scope = String(searchPopup.rbgScope.selectedValue);
+				searchResultView.isEnclosingProjects = searchPopup.cbEnclosingProjects.selected;
 				searchResultView.isMatchCase = searchPopup.optionMatchCase.selected;
 				searchResultView.isRegexp = searchPopup.optionRegExp.selected;
 				searchResultView.isEscapeChars = searchPopup.optionEscapeChars.selected;
 				searchResultView.isShowReplaceWhenDone = searchPopup.isShowReplaceWhenDone;
+				searchResultView.selectedProjectToSearch = LAST_SELECTED_PROJECT ? LAST_SELECTED_PROJECT : null;
 			}
 		}
 		
