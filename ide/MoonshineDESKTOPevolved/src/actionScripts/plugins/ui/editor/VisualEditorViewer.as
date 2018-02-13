@@ -34,6 +34,8 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
 
+    import utils.VisualEditorType;
+
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
@@ -53,6 +55,7 @@ package actionScripts.plugins.ui.editor
             isVisualEditor = true;
             
             visualEditorView = new VisualEditorView();
+            visualEditorView.visualEditorType = VisualEditorType.getInstance(VisualEditorType.PRIME_FACES);
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
             visualEditorView.addEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
