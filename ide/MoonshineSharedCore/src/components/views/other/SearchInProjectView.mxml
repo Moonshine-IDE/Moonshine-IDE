@@ -37,8 +37,10 @@
 			[Bindable] public var valueToSearch:String;
 			[Bindable] public var isShowReplaceWhenDone:Boolean;
 			
+			public var selectedProjectToSearch:AS3ProjectVO;
 			public var patterns:String;
 			public var scope:String;
+			public var isEnclosingProjects:Boolean;
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
@@ -122,21 +124,19 @@
 						}
 						break;
 					}
-					case SearchPlugin.LINKED_PROJECTS:
-					{
-						tmpArr.push(model.activeProject.folderLocation.fileBridge.nativePath);
-						for each (var j:FileLocation in AS3ProjectVO(model.activeProject).classpaths)
-						{
-							if (AS3ProjectVO(model.activeProject).sourceFolder.fileBridge.nativePath != j.fileBridge.nativePath && j.fileBridge.nativePath.indexOf("{locale}") == -1)
-							{
-								tmpArr.push(j.fileBridge.nativePath);
-							}
-						}
-						break;
-					}	
 					default:
 					{
-						tmpArr.push(model.activeProject.folderLocation.fileBridge.nativePath);
+						tmpArr.push(selectedProjectToSearch.folderLocation.fileBridge.nativePath);
+						if (isEnclosingProjects)
+						{
+							for each (var j:FileLocation in selectedProjectToSearch.classpaths)
+							{
+								if (selectedProjectToSearch.sourceFolder.fileBridge.nativePath != j.fileBridge.nativePath && j.fileBridge.nativePath.indexOf("{locale}") == -1)
+								{
+									tmpArr.push(j.fileBridge.nativePath);
+								}
+							}
+						}
 						break;
 					}
 				}
