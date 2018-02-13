@@ -240,7 +240,11 @@
 			
 			private function onTreeItemClicked(event:MouseEvent):void
 			{
+				if (!tree.selectedItem) return;
+				
 				var tmpFL:FileLocation = new FileLocation(tree.selectedItem.file.nativePath);
+				if (tmpFL.fileBridge.isDirectory) return;
+				
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL)
 				);

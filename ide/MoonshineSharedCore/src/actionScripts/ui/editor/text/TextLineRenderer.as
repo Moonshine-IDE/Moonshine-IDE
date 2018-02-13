@@ -253,12 +253,11 @@ package actionScripts.ui.editor.text
 			drawMarkerAtPosition(markerPos, 0);
 		}
 		
-		public function drawSelection(start:int, end:int, drawAsAllInstancesOfASearchString:Boolean=false):void
+		public function drawSelection(start:int, end:int):void
 		{
 			if (start == end || start < 0) 
 			{
 				removeSelection();
-				removeAllInstancesSelection();
 				return;	
 			}
 			if (start > end)
@@ -272,8 +271,52 @@ package actionScripts.ui.editor.text
 			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
 			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
 			
-			if (!drawAsAllInstancesOfASearchString) drawSelectionRect(selStart, selWidth);
-			else drawAllInstancesSelectionRect(selStart, selWidth);
+			drawSelectionRect(selStart, selWidth);
+		}
+		
+		public function drawAllInstanceOfASearchStringSelection(drawAsAllInstancesOfASearchString:Array):void
+		{
+			var g:Graphics = allInstancesSelection.graphics;
+			g.clear();
+			g.beginFill(styles['selectedAllInstancesOfASearchStringColorAlpha'],styles['selectedLineColorAlpha']);
+			
+			if (drawAsAllInstancesOfASearchString.length == 1)
+			{
+				getSelectionRange(drawAsAllInstancesOfASearchString[0].startCharIndex, drawAsAllInstancesOfASearchString[0].endCharIndex);
+			}
+			else
+			{
+				for (var j:int=0; j < drawAsAllInstancesOfASearchString.length; j++)
+				{
+					getSelectionRange(drawAsAllInstancesOfASearchString[j].startCharIndex, drawAsAllInstancesOfASearchString[j].endCharIndex);
+				}
+			}
+			
+			g.endFill();
+			
+			/*
+			 * @local
+			 */
+			function getSelectionRange(start:int, end:int):void
+			{
+				if (start == end || start < 0) 
+				{
+					removeAllInstancesSelection();
+					return;	
+				}
+				if (start > end)
+				{
+					var tmp:int = start;
+					start = end;
+					end = tmp;
+				}
+				
+				var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
+				var endBounds:Rectangle = textLine.getAtomBounds(end-1);
+				var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
+				
+				g.drawRect(selStart, 0, selWidth, lineHeight);
+			}
 		}
 		
 		public function drawTraceSelection(start:int, end:int):void
@@ -606,15 +649,6 @@ package actionScripts.ui.editor.text
 			var g:Graphics = selection.graphics;
 			g.clear();
 			g.beginFill(styles['selectionColor'],styles['selectedLineColorAlpha']);
-			g.drawRect(x, 0, w, lineHeight);
-			g.endFill();
-		}
-		
-		private function drawAllInstancesSelectionRect(x:int, w:int):void
-		{
-			var g:Graphics = allInstancesSelection.graphics;
-			g.clear();
-			g.beginFill(styles['selectedAllInstancesOfASearchStringColorAlpha'],styles['selectedLineColorAlpha']);
 			g.drawRect(x, 0, w, lineHeight);
 			g.endFill();
 		}

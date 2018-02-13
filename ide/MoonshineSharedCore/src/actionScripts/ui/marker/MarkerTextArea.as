@@ -99,7 +99,7 @@ package actionScripts.ui.marker
 			for(var i:int = 0; i<len; i++)
 			{
 				var textLayoutFormat:TextLayoutFormat = new TextLayoutFormat();
-				textLayoutFormat.backgroundColor = 0xFF00FF;
+				textLayoutFormat.backgroundColor = 0xff7cff;
 				textArea.setFormatOfRange(textLayoutFormat, positions[i].posStart, positions[i].posEnd);
 			}
 			

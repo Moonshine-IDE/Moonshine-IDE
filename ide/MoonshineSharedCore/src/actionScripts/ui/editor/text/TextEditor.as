@@ -102,8 +102,8 @@ package actionScripts.ui.editor.text
 		private var _backgroundColor:uint = 			0xfdfdfd;
 		private var _backgroundAlpha:uint = 			1;
 		private var lineNumberBackgroundColor:uint = 	0xf9f9f9;
-		private var _selectionColor:uint =				0xb3d8fe;
-		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xcecdf6;
+		private var _selectionColor:uint =				0xd1e3f9;
+		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xff7cff;
 		private var _selectedLineColor:uint =  			0xedfbfb;
 		private var _selectedLineColorAlpha:Number =	1;
 		private var _tracingLineColor:uint=				0xc6dbae;	
@@ -1108,11 +1108,10 @@ package actionScripts.ui.editor.text
 				rdr = model.itemRenderersInUse[i];
 				if (model.allInstancesOfASearchStringDict[i+model.scrollPosition] != undefined)
 				{
-					rdr.drawSelection(model.allInstancesOfASearchStringDict[i+model.scrollPosition].startCharIndex, model.allInstancesOfASearchStringDict[i+model.scrollPosition].endCharIndex, true);
+					rdr.drawAllInstanceOfASearchStringSelection(model.allInstancesOfASearchStringDict[i+model.scrollPosition]);
 				}
 				else
 				{
-					rdr.removeSelection();
 					rdr.removeAllInstancesSelection();
 				}
 			}

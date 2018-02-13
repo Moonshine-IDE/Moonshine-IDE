@@ -193,7 +193,7 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnCreate" label="Change"
+		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onChangeButton(event)"
 				  enabled="false"/>
