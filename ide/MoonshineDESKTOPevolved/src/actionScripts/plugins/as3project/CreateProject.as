@@ -400,7 +400,8 @@ package actionScripts.plugins.as3project
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
-                    newProjectPathSetting
+                    newProjectPathSetting,
+					new ListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_TYPE_FLEX, ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE]))
                 ]));
             }
 
@@ -602,6 +603,10 @@ package actionScripts.plugins.as3project
 				// we creates library project without any default created file inside
 				sourceFileWithExtension = null;
 			}
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE)
+			{
+				sourceFileWithExtension = pvo.projectName + ".shtml";
+			}
 			else
 			{
 				sourceFileWithExtension = pvo.projectName + ".mxml";
@@ -720,6 +725,30 @@ package actionScripts.plugins.as3project
 					{
 						folderToDelete5.fileBridge.deleteDirectoryAsync(true);
 					}
+				}
+			}
+			if (isVisualEditorProject)
+			{
+				if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_FLEX)
+				{
+					th.projectTemplate(templateDir.resolvePath("src_flex"), targetFolder.resolvePath("src"));
+				}
+				else if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE)
+				{
+					th.projectTemplate(templateDir.resolvePath("src_primeface"), targetFolder.resolvePath("src"));
+				}
+				
+				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");
+				var folderToDelete7:FileLocation = targetFolder.resolvePath("src_flex");
+				try
+				{
+					folderToDelete6.fileBridge.deleteDirectory(true);
+					folderToDelete7.fileBridge.deleteDirectory(true);
+				}
+				catch (e:Error)
+				{
+					folderToDelete6.fileBridge.deleteDirectoryAsync(true);
+					folderToDelete7.fileBridge.deleteDirectoryAsync(true);
 				}
 			}
 			if (isLibraryProject)
