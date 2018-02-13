@@ -117,7 +117,7 @@ package actionScripts.plugin.findreplace
 			if (!model.activeEditor || (model.activeEditor as BasicTextEditor) == null) return;
 			
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-			editor.searchAndShowAll(event.value);	
+			editor.searchAndShowAll(event.value);
 		}
 
 		protected function closeSearchView(event:Event):void

@@ -60,8 +60,8 @@ package actionScripts.ui.editor.text
 				res.endLineIndex = lc.x;
 				res.startCharIndex = lc.y;
 				res.endCharIndex = lc.y + results[0].length;
-				if (tmpDict[res.startLineIndex] == undefined) tmpDict[res.startLineIndex] = res;
-				//else tmpDict[res.startLineIndex +"_"+ res.startCharIndex] = res;
+				if (tmpDict[res.startLineIndex] == undefined) tmpDict[res.startLineIndex] = [res];
+				else tmpDict[res.startLineIndex].push(res);
 				
 				results = searchRegExp.exec(str);
 			}
