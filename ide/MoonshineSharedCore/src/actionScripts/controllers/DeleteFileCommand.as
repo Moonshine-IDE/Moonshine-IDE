@@ -18,26 +18,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+import flash.events.Event;
+import flash.utils.clearTimeout;
+import flash.utils.setTimeout;
+
+import mx.controls.Alert;
+import mx.events.CloseEvent;
+
+import actionScripts.events.DeleteFileEvent;
+import actionScripts.events.GlobalEventDispatcher;
+import actionScripts.factory.FileLocation;
+import actionScripts.locator.IDEModel;
+import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+import actionScripts.ui.IContentWindow;
+import actionScripts.ui.editor.BasicTextEditor;
+import actionScripts.ui.tabview.CloseTabEvent;
 import actionScripts.utils.SharedObjectUtil;
+import actionScripts.utils.UtilsCore;
+import actionScripts.valueObjects.ConstantsCoreVO;
+import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectReferenceVO;
 
-import flash.events.Event;
-	
-	import mx.controls.Alert;
-	import mx.events.CloseEvent;
-	
-	import actionScripts.events.DeleteFileEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.FileWrapper;
-	
-	import components.views.splashscreen.SplashScreen;
+import components.views.splashscreen.SplashScreen;
 	
 	public class DeleteFileCommand implements ICommand
 	{
@@ -118,6 +120,23 @@ import flash.events.Event;
                     SharedObjectUtil.removeCookieByName("projectFiles" + projectRef.name);
                     SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
                             {name: projectRef.name, path: projectRef.path}, "name", "path");
+					
+					// removal from the recently opened project in splash screen
+					var toRemove:int = -1;
+					for each (var file:Object in model.recentlyOpenedProjects)
+					{
+						if (file.path == e.wrapper.file.fileBridge.nativePath)
+						{
+							toRemove = model.recentlyOpenedProjects.getItemIndex(file);
+							break;
+						}
+					}
+					if (toRemove != -1) 
+					{
+						model.recentlyOpenedProjects.removeItemAt(toRemove);
+						model.recentlyOpenedProjectOpenedOption.removeItemAt(toRemove);
+						GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
+					}
 
 					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
 				}

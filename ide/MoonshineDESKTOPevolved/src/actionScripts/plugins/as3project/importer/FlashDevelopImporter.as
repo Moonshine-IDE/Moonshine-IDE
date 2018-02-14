@@ -24,6 +24,7 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.MXMLCConfigVO;
+	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
@@ -157,6 +158,13 @@ package actionScripts.plugins.as3project.importer
 			
             project.air = UtilsCore.isAIR(project);
             project.isMobile = UtilsCore.isMobile(project);
+			
+			if (project.swfOutput.platform == "")
+			{
+				if (project.isMobile) project.swfOutput.platform = SWFOutputVO.PLATFORM_MOBILE;
+				else if (project.air) project.swfOutput.platform = SWFOutputVO.PLATFORM_AIR;
+				else project.swfOutput.platform = SWFOutputVO.PLATFORM_DEFAULT;
+			}
 			
 			if (project.air) project.testMovie = AS3ProjectVO.TEST_MOVIE_AIR;
 			if (project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == AS3ProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
