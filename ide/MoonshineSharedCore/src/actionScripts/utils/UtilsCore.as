@@ -36,6 +36,7 @@ package actionScripts.utils
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -139,6 +140,9 @@ package actionScripts.utils
 		 */
 		public static function isAIR(project:AS3ProjectVO):Boolean
 		{
+			// giving precedence to the as3proj value
+			if (project.swfOutput.platform == SWFOutputVO.PLATFORM_AIR || project.swfOutput.platform == SWFOutputVO.PLATFORM_MOBILE) return true;
+			
 			if (project.targets.length > 0)
 			{
 				// considering that application descriptor file should exists in the same
@@ -158,6 +162,9 @@ package actionScripts.utils
 		 */
 		public static function isMobile(project:AS3ProjectVO):Boolean
 		{
+			// giving precedence to the as3proj value
+			if (project.swfOutput.platform == SWFOutputVO.PLATFORM_MOBILE) return true;
+			
 			if (project.isLibraryProject)
 			{
 				if (project.buildOptions.additional && project.buildOptions.additional.indexOf("airmobile") != -1) return true;

@@ -20,12 +20,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-    import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.TextUtil;
+	import actionScripts.utils.SDKUtils;
+	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 
 	public class SWFOutputVO 
 	{
+		public static const PLATFORM_AIR:String = "AIR";
+		public static const PLATFORM_MOBILE:String = "AIR Mobile";
+		public static const PLATFORM_DEFAULT:String = "Flash Player";
+		
 		public var disabled:Boolean = false;
 		public var path:FileLocation;
 		public var frameRate:Number = 24;
@@ -33,6 +37,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfMinorVersion:uint = 0;
 		public var width:int = 100;
 		public var height:int = 100;
+		public var platform:String;
 		
 		// TODO What is this? It's present as <movie input="" /> in FD .as3proj
 		/** Not sure what this is */
@@ -60,6 +65,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			height = int(params.@height);
 			background = uint("0x"+String(params.@background).substr(1));
 			input = String(params.@input);
+			platform = String(params.@platform);
 			
 			// we need to do a little more than just setting SWF version value
 			// from config.xml.
@@ -105,7 +111,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 				'height'	:	height,
 				'version'	:	swfVersion,
 				'background':	"#"+backgroundColorHex,
-				'input'		:	input
+				'input'		:	input,
+				'platform'	:	platform
 			}
 			
 			output.appendChild(UtilsCore.serializePairs(outputPairs, <movie/>));
