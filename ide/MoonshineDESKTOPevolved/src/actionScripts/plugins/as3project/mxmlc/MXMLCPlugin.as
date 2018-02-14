@@ -243,13 +243,12 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		override public function resetSettings():void
 		{
-			var tmpCount:int = model.userSavedSDKs.length;
-			for (var i:int=0; i < tmpCount; i++)
+			for (var i:int=0; i < model.userSavedSDKs.length; i++)
 			{
 				if (model.userSavedSDKs[i].status != SDKUtils.BUNDLED)
 				{
 					model.userSavedSDKs.removeItemAt(i);
-					tmpCount--;
+					i--;
 				}
 			}
 
