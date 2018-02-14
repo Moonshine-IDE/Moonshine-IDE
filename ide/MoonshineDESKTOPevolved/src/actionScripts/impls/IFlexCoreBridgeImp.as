@@ -19,10 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.plugin.findResources.FindResourcesPlugin;
-
-    import components.popup.FindResourcesPopup;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -40,6 +36,7 @@ package actionScripts.impls
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IFlexCoreBridge;
@@ -49,6 +46,7 @@ package actionScripts.impls
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsolePlugin;
     import actionScripts.plugin.core.compiler.CompilerEventBase;
+    import actionScripts.plugin.findResources.FindResourcesPlugin;
     import actionScripts.plugin.findreplace.FindReplacePlugin;
     import actionScripts.plugin.fullscreen.FullscreenPlugin;
     import actionScripts.plugin.help.HelpPlugin;
@@ -265,7 +263,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenamePlugin.EVENT_OPEN_RENAME_VIEW),
+					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 				]),
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, ProjectEvent.SHOW_PROJECT_VIEW),

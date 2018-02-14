@@ -18,31 +18,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.rename
 {
-	import actionScripts.utils.applyTextEditsToFile;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-
+	import flash.utils.Dictionary;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
 	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
-
+	
+	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.rename.view.RenameView;
+	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.utils.CustomTree;
 	import actionScripts.utils.TextUtil;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.applyTextEditsToFile;
+	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.TextEdit;
+	
+	import components.popup.RenamePopup;
 
 	public class RenamePlugin extends PluginBase
 	{
-		public static const EVENT_OPEN_RENAME_VIEW:String = "openRenameView";
-
-		public function RenamePlugin()
-		{
-		}
+		public static var RENAMED_FOLDER_STACK:Dictionary = new Dictionary();
+		
+		private var renameView:RenameView = new RenameView();
+		private var renameFileView:RenamePopup;
+		
+		public function RenamePlugin() {	}
 
 		override public function get name():String { return "Rename Plugin"; }
 		override public function get author():String { return "Moonshine Project Team"; }
@@ -52,20 +64,20 @@ package actionScripts.plugins.rename
 		private var _startChar:int;
 		private var _endChar:int;
 
-		private var renameView:RenameView = new RenameView();
-
 		override public function activate():void
 		{
 			super.activate();
-			dispatcher.addEventListener(EVENT_OPEN_RENAME_VIEW, handleOpenRenameView);
+			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
 			dispatcher.addEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
+			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 		}
 
 		override public function deactivate():void
 		{
 			super.deactivate();
-			dispatcher.removeEventListener(EVENT_OPEN_RENAME_VIEW, handleOpenRenameView);
+			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
 			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
+			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 		}
 
 		private function handleOpenRenameView(event:Event):void
@@ -89,10 +101,11 @@ package actionScripts.plugins.rename
 		private function renameView_closeHandler(event:CloseEvent):void
 		{
 			renameView.removeEventListener(CloseEvent.CLOSE, renameView_closeHandler);
-			if(event.detail !== Alert.OK)
+			if (event.detail !== Alert.OK)
 			{
 				return;
 			}
+			
 			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_RENAME,
 				this._startChar, this._line, this._endChar, this._line, renameView.newName));
 		}
@@ -109,11 +122,74 @@ package actionScripts.plugins.rename
 				var changesInFile:Vector.<TextEdit> = changes[key] as Vector.<TextEdit>;
 				applyTextEditsToFile(file, changesInFile);
 			}
-			if(fileCount === 0)
+			
+			if (fileCount === 0)
 			{
 				Alert.show("Could not rename symbol.", "Rename symbol", Alert.OK, renameView);
 			}
 		}
-
+		
+		private function handleOpenRenameFileView(event:RenameEvent):void
+		{
+			if (!renameFileView)
+			{
+				renameFileView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RenamePopup, true) as RenamePopup;
+				renameFileView.addEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
+				renameFileView.addEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
+				renameFileView.wrapperOfFolderLocation = event.changes as FileWrapper;
+				
+				PopUpManager.centerPopUp(renameFileView);
+			}
+		}
+		
+		private function handleRenamePopupClose(event:CloseEvent):void
+		{
+			renameFileView.removeEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
+			renameFileView.removeEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
+			renameFileView = null;
+		}
+		
+		private function onFileRenamedRequest(event:NewFileEvent):void
+		{
+			var newFile:FileLocation = event.insideLocation.file.fileBridge.parent.resolvePath(event.fileName);
+			var existingFilePath:String = event.insideLocation.nativePath;
+			
+			event.insideLocation.file.fileBridge.moveTo(newFile, false);
+			event.insideLocation.file = newFile;
+			
+			// we need to update file location of the (if any) opened instance 
+			// of the file template
+			if (!newFile.fileBridge.isDirectory)
+			{
+				for each (var tab:IContentWindow in model.editors)
+				{
+					var ed:BasicTextEditor = tab as BasicTextEditor;
+					if (ed 
+						&& ed.currentFile
+						&& ed.currentFile.fileBridge.nativePath == existingFilePath)
+					{
+						ed.currentFile = newFile;
+						ed.label = newFile.name;
+					}
+				}
+			}
+			else
+			{
+				RENAMED_FOLDER_STACK[existingFilePath] = newFile.fileBridge.nativePath;
+			}
+			
+			// updating the tree view
+			var tree:CustomTree = model.mainView.getTreeViewPanel().tree;
+			var tmpParent:FileWrapper = tree.getParentItem(event.insideLocation);
+			var timeoutValue:uint = setTimeout(function():void 
+				{
+					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
+					tree.selectedItem = tmpFileW;
+					
+					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+					clearTimeout(timeoutValue);
+				}, 300);
+		}
 	}
 }

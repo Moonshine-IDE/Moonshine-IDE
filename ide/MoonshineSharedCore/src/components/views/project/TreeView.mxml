@@ -28,45 +28,46 @@
 
 	<mx:Script>
 		<![CDATA[
-		import mx.collections.ArrayCollection;
-		import mx.collections.Sort;
-		import mx.collections.SortField;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.CollectionEvent;
-		import mx.events.CollectionEventKind;
-		import mx.events.ListEvent;
-		import mx.events.TreeEvent;
-		import mx.managers.PopUpManager;
-		
-		import actionScripts.events.AddFolderEvent;
-		import actionScripts.events.DeleteFileEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.events.OpenFileEvent;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.events.RenameApplicationEvent;
-		import actionScripts.events.RenameFileFolderEvent;
-		import actionScripts.events.RunANTScriptEvent;
-		import actionScripts.events.ShowSettingsEvent;
-		import actionScripts.events.TreeMenuItemEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-		import actionScripts.plugin.templating.TemplatingHelper;
-		import actionScripts.ui.LayoutModifier;
-		import actionScripts.ui.renderers.FTETreeItemRenderer;
-		import actionScripts.ui.tabview.TabViewTab;
-		import actionScripts.utils.FileCoreUtil;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
-		import actionScripts.valueObjects.URLDescriptorVO;
-		
-		import components.popup.NewFolderPopup;
-		import components.popup.RenamePopup;
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.ListEvent;
+			import mx.events.TreeEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.AddFolderEvent;
+			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.RenameApplicationEvent;
+			import actionScripts.events.RenameEvent;
+			import actionScripts.events.RenameFileFolderEvent;
+			import actionScripts.events.RunANTScriptEvent;
+			import actionScripts.events.ShowSettingsEvent;
+			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.ui.tabview.TabViewTab;
+			import actionScripts.utils.FileCoreUtil;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.NewFolderPopup;
+			import components.popup.RenamePopup;
 
 		private var renameWindow:RenamePopup;
 		private var newFolderWindow:NewFolderPopup;
@@ -525,15 +526,7 @@
              */
 			function renameFileFolder(rendererObject:FTETreeItemRenderer):void
 			{
-				if (!renameWindow)
-				{
-					renameWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RenamePopup, true) as RenamePopup;
-					renameWindow.addEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
-					renameWindow.addEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
-					renameWindow.wrapperOfFolderLocation = rendererObject.data as FileWrapper;
-
-					PopUpManager.centerPopUp(renameWindow);
-				}
+				dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, rendererObject.data));
 			}
 		}
 
@@ -585,33 +578,6 @@
 				// so we need new instance of the wrapper so we can
 				// select and scroll-to-index
 				var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(newFile, null, insideLocation);
-				tree.selectedItem = tmpFileW;
-
-				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
-				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
-				clearTimeout(timeoutValue);
-			}, 300);
-		}
-
-		protected function handleRenamePopupClose(event:CloseEvent):void
-		{
-			renameWindow.removeEventListener(CloseEvent.CLOSE, handleRenamePopupClose);
-			renameWindow.removeEventListener(NewFileEvent.EVENT_FILE_RENAMED, onFileRenamedRequest);
-			renameWindow = null;
-		}
-
-		protected function onFileRenamedRequest(event:NewFileEvent):void
-		{
-			var newFile:FileLocation = event.insideLocation.file.fileBridge.parent.resolvePath(event.fileName);
-
-			event.insideLocation.file.fileBridge.moveTo(newFile, false);
-			event.insideLocation.file = newFile;
-
-			var tmpParent:FileWrapper = tree.getParentItem(event.insideLocation);
-			//refreshByWrapperItem(tmpParent);
-
-			var timeoutValue:uint = setTimeout(function ():void {
-				var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
 				tree.selectedItem = tmpFileW;
 
 				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
