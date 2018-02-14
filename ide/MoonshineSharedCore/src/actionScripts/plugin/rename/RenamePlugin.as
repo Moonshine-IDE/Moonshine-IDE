@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.rename
+package actionScripts.plugin.rename
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -34,7 +34,7 @@ package actionScripts.plugins.rename
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugins.rename.view.RenameView;
+	import actionScripts.plugin.rename.view.RenameView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -78,6 +78,21 @@ package actionScripts.plugins.rename
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
 			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
+		}
+		
+		public static function updateFilePath(value:FileLocation):FileLocation
+		{
+			for (var i:String in RENAMED_FOLDER_STACK)
+			{
+				// we have a match
+				if (value.fileBridge.nativePath.indexOf(i) != -1)
+				{
+					value = new FileLocation(value.fileBridge.nativePath.replace(i, RENAMED_FOLDER_STACK[i] + value.fileBridge.separator));
+					break;
+				}
+			}
+			
+			return value;
 		}
 
 		private function handleOpenRenameView(event:Event):void
@@ -175,7 +190,11 @@ package actionScripts.plugins.rename
 			}
 			else
 			{
-				RENAMED_FOLDER_STACK[existingFilePath] = newFile.fileBridge.nativePath;
+				// we shall going to use this stack to test while opening a file,
+				// rename, delete etc. cases instead of updating unknown level of files/folders
+				// inside the renamed folder
+				trace(existingFilePath + newFile.fileBridge.separator, newFile.fileBridge.nativePath);
+				RENAMED_FOLDER_STACK[existingFilePath + newFile.fileBridge.separator] = newFile.fileBridge.nativePath;
 			}
 			
 			// updating the tree view

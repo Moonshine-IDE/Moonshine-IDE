@@ -55,6 +55,7 @@
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.rename.RenamePlugin;
 			import actionScripts.plugin.templating.TemplatingHelper;
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.renderers.FTETreeItemRenderer;
@@ -378,6 +379,9 @@
 
 			var project:ProjectVO;
 			var fileWrapper:FileWrapper = FileWrapper(event.data);
+			
+			// check if there was a parent renamed incident being happened
+			fileWrapper.file = RenamePlugin.updateFilePath(fileWrapper.file);
 
 			switch (event.menuLabel)
 			{
