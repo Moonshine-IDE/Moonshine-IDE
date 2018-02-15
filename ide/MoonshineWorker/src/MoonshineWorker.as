@@ -23,6 +23,7 @@ package
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
+	import flash.geom.Point;
 	import flash.system.MessageChannel;
 	import flash.system.Worker;
 	import flash.utils.clearTimeout;
@@ -124,6 +125,7 @@ package
 			
 			var extension: String = value.file.extension;
 			var tmpReturnCount:int;
+			var tmpLinesArray:Array;
 			
 			if ((value.children is Array) && (value.children as Array).length > 0) 
 			{
@@ -134,7 +136,8 @@ package
 					var isAcceptable:Boolean = (extension != null) ? isAcceptableResource(extension) : false;
 					if (!value.children[c].file.isDirectory && isAcceptable)
 					{
-						tmpReturnCount = testFilesForValueExist(value.children[c].file.nativePath);
+						tmpLinesArray = testFilesForValueExist(value.children[c].file.nativePath);
+						tmpReturnCount = tmpLinesArray ? tmpLinesArray.length : -1;
 						if (tmpReturnCount == -1)
 						{
 							value.children.splice(c, 1);
@@ -144,6 +147,7 @@ package
 						else
 						{
 							value.children[c].searchCount = tmpReturnCount;
+							value.children[c].children = tmpLinesArray;
 							totalFoundCount += tmpReturnCount;
 							FILES_FOUND_IN_COUNT++;
 							if (isStorePathsForProbableReplace) storedPathsForProbableReplace.push({label:value.children[c].file.nativePath, isSelected:true});
@@ -196,6 +200,7 @@ package
 			 */
 			function notifyFileCountCompletionToMain():void
 			{
+				tmpLinesArray = null;
 				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:++FILE_PROCESSED_COUNT});
 			}
 		}
@@ -231,7 +236,7 @@ package
 			workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:null});
 		}
 		
-		private function testFilesForValueExist(value:String, replace:String=null):int
+		private function testFilesForValueExist(value:String, replace:String=null):Array
 		{
 			var r:FileStream = new FileStream();
 			var f:File = new File(value); 
@@ -244,17 +249,36 @@ package
 			if (!projectSearchObject.value.isMatchCase) flags += 'i';
 			var searchRegExp:RegExp = new RegExp(searchString, flags);
 			
-			var foundMatches:Array = content.match(searchRegExp);
+			//var foundMatches:Array = content.match(searchRegExp);
+			
+			var foundMatches:Array = [];
+			var results:Array = searchRegExp.exec(content);
+			var res:WorkerFileWrapper;
+			while (results != null)
+			{
+				var lc:Point = charIdx2LineCharIdx(content, results.index, "\n");
+				
+				res = new WorkerFileWrapper(null);
+				res.isShowAsLineNumber = true;
+				//res = new SearchResult();
+				res.startLineIndex = lc.x;
+				res.endLineIndex = lc.x;
+				res.startCharIndex = lc.y;
+				res.endCharIndex = lc.y + results[0].length;
+				foundMatches.push(res);
+				
+				results = searchRegExp.exec(content);
+			}
 			
 			if (foundMatches.length > 0)
 			{
 				if (replace) replaceAndSaveFile();
 				content = null;
-				return foundMatches.length;
+				return foundMatches;
 			}
 			
 			content = null;
-			return -1;
+			return null;
 			
 			/*
 			 * @local
@@ -274,5 +298,12 @@ package
 		{
 			return str.replace(/[\$\(\)\*\+\.\[\]\?\\\^\{\}\|]/g,"\\$&");
 		}
+		
+		private function charIdx2LineCharIdx(str:String, charIdx:int, lineDelim:String):Point
+		{
+			var line:int = str.substr(0,charIdx).split(lineDelim).length - 1;
+			var chr:int = line > 0 ? charIdx - str.lastIndexOf(lineDelim, charIdx - 1) - lineDelim.length : charIdx;
+			return new Point(line, chr);
+		} 
 	}
 }
