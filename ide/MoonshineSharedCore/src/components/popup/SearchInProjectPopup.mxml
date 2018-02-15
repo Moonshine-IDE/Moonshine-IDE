@@ -156,7 +156,7 @@
 							enabled="{rbgScope.selectedIndex==1}" requireSelection="true"
 							dataProvider="{model.projects}" labelField="name"/>
 			<s:CheckBox id="cbEnclosingProjects"
-						label="Enclosing projects"
+						label="Include external source paths"
 						enabled="{rbgScope.selectedIndex==1}"/>
 		</s:VGroup>
 	</s:VGroup>
