@@ -135,15 +135,18 @@ package actionScripts.controllers
 					
 					// removal from the recently opened files in splash screen
 					// Find item & remove it if already present (path-based, since it's two different File objects)
+					toRemove = -1;
 					for (var i:int = 0; i < model.recentlyOpenedFiles.length; i++)
 					{
 						if (model.recentlyOpenedFiles[i].path.indexOf(e.wrapper.file.fileBridge.nativePath + e.wrapper.file.fileBridge.separator) != -1)
 						{
 							model.recentlyOpenedFiles.removeItemAt(i);
+							toRemove = 0;
 							i--;
 						}
 					}
-					GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
+					
+					if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 					
 					// finally
 					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
