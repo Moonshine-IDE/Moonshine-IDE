@@ -55,9 +55,9 @@ package actionScripts.plugins.ui.editor
             isVisualEditor = true;
             
             visualEditorView = new VisualEditorView();
-            visualEditorView.visualEditorType = visualEditorProject.isPrimeFacesVisualEditorProject ?
-                    VisualEditorType.getInstance(VisualEditorType.PRIME_FACES) :
-                    VisualEditorType.getInstance(VisualEditorType.FLEX);
+            visualEditorProject.isPrimeFacesVisualEditorProject ?
+            VisualEditorType.setInstance(VisualEditorType.PRIME_FACES) :
+            VisualEditorType.setInstance(VisualEditorType.FLEX);
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
             visualEditorView.addEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
