@@ -52,6 +52,7 @@ package actionScripts.impls
     import actionScripts.plugin.help.HelpPlugin;
     import actionScripts.plugin.project.ProjectPlugin;
     import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+    import actionScripts.plugin.rename.RenamePlugin;
     import actionScripts.plugin.search.SearchPlugin;
     import actionScripts.plugin.settings.SettingsPlugin;
     import actionScripts.plugin.splashscreen.SplashScreenPlugin;
@@ -76,7 +77,6 @@ package actionScripts.impls
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
-    import actionScripts.plugins.rename.RenamePlugin;
     import actionScripts.plugins.svn.SVNPlugin;
     import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;

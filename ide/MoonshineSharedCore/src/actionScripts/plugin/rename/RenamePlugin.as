@@ -16,11 +16,10 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.rename
+package actionScripts.plugin.rename
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.Dictionary;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -34,7 +33,7 @@ package actionScripts.plugins.rename
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugins.rename.view.RenameView;
+	import actionScripts.plugin.rename.view.RenameView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -49,8 +48,6 @@ package actionScripts.plugins.rename
 
 	public class RenamePlugin extends PluginBase
 	{
-		public static var RENAMED_FOLDER_STACK:Dictionary = new Dictionary();
-		
 		private var renameView:RenameView = new RenameView();
 		private var renameFileView:RenamePopup;
 		
@@ -63,6 +60,7 @@ package actionScripts.plugins.rename
 		private var _line:int;
 		private var _startChar:int;
 		private var _endChar:int;
+		private var _existingFilePath:String;
 
 		override public function activate():void
 		{
@@ -152,35 +150,26 @@ package actionScripts.plugins.rename
 		private function onFileRenamedRequest(event:NewFileEvent):void
 		{
 			var newFile:FileLocation = event.insideLocation.file.fileBridge.parent.resolvePath(event.fileName);
-			var existingFilePath:String = event.insideLocation.nativePath;
+			_existingFilePath = event.insideLocation.nativePath;
 			
 			event.insideLocation.file.fileBridge.moveTo(newFile, false);
 			event.insideLocation.file = newFile;
 			
 			// we need to update file location of the (if any) opened instance 
 			// of the file template
-			if (!newFile.fileBridge.isDirectory)
+			if (newFile.fileBridge.isDirectory)
 			{
-				for each (var tab:IContentWindow in model.editors)
-				{
-					var ed:BasicTextEditor = tab as BasicTextEditor;
-					if (ed 
-						&& ed.currentFile
-						&& ed.currentFile.fileBridge.nativePath == existingFilePath)
-					{
-						ed.currentFile = newFile;
-						ed.label = newFile.name;
-					}
-				}
+				updateChildrenPath(event.insideLocation, _existingFilePath + newFile.fileBridge.separator, newFile.fileBridge.nativePath + newFile.fileBridge.separator);
 			}
 			else
 			{
-				RENAMED_FOLDER_STACK[existingFilePath] = newFile.fileBridge.nativePath;
+				checkAndUpdateOpenedTabs(_existingFilePath, newFile);
 			}
 			
 			// updating the tree view
 			var tree:CustomTree = model.mainView.getTreeViewPanel().tree;
 			var tmpParent:FileWrapper = tree.getParentItem(event.insideLocation);
+			
 			var timeoutValue:uint = setTimeout(function():void 
 				{
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
@@ -190,6 +179,36 @@ package actionScripts.plugins.rename
 					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
 					clearTimeout(timeoutValue);
 				}, 300);
+		}
+		
+		private function updateChildrenPath(fw:FileWrapper, oldPath:String, newPath:String):void
+		{
+			for each (var i:FileWrapper in fw.children)
+			{
+				_existingFilePath = i.file.fileBridge.nativePath;
+				i.file = new FileLocation(i.file.fileBridge.nativePath.replace(oldPath, newPath));
+				if (!i.children) 
+				{
+					checkAndUpdateOpenedTabs(_existingFilePath, i.file);
+				}
+				else updateChildrenPath(i, oldPath, newPath);
+			}
+		}
+		
+		private function checkAndUpdateOpenedTabs(oldPath, newFile:FileLocation):void
+		{
+			for each (var tab:IContentWindow in model.editors)
+			{
+				var ed:BasicTextEditor = tab as BasicTextEditor;
+				if (ed 
+					&& ed.currentFile
+					&& ed.currentFile.fileBridge.nativePath == oldPath)
+				{
+					ed.currentFile = newFile;
+					ed.label = newFile.name;
+					break;
+				}
+			}
 		}
 	}
 }

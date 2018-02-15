@@ -18,29 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-import flash.events.Event;
-import flash.utils.clearTimeout;
-import flash.utils.setTimeout;
-
-import mx.controls.Alert;
-import mx.events.CloseEvent;
-
-import actionScripts.events.DeleteFileEvent;
-import actionScripts.events.GlobalEventDispatcher;
-import actionScripts.factory.FileLocation;
-import actionScripts.locator.IDEModel;
-import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-import actionScripts.ui.IContentWindow;
-import actionScripts.ui.editor.BasicTextEditor;
-import actionScripts.ui.tabview.CloseTabEvent;
-import actionScripts.utils.SharedObjectUtil;
-import actionScripts.utils.UtilsCore;
-import actionScripts.valueObjects.ConstantsCoreVO;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectReferenceVO;
-
-import components.views.splashscreen.SplashScreen;
+	import flash.events.Event;
 	
+	import mx.controls.Alert;
+	import mx.events.CloseEvent;
+	
+	import actionScripts.events.DeleteFileEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.SharedObjectUtil;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.ProjectReferenceVO;
+
 	public class DeleteFileCommand implements ICommand
 	{
 		private var file: FileLocation;
@@ -137,7 +132,20 @@ import components.views.splashscreen.SplashScreen;
 						model.recentlyOpenedProjectOpenedOption.removeItemAt(toRemove);
 						GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
 					}
-
+					
+					// removal from the recently opened files in splash screen
+					// Find item & remove it if already present (path-based, since it's two different File objects)
+					for (var i:int = 0; i < model.recentlyOpenedFiles.length; i++)
+					{
+						if (model.recentlyOpenedFiles[i].path.indexOf(e.wrapper.file.fileBridge.nativePath + e.wrapper.file.fileBridge.separator) != -1)
+						{
+							model.recentlyOpenedFiles.removeItemAt(i);
+							i--;
+						}
+					}
+					GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
+					
+					// finally
 					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
 				}
 			}
