@@ -43,7 +43,6 @@ package actionScripts.ui.renderers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.rename.RenamePlugin;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -266,7 +265,6 @@ package actionScripts.ui.renderers
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 						
-						fw.file = RenamePlugin.updateFilePath(fw.file);
 						var str:String = fw.file.fileBridge.read().toString();
 						if ((str.search("<project ")!=-1) || (str.search("<project>")!=-1))
 							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
