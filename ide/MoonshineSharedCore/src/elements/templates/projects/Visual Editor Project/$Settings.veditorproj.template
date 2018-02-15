@@ -56,5 +56,6 @@
   <options>
     <option showHiddenPaths="False"/>
     <option testMovieCommand="ExternalPlayer"/>
+    <option isPrimeFacesVisualEditor="False"/>
   </options>
 </project>

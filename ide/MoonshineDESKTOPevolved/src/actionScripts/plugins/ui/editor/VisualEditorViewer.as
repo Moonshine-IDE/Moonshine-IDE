@@ -45,9 +45,9 @@ package actionScripts.plugins.ui.editor
         
         public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
         {
-            super();
-
             this.visualEditorProject = visualEditorProject;
+
+            super();
         }
 
         override protected function initializeChildrens():void
@@ -55,7 +55,9 @@ package actionScripts.plugins.ui.editor
             isVisualEditor = true;
             
             visualEditorView = new VisualEditorView();
-            visualEditorView.visualEditorType = VisualEditorType.getInstance(VisualEditorType.PRIME_FACES);
+            visualEditorView.visualEditorType = visualEditorProject.isPrimeFacesVisualEditorProject ?
+                    VisualEditorType.getInstance(VisualEditorType.PRIME_FACES) :
+                    VisualEditorType.getInstance(VisualEditorType.FLEX);
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
             visualEditorView.addEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
@@ -197,9 +199,12 @@ package actionScripts.plugins.ui.editor
             if (splittedFileName.length == 2)
             {
                 var cleanFileName:String = splittedFileName[0];
-                return visualEditorProject.visualEditorSourceFolder
-                        .fileBridge.nativePath
-                        .concat(File.separator, cleanFileName, ".xml");
+                if (visualEditorProject.visualEditorSourceFolder)
+                {
+                    return visualEditorProject.visualEditorSourceFolder
+                            .fileBridge.nativePath
+                            .concat(File.separator, cleanFileName, ".xml");
+                }
             }
 
             return null;

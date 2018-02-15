@@ -401,7 +401,7 @@ package actionScripts.plugins.as3project
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
                     newProjectPathSetting,
-					new ListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_TYPE_FLEX, ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE]))
+					new ListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES]))
                 ]));
             }
 
@@ -603,7 +603,7 @@ package actionScripts.plugins.as3project
 				// we creates library project without any default created file inside
 				sourceFileWithExtension = null;
 			}
-			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE)
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
 			{
 				sourceFileWithExtension = pvo.projectName + ".xhtml";
 			}
@@ -729,11 +729,11 @@ package actionScripts.plugins.as3project
 			}
 			if (isVisualEditorProject)
 			{
-				if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_FLEX)
+				if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_FLEX)
 				{
 					th.projectTemplate(templateDir.resolvePath("src_flex"), targetFolder.resolvePath("src"));
 				}
-				else if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_TYPE_PRIMEFACE)
+				else if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
 				{
 					th.projectTemplate(templateDir.resolvePath("src_primeface"), targetFolder.resolvePath("src"));
 				}
@@ -806,7 +806,12 @@ package actionScripts.plugins.as3project
 				if (pvo.isMobile) pvo.buildOptions.additional = "+configname=airmobile";
 				if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
 			}
-			
+
+			if (isVisualEditorProject)
+			{
+				pvo.isPrimeFacesVisualEditorProject = projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES;
+			}
+
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
 
