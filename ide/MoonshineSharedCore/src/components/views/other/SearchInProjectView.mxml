@@ -267,7 +267,8 @@
 			private function getCountingLabel(item:Object):String
 			{
 				if (item.isRoot)  return item["name"]+"     ("+item.file.nativePath+")";
-				if (!item.children) return item["name"]+" ("+item["searchCount"]+" matches)";
+				if (item.isShowAsLineNumber) return "Howdy! Line details is coming! Line: "+ item["startLineIndex"] +" Range from: "+ item["startCharIndex"] +" to: "+ item["endCharIndex"];
+				else if (!item.children) return item["name"]+" ("+item["searchCount"]+" matches)";
 				return item["name"];
 			}
 			
