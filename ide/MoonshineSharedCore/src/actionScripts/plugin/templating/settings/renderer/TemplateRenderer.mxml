@@ -19,23 +19,15 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:VGroup 
-	xmlns:fx="http://ns.adobe.com/mxml/2009"
-	xmlns:s="library://ns.adobe.com/flex/spark"
-	xmlns:mx="library://ns.adobe.com/flex/mx"
-	
-	width="100%"
-	paddingLeft="15"
-	paddingTop="5"
-	paddingRight="15"
-	paddingBottom="5"
-	visible="true"
-	creationComplete="init()">
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%"
+		  paddingLeft="15" paddingTop="5" paddingRight="15" paddingBottom="5"
+		  visible="true" creationComplete="init()">
 	
 	<fx:Script>
 		<![CDATA[
-			import flash.events.Event;
-			
 			import mx.controls.Alert;
 			import mx.utils.StringUtil;
 			
@@ -139,7 +131,7 @@
 			<s:TextInput id="txtRename"
 						 styleName="uiTextSettingsValue"
 						 borderVisible="false" width="100%"
-						 contentBackgroundAlpha="1"
+						 contentBackgroundAlpha="1" contentBackgroundColor="#FFFFFF"
 						 unfocusedTextSelectionColor="#a8c6ee"
 						 focusAlpha="0" paddingLeft="0"
 						 visible="false"/>
