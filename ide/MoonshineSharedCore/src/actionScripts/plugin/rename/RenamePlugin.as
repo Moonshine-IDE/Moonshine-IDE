@@ -28,11 +28,13 @@ package actionScripts.plugin.rename
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.plugin.rename.view.RenameView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
@@ -42,9 +44,11 @@ package actionScripts.plugin.rename
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.TextEdit;
 	
 	import components.popup.RenamePopup;
+	import components.renderers.RecentProjectRenderer;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -197,6 +201,7 @@ package actionScripts.plugin.rename
 		
 		private function checkAndUpdateOpenedTabs(oldPath, newFile:FileLocation):void
 		{
+			// updates to tab
 			for each (var tab:IContentWindow in model.editors)
 			{
 				var ed:BasicTextEditor = tab as BasicTextEditor;
@@ -206,6 +211,18 @@ package actionScripts.plugin.rename
 				{
 					ed.currentFile = newFile;
 					ed.label = newFile.name;
+					break;
+				}
+			}
+			
+			// updates entry in recent files list
+			for each (var i:ProjectReferenceVO in model.recentlyOpenedFiles)
+			{
+				if (i.path == oldPath)
+				{
+					i.path = newFile.fileBridge.nativePath;
+					i.name = newFile.name;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 					break;
 				}
 			}
