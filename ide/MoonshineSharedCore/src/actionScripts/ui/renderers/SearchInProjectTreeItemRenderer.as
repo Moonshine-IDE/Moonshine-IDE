@@ -310,7 +310,7 @@ package actionScripts.ui.renderers
 				
 				for each(var i:Object in data.lineNumbersWithRange)
 				{
-					getSelectionRange(i.startCharIndex, i.endCharIndex);
+					getSelectionRange(i.startCharIndex, i.endCharIndex); 
 				}
 				g.endFill();
 				
