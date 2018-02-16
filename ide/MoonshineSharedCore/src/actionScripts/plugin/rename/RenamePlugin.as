@@ -199,7 +199,7 @@ package actionScripts.plugin.rename
 			}
 		}
 		
-		private function checkAndUpdateOpenedTabs(oldPath, newFile:FileLocation):void
+		private function checkAndUpdateOpenedTabs(oldPath:String, newFile:FileLocation):void
 		{
 			// updates to tab
 			for each (var tab:IContentWindow in model.editors)
