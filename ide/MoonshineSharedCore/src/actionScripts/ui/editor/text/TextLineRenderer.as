@@ -504,7 +504,7 @@ package actionScripts.ui.editor.text
 				textLine.y = 12;
 			}
 			drawDiagnostics();
-		 }
+		}
 		
 		private function drawDiagnostics():void
 		{
