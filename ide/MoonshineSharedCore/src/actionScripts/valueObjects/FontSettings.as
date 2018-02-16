@@ -29,6 +29,8 @@ package actionScripts.valueObjects
 		public var defaultFontSize:Number = 13;
 		public var defaultFontDescription:FontDescription =
 			new FontDescription(defaultFontFamily, FontWeight.NORMAL, FontPosture.NORMAL, FontLookup.EMBEDDED_CFF);
+		public var uiFontDescription:FontDescription =
+			new FontDescription("DejaVuSans", FontWeight.NORMAL, FontPosture.NORMAL, FontLookup.EMBEDDED_CFF);
 			
 		// Width of a tab-stop, in characters
 		public var tabWidth:int = 4;
