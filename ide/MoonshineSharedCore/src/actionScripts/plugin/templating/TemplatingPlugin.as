@@ -1158,7 +1158,14 @@ package actionScripts.plugin.templating
             if (event.fromTemplate.fileBridge.exists)
             {
                 var content:String = String(event.fromTemplate.fileBridge.read());
-                var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + event.fromTemplate.fileBridge.extension);
+				var extension:String = ".mxml";
+				var project:AS3ProjectVO = event.ofProject as AS3ProjectVO;
+				if (project && project.isPrimeFacesVisualEditorProject)
+				{
+					extension = ".xhtml";
+				}
+
+                var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + extension);
                 fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
