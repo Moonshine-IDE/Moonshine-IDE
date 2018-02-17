@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<newfile:NewMXMLFilePopup xmlns:fx="http://ns.adobe.com/mxml/2009"
+                          xmlns:newfile="components.popup.newFile.*"
+                          title="New Visual Editor File">
+    <fx:Script><![CDATA[
+        import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+        import actionScripts.valueObjects.ConstantsCoreVO;
+
+        override protected function refreshTemplatesBasedOnDropDownList():void
+        {
+            var currentProject:AS3ProjectVO = wrapperBelongToProject as AS3ProjectVO;
+            if (currentProject && currentProject.isVisualEditorProject)
+            {
+                componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS;
+            }
+        }
+        ]]></fx:Script>
+</newfile:NewMXMLFilePopup>

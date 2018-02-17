@@ -66,10 +66,10 @@ package actionScripts.plugin.templating
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.TemplateVO;
     
-    import components.popup.NewASFilePopup;
-    import components.popup.NewCSSFilePopup;
-    import components.popup.NewFilePopup;
-    import components.popup.NewMXMLFilePopup;
+    import components.popup.newFile.NewASFilePopup;
+    import components.popup.newFile.NewCSSFilePopup;
+    import components.popup.newFile.NewFilePopup;
+    import components.popup.newFile.NewMXMLFilePopup;
 	
 	/*
 	Templating plugin
