@@ -217,7 +217,7 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label text=".mxml" styleName="textInputLabel" textAlign="right"
+			<s:Label id="extensionLabel" text=".mxml" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 	</s:VGroup>

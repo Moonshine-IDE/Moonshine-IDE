@@ -52,7 +52,8 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'SETTINGS'),
             resourceManager.getString('resources', 'DELETE'),
             resourceManager.getString('resources', 'RENAME'),
-            "Visual Editor Flex File",
+            resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
+            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE'),
             "Copy Path",
             "Show in Explorer",
             "Show in Finder"
@@ -60,7 +61,8 @@ package actionScripts.ui.menu
 
         private static var menuItemsDisabledNoneVEProject:Array = [
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
-            "Visual Editor Flex File"
+            resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
+            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE')
         ];
 
         public static function isMenuItemEnabledInVisualEditor(label:String, project:ProjectVO = null):Boolean
@@ -74,6 +76,15 @@ package actionScripts.ui.menu
 
             if (currentProject && currentProject.isVisualEditorProject)
             {
+                if (currentProject.isPrimeFacesVisualEditorProject && label && label.indexOf(resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE')) > -1)
+                {
+                    return false;
+                }
+                else if (!currentProject.isPrimeFacesVisualEditorProject && label && label.indexOf(resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE')) > -1)
+                {
+                    return false;
+                }
+
                 return menuItemsEnabledInVEProject.indexOf(label) > -1;
             }
 

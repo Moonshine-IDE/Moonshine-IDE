@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
+    import components.popup.newFile.NewVisualEditorFilePopup;
+
     import flash.display.DisplayObject;
     import flash.events.Event;
     
@@ -98,6 +100,7 @@ package actionScripts.plugin.templating
 		protected var newMXMLComponentPopup:NewMXMLFilePopup;
 		protected var newAS3ComponentPopup:NewASFilePopup;
 		protected var newCSSComponentPopup:NewCSSFilePopup;
+		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newFilePopup:NewFilePopup;
 		
 		private var resetIndex:int = -1;
@@ -179,9 +182,17 @@ package actionScripts.plugin.templating
             for each (file in list)
             {
                 if (!file.isHidden && !file.isDirectory)
-                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_COMPONENTS.addItem(file);
+                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_FLEX.addItem(file);
             }
-			
+
+            files = templatesDir.resolvePath("files/visualeditor/primeFaces");
+            list = files.fileBridge.getDirectoryListing();
+            for each (file in list)
+            {
+                if (!file.isHidden && !file.isDirectory)
+                    ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES.addItem(file);
+            }
+
 			files = templatesDir.resolvePath("files/AS3 Class.as.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_AS3CLASS = files;
@@ -397,7 +408,7 @@ package actionScripts.plugin.templating
 				
 				eventType = "eventNewProjectFromTemplate"+lbl;
 				
-				dispatcher.addEventListener(eventType, handleNewProjectFile)
+				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
 				menuItem = new MenuItem(lbl, null, eventType);
 				menuItem.data = projectTemplate;
@@ -763,25 +774,28 @@ package actionScripts.plugin.templating
 				// MXML type choose
 				switch (eventName)
 				{
-                    case "Visual Editor Flex File":
 					case "MXML File":
 						openMXMLComponentTypeChoose(event);
-						return;
+                        break;
 					case "AS3 Class":
 						openAS3ComponentTypeChoose(event, false);
-						return;
+                        break;
 					case "AS3 Interface":
 						openAS3ComponentTypeChoose(event, true);
-						return;
+                        break;
 					case "CSS File":
 						openCSSComponentTypeChoose(event);
-						return;
+                        break;
 					case "XML File":
 						openNewComponentTypeChoose(event, NewFilePopup.AS_XML);
-						return;
+                        break;
 					case "File":
 						openNewComponentTypeChoose(event, NewFilePopup.AS_PLAIN_TEXT);
-						return;
+                        break;
+					case "Visual Editor Flex File":
+					case "Visual Editor PrimeFaces File":
+						openVisualEditorComponentTypeChoose(event);
+						break;
 					default:
 						for (i = 0; i < fileTemplates.length; i++)
 						{
@@ -795,7 +809,7 @@ package actionScripts.plugin.templating
 								}
 							}
 						}
-						return;
+						break;
 				}
 			}
 			else
@@ -884,7 +898,41 @@ package actionScripts.plugin.templating
 				PopUpManager.centerPopUp(newMXMLComponentPopup);
 			}
 		}
-		
+
+        protected function openVisualEditorComponentTypeChoose(event:Event):void
+        {
+            if (!newVisualEditorFilePopup)
+            {
+                newVisualEditorFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewVisualEditorFilePopup, true) as NewVisualEditorFilePopup;
+                newVisualEditorFilePopup.addEventListener(CloseEvent.CLOSE, handleNewVisualEditorFilePopupClose);
+                newVisualEditorFilePopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onVisualEditorFileCreateRequest);
+
+                // newFileEvent sends by TreeView when right-clicked
+                // context menu
+                if (event is NewFileEvent)
+                {
+                    newVisualEditorFilePopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+                    newVisualEditorFilePopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+                    newVisualEditorFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+                }
+                else
+                {
+                    // try to check if there is any selection in
+                    // TreeView item
+                    var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+                    if (treeSelectedItem)
+                    {
+                        var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+                        newVisualEditorFilePopup.folderLocation = creatingItemIn.file;
+                        newVisualEditorFilePopup.wrapperOfFolderLocation = creatingItemIn;
+                        newVisualEditorFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+                    }
+                }
+
+                PopUpManager.centerPopUp(newVisualEditorFilePopup);
+            }
+        }
+
 		protected function openCSSComponentTypeChoose(event:Event):void
 		{
 			if (!newCSSComponentPopup)
@@ -973,7 +1021,14 @@ package actionScripts.plugin.templating
 			newMXMLComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onMXMLFileCreateRequest);
 			newMXMLComponentPopup = null;
 		}
-		
+
+        protected function handleNewVisualEditorFilePopupClose(event:CloseEvent):void
+        {
+            newVisualEditorFilePopup.removeEventListener(CloseEvent.CLOSE, handleNewVisualEditorFilePopupClose);
+            newVisualEditorFilePopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, handleNewVisualEditorFilePopupClose);
+            newVisualEditorFilePopup = null;
+        }
+
 		protected function openAS3ComponentTypeChoose(event:Event, isInterfaceDialog:Boolean):void
 		{
 			if (!newAS3ComponentPopup)
@@ -1043,20 +1098,8 @@ package actionScripts.plugin.templating
 
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
 				fileToSave.fileBridge.save(content);
-				
-				// opens the file after writing done
-				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
-				);
-				
-				// notify the tree view if it needs to refresh
-				// the containing folder to make newly created file show
-				if (event.insideLocation)
-				{
-					dispatcher.dispatchEvent(
-						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-					);
-				}
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
 		
@@ -1080,20 +1123,8 @@ package actionScripts.plugin.templating
 
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
 				fileToSave.fileBridge.save(content);
-				
-				// opens the file after writing done
-				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
-				);
-				
-				// notify the tree view if it needs to refresh
-				// the containing folder to make newly created file show
-				if (event.insideLocation)
-				{
-					dispatcher.dispatchEvent(
-						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-					);
-				}
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
 		
@@ -1104,20 +1135,8 @@ package actionScripts.plugin.templating
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".mxml");
 				fileToSave.fileBridge.save(content);
-				
-				// opens the file after writing done
-				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
-				);
-				
-				// notify the tree view if it needs to refresh
-				// the containing folder to make newly created file show
-				if (event.insideLocation)
-				{
-					dispatcher.dispatchEvent(
-						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-					);
-				}
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
 		
@@ -1129,23 +1148,23 @@ package actionScripts.plugin.templating
 				var tmpArr:Array = event.fromTemplate.fileBridge.name.split(".");
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +"."+ tmpArr[tmpArr.length - 2]);
 				fileToSave.fileBridge.save(content);
-				
-				// opens the file after writing done
-				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
-				);
-				
-				// notify the tree view if it needs to refresh
-				// the containing folder to make newly created file show
-				if (event.insideLocation)
-				{
-					dispatcher.dispatchEvent(
-						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-					);
-				}
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
-		
+
+        protected function onVisualEditorFileCreateRequest(event:NewFileEvent):void
+        {
+            if (event.fromTemplate.fileBridge.exists)
+            {
+                var content:String = String(event.fromTemplate.fileBridge.read());
+                var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + event.fromTemplate.fileBridge.extension);
+                fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+            }
+        }
+
 		protected function onCSSFileCreateRequest(event:NewFileEvent):void
 		{
 			if (event.fromTemplate.fileBridge.exists)
@@ -1153,23 +1172,11 @@ package actionScripts.plugin.templating
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".css");
 				fileToSave.fileBridge.save(content);
-				
-				// opens the file after writing done
-				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
-				);
-				
-				// notify the tree view if it needs to refresh
-				// the containing folder to make newly created file show
-				if (event.insideLocation)
-				{
-					dispatcher.dispatchEvent(
-						new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.insideLocation)
-					);
-				}
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
-		
+
 		protected function handleNewProjectFile(event:Event):void
 		{
             newProjectFromTemplate(event.type);
@@ -1242,7 +1249,6 @@ package actionScripts.plugin.templating
 		/*
 		Silly little helper methods
 		*/
-		
 		protected function isCustom(template:FileLocation):Boolean
 		{
 			if (template.fileBridge.nativePath.indexOf(template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath) == 0)
@@ -1252,6 +1258,22 @@ package actionScripts.plugin.templating
 			
 			return false;
 		}
-		
+
+		private function notifyNewFileCreated(insideLocation:FileWrapper, fileToSave:FileLocation):void
+		{
+            // opens the file after writing done
+            dispatcher.dispatchEvent(
+                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, insideLocation)
+            );
+
+            // notify the tree view if it needs to refresh
+            // the containing folder to make newly created file show
+            if (insideLocation)
+            {
+                dispatcher.dispatchEvent(
+                        new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, insideLocation)
+                );
+            }
+		}
 	}
 }
