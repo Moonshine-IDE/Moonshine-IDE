@@ -155,16 +155,16 @@ package actionScripts.ui.renderers
 				//var style:ElementFormat = (model.breakPoint) ? styles['breakPointLineNumber'] : styles['lineNumber'];
 				//style = (model.traceLine) ? styles['tracingLineColor'] : styles['lineNumber'];
 				lineNumberTextElement.elementFormat = new ElementFormat(Settings.font.uiFontDescription, 12, 0xff0000);
-				lineNumberTextElement.text = data.lineNumbersWithRange[0].startLineIndex;
+				lineNumberTextElement.text = data.lineNumbersWithRange[0].startLineIndex + 1; // moonshine manage by 0th index, but in UI we need to show 1
 				var newLineNumberText:TextLine = null;
 				if(lineNumberText)
 				{
 					//try to reuse the existing TextLine, if it exists already
-					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 20);
+					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 30);
 				}
 				else
 				{
-					newLineNumberText = lineNumberTextBlock.createTextLine(null, 20);
+					newLineNumberText = lineNumberTextBlock.createTextLine(null, 30);
 					if(newLineNumberText)
 					{
 						lineNumberText = newLineNumberText;
@@ -182,7 +182,7 @@ package actionScripts.ui.renderers
 				if (lineNumberText) 
 				{
 					lineNumberText.y = 12;
-					lineNumberText.x = 20-lineNumberText.width-3;
+					lineNumberText.x = 30-lineNumberText.width-3;
 				}
 			}
 			else if (lineNumberText)
@@ -192,6 +192,14 @@ package actionScripts.ui.renderers
 			}
 		}
 		
+		private function getSearchLabel():String
+		{
+			if (data.isRoot)  return data.name +"     ("+data.file.nativePath+")";
+			if (data.isShowAsLineNumber) return (data.lineText);
+			else if (data.file && (data.searchCount != 0)) return data.name +" ("+data.searchCount +" matches)";
+			return (data.name);
+		}
+		
 		private function drawText():void
 		{
 			var groupElement:GroupElement = new GroupElement();
@@ -199,7 +207,7 @@ package actionScripts.ui.renderers
 			var newTextLine:TextLine = null;
 			var newTextLineNumber:TextLine = null;
 			
-			contentElements.push(new TextElement(label.text, new ElementFormat(Settings.font.uiFontDescription, 12, 0xe0e0e0)));
+			contentElements.push(new TextElement(getSearchLabel(), new ElementFormat(Settings.font.uiFontDescription, 12, 0xe0e0e0)));
 			groupElement.setElements(contentElements);
 			textBlock.content = groupElement;
 			
@@ -207,6 +215,7 @@ package actionScripts.ui.renderers
 			{
 				//try to reuse the existing TextLine, if it exists already
 				newTextLine = textBlock.recreateTextLine(textLine);
+				newTextLine.doubleClickEnabled = true;
 			}
 			else
 			{
@@ -216,9 +225,10 @@ package actionScripts.ui.renderers
 				{
 					textLine = newTextLine;
 					textLine.mouseEnabled = false;
+					textLine.mouseChildren = false;
 					textLine.cacheAsBitmap = true;
 					
-					if (labelIndex == -1) 
+					if (labelIndex == -1)
 					{
 						addChild(lineHighligter);
 						addChild(textLine);
@@ -310,7 +320,7 @@ package actionScripts.ui.renderers
 				
 				for each(var i:Object in data.lineNumbersWithRange)
 				{
-					getSelectionRange(i.startCharIndex, i.endCharIndex); 
+					try	{ getSelectionRange(i.startCharIndex, i.endCharIndex); } catch (e:Error) {	break;	}
 				}
 				g.endFill();
 				
@@ -338,6 +348,7 @@ package actionScripts.ui.renderers
 			else if (textLine)
 			{
 				textLine.x = lineHighligter.x = (label.x + 2);
+				lineHighligter.graphics.clear();
 			}
         	
         	if (label) label.visible = false;
@@ -372,7 +383,7 @@ package actionScripts.ui.renderers
 		        			sourceControlBackground.visible = true;
 		        			sourceControlText.visible = true;
 		        			
-		        			sourceControlBackground.x = unscaledWidth-20;
+		        			sourceControlBackground.x = unscaledWidth-30;
 		        			sourceControlText.x = sourceControlBackground.x;
 		        			//sourceControlText.y = label2.y;
 							sourceControlText.y = textLine.y;
@@ -380,6 +391,6 @@ package actionScripts.ui.renderers
 	        		}
 	        	}
 			}
-		} // updateDisplayList
+		}
 	}
 }
