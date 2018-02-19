@@ -24,11 +24,8 @@ package actionScripts.valueObjects
 	{
 		public var projectReference: Object;
 		public var searchCount:int;
-		public var searchedLinesWithRange:Array;
-		public var startLineIndex:int = -1;
-		public var startCharIndex:int = -1;
-		public var endLineIndex:int = -1;
-		public var endCharIndex:int = -1;
+		public var lineNumbersWithRange:Array;
+		public var fileReference:String;
 		
 		private var _file: File;
 		private var _children: Array = [];
@@ -39,6 +36,7 @@ package actionScripts.valueObjects
 		protected var _isDeleting: Boolean;
 		protected var _shallUpdateChildren: Boolean;
 		protected var _isShowAsLineNumber:Boolean;
+		protected var _lineText:String;
 		
 		public function set shallUpdateChildren(value:Boolean):void {	_shallUpdateChildren = value;	}
 		public function get shallUpdateChildren():Boolean {	return _shallUpdateChildren;	}
@@ -181,6 +179,15 @@ package actionScripts.valueObjects
 		{
 			_isShowAsLineNumber = value;
 			if (_isShowAsLineNumber) children = null;
+		}
+		
+		public function set lineText(value:String):void
+		{
+			_lineText = value;
+		}
+		public function get lineText():String
+		{
+			return _lineText;
 		}
 	}
 }

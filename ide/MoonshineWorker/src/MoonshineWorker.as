@@ -90,7 +90,7 @@ package
 		private function parseProjectsTree():void
 		{
 			// probable termination
-			if (projects.length == 0) 
+			if (projects.length == 0)
 			{
 				workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:FILES_FOUND_IN_COUNT});
 				return;
@@ -101,6 +101,20 @@ package
 			isCustomFilePatterns = false;
 			
 			var tmpWrapper:WorkerFileWrapper = new WorkerFileWrapper(new File(projects[0]), true);
+			
+			// in case a given path is not valid, do not parse anything
+			if (!tmpWrapper.file.exists)
+			{
+				// restart with available next project (if any)
+				projects.shift();
+				var timeoutValue:uint = setTimeout(function():void
+				{
+					clearTimeout(timeoutValue);
+					parseProjectsTree();
+				}, 400);
+				return;
+			}
+			
 			workerToMain.send({event:WorkerEvent.TOTAL_FILE_COUNT, value:FILES_COUNT});
 			
 			if (projectSearchObject.value.patterns != "*")
@@ -125,7 +139,7 @@ package
 			
 			var extension: String = value.file.extension;
 			var tmpReturnCount:int;
-			var tmpLinesArray:Array;
+			var tmpLineObject:Object;
 			
 			if ((value.children is Array) && (value.children as Array).length > 0) 
 			{
@@ -136,8 +150,8 @@ package
 					var isAcceptable:Boolean = (extension != null) ? isAcceptableResource(extension) : false;
 					if (!value.children[c].file.isDirectory && isAcceptable)
 					{
-						tmpLinesArray = testFilesForValueExist(value.children[c].file.nativePath);
-						tmpReturnCount = tmpLinesArray ? tmpLinesArray.length : -1;
+						tmpLineObject = testFilesForValueExist(value.children[c].file.nativePath);
+						tmpReturnCount = tmpLineObject ? tmpLineObject.foundCountInFile : -1;
 						if (tmpReturnCount == -1)
 						{
 							value.children.splice(c, 1);
@@ -147,7 +161,7 @@ package
 						else
 						{
 							value.children[c].searchCount = tmpReturnCount;
-							value.children[c].children = tmpLinesArray;
+							value.children[c].children = tmpLineObject.foundMatches;
 							totalFoundCount += tmpReturnCount;
 							FILES_FOUND_IN_COUNT++;
 							if (isStorePathsForProbableReplace) storedPathsForProbableReplace.push({label:value.children[c].file.nativePath, isSelected:true});
@@ -172,7 +186,6 @@ package
 					
 					notifyFileCountCompletionToMain();
 				}
-				
 				
 				// when recursive listing done
 				if (value.isRoot)
@@ -200,7 +213,7 @@ package
 			 */
 			function notifyFileCountCompletionToMain():void
 			{
-				tmpLinesArray = null;
+				tmpLineObject = null;
 				workerToMain.send({event:WorkerEvent.FILE_PROCESSED_COUNT, value:++FILE_PROCESSED_COUNT});
 			}
 		}
@@ -236,7 +249,7 @@ package
 			workerToMain.send({event:WorkerEvent.PROCESS_ENDS, value:null});
 		}
 		
-		private function testFilesForValueExist(value:String, replace:String=null):Array
+		private function testFilesForValueExist(value:String, replace:String=null):Object
 		{
 			var r:FileStream = new FileStream();
 			var f:File = new File(value); 
@@ -253,31 +266,51 @@ package
 			
 			var foundMatches:Array = [];
 			var results:Array = searchRegExp.exec(content);
-			var res:WorkerFileWrapper;
+			var tmpFW:WorkerFileWrapper;
+			var res:SearchResult;
+			var lastLineIndex:int = -1;
+			var foundCountInFile:int;
+			var lines:Array;
 			while (results != null)
 			{
 				var lc:Point = charIdx2LineCharIdx(content, results.index, "\n");
 				
-				res = new WorkerFileWrapper(null);
-				res.isShowAsLineNumber = true;
-				//res = new SearchResult();
+				res = new SearchResult();
 				res.startLineIndex = lc.x;
 				res.endLineIndex = lc.x;
 				res.startCharIndex = lc.y;
 				res.endCharIndex = lc.y + results[0].length;
-				foundMatches.push(res);
 				
+				if (res.startLineIndex != lastLineIndex)
+				{
+					lines = content.split(/\r?\n|\r/);
+					tmpFW = new WorkerFileWrapper(null);
+					tmpFW.isShowAsLineNumber = true;
+					tmpFW.lineNumbersWithRange = [];
+					tmpFW.fileReference = value;
+					foundMatches.push(tmpFW);
+					lastLineIndex = res.startLineIndex;
+				}
+				
+				//tmpFW.lineText = StringUtil.trim(lines[res.startLineIndex]);
+				tmpFW.lineText = lines[res.startLineIndex];
+				tmpFW.lineNumbersWithRange.push(res);
 				results = searchRegExp.exec(content);
-			}
-			
-			if (foundMatches.length > 0)
-			{
-				if (replace) replaceAndSaveFile();
-				content = null;
-				return foundMatches;
+				
+				// since a line could have multiple searched instance
+				// we need to count do/while separately other than
+				// counting total lines (foundMatches)
+				foundCountInFile++;
 			}
 			
 			content = null;
+			lines = null;
+			if (foundMatches.length > 0)
+			{
+				if (replace) replaceAndSaveFile();
+				return {foundMatches:foundMatches, foundCountInFile:foundCountInFile};
+			}
+			
 			return null;
 			
 			/*
@@ -306,4 +339,18 @@ package
 			return new Point(line, chr);
 		} 
 	}
+}
+
+class SearchResult
+{
+	public var startLineIndex:int = -1;
+	public var startCharIndex:int = -1;
+	public var endLineIndex:int = -1;
+	public var endCharIndex:int = -1;
+	public var totalMatches:int = 0;
+	public var totalReplaces:int = 0;
+	public var selectedIndex:int = 0;
+	public var didWrap:Boolean;
+	
+	public function SearchResult() {}	
 }
