@@ -177,7 +177,7 @@ package actionScripts.plugins.ui.editor
 
         private function getMxmlCode():String
         {
-            var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toMXML();
+            var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();
             var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
             
             return markAsXml + mxmlCode.toXMLString();
