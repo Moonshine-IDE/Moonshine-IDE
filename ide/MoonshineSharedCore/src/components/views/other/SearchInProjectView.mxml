@@ -28,11 +28,17 @@
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.findreplace.FindReplacePlugin;
 			import actionScripts.plugin.search.SearchPlugin;
-			import actionScripts.ui.renderers.GenericTreeItemRenderer;
 			import actionScripts.ui.tabview.TabEvent;
 			import actionScripts.utils.TextUtil;
 			
 			import components.popup.ReplaceProjectSearchPopup;
+			
+			[Embed("/elements/images/icoTreeFolder_open.png")]
+			private var iconFolderOpen:Class;
+			[Embed("/elements/images/icoTreeFolder_close.png")]
+			private var iconFolderClose:Class;
+			[Embed("/elements/images/icoTreeFile.png")]
+			private var iconFile:Class;
 			
 			[Bindable] public var valueToSearch:String;
 			[Bindable] public var isShowReplaceWhenDone:Boolean;
@@ -242,11 +248,12 @@
 			{
 				if (!tree.selectedItem) return;
 				
-				var tmpFL:FileLocation = new FileLocation(tree.selectedItem.file.nativePath);
+				var tmpSelectedItem:Object = tree.selectedItem;
+				var tmpFL:FileLocation = new FileLocation(tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.fileReference : tmpSelectedItem.file.nativePath);
 				if (tmpFL.fileBridge.isDirectory) return;
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFL, tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0].startLineIndex : -1)
 				);
 				
 				// this needs some timeout to get the tab open first
@@ -266,10 +273,10 @@
 			
 			private function getCountingLabel(item:Object):String
 			{
-				if (item.isRoot)  return item["name"]+"     ("+item.file.nativePath+")";
-				if (item.isShowAsLineNumber) return (item["lineText"]);
-				else if (!item.children) return item["name"]+" ("+item["searchCount"]+" matches)";
-				return item["name"];
+				if (item.isRoot)  return item.name +"     ("+item.file.nativePath+")";
+				if (item.isShowAsLineNumber) return (item.lineText);
+				else if (item.file && (item.searchCount != 0)) return item.name +" ("+item.searchCount +" matches)";
+				return (item.name);
 			}
 			
 			private function handleProjectsChange(event:CollectionEvent):void
@@ -303,6 +310,22 @@
 				// some components already dispatching this event manually while closing to 
 				// owner classes - need to carefully remove them so no duplicate event dispatch occurs  
 				dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_CLOSE, null));
+			}
+			
+			private function searchTreeIconFunction(item:Object):Class 
+			{
+				var iconClass:Class;
+				
+				if (item.file && (item.searchCount != 0))
+				{
+					iconClass = iconFile;
+				}
+				else if (!item.isShowAsLineNumber)
+				{
+					iconClass = tree.isItemOpen(item) ? iconFolderOpen : iconFolderClose;
+				}
+					
+				return iconClass;
 			}
 			
 		]]>
@@ -343,8 +366,9 @@
 			useRollOver="true"
 			doubleClickEnabled="true"
 			showDataTips="true"
+			iconFunction="searchTreeIconFunction"
 			itemRenderer="actionScripts.ui.renderers.SearchInProjectTreeItemRenderer"
-			dataTipFunction="getTreeTooltip" labelFunction="getCountingLabel"
+			dataTipFunction="getTreeTooltip"
 			doubleClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 </mx:Canvas>

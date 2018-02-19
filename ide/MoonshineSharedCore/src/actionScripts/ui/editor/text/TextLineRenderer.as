@@ -282,7 +282,7 @@ package actionScripts.ui.editor.text
 			
 			if (drawAsAllInstancesOfASearchString.length == 1)
 			{
-				getSelectionRange(drawAsAllInstancesOfASearchString[0].startCharIndex, drawAsAllInstancesOfASearchString[0].endCharIndex);
+				try { getSelectionRange(drawAsAllInstancesOfASearchString[0].startCharIndex, drawAsAllInstancesOfASearchString[0].endCharIndex); } catch (e:Error){}
 			}
 			else
 			{
