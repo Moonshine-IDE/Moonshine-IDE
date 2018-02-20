@@ -592,7 +592,6 @@ package actionScripts.ui.editor.text
 
 				if (model.breakPoint)
 				{
-					trace("breakpoint ? "+dataIndex);
 					lineNumberBackground.graphics.beginFill(styles['breakPointBackground']);
 					lineNumberBackground.graphics.drawRect(0, 0, lineNumberWidth, lineHeight);
 					lineNumberBackground.graphics.endFill();

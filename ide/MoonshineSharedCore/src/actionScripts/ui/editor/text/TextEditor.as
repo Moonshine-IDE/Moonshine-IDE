@@ -24,7 +24,9 @@ package actionScripts.ui.editor.text
     import flash.geom.Point;
     import flash.geom.Rectangle;
     import flash.utils.Timer;
+    import flash.utils.clearTimeout;
     import flash.utils.getTimer;
+    import flash.utils.setTimeout;
     
     import mx.controls.HScrollBar;
     import mx.controls.scrollClasses.ScrollBar;
@@ -700,13 +702,17 @@ package actionScripts.ui.editor.text
 			{
 				return;
             }
-
-            var verticalOffsetLineIndex:int = lineIndex;
-			if (eventType ==  OpenFileEvent.TRACE_LINE)
+			
+			// in case (when editor first opens)
+			// requisite values not initialized yet
+			if (verticalScrollBar.minScrollPosition == 0 && verticalScrollBar.maxScrollPosition == 0)
 			{
-				verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
+				verticalScrollBar.callLater(scrollTo, [lineIndex, eventType]);
+				return;
 			}
 
+            var verticalOffsetLineIndex:int = lineIndex;
+			verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
 			verticalScrollBar.scrollPosition = Math.min(Math.max(verticalOffsetLineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
 			if (horizontalScrollBar.visible)
 			{
