@@ -349,11 +349,15 @@ package actionScripts.ui.editor.text
 				}
 				case Keyboard.LEFT:
 				{
-					if (event.keyCode == 25) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
+					if (event.commandKey) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
 					{
 						if (!event.shiftKey && model.hasSelection) removeSelection();
 						startSelectionIfNeeded(event.shiftKey);
-						model.caretIndex = 0;
+
+						var tabIndex:int = TextUtil.indentAmount(model.selectedLine.text);
+
+						if (model.caretIndex == tabIndex) model.caretIndex = 0;
+						else model.caretIndex = tabIndex;
 					}
 					else if (model.hasSelection && !event.shiftKey)
 					{
@@ -386,7 +390,7 @@ package actionScripts.ui.editor.text
 				}
 				case Keyboard.RIGHT:
 				{
-					if (event.keyCode == 25) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
+					if (event.commandKey) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
 					{
 						if (!event.shiftKey && model.hasSelection) removeSelection();
 						startSelectionIfNeeded(event.shiftKey);
