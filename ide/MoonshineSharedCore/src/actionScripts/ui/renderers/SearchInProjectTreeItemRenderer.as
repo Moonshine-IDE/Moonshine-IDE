@@ -48,8 +48,6 @@ package actionScripts.ui.renderers
 	
 	public class SearchInProjectTreeItemRenderer extends TreeItemRenderer
 	{
-		private var label2:Label;
-		
 		private var model:IDEModel;
 		private var hitareaSprite:Sprite;
 		private var sourceControlBackground:UIComponent;
@@ -154,17 +152,17 @@ package actionScripts.ui.renderers
 			{
 				//var style:ElementFormat = (model.breakPoint) ? styles['breakPointLineNumber'] : styles['lineNumber'];
 				//style = (model.traceLine) ? styles['tracingLineColor'] : styles['lineNumber'];
-				lineNumberTextElement.elementFormat = new ElementFormat(Settings.font.uiFontDescription, 12, 0xff0000);
+				lineNumberTextElement.elementFormat = new ElementFormat(Settings.font.uiFontDescription, 12, 0x999999);
 				lineNumberTextElement.text = data.lineNumbersWithRange[0].startLineIndex + 1; // moonshine manage by 0th index, but in UI we need to show 1
 				var newLineNumberText:TextLine = null;
 				if(lineNumberText)
 				{
 					//try to reuse the existing TextLine, if it exists already
-					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 30);
+					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 50);
 				}
 				else
 				{
-					newLineNumberText = lineNumberTextBlock.createTextLine(null, 30);
+					newLineNumberText = lineNumberTextBlock.createTextLine(null, 50);
 					if(newLineNumberText)
 					{
 						lineNumberText = newLineNumberText;
@@ -182,7 +180,6 @@ package actionScripts.ui.renderers
 				if (lineNumberText) 
 				{
 					lineNumberText.y = 12;
-					lineNumberText.x = 30-lineNumberText.width-3;
 				}
 			}
 			else if (lineNumberText)
@@ -246,7 +243,6 @@ package actionScripts.ui.renderers
 				removeChild(textLine);
 				textLine = null;
 			}
-			
 			if (textLine) 
 			{
 				textLine.x = label.x;
@@ -278,12 +274,6 @@ package actionScripts.ui.renderers
 				lineNumberText = null;
 				lineNumberTextBlock = null;
 			}
-	    	
-	        /*if (label2 != null)
-	        {
-	            removeChild(label2);
-	            label2 = null;
-	        }*/
 	    }
 		
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
@@ -295,15 +285,6 @@ package actionScripts.ui.renderers
         	hitareaSprite.graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
         	hitareaSprite.graphics.endFill();
         	hitArea = hitareaSprite;
-        	
-        	// Draw our own FTE label
-        	/*label2.width = label.width;
-        	label2.height = label.height;
-			label2.x = label.x;
-        	label2.y = label.y+5;
-			if (lineHighligter) lineHighligter.x = label2.x;
-        	
-        	label2.text = label.text;*/
 			
 			// to be used in 'search in projects' 
 			if (data.isShowAsLineNumber && textLine)
@@ -311,19 +292,24 @@ package actionScripts.ui.renderers
 				if (lineNumberText)
 				{
 					lineNumberText.x = (label.x + 2);
-					textLine.x = lineHighligter.x = (label.x + 22);
+					textLine.x = lineHighligter.x = (label.x + 40);
 				}
 				
 				var g:Graphics = lineHighligter.graphics;
 				g.clear();
-				g.beginFill(0xff0000, 1);
+				g.lineStyle(1, 0xcccccc);
+				g.beginFill(0xff7cff, 0);
 				
 				for each(var i:Object in data.lineNumbersWithRange)
 				{
 					try	{ getSelectionRange(i.startCharIndex, i.endCharIndex); } catch (e:Error) {	break;	}
 				}
+				
 				g.endFill();
 				
+				/*
+				 * @local
+				 */
 				function getSelectionRange(start:int, end:int):void
 				{
 					if (start == end || start < 0) 
@@ -371,7 +357,6 @@ package actionScripts.ui.renderers
 		        		
 		        		sourceControlBackground.x = unscaledWidth-30;
 		        		sourceControlSystem.x = sourceControlBackground.x;
-		        		//sourceControlSystem.y = label2.y;
 						sourceControlSystem.y = textLine.y;
 	        		}
 	        		else
@@ -385,7 +370,6 @@ package actionScripts.ui.renderers
 		        			
 		        			sourceControlBackground.x = unscaledWidth-30;
 		        			sourceControlText.x = sourceControlBackground.x;
-		        			//sourceControlText.y = label2.y;
 							sourceControlText.y = textLine.y;
 		        		//}	
 	        		}

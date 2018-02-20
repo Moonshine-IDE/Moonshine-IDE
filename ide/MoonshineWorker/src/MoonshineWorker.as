@@ -29,6 +29,8 @@ package
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
+	import mx.utils.StringUtil;
+	
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.WorkerFileWrapper;
 	
@@ -256,6 +258,11 @@ package
 			r.open(f, FileMode.READ);
 			var content:String = r.readUTFBytes(f.size);
 			r.close();
+			
+			// remove all the leading space/tabs in a line
+			// so we can show the lines without having space/tabs in search results
+			content = content.replace(/^[ \t]+(?=\S)/gm, "");
+			content = StringUtil.trim(content);
 			
 			var searchString:String = projectSearchObject.value.isEscapeChars ? escapeRegex(projectSearchObject.value.valueToSearch) : projectSearchObject.value.valueToSearch;
 			var flags:String = 'g';
