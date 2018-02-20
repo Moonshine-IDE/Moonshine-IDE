@@ -19,7 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import flash.desktop.NativeApplication;
+	import actionScripts.events.OrganizeImportsEvent;
+	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
+
+	import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
     import flash.display.Stage;
@@ -199,13 +202,14 @@ package actionScripts.impls
 				ReferencesPlugin,
 				StartupHelperPlugin,
 				RenamePlugin,
+				OrganizeImportsPlugin,
 				Away3DPlugin
 			];
 		}
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin];
+			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin,];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -264,6 +268,9 @@ package actionScripts.impls
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
+					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS,
+						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
 				]),
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, ProjectEvent.SHOW_PROJECT_VIEW),
