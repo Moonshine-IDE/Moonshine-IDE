@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.events.Event;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
+    import flash.events.Event;
 	
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
@@ -44,19 +46,19 @@ package actionScripts.controllers
 		
 		public function execute(event:Event):void
 		{
-			var e:DeleteFileEvent = DeleteFileEvent(event);
+			var deleteEvent:DeleteFileEvent = DeleteFileEvent(event);
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
 			
-			if (!e.file.fileBridge.exists) return;
+			if (!deleteEvent.file.fileBridge.exists) return;
 			
 			// project deletion
-			if (e.wrapper.isRoot && e.showAlert)
+			if (deleteEvent.wrapper.isRoot && deleteEvent.showAlert)
 			{
-				Alert.show("Are you sure you want to delete project '"+ e.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
+				Alert.show("Are you sure you want to delete project '"+ deleteEvent.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
 				return;
 			}
-			else if (e.wrapper.isRoot)
+			else if (deleteEvent.wrapper.isRoot)
 			{
 				onProjectDeleteConfirm(null);
 				return;
@@ -65,16 +67,37 @@ package actionScripts.controllers
 			// file/folder deletion for desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (e.file.fileBridge.isDirectory) e.file.fileBridge.deleteDirectory(true);
-				else e.file.fileBridge.deleteFile();
-				if (e.wrapper.sourceController) e.wrapper.sourceController.remove(e.file);
+				if (deleteEvent.file.fileBridge.isDirectory)
+				{
+					deleteEvent.file.fileBridge.deleteDirectory(true);
+                }
+				else
+				{
+					deleteEvent.file.fileBridge.deleteFile();
+
+                    if (deleteEvent.projectAssociatedWithFile)
+                    {
+                        var as3ProjectVO:AS3ProjectVO = deleteEvent.projectAssociatedWithFile as AS3ProjectVO;
+                        if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
+                        {
+                            var fileName:String = deleteEvent.file.name.replace(/.mxml$|.xhtml$/, ".xml");
+                            var visualEditorFile:FileLocation = as3ProjectVO.visualEditorSourceFolder.resolvePath(fileName);
+                            visualEditorFile.fileBridge.deleteFile();
+                        }
+                    }
+                }
+
+				if (deleteEvent.wrapper.sourceController)
+				{
+					deleteEvent.wrapper.sourceController.remove(deleteEvent.file);
+                }
 				
 				for each (tab in IDEModel.getInstance().editors)
 				{
 					ed = tab as BasicTextEditor;
 					if (ed 
 						&& ed.currentFile
-						&& ed.currentFile.fileBridge.nativePath == e.file.fileBridge.nativePath)
+						&& ed.currentFile.fileBridge.nativePath == deleteEvent.file.fileBridge.nativePath)
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
 							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
@@ -83,15 +106,15 @@ package actionScripts.controllers
 				}
 				
 				// removing the wrapper in tree view
-				e.wrapper.isDeleting = true;
-				e.treeViewCompletionHandler(e.wrapper);
+				deleteEvent.wrapper.isDeleting = true;
+				deleteEvent.treeViewCompletionHandler(deleteEvent.wrapper);
 			}
 				// for web
 			else
 			{
-				file = e.file;
-				treeViewHandler = e.treeViewCompletionHandler;
-				wrapper = e.wrapper;
+				file = deleteEvent.file;
+				treeViewHandler = deleteEvent.treeViewCompletionHandler;
+				wrapper = deleteEvent.wrapper;
 				wrapper.isWorking = true;
 				wrapper.isDeleting = true;
 				
@@ -111,7 +134,7 @@ package actionScripts.controllers
 					var model: IDEModel = IDEModel.getInstance();
 					// sends delete call to factory classes
 
-					var projectRef:ProjectReferenceVO = e.wrapper.projectReference;
+					var projectRef:ProjectReferenceVO = deleteEvent.wrapper.projectReference;
                     SharedObjectUtil.removeCookieByName("projectFiles" + projectRef.name);
                     SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
                             {name: projectRef.name, path: projectRef.path}, "name", "path");
@@ -120,7 +143,7 @@ package actionScripts.controllers
 					var toRemove:int = -1;
 					for each (var file:Object in model.recentlyOpenedProjects)
 					{
-						if (file.path == e.wrapper.file.fileBridge.nativePath)
+						if (file.path == deleteEvent.wrapper.file.fileBridge.nativePath)
 						{
 							toRemove = model.recentlyOpenedProjects.getItemIndex(file);
 							break;
@@ -138,7 +161,7 @@ package actionScripts.controllers
 					toRemove = -1;
 					for (var i:int = 0; i < model.recentlyOpenedFiles.length; i++)
 					{
-						if (model.recentlyOpenedFiles[i].path.indexOf(e.wrapper.file.fileBridge.nativePath + e.wrapper.file.fileBridge.separator) != -1)
+						if (model.recentlyOpenedFiles[i].path.indexOf(deleteEvent.wrapper.file.fileBridge.nativePath + deleteEvent.wrapper.file.fileBridge.separator) != -1)
 						{
 							model.recentlyOpenedFiles.removeItemAt(i);
 							toRemove = 0;
@@ -149,7 +172,7 @@ package actionScripts.controllers
 					if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 					
 					// finally
-					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
+					model.flexCore.deleteProject(deleteEvent.wrapper, deleteEvent.treeViewCompletionHandler);
 				}
 			}
 		}

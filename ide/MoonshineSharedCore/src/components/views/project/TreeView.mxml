@@ -516,7 +516,8 @@
 			{
 				if (event2.detail == Alert.YES)
 				{
-					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert));
+					var projectAssociatedWithFile:ProjectVO = getProjectFromProjectFolder(fileWrapper);
+					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
 				}
 			}
 
