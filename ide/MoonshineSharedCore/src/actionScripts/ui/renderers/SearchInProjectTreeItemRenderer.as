@@ -158,11 +158,11 @@ package actionScripts.ui.renderers
 				if(lineNumberText)
 				{
 					//try to reuse the existing TextLine, if it exists already
-					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 50);
+					newLineNumberText = lineNumberTextBlock.recreateTextLine(lineNumberText, null, 40);
 				}
 				else
 				{
-					newLineNumberText = lineNumberTextBlock.createTextLine(null, 50);
+					newLineNumberText = lineNumberTextBlock.createTextLine(null, 40);
 					if(newLineNumberText)
 					{
 						lineNumberText = newLineNumberText;
