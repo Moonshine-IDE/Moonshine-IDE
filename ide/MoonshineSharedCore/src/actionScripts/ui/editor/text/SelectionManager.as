@@ -350,7 +350,7 @@ package actionScripts.ui.editor.text
 				}
 				case Keyboard.LEFT:
 				{
-					if (event.commandKey) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
+					if ("commandKey" in event && event["commandKey"]) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
 					{
 						if (!event.shiftKey && model.hasSelection) removeSelection();
 						startSelectionIfNeeded(event.shiftKey);
@@ -391,7 +391,7 @@ package actionScripts.ui.editor.text
 				}
 				case Keyboard.RIGHT:
 				{
-					if (event.commandKey) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
+					if ("commandKey" in event && event["commandKey"]) // CHECK COMMAND KEY VALUE // Mac specific text editing functionality
 					{
 						if (!event.shiftKey && model.hasSelection) removeSelection();
 						startSelectionIfNeeded(event.shiftKey);
