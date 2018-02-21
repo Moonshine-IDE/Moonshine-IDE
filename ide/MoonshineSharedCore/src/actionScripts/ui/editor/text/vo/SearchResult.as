@@ -36,7 +36,6 @@ package actionScripts.ui.editor.text.vo
 		
 		public function SearchResult()
 		{
-		}
-
+		}		
 	}
 }

@@ -18,29 +18,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-    import actionScripts.utils.UtilsCore;
-
     import flash.events.Event;
-
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.FileChangeEvent;
-	import actionScripts.events.FilePluginEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
-	import actionScripts.ui.editor.BasicHTMLViewer;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
-	import actionScripts.ui.notifier.ActionNotifier;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.FileWrapper;
-	import actionScripts.valueObjects.URLDescriptorVO;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.FileChangeEvent;
+    import actionScripts.events.FilePluginEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.editor.ActionScriptTextEditor;
+    import actionScripts.ui.editor.BasicHTMLViewer;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.DebugHighlightManager;
+    import actionScripts.ui.notifier.ActionNotifier;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.URLDescriptorVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -54,6 +53,7 @@ package actionScripts.controllers
 		protected var ged:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 		private var loader: DataAgent;
+		private var lastOpenEvent:OpenFileEvent;
 
 		public function execute(event:Event):void
 		{
@@ -63,6 +63,7 @@ package actionScripts.controllers
 			if (event is OpenFileEvent)
 			{
 				var e:OpenFileEvent = event as OpenFileEvent;
+				lastOpenEvent = e;
 				if (e.file)
 				{
 					// in case of awd file proceed to different process
@@ -121,7 +122,7 @@ package actionScripts.controllers
 					if (atLine > -1)
 					{
 						ed.getEditorComponent().scrollTo(atLine, openType);
-						if (!openType || openType == OpenFileEvent.OPEN_FILE)
+						if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
 						{
 							ed.getEditorComponent().selectLine(atLine);
                         }
@@ -269,6 +270,7 @@ package actionScripts.controllers
 			editorEvent.fileExtension = file.fileBridge.extension;
 			ged.dispatchEvent(editorEvent);
 			
+			editor.lastOpenType = lastOpenEvent.type;
 			if (!ConstantsCoreVO.IS_AIR)
 			{
 				var rawData:String = String(value);
@@ -281,7 +283,9 @@ package actionScripts.controllers
 			}
 			
 			if (atLine > -1)
-				editor.scrollTo(atLine);
+			{
+				editor.scrollTo(atLine, lastOpenEvent.type);
+			}
 
 			ged.dispatchEvent(
 				new AddTabEvent(editor)

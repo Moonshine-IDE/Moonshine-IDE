@@ -58,6 +58,7 @@ package actionScripts.locator
 			commands[CloseTabEvent.EVENT_CLOSE_ALL_TABS] = CloseTabCommand;
 			commands[OpenFileEvent.OPEN_FILE] = OpenFileCommand;
 			commands[OpenFileEvent.TRACE_LINE] = OpenFileCommand;
+			commands[OpenFileEvent.JUMP_TO_SEARCH_LINE] = OpenFileCommand;
 			commands[AddTabEvent.EVENT_ADD_TAB] = AddTabCommand;
 			
 			commands[MenuPlugin.MENU_SAVE_AS_EVENT] = SaveAsCommand;

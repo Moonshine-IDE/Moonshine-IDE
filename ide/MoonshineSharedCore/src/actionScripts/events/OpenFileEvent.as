@@ -21,13 +21,13 @@ package actionScripts.events
 	import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.ui.editor.text.vo.SearchResult;
 	import actionScripts.valueObjects.FileWrapper;
 
 	public class OpenFileEvent extends Event
 	{
 		public static const OPEN_FILE:String = "openFileEvent";
 		public static const TRACE_LINE:String = "traceLineEvent";
+		public static const JUMP_TO_SEARCH_LINE:String = "jumpToLineEvent";
 		
 		public var file:FileLocation;
 		public var atLine:int;
@@ -35,7 +35,6 @@ package actionScripts.events
 		public var wrapper:FileWrapper;
 		public var openAsTourDe:Boolean;
 		public var tourDeSWFSource:String;
-		public var openWithSelection:SearchResult;
 		
 		public function OpenFileEvent(type:String, file:FileLocation=null, atLine:int = -1, wrapper:FileWrapper=null, ...param)
 		{
