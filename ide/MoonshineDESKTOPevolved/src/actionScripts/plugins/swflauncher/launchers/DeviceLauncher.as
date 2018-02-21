@@ -299,19 +299,19 @@ package actionScripts.plugins.swflauncher.launchers
 			{
 				/*
 				@example
-				@osx
+				@ios
 				List of attached devices:
 				Handle	DeviceClass	DeviceUUID					DeviceName
 				1	iPad    	6de82fb31xxxxxxxxxxxxcc8	My iPad
 				
-				@windows
+				@android
 				list of devices attached
 				h7azcyxxxx32	device
 				*/
 				
 				var devicesLines:Array = data.split("\n");
 				devicesLines.shift(); // one
-				if (ConstantsCoreVO.IS_MACOS) devicesLines.shift(); // two
+				if (!isAndroid) devicesLines.shift(); // two
 				connectedDevices = new Vector.<String>();
 				for (var i:String in devicesLines)
 				{
@@ -320,7 +320,7 @@ package actionScripts.plugins.swflauncher.launchers
 						var newDevice:DeviceVO = new DeviceVO();
 						var breakups:Array = devicesLines[i].split("\t");
 						
-						if (ConstantsCoreVO.IS_MACOS)
+						if (!isAndroid)
 						{
 							newDevice.deviceID = int(StringUtil.trim(breakups[0]));
 							newDevice.deviceUDID = StringUtil.trim(breakups[2]);
@@ -347,7 +347,7 @@ package actionScripts.plugins.swflauncher.launchers
 				}
 				else
 				{
-					var deviceString:String = !ConstantsCoreVO.IS_MACOS ? "&&" : "&&-device&&"+ newDevice.deviceID +"&&";
+					var deviceString:String = isAndroid ? "&&" : "&&-device&&" + newDevice.deviceID +"&&";
 					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
 				}
 			}
