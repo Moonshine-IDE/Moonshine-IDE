@@ -141,6 +141,13 @@
 			{
 				fileWrapper.sourceController.refresh(fileWrapper.file);
 			}
+			
+			if (fileWrapper.isRoot)
+			{
+				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as AS3ProjectVO;
+				var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
+				if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
+			}
 		}
 
 		public function refresh(dir:FileLocation, markAsDeletion:Boolean=false):void
