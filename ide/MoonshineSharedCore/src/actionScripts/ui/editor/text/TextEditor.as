@@ -24,9 +24,7 @@ package actionScripts.ui.editor.text
     import flash.geom.Point;
     import flash.geom.Rectangle;
     import flash.utils.Timer;
-    import flash.utils.clearTimeout;
     import flash.utils.getTimer;
-    import flash.utils.setTimeout;
     
     import mx.controls.HScrollBar;
     import mx.controls.scrollClasses.ScrollBar;
@@ -629,7 +627,6 @@ package actionScripts.ui.editor.text
 			model.textWidth = max;
 			widthUpdateTime = getTimer();
 		}
-		
 			
 		public function selectLine(lineIndex:int):void
 		{
@@ -639,6 +636,37 @@ package actionScripts.ui.editor.text
 			
 			invalidateSelection();
 		}
+		
+		public function selectRangeAtLine(search:*, range:Object=null):void
+		{
+			var rdr:TextLineRenderer;
+			var itemRenderersInUseCount:int = model.itemRenderersInUse.length;
+			
+			for (var i:int = 0; i < itemRenderersInUseCount; i++)
+			{
+				rdr = model.itemRenderersInUse[i];
+				if (i+model.scrollPosition == range.startLineIndex)
+				{
+					var results:Array = RegExp(search).exec(rdr.model.text);
+					if (results != null)
+					{
+						var lc:Point = TextUtil.charIdx2LineCharIdx(rdr.model.text, results.index, lineDelim);
+						
+						model.selectedLineIndex = range.startLineIndex;
+						rdr.focus = hasFocus;
+						rdr.caretPosition = model.caretIndex = lc.y + results[0].length;
+						model.selectionStartCharIndex = lc.y;
+						rdr.drawSelection(model.selectionStartCharIndex, model.caretIndex);
+					}
+				}
+				else
+				{
+					rdr.focus = false;
+					rdr.removeSelection();
+				}
+			}
+		}
+		
 		public function selectTraceLine(lineIndex:int):void
 		{
 			lineIndex = Math.max(0, Math.min(model.lines.length-1, lineIndex));
@@ -712,7 +740,10 @@ package actionScripts.ui.editor.text
 			}
 
             var verticalOffsetLineIndex:int = lineIndex;
-			verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
+			if (eventType ==  OpenFileEvent.TRACE_LINE || eventType ==  OpenFileEvent.JUMP_TO_SEARCH_LINE)
+			{
+				verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
+			}
 			verticalScrollBar.scrollPosition = Math.min(Math.max(verticalOffsetLineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
 			if (horizontalScrollBar.visible)
 			{

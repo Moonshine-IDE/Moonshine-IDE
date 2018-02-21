@@ -288,7 +288,7 @@ package actionScripts.ui.editor.text
 			{
 				for (var j:int=0; j < drawAsAllInstancesOfASearchString.length; j++)
 				{
-					getSelectionRange(drawAsAllInstancesOfASearchString[j].startCharIndex, drawAsAllInstancesOfASearchString[j].endCharIndex);
+					try { getSelectionRange(drawAsAllInstancesOfASearchString[j].startCharIndex, drawAsAllInstancesOfASearchString[j].endCharIndex); } catch (e:Error){}
 				}
 			}
 			

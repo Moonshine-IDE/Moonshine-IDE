@@ -53,6 +53,7 @@ package actionScripts.ui.editor
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
 		public var editor:TextEditor;
+		public var lastOpenType:String;
 		
 		protected var file:FileLocation;
 		protected var created:Boolean;
@@ -198,7 +199,7 @@ package actionScripts.ui.editor
 				callLater(open, [file]);
 		}
 
-		public function scrollTo(line:int):void
+		public function scrollTo(line:int, eventType:String=null):void
 		{
 			if (loadingFile)
 			{
@@ -206,9 +207,14 @@ package actionScripts.ui.editor
 			}
 			else
 			{
-				editor.scrollTo(line);
+				editor.scrollTo(line, eventType);
 				editor.selectLine(line);
 			}
+		}
+		
+		public function selectRangeAtLine(search:*, range:Object=null):void
+		{
+			editor.selectRangeAtLine(search, range);
 		}
 		
 		public function setContent(content:String):void
@@ -424,7 +430,7 @@ package actionScripts.ui.editor
         {
             if (tempScrollTo > 0)
             {
-                scrollTo(tempScrollTo);
+                scrollTo(tempScrollTo, lastOpenType);
                 tempScrollTo = -1;
             }
         }

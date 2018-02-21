@@ -332,7 +332,8 @@ package actionScripts.ui.editor.text
 			var processed:Boolean = true;
 			var chars:int = 1;
 			var word:Boolean = event[Settings.keyboard.wordModifierKey];
-			
+            var tabIndex:int = -1;
+
 			switch (event.keyCode)
 			{
 				case Keyboard.A:
@@ -354,7 +355,7 @@ package actionScripts.ui.editor.text
 						if (!event.shiftKey && model.hasSelection) removeSelection();
 						startSelectionIfNeeded(event.shiftKey);
 
-						var tabIndex:int = TextUtil.indentAmount(model.selectedLine.text);
+						tabIndex = TextUtil.indentAmount(model.selectedLine.text);
 
 						if (model.caretIndex == tabIndex) model.caretIndex = 0;
 						else model.caretIndex = tabIndex;
@@ -526,7 +527,7 @@ package actionScripts.ui.editor.text
 					}
 					else
 					{
-						var tabIndex:int = TextUtil.indentAmount(model.selectedLine.text);
+						tabIndex = TextUtil.indentAmount(model.selectedLine.text);
 						
 						if (model.caretIndex == tabIndex) model.caretIndex = 0;
 						else model.caretIndex = tabIndex;

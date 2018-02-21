@@ -44,6 +44,10 @@ package actionScripts.ui.editor.text
 		// Preferably used in 'search in project' sequence
 		public function searchAndShowAll(search:*):void
 		{
+			// this probably overkill if search highlights already
+			// rendered once
+			if (model.allInstancesOfASearchStringDict) return;
+			
 			var results:Array;
 			var searchRegExp:RegExp = search as RegExp;
 			var str:String = editor.dataProvider;
