@@ -292,7 +292,7 @@ package actionScripts.ui.renderers
 				if (lineNumberText)
 				{
 					lineNumberText.x = (label.x + 2);
-					textLine.x = lineHighligter.x = (label.x + 40);
+					textLine.x = lineHighligter.x = (label.x + 42);
 				}
 				
 				var g:Graphics = lineHighligter.graphics;
