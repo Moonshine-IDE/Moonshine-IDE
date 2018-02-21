@@ -957,9 +957,13 @@ package actionScripts.plugins.as3project.mxmlc
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							getResourceCopied(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
 							dispatcher.dispatchEvent(
-								//new MXMLCPluginEvent(CompilerEventBase.POSTBUILD, (currentProject as AS3ProjectVO).buildOptions.customSDK ? (currentProject as AS3ProjectVO).buildOptions.customSDK : IDEModel.getInstance().defaultSDK)
 								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
 							);
+							if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
+							{
+								//install and launch on device
+								testMovie();
+							}
 						}
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
