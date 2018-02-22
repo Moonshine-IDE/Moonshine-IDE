@@ -54,8 +54,8 @@
 	        import actionScripts.ui.tabview.CloseTabEvent;
 	        import actionScripts.utils.SDKUtils;
 	        import actionScripts.utils.UtilsCore;
-	        import actionScripts.valueObjects.ConstantsCoreVO;
 	        import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 	        
 	        import components.popup.SDKDefinePopup;
 	        import components.popup.SDKSelectorPopup;
@@ -310,7 +310,8 @@
 	            {
 	                if (!evnt || evnt.detail == Alert.YES)
 	                {
-	                    setting.stringValue = event.anObject.label;
+						setting.stringValue = event.anObject.path;
+						lblValue.text = event.anObject.label;
 	                    hideDefineSDKLink(setting.stringValue);
 	                }
 	            }
