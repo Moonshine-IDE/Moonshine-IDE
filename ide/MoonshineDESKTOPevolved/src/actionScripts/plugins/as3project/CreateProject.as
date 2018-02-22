@@ -140,24 +140,8 @@ package actionScripts.plugins.as3project
 		public function set isProjectFromExistingSource(value:Boolean):void
 		{
 			_isProjectFromExistingSource = project.isProjectFromExistingSource = value;
-			if (_isProjectFromExistingSource)
-			{
-				///project.projectFolder = null;
-				project.projectName = newProjectNameSetting.stringValue;
-				project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-				
-				newProjectWithExistingSourcePathSetting.project = project;
-				newProjectPathSetting.label = "Existing Project Directory";
-			}
-			else
-			{
-				newProjectPathSetting.label = "Parent Directory";
-			}
-			
+			onProjectPathChanged(null, false);
 			newProjectWithExistingSourcePathSetting.visible = _isProjectFromExistingSource;
-			
-			if (isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation);
-			else checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
 		}
 		
 		public function set projectTemplateType(value:String):void
@@ -433,19 +417,24 @@ package actionScripts.plugins.as3project
 		//
 		//--------------------------------------------------------------------------
 		
-		private function onProjectPathChanged(event:Event):void
+		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void
 		{
-			project.projectFolder = null;
-			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-			if (isProjectFromExistingSource)
+			if (makeNull) project.projectFolder = null;
+			if (_isProjectFromExistingSource)
 			{
-                newProjectWithExistingSourcePathSetting.project = project;
+				project.projectName = newProjectNameSetting.stringValue;
+				project.folderLocation = (new FileLocation(newProjectPathSetting.stringValue)).resolvePath(project.projectName);
+				
+				newProjectWithExistingSourcePathSetting.project = project;
+				newProjectPathSetting.label = "Existing Project Directory";
 				checkIfProjectDirectory(project.folderLocation);
-            }
+			}
 			else
 			{
+				project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
+				newProjectPathSetting.label = "Parent Directory";
 				checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
-            }
+			}
 		}
 		
 		private function onProjectNameChanged(event:Event):void
@@ -478,7 +467,7 @@ package actionScripts.plugins.as3project
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
-			var targetFolder:FileLocation = project.folderLocation;
+			var targetFolder:FileLocation = project.folderLocation = _isProjectFromExistingSource ? project.folderLocation.resolvePath(project.name) : project.folderLocation;
 
 			//save  project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -582,12 +571,12 @@ package actionScripts.plugins.as3project
 			
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
-			var sourceFile:String = _isProjectFromExistingSource ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
+			var sourceFile:String = (_isProjectFromExistingSource && !isLibraryProject) ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
 			var sourceFileWithExtension:String;
 			var sourcePath:String = _isProjectFromExistingSource ? pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) : "src";
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
-			if (_isProjectFromExistingSource)
+			if (_isProjectFromExistingSource && !isLibraryProject)
 			{
 				sourceFileWithExtension = pvo.projectWithExistingSourcePaths[1].fileBridge.name;
 			}

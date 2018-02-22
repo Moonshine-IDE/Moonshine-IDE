@@ -86,7 +86,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 			_project = value;
 			if (rdr) rdr.resetAllProjectPaths();
 		}
-		public function get project():AS3ProjectVO
+		[Bindable] public function get project():AS3ProjectVO
 		{
 			return _project;
 		}
