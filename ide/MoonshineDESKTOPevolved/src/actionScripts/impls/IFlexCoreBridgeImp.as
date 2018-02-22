@@ -19,7 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.events.OrganizeImportsEvent;
+    import actionScripts.events.ExportVisualEditorProjectEvent;
+    import actionScripts.events.OrganizeImportsEvent;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 
 	import flash.desktop.NativeApplication;
@@ -102,6 +103,9 @@ package actionScripts.impls
     import components.popup.DefineFolderAccessPopup;
     import components.popup.SoftwareInformation;
 
+    import visualEditor.plugin.ExportToFlexPlugin;
+    import visualEditor.plugin.ExportToPrimeFacesPlugin;
+
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
@@ -175,7 +179,9 @@ package actionScripts.impls
 				ConsolePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
-				SearchPlugin
+				SearchPlugin,
+				ExportToFlexPlugin,
+				ExportToPrimeFacesPlugin
 			];
 		}
 		
@@ -209,7 +215,9 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin,];
+			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject,
+				VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin,
+				ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -286,7 +294,12 @@ package actionScripts.impls
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), null, ProjectEvent.INIT_EXPORT_VISUALEDITOR_PROJECT),
+					new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
+						new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'),
+							 null, ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX),
+						new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'),
+							 null, ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES)
+					]),
                     new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],

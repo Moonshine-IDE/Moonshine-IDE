@@ -22,7 +22,7 @@ package actionScripts.events
 
 	public class OrganizeImportsEvent extends Event
 	{
-		public static const EVENT_ORGANIZE_IMPORTS:String = "organizeImports"
+		public static const EVENT_ORGANIZE_IMPORTS:String = "organizeImports";
 
 		public function OrganizeImportsEvent(type:String)
 		{

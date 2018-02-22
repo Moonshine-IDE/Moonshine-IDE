@@ -549,9 +549,6 @@ package actionScripts.plugins.as3project
 			{
                 GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
-			
-			// close the Settings tab
-			event.target.dispatchEvent(new Event(SettingsView.EVENT_CLOSE));
 		}
 
 		private function exportVisualEditorProject(project:AS3ProjectVO, exportProject:AS3ProjectVO):void

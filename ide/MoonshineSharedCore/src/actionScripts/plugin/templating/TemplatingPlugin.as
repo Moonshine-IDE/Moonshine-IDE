@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
+    import actionScripts.events.ExportVisualEditorProjectEvent;
+
     import components.popup.newFile.NewVisualEditorFilePopup;
 
     import flash.display.DisplayObject;
@@ -122,7 +124,8 @@ package actionScripts.plugin.templating
 			super.activate();
 
 			dispatcher.addEventListener(TemplateEvent.CREATE_NEW_FILE, handleCreateFileTemplate);
-            dispatcher.addEventListener(ProjectEvent.EXPORT_VISUALEDITOR_PROJECT, handleExportNewProjectFromTemplate);
+            dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
+					handleExportNewProjectFromTemplate);
 			
 			// For web Moonshine, we won't depend on getMenu()
 			// getMenu() exclusively calls for desktop Moonshine
@@ -1189,14 +1192,9 @@ package actionScripts.plugin.templating
             newProjectFromTemplate(event.type);
 		}
 
-        private function handleExportNewProjectFromTemplate(event:ProjectEvent):void
+        private function handleExportNewProjectFromTemplate(event:ExportVisualEditorProjectEvent):void
         {
-            if (event.type == ProjectEvent.EXPORT_VISUALEDITOR_PROJECT)
-            {
-                newProjectFromTemplate(
-                        "eventNewProjectFromTemplateFlex Desktop Project (MacOS, Windows)",
-                        event.project as AS3ProjectVO);
-            }
+			newProjectFromTemplate("eventNewProjectFromTemplateFlex Desktop Project (MacOS, Windows)", event.exportedProject);
         }
 
         private function newProjectFromTemplate(eventName:String, exportProject:AS3ProjectVO = null):void
