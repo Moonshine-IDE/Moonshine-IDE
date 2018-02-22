@@ -125,7 +125,8 @@
 			
 			private function updateToSettings():void
 			{
-				if (sourceFolderLocation && sourceFileLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath +","+ sourceFileLocation.fileBridge.nativePath;
+				if (!setting.project.isLibraryProject && sourceFolderLocation && sourceFileLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath +","+ sourceFileLocation.fileBridge.nativePath;
+				else if (setting.project.isLibraryProject && sourceFolderLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath;
 			}
 			
 		]]>
@@ -172,12 +173,13 @@
 					 borderVisible="false"
 					 contentBackgroundAlpha="0"
 					 focusAlpha="0"
-					 buttonMode="true" editable="false" mouseChildren="false"/>
+					 buttonMode="true" editable="false" mouseChildren="false"
+					 enabled="{!setting.project.isLibraryProject}"/>
 		<s:Spacer width="10"/>
 		<s:Button 
 			label="Browse file"
 			styleName="lightButton"
 			click="onBrowseSourceFile()"
-			/>
+			enabled="{!setting.project.isLibraryProject}"/>
 	</s:HGroup>
 </s:VGroup>
