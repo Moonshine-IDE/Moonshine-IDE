@@ -64,7 +64,9 @@ package actionScripts.ui.menu
         private static var menuItemsDisabledNoneVEProject:Array = [
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
             resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
-            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE')
+            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES')
         ];
 
         public static function isMenuItemEnabledInVisualEditor(label:String, project:ProjectVO = null):Boolean
