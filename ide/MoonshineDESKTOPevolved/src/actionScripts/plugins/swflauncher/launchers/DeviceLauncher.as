@@ -105,12 +105,50 @@ package actionScripts.plugins.swflauncher.launchers
 			var adtPackagingCom:String;
 			if (isAndroid) 
 			{
-				adtPackagingCom = adtPath +'-package&&-target&&'+ (runAsDebugger ? 'apk-debug' : 'apk') +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
+				var androidPackagingMode:String = null;
+				if(runAsDebugger)
+				{
+					androidPackagingMode = "apk-debug";
+				}
+				else
+				{
+					androidPackagingMode = "apk";
+				}
+				adtPackagingCom = adtPath +'-package&&-target&&'+ androidPackagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			else
 			{
-				var packagingMode:String = (runAsDebugger) ? "ipa-debug-interpreter" : ((project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_STANDARD) ? "ipa-test" : "ipa-test-interpreter");
-				adtPackagingCom = adtPath +'-package&&-target&&'+ packagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
+				var iOSPackagingMode:String = null;
+				if(runAsDebugger)
+				{
+					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
+					{
+						//fast bypasses bytecode translation interprets the SWF
+						iOSPackagingMode = "ipa-debug-interpreter";
+					}
+					else
+					{
+						//standard takes longer to package
+						//debug builds aren't meant for the app store, though
+						iOSPackagingMode = "ipa-debug";
+					}
+				}
+				else //release
+				{
+					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
+					{
+						//fast bypasses bytecode translation interprets the SWF
+						iOSPackagingMode = "ipa-test-interpreter";
+					}
+					else
+					{
+						//standard takes longer to package
+						//release builds are suitable for the app store
+						iOSPackagingMode = "ipa-app-store";
+					}
+				}
+					
+				adtPackagingCom = adtPath +'-package&&-target&&'+ iOSPackagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			
 			// extensions and resources

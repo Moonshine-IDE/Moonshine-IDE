@@ -360,6 +360,16 @@ package actionScripts.plugins.vscodeDebug
 						this.parseDisconnectResponse(response);
 						break;
 					}
+					case COMMAND_ATTACH:
+					{
+						this.handleDisconnectOrTerminated();
+						if(_nativeProcess)
+						{
+							//the process won't exit automatically
+							_nativeProcess.exit(true);
+						}
+						break;
+					}
 					case COMMAND_LAUNCH:
 					case COMMAND_PAUSE:
 					case COMMAND_STEP_IN:
