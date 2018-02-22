@@ -30,7 +30,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static var defaultOptions:BuildOptions = new BuildOptions();
 		public static const TYPE_FB:String = "TYPE_FB";
 		public static const TYPE_FD:String = "TYPE_FD";
+		
+		//https://help.adobe.com/en_US/flashbuilder/using/WSe4e4b720da9dedb5-6caff02f136a645e895-7ffe.html
+		//standard takes longer to package is suitable for submission to the app store
 		public static const IOS_PACKAGING_STANDARD:String = "IOS_PACKAGING_STANDARD";
+		//fast bypasses bytecode translation interprets the SWF
 		public static const IOS_PACKAGING_FAST:String = "IOS_PACKAGING_FAST";
 		
 		public var accessible:Boolean = false;

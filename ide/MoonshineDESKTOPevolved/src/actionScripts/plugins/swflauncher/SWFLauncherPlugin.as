@@ -157,7 +157,7 @@ package actionScripts.plugins.swflauncher
 			// In case of mobile project and device-run, lets divert
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
 			{
-				deviceLauncher.runOnDevice(project, sdk, file, appXML);
+				deviceLauncher.runOnDevice(project, sdk, file, appXML, RUN_AS_DEBUGGER);
 				return;
 			}
 			
