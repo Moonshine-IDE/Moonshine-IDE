@@ -75,6 +75,7 @@ package actionScripts.plugins.vscodeDebug
 		private static const MESSAGE_TYPE_EVENT:String = "event";
 		private static const COMMAND_INITIALIZE:String = "initialize";
 		private static const COMMAND_LAUNCH:String = "launch";
+		private static const COMMAND_ATTACH:String = "attach";
 		private static const COMMAND_THREADS:String = "threads";
 		private static const COMMAND_SET_BREAKPOINTS:String = "setBreakpoints";
 		private static const COMMAND_PAUSE:String = "pause";
@@ -434,14 +435,31 @@ package actionScripts.plugins.vscodeDebug
 				trace("initialize command not successful!");
 				return;
 			}
+			if(_currentProject.isMobile && !_currentProject.buildOptions.isMobileRunOnSimulator)
+			{
+				sendAttachCommand();
+			}
+			else
+			{
+				sendLaunchCommand();
+			}
+		}
+
+		private function sendAttachCommand():void
+		{
+			this.sendRequest(COMMAND_ATTACH, {});
+		}
+		
+		private function sendLaunchCommand():void
+		{
 			//try to figure out which "program" to launch, whether it's an
 			//AIR application descriptor, an HTML file, or a SWF
 			//var project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
 			var body:Object =
-				{
-					"request": REQUEST_LAUNCH,
-					"program": _currentProject.swfOutput.path.fileBridge.nativePath
-				};
+			{
+				"request": REQUEST_LAUNCH,
+				"program": _currentProject.swfOutput.path.fileBridge.nativePath
+			};
 			var binLocation:FileLocation = _currentProject.swfOutput.path.fileBridge.parent;
 			var swfFile:File = _currentProject.swfOutput.path.fileBridge.getFile as File;
 			if(_currentProject.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
