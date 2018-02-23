@@ -405,7 +405,8 @@ package actionScripts.plugins.as3project
 			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && !isProjectFromExistingSource && value.fileBridge.exists) tmpFile = value;
 			
-			if (tmpFile) newProjectPathSetting.setCriticalMessage("(Project can not be created in an existing project directory)\n"+ value.fileBridge.nativePath);
+			if (tmpFile) newProjectPathSetting.setCriticalMessage("Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath);
+			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
 			isInvalidToSave = tmpFile ? true : false;
@@ -420,18 +421,16 @@ package actionScripts.plugins.as3project
 		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void
 		{
 			if (makeNull) project.projectFolder = null;
+			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
 			if (_isProjectFromExistingSource)
 			{
 				project.projectName = newProjectNameSetting.stringValue;
-				project.folderLocation = (new FileLocation(newProjectPathSetting.stringValue)).resolvePath(project.projectName);
-				
 				newProjectWithExistingSourcePathSetting.project = project;
 				newProjectPathSetting.label = "Existing Project Directory";
 				checkIfProjectDirectory(project.folderLocation);
 			}
 			else
 			{
-				project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
 				newProjectPathSetting.label = "Parent Directory";
 				checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
 			}
@@ -467,7 +466,8 @@ package actionScripts.plugins.as3project
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
-			var targetFolder:FileLocation = project.folderLocation = _isProjectFromExistingSource ? project.folderLocation.resolvePath(project.name) : project.folderLocation;
+			//var targetFolder:FileLocation = project.folderLocation = _isProjectFromExistingSource ? project.folderLocation.resolvePath(project.name) : project.folderLocation;
+			var targetFolder:FileLocation = project.folderLocation;
 
 			//save  project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -503,7 +503,7 @@ package actionScripts.plugins.as3project
             }
 			
 			// don't save this if from a open project call
-			if (!isOpenProjectCall)
+			if (!isOpenProjectCall && !_isProjectFromExistingSource)
 			{
 				cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
 				cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
