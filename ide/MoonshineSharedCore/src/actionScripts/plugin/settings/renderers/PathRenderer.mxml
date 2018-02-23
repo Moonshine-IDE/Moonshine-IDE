@@ -94,7 +94,7 @@
 				if (lblCriticalMessage.visible) lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = false;
 				if (lblMessage.visible) lblMessage.text = _message = value;
 			}
-	
+			
 	        private function selectPath():void
 	        {
 	            // opens only if sdkpop not opens already
