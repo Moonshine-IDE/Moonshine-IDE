@@ -782,9 +782,10 @@ package actionScripts.plugins.as3project
 
 			var isRoyaleTemplates:Boolean = projectTemplateType.indexOf("Royale") != -1 ||
 					projectTemplateType.indexOf("FlexJS") != -1;
-
+			
             if (isOpenProjectCall || isRoyaleTemplates)
             {
+				setProjectType(projectTemplateType);
                 var projectsTemplates:ArrayCollection = isRoyaleTemplates ?
                         ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
                         allProjectTemplates;
