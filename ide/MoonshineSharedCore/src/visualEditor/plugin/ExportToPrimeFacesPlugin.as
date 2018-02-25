@@ -21,6 +21,7 @@ package visualEditor.plugin
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
@@ -41,6 +42,7 @@ package visualEditor.plugin
         private var newProjectPathSetting:PathSetting;
 
         private var _currentProject:AS3ProjectVO;
+        private var _exportedProject:AS3ProjectVO;
 
         public function ExportToPrimeFacesPlugin()
         {
@@ -76,23 +78,24 @@ package visualEditor.plugin
                 return;
             }
 
+            _exportedProject = _currentProject.clone() as AS3ProjectVO;
+            _exportedProject.projectName = _exportedProject.projectName + "_exported";
+
             var settingsView:SettingsView = new SettingsView();
-            settingsView.exportProject = _currentProject;
+            settingsView.exportProject = _exportedProject;
             settingsView.Width = 150;
             settingsView.defaultSaveLabel = "Export";
             settingsView.isNewProjectSettings = true;
 
             settingsView.addCategory("");
-            // Remove spaces from project name
-            _currentProject.projectName = _currentProject.projectName.replace(/ /g, "");
 
-            var settings:SettingsWrapper = getProjectSettings(_currentProject);
+            var settings:SettingsWrapper = getProjectSettings(_exportedProject);
             settingsView.addEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
             settingsView.addEventListener(SettingsView.EVENT_CLOSE, onProjectCreateClose);
             settingsView.addSetting(settings, "");
 
             settingsView.label = "New Project";
-            settingsView.associatedData = _currentProject;
+            settingsView.associatedData = _exportedProject;
 
             dispatcher.dispatchEvent(new AddTabEvent(settingsView));
         }
@@ -112,7 +115,7 @@ package visualEditor.plugin
 
         private function onProjectNameChanged(event:Event):void
         {
-            var newProjectLocation:FileLocation = _currentProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
+            var newProjectLocation:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
             if (canSaveProject(newProjectLocation))
             {
                 newProjectPathSetting.setCriticalMessage("(Project can not be created in an existing project directory)\n"+ newProjectLocation.fileBridge.nativePath);
@@ -125,16 +128,21 @@ package visualEditor.plugin
 
         private function onProjectPathChanged(event:Event):void
         {
-            _currentProject.projectFolder = null;
-            _currentProject.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
+            _exportedProject.projectFolder = null;
+            _exportedProject.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
         }
 
         private function onProjectCreateExecute(event:Event):void
         {
-            var newProjectLocation:FileLocation = _currentProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
-            if (!canSaveProject(newProjectLocation)) return;
+            var destination:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
 
-            var settings:SettingsView = event.target as SettingsView;
+            var settingsView:SettingsView = event.target as SettingsView;
+
+            destination.fileBridge.createDirectory();
+            _currentProject.sourceFolder.fileBridge.copyTo(destination.resolvePath("src"));
+
+            copyPrimeFacesPom(destination);
+            copyPrimeFacesWebFile(destination);
 
             success("PrimeFaces project " + newProjectNameSetting.name + " has been successfully saved.");
 
@@ -173,6 +181,52 @@ package visualEditor.plugin
             }
 
             return false;
+        }
+
+        private function copyPrimeFacesPom(destination:FileLocation):void
+        {
+            var currentFolder:FileLocation = _currentProject.folderLocation;
+            var pomForCopy:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
+
+            var pom:XML = XML(pomForCopy.fileBridge.read());
+
+            var qName:QName = new QName("http://maven.apache.org/POM/4.0.0", "artifactId");
+            pom.replace(qName, <artifactId>{newProjectNameSetting.name}</artifactId>);
+
+            qName = new QName("http://maven.apache.org/POM/4.0.0", "name");
+            pom.replace(qName, <name>{newProjectNameSetting.name}</name>);
+
+            XML.ignoreWhitespace = true;
+            XML.ignoreComments = true;
+            
+            pomForCopy = destination.fileBridge.resolvePath("pom.xml");
+            pomForCopy.fileBridge.save(pom.toXMLString());
+        }
+
+        private function copyPrimeFacesWebFile(destination:FileLocation):void
+        {
+            var currentFolder:FileLocation = _currentProject.folderLocation;
+            var webPath:String = "src/main/webapp/WEB-INF/web.xml";
+            var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
+            var web:XML = XML(webForCopy.fileBridge.read());
+            XML.ignoreWhitespace = true;
+            XML.ignoreComments = true;
+
+            var ns:Namespace=new Namespace("http://xmlns.jcp.org/xml/ns/javaee");
+            var webChildren:XMLList = web.ns::["welcome-file-list"];
+
+            for each (var item:XML in webChildren)
+            {
+                var welcomeFiles:XMLList = item.ns::["welcome-file"];
+                if (welcomeFiles)
+                {
+                    welcomeFiles[0] = newProjectNameSetting.name;
+                    break;
+                }
+            }
+
+            var webFile:FileLocation = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
+            webFile.fileBridge.save(web.toXMLString());
         }
     }
 }

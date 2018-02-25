@@ -35,7 +35,8 @@ package actionScripts.plugin.settings.vo
 		private var rdr:PathRenderer;
 
 		private var _isEditable:Boolean = true;
-		
+		private var _path:String;
+
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
 		{
 			super();
@@ -45,9 +46,15 @@ package actionScripts.plugin.settings.vo
 			this.directory = directory;
 			this.isSDKPath = isSDKPath;
 			this.isDropDown = isDropDown;
+			this._path = path;
 			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
-		
+
+		public function get path():String
+		{
+			return _path;
+		}
+
 		public function setCriticalMessage(value:String):void
 		{
 			if (rdr) rdr.criticalMessage = value;

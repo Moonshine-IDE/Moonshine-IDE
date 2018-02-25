@@ -50,6 +50,8 @@
   </compileTargets>
   <hiddenPaths>
     <hidden path="visualeditor-src" />
+	<hidden path="src/main" />
+	<hidden path="pom.xml" />
   </hiddenPaths>
   <preBuildCommand/>
   <postBuildCommand alwaysRun="False"/>

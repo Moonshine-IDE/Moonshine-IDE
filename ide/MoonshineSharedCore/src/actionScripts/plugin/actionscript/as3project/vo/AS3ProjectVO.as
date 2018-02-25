@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.ICloneable;
+
     import flash.events.Event;
     import flash.events.MouseEvent;
-    
+
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
     
@@ -47,7 +50,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectVO;
 	
-	public class AS3ProjectVO extends ProjectVO
+	public class AS3ProjectVO extends ProjectVO implements ICloneable
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
@@ -529,5 +532,110 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			return nativeExtensionSettings;
         }
+
+		public function clone():Object
+		{
+			var as3Project:AS3ProjectVO = new AS3ProjectVO(this.folderLocation, this.projectName, true);
+
+            as3Project.fromTemplate = this.fromTemplate;
+            as3Project.sourceFolder = new FileLocation(this.sourceFolder.fileBridge.nativePath);
+
+			if (this.visualEditorSourceFolder)
+            {
+                as3Project.visualEditorSourceFolder = new FileLocation(this.visualEditorSourceFolder.fileBridge.nativePath);
+            }
+
+            as3Project.swfOutput = this.swfOutput;
+            as3Project.buildOptions = this.buildOptions;
+
+			if (this.htmlPath)
+            {
+                as3Project.htmlPath = new FileLocation(this.htmlPath.fileBridge.nativePath);
+            }
+
+            as3Project.classpaths = this.classpaths.slice(0, this.classpaths.length);
+            as3Project.resourcePaths = this.resourcePaths.slice(0, this.resourcePaths.length);
+            as3Project.includeLibraries = this.includeLibraries.slice(0, this.includeLibraries.length);
+            as3Project.libraries = this.libraries.slice(0, this.libraries.length);
+            as3Project.externalLibraries = this.externalLibraries.slice(0, this.externalLibraries.length);
+            as3Project.nativeExtensions = this.nativeExtensions.slice(0, this.nativeExtensions.length);
+            as3Project.runtimeSharedLibraries = this.runtimeSharedLibraries.splice(0, this.runtimeSharedLibraries.length);
+            as3Project.intrinsicLibraries = this.intrinsicLibraries.slice(0, this.intrinsicLibraries.length);
+            as3Project.assetLibrary = this.assetLibrary.copy();
+            as3Project.targets = this.targets.slice(0, this.targets.length);
+            as3Project.hiddenPaths = this.hiddenPaths.slice(0, this.hiddenPaths.length);
+
+			if (this.projectWithExistingSourcePaths)
+            {
+                as3Project.projectWithExistingSourcePaths = this.projectWithExistingSourcePaths.slice(0, this.projectWithExistingSourcePaths.length);
+            }
+
+			as3Project.showHiddenPaths = this.showHiddenPaths;
+
+            as3Project.prebuildCommands = this.prebuildCommands;
+            as3Project.postbuildCommands = this.postbuildCommands;
+            as3Project.postbuildAlways = this.postbuildAlways;
+            as3Project.isFlexJS = this.isFlexJS;
+            as3Project.isMDLFlexJS = this.isMDLFlexJS;
+            as3Project.isRoyale = this.isRoyale;
+
+            as3Project.testMovie = this.testMovie;
+            as3Project.testMovieCommand = this.testMovieCommand;
+            as3Project.defaultBuildTargets = this.defaultBuildTargets;
+
+            as3Project.config = new MXMLCConfigVO(new FileLocation(this.config.file.fileBridge.nativePath));
+
+            as3Project.flashBuilderProperties = this.flashBuilderProperties ? this.flashBuilderProperties.copy() : null;
+            as3Project.flashDevelopObjConfig = this.flashDevelopObjConfig ? this.flashDevelopObjConfig.copy() : null;
+            as3Project.isFlashBuilderProject = this.isFlashBuilderProject;
+            as3Project.flashBuilderDOCUMENTSPath = this.flashBuilderDOCUMENTSPath;
+
+            as3Project.isMobile = this.isMobile;
+            as3Project.isProjectFromExistingSource = this.isProjectFromExistingSource;
+            as3Project.isVisualEditorProject = this.isVisualEditorProject;
+            as3Project.isLibraryProject = this.isLibraryProject;
+            as3Project.isActionScriptOnly = this.isActionScriptOnly;
+            as3Project.isPrimeFacesVisualEditorProject = this.isPrimeFacesVisualEditorProject;
+
+			as3Project.additional = this.additional;
+
+			if (this.htmlFilePath)
+            {
+                as3Project.htmlFilePath = new PathSetting(this.htmlFilePath.provider,
+                        this.htmlFilePath.name, this.htmlFilePath.label,
+                        this.htmlFilePath.directory, this.htmlFilePath.path);
+            }
+
+			if (this.outputPathSetting)
+            {
+                as3Project.outputPathSetting = new PathSetting(this.outputPathSetting.provider,
+                        this.outputPathSetting.name, this.outputPathSetting.label,
+                        this.outputPathSetting.directory, this.outputPathSetting.path);
+            }
+
+			if (this.nativeExtensionPath)
+            {
+                as3Project.nativeExtensionPath = new PathListSetting(this.nativeExtensionPath.provider,
+                        this.nativeExtensionPath.name, this.nativeExtensionPath.label, this.nativeExtensionPath.relativeRoot,
+                        this.nativeExtensionPath.allowFiles, this.nativeExtensionPath.allowFolders, this.nativeExtensionPath.fileMustExist,
+                        this.nativeExtensionPath.displaySourceFolder);
+            }
+
+			if (this.mobileRunSettings)
+            {
+                as3Project.mobileRunSettings = new RunMobileSetting(this.mobileRunSettings.provider,
+                        this.mobileRunSettings.label, new FileLocation(this.mobileRunSettings.relativeRoot.fileBridge.nativePath));
+                as3Project.mobileRunSettings.project = as3Project;
+            }
+
+			if (this.targetPlatformSettings)
+            {
+                as3Project.targetPlatformSettings = new ListSetting(this.targetPlatformSettings.provider,
+                        this.targetPlatformSettings.name, this.targetPlatformSettings.label,
+                        this.targetPlatformSettings.dataProvider, this.targetPlatformSettings.labelField);
+            }
+
+			return as3Project;
+		}
 	}
 }
