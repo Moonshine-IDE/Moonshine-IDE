@@ -92,7 +92,6 @@ package actionScripts.plugin.settings.vo
 			if (rdr) 
 			{
 				rdr.enabled = _isEditable;
-				//rdr.filters = _isEditable ? [] : [myBlurFilter];
 			}
 		}
 		public function get isEditable():Boolean

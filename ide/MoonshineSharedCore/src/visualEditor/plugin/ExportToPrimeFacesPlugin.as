@@ -141,14 +141,46 @@ package visualEditor.plugin
             var destination:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
 
             destination.fileBridge.createDirectory();
-            _currentProject.sourceFolder.fileBridge.copyTo(destination.resolvePath("src"));
 
             copyPrimeFacesPom(destination);
             copyPrimeFacesWebFile(destination);
+            copySources(destination);
 
             success("PrimeFaces project " + newProjectNameSetting.name + " has been successfully saved.");
 
             onProjectCreateClose(event);
+        }
+
+        private function copySources(destination:FileLocation):void
+        {
+            var includesFolder:FileLocation = destination.resolvePath("src/main/webapp/WEB-INF/includes");
+            if (!includesFolder.fileBridge.exists)
+            {
+                includesFolder.fileBridge.createDirectory();
+            }
+
+            var destinationSource:FileLocation = destination.fileBridge.resolvePath("src");
+            var sources:FileLocation = _currentProject.sourceFolder;
+            var dirsToCopy:Array = sources.fileBridge.getDirectoryListing();
+            var mainApplicationFile:FileLocation = _currentProject.targets[0];
+            var mainFolder:FileLocation = sources.fileBridge.resolvePath("main");
+
+            for each (var item:Object in dirsToCopy)
+            {
+                if (item.nativePath == mainFolder.fileBridge.nativePath)
+                {
+                    continue;
+                }
+
+                if (item.nativePath == mainApplicationFile.fileBridge.nativePath)
+                {
+                    mainApplicationFile.fileBridge.copyTo(destinationSource.resolvePath(mainApplicationFile.name));
+                }
+                else
+                {
+                    item.copyTo(includesFolder.resolvePath(item.name).fileBridge.getFile);
+                }
+            }
         }
 
         private function onProjectCreateClose(event:Event):void
@@ -190,6 +222,9 @@ package visualEditor.plugin
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var pomForCopy:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
 
+            XML.ignoreWhitespace = true;
+            XML.ignoreComments = true;
+
             var pom:XML = XML(pomForCopy.fileBridge.read());
 
             var qName:QName = new QName("http://maven.apache.org/POM/4.0.0", "artifactId");
@@ -198,9 +233,6 @@ package visualEditor.plugin
             qName = new QName("http://maven.apache.org/POM/4.0.0", "name");
             pom.replace(qName, <name>{_exportedProject.projectName}</name>);
 
-            XML.ignoreWhitespace = true;
-            XML.ignoreComments = true;
-            
             pomForCopy = destination.fileBridge.resolvePath("pom.xml");
             pomForCopy.fileBridge.save(pom.toXMLString());
         }
