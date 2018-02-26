@@ -115,6 +115,7 @@ package visualEditor.plugin
 
         private function onProjectNameChanged(event:Event):void
         {
+            _exportedProject.projectName = newProjectNameSetting.stringValue;
             var newProjectLocation:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
             if (canSaveProject(newProjectLocation))
             {
@@ -136,8 +137,6 @@ package visualEditor.plugin
         private function onProjectCreateExecute(event:Event):void
         {
             var destination:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
-
-            var settingsView:SettingsView = event.target as SettingsView;
 
             destination.fileBridge.createDirectory();
             _currentProject.sourceFolder.fileBridge.copyTo(destination.resolvePath("src"));
@@ -192,10 +191,10 @@ package visualEditor.plugin
             var pom:XML = XML(pomForCopy.fileBridge.read());
 
             var qName:QName = new QName("http://maven.apache.org/POM/4.0.0", "artifactId");
-            pom.replace(qName, <artifactId>{newProjectNameSetting.name}</artifactId>);
+            pom.replace(qName, <artifactId>{_exportedProject.projectName}</artifactId>);
 
             qName = new QName("http://maven.apache.org/POM/4.0.0", "name");
-            pom.replace(qName, <name>{newProjectNameSetting.name}</name>);
+            pom.replace(qName, <name>{_exportedProject.projectName}</name>);
 
             XML.ignoreWhitespace = true;
             XML.ignoreComments = true;
@@ -221,7 +220,7 @@ package visualEditor.plugin
                 var welcomeFiles:XMLList = item.ns::["welcome-file"];
                 if (welcomeFiles)
                 {
-                    welcomeFiles[0] = newProjectNameSetting.name;
+                    welcomeFiles[0] = _exportedProject.projectName + ".xhtml";
                     break;
                 }
             }
