@@ -26,6 +26,9 @@ package actionScripts.plugin.settings.vo
 	public class PathSetting extends AbstractSetting
 	{
 		public static const PATH_SELECTED:String = "pathSelected";
+		public static const MESSAGE_CRITICAL:String = "MESSAGE_CRITICAL";
+		public static const MESSAGE_IMPORTANT:String = "MESSAGE_IMPORTANT";
+		public static const MESSAGE_NORMAL:String = "MESSAGE_NORMAL";
 		
 		[Bindable]
 		public var directory:Boolean;
@@ -48,14 +51,9 @@ package actionScripts.plugin.settings.vo
 			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
 		
-		public function setCriticalMessage(value:String):void
+		public function setMessage(value:String, type:String=MESSAGE_NORMAL):void
 		{
-			if (rdr) rdr.criticalMessage = value;
-		}
-		
-		public function setMessage(value:String):void
-		{
-			if (rdr) rdr.message = value;
+			if (rdr) rdr.setMessage(value, type);
 		}
 		
 		override public function get renderer():IVisualElement

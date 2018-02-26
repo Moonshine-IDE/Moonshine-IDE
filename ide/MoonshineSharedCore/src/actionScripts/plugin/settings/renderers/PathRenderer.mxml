@@ -54,8 +54,8 @@
 	        import actionScripts.ui.tabview.CloseTabEvent;
 	        import actionScripts.utils.SDKUtils;
 	        import actionScripts.utils.UtilsCore;
+	        import actionScripts.valueObjects.ConstantsCoreVO;
 	        import actionScripts.valueObjects.ProjectReferenceVO;
-			import actionScripts.valueObjects.ConstantsCoreVO;
 	        
 	        import components.popup.SDKDefinePopup;
 	        import components.popup.SDKSelectorPopup;
@@ -77,22 +77,22 @@
 	        private var sdkPathPopup:SDKDefinePopup;
 	        private var pathMenu:ScrollableMenu = new ScrollableMenu();
 				
-			private var _criticalMessage:String;
-			public function get criticalMessage():String {	return _criticalMessage;	}
-			public function set criticalMessage(value:String):void
+			public function setMessage(value:String, type:String):void
 			{
-				lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = value && value != "";
-				if (lblMessage.visible) lblMessage.visible = lblMessage.includeInLayout = false;
-				if (lblCriticalMessage.visible) lblCriticalMessage.text = _criticalMessage = value;
-			}
-			
-			private var _message:String;
-			public function get message():String {	return _message;	}
-			public function set message(value:String):void
-			{
-				lblMessage.visible = lblMessage.includeInLayout = value && value != "";
-				if (lblCriticalMessage.visible) lblCriticalMessage.visible = lblCriticalMessage.includeInLayout = false;
-				if (lblMessage.visible) lblMessage.text = _message = value;
+				switch(type)
+				{
+					case PathSetting.MESSAGE_CRITICAL:
+						lblMessage.setStyle("color", 0xff0000);
+						break;
+					case PathSetting.MESSAGE_IMPORTANT:
+						lblMessage.setStyle("color", 0x0099ff);
+						break;
+					default:
+						lblMessage.setStyle("color", 0x666666);
+						break;
+				}
+				
+				lblMessage.text = value;
 			}
 			
 	        private function selectPath():void
@@ -387,12 +387,9 @@
 	<s:ComboBox  width="100%" dataProvider="{historyPaths}" id="cmbPath" visible="{isDropDown}" 
 				 alternatingItemColors="[#FFFFFF, #FFFFFF]"  selectionColor="#cccccc" rollOverColor="#eeeeee"
 				 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
-	<s:Label id="lblCriticalMessage" 
-			 styleName="uiTextSettingsLabel" color="#ff0000" width="100%" maxDisplayedLines="3"
-			 includeInLayout="false" visible="false" fontSize="12"/>
 	<s:Label id="lblMessage" 
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
-			 includeInLayout="false" visible="false" fontSize="12"/>
+			 fontSize="12"/>
 	<!--<mx:Button width="23" height="24" upSkin="@Embed('/elements/images/btnDropDown_UP.png')" overSkin="@Embed('/elements/images/btnDropDown_UP.png')"
 			   downSkin="@Embed('/elements/images/btnDropDown_DOWN.png')"  focusAlpha="0" 
 			   click="onPathDropdown()" id="btn_ProjectPath" visible="{isDropDown}" includeInLayout="{isDropDown}" />-->

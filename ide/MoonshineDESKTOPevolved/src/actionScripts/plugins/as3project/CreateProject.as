@@ -29,6 +29,7 @@ package actionScripts.plugins.as3project
     import mx.controls.Alert;
     
     import actionScripts.events.AddTabEvent;
+    import actionScripts.events.GeneralEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.events.OpenFileEvent;
@@ -76,6 +77,7 @@ package actionScripts.plugins.as3project
 		private var templateLookup:Object = {};
 		private var project:AS3ProjectVO;
 		private var model:IDEModel = IDEModel.getInstance();
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
@@ -142,6 +144,14 @@ package actionScripts.plugins.as3project
 			_isProjectFromExistingSource = project.isProjectFromExistingSource = value;
 			onProjectPathChanged(null, false);
 			newProjectWithExistingSourcePathSetting.visible = _isProjectFromExistingSource;
+			
+			// lets scroll-up the project creation dialog
+			// so user can see changed project path clearly - if
+			// s/he is working in a shorter frame where project path
+			// may cut-off in displaying frame
+			dispatcher.dispatchEvent(
+				new GeneralEvent(GeneralEvent.SCROLL_TO_TOP)
+			);
 		}
 		
 		public function set projectTemplateType(value:String):void
@@ -293,7 +303,7 @@ package actionScripts.plugins.as3project
 			settingsView.label = "New Project";
 			settingsView.associatedData = project;
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			dispatcher.dispatchEvent(
 				new AddTabEvent(settingsView)
 			);
 			
@@ -338,7 +348,7 @@ package actionScripts.plugins.as3project
 			settingsView.label = "New Project";
 			settingsView.associatedData = project;
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			dispatcher.dispatchEvent(
 				new AddTabEvent(settingsView)
 			);
 			
@@ -404,8 +414,8 @@ package actionScripts.plugins.as3project
 			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && !isProjectFromExistingSource && value.fileBridge.exists) tmpFile = value;
 			
-			if (tmpFile) newProjectPathSetting.setCriticalMessage("Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath);
-			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath);
+			if (tmpFile) newProjectPathSetting.setMessage("Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_CRITICAL);
+			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_IMPORTANT);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
 			isInvalidToSave = tmpFile ? true : false;
@@ -454,7 +464,7 @@ package actionScripts.plugins.as3project
 			
 			delete templateLookup[settings.associatedData];
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			dispatcher.dispatchEvent(
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject)
 			);
 		}
@@ -522,20 +532,20 @@ package actionScripts.plugins.as3project
 			createClose(event);
 			
 			// Open main file for editing
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			dispatcher.dispatchEvent(
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
 			if (!isCustomTemplateProject && !isLibraryProject)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent( 
+				dispatcher.dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
 				);
 			}
 
 			if (view.exportProject)
 			{
-                GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(project.folderLocation));
+                dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
 			
 			// close the Settings tab
