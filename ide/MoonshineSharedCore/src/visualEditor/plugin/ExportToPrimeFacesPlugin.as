@@ -97,6 +97,8 @@ package visualEditor.plugin
             settingsView.label = "New Project";
             settingsView.associatedData = _exportedProject;
 
+            newProjectPathSetting.setMessage(_exportedProject.folderLocation.resolvePath(_exportedProject.projectName).fileBridge.nativePath);
+
             dispatcher.dispatchEvent(new AddTabEvent(settingsView));
         }
 

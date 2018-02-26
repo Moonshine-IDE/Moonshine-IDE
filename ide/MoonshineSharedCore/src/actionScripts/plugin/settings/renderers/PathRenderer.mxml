@@ -50,7 +50,6 @@
 	        import actionScripts.locator.IDEModel;
 	        import actionScripts.plugin.settings.vo.PathSetting;
 	        import actionScripts.ui.IContentWindow;
-	        import actionScripts.ui.ScrollableMenu;
 	        import actionScripts.ui.tabview.CloseTabEvent;
 	        import actionScripts.utils.SDKUtils;
 	        import actionScripts.utils.UtilsCore;
@@ -75,10 +74,20 @@
 	        private var file:FileLocation;
 	        private var sdkPopup:SDKSelectorPopup;
 	        private var sdkPathPopup:SDKDefinePopup;
-	        private var pathMenu:ScrollableMenu = new ScrollableMenu();
-				
+
+			private var message:String;
+			private var messageType:String;
+
 			public function setMessage(value:String, type:String):void
 			{
+				this.message = value;
+				this.messageType = type;
+
+				if (!lblMessage)
+				{
+					return;
+				}
+
 				switch(type)
 				{
 					case PathSetting.MESSAGE_CRITICAL:
@@ -226,6 +235,8 @@
 	            }
 				
 				setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
+
+				setMessage(this.message, this.messageType);
 	        }
 	
 	        private function hideDefineSDKLink(withSDKName:String):void

@@ -40,6 +40,9 @@ package actionScripts.plugin.settings.vo
 		private var _isEditable:Boolean = true;
 		private var _path:String;
 
+		private var message:String;
+		private var messageType:String;
+
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
 		{
 			super();
@@ -60,7 +63,15 @@ package actionScripts.plugin.settings.vo
 
 		public function setMessage(value:String, type:String=MESSAGE_NORMAL):void
 		{
-			if (rdr) rdr.setMessage(value, type);
+			if (rdr)
+			{
+				rdr.setMessage(value, type);
+            }
+			else
+			{
+				message = value;
+				messageType = value;
+			}
 		}
 		
 		override public function get renderer():IVisualElement
@@ -70,6 +81,8 @@ package actionScripts.plugin.settings.vo
 			rdr.isSDKPath = isSDKPath;
 			rdr.isDropDown = isDropDown;
 			rdr.enabled = _isEditable;
+			rdr.setMessage(message, messageType);
+
 			return rdr;
 		}
 		
