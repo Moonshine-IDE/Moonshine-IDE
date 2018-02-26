@@ -118,7 +118,8 @@ package visualEditor.plugin
             var newProjectLocation:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
             if (canSaveProject(newProjectLocation))
             {
-                newProjectPathSetting.setCriticalMessage("(Project can not be created in an existing project directory)\n"+ newProjectLocation.fileBridge.nativePath);
+                newProjectPathSetting.setMessage("(Project can not be created in an existing project directory)\n"+ newProjectLocation.fileBridge.nativePath,
+                                                PathSetting.MESSAGE_CRITICAL);
             }
             else
             {
