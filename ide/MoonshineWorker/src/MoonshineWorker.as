@@ -310,15 +310,14 @@ package
 				foundCountInFile++;
 			}
 			
-			content = null;
-			lines = null;
-			if (foundMatches.length > 0)
+			if (foundMatches.length > 0 && replace)
 			{
-				if (replace) replaceAndSaveFile();
-				return {foundMatches:foundMatches, foundCountInFile:foundCountInFile};
+				replaceAndSaveFile();
 			}
 			
-			return null;
+			lines = null;
+			content = null;
+			return ((foundMatches.length > 0) ? {foundMatches:foundMatches, foundCountInFile:foundCountInFile} : null);
 			
 			/*
 			 * @local
