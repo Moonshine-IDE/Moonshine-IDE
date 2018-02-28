@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Group
+<s:VGroup
 				xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				xmlns:s="library://ns.adobe.com/flex/spark" 
 				xmlns:mx="library://ns.adobe.com/flex/mx"
 				xmlns:components="awaybuilder.view.components.*"
 				minWidth="1024" minHeight="720" 
 				preinitialize="preinitializeHandler(event)" xmlns:desktop="awaybuilder.desktop.*"
-				>
-	<mx:Menu>
+				gap="0">
+	<!--<mx:Menu>
 		<mx:FlexNativeMenu id="menu" dataProvider="{menuProvider}" keyEquivalentModifiersFunction="keyEquivalentModifiers"/>
-	</mx:Menu>
+	</mx:Menu>-->
 	
 	<fx:Declarations>
 		<fx:Array id="menuProvider">
@@ -81,6 +81,9 @@
 		
 	</fx:Declarations>
 	
+	<mx:MenuBar id="menu" 
+				labelField="label" dataProvider="{menuProvider}"
+				width="100%"/>
 	<components:CoreEditor id="coreEditor" width="100%" height="100%"/>
 	
 	<fx:Script><![CDATA[
@@ -198,4 +201,4 @@
 
 	]]></fx:Script>
 	
-</s:Group>
+</s:VGroup>

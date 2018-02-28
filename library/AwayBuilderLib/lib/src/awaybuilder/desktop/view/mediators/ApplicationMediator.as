@@ -1,6 +1,24 @@
 package awaybuilder.desktop.view.mediators
 {
 
+	import flash.display.NativeMenuItem;
+	import flash.events.Event;
+	import flash.events.FocusEvent;
+	import flash.events.InvokeEvent;
+	import flash.events.KeyboardEvent;
+	import flash.filesystem.File;
+	import flash.system.Capabilities;
+	import flash.ui.Keyboard;
+	import flash.utils.Dictionary;
+	
+	import mx.controls.menuClasses.MenuBarItem;
+	import mx.core.DragSource;
+	import mx.core.IIMESupport;
+	import mx.events.DragEvent;
+	import mx.events.MenuEvent;
+	import mx.managers.DragManager;
+	import mx.managers.IFocusManagerComponent;
+	
 	import awaybuilder.controller.clipboard.events.ClipboardEvent;
 	import awaybuilder.controller.events.DocumentEvent;
 	import awaybuilder.controller.events.DocumentModelEvent;
@@ -17,23 +35,6 @@ package awaybuilder.desktop.view.mediators
 	import awaybuilder.model.vo.scene.ObjectVO;
 	import awaybuilder.utils.enumerators.EMenuItem;
 	import awaybuilder.view.mediators.BaseApplicationMediator;
-	
-	import flash.display.NativeMenuItem;
-	import flash.events.Event;
-	import flash.events.FocusEvent;
-	import flash.events.InvokeEvent;
-	import flash.events.KeyboardEvent;
-	import flash.filesystem.File;
-	import flash.system.Capabilities;
-	import flash.ui.Keyboard;
-	import flash.utils.Dictionary;
-	
-	import mx.core.DragSource;
-	import mx.core.IIMESupport;
-	import mx.events.DragEvent;
-	import mx.events.FlexNativeMenuEvent;
-	import mx.managers.DragManager;
-	import mx.managers.IFocusManagerComponent;
 
 	public class ApplicationMediator extends BaseApplicationMediator
 	{
@@ -56,7 +57,7 @@ package awaybuilder.desktop.view.mediators
 		{	
 			_menuCache = new Dictionary();
 			
-			app.menu.addEventListener(FlexNativeMenuEvent.ITEM_CLICK, menu_itemClickHandler );
+			app.menu.addEventListener(MenuEvent.ITEM_CLICK, menu_itemClickHandler );
 			this.updatePageTitle();
 			
 			addContextListener( DocumentModelEvent.DOCUMENT_NAME_CHANGED, eventDispatcher_documentNameChangedHandler);
@@ -99,17 +100,17 @@ package awaybuilder.desktop.view.mediators
 			_isWin = (Capabilities.os.indexOf("Windows") >= 0); 
 			_isMac = (Capabilities.os.indexOf("Mac OS") >= 0); 
 			
-			if( _isMac )
+			/*if( _isMac )
 			{
 				getItemByValue( EMenuItem.EXIT ).keyEquivalent = "q";
 				getItemByValue( EMenuItem.EXIT ).keyEquivalentModifiers = [Keyboard.COMMAND];
-			}
+			}*/
 		}
 
 		private function focusInHandler(event:FocusEvent):void
 		{
 			const focus:IFocusManagerComponent = app.focusManager.getFocus();
-			if( focus is IIMESupport )
+			/*if( focus is IIMESupport )
 			{
 				getItemByValue( EMenuItem.CUT ).keyEquivalentModifiers = [Keyboard.ALTERNATE, app.getCommandKey()];
 				getItemByValue( EMenuItem.COPY ).keyEquivalentModifiers = [Keyboard.ALTERNATE, app.getCommandKey()];
@@ -120,23 +121,23 @@ package awaybuilder.desktop.view.mediators
 				getItemByValue( EMenuItem.CUT ).keyEquivalentModifiers = [app.getCommandKey()];
 				getItemByValue( EMenuItem.COPY ).keyEquivalentModifiers = [app.getCommandKey()];
 				getItemByValue( EMenuItem.PASTE ).keyEquivalentModifiers = [app.getCommandKey()];
-			}
+			}*/
 		}
 		
-		private function getItemByValue( value:String ):NativeMenuItem
+		private function getItemByValue( value:String ):MenuBarItem
 		{
 			if( _menuCache[value] ) return _menuCache[value];
-			_menuCache[value] = findItem( value, app.menu.nativeMenu.items );
+			_menuCache[value] = findItem( value, app.menu.menuBarItems );
 			return _menuCache[value];
 		}
-		private function findItem( value:String, items:Array ):NativeMenuItem
+		private function findItem( value:String, items:Array ):MenuBarItem
 		{
-			for each( var item:NativeMenuItem in items )
+			for each( var item:MenuBarItem in items )
 			{
-				if( item.data && item.data.value == value ) return item;
-				if( item.submenu )
+				if( item.data && item.data.label == value ) return item;
+				if( item.menuBar.menuBarItems )
 				{
-					var nativeMenuItem:NativeMenuItem = findItem( value, item.submenu.items );
+					var nativeMenuItem:MenuBarItem = findItem( value, item.menuBar.menuBarItems );
 					if( nativeMenuItem ) return nativeMenuItem;
 				}
 			}
@@ -218,35 +219,35 @@ package awaybuilder.desktop.view.mediators
 		
 		private function eventDispatcher_switchToFreeCameraHandler(event:SceneEvent):void
 		{
-			getItemByValue( EMenuItem.TARGET_CAMERA ).checked = false;
-			getItemByValue( EMenuItem.FREE_CAMERA ).checked = true;
+			/*getItemByValue( EMenuItem.TARGET_CAMERA ).checked = false;
+			getItemByValue( EMenuItem.FREE_CAMERA ).checked = true;*/
 		}
 		
 		private function eventDispatcher_switchToTargetCameraHandler(event:SceneEvent):void
 		{
-			getItemByValue( EMenuItem.TARGET_CAMERA ).checked = false;
-			getItemByValue( EMenuItem.FREE_CAMERA ).checked = true;
+			/*getItemByValue( EMenuItem.TARGET_CAMERA ).checked = false;
+			getItemByValue( EMenuItem.FREE_CAMERA ).checked = true;*/
 		}
 		
 		private function eventDispatcher_switchTranslateHandler(event:SceneEvent):void
 		{
-			getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = true;
+			/*getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = true;
 			getItemByValue( EMenuItem.ROTATE_MODE ).checked = false;
-			getItemByValue( EMenuItem.SCALE_MODE ).checked = false;
+			getItemByValue( EMenuItem.SCALE_MODE ).checked = false;*/
 		}
 		
 		private function eventDispatcher_switchRotateHandler(event:SceneEvent):void
 		{
-			getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = false;
+			/*getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = false;
 			getItemByValue( EMenuItem.ROTATE_MODE ).checked = true;
-			getItemByValue( EMenuItem.SCALE_MODE ).checked = false;
+			getItemByValue( EMenuItem.SCALE_MODE ).checked = false;*/
 		}
 		
 		private function eventDispatcher_switchScaleCameraHandler(event:SceneEvent):void
 		{
-			getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = false;
+			/*getItemByValue( EMenuItem.TRANSLATE_MODE ).checked = false;
 			getItemByValue( EMenuItem.ROTATE_MODE ).checked = false;
-			getItemByValue( EMenuItem.SCALE_MODE ).checked = true;
+			getItemByValue( EMenuItem.SCALE_MODE ).checked = true;*/
 		}
 		
 		private function context_copyHandler(event:ClipboardEvent):void
@@ -291,7 +292,7 @@ package awaybuilder.desktop.view.mediators
 			}
 		}
 		
-		private function menu_itemClickHandler(event:FlexNativeMenuEvent):void
+		private function menu_itemClickHandler(event:MenuEvent):void
 		{	
 			onItemSelect( event.item.value );
 		}
