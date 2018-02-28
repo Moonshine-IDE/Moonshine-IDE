@@ -21,7 +21,6 @@ package visualEditor.plugin
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
@@ -159,6 +158,7 @@ package visualEditor.plugin
                 includesFolder.fileBridge.createDirectory();
             }
 
+            var webappFolder:FileLocation = destination.resolvePath("src/main/webapp");
             var destinationSource:FileLocation = destination.fileBridge.resolvePath("src");
             var sources:FileLocation = _currentProject.sourceFolder;
             var dirsToCopy:Array = sources.fileBridge.getDirectoryListing();
@@ -174,7 +174,7 @@ package visualEditor.plugin
 
                 if (item.nativePath == mainApplicationFile.fileBridge.nativePath)
                 {
-                    mainApplicationFile.fileBridge.copyTo(destinationSource.resolvePath(mainApplicationFile.name));
+                    mainApplicationFile.fileBridge.copyTo(webappFolder.resolvePath("index.xhtml"));
                 }
                 else
                 {
@@ -242,25 +242,9 @@ package visualEditor.plugin
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var webPath:String = "src/main/webapp/WEB-INF/web.xml";
             var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
-            var web:XML = XML(webForCopy.fileBridge.read());
-            XML.ignoreWhitespace = true;
-            XML.ignoreComments = true;
+            destination = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
 
-            var ns:Namespace=new Namespace("http://xmlns.jcp.org/xml/ns/javaee");
-            var webChildren:XMLList = web.ns::["welcome-file-list"];
-
-            for each (var item:XML in webChildren)
-            {
-                var welcomeFiles:XMLList = item.ns::["welcome-file"];
-                if (welcomeFiles)
-                {
-                    welcomeFiles[0] = _exportedProject.projectName + ".xhtml";
-                    break;
-                }
-            }
-
-            var webFile:FileLocation = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
-            webFile.fileBridge.save(web.toXMLString());
+            webForCopy.fileBridge.copyTo(destination);
         }
     }
 }

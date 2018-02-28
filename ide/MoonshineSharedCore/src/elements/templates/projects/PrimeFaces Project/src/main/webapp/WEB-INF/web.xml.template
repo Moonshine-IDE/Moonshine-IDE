@@ -3,7 +3,7 @@
 
     <!-- File(s) appended to a request for a URL that is not mapped to a web component -->
     <welcome-file-list>
-        <welcome-file>$ProjectName</welcome-file>
+        <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>
 
     <!-- Define the JSF servlet (manages the request processing life cycle for JavaServer Faces) -->
