@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="134" height="130"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   close="titlewindow1_closeHandler(event)"
+			   title="Stats"
+			   backgroundColor="0x000000">
+	<fx:Script>
+		<![CDATA[
+			import away3d.debug.AwayStats;
+			
+			import awaybuilder.utils.scene.Scene3DManager;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if( !stats )
+				{
+					stats = new AwayStats( Scene3DManager.view, false, false, 0, true, true );
+				}
+				stats.mouseEnabled = false;
+				stats.mouseChildren = false;
+				container.addChild( stats );
+				stats.x = 5;
+				stats.y = 4;
+			}
+			
+			private static var stats:AwayStats;
+			
+			private static var popup:StatsPopup;
+			public static function show():StatsPopup
+			{
+				if( !popup )
+				{
+					popup = PopUpManager.createPopUp( DisplayObject(FlexGlobals.topLevelApplication), StatsPopup, false ) as StatsPopup;
+				}
+				PopUpManager.centerPopUp( popup );
+				return popup;
+			}
+			
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				container.removeChild( stats );
+				PopUpManager.removePopUp( this );
+				popup = null;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:UIComponent width="100%" height="100%" id="container"/>
+</s:TitleWindow>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" autoDrawBackground="false" height="24">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:layout>
+		<s:HorizontalLayout paddingLeft="10" paddingRight="4" paddingTop="2" paddingBottom="2" verticalAlign="middle"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import awaybuilder.model.vo.scene.AssetVO;
+			
+			[Bindable]
+			private var _asset:AssetVO;
+			
+			override public function set data(value:Object):void 
+			{
+				super.data = value;
+				_asset = value as AssetVO;
+			}
+		]]>
+	</fx:Script>
+	<s:Rect height="{this.height}" width="{this.width}" y="1" includeIn="hovered,selected" alpha.hovered="0.3" includeInLayout="false">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x000000" alpha="0.7" ratio="0.2"/>
+				<s:GradientEntry color="0x000000" alpha="0.8" ratio="0.9"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<s:Label text="{_asset.name}" width="100%" maxDisplayedLines="1"/>
+</s:ItemRenderer>

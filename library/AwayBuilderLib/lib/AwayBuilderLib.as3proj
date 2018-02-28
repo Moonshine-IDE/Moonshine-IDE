@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <output>
+    <movie width="100"/>
+    <movie disabled="False"/>
+    <movie path="bin-debug/AwayBuilderLib.swf"/>
+    <movie platform="AIR"/>
+    <movie fps="24"/>
+    <movie version="22"/>
+    <movie height="100"/>
+    <movie background="#000000"/>
+    <movie input=""/>
+  </output>
+  &lt;!-- Other classes to be compiled into your SWF --&gt;
+  <classpaths>
+    <class path="../away3d-core-fp11-dev/src"/>
+    <class path="../awaybuilder-core/src"/>
+    <class path="src"/>
+  </classpaths>
+  <moonshineResourcePaths>
+    <class path="../awaybuilder-core/src/assets"/>
+  </moonshineResourcePaths>
+  <build>
+    <option antBuildPath=""/>
+    <option accessible="False"/>
+    <option warnings="True"/>
+    <option showBindingWarnings="True"/>
+    <option allowSourcePathOverlap="False"/>
+    <option verboseStackTraces="False"/>
+    <option showDeprecationWarnings="True"/>
+    <option benchmark="False"/>
+    <option linkReport=""/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+    <option es="False"/>
+    <option strict="True"/>
+    <option loadConfig=""/>
+    <option staticLinkRSL="False"/>
+    <option useNetwork="True"/>
+    <option locale=""/>
+    <option optimize="True"/>
+    <option compilerConstants=""/>
+    <option customSDK=""/>
+    <option useResourceBundleMetadata="True"/>
+    <option additional="+configname=air"/>
+    <option showActionScriptWarnings="True"/>
+  </build>
+  <includeLibraries></includeLibraries>
+  <libraryPaths>
+    <element path="../awaybuilder-core/libs/robotlegs-framework-v1.5.2.swc"/>
+    <element path="../awaybuilder-core/libs/as3corelib.swc"/>
+    <element path="../awaybuilder-core/libs/TweenMax 11.16.swc"/>
+  </libraryPaths>
+  <externalLibraryPaths></externalLibraryPaths>
+  <rslPaths></rslPaths>
+  <intrinsics></intrinsics>
+  <library></library>
+  <compileTargets>
+    <compile path="src/AwayBuilderApplication.mxml"/>
+  </compileTargets>
+  <hiddenPaths></hiddenPaths>
+  <preBuildCommand>null</preBuildCommand>
+  <postBuildCommand alwaysRun="False">null</postBuildCommand>
+  <options>
+    <option defaultBuildTargets=""/>
+    <option showHiddenPaths="False"/>
+    <option testMovie="AIR"/>
+    <option testMovieCommand=""/>
+  </options>
+  <moonshineRunCustomization>
+    <option deviceSimulator="null"/>
+    <option urlToLaunch=""/>
+    <option targetPlatform="1"/>
+    <option launchMethod="Simulator"/>
+    <option projectType="1"/>
+    <deviceSimulator>null</deviceSimulator>
+    <certAndroid>null</certAndroid>
+    <certIos>null</certIos>
+    <certIosProvisioning>null</certIosProvisioning>
+  </moonshineRunCustomization>
+</project>

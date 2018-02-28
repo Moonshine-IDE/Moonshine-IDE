@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" 
+					xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:editors="awaybuilder.view.components.editors.*" 
+					currentState="{_asset.type}"
+					>
+	<fx:Declarations>
+	</fx:Declarations>
+	<editors:states>
+		<s:State name="PerspectiveLens"/>
+		<s:State name="OrthographicLens"/>
+		<s:State name="OrthographicOffCenterLens"/>
+	</editors:states>
+	
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.LensVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		[Bindable] private var _asset:LensVO = new LensVO();
+		
+		[Bindable] private var _selectedDiffuseMethod:Object;
+		[Bindable] private var _selectedSpecularMethod:Object;
+		
+		override protected function validate():void
+		{
+			if( !(data is LensVO) ) return;
+			_asset.fillFromLens( data as LensVO );
+		}
+		
+		private function stepper_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.LENS_STEPPER_CHANGE, _asset, true));
+		}
+		private function value_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.LENS_CHANGE, _asset, true));
+		}
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="{_asset.type}" maxDisplayedLines="1" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Field of View" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="PerspectiveLens">
+			<controls:DragableNumericStepper value="@{_asset.value}" stepSize="0.1" snapInterval="0.01" minimum="0" maximum="170" width="42" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Projection Height" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="OrthographicLens">
+			<controls:DragableNumericStepper value="@{_asset.value}" stepSize="1" snapInterval="1" minimum="0" maximum="4096" width="42" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="X" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="OrthographicOffCenterLens">
+			<controls:DragableNumericStepper value="@{_asset.minX}" stepSize="1" snapInterval="1" minimum="-2048" maximum="2048" width="42" textAlign="right"
+											 change="stepper_changeHandler(event)" />
+			<s:Label text="-" fontWeight="bold" verticalAlign="middle" paddingLeft="2" paddingRight="2" height="100%"/>
+			<controls:DragableNumericStepper value="@{_asset.maxX}" stepSize="1" snapInterval="1" minimum="-2048" maximum="2048" width="42"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Y" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="OrthographicOffCenterLens">
+			<controls:DragableNumericStepper value="@{_asset.minY}" stepSize="1" snapInterval="1" minimum="-2048" maximum="2048" width="42" textAlign="right"
+											 change="stepper_changeHandler(event)" />
+			<s:Label text="-" fontWeight="bold" verticalAlign="middle" paddingLeft="2" paddingRight="2" height="100%"/>
+			<controls:DragableNumericStepper value="@{_asset.maxY}" stepSize="1" snapInterval="1" minimum="-2048" maximum="2048" width="42"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Near" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+			<controls:DragableNumericStepper value="@{_asset.near}" stepSize="1" snapInterval="1" minimum="0" width="42" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Far" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+			<controls:DragableNumericStepper value="@{_asset.far}" stepSize="1" snapInterval="1" minimum="0" width="42" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+	</s:Form>
+</editors:EditorBase>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>AwayBuilderLib</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.flexlibnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] away3d-core-fp11-dev-src</name>
+			<type>2</type>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/library/AwayBuilderLib/away3d-core-fp11-dev/src</location>
+		</link>
+		<link>
+			<name>[source path] awaybuilder-core-src</name>
+			<type>2</type>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/library/AwayBuilderLib/awaybuilder-core/src</location>
+		</link>
+		<link>
+			<name>bin-debug</name>
+			<type>2</type>
+			<location>/Users/santanu/Desktop/TestAwayBuilderLib/libs</location>
+		</link>
+	</linkedResources>
+</projectDescription>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="450" height="160" backgroundColor="0x292929" color="0xEEEEEE"
+		 title="Update" defaultButton="{okButton}"
+		 currentState="normal">
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="progress"/>
+	</s:states>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			public static function show():UpdatePopup
+			{
+				var popup:UpdatePopup = PopUpManager.createPopUp( FlexGlobals.topLevelApplication as DisplayObject, UpdatePopup, true ) as UpdatePopup;
+				PopUpManager.centerPopUp( popup );
+				return popup;
+			}
+			
+			
+			public function setProgress( loaded:Number, total:Number ):void
+			{
+				if( progressBar )
+				{
+					progressBar.setProgress( loaded, total );
+					progressBar.validateNow();
+				}
+			}
+				
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "progress";
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE, false, false, Alert.OK ) );
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				PopUpManager.removePopUp( this );
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE, false, false, Alert.CANCEL ) );
+				PopUpManager.removePopUp( this );
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup visible="true" horizontalAlign="center" includeIn="normal" height="100%" width="100%">
+		<s:Label text="A new version of Away Builder is available! Do you wish to install?" height="100%" verticalAlign="middle" fontSize="13"/>
+		<s:HGroup width="100%" horizontalAlign="center">
+			<s:Button label="Install" width="32%" click="button1_clickHandler(event)" height="24" id="okButton" color="0xFFFFFF"/>
+			<s:Button label="Remind me later" width="32%" click="button2_clickHandler(event)" height="24"/>
+		</s:HGroup>
+	</s:VGroup>
+	<s:VGroup width="100%" height="100%" includeIn="progress" >
+		<s:Spacer height="100%"/>
+		<mx:ProgressBar id="progressBar" width="100%" mode="manual" paddingLeft="12" paddingRight="12" fontWeight="normal" fontSize="10" labelPlacement="center"/>
+		<s:Spacer height="100%"/>
+		<s:HGroup width="100%" horizontalAlign="center">
+			<s:Button label="Cancel and remind me later" click="button3_clickHandler(event)" height="24"/>
+		</s:HGroup>
+	</s:VGroup>
+	
+</s:Panel>

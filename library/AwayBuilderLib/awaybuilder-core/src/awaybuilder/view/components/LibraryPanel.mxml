@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:CollapsiblePanel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						   xmlns:s="library://ns.adobe.com/flex/spark" 
+						   xmlns:mx="library://ns.adobe.com/flex/mx" 
+						   xmlns:controls="awaybuilder.view.components.controls.*" 
+						   xmlns:tree="awaybuilder.view.components.controls.tree.*"
+						   skinClass="awaybuilder.view.skins.CollapsiblePanelSkin" creationComplete="collapsiblepanel_creationCompleteHandler(event)">
+	<fx:Declarations>
+		<s:Power id="collapseEaser" exponent="2" easeInFraction="0.1" />
+		<s:Resize id="collapseEffect" duration="150" easer="{collapseEaser}" heightTo="24" />
+		<fx:Component className="NewAnimatorPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();">
+				<s:Button width="100%" label="New SkeletonAnimationSet" styleName="addItemButton" cornerRadius="0" click="close(true,'SkeletonAnimationSet')"/>
+				<s:Button width="100%" label="New VertexAnimationSet" styleName="addItemButton" cornerRadius="0" click="close(true,'VertexAnimationSet')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="NewTexturePopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();">
+				<s:Button width="100%" label="New Texture" styleName="addItemButton" cornerRadius="0" click="close(true,'newTexture')"/>
+				<s:Button width="100%" label="New Cube Texture" styleName="addItemButton" cornerRadius="0" click="close(true,'newCubeTexture')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="NewLightPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();">
+				<s:Button width="100%" label="New Directional Light" styleName="addItemButton" cornerRadius="0" click="close(true,'newDirectionalLight')"/>
+				<s:Button width="100%" label="New Point Light" styleName="addItemButton" cornerRadius="0" click="close(true,'newPointLight')"/>
+				<s:Button width="100%" label="New Light Picker" styleName="addItemButton" cornerRadius="0" click="close(true,'newLightPicker')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="NewMatreialPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();">
+				<s:Button width="100%" label="New Material" styleName="addItemButton" cornerRadius="0" click="close(true,'Material')"/>
+				<s:Button width="100%" label="New LightMapMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'LightMapMethod')"/>
+				<s:Button width="100%" label="New ProjectiveTextureMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'ProjectiveTextureMethod')"/>
+				<s:Button width="100%" label="New RimLightMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'RimLightMethod')"/>
+				<s:Button width="100%" label="New ColorTransformMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'ColorTransformMethod')"/>
+				<s:Button width="100%" label="New AlphaMaskMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'AlphaMaskMethod')"/>
+				<s:Button width="100%" label="New ColorMatrixMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'ColorMatrixMethod')"/>
+				<s:Button width="100%" label="New RefractionEnvMapMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'RefractionEnvMapMethod')"/>
+				<s:Button width="100%" label="New OutlineMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'OutlineMethod')"/>
+				<s:Button width="100%" label="New FresnelEnvMapMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'FresnelEnvMapMethod')"/>
+				<s:Button width="100%" label="New FogMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'FogMethod')"/>
+				<s:Button width="100%" label="New EnvMapMethod" styleName="addItemButton" cornerRadius="0" click="close(true,'EnvMapMethod')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="NewGeometryPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();" >
+				<s:Button width="100%" label="New PlaneGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'PlaneGeometry')"/>
+				<s:Button width="100%" label="New CubeGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'CubeGeometry')"/>
+				<s:Button width="100%" label="New SphereGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'SphereGeometry')"/>
+				<s:Button width="100%" label="New CylinderGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'CylinderGeometry')"/>
+				<s:Button width="100%" label="New ConeGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'ConeGeometry')"/>
+				<s:Button width="100%" label="New CapsuleGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'CapsuleGeometry')"/>
+				<s:Button width="100%" label="New TorusGeometry" styleName="addItemButton" cornerRadius="0" click="close(true,'TorusGeometry')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="NewObjectsPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer" chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();" >
+				<s:Button width="100%" label="New ObjectContainer3D" styleName="addItemButton" cornerRadius="0" click="close(true,'ObjectContainer3D')"/>
+				<s:Button width="100%" label="New Mesh" styleName="addItemButton" cornerRadius="0" click="close(true,'Mesh')"/>
+				<s:Button width="100%" label="New SkyBox" styleName="addItemButton" cornerRadius="0" click="close(true,'SkyBox')"/>
+				<s:Button width="100%" label="New Texture Projector" styleName="addItemButton" cornerRadius="0" click="close(true,'TextureProjector')"/>
+				<s:Button width="100%" label="New Camera" styleName="addItemButton" cornerRadius="0" click="close(true,'Camera')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import awaybuilder.model.vo.DocumentVO;
+			import awaybuilder.model.vo.DroppedAssetVO;
+			import awaybuilder.model.vo.DroppedTreeItemVO;
+			import awaybuilder.model.vo.scene.AssetVO;
+			import awaybuilder.view.components.controls.tree.SceneDataDescriptor;
+			import awaybuilder.view.components.controls.tree.TreeDataProvider;
+			import awaybuilder.view.components.controls.tree.TreeEvent;
+			import awaybuilder.view.components.events.LibraryPanelEvent;
+			
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.SandboxMouseEvent;
+			
+			import spark.components.supportClasses.ButtonBase;
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			
+			[Bindable] 
+			public var model:DocumentVO = new DocumentVO();
+			
+			[Bindable] 
+			public var selectedItems:Vector.<Object> = new Vector.<Object>();
+			
+			private var _expandedPanel:CollapsiblePanel;
+			private var _panels:Array;
+			
+			private var _tempSelectedItems:Vector.<Object>;
+			
+			private var _waitingForMouseUp:Boolean;
+			
+			protected function panel_collapsedChangeHandler(event:Event):void
+			{
+				var panel:CollapsiblePanel = event.target as CollapsiblePanel;
+				if( panel.collapsed ) 
+				{
+					collapseEffect.play( [panel] );
+					
+					if( _expandedPanel == panel ) 
+					{
+						getNextPanel(panel).collapsed = false;
+					}
+				}
+				else 
+				{
+					_expandedPanel = panel;
+					panel.percentHeight = 100;
+					collapseAllExcept( panel );
+				}
+			}
+			private function collapseAllExcept( panel:CollapsiblePanel ):void
+			{
+				for each( var p:CollapsiblePanel in _panels )
+				{
+					if( p != panel ) p.collapsed = true;
+				}
+			}
+			private function getNextPanel( panel:CollapsiblePanel ):CollapsiblePanel
+			{
+				var result:int = 0;
+				for (var i:int = 0; i < _panels.length; i++) 
+				{
+					if( _panels[i] == panel ) 
+					{
+						if( i+1 < _panels.length ) return _panels[i+1]
+					}
+						
+				}
+				return _panels[0];
+			}
+			
+			protected function collapsiblepanel_creationCompleteHandler(event:FlexEvent):void
+			{
+				_expandedPanel = scenePanel;
+				_panels = [scenePanel,materialsPanel,texturesPanel,geometryPanel,animationsPanel,lightsPanel ];
+			}
+			
+			protected function tree_changeHandler(event:IndexChangeEvent):void
+			{
+				
+				var tree:Tree = event.target as Tree;
+				_tempSelectedItems = tree.selectedItems;
+//				if( !_waitingForMouseUp )
+//				{
+//					this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.TREE_CHANGE, _tempSelectedItems ) );
+//					_tempSelectedItems = null;
+//				}
+			}
+			
+			private function mouseUpHandler( event:Event ):void
+			{
+				if( _waitingForMouseUp )
+				{
+					this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.TREE_CHANGE, _tempSelectedItems ) );
+					_tempSelectedItems = null;
+				}
+				_waitingForMouseUp = false;
+				systemManager.getSandboxRoot().removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler, false);
+				systemManager.getSandboxRoot().removeEventListener(SandboxMouseEvent.MOUSE_UP_SOMEWHERE, mouseUpHandler, false);
+			}
+			
+			protected function texturesPanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewTexturePopup = new NewTexturePopup();
+				popup.open(this);
+				popup.addEventListener('close', newTexturePopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+			}
+			protected function scenePanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewObjectsPopup = new NewObjectsPopup();
+				popup.open(this);
+				popup.addEventListener('close', newObjectPopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+			}
+			
+			private function newObjectPopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				switch(event.data)
+				{
+					case "ObjectContainer3D":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_CONTAINER ) );
+						break;
+					case "Mesh":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_MESH ) );
+						break;
+					case "TextureProjector":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_TEXTURE_PROJECTOR ) );
+						break;
+					case "Camera":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_CAMERA ) );
+						break;
+					default:
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_SKYBOX ) );
+						break;
+				}
+			}  
+			private function newTexturePopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				switch(event.data)
+				{
+					case "newTexture":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_TEXTURE ) );
+						break;
+					default:
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_CUBE_TEXTURE ) );
+						break;
+				}
+			}   
+			private function lightsPanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewLightPopup = new NewLightPopup();
+				popup.open(this);
+				popup.addEventListener('close', newLightPopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+			}
+			private function materialsPanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewMatreialPopup = new NewMatreialPopup();
+				popup.open(this);
+				popup.addEventListener('close', newMaterialsPopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+			}
+			private function geometryPanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewGeometryPopup = new NewGeometryPopup();
+				popup.open(this);
+				popup.addEventListener('close', newGeometryPopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+			}
+			
+			private function newMaterialsPopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				if( event.data == "Material" )
+				{
+					this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_MATERIAL ) );
+					return;
+				}
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_EFFECTMETHOD, event.data ) );
+			}  
+			private function newGeometryPopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_GEOMETRY, event.data ) );
+			}  
+			
+			private function newLightPopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				switch(event.data)
+				{
+					
+					case "newLightPicker":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_LIGHTPICKER ) );
+						break;
+					case "newDirectionalLight":
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_DIRECTIONAL_LIGHT ) );
+						break;
+					default:
+						this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_POINT_LIGHT ) );
+						break;
+				}
+			}   
+			
+			protected function tree_dragStartHandler(event:DragEvent):void
+			{
+				_waitingForMouseUp = false;
+				systemManager.getSandboxRoot().removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler, false);
+				systemManager.getSandboxRoot().removeEventListener(SandboxMouseEvent.MOUSE_UP_SOMEWHERE, mouseUpHandler, false);
+			}
+			
+			protected function lightsTree_dragCompleteHandler(event:DragEvent):void
+			{
+				lightsTree.selectedItems = selectedItems;
+			}
+			
+			protected function lightsTree_itemDroppedHandler(event:TreeEvent):void
+			{
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.LIGHT_DROPPED, getAssetsFromDroppedItem(event.item as Dictionary) ) );
+			}
+			
+			protected function animationsPanel_addNewItemHandler(event:MouseEvent):void
+			{
+				var button:ButtonBase = event.relatedObject as ButtonBase;
+				var popup:NewAnimatorPopup = new NewAnimatorPopup();
+				popup.open(this);
+				popup.addEventListener('close', newNewAnimatorPopup_closeHandler);
+				var pos:Point = button.localToGlobal( new Point() );
+				popup.move( pos.x-4,  Math.min(pos.y-4, stage.height-popup.height-8) );
+				
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_ANIMATOR ) );
+			}
+			private function newNewAnimatorPopup_closeHandler(event:PopUpEvent):void 
+			{
+				if (!event.commit) return;
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ADD_ANIMATOR, event.data ) );
+			}   
+			
+			protected function sceneTree_itemDroppedHandler(event:TreeEvent):void
+			{
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.SCENEOBJECT_DROPPED, event.item ) );
+			}
+			
+			protected function sceneTree_dragCompleteHandler(event:DragEvent):void
+			{
+				sceneTree.selectedItems = selectedItems;
+			}
+			
+			protected function animationsTree_dragCompleteHandler(event:DragEvent):void
+			{
+				animationsTree.selectedItems = selectedItems;
+			}
+			
+			protected function animationsTree_itemDroppedHandler(event:TreeEvent):void
+			{
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.ANIMATIONS_DROPPED, getAssetsFromDroppedItem(event.item as Dictionary) ) );
+			}
+			
+			private function getAssetsFromDroppedItem( items:Dictionary ):Vector.<DroppedAssetVO>
+			{
+				var droppedAsses:Vector.<DroppedAssetVO> = new Vector.<DroppedAssetVO>;
+				for each( var item:DroppedTreeItemVO in items ) 
+				{
+					var droppedAsset:DroppedAssetVO = new DroppedAssetVO();
+					droppedAsset.value = item.value as AssetVO;
+					droppedAsset.oldPosition = item.oldPosition;
+					droppedAsset.newPosition = item.newPosition;
+					if( item.oldParent )
+					{
+						droppedAsset.oldParent = item.oldParent as AssetVO;
+					}
+					if( item.newParent )
+					{
+						droppedAsset.newParent = item.newParent as AssetVO;
+					}
+					droppedAsses.push( droppedAsset );
+				}
+				return droppedAsses;
+			}
+			
+			protected function tree_mouseDownHandler(event:MouseEvent):void
+			{
+				_waitingForMouseUp = true;
+				systemManager.getSandboxRoot().addEventListener(SandboxMouseEvent.MOUSE_UP_SOMEWHERE, mouseUpHandler, false, 0, true);
+				systemManager.getSandboxRoot().addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler, false, 0, true);
+			}
+			
+			protected function materialTree_itemDroppedHandler(event:TreeEvent):void
+			{
+				this.dispatchEvent( new LibraryPanelEvent( LibraryPanelEvent.MATERIALS_DROPPED,  getAssetsFromDroppedItem(event.item as Dictionary) ) );
+			}
+			
+			protected function materialTree_dragCompleteHandler(event:DragEvent):void
+			{
+				materialTree.selectedItems = selectedItems;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="235" height="100%" gap="0">
+		<controls:LibraryCollapsiblePanel id="scenePanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+										   title="Scene Objects" width="100%" collapsed="false" height="100%" addEnabled="true"
+										   addNewItem="scenePanel_addNewItemHandler(event)"
+										   collapsedChange="panel_collapsedChangeHandler(event)">
+			<controls:SceneTree id="sceneTree" dataProvider="{model.scene}" selectedItems="{selectedItems}" indentation="16"
+								   dragEnabled="true" dropEnabled="true" dragMoveEnabled="true" allowMultipleSelection="true"
+								   focusSkin="mx.core.UIComponent"
+								   dataDescriptor="{new SceneDataDescriptor()}"
+								   change="tree_changeHandler(event)"
+								   itemDropped="sceneTree_itemDroppedHandler(event)"
+								   dragComplete="sceneTree_dragCompleteHandler(event)"
+								   mouseDown="tree_mouseDownHandler(event)"
+								   width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+		<controls:LibraryCollapsiblePanel  id="materialsPanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+									title="Materials" height="24" width="100%" collapsed="true" addEnabled="true"
+									collapsedChange="panel_collapsedChangeHandler(event)"
+									addNewItem="materialsPanel_addNewItemHandler(event)">
+			<controls:MaterialsTree id="materialTree" dataProvider="{model.materials}" selectedItems="{selectedItems}" indentation="16"
+								   dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
+								   allowMultipleSelection="true" focusSkin="mx.core.UIComponent"
+								   change="tree_changeHandler(event)"
+								   itemDropped="materialTree_itemDroppedHandler(event)"
+								   dragStart="tree_dragStartHandler(event)"
+								   dragComplete="materialTree_dragCompleteHandler(event)"
+								   mouseDown="tree_mouseDownHandler(event)"
+								   width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+		<controls:LibraryCollapsiblePanel id="texturesPanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+								   title="Textures" height="24" width="100%" collapsed="true" addEnabled="true"
+								   collapsedChange="panel_collapsedChangeHandler(event)"
+								   addNewItem="texturesPanel_addNewItemHandler(event)">
+			<tree:Tree id="texturesTree" dataProvider="{model.textures}" selectedItems="{selectedItems}" indentation="16"
+					   allowMultipleSelection="true" focusSkin="mx.core.UIComponent"
+					   change="tree_changeHandler(event)"
+					   mouseDown="tree_mouseDownHandler(event)"
+					   width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+		<controls:LibraryCollapsiblePanel id="geometryPanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+								   title="Geometry" height="24" width="100%" collapsed="true" collapsedChange="panel_collapsedChangeHandler(event)"
+								   addNewItem="geometryPanel_addNewItemHandler(event)" addEnabled="true">
+			<tree:Tree id="geometryTree" dataProvider="{model.geometry}" selectedItems="{selectedItems}" indentation="16"
+					   allowMultipleSelection="true" focusSkin="mx.core.UIComponent"
+					   change="tree_changeHandler(event)"
+					   mouseDown="tree_mouseDownHandler(event)"
+					   width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+		<controls:LibraryCollapsiblePanel id="animationsPanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+								   title="Animations"  addEnabled="true"
+								   height="24" width="100%" collapsed="true" 
+								   collapsedChange="panel_collapsedChangeHandler(event)"
+								   addNewItem="animationsPanel_addNewItemHandler(event)">
+			<controls:AnimationTree id="animationsTree" dataProvider="{model.animations}" selectedItems="{selectedItems}" indentation="16"
+									allowMultipleSelection="true" focusSkin="mx.core.UIComponent"
+									dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
+							  		change="tree_changeHandler(event)"
+									dragStart="tree_dragStartHandler(event)"
+									itemDropped="animationsTree_itemDroppedHandler(event)"
+									dragComplete="animationsTree_dragCompleteHandler(event)"
+									mouseDown="tree_mouseDownHandler(event)"
+							 		width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+		<controls:LibraryCollapsiblePanel id="lightsPanel" skinClass="awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin" borderVisible="false"
+								   title="Lights" height="24" width="100%" collapsed="true" addEnabled="true"
+								   collapsedChange="panel_collapsedChangeHandler(event)"
+								   addNewItem="lightsPanel_addNewItemHandler(event)">
+			<controls:LightsTree id="lightsTree" dataProvider="{model.lights}" selectedItems="{selectedItems}" indentation="16"
+								 allowMultipleSelection="true"
+							  	 dragEnabled="true" dropEnabled="true" dragMoveEnabled="true"
+								 focusSkin="mx.core.UIComponent"
+							 	 dragStart="tree_dragStartHandler(event)"
+								 itemDropped="lightsTree_itemDroppedHandler(event)"
+								 change="tree_changeHandler(event)" 
+								 dragComplete="lightsTree_dragCompleteHandler(event)"
+								 mouseDown="tree_mouseDownHandler(event)"
+								 width="100%" height="100%"/>
+		</controls:LibraryCollapsiblePanel>
+	</s:VGroup>
+	
+</controls:CollapsiblePanel>

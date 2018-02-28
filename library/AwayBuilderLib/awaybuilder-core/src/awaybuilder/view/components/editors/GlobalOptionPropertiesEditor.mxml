@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" 
+					xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:editors="awaybuilder.view.components.editors.*"
+					>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="matrixGroup" selectedValue="{_asset.matrixStorage}" change="value_changeHandler(event)" />
+		<s:RadioButtonGroup id="geometryGroup" selectedValue="{_asset.geometryStorage}" change="value_changeHandler(event)"/>
+		<s:RadioButtonGroup id="propertiesGroup" selectedValue="{_asset.propertyStorage}" change="value_changeHandler(event)"/>
+		<s:RadioButtonGroup id="attributesGroup" selectedValue="{_asset.attributesStorage}" change="value_changeHandler(event)"/>
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.GlobalOptionsVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import spark.events.IndexChangeEvent;
+		
+		[Bindable] public var embedTexturesOptionEnabled:Boolean = true;
+		
+		[Bindable] private var _asset:GlobalOptionsVO;
+		
+		override protected function validate():void
+		{
+			if( !(data is GlobalOptionsVO) ) return;
+			_asset = GlobalOptionsVO(data).clone();
+		}
+		
+		private function value_changeHandler(event:Event):void 
+		{
+			_asset.matrixStorage = matrixGroup.selectedValue as String;
+			_asset.geometryStorage = geometryGroup.selectedValue as String;
+			_asset.propertyStorage = propertiesGroup.selectedValue as String;
+			_asset.attributesStorage = attributesGroup.selectedValue as String;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.GLOBAL_OPTIONS_CHANGE, _asset, true));
+		}
+		private function stepper_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.GLOBAL_OPTIONS_STEPPER_CHANGE, _asset, true));
+		}
+		
+		protected function compressionDropDownList_changeHandler(event:IndexChangeEvent):void
+		{
+			_asset.compression = compressionDropDownList.selectedItem as String;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.GLOBAL_OPTIONS_CHANGE, _asset, true));
+		}
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="10" paddingRight="2" paddingTop="4" paddingBottom="4" height="36">
+			<s:Label width="100%" text="Global Option Properties" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	<s:Spacer height="6"/>
+	<s:VGroup width="100%" paddingLeft="10" paddingRight="8" gap="8">
+		<controls:PropertiesItemContainer label="Matrix Storage" width="100%">
+			<s:RadioButton label="Size" group="{matrixGroup}" value="Size"/>
+			<s:RadioButton label="Precision" group="{matrixGroup}" value="Precision"/>
+		</controls:PropertiesItemContainer>
+		<controls:PropertiesItemContainer label="Geometry Storage" width="100%">
+			<s:RadioButton label="Size" group="{geometryGroup}" value="Size"/>
+			<s:RadioButton label="Precision" group="{geometryGroup}" value="Precision"/>
+		</controls:PropertiesItemContainer>
+		<controls:PropertiesItemContainer label="Properties Storage" width="100%">
+			<s:RadioButton label="Size" group="{propertiesGroup}" value="Size"/>
+			<s:RadioButton label="Precision" group="{propertiesGroup}" value="Precision"/>
+		</controls:PropertiesItemContainer>
+		<controls:PropertiesItemContainer label="User Attributes Storage" width="100%">
+			<s:RadioButton label="Size" group="{attributesGroup}" value="Size"/>
+			<s:RadioButton label="Precision" group="{attributesGroup}" value="Precision"/>
+		</controls:PropertiesItemContainer>
+		<controls:PropertiesItemContainer label="Compression" width="100%">
+			<s:DropDownList id="compressionDropDownList" requireSelection="true" selectedItem="@{_asset.compression}"
+							change="compressionDropDownList_changeHandler(event)" width="100%">
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:String>UNCOMPRESSED</fx:String>
+						<fx:String>DEFLATE</fx:String>
+						<fx:String>LZMA</fx:String>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</controls:PropertiesItemContainer>
+		<controls:PropertiesItemContainer label="User Attributes Namespace" width="100%">
+			<s:TextInput width="100%" text="@{_asset.namespace}" change="stepper_changeHandler(event)"/>
+		</controls:PropertiesItemContainer>
+	</s:VGroup>
+	<s:Spacer height="6"/>
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Embed Textures" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeInLayout="{embedTexturesOptionEnabled}" visible="{embedTexturesOptionEnabled}" >
+			<s:CheckBox change="value_changeHandler(event)" selected="@{_asset.embedTextures}" />
+		</s:FormItem>
+		<s:FormItem label="Include Normal data" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+			<s:CheckBox change="value_changeHandler(event)" selected="@{_asset.includeNormal}"/>
+		</s:FormItem>
+		<s:FormItem label="Include Tangent data" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" >
+			<s:CheckBox change="value_changeHandler(event)" selected="@{_asset.includeTangent}" />
+		</s:FormItem>
+	</s:Form>
+		
+	
+</editors:EditorBase>

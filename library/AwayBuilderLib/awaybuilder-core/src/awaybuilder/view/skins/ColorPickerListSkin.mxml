@@ -1,0 +1,197 @@
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" xmlns:local="*" alpha.disabled=".5" minWidth="24"
+    currentStateChange="if (currentState == 'open') prepOpenState()" xmlns:controls="awaybuilder.view.components.controls.*" > 
+
+    <!-- host component -->
+    <fx:Metadata>
+    <![CDATA[ 
+        /** 
+         * @copy spark.skins.spark.ApplicationSkin#hostComponent
+         */
+        [HostComponent("spark.components.ComboBox")]
+    ]]>
+    </fx:Metadata> 
+
+    <fx:Script fb:purpose="styling">
+        <![CDATA[
+            import spark.components.ComboBox;
+            import spark.events.IndexChangeEvent;
+            
+            /* Define the content fill items that should be colored by the "contentBackgroundColor" style. */
+            static private const contentFill:Array = ["bgFill"];
+            
+            /**
+             * @private
+             */
+            override public function get contentItems():Array {return contentFill};
+                        /**
+             * @private
+             */
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                if (getStyle("borderVisible") == false)
+                {
+                    if (border)
+                        border.visible = false;
+                    if (background)
+                    {
+                        background.left = background.top = background.right = background.bottom = 0;
+                    }
+					if (swatchpanel)
+					{
+						swatchpanel.left = swatchpanel.top = swatchpanel.right = swatchpanel.bottom = 0;
+					}
+                }
+                else
+                {
+                    if (border)
+                        border.visible = true;
+                    if (background)
+                    {
+                        background.left = background.top = background.right = background.bottom = 1;
+                    }
+					if (swatchpanel)
+					{
+						swatchpanel.left = swatchpanel.top = swatchpanel.right = swatchpanel.bottom = 1;
+					}
+                }
+                
+                if (dropShadow)
+                    dropShadow.visible = getStyle("dropShadowVisible");
+                
+                openButton.setStyle("cornerRadius", getStyle("cornerRadius"));
+                
+                if (borderStroke)
+                {
+                    borderStroke.color = getStyle("borderColor");
+                    borderStroke.alpha = getStyle("borderAlpha");
+                }
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+					
+            private function prepOpenState():void
+            {
+                if (preview) 
+                    previewColor.color = hostComponent.selectedItem as uint;
+                ti.callLater(ti.setFocus);
+                ti.text = previewColor.color.toString(16);
+            }
+            
+            private function handleEnter():void
+            {
+                hostComponent.selectedItem = previewColor.color; 
+                hostComponent.closeDropDown(true); 
+                hostComponent.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE));
+            }
+		]]>
+    </fx:Script>
+ 
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="open" />
+        <s:State name="disabled" />
+    </s:states>
+    
+    <!--- 
+        The PopUpAnchor control that opens the drop-down list. 
+        
+        <p>In a custom skin class that uses transitions, set the 
+        <code>itemDestructionPolicy</code> property to <code>none</code>.</p>
+    -->
+    <s:PopUpAnchor id="popUp"  displayPopUp.normal="false" displayPopUp.open="true" includeIn="open"
+        left="0" right="0" top="0" bottom="0" itemDestructionPolicy="auto"
+        popUpPosition="below" popUpWidthMatchesAnchorWidth="false">
+        
+        <!--- 
+              This includes borders, background colors, scrollers, and filters.
+              @copy spark.components.supportClasses.DropDownListBase#dropDown
+        -->
+        <controls:FocusGroup id="dropDown" >
+        
+            <!--- @private -->
+            <s:RectangularDropShadow id="dropShadow" blurX="20" blurY="20" alpha="0.45" distance="7" 
+                 angle="90" color="#000000" left="0" top="0" right="0" bottom="0"/>
+        
+            <!--- @private -->
+            <s:Rect id="border" left="0" right="0" top="0" bottom="0">
+                <s:stroke>
+                    <!--- border stroke @private -->
+                    <s:SolidColorStroke id="borderStroke" weight="1"/>
+                </s:stroke>
+            </s:Rect>
+            
+            <!-- fill -->
+            <!--- Defines the appearance of drop-down list's background fill. -->
+            <s:Rect id="background" left="1" right="1" top="1" bottom="1" >
+                <s:fill>
+                <!---  
+                    The color of the drop down's background fill.
+                    The default color is 0xFFFFFF.
+                -->
+                    <s:SolidColor id="bgFill" color="0xFFFFFF" />
+                </s:fill>
+            </s:Rect>
+			<s:VGroup id="swatchpanel" left="0" top="0" right="0" bottom="0" >
+                <s:HGroup>
+                    <s:Rect id="preview" width="50" height="20" >
+                        <s:fill>
+                            <s:SolidColor id="previewColor" />
+                        </s:fill>
+                    </s:Rect>
+                    <s:TextInput id="ti" restrict="0123456789abcdefABCDEF" 
+                                 change="previewColor.color = uint('0x' + ti.text)"
+                                 enter="handleEnter()"  />
+                </s:HGroup>
+                <s:Group>
+                    <s:Rect left="0" top="0" right="0" bottom="0" width="220" height="132" >
+                        <s:fill>
+                            <s:SolidColor color="0x0" />
+                        </s:fill>
+                    </s:Rect>
+                    <s:DataGroup id="dataGroup" left="0" top="0" right="0" bottom="0" width="220" height="132" >
+                        <s:layout>
+                            <s:TileLayout verticalGap="0" horizontalGap="0" requestedColumnCount="20" requestedRowCount="12"/>
+                        </s:layout>
+                        <s:itemRenderer>
+                            <fx:Component>
+                                <s:ItemRenderer rollOver="outerDocument.previewColor.color = uint(data); outerDocument.ti.text = data.toString(16)">
+                                    <s:states>
+                                        <s:State name="normal" />
+                                        <s:State name="hovered" />
+                                        <s:State name="selected" />
+                                    </s:states>
+                                    <s:Rect id="swatch" width="10" height="10">
+                                        <s:fill>
+                                            <s:SolidColor color="{data}" />
+                                        </s:fill>
+                                        <s:stroke>
+                                            <s:SolidColorStroke color="0xFFFF00" alpha.hovered="1" alpha="0" />
+                                        </s:stroke>
+                                    </s:Rect>
+                                </s:ItemRenderer>
+                            </fx:Component>
+                        </s:itemRenderer>
+                    </s:DataGroup>                           
+                </s:Group>
+            </s:VGroup>
+        </controls:FocusGroup>
+    </s:PopUpAnchor>
+    
+    <!---  The default skin is DropDownListButtonSkin. 
+            @copy spark.components.supportClasses.DropDownListBase#openButton
+            @see spark.skins.spark.DropDownListButtonSkin -->
+    <s:Button id="openButton" left="0" right="0" top="0" bottom="0" focusEnabled="false"
+        skinClass="awaybuilder.view.skins.ColorPickerListButtonSkin" />  
+        
+    <!--- @copy spark.components.DropDownList#labelDisplay -->
+    <s:TextInput id="textInput" visible="false"
+                 left="0" top="0" bottom="0" width="0"
+                 skinClass="spark.skins.spark.ComboBoxTextInputSkin"/> 
+    
+    <s:Rect id="currentColor" left="2" right="2" top="2" bottom="2" width="20" height="20" radiusX="2">
+        <s:fill>
+            <s:SolidColor id="current" />
+        </s:fill>
+    </s:Rect>
+
+</s:SparkSkin>

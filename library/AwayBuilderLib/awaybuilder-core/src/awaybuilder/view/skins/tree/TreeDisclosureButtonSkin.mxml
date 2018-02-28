@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkButtonSkin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                   xmlns:s="library://ns.adobe.com/flex/spark" 
+                   xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+                   minWidth="16" minHeight="16" 
+                   alpha.disabledStates="0.5">
+    
+    <!-- host component -->
+    <fx:Metadata>
+    <![CDATA[ 
+
+		[HostComponent("spark.components.ToggleButton")]
+    ]]>
+    </fx:Metadata>
+    
+    <fx:Script>
+		
+		[Embed("/assets/disclosureOpenIcon.png")]
+		private const disclosureOpenIcon:Class;
+		
+		[Embed("/assets/disclosureClosedIcon.png")]
+		private const disclosureClosedIcon:Class;
+		
+    </fx:Script>
+    
+    <!-- states -->
+    <s:states>
+        <s:State name="up" />
+        <s:State name="over" stateGroups="overStates" />
+        <s:State name="down" stateGroups="downStates" />
+        <s:State name="disabled" stateGroups="disabledStates" />
+        <s:State name="upAndSelected" stateGroups="selectedStates, selectedUpStates" />
+        <s:State name="overAndSelected" stateGroups="overStates, selectedStates" />
+        <s:State name="downAndSelected" stateGroups="downStates, selectedStates" />
+        <s:State name="disabledAndSelected" stateGroups="selectedUpStates, disabledStates, selectedStates" />
+    </s:states>
+    
+	<s:BitmapImage id="image" source="{disclosureClosedIcon}" source.selectedStates="{disclosureOpenIcon}" verticalCenter="0" horizontalCenter="0"/>
+    
+</s:SparkButtonSkin>

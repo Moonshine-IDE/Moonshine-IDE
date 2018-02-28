@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009" blendMode="normal" mouseEnabled="false"
+			 minWidth="{collapseButton.width}" maxWidth="300" minHeight="127"
+			 alpha.disabled="0.5" alpha.disabledWithControlBar="0.5">
+
+	<fx:Metadata>
+		[HostComponent("awaybuilder.view.components.controls.CollapsiblePanel")]
+	</fx:Metadata>
+
+		<fx:Script fb:purpose="styling">
+		/* Define the skin elements that should not be colorized.
+		For panel, border and title background are skinned, but the content area and title text are not. */
+		static private const exclusions:Array = ["contentGroup", "collapseButton"];
+
+		/**
+		 * @private
+		 */
+		override public function get colorizeExclusions():Array {return exclusions;}
+
+		/**
+		 * @private
+		 */
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		}
+
+		/**
+		 * @private
+		 */
+		private function setPartCornerRadii(target:Rect, includeBottom:Boolean):void
+		{
+			target.topLeftRadiusX = cornerRadius;
+			target.topRightRadiusX = cornerRadius;
+			target.bottomLeftRadiusX = includeBottom ? cornerRadius : 0;
+			target.bottomRightRadiusX = includeBottom ? cornerRadius : 0;
+		}
+
+		private var cornerRadius:Number;
+	</fx:Script>
+
+	<fx:Declarations>
+		<s:Power id="collapseEaser" exponent="2" easeInFraction="0.7" />
+	</fx:Declarations>
+
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="collapsed" />
+		<s:State name="normalWithControlBar" stateGroups="withControls" />
+		<s:State name="disabledWithControlBar" stateGroups="withControls" />
+	</s:states>
+
+	<s:transitions>
+		<s:Transition fromState="*" toState="collapsed">
+			<s:Parallel duration="150">
+				<s:Move target="{contentGroup}" easer="{collapseEaser}" />
+				<s:Resize target="{this}" easer="{collapseEaser}" />
+			</s:Parallel>
+		</s:Transition>
+		<s:Transition fromState="collapsed" toState="*">
+			<s:Sequence>
+				<s:Parallel duration="150">
+					<s:Resize target="{this}" easer="{collapseEaser}" />
+					<s:Move target="{contentGroup}" easer="{collapseEaser}"/>
+				</s:Parallel>
+				<s:SetAction target="{contentGroup}" property="includeInLayout"/>
+			</s:Sequence>
+		</s:Transition>
+	</s:transitions>
+
+	<!-- drop shadow can't be hittable so all other graphics go in this group -->
+	<s:Group left="0" right="0" top="0" bottom="0">
+
+		<!-- layer 3: contents -->
+		<!--- Contains the horizontal stack of collapse bar, content and controlbar. -->
+		<s:Group left="0" right="0" top="0" bottom="0" id="contents">
+			<s:layout>
+				<s:HorizontalLayout gap="0" horizontalAlign="right" />
+			</s:layout>
+
+			<!--
+			Note: setting the minimum size to 0 here so that changes to the host component's
+			size will not be thwarted by this skin part's minimum size.   This is a compromise,
+			more about it here: http://bugs.adobe.com/jira/browse/SDK-21143
+			-->
+			<!--- @copy spark.components.SkinnableContainer#contentGroup -->
+			<s:Group id="contentGroup" width="100%" height="100%" minWidth="0" minHeight="0"
+					 includeInLayout.collapsed="false" x.collapsed="{-contentGroup.width}">
+				<s:layout>
+					<s:VerticalLayout gap="0"/>
+				</s:layout>
+			</s:Group>
+
+			<s:Group width="10" height="100%">
+				<s:Rect left="0" right="0" top="0" bottom="0">
+					<s:stroke>
+						<s:LinearGradientStroke rotation="90" weight="1">
+							<s:GradientEntry color="0xbbbbbb" />
+							<s:GradientEntry color="0xaaaaaa" />
+						</s:LinearGradientStroke>
+					</s:stroke>
+				</s:Rect>
+				<s:Rect top="1" right="1" bottom="1" left="1">
+					<s:fill>
+						<s:SolidColor color="#aaaaaa"/>
+					</s:fill>
+				</s:Rect>
+				<s:ToggleButton id="collapseButton" styleName="objectPickerCollapseButton"
+								width="10" height="100" verticalCenter="0" cornerRadius="0"
+								label=""
+								skinClass="awaybuilder.view.skins.CollapseLeftButtonSkin"
+								chromeColor="0x004F8F"/>
+			</s:Group>
+		</s:Group>
+	</s:Group>
+</s:SparkSkin>

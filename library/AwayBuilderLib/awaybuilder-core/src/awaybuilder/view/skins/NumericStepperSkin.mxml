@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+	  xmlns:fb="http://ns.adobe.com/flashbuilder/2009" minHeight="23" minWidth="40" 
+	  alpha.disabled="0.5">
+
+	<fx:Metadata>
+		[HostComponent("spark.components.NumericStepper")]
+	</fx:Metadata> 
+	
+	<fx:Script fb:purpose="styling">
+		/* Define the skin elements that should not be colorized. 
+		   For numeric stepper, the skin itself is colorized but the individual parts are not. */
+		static private const exclusions:Array = ["textDisplay", "decrementButton", "incrementButton"];
+
+		/**
+		 * @private
+		 */  
+		override public function get colorizeExclusions():Array {return exclusions;}
+		
+		/**
+		 * @private
+		 */
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		}
+		
+		private var cornerRadiusChanged:Boolean;
+		private var borderStylesChanged:Boolean;
+		
+		/**
+		 *  @private
+		 */
+		override protected function commitProperties():void
+		{
+			super.commitProperties();
+			
+			if (cornerRadiusChanged)
+			{
+				var cr:Number = getStyle("cornerRadius");
+				if (incrementButton)
+					incrementButton.setStyle("cornerRadius", cr);
+				if (decrementButton)
+					decrementButton.setStyle("cornerRadius", cr);
+				cornerRadiusChanged = false;
+			}
+			
+			if (borderStylesChanged)
+			{
+				textDisplay.setStyle("borderAlpha", getStyle("borderAlpha"));
+				textDisplay.setStyle("borderColor", getStyle("borderColor"));
+				textDisplay.setStyle("borderVisible", getStyle("borderVisible"));
+				borderStylesChanged = false;
+			}
+		}
+		
+		/**
+		 *  @private
+		 */
+		override public function styleChanged(styleProp:String):void
+		{
+			var allStyles:Boolean = !styleProp || styleProp == "styleName";
+
+			super.styleChanged(styleProp);
+			
+			if (allStyles || styleProp == "cornerRadius")
+			{
+				cornerRadiusChanged = true;
+				invalidateProperties();
+			}
+			
+			if (allStyles || styleProp.indexOf("border") == 0)
+			{
+				borderStylesChanged = true;
+				invalidateProperties();
+			}
+		}
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+	</s:states>
+
+	<!--- The default class is NumericStepperIncrementButtonSkin.
+		   @copy spark.components.Spinner#incrementButton
+		   @see spark.skins.spark.NumericStepperIncrementButtonSkin -->
+	<s:Button id="incrementButton" right="0" top="0" height="50%" 
+			  skinClass="awaybuilder.view.skins.NumericStepperIncrementButtonSkin" />
+			  
+	<!--- The default class is NumericStepperDecrementButtonSkin.
+			@copy spark.components.Spinner#decrementButton
+			@see spark.skins.spark.NumericStepperDecrementButtonSkin -->
+	<s:Button id="decrementButton" right="0" bottom="0" height="50%" 
+			  skinClass="awaybuilder.view.skins.NumericStepperDecrementButtonSkin" />
+						   
+	<!--- The default class is NumericStepperTextInputSkin.
+			@copy spark.components.NumericStepper#textDisplay
+			@see spark.skins.spark.NumericStepperTextInputSkin -->
+	<s:TextInput id="textDisplay" left="0" top="0" right="18" bottom="0"
+		skinClass="spark.skins.spark.NumericStepperTextInputSkin" />
+		
+</s:SparkSkin>

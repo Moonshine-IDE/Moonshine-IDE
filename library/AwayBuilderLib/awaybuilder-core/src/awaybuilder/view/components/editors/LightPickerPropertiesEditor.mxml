@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" 
+					xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:editors="awaybuilder.view.components.editors.*" 
+					>
+	<fx:Declarations>
+		<fx:Component className="NewLightPopup">
+			<s:SkinnablePopUpContainer skinClass="awaybuilder.view.skins.LibrarySkinnablePopUpContainer"
+									   chromeColor="0x1d1d1c" color="0xdbdbdb" mouseDownOutside="close();">
+				<s:Button width="100%" label="New DirectionalLight" styleName="addItemButton" cornerRadius="0" click="close(true,'newDirectionalLight')"/>
+				<s:Button width="100%" label="New PointLight" styleName="addItemButton" cornerRadius="0" click="close(true,'newPointLight')"/>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.LightPickerVO;
+		import awaybuilder.view.components.controls.events.DroppedEvent;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import mx.events.CollectionEvent;
+		
+		import spark.components.supportClasses.ButtonBase;
+		import spark.events.PopUpEvent;
+		
+		[Bindable]
+		private var _asset:LightPickerVO = new LightPickerVO();
+		
+		override protected function validate():void
+		{
+			if( !(data is LightPickerVO) ) return;
+			LightPickerVO(data).lights.addEventListener(CollectionEvent.COLLECTION_CHANGE, lights_collectionChangeEvent, false, 0, true );
+			_asset.fillLightPicker( data as LightPickerVO );
+		}
+		private function lights_collectionChangeEvent(event:CollectionEvent):void 
+		{
+			if( data is LightPickerVO )
+			{
+				_asset.fillLightPicker( data as LightPickerVO );
+			}
+			
+		}
+		
+		private function name_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.LIGHTPICKER_STEPPER_CHANGE, _asset, true));
+		}
+		
+		protected function lightsList_droppedHandler(event:DroppedEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.LIGHTPICKER_CHANGE, _asset, true));
+		}
+		
+		protected function deleteButton_clickHandler(event:MouseEvent):void
+		{
+			_asset.lights.removeItemAt( lightsList.selectedIndex );
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.LIGHTPICKER_CHANGE, _asset, true));
+		}
+		
+		protected function addButton_clickHandler(event:MouseEvent):void
+		{
+			var button:ButtonBase = event.target as ButtonBase;
+			var popup:NewLightPopup = new NewLightPopup();
+			popup.open(this);
+			popup.addEventListener('close', newLightPopup_closeHandler);
+			var pos:Point = button.localToGlobal( new Point() );
+			popup.move( Math.min(pos.x-4, stage.width-200),  Math.min(pos.y-4, stage.height-200) );
+		}
+		private function newLightPopup_closeHandler(event:PopUpEvent):void 
+		{
+			if (!event.commit) return;
+			switch(event.data)
+			{
+				case "newDirectionalLight":
+					this.dispatchEvent( new PropertyEditorEvent( PropertyEditorEvent.LIGHTPICKER_ADD_DIRECTIONAL_LIGHT ) );
+					break;
+				default:
+					this.dispatchEvent( new PropertyEditorEvent( PropertyEditorEvent.LIGHTPICKER_ADD_POINT_LIGHT ) );
+					break;
+			}
+		}   
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="Light Picker" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	<s:FormItem label="Name:" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+		<s:TextInput id="nameInput" width="100%" text="@{_asset.name}" change="name_changeHandler(event)"/>
+	</s:FormItem>
+	<controls:PropertiesItemContainer label="Lights" width="100%"  paddingLeft="10" paddingRight="6" paddingTop="8">
+		<controls:layout>
+			<s:VerticalLayout/>
+		</controls:layout>
+		<controls:DroppableLightsList id="lightsList" dataProvider="{_asset.lights}" 
+									  dropEnabled="true" width="100%" 
+									  skinClass="awaybuilder.view.skins.AssetChildrenListSkin" 
+									  itemRenderer="awaybuilder.view.components.editors.renderers.LightItemRenderer"
+									  dropped="lightsList_droppedHandler(event)"/>
+		<s:HGroup width="100%" paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" horizontalAlign="right">
+			<s:Button id="addButton" toolTip="Add New" styleName="addButton" click="addButton_clickHandler(event)" height="22" width="22"/>
+			<s:Button id="deleteButton" enabled="{lightsList.selectedItem}" toolTip="Remove" styleName="removeButton" height="22" width="22"
+					  click="deleteButton_clickHandler(event)"/>
+		</s:HGroup>
+	</controls:PropertiesItemContainer>
+ 	
+</editors:EditorBase>

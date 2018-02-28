@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   title="Warning" close="titlewindow_closeHandler(event)">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="16" paddingRight="16" paddingTop="16" paddingBottom="16"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			protected function titlewindow_closeHandler(event:CloseEvent):void
+			{
+				PopUpManager.removePopUp( this );
+			}
+			
+			public static function show( closeHandler:Function ):ImportWarningPopup
+			{
+				var popup:ImportWarningPopup = PopUpManager.createPopUp( FlexGlobals.topLevelApplication as DisplayObject,ImportWarningPopup,true) as ImportWarningPopup;
+				popup.addEventListener( CloseEvent.CLOSE, closeHandler );
+				PopUpManager.centerPopUp( popup );
+				return popup;
+			}
+			
+			protected function yesButton_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE, false, false, Alert.YES ) );
+				PopUpManager.removePopUp( this );
+			}
+			
+			protected function noButton_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE, false, false, Alert.NO ) );
+				PopUpManager.removePopUp( this );
+			}
+			
+			protected function cancelButton_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+				PopUpManager.removePopUp( this );
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:HGroup width="100%" paddingBottom="16" paddingTop="16" paddingRight="16" paddingLeft="16"
+			  verticalAlign="middle" horizontalAlign="center"> 
+		<s:Label text="Do you want to import file to current library?" width="100%"/>
+	</s:HGroup>
+	<s:HGroup width="100%">
+		<s:Button id="yesButton" label="Yes" click="yesButton_clickHandler(event)"/>
+		<s:Button id="noButton" label="No, create new library" click="noButton_clickHandler(event)"/>
+		<s:Button id="cancelButton" label="Cancel" click="cancelButton_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

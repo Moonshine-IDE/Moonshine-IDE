@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="awaybuilder.view.components.*" xmlns:controls="awaybuilder.view.components.controls.*">
+	
+	<fx:Metadata>
+		[Event(name="newDocument",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="openDocument",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="saveDocument",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="printDocument",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="applicationSettings",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="documentSettings",type="awaybuilder.view.components.events.ToolBarEvent")]
+		[Event(name="help",type="awaybuilder.view.components.events.ToolBarEvent")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="cameraModeToolGroup" change="cameraModeToolGroup_changeHandler(event)"/>
+		<s:RadioButtonGroup id="transformModeToolGroup" change="transformModeToolGroup_changeHandler(event)"/>
+	</fx:Declarations>
+	
+	<!-- document -->
+	<s:Button id="newDocumentButton" styleName="toolbarButton" toolTip="New"
+		click="newDocumentButton_clickHandler(event)"/>
+	<s:Button id="openDocumentButton" styleName="toolbarButton" toolTip="Open..."
+		click="openDocumentButton_clickHandler(event)"/>
+	<s:Button id="importDocumentButton" styleName="toolbarButton" toolTip="Import..."
+			  click="importDocumentButton_clickHandler(event)"/>
+	<s:Button id="saveDocumentButton" styleName="toolbarButton" toolTip="Save"
+		click="saveDocumentButton_clickHandler(event)"/>
+	
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<!-- history -->
+	<s:Button id="undoButton" styleName="toolbarButton" toolTip="Undo"
+		click="undoButton_clickHandler(event)"/>
+	<s:Button id="redoButton" styleName="toolbarButton" toolTip="Redo"
+		click="redoButton_clickHandler(event)"/>
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<!-- clipboard -->
+	<s:Button id="cutButton" styleName="toolbarButton"
+			  toolTip="Cut"
+			  enabled="false"
+			  click="cutButton_clickHandler(event)"/>
+	<s:Button id="copyButton" styleName="toolbarButton"
+			  toolTip="Copy"
+			  enabled="false"
+			  click="copyButton_clickHandler(event)"/>
+	<s:Button id="pasteButton" styleName="toolbarButton"
+			  toolTip="Paste"
+			  enabled="false"
+			  click="pasteButton_clickHandler(event)"/>
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<!-- camera modes -->
+
+    <s:Button id="focusButton" styleName="toolbarButton" toolTip="Focus On Object" enabled="false" 
+              click="focusButton_clickHandler(event)"/>
+
+	<controls:SwitchButton id="targetCameraButton" styleName="toolbarButton" toolTip="Target Camera Mode" value="Target" tabFocusEnabled="false" tabEnabled="false" tabChildren="false" focusEnabled="false"
+							selected="true" group="{cameraModeToolGroup}"/>
+	<controls:SwitchButton id="freeCameraButton" styleName="toolbarButton" toolTip="Free Camera Mode" value="Free" tabFocusEnabled="false" tabEnabled="false" tabChildren="false"
+							group="{cameraModeToolGroup}"/>
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<!-- transform modes -->
+	<controls:SwitchButton id="translateButton" styleName="toolbarButton" toolTip="Translate Transform Mode" value="Translate"
+				   selected="true" group="{transformModeToolGroup}"/>
+	<controls:SwitchButton id="rotateButton" styleName="toolbarButton" toolTip="Rotate Transform Mode" value="Rotate"
+				   group="{transformModeToolGroup}"/>
+	<controls:SwitchButton id="scaleButton" styleName="toolbarButton" toolTip="Scale Transform Mode" value="Scale"
+				   group="{transformModeToolGroup}"/>
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<!-- operations -->
+	<s:Button id="deleteButton" styleName="toolbarButton"
+			  toolTip="Delete Selected Object"
+			  enabled="false"
+			  click="deleteButton_clickHandler(event)"/>
+	<mx:VRule styleName="toolbarSeparator" height="21"/>
+	
+	<mx:Spacer width="100%"/>
+	
+	<s:Button id="statsButton" styleName="toolbarButton" toolTip="Stats" click="statsButton_clickHandler(event)" alpha="0.9"/>
+	
+	<s:Button id="documentSettingsButton" styleName="toolbarButton" toolTip="Document Settings" click="documentSettingsButton_clickHandler(event)"/>
+	
+	<fx:Script>
+	<![CDATA[
+		import awaybuilder.view.components.events.ToolBarEvent;
+		import awaybuilder.view.components.popup.StatsPopup;
+		
+		private var _showBugReportButton:Boolean = false;
+		
+		[Bindable("showBugReportButtonChange")]
+		public function get showBugReportButton():Boolean
+		{
+			return this._showBugReportButton;
+		}
+		
+		public function set showBugReportButton(value:Boolean):void
+		{
+			if(this._showBugReportButton == value)
+			{
+				return;
+			}
+			this._showBugReportButton = value;
+			this.dispatchEvent(new Event("showBugReportButtonChange"));
+		}
+		
+		protected var selectionCountChanged:Boolean = false;
+		
+		private var _objectSelectionCount:int = 0;
+
+		public function get objectSelectionCount():int
+		{
+			return this._objectSelectionCount;
+		}
+
+		public function set objectSelectionCount(value:int):void
+		{
+			if(this._objectSelectionCount == value)
+			{
+				return;
+			}
+			this._objectSelectionCount = value;
+			this.selectionCountChanged = true;
+			this.invalidateProperties();
+		}
+		
+		private var _connectionSelectionCount:int = 0;
+		
+		public function get connectionSelectionCount():int
+		{
+			return this._connectionSelectionCount;
+		}
+		
+		public function set connectionSelectionCount(value:int):void
+		{
+			if(this._connectionSelectionCount == value)
+			{
+				return;
+			}
+			this._connectionSelectionCount = value;
+			this.selectionCountChanged = true;
+			this.invalidateProperties();
+		}
+
+		override protected function commitProperties():void
+		{
+			super.commitProperties();
+			
+			if(this.selectionCountChanged)
+			{
+				this.cutButton.enabled = this._objectSelectionCount > 0;
+				this.copyButton.enabled = this._objectSelectionCount > 0;
+				this.deleteButton.enabled = this._connectionSelectionCount > 0 || this._objectSelectionCount > 0;
+				this.selectionCountChanged = false;
+			}
+		}
+		
+		protected function transformModeToolGroup_changeHandler(event:Event):void
+		{
+			if(this.transformModeToolGroup.selectedValue == "Translate")
+			{
+				this.dispatchEvent(new ToolBarEvent(ToolBarEvent.TRANSFORM_TRANSLATE));
+			}
+			else if(this.transformModeToolGroup.selectedValue == "Rotate")
+			{
+				this.dispatchEvent(new ToolBarEvent(ToolBarEvent.TRANSFORM_ROTATE));
+			}
+			else
+			{
+				this.dispatchEvent(new ToolBarEvent(ToolBarEvent.TRANSFORM_SCALE));
+			}
+		}
+		protected function cameraModeToolGroup_changeHandler(event:Event):void
+		{
+			if(this.cameraModeToolGroup.selectedValue == "Free")
+			{
+				this.dispatchEvent(new ToolBarEvent(ToolBarEvent.SWITCH_CAMERA_TO_FREE));
+			}
+			else
+			{
+				this.dispatchEvent(new ToolBarEvent(ToolBarEvent.SWITCH_CAMERA_TO_TARGET));
+			}
+		}
+		
+		protected function cutButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.CLIPBOARD_CUT));
+		}
+		
+		protected function copyButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.CLIPBOARD_COPY));
+		}
+		
+		protected function pasteButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.CLIPBOARD_PASTE));
+		}
+		
+		protected function deleteButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.DELETE_SELECTION));
+		}
+		
+		protected function focusButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.FOCUS_OBJECT));
+		}
+		
+		protected function newDocumentButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.NEW_DOCUMENT));
+		}
+
+		protected function importDocumentButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.IMPORT_DOCUMENT));
+		}
+		
+		protected function openDocumentButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.OPEN_DOCUMENT));
+		}
+
+		protected function saveDocumentButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.SAVE_DOCUMENT));
+		}
+		
+		protected function undoButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.UNDO));
+		}
+		
+		protected function redoButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.REDO));
+		}
+
+		protected function documentSettingsButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ToolBarEvent(ToolBarEvent.DOCUMENT_SETTINGS));
+		}
+		
+		protected function statsButton_clickHandler(event:MouseEvent):void
+		{
+			StatsPopup.show();
+		}
+		
+		
+		
+		
+	]]>
+	</fx:Script>
+</s:SkinnableContainer>

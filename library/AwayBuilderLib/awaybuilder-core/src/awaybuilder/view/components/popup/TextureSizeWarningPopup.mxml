@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   title="Warning" close="titlewindow_closeHandler(event)"
+			   width="800" height="400">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="16" paddingRight="16" paddingTop="16" paddingBottom="16"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import away3d.library.assets.BitmapDataAsset;
+			import awaybuilder.model.vo.DocumentVO;
+			import awaybuilder.utils.AssetUtil;
+			import away3d.tools.utils.TextureUtils;
+			import mx.collections.ArrayCollection;
+			import awaybuilder.utils.logging.AwayBuilderLoadErrorLogger;
+			import mx.events.CloseEvent;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private static var textureWarningLog:ArrayCollection = new ArrayCollection();
+			 
+			protected function titlewindow_closeHandler(event:CloseEvent):void
+			{
+				PopUpManager.removePopUp( this );
+			}
+			
+			public static function show( ):TextureSizeWarningPopup
+			{
+				var popup:TextureSizeWarningPopup = PopUpManager.createPopUp( FlexGlobals.topLevelApplication as DisplayObject,TextureSizeWarningPopup,true) as TextureSizeWarningPopup;
+				PopUpManager.centerPopUp( popup );
+				
+				textureWarningLog.removeAll();
+				var idx:int = 0;
+				for each (var line:String in AwayBuilderLoadErrorLogger.log) {
+					textureWarningLog.addItem({ Warning:line, Rescale:"btn_"+idx });
+					idx++;
+				}
+				
+				return popup;
+			}			
+
+			public static function updateButton_clickHandler(event:MouseEvent):void
+			{
+				var b:Button = event.target as Button;
+				var idx:int = parseInt(b.name.substring(3));
+				
+				var msg:String = textureWarningLog[idx]["Warning"];
+				var obj:* = AwayBuilderLoadErrorLogger.getData(msg);
+				
+				var bmp:BitmapData = obj.assetEvent.bitmapData;
+				var name:String = obj.assetEvent.name;
+				var mtx : Matrix;
+				var tmp : BitmapData = bmp;
+				var dim : Number = Math.max(tmp.width, tmp.height);
+				
+				dim = TextureUtils.getBestPowerOf2(dim);
+				
+				mtx = new Matrix(dim/tmp.width, 0, 0, dim/tmp.height);
+				bmp = new BitmapData(dim, dim, tmp.transparent, 0);
+				bmp.draw(tmp, mtx, null, null, null, true);
+				
+				
+				
+				//TODO: Replace the assets BitmapTexture bitmapData with the rescaled version
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:HGroup width="100%" paddingTop="16" paddingRight="16" paddingLeft="16"
+			  verticalAlign="middle" horizontalAlign="center"> 
+		<s:Label width="100%" paddingRight="16" paddingLeft="16">
+			<s:text>
+One or more textures are too large or the dimensions are not to power of 2. Click the button next to each entry to rescale and update the image texture.
+
+Note: To improve quality, it is advisable to manually adjust the source image in an external application and replace the texture.
+			</s:text>
+		</s:Label>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingTop="16" paddingRight="16" paddingLeft="16"
+			  verticalAlign="middle" horizontalAlign="center">
+	    <s:DataGrid height="170" id="textureWarnings"
+	        dataProvider="{textureWarningLog}"
+	        width="100%">   
+	        <s:columns>
+	            <s:ArrayList>
+	                <s:GridColumn dataField="Warning" headerText="Warning message" />
+	                <!--<s:GridColumn dataField="Rescale" headerText="Rescale &amp; Update" width="130">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:GridItemRenderer>
+									<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center" paddingTop="4">
+										<s:Button label="Rescale" name="{data.Rescale}" click="TextureSizeWarningPopup.updateButton_clickHandler(event)"/>
+									</s:HGroup>
+								</s:GridItemRenderer>
+							</fx:Component>
+						</s:itemRenderer>
+      	        	</s:GridColumn>-->
+	            </s:ArrayList>
+	        </s:columns>       
+	    </s:DataGrid>      
+	</s:HGroup>
+	<s:HGroup width="100%" paddingTop="16" >
+		<s:Button id="closeButton" label="Close" click="closeButton_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

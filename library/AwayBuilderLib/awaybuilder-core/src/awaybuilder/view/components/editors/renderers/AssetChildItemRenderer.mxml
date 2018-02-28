@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" height="24">
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	
+	<s:layout>
+		<s:HorizontalLayout paddingLeft="5" verticalAlign="middle" paddingRight="1" paddingBottom="0" paddingTop="0" gap="4"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import away3d.materials.methods.EffectMethodBase;
+			
+			import awaybuilder.model.vo.scene.AssetVO;
+			import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+			
+			[Bindable]
+			private var _asset:AssetVO
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				_asset = value as AssetVO;
+			}
+			private function editSubmeshMaterialButton_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHOW_CHILD_PROPERTIES, data, true));
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect height="24" width="{this.width}" y="0" includeIn="hovered,selected" alpha.hovered="0.3" includeInLayout="false">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x105F9F" alpha="0.4" ratio="0.2"/>
+				<s:GradientEntry color="0x105F9F" alpha="0.5" ratio="0.9"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<s:Label id="labelDisplay" text="{_asset.name}" color.hovered="0xEEEEEE" paddingTop="1" width="100%"/>
+	<s:Button id="editSubmeshMaterialButton" styleName="editSharedObjectButtonStyle"
+			  width="22" height="22" click="editSubmeshMaterialButton_clickHandler(event)"/>
+	
+</s:ItemRenderer>

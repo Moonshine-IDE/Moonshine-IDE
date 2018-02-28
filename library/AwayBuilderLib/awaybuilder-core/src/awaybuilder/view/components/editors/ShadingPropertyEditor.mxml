@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" 
+					xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:editors="awaybuilder.view.components.editors.*" 
+					currentState="{_asset.type}"
+					>
+	<fx:Declarations>
+		<s:ArrayCollection id="diffuseList">
+			<fx:Object label="BasicDiffuseMethod" value="BasicDiffuseMethod"/>
+			<fx:Object label="GradientDiffuseMethod" value="GradientDiffuseMethod"/>
+			<fx:Object label="WrapDiffuseMethod" value="WrapDiffuseMethod"/>
+		</s:ArrayCollection>
+		<s:ArrayCollection id="specularList">
+			<fx:Object label="BasicSpecularMethod" value="BasicSpecularMethod"/>
+			<fx:Object label="AnisotropicSpecularMethod" value="AnisotropicSpecularMethod"/>
+			<fx:Object label="PhongSpecularMethod" value="PhongSpecularMethod"/>
+		</s:ArrayCollection>
+	</fx:Declarations>
+	<editors:states>
+		<s:State name="BasicAmbientMethod"/>
+		<s:State name="EnvMapAmbientMethod"/>
+		<s:State name="BasicDiffuseMethod"/>
+		<s:State name="GradientDiffuseMethod"/>
+		<s:State name="WrapDiffuseMethod"/>
+		<s:State name="LightMapDiffuseMethod"/>
+		<s:State name="CelDiffuseMethod"/>
+		<s:State name="SubsurfaceScatteringDiffuseMethod"/>
+		<s:State name="BasicSpecularMethod"/>
+		<s:State name="AnisotropicSpecularMethod"/>
+		<s:State name="PhongSpecularMethod"/>
+		<s:State name="CelSpecularMethod"/>
+		<s:State name="FresnelSpecularMethod"/>
+		<s:State name="BasicNormalMethod"/>
+		<s:State name="HeightMapNormalMethod"/>
+		<s:State name="SimpleWaterNormalMethod"/>
+	</editors:states>
+	
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.AssetVO;
+		import awaybuilder.model.vo.scene.CubeTextureVO;
+		import awaybuilder.model.vo.scene.ShadingMethodVO;
+		import awaybuilder.model.vo.scene.TextureVO;
+		import awaybuilder.view.components.controls.events.ExtendedDropDownEvent;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import spark.events.IndexChangeEvent;
+		
+		[Bindable] private var _asset:ShadingMethodVO;
+		
+		[Bindable] private var _selectedDiffuseMethod:Object;
+		[Bindable] private var _selectedSpecularMethod:Object;
+		
+		override protected function validate():void
+		{
+			if( !(data is ShadingMethodVO) ) return;
+			_asset = ShadingMethodVO(data).clone();
+			
+			var item:Object;
+			
+			if( _asset.baseMethod )
+			{
+				for each(item in diffuseList) 
+				{
+					if( item.value == _asset.baseMethod.type ) 
+					{
+						_selectedDiffuseMethod = item;
+					}
+				}
+				for each(item in specularList) 
+				{
+					if( item.value == _asset.baseMethod.type ) 
+					{
+						_selectedSpecularMethod = item;
+					}
+				}
+			}
+		}
+		
+		private function stepper_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_STEPPER_CHANGE, _asset, true));
+		}
+		private function value_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_CHANGE, _asset, true));
+		}
+		
+		protected function textureList_addNewItemHandler(event:ExtendedDropDownEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_ADD_TEXTURE, _asset, true));
+		}
+		
+		protected function environmentMapDropDownList_addNewItemHandler(event:ExtendedDropDownEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_ADD_CUBE_TEXTURE, _asset, true));
+		}
+		protected function environmentMapDropDownListButton_clickHandler(event:MouseEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHOW_CHILD_PROPERTIES, _asset.envMap));
+		}
+		private function dropDownIconFunction(item:TextureVO):Object 
+		{
+			return item.bitmapData;
+		}
+		
+		private function dropDownLabelFunction(item:AssetVO):Object 
+		{
+			return item.name.split("/").pop();
+		}
+		private function dropDownCubeTextureIconFunction(item:CubeTextureVO):Object 
+		{
+			return item.positiveX;
+		}
+		
+		protected function editSharedObjectButton_clickHandler(event:MouseEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHOW_CHILD_PROPERTIES, _asset.baseMethod));
+		}
+		
+		protected function textureButton_clickHandler(event:MouseEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHOW_CHILD_PROPERTIES, _asset.texture));
+		}
+		
+		protected function diffuseMethodDropDownList_changeHandler(event:IndexChangeEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_BASE_METHOD_CHANGE, baseDiffuseMethodDropDownList.selectedItem.value));
+		}
+		protected function specularMethodDropDownList_changeHandler(event:IndexChangeEvent):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADINGMETHOD_BASE_METHOD_CHANGE, baseSpecularMethodDropDownList.selectedItem.value));
+		}
+		
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="{_asset.type}" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	<controls:PropertiesItemContainer label="Environment Map" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="EnvMapAmbientMethod">
+		<controls:ExtendedDropDownList id="environmentMapDropDownList" width="100%" height="40" requireSelection="true"
+									   itemRenderer="awaybuilder.view.components.editors.renderers.CubeTextureItemRenderer"
+									   dataProvider="{cubeTextures}" selectedItem="@{_asset.envMap}"
+									   labelFunction="{dropDownLabelFunction}" iconFunction="{dropDownCubeTextureIconFunction}"
+									   newItemLabel="New Cube Texture"
+									   change="value_changeHandler(event)"
+									   addNewItem="environmentMapDropDownList_addNewItemHandler(event)"
+									   />
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="environmentMapDropDownListButton_clickHandler(event)" enabled="{!environmentMapDropDownList.selectedItem.isNull&amp;&amp;!environmentMapDropDownList.selectedItem.isDefault}"/>
+	</controls:PropertiesItemContainer>
+	<controls:PropertiesItemContainer label="Gradient" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="GradientDiffuseMethod">
+		<controls:ExtendedDropDownList id="gradientDropDownList" width="100%" height="40" requireSelection="true"
+									   itemRenderer="awaybuilder.view.components.editors.renderers.TextureItemRenderer"
+									   dataProvider="{textures}" selectedItem="@{_asset.texture}"
+									   labelFunction="{dropDownLabelFunction}" iconFunction="{dropDownIconFunction}"
+									   newItemLabel="New Texture"
+									   change="value_changeHandler(event)"
+									   addNewItem="textureList_addNewItemHandler(event)"
+									   />
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="textureButton_clickHandler(event)" enabled="{!gradientDropDownList.selectedItem.isNull&amp;&amp;!gradientDropDownList.selectedItem.isDefault}"/>
+	</controls:PropertiesItemContainer>
+	<controls:PropertiesItemContainer label="Light Map" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="LightMapDiffuseMethod">
+		<controls:ExtendedDropDownList id="lightMapDropDownList" width="100%" height="40" requireSelection="true"
+									   itemRenderer="awaybuilder.view.components.editors.renderers.TextureItemRenderer"
+									   dataProvider="{textures}" selectedItem="@{_asset.texture}"
+									   labelFunction="{dropDownLabelFunction}" iconFunction="{dropDownIconFunction}"
+									   change="value_changeHandler(event)"
+									   addNewItem="textureList_addNewItemHandler(event)"
+									   newItemLabel="New Texture" />
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="textureButton_clickHandler(event)" enabled="{!lightMapDropDownList.selectedItem.isNull&amp;&amp;!lightMapDropDownList.selectedItem.isDefault}"/>
+	</controls:PropertiesItemContainer>
+	<controls:PropertiesItemContainer label="Secondary Normal Map" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="SimpleWaterNormalMethod">
+		<controls:ExtendedDropDownList id="secondaryNormalMapDropDownList" width="100%" height="40" requireSelection="true"
+									   itemRenderer="awaybuilder.view.components.editors.renderers.TextureItemRenderer"
+									   dataProvider="{textures}" selectedItem="@{_asset.texture}"
+									   labelFunction="{dropDownLabelFunction}" iconFunction="{dropDownIconFunction}"
+									   change="value_changeHandler(event)"
+									   addNewItem="textureList_addNewItemHandler(event)"
+									   newItemLabel="New Texture" />
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="textureButton_clickHandler(event)" enabled="{!secondaryNormalMapDropDownList.selectedItem.isNull&amp;&amp;!secondaryNormalMapDropDownList.selectedItem.isDefault}"/>
+	</controls:PropertiesItemContainer>
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Warp Factor" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="WrapDiffuseMethod">
+			<controls:DragableNumericStepper value="@{_asset.value}" stepSize="0.1" snapInterval="0.01" minimum="0" maximum="1" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Blend Mode" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="LightMapDiffuseMethod">
+			<s:DropDownList id="blendModeDropDownList" requireSelection="true" selectedItem="@{_asset.blendMode}"
+							width="100%" change="value_changeHandler(event)" >
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:String>add</fx:String>
+						<fx:String>multiply</fx:String>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</s:FormItem>
+		
+		<s:FormItem label="Specular Cutoff" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="CelSpecularMethod">
+			<controls:DragableNumericStepper stepSize="1" snapInterval="1" minimum="1" maximum="24" width="40" value="@{_asset.value}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Levels" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="CelDiffuseMethod">
+			<controls:DragableNumericStepper stepSize="1" snapInterval="1" minimum="1" maximum="24" width="40" value="@{_asset.value}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Smoothness" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="CelDiffuseMethod,CelSpecularMethod">
+			<controls:DragableNumericStepper stepSize="0.1" snapInterval="0.01" minimum="0" maximum="1" width="40" value="@{_asset.smoothness}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		
+		<s:FormItem label="Based on Surface" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="FresnelSpecularMethod">
+			<s:CheckBox change="value_changeHandler(event)" selected="@{_asset.basedOnSurface}" />
+		</s:FormItem>
+		<s:FormItem label="Fresnel Power" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="FresnelSpecularMethod">
+			<controls:DragableNumericStepper stepSize="0.1" snapInterval="0.1" minimum="0" maximum="10" width="40" value="@{_asset.fresnelPower}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Normal Reflectance" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="FresnelSpecularMethod">
+			<controls:DragableNumericStepper stepSize="0.01" snapInterval="0.001" minimum="0" maximum="1" width="40" value="@{_asset.value}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Scattering" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="SubsurfaceScatteringDiffuseMethod">
+			<controls:DragableNumericStepper stepSize="0.01" snapInterval="0.001" minimum="0" maximum="1" width="40" value="@{_asset.scattering}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Translucency" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="SubsurfaceScatteringDiffuseMethod">
+			<controls:DragableNumericStepper stepSize="0.01" snapInterval="0.001" minimum="0" maximum="1" width="40" value="@{_asset.translucency}" change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="Scatter Color" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="SubsurfaceScatteringDiffuseMethod">
+			<mx:ColorPicker selectedColor="@{_asset.scatterColor}" change="value_changeHandler(event)"/>
+		</s:FormItem>
+
+	<!--	<s:FormItem label="World Width" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="HeightMapNormalMethod">
+			<controls:DragableNumericStepper stepSize="1" snapInterval="0.1" minimum="0" maximum="100" width="40" value="@{_asset.width}"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="World Height" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="HeightMapNormalMethod">
+			<controls:DragableNumericStepper stepSize="1" snapInterval="0.1" minimum="0" maximum="100" width="40" value="@{_asset.height}"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		<s:FormItem label="World Depth" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="HeightMapNormalMethod">
+			<controls:DragableNumericStepper stepSize="1" snapInterval="0.1" minimum="0" maximum="100" width="40" value="@{_asset.depth}"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>-->
+		
+	</s:Form>
+	<controls:PropertiesItemContainer label="Base Method" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="LightMapDiffuseMethod,CelDiffuseMethod,SubsurfaceScatteringDiffuseMethod">
+		<s:DropDownList id="baseDiffuseMethodDropDownList" requireSelection="true"
+						change="diffuseMethodDropDownList_changeHandler(event)" width="100%"
+						selectedItem="{_selectedDiffuseMethod}" dataProvider="{diffuseList}"
+						/>
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="editSharedObjectButton_clickHandler(event)"/>
+	</controls:PropertiesItemContainer>
+	<controls:PropertiesItemContainer label="Base Method" paddingLeft="10" paddingTop="6" paddingRight="8" width="100%" includeIn="CelSpecularMethod,FresnelSpecularMethod">
+		<s:DropDownList id="baseSpecularMethodDropDownList" requireSelection="true"
+						change="specularMethodDropDownList_changeHandler(event)" width="100%"
+						selectedItem="{_selectedSpecularMethod}" dataProvider="{specularList}"
+						/>
+		<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="editSharedObjectButton_clickHandler(event)"/>
+	</controls:PropertiesItemContainer>
+</editors:EditorBase>

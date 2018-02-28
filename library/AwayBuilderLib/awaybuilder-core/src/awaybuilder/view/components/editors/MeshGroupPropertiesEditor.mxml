@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="awaybuilder.view.components.*" xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:editors="awaybuilder.view.components.editors.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="awaybuilder.view.components.editors.renderers.*">
+	<fx:Declarations>
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import away3d.core.base.Object3D;
+		
+		import awaybuilder.model.vo.scene.AssetVO;
+		import awaybuilder.model.vo.scene.ContainerVO;
+		import awaybuilder.model.vo.scene.ExtraItemVO;
+		import awaybuilder.model.vo.scene.MeshVO;
+		import awaybuilder.model.vo.scene.ObjectVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import mx.controls.Alert;
+		
+		import spark.events.GridItemEditorEvent;
+		
+		[Bindable]
+		private var _asset:MeshVO = new MeshVO();
+		
+		private var _assets:Array;
+		
+		override protected function validate():void
+		{
+			if( !(data is Array) ) return;
+			_assets = data as Array;
+			validateGroup();
+			this.owner.addEventListener( "updateGroupCollection", updateGroupCollectionHandler );
+		}
+		
+		private function validateGroup():void
+		{
+			_asset.fillFromMesh( _assets[0] as MeshVO );
+			
+			for each( var asset:MeshVO in _assets )
+			{
+				if( _asset.castsShadows != asset.castsShadows ) _asset.castsShadows = false;
+				if( _asset.x != asset.x ) _asset.x = Number.NaN;
+				if( _asset.y != asset.y ) _asset.y = Number.NaN;
+				if( _asset.z != asset.z ) _asset.z = Number.NaN;
+				if( _asset.scaleX != asset.scaleX ) _asset.scaleX = Number.NaN;
+				if( _asset.scaleY != asset.scaleY ) _asset.scaleY = Number.NaN;
+				if( _asset.scaleZ != asset.scaleZ ) _asset.scaleZ = Number.NaN;
+				if( _asset.pivotX != asset.pivotX ) _asset.pivotX = Number.NaN;
+				if( _asset.pivotY != asset.pivotY ) _asset.pivotY = Number.NaN;
+				if( _asset.pivotZ != asset.pivotZ ) _asset.pivotZ = Number.NaN;
+				if( _asset.rotationX != asset.rotationX ) _asset.rotationX = Number.NaN;
+				if( _asset.rotationY != asset.rotationY ) _asset.rotationY = Number.NaN;
+				if( _asset.rotationZ != asset.rotationZ ) _asset.rotationZ = Number.NaN;
+			}
+		}
+		private function updateGroupCollectionHandler(event:Event):void 
+		{
+			validateGroup();
+		}
+		
+		private function value_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.MESH_CHANGE, _asset));
+		}
+		
+	]]></fx:Script>
+	
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="Mesh [ ]" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Cast Shadows" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+			<s:CheckBox id="castShadowBox" change="value_changeHandler(event)" selected="@{_asset.castsShadows}"/>
+		</s:FormItem>
+	</s:Form>
+	<s:Spacer height="6"/>
+	
+	<renderers:TransformationsGroup asset="{_asset}"/>
+	
+</editors:EditorBase>

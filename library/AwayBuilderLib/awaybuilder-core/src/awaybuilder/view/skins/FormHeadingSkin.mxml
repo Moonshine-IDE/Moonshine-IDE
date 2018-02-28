@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+ADOBE SYSTEMS INCORPORATED
+Copyright 2010 Adobe Systems Incorporated
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file
+in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!-- TODO
+    - Move the font style declaration to the FormHeading type selector in defaults.ccs
+
+-->
+
+<!--- The default skin class for the Spark FormHeading component.  
+
+@see spark.components.FormHeading
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 1.5
+@productversion Flex 4.5
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+        xmlns:s="library://ns.adobe.com/flex/spark" 
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+        alpha.disabled=".5">
+    
+    <fx:Metadata>
+        <![CDATA[ 
+        /** 
+        * @copy spark.skins.spark.ApplicationSkin#hostComponent
+        */
+        [HostComponent("spark.components.FormHeading")]
+        ]]>
+    </fx:Metadata> 
+    
+    <fx:Script fb:purpose="styling">
+        <![CDATA[         
+            /**
+             *  @private
+             */
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+            {
+                // Push backgroundColor and backgroundAlpha directly.
+                // Handle undefined backgroundColor by hiding the background object.
+                if (isNaN(getStyle("backgroundColor")))
+                {
+                    background.visible = false;
+                }
+                else
+                {
+                    background.visible = true;
+                    bgFill.color = getStyle("backgroundColor");
+                    bgFill.alpha = getStyle("backgroundAlpha");
+                }
+                
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+        ]]>        
+    </fx:Script>
+    
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="disabled" />	
+    </s:states>
+    
+    <s:layout>
+        <s:FormItemLayout>
+            <s:constraintColumns>
+                <!--- The column containing the form item's label. -->
+                <s:ConstraintColumn id="labelCol" />
+                <!--- The column containing the form item's content. -->
+                <s:ConstraintColumn id="contentCol" width="100%"/>
+            </s:constraintColumns>         
+            <s:constraintRows>
+                <!--- @private -->
+                <s:ConstraintRow id="row1" height="100%"/>
+            </s:constraintRows>  
+        </s:FormItemLayout>
+    </s:layout>
+
+    <!--- Defines the appearance of the Form class's background. -->
+    <s:Rect id="background" left="0" right="0" top="0" bottom="0">
+        <s:fill>
+            <!--- @private -->
+            <s:SolidColor id="bgFill" color="#FFFFFF"/>
+        </s:fill>
+    </s:Rect>
+    
+    <!--- @copy spark.components.FormHeading#labelDisplay -->
+    <s:Label id="labelDisplay" top="4" right="0" bottom="0" left="0"/>
+
+</s:Skin>

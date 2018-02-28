@@ -1,0 +1,63 @@
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabledGroup="0.5" >
+	<fx:Metadata>[HostComponent("spark.components.Window")]</fx:Metadata>
+
+	<fx:Script fb:purpose="styling">
+
+		static private const exclusions:Array = ["backgroundRect", "backgroundBitmapRect", "contentGroup"];
+
+		/**
+		 * @private
+		 */
+		override public function get colorizeExclusions():Array {return exclusions;}
+		
+		/**
+		 * @private
+		 */
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		} 
+
+		/**
+		 *  @private
+		 */
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+		{
+			backgroundFill.color = getStyle("backgroundColor");
+//			backgroundFill.alpha = backgroundBitmapRect.alpha = getStyle("backgroundAlpha");
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+		}
+	</fx:Script>
+	
+	 <s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" stateGroups="disabledGroup" />
+		<s:State name="normalAndInactive" stateGroups="inactiveGroup" />
+		<s:State name="disabledAndInactive" stateGroups="disabledGroup, inactiveGroup" />
+	</s:states>
+
+	<!-- layer 1: background fill -->
+	<!--- Defines the background color of the skin. -->
+	<s:Rect id="backgroundRect" left="0" right="0" top="0" bottom="0" >
+		<s:fill>
+			<!--- @private -->
+			<s:SolidColor id="backgroundFill"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect id="backgroundBitmapRect" left="0" right="0" top="0" bottom="0" >
+		<s:fill>
+			<!--- @private -->
+            <s:LinearGradient rotation="90">
+                <s:GradientEntry color="#192432"/>
+                <s:GradientEntry color="#1d1d1c"/>
+            </s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+
+	<!-- content -->
+	<!--- @copy spark.components.SkinnableContainer#contentGroup -->
+	<s:Group id="contentGroup" left="0" right="0" top="0" bottom="0" minHeight="0" minWidth="0"/>
+	
+</s:SparkSkin>
