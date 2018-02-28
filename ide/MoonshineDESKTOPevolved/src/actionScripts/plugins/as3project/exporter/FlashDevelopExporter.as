@@ -64,7 +64,7 @@ package actionScripts.plugins.as3project.exporter
 			project.appendChild(exportPaths(p.libraries, <libraryPaths />, <element />, p));
 			project.appendChild(exportPaths(p.externalLibraries, <externalLibraryPaths />, <element />, p));
 			project.appendChild(exportPaths(p.runtimeSharedLibraries, <rslPaths></rslPaths>, <element />, p));
-			project.appendChild(exportPaths(p.intrinsicLibraries, <intrinsics />, <element />, p));
+			project.appendChild(exportPathString(p.intrinsicLibraries, <intrinsics />, <element />, p));
 			if (p.assetLibrary && p.assetLibrary.children().length() == 0)
 			{
 				var libXML:XMLList = p.assetLibrary;
@@ -174,5 +174,28 @@ package actionScripts.plugins.as3project.exporter
 			return container;
 		}
 		
+		private static function exportPathString(v:Vector.<String>, container:XML, element:XML, p:AS3ProjectVO, absolutePath:Boolean=false, appendAsValue:Boolean=false, nullValue:String=null):XML
+		{
+			for each (var f:String in v) 
+			{
+				var e:XML = element.copy();
+				if (appendAsValue) e.appendChild(f);
+				else e.@path = f;
+				container.appendChild( e );
+			}
+			
+			if (v.length == 0 && nullValue)
+			{
+				element.appendChild(nullValue);
+				container.appendChild(nullValue);
+			}
+			else if (v.length == 0)
+			{
+				var tmpXML:XML = <!-- <empty/> -->
+				container.appendChild(tmpXML);
+			}
+			
+			return container;
+		}
 	}
 }

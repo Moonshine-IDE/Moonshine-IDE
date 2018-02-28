@@ -50,5 +50,17 @@ package actionScripts.plugin.core.importer
 				}
 			}
 		}
+		
+		protected static function parsePathString(paths:XMLList, v:Vector.<String>, p:ProjectVO, attrName:String="path"):void 
+		{
+			for each (var pathXML:XML in paths)
+			{
+				var path:String = pathXML.attribute(attrName);
+				if (path)
+				{
+					v.push(path);
+				}
+			}
+		}
 	}
 }

@@ -76,7 +76,7 @@ package actionScripts.plugins.as3project.importer
             parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
 
             project.assetLibrary = data.library;
-            parsePaths(data.intrinsics.element, project.intrinsicLibraries, project, "path", project.buildOptions.customSDKPath);
+            parsePathString(data.intrinsics.element, project.intrinsicLibraries, project, "path");
             parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
 			
