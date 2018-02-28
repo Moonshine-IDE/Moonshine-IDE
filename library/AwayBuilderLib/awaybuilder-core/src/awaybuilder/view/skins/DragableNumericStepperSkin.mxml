@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+	  xmlns:fb="http://ns.adobe.com/flashbuilder/2009" minHeight="23" minWidth="30" width="30" 
+	  alpha.disabled="0.5">
+	<fx:Metadata>[HostComponent("awaybuilder.view.components.controls.DragableNumericStepper")]</fx:Metadata>
+
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="focused"/>
+	</s:states>
+
+	<s:TextInput id="textDisplay" left="0" top="0" right="0" bottom="0" visible="{hostComponent.editingMode}"
+		skinClass="spark.skins.spark.NumericStepperTextInputSkin"/>
+	<s:Label id="valueDisplay" left="0" top="0" right="0" bottom="0" paddingLeft="3" paddingRight="3" color.focused="0xCCCCCC" paddingTop="7" 
+			 visible="{!hostComponent.editingMode}" maxDisplayedLines="1" 
+			 color="0x4382e2"/>
+</s:SparkSkin>

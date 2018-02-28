@@ -1,0 +1,25 @@
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace components "awaybuilder.desktop.view.components.*";
+
+s|WindowedApplication
+{
+	backgroundColor: #333333;
+	backgroundAlpha: 0;
+	skinClass: ClassReference("awaybuilder.desktop.view.skins.AwayBuilderSkin");
+}
+
+s|Window
+{
+	color: #dbdbdb;
+	backgroundColor: #1d1d1c;
+	chromeColor: #1d1d1c;
+	symbolColor: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.desktop.view.skins.WindowSkin");
+}
+
+s|Window #controlBar
+{
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}

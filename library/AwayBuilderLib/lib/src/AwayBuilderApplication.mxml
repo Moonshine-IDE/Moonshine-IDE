@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group
+				xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx"
+				xmlns:components="awaybuilder.view.components.*"
+				minWidth="1024" minHeight="720" 
+				preinitialize="preinitializeHandler(event)" xmlns:desktop="awaybuilder.desktop.*"
+				>
+	<mx:Menu>
+		<mx:FlexNativeMenu id="menu" dataProvider="{menuProvider}" keyEquivalentModifiersFunction="keyEquivalentModifiers"/>
+	</mx:Menu>
+	
+	<fx:Declarations>
+		<fx:Array id="menuProvider">
+			<fx:Object label="File">
+				<fx:children>
+					<fx:Array>
+						<fx:Object label="New" value="{EMenuItem.NEW_DOCUMENT}" keyEquivalent="n" modifyer="1" />
+						<fx:Object label="Open..." value="{EMenuItem.OPEN}" keyEquivalent="o" modifyer="1"/>
+						<fx:Object label="Import..." value="{EMenuItem.IMPORT}" keyEquivalent="i" modifyer="1"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Save" value="{EMenuItem.SAVE}" keyEquivalent="s" modifyer="1"/>
+						<fx:Object label="Save As..." value="{EMenuItem.SAVE_AS}" keyEquivalent="S" modifyer="1"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Exit" value="{EMenuItem.EXIT}" />
+					</fx:Array>
+				</fx:children>
+			</fx:Object>
+			<fx:Object label="Edit">
+				<fx:children>
+					<fx:Array>
+						<fx:Object label="Undo" value="{EMenuItem.UNDO}" modifyer="1" keyEquivalent="z"/>
+						<fx:Object label="Redo" value="{EMenuItem.REDO}" modifyer="1" keyEquivalent="y"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Cut" value="{EMenuItem.CUT}" modifyer="1" keyEquivalent="x"/>
+						<fx:Object label="Copy" value="{EMenuItem.COPY}" modifyer="1" keyEquivalent="c"/>
+						<fx:Object label="Paste" value="{EMenuItem.PASTE}" modifyer="1" keyEquivalent="v"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Delete" value="{EMenuItem.DELETE}"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Select All" value="{EMenuItem.SELECT_ALL}" modifyer="1" keyEquivalent="a"/>
+						<fx:Object label="Select None" value="{EMenuItem.SELECT_NONE}"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Document Settings" value="{EMenuItem.DOCUMENT_SETTINGS}"/>
+					</fx:Array>
+				</fx:children>
+			</fx:Object>
+			<fx:Object label="View">
+				<fx:children>
+					<fx:Array>
+						<fx:Object label="Zoom In" value="{EMenuItem.ZOOM_IN}" modifyer="1" keyEquivalent="+"/>
+						<fx:Object label="Zoom Out" value="{EMenuItem.ZOOM_OUT}" modifyer="1" keyEquivalent="-"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Focus Selected" value="{EMenuItem.FOCUS}" modifyer="1" keyEquivalent="f"/>
+					</fx:Array>
+				</fx:children>
+			</fx:Object>
+			<fx:Object label="Tools">
+				<fx:children>
+					<fx:Array>
+						<fx:Object label="Target Camera Mode" value="{EMenuItem.TARGET_CAMERA}" type="check" toggled="{true}" modifyer="2" keyEquivalent="t"/>
+						<fx:Object label="Free Camera Mode" value="{EMenuItem.FREE_CAMERA}" type="check" modifyer="2" keyEquivalent="f"/>
+						<fx:Object type="separator"/> 
+						<fx:Object label="Translate Transform Mode" value="{EMenuItem.TRANSLATE_MODE}" type="check" modifyer="1" keyEquivalent="t"/>
+						<fx:Object label="Rotate Transform Mode" value="{EMenuItem.ROTATE_MODE}" type="check" modifyer="1" keyEquivalent="r"/>
+						<fx:Object label="Scale Transform Mode" value="{EMenuItem.SCALE_MODE}" type="check" modifyer="1" keyEquivalent="s"/>
+					</fx:Array>
+				</fx:children>
+			</fx:Object>
+			<fx:Object label="Help">
+				<fx:children>
+					<fx:Array>
+						<fx:Object label="About" value="{EMenuItem.ABOUT}"/>
+					</fx:Array>
+				</fx:children>
+			</fx:Object>
+		</fx:Array>
+		
+		<desktop:DesktopAppContext contextView="{this}"/>
+		
+	</fx:Declarations>
+	
+	<components:CoreEditor id="coreEditor" width="100%" height="100%"/>
+	
+	<fx:Script><![CDATA[
+		import awaybuilder.AwayBuilder;
+		import awaybuilder.desktop.view.components.UpdatePopup;
+		import awaybuilder.utils.enumerators.EMenuItem;
+		
+		import mx.controls.Alert;
+		import mx.events.CloseEvent;
+		import mx.events.FlexEvent;
+
+		private var _updatePopup:UpdatePopup;
+		
+		private var _updateCancelled:Boolean = false;
+		
+		public var splashScreen:SplashScreen;
+		
+		public var isMac:Boolean;
+		
+        private function preinitializeHandler(event:FlexEvent):void
+        {
+			splashScreen = new SplashScreen();
+			
+			isMac = (Capabilities.os.indexOf("Mac OS") >= 0); 
+			
+			var urlLoader:URLLoader = new URLLoader();
+			urlLoader.load( new URLRequest( "https://raw.github.com/awaytools/AwayBuilder/master/awaybuilder-core/src/awaybuilder/AwayBuilder.as" ) );
+			urlLoader.addEventListener(Event.COMPLETE, urlLoader_completeHandler );
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, function(event:Event):void{ trace( event )} );
+        }
+		
+		private function keyEquivalentModifiers(item:Object):Array 
+		{
+			
+			if( item.modifyer == "1" )
+			{
+				return [getCommandKey()];
+			}
+			else if( item.modifyer == "2" )
+			{
+				return [getCommandKey(),Keyboard.ALTERNATE];
+			}
+			return [];
+		}
+		
+		public function getCommandKey():uint
+		{
+			if( isMac )
+				return Keyboard.COMMAND;
+			return Keyboard.CONTROL;
+		}
+		private function urlLoader_completeHandler( event:Event ):void
+		{
+			var urlLoader:URLLoader = event.target as URLLoader;
+			var strings:Array = urlLoader.data.toString().split(";");
+			
+			var majorStrings:Array = strings[1].toString().split( " = " );
+			var minorStrings:Array = strings[2].toString().split( " = " );
+			var revisionStrings:Array = strings[3].toString().split( " = " );
+			
+			var version:Array = [parseInt( majorStrings[1] ), parseInt( minorStrings[1] ), parseInt( revisionStrings[1] )];
+			
+			var currentVersionWeight:Number = AwayBuilder.MAJOR_VERSION*1000000+AwayBuilder.MINOR_VERSION*10000+AwayBuilder.REVISION;
+			var versionWeight:Number = version[0]*1000000+version[1]*10000+version[2];
+			if( versionWeight > currentVersionWeight ) 
+			{
+				_updatePopup = UpdatePopup.show();
+				_updatePopup.addEventListener( CloseEvent.CLOSE, versionAlert_closeHandler );
+			}
+			
+		}
+		private function versionAlert_closeHandler( event:CloseEvent ):void
+		{
+			if( event.detail == Alert.OK )
+			{
+				var airLoader:URLLoader = new URLLoader();
+				airLoader.dataFormat = URLLoaderDataFormat.BINARY;
+				airLoader.load( new URLRequest( "https://github.com/awaytools/AwayBuilder/blob/master/awaybuilder-desktop/bin-release/AwayBuilderApplication.air?raw=true" ) );
+				airLoader.addEventListener(Event.COMPLETE, airLoader_completeHandler );
+				airLoader.addEventListener(ProgressEvent.PROGRESS, airLoader_progressHandler );
+				airLoader.addEventListener(IOErrorEvent.IO_ERROR, airLoader_errorHandler );
+			}
+			else if( event.detail == Alert.CANCEL )
+			{
+				_updateCancelled = true;
+				_updatePopup = null;
+			}
+		}
+		
+		private function airLoader_errorHandler( event:IOErrorEvent ):void
+		{
+			Alert.show( "Update interrupted, try next time" );
+		}
+		
+		private function airLoader_progressHandler( event:ProgressEvent ):void
+		{
+			if( _updatePopup )
+			{
+				_updatePopup.setProgress( event.bytesLoaded, event.bytesTotal );
+			}
+		}
+		private function airLoader_completeHandler( event:Event ):void
+		{
+			if( _updateCancelled ) return;
+			var urlLoader:URLLoader = event.target as URLLoader;
+			
+			var file:File = File.applicationStorageDirectory.resolvePath("awayBuilderInstaller.air");
+			var stream:FileStream = new FileStream();
+			stream.open(file, FileMode.WRITE);
+			stream.writeBytes( urlLoader.data );
+			stream.close();
+			file.openWithDefaultApplication();
+			//this.nativeApplication.exit();
+		}
+
+	]]></fx:Script>
+	
+</s:Group>

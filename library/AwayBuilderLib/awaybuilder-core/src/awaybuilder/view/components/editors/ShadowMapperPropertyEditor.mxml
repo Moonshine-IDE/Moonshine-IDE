@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" 
+					xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:editors="awaybuilder.view.components.editors.*" 
+					currentState="{_asset.type}"
+					>
+	<fx:Declarations>
+	</fx:Declarations>
+	<editors:states>
+		<s:State name="DirectionalShadowMapper"/>
+		<s:State name="NearDirectionalShadowMapper"/>
+		<s:State name="CascadeShadowMapper"/>
+		<s:State name="CubeMapShadowMapper"/>
+	</editors:states>
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.AssetVO;
+		import awaybuilder.model.vo.scene.ShadowMapperVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import spark.events.IndexChangeEvent;
+		
+		[Bindable]
+		private var _asset:ShadowMapperVO;
+		
+		override protected function validate():void
+		{
+			if( !(data is ShadowMapperVO) ) return;
+			_asset = ShadowMapperVO(data).clone();
+		}
+		
+		private function stepper_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADOWMAPPER_STEPPER_CHANGE, _asset, true));
+		}
+		private function value_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADOWMAPPER_CHANGE, _asset, true));
+		}
+		
+		
+		protected function numCascadesDropdownList_changeHandler(event:IndexChangeEvent):void
+		{
+			_asset.numCascades = numCascadesDropdownList.selectedItem;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADOWMAPPER_CHANGE, _asset, true));
+		}
+		
+		protected function depthDropDownListCube_changeHandler(event:IndexChangeEvent):void
+		{
+			_asset.depthMapSizeCube = depthDropDownListCube.selectedItem;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADOWMAPPER_CHANGE, _asset, true));
+		}
+		protected function depthDropDownList_changeHandler(event:IndexChangeEvent):void
+		{
+			_asset.depthMapSize = depthDropDownList.selectedItem;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHADOWMAPPER_CHANGE, _asset, true));
+		}
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="{_asset.type}" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Depth Map Size" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="DirectionalShadowMapper,NearDirectionalShadowMapper,CascadeShadowMapper">
+			<s:DropDownList id="depthDropDownList" requireSelection="true" selectedItem="{_asset.depthMapSize}"
+							width="100%" change="depthDropDownList_changeHandler(event)"
+							>
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:Number>256</fx:Number>
+						<fx:Number>512</fx:Number>
+						<fx:Number>2048</fx:Number>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</s:FormItem>
+		<s:FormItem label="Depth Map Size" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="CubeMapShadowMapper">
+			<s:DropDownList id="depthDropDownListCube" requireSelection="true" selectedItem="{_asset.depthMapSizeCube}"
+							width="100%" change="depthDropDownListCube_changeHandler(event)"
+							>
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:Number>256</fx:Number>
+						<fx:Number>512</fx:Number>
+						<fx:Number>1024</fx:Number>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</s:FormItem>
+		<s:FormItem label="Number of Cascasdes" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="CascadeShadowMapper">
+			<s:DropDownList id="numCascadesDropdownList" requireSelection="true" selectedItem="{_asset.numCascades}"
+							width="100%" change="numCascadesDropdownList_changeHandler(event)"
+							>
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:Number>1</fx:Number>
+						<fx:Number>2</fx:Number>
+						<fx:Number>3</fx:Number>
+						<fx:Number>4</fx:Number>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</s:FormItem>
+		<s:FormItem label="Coverage Ratio" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" includeIn="NearDirectionalShadowMapper">
+			<controls:DragableNumericStepper id="rangeStepper" stepSize="0.1" snapInterval="0.001" minimum="0" maximum="1"
+											 width="40" value="{_asset.coverage}"
+											 change="stepper_changeHandler(event)" />
+		</s:FormItem>
+		
+	</s:Form>
+	
+</editors:EditorBase>

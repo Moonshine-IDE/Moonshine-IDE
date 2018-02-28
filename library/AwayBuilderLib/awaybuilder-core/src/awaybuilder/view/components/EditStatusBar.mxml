@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="zoom",type="awaybuilder.view.components.events.ToolBarZoomEvent")]
+		[Event(name="zoom",type="awaybuilder.view.components.events.StatusBarEvent")]
+	</fx:Metadata>
+
+	<s:Label text="Current container"/>
+	
+	<s:ButtonBar id="breadCrumbBar" change="breadCrumbClicked(event);">
+		<s:dataProvider>
+			<s:ArrayCollection source="['Scene']" />
+		</s:dataProvider>
+	</s:ButtonBar>
+	
+	<s:Spacer width="100%"/>
+	
+	<s:Button id="zoomOutButton" styleName="toolbarButton" toolTip="Zoom Out" autoRepeat="true"
+			  buttonDown="zoomOutButton_clickHandler(event)"/>
+	<s:HSlider id="zoomSlider" minimum="-8" maximum="8" stepSize="0.001" value="0.75"
+		liveDragging="true" focusEnabled="false"
+		dataTipFormatFunction="{zoomSlider_dataTipFormat}"
+		change="zoomSlider_changeHandler(event)"/>
+	<s:Button id="zoomInButton" styleName="toolbarButton" toolTip="Zoom In" autoRepeat="true"
+		buttonDown="zoomInButton_clickHandler(event)"/>
+	
+	<fx:Script>
+	<![CDATA[
+		import awaybuilder.view.components.events.StatusBarEvent;
+		import awaybuilder.utils.scene.CameraManager;
+		import awaybuilder.view.components.events.ToolBarZoomEvent;
+		
+		import mx.events.FlexEvent;
+		
+		import spark.events.IndexChangeEvent;
+                        
+		private var breadCrumbButtons:Array = [ {label:"Scene", container:null} ];
+
+		protected function resetButtons():void {
+		    breadCrumbBar.selectedIndex = -1;
+		}
+
+		private function breadCrumbClicked(event:IndexChangeEvent):void {      
+			this.dispatchEvent(new StatusBarEvent(StatusBarEvent.CONTAINER_CLICKED, breadCrumbButtons[event.newIndex]["container"]));
+			callLater(resetButtons);
+		}
+            
+		public function updateBreadCrumb(arr:Array) : void {
+			
+			var breadCrumb:Object;
+ 			breadCrumbButtons=[ {label:"Scene", container:null} ];
+	        for (var bC:int=0; bC<arr.length; bC++){
+				breadCrumb = {label:arr[bC][0], container:arr[bC][1]};
+				breadCrumbButtons.push(breadCrumb);
+	        }
+        	this.breadCrumbBar.dataProvider = new ArrayCollection(breadCrumbButtons);
+		}
+
+		public function get zoom():Number
+		{
+			if(!this.zoomSlider)
+			{
+				return 1000;
+			}
+			return this.zoomSlider.value;
+		}
+
+		public function set zoom(value:Number):void
+		{
+			if(this.zoom == value)
+			{
+				return;
+			}
+			if (value < this.zoomSlider.minimum) value = this.zoomSlider.minimum;
+			if (value > this.zoomSlider.maximum) value = this.zoomSlider.maximum;
+			this.zoomSlider.value = value;
+		}
+
+		private function zoomSlider_dataTipFormat(value:Number):String
+		{
+			return int(CameraManager.zoomFunction(value)).toString();
+		}
+		
+		protected function zoomInButton_clickHandler(event:FlexEvent):void
+		{
+			this.dispatchEvent(new ToolBarZoomEvent(ToolBarZoomEvent.ZOOM_IN));
+		}
+		
+		protected function zoomOutButton_clickHandler(event:FlexEvent):void
+		{
+			this.dispatchEvent(new ToolBarZoomEvent(ToolBarZoomEvent.ZOOM_OUT));
+		}
+		
+		protected function zoomSlider_changeHandler(event:Event):void
+		{
+			this.dispatchEvent(new ToolBarZoomEvent(ToolBarZoomEvent.ZOOM_TO, this.zoom));
+		}
+
+	]]>
+	</fx:Script>
+</s:SkinnableContainer>

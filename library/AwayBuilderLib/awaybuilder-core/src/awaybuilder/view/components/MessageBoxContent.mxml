@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Metadata>
+		[Event(name="complete",type="flash.events.Event")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Group top="10" right="15" bottom="{10 + controlBar.height}" left="15">
+		<s:RichText id="messageText" width="100%" height="100%"/>
+	</s:Group>
+	
+	<s:SkinnableContainer id="controlBar" right="0" bottom="0" left="0">
+		<mx:Spacer width="100%"/>
+		<s:Button id="okButton" label="Close" click="okButton_clickHandler(event)"/>
+		<s:Button id="cancelButton" visible="false" includeInLayout="false" click="cancelButton_clickHandler(event)"/>
+	</s:SkinnableContainer>
+	
+	<fx:Script>
+	<![CDATA[
+		
+		protected var messageChanged:Boolean = false;
+		
+		private var _message:String = "";
+
+		public function get message():String
+		{
+			return this._message;
+		}
+
+		public function set message(value:String):void
+		{
+			if(this._message == value)
+			{
+				return;
+			}
+			this._message = value;
+			this.messageChanged = true;
+			this.invalidateProperties();
+		}
+		
+		protected var labelsChanged:Boolean = false;
+		
+		private var _okLabel:String = "Close";
+
+		public function get okLabel():String
+		{
+			return this._okLabel;
+		}
+
+		public function set okLabel(value:String):void
+		{
+			if(this._okLabel === value)
+			{
+				return;
+			}
+			this._okLabel = value;
+			this.labelsChanged = true;
+			this.invalidateProperties();
+		}
+
+		private var _cancelLabel:String = null;
+
+		public function get cancelLabel():String
+		{
+			return this._cancelLabel;
+		}
+
+		public function set cancelLabel(value:String):void
+		{
+			if(this._cancelLabel === value)
+			{
+				return;
+			}
+			this._cancelLabel = value;
+			this.labelsChanged = true;
+			this.invalidateProperties();
+		}
+		
+		public var okCallback:Function;
+		public var cancelCallback:Function;
+
+		override protected function commitProperties():void
+		{
+			if(this.messageChanged)
+			{
+				this.messageText.text = this._message;
+				this.messageChanged = false;
+			}
+			
+			if(this.labelsChanged)
+			{
+				this.okButton.label = this._okLabel;
+				this.cancelButton.label = this._cancelLabel;
+				this.cancelButton.visible = this.cancelButton.includeInLayout = this.cancelLabel != null;
+				this.labelsChanged = false;
+			}
+			
+			super.commitProperties();
+		}
+		
+		private function okButton_clickHandler(event:MouseEvent):void
+		{
+			if(this.okCallback != null)
+			{
+				this.okCallback();
+			}
+			this.dispatchEvent(new Event(Event.COMPLETE));
+		}
+		
+		private function cancelButton_clickHandler(event:MouseEvent):void
+		{
+			if(this.cancelCallback != null)
+			{
+				this.cancelCallback();
+			}
+			this.dispatchEvent(new Event(Event.CANCEL));
+		}
+		
+	]]>
+	</fx:Script>
+</s:Group>

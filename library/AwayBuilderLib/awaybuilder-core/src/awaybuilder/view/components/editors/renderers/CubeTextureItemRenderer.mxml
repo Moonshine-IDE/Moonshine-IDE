@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" autoDrawBackground="false">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:layout>
+		<s:HorizontalLayout paddingLeft="4" paddingRight="4" paddingTop="2" paddingBottom="2" verticalAlign="middle"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import awaybuilder.model.vo.scene.CubeTextureVO;
+			
+			[Bindable]
+			private var _texture:CubeTextureVO;
+			
+			[Bindable]
+			private var _image:BitmapData;
+			[Bindable]
+			private var _isNull:Boolean;
+			
+			override public function set data(value:Object):void 
+			{
+				super.data = value;
+				_texture = value as CubeTextureVO;
+				if( _texture ) {
+					_isNull = false;
+					_image = _texture.positiveX;
+				}
+				else
+				{
+					_isNull = true;
+				}
+				
+			}
+		]]>
+	</fx:Script>
+	<s:Rect height="{this.height}" width="{this.width}" y="1" includeIn="hovered,selected" alpha.hovered="0.3" includeInLayout="false">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x000000" alpha="0.7" ratio="0.2"/>
+				<s:GradientEntry color="0x000000" alpha="0.8" ratio="0.9"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<s:Group width="34" height="34" visible="{!_isNull}"> 
+		<s:Rect top="0" bottom="0" left="0" right="0">
+			<s:fill>
+				<s:SolidColor color="0x222222"/>
+			</s:fill>
+			<s:stroke>
+				<s:SolidColorStroke color="0xAAAAAA"/>
+			</s:stroke>
+		</s:Rect>
+		<s:BitmapImage source="{_image}" top="1" bottom="1" left="1" right="1"/>
+		
+	</s:Group>
+	<s:Label text="{_isNull?'Null':_texture.name.split('/').pop()}" width="100%" maxDisplayedLines="1"/>
+</s:ItemRenderer>

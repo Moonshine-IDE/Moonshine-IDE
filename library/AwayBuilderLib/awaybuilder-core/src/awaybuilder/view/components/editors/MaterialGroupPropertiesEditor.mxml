@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:components="awaybuilder.view.components.*" xmlns:controls="awaybuilder.view.components.controls.*"
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:editors="awaybuilder.view.components.editors.*" 
+					currentState="{_asset.type}">
+	<editors:states>
+		<s:State name="singlepass"/>
+		<s:State name="multipass"/>
+		<s:State name="miscellaneous"/>
+	</editors:states>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="typeRadioGroup" selectedValue="{_asset.type=='miscellaneous'?null:_asset.type}" change="typeRadioGroup_changeHandler(event)"/>
+		<s:ArrayCollection id="ambientList">
+			<fx:Object label="BasicAmbientMethod" value="BasicAmbientMethod"/>
+			<fx:Object label="EnvMapAmbientMethod" value="EnvMapAmbientMethod"/>
+		</s:ArrayCollection>
+		<s:ArrayCollection id="diffuseList">
+			<fx:Object label="BasicDiffuseMethod" value="BasicDiffuseMethod"/>
+			<fx:Object label="GradientDiffuseMethod" value="GradientDiffuseMethod"/>
+			<fx:Object label="WrapDiffuseMethod" value="WrapDiffuseMethod"/>
+			<fx:Object label="LightMapDiffuseMethod" value="LightMapDiffuseMethod"/>
+			<fx:Object label="CelDiffuseMethod" value="CelDiffuseMethod"/>
+			<!--<fx:Object label="SubsurfaceScatteringDiffuse" value="SubsurfaceScatteringDiffuseMethod"/>-->
+		</s:ArrayCollection>
+		<s:ArrayCollection id="specularList">
+			<fx:Object label="BasicSpecularMethod" value="BasicSpecularMethod"/>
+			<fx:Object label="AnisotropicSpecularMethod" value="AnisotropicSpecularMethod"/>
+			<fx:Object label="PhongSpecularMethod" value="PhongSpecularMethod"/>
+			<fx:Object label="CelSpecularMethod" value="CelSpecularMethod"/>
+			<fx:Object label="FresnelSpecularMethod" value="FresnelSpecularMethod"/>
+		</s:ArrayCollection>
+		<s:ArrayCollection id="normalList">
+			<fx:Object label="BasicNormalMethod" value="BasicNormalMethod"/>
+			<!--<fx:Object label="HeightMapNormalMethod" value="HeightMapNormalMethod"/>-->
+			<fx:Object label="SimpleWaterNormalMethod" value="SimpleWaterNormalMethod"/>
+		</s:ArrayCollection>
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.AssetVO;
+		import awaybuilder.model.vo.scene.MaterialVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import mx.collections.ArrayCollection;
+		
+		import spark.events.IndexChangeEvent;
+		
+		[Bindable] private var _selectedLightPicker:AssetVO;
+		
+		[Bindable] private var _lights:ArrayCollection;
+		[Bindable] private var _selectedLight:AssetVO;
+		
+		[Bindable] private var _shadowMethods:ArrayCollection;
+		[Bindable] private var _selectedShadowMethod:AssetVO;
+		
+		[Bindable] private var _selectedDiffuseMethod:Object;
+		[Bindable] private var _selectedAmbientMethod:Object;
+		[Bindable] private var _selectedNormalMethod:Object;
+		[Bindable] private var _selectedSpecularMethod:Object;
+		
+		[Bindable] private var _asset:MaterialVO = new MaterialVO();
+		
+		private var _assets:Array;
+		
+		[Bindable] private var _isColorMaterial:Boolean;
+		
+		override protected function validate():void
+		{
+			if( !(data is Array) ) return;
+			_assets = data as Array;
+			validateGroup();
+		}
+		
+		private function validateGroup():void
+		{
+			_asset.fillFromMaterial( _assets[0] as MaterialVO );
+			_asset.name = null;
+			for each( var asset:MaterialVO in _assets )
+			{
+				if( _asset.type != asset.type ) _asset.type = "miscellaneous";
+				if( _asset.repeat != asset.repeat ) _asset.repeat = false;
+				if( _asset.smooth != asset.smooth )_asset.smooth = false;
+				if( _asset.mipmap != asset.mipmap )_asset.mipmap = false;
+				if( _asset.bothSides != asset.bothSides )_asset.bothSides = false;
+				if( _asset.alpha != asset.alpha ) _asset.alpha = Number.NaN;
+				if( _asset.alphaBlending != asset.alphaBlending )_asset.alphaBlending = false;
+				if( _asset.alphaPremultiplied != asset.alphaPremultiplied )_asset.alphaPremultiplied = false;
+				
+				if( _asset.alphaThreshold != asset.alphaThreshold ) _asset.alphaThreshold = Number.NaN;
+				if( _asset.blendMode != asset.blendMode ) _asset.blendMode = null;
+			}
+		}
+		
+		protected function stepper_changeHandler(event:Event):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.MATERIAL_STEPPER_CHANGE, _asset, true));
+		}
+		protected function value_changeHandler(event:Event):void
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.MATERIAL_CHANGE, _asset, true));
+		}
+		protected function blendModeList_changeHandler(event:IndexChangeEvent):void
+		{
+			_asset.blendMode = blendModeList.selectedItem;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.MATERIAL_CHANGE, _asset, true));
+		}
+		protected function typeRadioGroup_changeHandler(event:Event):void
+		{
+			_asset.type = typeRadioGroup.selectedValue as String;
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.MATERIAL_CHANGE, _asset, true));
+		}
+		
+	]]></fx:Script>
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="Material [ ]" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	
+	<controls:CollapsiblePanel width="100%" title="General" collapsed="false">
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="6" paddingRight="6" paddingTop="1" paddingBottom="1" enabled="{!_asset.isDefault}" horizontalAlign="center">
+			<s:RadioButton label="Singlepass" width="100%" group="{typeRadioGroup}" value="{MaterialVO.SINGLEPASS}"/>
+			<s:RadioButton label="Multipass" width="100%" group="{typeRadioGroup}" value="{MaterialVO.MULTIPASS}"/>
+		</s:HGroup>
+		<controls:HorizontalFormSeparator/>
+		<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin" enabled="{!_asset.isDefault}">
+			<s:FormItem label="repeat" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" >
+				<s:CheckBox id="repeatBox" change="value_changeHandler(event)" selected="@{_asset.repeat}"/>
+			</s:FormItem>
+			<s:FormItem label="smooth" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+				<s:CheckBox id="smoothBox" change="value_changeHandler(event)" selected="@{_asset.smooth}" />
+			</s:FormItem>
+			<s:FormItem label="mipmap" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" >
+				<s:CheckBox id="mipmapBox" change="value_changeHandler(event)" selected="@{_asset.mipmap}" />
+			</s:FormItem>
+			<s:FormItem label="both sides" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" >
+				<s:CheckBox id="bothSidesBox" change="value_changeHandler(event)" selected="@{_asset.bothSides}" />
+			</s:FormItem>
+			<s:FormItem label="Alpha" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%" excludeFrom="multipass">
+				<controls:DragableNumericStepper id="alphaStepper" value="@{_asset.alpha}" width="42"
+												 minimum="0" maximum="1" stepSize="0.01" snapInterval="0.001"
+												 change="stepper_changeHandler(event)" />
+			</s:FormItem>
+			<s:FormItem label="Alpha Blending" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%"  excludeFrom="multipass">
+				<s:CheckBox id="alphaBlendingBox" change="value_changeHandler(event)" selected="@{_asset.alphaBlending}"/>
+			</s:FormItem>
+			<s:FormItem label="Alpha Threshold" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+				<controls:DragableNumericStepper id="alphaThresholdStepper" value="@{_asset.alphaThreshold}" width="42"
+												 minimum="0" maximum="1" stepSize="0.01" snapInterval="0.001"
+												 change="stepper_changeHandler(event)" />
+			</s:FormItem>
+			<s:FormItem label="Pre-multiplied" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+				<s:CheckBox id="alphaPremultipliedBox" change="value_changeHandler(event)" selected="@{_asset.alphaPremultiplied}"/>
+			</s:FormItem>
+			<s:FormItem label="blend mode" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+				<s:DropDownList id="blendModeList" selectedItem="{_asset.blendMode}" change="blendModeList_changeHandler(event)" width="100%"
+								dataProvider="{new ArrayCollection([BlendMode.NORMAL,BlendMode.MULTIPLY,BlendMode.ADD,BlendMode.ALPHA,BlendMode.LAYER])}"
+								/>
+			</s:FormItem>
+		</s:Form>
+	</controls:CollapsiblePanel>
+	
+</editors:EditorBase>

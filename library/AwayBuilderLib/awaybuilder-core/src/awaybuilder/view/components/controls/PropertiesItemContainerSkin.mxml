@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabled="0.5" xmlns:controls="awaybuilder.view.components.controls.*" width="100%">
+	<fx:Metadata>[HostComponent("awaybuilder.view.components.controls.PropertiesItemContainer")]</fx:Metadata>
+
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="disabled" />
+    </s:states>
+    <s:layout>
+		<s:VerticalLayout paddingTop="{hostComponent.paddingTop}" paddingBottom="{hostComponent.paddingBottom}" 
+						  paddingLeft="{hostComponent.paddingLeft}" paddingRight="{hostComponent.paddingRight}"/>
+	</s:layout>
+	<s:HGroup width="100%">
+		<s:Label text="{hostComponent.label}" fontWeight="bold"/>
+		<controls:HorizontalFormSeparator/>
+	</s:HGroup>
+	<s:Group id="contentGroup" width="100%">
+		<s:layout>
+			<s:HorizontalLayout verticalAlign="middle"/>
+		</s:layout>
+	</s:Group>
+
+</s:Skin>

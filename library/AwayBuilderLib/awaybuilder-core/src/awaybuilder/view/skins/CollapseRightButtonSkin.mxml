@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009" minWidth="21" minHeight="21" alpha.disabledStates="0.5" xmlns:skins="awaybuilder.view.skins.*" xmlns:fxg="awaybuilder.view.skins.fxg.*"
+			 >
+	
+	<fx:Metadata>
+		[HostComponent("spark.components.ToggleButton")]
+	</fx:Metadata>
+	
+		<fx:Script fb:purpose="styling">
+		/* Define the skin elements that should not be colorized. 
+		For toggle button, the graphics are colorized but the label is not. */
+		static private const exclusions:Array = ["icon", "selectedIcon"];
+		
+		/**
+		 * @private
+		 */    
+		override public function get colorizeExclusions():Array {return exclusions;}
+		
+		/**
+		 * @private
+		 */
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		}
+		
+		/**
+		 * @private
+		 */
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+		{
+			var cr:Number = getStyle("cornerRadius");
+			
+			if (cornerRadius != cr)
+			{
+				cornerRadius = cr;
+				shadow.radiusX = cornerRadius;
+				fill.radiusX = cornerRadius;
+				border.radiusX = cornerRadius;
+			}
+			
+			if (highlightStroke) highlightStroke.radiusX = cornerRadius;
+			if (hldownstroke1) hldownstroke1.radiusX = cornerRadius;
+			if (hldownstroke2) hldownstroke2.radiusX = cornerRadius;
+			
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+		}
+		
+		private var cornerRadius:Number = 2;
+	</fx:Script>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" stateGroups="overStates" />
+		<s:State name="down" stateGroups="downStates" />
+		<s:State name="disabled" stateGroups="disabledStates" />
+		<s:State name="upAndSelected" stateGroups="selectedStates, selectedUpStates" />
+		<s:State name="overAndSelected" stateGroups="overStates, selectedStates" />
+		<s:State name="downAndSelected" stateGroups="downStates, selectedStates" />
+		<s:State name="disabledAndSelected" stateGroups="selectedUpStates, disabledStates, selectedStates" />
+	</s:states>
+	
+	<!-- layer 1: shadow -->
+	<!--- @private -->
+	<s:Rect id="shadow" left="-1" right="-1" top="-1" bottom="-1" radiusX="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x000000" 
+								 color.downStates="0xFFFFFF"
+								 alpha="0.01"
+								 alpha.downStates="0" />
+				<s:GradientEntry color="0x000000" 
+								 color.downStates="0xFFFFFF" 
+								 alpha="0.07"
+								 alpha.downStates="0.5" />
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- layer 2: fill -->
+	<!--- @private -->
+	<s:Rect id="fill" left="1" right="1" top="1" bottom="1" radiusX="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xEAEAEA" 
+								 color.overStates="0xFFFFFF" 
+								 color.downStates="0xD7D7D7"/>
+				<s:GradientEntry color="0xC0C0C0"
+								 color.overStates="0xD5D5D5"
+								 color.downStates="0xEAEAEA"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- layer 5: highlight stroke (all states except down) -->
+	<!--- @private -->
+	<s:Rect id="highlightStroke" left="1" right="1" top="1" bottom="1" radiusX="2" excludeFrom="downStates">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0xFFFFFF" alpha.overStates="0.22" alpha.selectedUpStates="0.33" />
+				<s:GradientEntry color="0xD8D8D8" alpha.overStates="0.22" alpha.selectedUpStates="0.33" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	
+	<!-- layer 6: highlight stroke (down state only) -->
+	<!--- @private -->
+	<s:Rect id="hldownstroke1" left="1" right="1" top="1" bottom="1" radiusX="2"
+			includeIn="downStates, selectedUpStates, overAndSelected">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0x000000" alpha="0.25" ratio="0.0" />
+				<s:GradientEntry color="0x000000" alpha="0.25" ratio="0.001" />
+				<s:GradientEntry color="0x000000" alpha="0.07" ratio="0.0011" />
+				<s:GradientEntry color="0x000000" alpha="0.07" ratio="0.965" />
+				<s:GradientEntry color="0x000000" alpha="0.00" ratio="0.9651" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	<!--- @private -->
+	<s:Rect id="hldownstroke2" left="2" right="2" top="2" bottom="2" radiusX="2"
+			includeIn="downStates, selectedUpStates, overAndSelected">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0x000000" alpha="0.09" ratio="0.0" />
+				<s:GradientEntry color="0x000000" alpha="0.00" ratio="0.0001" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	
+	<!-- layer 7: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
+	<!--- @private -->
+	<s:Rect id="border" left="0" right="0" top="0" bottom="0" width="69" height="20" radiusX="2">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0x000000" 
+								 alpha="0.5625"
+								 alpha.down="0.6375"
+								 alpha.selectedStates="0.6375" />
+				<s:GradientEntry color="0x000000" 
+								 alpha="0.75" 
+								 alpha.down="0.85"
+								 alpha.selectedStates="0.85" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	
+	<!-- layer 8: content -->
+	<fxg:CollapseArrowRightSkin id="icon" horizontalCenter="0" verticalCenter="0" excludeFrom="selectedStates"/>
+	<fxg:CollapseArrowLeftSkin id="selectedIcon" horizontalCenter="0" verticalCenter="0" includeIn="selectedStates"/>
+	
+</s:SparkSkin>

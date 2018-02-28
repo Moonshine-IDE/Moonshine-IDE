@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	title="Warning" showStatusBar="false"
+	resizable="false" minimizable="false" maximizable="false"
+	minWidth="350" minHeight="50">
+	
+	<fx:Metadata>
+		[Event(name="saveDocument")]
+		[Event(name="noSaveDocument")]
+		[Event(name="cancel",type="flash.events.Event")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:RichText id="questionText" lineHeight="20"
+		top="10" right="15" bottom="{10 + controlBar.height}" left="15"/>
+	
+	<s:SkinnableContainer id="controlBar" right="0" bottom="0" left="0">
+		<mx:Spacer width="100%"/>
+		<s:Button id="saveButton" label="Save" click="saveButton_clickHandler(event)"/>
+		<s:Button id="noSaveButton" label="Don't Save" click="noSaveButton_clickHandler(event)"/>
+		<s:Button id="cancelButton" label="Cancel" click="cancelButton_clickHandler(event)"/>
+	</s:SkinnableContainer>
+	
+	<fx:Script>
+	<![CDATA[
+		public static const SAVE_DOCUMENT:String = "saveDocument";
+		public static const NO_SAVE_DOCUMENT:String = "noSaveDocument";
+		
+		protected var documentNameChanged:Boolean = false;
+		
+		private var _documentName:String;
+		
+		public function get documentName():String
+		{
+			return this._documentName;
+		}
+		
+		public function set documentName(value:String):void
+		{
+			this._documentName = value;
+			this.documentNameChanged = true;
+			this.invalidateProperties();
+		}
+		
+		override protected function commitProperties():void
+		{
+			super.commitProperties();
+			
+			if(this.documentNameChanged)
+			{
+				this.questionText.text = "Do you want to save the changes to " + this._documentName + "?";
+				this.documentNameChanged = false;
+			}
+		}
+		
+		protected function saveButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new Event(SAVE_DOCUMENT));
+		}
+		
+		protected function noSaveButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new Event(NO_SAVE_DOCUMENT));
+		}
+		
+		protected function cancelButton_clickHandler(event:MouseEvent):void
+		{
+			this.dispatchEvent(new Event(Event.CANCEL));
+		}
+		
+	]]>
+	</fx:Script>
+	
+</s:Window>

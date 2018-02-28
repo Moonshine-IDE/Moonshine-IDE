@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<editors:EditorBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="awaybuilder.view.components.*" xmlns:controls="awaybuilder.view.components.controls.*"
+		  xmlns:editors="awaybuilder.view.components.editors.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="awaybuilder.view.components.editors.renderers.*">
+	<fx:Declarations>
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import awaybuilder.model.vo.scene.ContainerVO;
+		import awaybuilder.model.vo.scene.ExtraItemVO;
+		import awaybuilder.model.vo.scene.ObjectVO;
+		import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+		import mx.controls.Alert;
+		
+		import spark.events.GridItemEditorEvent;
+		
+		[Bindable]
+		private var _asset:ContainerVO = new ContainerVO();
+		
+		override protected function validate():void
+		{
+			if( !(data is ContainerVO) ) return;
+			_asset.fillFromContainer( data as ContainerVO );
+		}
+		
+		private function name_changeHandler(event:Event):void 
+		{
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.CONTAINER_STEPPER_CHANGE, _asset));
+		}
+		
+		private function addExtraButton_clickHandler(event:MouseEvent):void
+		{
+			var extra:ExtraItemVO = new ExtraItemVO();
+			var i:int = 0;
+			while( !isCorrectName( "key"+i ) )
+			{
+				i++;
+			}
+			extra.name = "key"+i;
+			_asset.extras.addItem(extra);
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.CONTAINER_CHANGE, _asset));
+		}
+		private function deleteExtraButton_clickHandler(event:MouseEvent):void
+		{
+			if( extrasGrid.selectedIndex>-1 )
+			{
+				_asset.extras.removeItemAt( extrasGrid.selectedIndex );
+			}
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.CONTAINER_CHANGE, _asset));
+		}
+		
+		protected function extrasGrid_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void
+		{
+			var extra:ExtraItemVO = _asset.extras.getItemAt( event.rowIndex ) as ExtraItemVO;
+			if( event.column.dataField == "name" )
+			{
+				if( !isCorrectExtra(extra) )
+				{
+					Alert.show("Name must be unique", "Warning");
+					_asset.extras = ObjectVO(data).clone().extras;
+					return;
+				}
+			}
+			dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.CONTAINER_STEPPER_CHANGE, _asset));
+		}
+		private function isCorrectExtra( extra:ExtraItemVO ):Boolean
+		{
+			for each( var item:ExtraItemVO in _asset.extras )
+			{
+				if( (extra.name == item.name) && (extra != item) ) return false;
+			}
+			return true;
+		}
+		private function isCorrectName( extra:String ):Boolean
+		{
+			for each( var item:ExtraItemVO in _asset.extras )
+			{
+				if( extra == item.name ) return false;
+			}
+			return true;
+		}
+	]]></fx:Script>
+	
+	
+	<s:Group width="100%" top="0">
+		<s:Rect left="0" right="0" top="3" bottom="3">
+			<s:fill>
+				<s:SolidColor color="0x111111" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" verticalAlign="middle" paddingLeft="2" paddingRight="2" paddingTop="4" paddingBottom="4">
+			<s:Button id="editParentObjectButton" styleName="editParentObjectButtonStyle" visible="{prevSelected.length>0}"
+					  width="32" height="32" click="editParentObjectButton_clickHandler(event)"/>
+			<s:Label width="100%" text="ObjectContainer3D" fontWeight="bold" fontSize="14"/>
+		</s:HGroup>
+	</s:Group>
+	
+	<s:Form width="100%" skinClass="awaybuilder.view.skins.PropertyFormSkin">
+		<s:FormItem label="Name" skinClass="awaybuilder.view.skins.PropertyFormItemSkin" width="100%">
+			<s:TextInput id="nameInput" width="100%" text="@{_asset.name}" change="name_changeHandler(event)"/>
+		</s:FormItem>
+	</s:Form>
+	<s:Spacer height="6"/>
+	
+	<controls:CollapsiblePanel width="100%" title="Transformations" collapsed="false">
+		<renderers:TransformationsGroup asset="{_asset}"/>
+	</controls:CollapsiblePanel>
+	
+	<controls:CollapsiblePanel width="100%" title="Extras" collapsed="false">
+		<s:DataGrid width="100%" id="extrasGrid" dataProvider="{_asset.extras}" focusEnabled="false"
+					editable="true" requestedMinRowCount="4" requestedMaxRowCount="6"
+					gridItemEditorSessionSave="extrasGrid_gridItemEditorSessionSaveHandler(event)">
+			<s:columns> 
+				<s:ArrayList>
+					<s:GridColumn headerText="Name" dataField="name" editable="true"/> 
+					<s:GridColumn headerText="Value" dataField="value" editable="true"/> 
+				</s:ArrayList>
+			</s:columns> 
+		</s:DataGrid>
+		<s:HGroup width="100%" paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" horizontalAlign="right">
+			<s:Button id="addButton" toolTip="Add New" styleName="addButton" click="addExtraButton_clickHandler(event)" height="22" width="22"/>
+			<s:Button id="deleteButton" enabled="{extrasGrid.selectedIndex>-1}" toolTip="Remove" styleName="removeButton"
+					  click="deleteExtraButton_clickHandler(event)" height="22" width="22"/>
+		</s:HGroup>
+	</controls:CollapsiblePanel>
+</editors:EditorBase>

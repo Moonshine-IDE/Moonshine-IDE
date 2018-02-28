@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	title="About"
+	width="500" height="300" close="titlewindow1_closeHandler(event)" borderVisible="true">
+	
+	<s:layout>
+		<s:VerticalLayout gap="0" paddingTop="0" paddingRight="0" paddingBottom="0" paddingLeft="0"/>
+	</s:layout>
+	
+	<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
+		<s:Label text="{'Ver ' + AwayBuilder.MAJOR_VERSION + '.' + AwayBuilder.MINOR_VERSION + '.' + AwayBuilder.REVISION + ' ' + AwayBuilder.SUFFIX}" />
+	</s:VGroup>
+	
+	<s:SkinnableContainer id="controlBar" width="100%">
+		<s:Spacer width="100%"/>
+		<s:Button id="okButton" label="Close" click="okButton_clickHandler(event)"/>	
+	</s:SkinnableContainer>
+<!--	<s:controlBarContent>
+		<s:Button id="okButton" label="Close" click="okButton_clickHandler(event)"/>	
+	</s:controlBarContent>-->
+	<fx:Script>
+	<![CDATA[
+		import awaybuilder.AwayBuilder;
+		
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.managers.PopUpManager;
+		
+		public static function show():AboutPopup
+		{
+			var popup:AboutPopup = PopUpManager.createPopUp( DisplayObject(FlexGlobals.topLevelApplication), AboutPopup, true ) as AboutPopup;
+			PopUpManager.centerPopUp( popup );
+			return popup;
+		}
+		
+		private function okButton_clickHandler(event:MouseEvent):void
+		{
+			PopUpManager.removePopUp( this );
+		}
+		
+		protected function titlewindow1_closeHandler(event:CloseEvent):void
+		{
+			PopUpManager.removePopUp( this );
+		}
+		
+	]]>
+	</fx:Script>
+</s:TitleWindow>

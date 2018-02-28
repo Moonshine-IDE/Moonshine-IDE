@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+        xmlns:s="library://ns.adobe.com/flex/spark" 
+        xmlns:fb="http://ns.adobe.com/flashbuilder/2009" 
+        alpha.disabled="0.5">
+    
+    <fx:Metadata>
+        <![CDATA[ 
+        /** 
+        * @copy spark.skins.spark.ApplicationSkin#hostComponent
+        */
+        [HostComponent("spark.components.Form")]
+        ]]>
+    </fx:Metadata> 
+    
+    <fx:Script fb:purpose="styling">
+        <![CDATA[         
+            /**
+             *  @private
+             */
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+            {
+                // Push backgroundColor and backgroundAlpha directly.
+                // Handle undefined backgroundColor by hiding the background object.
+                if (isNaN(getStyle("backgroundColor")))
+                {
+                    background.visible = false;
+                }
+                else
+                {
+                    background.visible = true;
+                    bgFill.color = getStyle("backgroundColor");
+                    bgFill.alpha = getStyle("backgroundAlpha");
+                }
+                
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+        ]]>        
+    </fx:Script>
+    
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="error" />
+        <s:State name="disabled" />
+    </s:states>
+    
+    <!--- Defines the appearance of the Form class's background. -->
+    <s:Rect id="background" left="0" right="0" top="0" bottom="0">
+        <s:fill>
+            <!--- @private -->
+            <s:SolidColor id="bgFill" color="#FFFFFF"/>
+        </s:fill>
+    </s:Rect>
+    <!--- @copy spark.components.SkinnableContainer#contentGroup -->
+    <!-- We set Form's showErrorTip and showErrorSkin to false, so we set them back 
+         to true for the Form's elements -->
+    <s:Group id="contentGroup" showErrorSkin="true" showErrorTip="true" 
+             left="0" right="0" top="0" bottom="0">
+        <s:layout>
+            <s:FormLayout gap="0"/>
+        </s:layout>
+    </s:Group>
+    
+    
+</s:Skin>

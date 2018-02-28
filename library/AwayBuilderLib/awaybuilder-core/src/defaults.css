@@ -1,0 +1,559 @@
+@namespace skins "awaybuilder.view.skins.*";
+@namespace awaybuilder "awaybuilder.view.components.*";
+@namespace renderers "awaybuilder.view.components.renderers.*";
+@namespace propertyEditors "awaybuilder.view.components.propertyEditors.*";
+@namespace controls "awaybuilder.view.components.controls.*";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace tree "awaybuilder.view.components.controls.tree.*";
+
+/*@font-face 
+{
+	src:                    url("assets/arial.ttf");
+	font-family:            mainFont;
+	font-style:             normal;
+	font-weight:            normal;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("assets/arialbd.ttf");
+	font-family:            mainFont;
+	font-style:             normal;
+	font-weight:            bold;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("assets/ariali.ttf");
+	font-family:            mainFont;
+	font-style:             italic;
+	font-weight:            normal;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("assets/arialbi.ttf");
+	font-family:            mainFont;
+	font-style:             italic;
+	font-weight:            bold;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("assets/arial.ttf");
+	font-family:            mxmainFont;
+	embed-as-cff:           false;
+}
+@font-face 
+{
+	src:                    url("assets/arialbd.ttf");
+	font-family:            mxmainFont;
+	font-weight:            bold;
+	embed-as-cff:           false;
+}
+mx|ToolTip 
+{
+	font-family: mxmainFont;
+}
+mx|Button 
+{
+	font-family: mxmainFont;
+}
+mx|TextInput 
+{
+	font-family: mxmainFont;
+}
+mx|Alert 
+{
+	font-family: mxmainFont;
+}*/
+
+global 
+{
+	modalTransparency: 0.6;
+	modalTransparencyColor: #000003;
+	modalTransparencyDuration: 200;
+	/*fontFamily: mainFont;
+	fontWeight: normal;
+	fontSize: 12;*/
+}
+
+s|TitleWindow
+{
+	color: #ebebeb;
+	backgroundColor: #2d2d2c;
+	chromeColor: #2d2d2c;
+	symbolColor: #ebebeb;
+	skinClass: ClassReference("awaybuilder.view.skins.PopupSkin");
+}
+
+s|TitleWindow #controlBar
+{
+	color: #ebebeb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+awaybuilder|CoreEditor
+{	
+	backgroundColor: #dbdbdb; 
+	color: #1d1d1c;
+	chromeColor: #dbdbdb;
+}
+tree|Tree
+{
+	skinClass: ClassReference("awaybuilder.view.skins.tree.TreeSkin")
+}
+tree|TreeItemRenderer.light
+{
+	icon: Embed("assets/images/weather_sun.png");
+}
+tree|TreeItemRenderer.lightPicker
+{
+	icon: Embed("assets/images/category.png");
+}
+tree|TreeItemRenderer.default
+{
+	icon: Embed("assets/images/plugin.png");
+}
+tree|TreeItemRenderer.texture
+{
+	icon: Embed("assets/images/map.png");
+}
+tree|TreeItemRenderer.material
+{
+	icon: Embed("assets/images/block.png");
+}
+tree|TreeItemRenderer.geometry
+{
+	icon: Embed("assets/images/origami.png");
+}
+tree|TreeItemRenderer.skeleton
+{
+	icon: Embed("assets/images/skull.png");
+}
+tree|TreeItemRenderer.mesh
+{
+	icon: Embed("assets/images/mesh_box_closed.png");
+}
+tree|TreeItemRenderer.container
+{
+	icon: Embed("assets/images/box_closed.png");
+}
+tree|TreeItemRenderer.animationNode
+{
+	icon: Embed("assets/images/film-medium.png");
+}
+tree|TreeItemRenderer.animationSet
+{
+	icon: Embed("assets/images/inbox-film.png");
+}
+tree|TreeItemRenderer.animator
+{
+	icon: Embed("assets/images/walk.png");
+}
+tree|TreeItemRenderer.bear
+{
+	icon: Embed("assets/images/teddy_bear.png");
+}
+tree|TreeItemRenderer.shadow
+{
+	icon: Embed("assets/images/blue-document-attribute-s.png");
+}
+tree|TreeItemRenderer.effect
+{
+	icon: Embed("assets/images/blue-document-attribute-e.png");
+}
+tree|TreeItemRenderer.skyBox
+{
+	icon: Embed("assets/images/weather_clouds.png");
+}
+tree|TreeItemRenderer.camera
+{
+	icon: Embed("assets/images/camera.png");
+}
+tree|TreeItemRenderer.lens
+{
+	icon: Embed("assets/images/camera-lens.png");
+}
+
+s|NumericStepper
+{
+	color: #000000;
+}
+s|TextInput 
+{
+	color: #000000;
+}
+
+s|Button 
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ButtonSkin")
+}
+s|TitleWindow 
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 12;
+	backgroundColor:#1d1d1c;
+}
+s|Panel 
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 12;
+	backgroundColor:#1d1d1c;
+}
+
+/*** tool/status bars ***/
+
+awaybuilder|EditToolBar
+{
+	chromeColor: #1d1d1c;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+awaybuilder|EditStatusBar
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+.toolBar
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+propertyEditors|LabelPropertyEditor s|TextArea
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ResizingTextAreaSkin");
+}
+
+/*** toolbar ***/
+
+mx|VRule
+{
+	strokeWidth: 2;
+	strokeColor: #70706d;
+	shadowColor: #383836;
+}
+
+.toolbarButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+}
+
+s|ToggleButton.toolbarButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+}
+
+s|RadioButton.toolbarButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarRadioButtonSkin");
+}
+
+.toolbarButton#newDocumentButton
+{
+	icon: Embed("assets/images/page_white_star.png");
+}
+
+.toolbarButton#openDocumentButton
+{
+	icon: Embed("assets/images/folder_page_white.png");
+}
+.toolbarButton#importDocumentButton
+{
+	icon: Embed("assets/images/document-import.png");
+}
+.toolbarButton#saveDocumentButton
+{
+	icon: Embed("assets/images/disk.png");
+}
+
+.toolbarButton#printDocumentButton
+{
+	icon: Embed("assets/images/printer.png");
+}
+
+.toolbarButton#undoButton
+{
+	icon: Embed("assets/images/arrow_undo.png");
+}
+
+.toolbarButton#redoButton
+{
+	icon: Embed("assets/images/arrow_redo.png");
+}
+
+.toolbarButton#zoomInButton
+{
+	icon: Embed("assets/images/zoom_in.png");
+}
+
+.toolbarButton#zoomOutButton
+{
+	icon: Embed("assets/images/zoom_out.png");
+}
+
+.toolbarButton#helpButton
+{
+	icon: Embed("assets/images/help.png");
+}
+
+.toolbarButton#applicationSettingsButton
+{
+	icon: Embed("assets/images/cog.png");
+}
+
+.toolbarButton#documentSettingsButton
+{
+	icon: Embed("assets/images/page_white_gear.png");
+}
+
+.toolbarButton#statsButton
+{
+	icon: Embed("assets/images/information.png");
+}
+
+.toolbarButton#cutButton
+{
+	icon: Embed("assets/images/cut.png");
+}
+
+.toolbarButton#copyButton
+{
+	icon: Embed("assets/images/page_copy.png");
+}
+
+.toolbarButton#pasteButton
+{
+	icon: Embed("assets/images/paste_plain.png");
+}
+
+.toolbarButton#deleteButton
+{
+	icon: Embed("assets/images/delete.png");
+}
+
+.toolbarButton#rotateClockwiseButton
+{
+	icon: Embed("assets/images/shape_rotate_clockwise.png");
+}
+
+.toolbarButton#rotateCounterClockwiseButton
+{
+	icon: Embed("assets/images/shape_rotate_anticlockwise.png");
+}
+
+.toolbarButton#targetCameraButton
+{
+	icon: Embed("assets/images/cursor.png");
+}
+
+.toolbarButton#freeCameraButton
+{
+	icon: Embed("assets/images/hand.png");
+}
+.toolbarButton#translateButton
+{
+	icon: Embed("assets/images/arrow_nsew.png");
+}
+.toolbarButton#rotateButton
+{
+	icon: Embed("assets/images/arrow_rotate_anticlockwise.png");
+}
+.toolbarButton#scaleButton
+{
+	icon: Embed("assets/images/arrow_out_longer.png");
+}
+
+.toolbarButton#resetButton
+{
+	icon: Embed("assets/images/control_start_blue.png");
+}
+
+.toolbarButton#advanceButton
+{
+	icon: Embed("assets/images/control_fastforward_blue.png");
+}
+
+.toolbarButton#focusButton
+{
+    icon: Embed("assets/images/eye.png");
+}
+
+.toolbarButton#playPauseButton
+{
+	icon: Embed("assets/images/control_play_blue.png");
+	selectedIcon: Embed("assets/images/control_pause_blue.png");
+}
+
+s|Button.editSharedObjectButtonStyle
+{
+    skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+	icon: Embed("assets/images/arrow-transition.png");
+}
+
+s|Button.editParentObjectButtonStyle
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+	icon: Embed("assets/images/arrow-transition-180.png");
+}
+
+s|Button.addItemButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.AddButtonSkin");
+	icon: Embed("assets/images/add.png");
+}
+
+s|Button.playButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control.png");
+}
+s|Button.pauseButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control-pause.png");
+}
+s|Button.stopButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control-stop-square.png");
+}
+s|Button.rewindButton 
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control-stop-180.png");
+}
+
+s|Button.stepForwardButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control-double.png");
+}
+s|Button.stepBackButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/control-double-180.png");
+}
+s|Button.addButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/add.png");
+}
+s|Button.removeButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("assets/images/delete.png");
+}
+
+awaybuilder|ApplicationSettingsForm s|List
+{
+	borderVisible: false;
+}
+
+awaybuilder|SamplePicker s|List
+{
+	skinClass: ClassReference("awaybuilder.view.skins.SamplesListSkin");
+	borderVisible: false;
+	contentBackgroundColor: #111110;
+	contentBackgroundAlpha: 0.45;
+	color: #dbdbdb;
+}
+
+awaybuilder|SampleItemRenderer #titleLabel
+{
+	fontWeight: bold;
+	fontSize: 14;
+	color: #40a9ff;
+}
+
+s|DropDownList
+{
+    skinClass: ClassReference("awaybuilder.view.skins.DropDownListSkin");
+    contentBackgroundColor: #333333;
+    borderColor: #222222;
+	selectionColor: #090909;
+	rollOverColor:  #222222;
+}
+
+s|DataGrid
+{
+	contentBackgroundColor: #333333;
+	selectionColor: #111111;
+	rollOverColor: #222222;
+}
+s|RadioButton
+{
+	symbolColor: #90BFFF;
+}
+s|CheckBox
+{
+	symbolColor: #90BFFF;
+}
+
+.toolsPanel
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 11;
+	backgroundColor:#1d1d1c;
+}
+
+controls|CollapsiblePanel
+{
+    chromeColor: #1d1d1c;
+    color: #dbdbdb;
+    fontSize: 11;
+    backgroundColor: #1d1d1c;
+    skinClass: ClassReference("awaybuilder.view.skins.CollapsibleDropdownPanelSkin");
+}
+controls|LibraryCollapsiblePanel
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 11;
+	backgroundColor: #1d1d1c;
+	skinClass: ClassReference("awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin");
+}
+controls|DragableNumericStepper
+{
+	skinClass: ClassReference("awaybuilder.view.skins.DragableNumericStepperSkin");
+	focusSkin: ClassReference("awaybuilder.view.skins.DragableLabelFocusSkin");
+}
+controls|PropertiesItemContainer
+{
+	skinClass: ClassReference("awaybuilder.view.components.controls.PropertiesItemContainerSkin");
+}
+controls|SparkColorPicker
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ColorPickerListSkin");
+	color: #000000;
+}
+mx|ColorPicker
+{
+	color: #000000;
+}
+	
+controls|ExtendedDropDownList
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ExtendedDropDownListSkin");
+}

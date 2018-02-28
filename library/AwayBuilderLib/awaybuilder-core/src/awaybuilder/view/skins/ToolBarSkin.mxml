@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009">
+
+    <fx:Metadata>
+        [HostComponent("spark.components.SkinnableContainer")]
+    </fx:Metadata>
+    
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="disabled" />
+    </s:states>
+	
+	<!-- highlight -->
+	<s:Rect left="0" right="0" top="1" bottom="1">
+	   <s:stroke>
+		   <s:LinearGradientStroke rotation="90" weight="1">
+			   <s:GradientEntry color="0xFFFFFF" />
+			   <s:GradientEntry color="0xD8D8D8" />
+		   </s:LinearGradientStroke>
+	   </s:stroke>
+   </s:Rect>
+	
+	<!-- fill -->
+	<s:Rect left="1" right="1" top="2" bottom="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="#ebebec"/>
+				<s:GradientEntry color="#bdbdbc"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- dividers -->
+	<s:Line left="0" right="0" top="0">
+		<s:stroke>
+			<s:SolidColorStroke color="#aaaaaa" weight="1" caps="square"/>
+		</s:stroke>
+	</s:Line>
+	<s:Line left="0" right="0" bottom="0">
+		<s:stroke>
+			<s:SolidColorStroke color="#aaaaaa" weight="1" caps="square"/>
+		</s:stroke>
+	</s:Line>
+    
+    <!--
+        Note: setting the minimum size to 0 here so that changes to the host component's
+        size will not be thwarted by this skin part's minimum size.   This is a compromise,
+        more about it here: http://bugs.adobe.com/jira/browse/SDK-21143
+    -->
+    <!--- @copy spark.components.SkinnableContainer#contentGroup -->
+    <s:Group id="contentGroup" left="0" right="0" top="1" bottom="1" minWidth="0" minHeight="0"
+		alpha.disabled="0.5">
+        <s:layout>
+			<s:HorizontalLayout verticalAlign="middle" gap="5"
+				paddingTop="2" paddingRight="7" paddingBottom="2" paddingLeft="7"/>
+        </s:layout>
+    </s:Group>
+	
+	<fx:Script>
+	<![CDATA[
+		static private const exclusions:Array = ["contentGroup"];
+		
+		override public function get colorizeExclusions():Array
+		{
+			return exclusions;
+		}
+		
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		} 
+	]]>
+	</fx:Script>
+</s:SparkSkin>

@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+xmlns:controls="awaybuilder.view.components.controls.*" autoDrawBackground="false"
+alpha="0.9" alpha.selected="1" alpha.hovered="1">
+	
+<s:layout>
+<s:VerticalLayout verticalAlign="middle" gap="0"/>
+</s:layout>
+<s:states>
+<s:State name="normal"/>
+<s:State name="hovered"/>
+<s:State name="selected"/>
+</s:states>
+<fx:Script><![CDATA[
+import awaybuilder.controller.scene.events.AnimationEvent;
+import awaybuilder.model.vo.scene.AnimationNodeVO;
+import awaybuilder.view.components.editors.events.PropertyEditorEvent;
+		
+import mx.events.FlexEvent;
+		
+[Bindable]
+private var _animation:AnimationNodeVO;
+		
+override public function set data(value:Object):void 
+{
+super.data = value;
+if( !value ) return;
+_animation = value as AnimationNodeVO;
+}
+		
+private function editSubmeshMaterialButton_clickHandler(event:MouseEvent):void
+{
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.SHOW_CHILD_PROPERTIES, _animation));
+}
+		
+protected function playButton_clickHandler(event:MouseEvent):void
+{
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_PLAY, _animation));
+}
+protected function pauseButton_clickHandler(event:MouseEvent):void
+{
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_PAUSE, _animation));
+}
+protected function stopButton_clickHandler(event:MouseEvent):void
+{
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_STOP, _animation));
+}
+protected function rewindButton_clickHandler(event:MouseEvent):void
+{
+_animation.currentPosition = 0;
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_SEEK, _animation ));
+}
+		
+		
+protected function timeline_changeHandler(event:Event):void
+{
+_animation.currentPosition = timeline.value;
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_SEEK, _animation ));
+}
+		
+protected function forwardButton_buttonDownHandler(event:FlexEvent):void
+{
+_animation.currentPosition += 100;
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_SEEK, _animation ));
+}
+		
+protected function backButton_buttonDownHandler(event:FlexEvent):void
+{
+_animation.currentPosition -= 100;
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_SEEK, _animation ));
+}
+		
+protected function positionStepper_changeHandler(event:Event):void
+{
+_animation.currentPosition = positionStepper.value;
+dispatchEvent(new PropertyEditorEvent(PropertyEditorEvent.ANIMATOR_SEEK, _animation ));
+}
+		
+]]></fx:Script>
+<s:HGroup width="100%" verticalAlign="middle" paddingLeft="3" height="23" paddingTop="1">
+<s:BitmapImage id="iconButton" source="@Embed('/assets/images/walk.png')" visible="true" visible.normal="false" alpha.hovered="0.5"/>
+<s:Label text="{_animation.name}" fontWeight="bold" width="100%"/>
+<s:Button styleName="editSharedObjectButtonStyle" width="23" height="100%" click="editSubmeshMaterialButton_clickHandler(event)"/>
+</s:HGroup>
+	
+<s:HGroup width="100%" paddingBottom="6" paddingTop="4" paddingRight="19" verticalAlign="middle" includeIn="selected">
+<s:Button id="playButton" toolTip="Play" styleName="playButton" click="playButton_clickHandler(event)" height="23" width="23" includeInLayout="{!_animation.isPlaying}" visible="{!_animation.isPlaying}"/>
+<s:Button id="pauseButton" toolTip="Pause" styleName="pauseButton" click="pauseButton_clickHandler(event)" height="23" width="23" includeInLayout="{_animation.isPlaying}" visible="{_animation.isPlaying}"/>
+<s:Button id="stopButton" toolTip="Stop" styleName="stopButton" click="stopButton_clickHandler(event)" height="23" width="23" includeInLayout="{_animation.isPlaying}" visible="{_animation.isPlaying}"/>
+<s:Button id="rewindButton" toolTip="Rewind" styleName="rewindButton" click="rewindButton_clickHandler(event)" height="23" width="23" includeInLayout="{!_animation.isPlaying}" visible="{!_animation.isPlaying}" enabled="{_animation.currentPosition&gt;0}"/>
+<s:Spacer width="100%"/>
+<s:Button id="backButton" toolTip="Back" styleName="stepBackButton" height="23" width="23" enabled="{!_animation.isPlaying}"
+buttonDown="backButton_buttonDownHandler(event)" autoRepeat="true"/>
+<controls:DragableNumericStepper id="positionStepper" value="{_animation.currentPosition}" 
+stepSize="100" snapInterval="1" minimum="0" maximum="{_animation.totalDuration}" 
+width="46"
+change="positionStepper_changeHandler(event)" />
+<s:Button id="forwardButton" toolTip="Forward" styleName="stepForwardButton" height="23" width="23" enabled="{!_animation.isPlaying}"
+buttonDown="forwardButton_buttonDownHandler(event)" autoRepeat="true"/>
+</s:HGroup>
+<s:HSlider id="timeline" width="100%" minimum="0" maximum="{_animation.totalDuration}" value="{_animation.currentPosition}" chromeColor="0x004F8F"
+change="timeline_changeHandler(event)" showDataTip="false" includeIn="selected" />
+<controls:HorizontalFormSeparator/>
+</s:ItemRenderer>
