@@ -786,6 +786,7 @@ package actionScripts.plugins.as3project
 			if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
 			{
 				pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
+				pvo.isActionScriptOnly = false;
 			}
 
 			// Write settings
