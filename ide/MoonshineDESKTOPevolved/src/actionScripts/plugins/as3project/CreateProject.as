@@ -779,6 +779,14 @@ package actionScripts.plugins.as3project
 			
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
+			
+			// in case of Flex project (where mx or spark controls can be included)
+			// we need to populate the project's intrinsic libraries. this will also help 
+			// when next time project opens we can detect between pure AS and flex type of project
+			if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
+			{
+				pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
+			}
 
 			// Write settings
 			FlashDevelopExporter.export(pvo, settingsFile);

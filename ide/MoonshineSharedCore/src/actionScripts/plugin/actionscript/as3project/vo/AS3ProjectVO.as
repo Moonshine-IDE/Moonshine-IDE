@@ -60,6 +60,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const FLEXJS_DEBUG_PATH:String = "bin/js-debug/index.html";
 		public static const FLEXJS_RELEASE_PATH:String = "bin/js-release";
 		
+		[Bindable] public var isLibraryProject:Boolean;
+		
 		public var fromTemplate:FileLocation;
 		public var sourceFolder:FileLocation;
 		public var visualEditorSourceFolder:FileLocation;
@@ -75,7 +77,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var externalLibraries:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var nativeExtensions:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var runtimeSharedLibraries:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var intrinsicLibraries:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public var intrinsicLibraries:Vector.<String> = new Vector.<String>();
 		public var assetLibrary:XMLList; // TODO Unknown if it works in FD, there just for compatibility purposes (<library/> tag)
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -103,7 +105,6 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isMobile:Boolean;
         public var isProjectFromExistingSource:Boolean;
 		public var isVisualEditorProject:Boolean;
-		public var isLibraryProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 
 		private var additional:StringSetting;
