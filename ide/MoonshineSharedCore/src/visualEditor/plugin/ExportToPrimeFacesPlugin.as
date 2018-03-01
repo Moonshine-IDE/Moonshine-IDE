@@ -145,7 +145,7 @@ package visualEditor.plugin
             copyPrimeFacesWebFile(destination);
             copySources(destination);
 
-            success("PrimeFaces project " + newProjectNameSetting.name + " has been successfully saved.");
+            success("PrimeFaces project " + newProjectNameSetting.stringValue + " has been successfully saved.");
 
             onProjectCreateClose(event);
         }
