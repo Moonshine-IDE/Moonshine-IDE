@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.10.0-Pending]
 
 ### Added
-Global Search: Added presentation of founded lines in the search results.
-Global Search: Highlight words/lines in the results of search.
-Added organize imports by shortcuts (Windows: CTRL+SHIFT+O, Mac: CMD+SHISFT+O)
+* Global Search: Added presentation of founded lines in the search results.
+* Global Search: Highlight words/lines in the results of search.
+* Added organize imports by shortcuts (Windows: CTRL+SHIFT+O, Mac: CMD+SHISFT+O)
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.9.1](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.9.1).
@@ -17,15 +17,15 @@ Added organize imports by shortcuts (Windows: CTRL+SHIFT+O, Mac: CMD+SHISFT+O)
 * Changed name of confirmation button in new file popup from **Change** to **Create*.
 
 ### Fixed
-Fixed issue where code completion does not work when user type tag name using lower case.
-Library Project: Fixed issue where adding new MXML file was disabled.
-Library Project: Fixed issue where build of Flex library failed after adding mxml file.
-Library Project: Fixed issue where user could not create library project from existing sources.
-Project Settings: Fixed issue where **Define it now** does not work in **Custom SDK** section.
-Project Tree: Fixed issue where source icon dissapear once root folder is refreshed.
-Project Tree: Fixed issue where IDE throws IOError, after renaming parent folder and open some children.
-Home Tab: Fixed issue where deleted project was not removed from "Recent" opened project section.
-Settings: Fixed issue where **Reset to Default** was not removed one SDK from the list.
+* Fixed issue where code completion does not work when user type tag name using lower case.
+* Library Project: Fixed issue where adding new MXML file was disabled.
+* Library Project: Fixed issue where build of Flex library failed after adding mxml file.
+* Library Project: Fixed issue where user could not create library project from existing sources.
+* Project Settings: Fixed issue where **Define it now** does not work in **Custom SDK** section.
+* Project Tree: Fixed issue where source icon dissapear once root folder is refreshed.
+* Project Tree: Fixed issue where IDE throws IOError, after renaming parent folder and open some children.
+* Home Tab: Fixed issue where deleted project was not removed from "Recent" opened project section.
+* Settings: Fixed issue where **Reset to Default** was not removed one SDK from the list.
 
 
 ## Moonshine IDE [1.9.0]
