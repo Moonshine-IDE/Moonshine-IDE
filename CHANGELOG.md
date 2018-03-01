@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Tree: Fixed issue where IDE throws IOError, after renaming parent folder and open some children.
 * Home Tab: Fixed issue where deleted project was not removed from "Recent" opened project section.
 * Settings: Fixed issue where **Reset to Default** was not removed one SDK from the list.
+* Fixed issue where user cannot change platform type after importing project from FlashDevelop.
 
 
 ## Moonshine IDE [1.9.0]
