@@ -21,7 +21,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import mx.controls.Alert;
 	
 	import actionScripts.extResources.riaspace.nativeApplicationUpdater.utils.HdiutilHelper;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import air.update.events.DownloadErrorEvent;
 	import air.update.events.StatusUpdateErrorEvent;
@@ -248,8 +247,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
 			updateDescriptorLoader.close();
 			
-			// ** OLD CHECK **
-			/*updateDescriptor = new XML(updateDescriptorLoader.data);
+			updateDescriptor = new XML(updateDescriptorLoader.data);
 			
 			if (updateDescriptor.namespace() == UPDATE_XMLNS_1_0)
 			{
@@ -266,22 +264,9 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					updateDescription = typeXml.UPDATE_XMLNS_1_1::description;
 					updatePackageURL = typeXml.UPDATE_XMLNS_1_1::url;
 				}
-			}*/
+			}
 			
-			// ** NEWER CHECK **
-			var strings:Array = updateDescriptorLoader.data.toString().split(";");
-			var majorStrings:Array = strings[0].toString().split(" = ");
-			var minorStrings:Array = strings[1].toString().split(" = ");
-			var revisionStrings:Array = strings[2].toString().split(" = ");
-			
-			updateVersion = majorStrings[1] +"."+ minorStrings[1] +"."+ revisionStrings[1];
-			updatePackageURL = ConstantsCoreVO.IS_MACOS ? strings[3].toString().split(" = ")[1] : strings[4].toString().split(" = ")[1];
-			
-			var version:Array = [parseInt( majorStrings[1] ), parseInt( minorStrings[1] ), parseInt( revisionStrings[1] )];
-			var currentVersionWeight:Number = _currentMajor*1000000 + _currentMinor*10000 + _currentRevision;
-			var updateVersionWeight:Number = version[0]*1000000 + version[1]*10000 + version[2];
-			
-			if (!version || !updatePackageURL)
+			if (!updateVersion || !updatePackageURL)
 			{
 				dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
 					"Update package is not defined for current installerType: " + installerType, UpdaterErrorCodes.ERROR_9001));
@@ -291,7 +276,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			currentState = AVAILABLE;
 			dispatchEvent(new StatusUpdateEvent(
 				StatusUpdateEvent.UPDATE_STATUS, false, true, 
-				isNewerVersionFunction.call(this, currentVersionWeight, updateVersionWeight), updateVersion)); // TODO: handle last event param with details (description)
+				isNewerVersionFunction.call(this, currentVersion, updateVersion), updateVersion)); // TODO: handle last event param with details (description)
 		}
 		
 		protected function updateDescriptorLoader_ioErrorHandler(event:IOErrorEvent):void
@@ -569,10 +554,17 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			if (_isNewerVersionFunction != null)
 				return _isNewerVersionFunction;
 			else
-				return function(currentVersion:Number, updateVersion:Number):Boolean { 
-					/*var cvNumber : Number = Number( currentVersion.split(".").join("") );
-					var uvNumber : Number = Number( updateVersion.split(".").join("") );*/
-					return currentVersion < updateVersion;
+				return function(currentVersion:String, updateVersion:String):Boolean { 
+					var tmpSplit:Array = updateVersion.split(".");
+					var uv1:Number = Number(tmpSplit[0]);
+					var uv2:Number = Number(tmpSplit[1]);
+					var uv3:Number = Number(tmpSplit[2]);
+					
+					if (uv1 > _currentMajor) return true;
+					else if (uv1 >= _currentMajor && uv2 > _currentMinor) return true;
+					else if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 > _currentRevision) return true;
+					
+					return false;
 				};
 		}
 		

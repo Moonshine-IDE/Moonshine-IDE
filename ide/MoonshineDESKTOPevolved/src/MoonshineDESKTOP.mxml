@@ -188,8 +188,7 @@
              */
 			function initAutoUpdater():void
 			{
-				//updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
-				updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/MoonshineUpdater.as";
+				updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
 				updater.initialize();
 			}
 		}
