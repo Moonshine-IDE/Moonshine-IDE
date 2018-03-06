@@ -19,22 +19,23 @@
 package actionScripts.ui.menu
 {
     import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.events.MouseEvent;
-	import flash.events.TimerEvent;
-	import flash.geom.Point;
-	import flash.utils.Timer;
-	
-	import mx.managers.PopUpManager;
-	
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.MenuEvent;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
-	import actionScripts.ui.menu.renderers.MenuItemRenderer;
-	import actionScripts.ui.menu.renderers.MenuRenderer;
+    import flash.display.DisplayObjectContainer;
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+    import flash.events.MouseEvent;
+    import flash.events.TimerEvent;
+    import flash.geom.Point;
+    import flash.utils.Timer;
+    
+    import mx.core.FlexGlobals;
+    import mx.managers.PopUpManager;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.MenuEvent;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+    import actionScripts.ui.menu.renderers.MenuItemRenderer;
+    import actionScripts.ui.menu.renderers.MenuRenderer;
 
     public class MenuModel extends EventDispatcher
 	{
@@ -187,7 +188,7 @@ package actionScripts.ui.menu
 					return null;
 
 			}
-			var menu:MenuRenderer = positionMenu(menuItems, base, new Point(base.x, base.y + base.height));
+			var menu:MenuRenderer = positionMenu(menuItems, base, new Point(base.x, base.y + base.height + (bar.localToGlobal(new Point(bar.x, bar.y)).y)));
 			setTopLevelMenu(menu);
 			return menu;
 		}
@@ -246,7 +247,7 @@ package actionScripts.ui.menu
 
 			if (topLevelMenu == null)
 			{ // request is to open up top menu
-				PopUpManager.addPopUp(menu, IDEModel.getInstance().mainView);
+				PopUpManager.addPopUp(menu, this.bar.parent);
 				registerForMouseClicks(true);
 			}
 
