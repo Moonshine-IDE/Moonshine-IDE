@@ -31,10 +31,13 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.factory.NativeMenuItemLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.away3d.Away3DPlugin;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.ui.menu.MenuBar;
 			import actionScripts.ui.menu.interfaces.ICustomMenu;
@@ -80,10 +83,12 @@
 			public function initThis():void
 			{
 				dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+				IDEModel.getInstance().mainView.bodyPanel.setStyle('backgroundAlpha', 0);
 				
 				var tmp:SplashScreenLib = SplashScreenLib.getInstance();
 				tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
-				setTimeout(function():void
+				
+				var timeoutValue:uint = setTimeout(function():void
 				{
 					abLib = new AwayBuilderLibMain;
 					abLib.percentWidth = abLib.percentHeight = 100;
@@ -96,6 +101,8 @@
 					menuBar.percentWidth = 100;
 					abLib.menu = menuBar;
 					abLib.eventDispatcher = GlobalEventDispatcher.getInstance();
+					
+					clearTimeout(timeoutValue);
 				}, 1000);
 			}
 			
@@ -116,6 +123,8 @@
 					abLib.dispatchEvent(new Event(AwayBuilderLibMain.DISPOSE));
 					abLib.eventDispatcher = null;
 					removeElement(abLib);
+					IDEModel.getInstance().mainView.bodyPanel.setStyle('backgroundAlpha', 1);
+					Away3DPlugin.IS_AWAYBUILDER_OPEN = false;
 					abLib = null;
 				}
 			}
