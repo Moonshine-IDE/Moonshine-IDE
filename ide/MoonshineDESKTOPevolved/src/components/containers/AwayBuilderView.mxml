@@ -41,8 +41,11 @@
 			import actionScripts.ui.menu.vo.CustomMenu;
 			import actionScripts.ui.menu.vo.CustomMenuItem;
 			import actionScripts.ui.menu.vo.MenuItem;
+			import actionScripts.ui.tabview.CloseTabEvent;
 			
 			private var builder:AwayBuilderLibMain;
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var abLib:AwayBuilderLibMain;
 			
 			/**
 			 * Interface methods
@@ -76,21 +79,23 @@
 			 */
 			public function initThis():void
 			{
+				dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+				
 				var tmp:SplashScreenLib = SplashScreenLib.getInstance();
 				tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
 				setTimeout(function():void
 				{
-					var tmpScene:AwayBuilderLibMain = new AwayBuilderLibMain;
-					tmpScene.percentWidth = tmpScene.percentHeight = 100;
-					addElement(tmpScene);
+					abLib = new AwayBuilderLibMain;
+					abLib.percentWidth = abLib.percentHeight = 100;
+					addElement(abLib);
 					
-					var currentMenu:Object = applyNewNativeMenu(tmpScene.menuProvider);
+					var currentMenu:Object = applyNewNativeMenu(abLib.menuProvider);
 					
 					var menuBar:MenuBar = new MenuBar();
 					menuBar.menu = currentMenu as ICustomMenu;
 					menuBar.percentWidth = 100;
-					tmpScene.menu = menuBar;
-					tmpScene.eventDispatcher = GlobalEventDispatcher.getInstance();
+					abLib.menu = menuBar;
+					abLib.eventDispatcher = GlobalEventDispatcher.getInstance();
 				}, 1000);
 			}
 			
@@ -100,6 +105,19 @@
 				addMenus(menuItems, mainMenu);
 				
 				return mainMenu;
+			}
+			
+			private function onThisClosing(event:CloseTabEvent):void
+			{
+				if (event.tab == this)
+				{
+					// time to remove all footprints
+					dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
+					abLib.dispatchEvent(new Event(AwayBuilderLibMain.DISPOSE));
+					abLib.eventDispatcher = null;
+					removeElement(abLib);
+					abLib = null;
+				}
 			}
 			
 			protected function addMenus(items:Array, parentMenu:*):void
