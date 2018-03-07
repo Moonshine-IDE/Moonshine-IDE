@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+			   implements="actionScripts.ui.IContentWindow"
+			   creationComplete="initThis()">
+	<fx:Metadata>
+		[Event(name="INSTALL_FINISH", type="flash.events.Event")]
+		[Event(name="INSTALL_CANCEL", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.setTimeout;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.factory.NativeMenuItemLocation;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.ui.menu.MenuBar;
+			import actionScripts.ui.menu.interfaces.ICustomMenu;
+			import actionScripts.ui.menu.vo.CustomMenu;
+			import actionScripts.ui.menu.vo.CustomMenuItem;
+			import actionScripts.ui.menu.vo.MenuItem;
+			
+			private var builder:AwayBuilderLibMain;
+			
+			/**
+			 * Interface methods
+			 */
+			public function get longLabel():String
+			{
+				return "Away Builder";
+			}
+			
+			public function get label():String
+			{
+				return "Away Builder";
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			/**
+			 * On creation completes
+			 */
+			public function initThis():void
+			{
+				var tmp:SplashScreenLib = SplashScreenLib.getInstance();
+				tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
+				setTimeout(function():void
+				{
+					var tmpScene:AwayBuilderLibMain = new AwayBuilderLibMain;
+					tmpScene.percentWidth = tmpScene.percentHeight = 100;
+					addElement(tmpScene);
+					
+					var currentMenu:Object = applyNewNativeMenu(tmpScene.menuProvider);
+					
+					var menuBar:MenuBar = new MenuBar();
+					menuBar.menu = currentMenu as ICustomMenu;
+					menuBar.percentWidth = 100;
+					tmpScene.menu = menuBar;
+					tmpScene.eventDispatcher = GlobalEventDispatcher.getInstance();
+				}, 1000);
+			}
+			
+			private function applyNewNativeMenu(menuItems:Array):Object
+			{
+				var mainMenu:Object = new CustomMenu();
+				addMenus(menuItems, mainMenu);
+				
+				return mainMenu;
+			}
+			
+			protected function addMenus(items:Array, parentMenu:*):void
+			{
+				for (var i:int = 0; i < items.length; i++)
+				{
+					var item:Object = items[i];
+					if (item && item.children)
+					{
+						var newMenu:*;
+						newMenu = new CustomMenu();
+						if (!newMenu)
+							continue;
+						addMenus(item.children, newMenu);
+						parentMenu.addSubmenu(newMenu, item.label);
+					}
+					else if (item)
+					{
+						var menuItem:* = createNewMenuItem((item.type != "separator") ? item : new MenuItem(null));
+						if (menuItem)
+							parentMenu.addItem((menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem);
+					}
+				}
+			}
+			
+			private function createNewMenuItem(item:Object):*
+			{
+				var menuItem:CustomMenuItem;
+				
+				menuItem = new CustomMenuItem(item.label, item.isSeparator);
+				if (item.label)
+				{
+					menuItem.data = {
+						eventData:item,
+						event:"awayBuilderMenuEvent"
+					};
+				}
+				
+				return menuItem;
+			}
+			
+		]]>
+	</fx:Script>
+</s:Group>

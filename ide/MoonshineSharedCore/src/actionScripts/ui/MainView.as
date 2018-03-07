@@ -54,6 +54,7 @@ package actionScripts.ui
 		{
 			super();
 			
+			setStyle('backgroundAlpha', 0);
 			model = IDEModel.getInstance();
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange);
 			BindingUtils.bindSetter(activeEditorChanged, model, 'activeEditor');
@@ -73,6 +74,7 @@ package actionScripts.ui
 			bodyPanel = new IDEVDividedBox();
 			bodyPanel.percentHeight = 100;
 			bodyPanel.percentWidth = 100;
+			bodyPanel.setStyle('backgroundAlpha', 0);
 			bodyPanel.setStyle('backgroundColor', 0xa0a0a0);
 			bodyPanel.setStyle('dividerThickness', 6);
 			bodyPanel.setStyle('dividerAffordance', 2);
@@ -82,6 +84,7 @@ package actionScripts.ui
 			mainPanel = new IDEHDividedBox();
 			mainPanel.percentWidth = 100;
 			mainPanel.percentHeight = 100;
+			mainPanel.setStyle('backgroundAlpha', 0);
 			mainPanel.setStyle('dividerThickness', 2);
 			mainPanel.setStyle('dividerAffordance', 2);
 			mainPanel.setStyle('horizontalGap', 2);
@@ -89,6 +92,7 @@ package actionScripts.ui
 			
 			_mainContent = new TabView();
 			_mainContent.styleName = "tabNav";
+			_mainContent.setStyle("backgroundAlpha", 0);
 			_mainContent.percentWidth = 100;
 			_mainContent.percentHeight = 100;
 			_mainContent.addEventListener(TabEvent.EVENT_TAB_CLOSE, handleTabClose);

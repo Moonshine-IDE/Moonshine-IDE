@@ -23,6 +23,7 @@ limitations under the License.
 s|WindowedApplication 
 {
 	skinClass:ClassReference("components.skins.MoonshineApplicationSkin");
+	backgroundAlpha: 0;
 }
 
 st|StepRenderer st|ActivityIndicator

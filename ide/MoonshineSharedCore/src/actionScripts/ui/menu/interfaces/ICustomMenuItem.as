@@ -28,8 +28,8 @@ package actionScripts.ui.menu.interfaces
 	{
 
 		function hasShortcut():Boolean
-		/*function get checked():Boolean
-		function set checked(value:Boolean):void*/
+		function get checked():Boolean
+		function set checked(value:Boolean):void
 
 		function get data():Object
 		function set data(value:Object):void

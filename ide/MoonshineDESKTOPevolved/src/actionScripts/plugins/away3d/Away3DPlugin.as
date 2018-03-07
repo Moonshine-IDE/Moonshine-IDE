@@ -20,7 +20,6 @@ package actionScripts.plugins.away3d
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
-	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
@@ -32,11 +31,10 @@ package actionScripts.plugins.away3d
 	import flash.utils.IDataInput;
 	
 	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -48,6 +46,8 @@ package actionScripts.plugins.away3d
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
+	import components.containers.AwayBuilderView;
+	
 	public class Away3DPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const OPEN_AWAY3D_BUILDER:String = "OPEN_AWAY3D_BUILDER";
@@ -55,6 +55,8 @@ package actionScripts.plugins.away3d
 		private static const APP_EXT_COUNT					: int = 3;
 		private static const APP_INTERNAL_PATH_TO_EXEC		: String = "/Contents/MacOS/";
 		private static const APP_INTERNAL_PATH_TO_PLIST		: String = "/Contents/Info.plist";
+		
+		public static var IS_AWAYBUILDER_OPEN:Boolean;
 		
 		override public function get name():String { return "Away3D"; }
 		override public function get author():String { return "Moonshine Project Team"; }
@@ -105,28 +107,14 @@ package actionScripts.plugins.away3d
 		
 		private function openAway3DBuilder(event:Event):void
 		{
-			if (!executablePath) Alert.show("Application unavailable. Please locate the Away3D Builder to run.", "Error!", Alert.OK, FlexGlobals.topLevelApplication as Sprite, locateHandler);
-			else runHandler();
-			
-			function locateHandler(value:CloseEvent):void
+			if (IS_AWAYBUILDER_OPEN)
 			{
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.away3d::Away3DPlugin"));
-				
-				for each (var tab:IContentWindow in model.editors)
-				{
-					if (tab["className"] == "SettingsView")
-					{
-						tab.addEventListener(SettingsView.EVENT_SAVE, onAway3DSettingsUpdated, false, 0, true);
-						tab.addEventListener(SettingsView.EVENT_CLOSE, onAway3DSettingsCanceled, false, 0, true);
-						return;
-					}
-				}
+				Alert.show("Away Builder is already open.", "Note!");
+				return;
 			}
 			
-			function runHandler():void
-			{
-				runAwdFile(); // no parameter to open the application only
-			}
+			GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent((new AwayBuilderView) as IContentWindow));
+			IS_AWAYBUILDER_OPEN = true;
 		}
 		
 		private function onAway3DSettingsUpdated(event:Event):void

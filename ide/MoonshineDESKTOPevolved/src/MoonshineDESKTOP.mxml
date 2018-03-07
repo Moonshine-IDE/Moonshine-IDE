@@ -303,6 +303,7 @@
 	</fx:Declarations>
 	<fx:Style source="/elements/style/style.css"/>
 	<fx:Style source="/assets/styles/InstallApacheFlexStyle.css"/>
+	<fx:Style source="/assets/styles/awaybuilder_defaults.css"/>
 
 	<fx:Script source="actionScripts/utils/AutoUpdater.as"/>
 	<containers:UpdaterView width="100%" height="100%"
