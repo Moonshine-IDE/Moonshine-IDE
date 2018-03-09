@@ -46,8 +46,12 @@
 			import actionScripts.ui.menu.vo.MenuItem;
 			import actionScripts.ui.tabview.CloseTabEvent;
 			
-			private var builder:AwayBuilderLibMain;
+			import awaybuilder.controller.events.SceneReadyEvent;
+			
+			public var awdFileObject:File;
+			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var model:IDEModel = IDEModel.getInstance();
 			private var abLib:AwayBuilderLibMain;
 			
 			/**
@@ -77,21 +81,29 @@
 			{
 			}
 			
+			private static var is_once:Boolean;
 			/**
 			 * On creation completes
 			 */
 			public function initThis():void
 			{
 				dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
-				IDEModel.getInstance().mainView.bodyPanel.setStyle('backgroundAlpha', 0);
+				model.mainView.bodyPanel.setStyle('backgroundAlpha', 0);
+				model.mainView.mainPanel.setStyle('backgroundAlpha', 0);
+				model.mainView.mainContent.setStyle('backgroundAlpha', 0);
 				
-				var tmp:SplashScreenLib = SplashScreenLib.getInstance();
-				tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
+				if (!is_once)
+				{
+					var tmp:SplashScreenLib = SplashScreenLib.getInstance();
+					tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
+					is_once = true;
+				}
 				
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					abLib = new AwayBuilderLibMain;
 					abLib.percentWidth = abLib.percentHeight = 100;
+					abLib.addEventListener(SceneReadyEvent.READY, onAwayBuilderReady, false, 0, true);
 					addElement(abLib);
 					
 					var currentMenu:Object = applyNewNativeMenu(abLib.menuProvider);
@@ -106,6 +118,11 @@
 				}, 1000);
 			}
 			
+			public function loadAwayBuilderFile():void
+			{
+				abLib.openFileByURL(awdFileObject.url, awdFileObject.name);
+			}
+			
 			private function applyNewNativeMenu(menuItems:Array):Object
 			{
 				var mainMenu:Object = new CustomMenu();
@@ -114,18 +131,26 @@
 				return mainMenu;
 			}
 			
+			private function onAwayBuilderReady(event:Event):void
+			{
+				abLib.removeEventListener(SceneReadyEvent.READY, onAwayBuilderReady);
+				loadAwayBuilderFile();
+			}
+			
 			private function onThisClosing(event:CloseTabEvent):void
 			{
 				if (event.tab == this)
 				{
 					// time to remove all footprints
+					abLib.removeEventListener(SceneReadyEvent.READY, onAwayBuilderReady);
 					dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
 					abLib.dispatchEvent(new Event(AwayBuilderLibMain.DISPOSE));
 					abLib.eventDispatcher = null;
 					removeElement(abLib);
-					IDEModel.getInstance().mainView.bodyPanel.setStyle('backgroundAlpha', 1);
-					Away3DPlugin.IS_AWAYBUILDER_OPEN = false;
 					abLib = null;
+					model.mainView.bodyPanel.setStyle('backgroundAlpha', 1);
+					model.mainView.mainPanel.setStyle('backgroundAlpha', 1);
+					model.mainView.mainContent.setStyle('backgroundAlpha', 1);
 				}
 			}
 			

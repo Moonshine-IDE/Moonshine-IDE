@@ -365,6 +365,7 @@
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
 			<arg line="elements" />
+			<arg line="assets" />
 			<arg line="tourDeFlex" />
 			<arg line="appScripts" />
 			<arg line="defaultSDKs"/>
@@ -808,6 +809,7 @@
 			<equals arg1="${keepDebugFiles}" arg2="false"/>
 			<then>
 				<delete dir="${debug_dir}" />
+				<delete dir="assets" />
 				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>

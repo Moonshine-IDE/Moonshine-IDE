@@ -43,6 +43,7 @@ package actionScripts.plugins.away3d
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
@@ -56,8 +57,6 @@ package actionScripts.plugins.away3d
 		private static const APP_INTERNAL_PATH_TO_EXEC		: String = "/Contents/MacOS/";
 		private static const APP_INTERNAL_PATH_TO_PLIST		: String = "/Contents/Info.plist";
 		
-		public static var IS_AWAYBUILDER_OPEN:Boolean;
-		
 		override public function get name():String { return "Away3D"; }
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "The Away3D Moonshine Plugin."; }
@@ -65,6 +64,7 @@ package actionScripts.plugins.away3d
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var awdFileObject:File;
+		private var abView:AwayBuilderView;
 		
 		private var finalExecutablePath:String;
 		public function get executablePath():String
@@ -107,14 +107,18 @@ package actionScripts.plugins.away3d
 		
 		private function openAway3DBuilder(event:Event):void
 		{
-			if (IS_AWAYBUILDER_OPEN)
+			if (abView)
 			{
-				Alert.show("Away Builder is already open.", "Note!");
+				abView.awdFileObject = awdFileObject;
+				abView.setFocus();
+				abView.loadAwayBuilderFile();
 				return;
 			}
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent((new AwayBuilderView) as IContentWindow));
-			IS_AWAYBUILDER_OPEN = true;
+			abView = new AwayBuilderView;
+			abView.awdFileObject = awdFileObject;
+			abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+			GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));
 		}
 		
 		private function onAway3DSettingsUpdated(event:Event):void
@@ -127,6 +131,12 @@ package actionScripts.plugins.away3d
 		{
 			event.target.removeEventListener(SettingsView.EVENT_SAVE, onAway3DSettingsUpdated);
 			event.target.removeEventListener(SettingsView.EVENT_CLOSE, onAway3DSettingsCanceled);
+		}
+		
+		private function onAwayBuilderTabClosed(event:CloseTabEvent):void
+		{
+			abView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+			abView = null;
 		}
 		
 		private function onAway3DProjectOpen(event:ProjectEvent):void
