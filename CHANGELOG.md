@@ -6,27 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.10.0-Pending]
 
 ### Added
-* Global Search: Added presentation of founded lines in the search results.
-* Global Search: Highlight words/lines in the results of search.
-* Added organize imports by shortcuts (Windows: CTRL+SHIFT+O, Mac: CMD+SHISFT+O)
+* Global Search: Display matched lines in the search results.
+* Global Search: Highlight the matched string and line when opening a search result
+* Added Edit > Organize Imports to organize import statements (Windows: CTRL+SHIFT+O, Mac: CMD+SHIFT+O)
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.9.1](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.9.1).
-* New Project: Extend information about location of project created from existing source code.
-* Global Search: Added drop down list with list of the project.
+* New Project:  Added further clarification about location of project created from existing source code.
+* Global Search:  Select the target project from a drop-down list.
 * Changed name of confirmation button in new file popup from **Change** to **Create*.
 
 ### Fixed
-* Fixed issue where code completion does not work when user type tag name using lower case.
+* Code completion:  Now ignores the case of the entered text.
 * Library Project: Fixed issue where adding new MXML file was disabled.
-* Library Project: Fixed issue where build of Flex library failed after adding mxml file.
-* Library Project: Fixed issue where user could not create library project from existing sources.
-* Project Settings: Fixed issue where **Define it now** does not work in **Custom SDK** section.
-* Project Tree: Fixed issue where source icon dissapear once root folder is refreshed.
-* Project Tree: Fixed issue where IDE throws IOError, after renaming parent folder and open some children.
+* Library Project: Fixed issue where compilation failed for Flex library projects after adding an MXML file.
+* Library Project: Fixed issue where user could not create library projects from existing sources.
+* Project Settings: Fixed issue where **Define it now** did not work in **Custom SDK** section.
+* Project Tree: Fixed issue where source icon disappeared once root folder was refreshed.
+* Project Tree: Fixed issue where IDE threw IOError on child files after renaming parent folder
 * Home Tab: Fixed issue where deleted project was not removed from "Recent" opened project section.
-* Settings: Fixed issue where **Reset to Default** was not removed one SDK from the list.
-* Fixed issue where user cannot change platform type after importing project from FlashDevelop.
+* Settings: Fixed issue where **Reset to Default** did not remove one SDK from the list.
+* Fixed issue where user could not change platform type after importing project from FlashDevelop.
 
 
 ## Moonshine IDE [1.9.0]
