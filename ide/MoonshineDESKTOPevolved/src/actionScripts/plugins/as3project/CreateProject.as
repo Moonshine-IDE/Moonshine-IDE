@@ -493,7 +493,7 @@ package actionScripts.plugins.as3project
 						clearTimeout(timeoutValue);
 					}, 500);
 					
-					Alert.show("Please provide the source folder and application file location to proceed.", "Error!");
+					Alert.show(isLibraryProject ? "Please provide the source folder location to proceed." : "Please provide the source folder and application file location to proceed.", "Error!");
 					return;
 				}
 				
