@@ -102,6 +102,12 @@ package actionScripts.plugins.swflauncher.launchers
 			
 			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
+			var debugOptions:String = "";
+			if(runAsDebugger)
+			{
+				debugOptions = "&&-connect";
+			}
+
 			var adtPackagingCom:String;
 			if (isAndroid) 
 			{
@@ -114,7 +120,7 @@ package actionScripts.plugins.swflauncher.launchers
 				{
 					androidPackagingMode = "apk";
 				}
-				adtPackagingCom = adtPath +'-package&&-target&&'+ androidPackagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
+				adtPackagingCom = adtPath +'-package&&-target&&' + androidPackagingMode + debugOptions + '&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			else
 			{
@@ -148,7 +154,7 @@ package actionScripts.plugins.swflauncher.launchers
 					}
 				}
 					
-				adtPackagingCom = adtPath +'-package&&-target&&'+ iOSPackagingMode +'&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
+				adtPackagingCom = adtPath +'-package&&-target&&' + iOSPackagingMode + debugOptions + '&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
 			}
 			
 			// extensions and resources

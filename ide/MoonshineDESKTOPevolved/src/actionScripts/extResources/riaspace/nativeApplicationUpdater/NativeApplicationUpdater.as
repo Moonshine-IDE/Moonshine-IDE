@@ -1,12 +1,5 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
-	import air.update.events.DownloadErrorEvent;
-	import air.update.events.StatusUpdateErrorEvent;
-	import air.update.events.StatusUpdateEvent;
-	import air.update.events.UpdateEvent;
-	
-	import actionScripts.extResources.riaspace.nativeApplicationUpdater.utils.HdiutilHelper;
-	
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -26,6 +19,13 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
+	
+	import actionScripts.extResources.riaspace.nativeApplicationUpdater.utils.HdiutilHelper;
+	
+	import air.update.events.DownloadErrorEvent;
+	import air.update.events.StatusUpdateErrorEvent;
+	import air.update.events.StatusUpdateEvent;
+	import air.update.events.UpdateEvent;
 	
 	[Event(name="initialized", type="air.update.events.UpdateEvent")]
 	[Event(name="checkForUpdate", type="air.update.events.UpdateEvent")]
@@ -109,6 +109,12 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var _installerType:String;
 		
 		protected var _currentState:String = UNINITIALIZED;
+		
+		protected var _currentMajor:int = -1;
+		
+		protected var _currentMinor:int = -1;
+		
+		protected var _currentRevision:int = -1;
 		
 		protected var updateDescriptorLoader:URLLoader;
 		
@@ -267,7 +273,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				return;
 			}
 			
-			currentState = AVAILABLE;			
+			currentState = AVAILABLE;
 			dispatchEvent(new StatusUpdateEvent(
 				StatusUpdateEvent.UPDATE_STATUS, false, true, 
 				isNewerVersionFunction.call(this, currentVersion, updateVersion), updateVersion)); // TODO: handle last event param with details (description)
@@ -487,6 +493,15 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected function set currentVersion(value:String):void
 		{
 			_currentVersion = value;
+			
+			// split the value to three
+			var tmpArr:Array = value.split(".");
+			if (tmpArr.length == 3)
+			{
+				_currentMajor = parseInt(tmpArr[0]);
+				_currentMinor = parseInt(tmpArr[1]);
+				_currentRevision = parseInt(tmpArr[2]);
+			}
 		}
 		
 		[Bindable]
@@ -540,9 +555,16 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				return _isNewerVersionFunction;
 			else
 				return function(currentVersion:String, updateVersion:String):Boolean { 
-					var cvNumber : Number = Number( currentVersion.split(".").join("") );
-					var uvNumber : Number = Number( updateVersion.split(".").join("") );
-					return cvNumber < uvNumber;
+					var tmpSplit:Array = updateVersion.split(".");
+					var uv1:Number = Number(tmpSplit[0]);
+					var uv2:Number = Number(tmpSplit[1]);
+					var uv3:Number = Number(tmpSplit[2]);
+					
+					if (uv1 > _currentMajor) return true;
+					else if (uv1 >= _currentMajor && uv2 > _currentMinor) return true;
+					else if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 > _currentRevision) return true;
+					
+					return false;
 				};
 		}
 		
