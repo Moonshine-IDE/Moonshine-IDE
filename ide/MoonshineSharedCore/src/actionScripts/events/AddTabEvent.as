@@ -27,10 +27,12 @@ package actionScripts.events
 		public static const EVENT_ADD_TAB:String = "addTabEvent";
 		
 		public var tab:IContentWindow;
+		public var canClose:Boolean;
 		
-		public function AddTabEvent(tab:IContentWindow)
+		public function AddTabEvent(tab:IContentWindow, canClose:Boolean=true)
 		{
 			this.tab = tab;
+			this.canClose = canClose;
 			
 			super(EVENT_ADD_TAB, false, true);
 		}

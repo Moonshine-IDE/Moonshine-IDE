@@ -190,10 +190,10 @@ s|TextInput
 	color: #000000;
 }
 
-s|Button 
+/*s|Button 
 {
 	skinClass: ClassReference("awaybuilder.view.skins.ButtonSkin")
-}
+}*/
 s|TitleWindow 
 {
 	chromeColor: #1d1d1c;

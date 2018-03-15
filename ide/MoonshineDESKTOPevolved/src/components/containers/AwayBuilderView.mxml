@@ -37,7 +37,6 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.factory.NativeMenuItemLocation;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.away3d.Away3DPlugin;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.ui.menu.MenuBar;
 			import actionScripts.ui.menu.interfaces.ICustomMenu;
@@ -81,7 +80,6 @@
 			{
 			}
 			
-			private static var is_once:Boolean;
 			/**
 			 * On creation completes
 			 */
@@ -92,12 +90,8 @@
 				model.mainView.mainPanel.setStyle('backgroundAlpha', 0);
 				model.mainView.mainContent.setStyle('backgroundAlpha', 0);
 				
-				if (!is_once)
-				{
-					var tmp:SplashScreenLib = SplashScreenLib.getInstance();
-					tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
-					is_once = true;
-				}
+				var tmp:SplashScreenLib = SplashScreenLib.instance;
+				tmp.attachSplashScreenTo(new Rectangle(stage.nativeWindow.x, stage.nativeWindow.y, stage.nativeWindow.width, stage.nativeWindow.height));
 				
 				var timeoutValue:uint = setTimeout(function():void
 				{
@@ -148,9 +142,9 @@
 					abLib.eventDispatcher = null;
 					removeElement(abLib);
 					abLib = null;
-					model.mainView.bodyPanel.setStyle('backgroundAlpha', 1);
-					model.mainView.mainPanel.setStyle('backgroundAlpha', 1);
-					model.mainView.mainContent.setStyle('backgroundAlpha', 1);
+					//model.mainView.bodyPanel.setStyle('backgroundAlpha', 1);
+					//model.mainView.mainPanel.setStyle('backgroundAlpha', 1);
+					//model.mainView.mainContent.setStyle('backgroundAlpha', 1);
 				}
 			}
 			

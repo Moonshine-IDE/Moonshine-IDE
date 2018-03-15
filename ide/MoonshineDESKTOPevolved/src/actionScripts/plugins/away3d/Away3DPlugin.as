@@ -30,8 +30,6 @@ package actionScripts.plugins.away3d
 	import flash.system.System;
 	import flash.utils.IDataInput;
 	
-	import mx.controls.Alert;
-	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
@@ -109,6 +107,9 @@ package actionScripts.plugins.away3d
 		{
 			if (abView)
 			{
+				/*abView.awdFileObject = awdFileObject;
+				abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));*/
 				abView.awdFileObject = awdFileObject;
 				abView.setFocus();
 				abView.loadAwayBuilderFile();
