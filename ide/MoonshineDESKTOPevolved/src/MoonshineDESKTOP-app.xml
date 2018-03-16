@@ -110,7 +110,7 @@
 		<!-- <softKeyboardBehavior></softKeyboardBehavior> -->
 
 		<!-- Display Resolution for the app (either "standard" or "high"). Optional, OSX-only. Default "standard" -->
-		<!-- <requestedDisplayResolution></requestedDisplayResolution> -->
+		 <requestedDisplayResolution>high</requestedDisplayResolution>
 	<autoOrients>false</autoOrients>
         <fullScreen>false</fullScreen>
         <visible>false</visible>
