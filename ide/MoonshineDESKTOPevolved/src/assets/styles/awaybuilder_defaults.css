@@ -73,17 +73,7 @@ mx|Alert
 	font-family: mxmainFont;
 }*/
 
-global 
-{
-	modalTransparency: 0.6;
-	modalTransparencyColor: #000003;
-	modalTransparencyDuration: 200;
-	/*fontFamily: mainFont;
-	fontWeight: normal;
-	fontSize: 12;*/
-}
-
-s|TitleWindow
+awaybuilder|CoreEditor s|TitleWindow
 {
 	color: #ebebeb;
 	backgroundColor: #2d2d2c;
@@ -92,7 +82,7 @@ s|TitleWindow
 	skinClass: ClassReference("awaybuilder.view.skins.PopupSkin");
 }
 
-s|TitleWindow #controlBar
+awaybuilder|CoreEditor s|TitleWindow #controlBar
 {
 	color: #ebebeb;
 	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
@@ -103,6 +93,19 @@ awaybuilder|CoreEditor
 	backgroundColor: #dbdbdb; 
 	color: #1d1d1c;
 	chromeColor: #dbdbdb;
+}
+awaybuilder|CoreEditor s|Window
+{
+	color: #dbdbdb;
+	backgroundColor: #1d1d1c;
+	chromeColor: #1d1d1c;
+	symbolColor: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.desktop.view.skins.WindowSkin");
+}
+awaybuilder|CoreEditor s|Window #controlBar
+{
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
 }
 tree|Tree
 {
@@ -184,29 +187,6 @@ tree|TreeItemRenderer.lens
 s|NumericStepper
 {
 	color: #000000;
-}
-s|TextInput 
-{
-	color: #000000;
-}
-
-/*s|Button 
-{
-	skinClass: ClassReference("awaybuilder.view.skins.ButtonSkin")
-}*/
-s|TitleWindow 
-{
-	chromeColor: #1d1d1c;
-	color: #dbdbdb;
-	fontSize: 12;
-	backgroundColor:#1d1d1c;
-}
-s|Panel 
-{
-	chromeColor: #1d1d1c;
-	color: #dbdbdb;
-	fontSize: 12;
-	backgroundColor:#1d1d1c;
 }
 
 /*** tool/status bars ***/
@@ -486,26 +466,13 @@ awaybuilder|SampleItemRenderer #titleLabel
 	color: #40a9ff;
 }
 
-s|DropDownList
-{
-    skinClass: ClassReference("awaybuilder.view.skins.DropDownListSkin");
-    contentBackgroundColor: #333333;
-    borderColor: #222222;
-	selectionColor: #090909;
-	rollOverColor:  #222222;
-}
-
-s|DataGrid
+awaybuilder|CoreEditor s|DataGrid
 {
 	contentBackgroundColor: #333333;
 	selectionColor: #111111;
 	rollOverColor: #222222;
 }
-s|RadioButton
-{
-	symbolColor: #90BFFF;
-}
-s|CheckBox
+awaybuilder|CoreEditor s|RadioButton
 {
 	symbolColor: #90BFFF;
 }

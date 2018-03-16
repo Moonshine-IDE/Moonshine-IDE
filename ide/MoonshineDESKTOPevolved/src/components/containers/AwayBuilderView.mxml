@@ -45,6 +45,7 @@
 			import actionScripts.ui.menu.vo.MenuItem;
 			import actionScripts.ui.tabview.CloseTabEvent;
 			
+			import awaybuilder.controller.events.SaveDocumentEvent;
 			import awaybuilder.controller.events.SceneReadyEvent;
 			
 			public var awdFileObject:File;
@@ -52,6 +53,8 @@
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
 			private var abLib:AwayBuilderLibMain;
+			
+			private var _isChanged:Boolean;
 			
 			/**
 			 * Interface methods
@@ -63,12 +66,12 @@
 			
 			public function get label():String
 			{
-				return "Away Builder";
+				return _isChanged ? "*Away Builder" : "Away Builder";
 			}
 			
 			public function isChanged():Boolean
 			{
-				return false;
+				return _isChanged;
 			}
 			
 			public function isEmpty():Boolean
@@ -78,6 +81,7 @@
 			
 			public function save():void
 			{
+				abLib.save();
 			}
 			
 			/**
@@ -85,7 +89,7 @@
 			 */
 			public function initThis():void
 			{
-				dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
+				//dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
 				model.mainView.bodyPanel.setStyle('backgroundAlpha', 0);
 				model.mainView.mainPanel.setStyle('backgroundAlpha', 0);
 				model.mainView.mainContent.setStyle('backgroundAlpha', 0);
@@ -98,6 +102,8 @@
 					abLib = new AwayBuilderLibMain;
 					abLib.percentWidth = abLib.percentHeight = 100;
 					abLib.addEventListener(SceneReadyEvent.READY, onAwayBuilderReady, false, 0, true);
+					abLib.addEventListener(Event.CHANGE, onAwayBuilderChanged, false, 0, true);
+					abLib.addEventListener(SaveDocumentEvent.SAVE_DOCUMENT_SUCCESS, onAwayBuilderSaved, false, 0, true);
 					addElement(abLib);
 					
 					var currentMenu:Object = applyNewNativeMenu(abLib.menuProvider);
@@ -115,6 +121,18 @@
 			public function loadAwayBuilderFile():void
 			{
 				abLib.openFileByURL(awdFileObject.url, awdFileObject.name);
+			}
+			
+			private function onAwayBuilderChanged(event:Event):void
+			{
+				_isChanged = true;
+				dispatchEvent(new Event("labelChanged"));
+			}
+			
+			private function onAwayBuilderSaved(event:Event):void
+			{
+				_isChanged = false;
+				dispatchEvent(new Event("labelChanged"));
 			}
 			
 			private function applyNewNativeMenu(menuItems:Array):Object
@@ -137,6 +155,8 @@
 				{
 					// time to remove all footprints
 					abLib.removeEventListener(SceneReadyEvent.READY, onAwayBuilderReady);
+					abLib.removeEventListener(Event.CHANGE, onAwayBuilderChanged);
+					abLib.removeEventListener(SaveDocumentEvent.SAVE_DOCUMENT_SUCCESS, onAwayBuilderSaved);
 					dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing);
 					abLib.dispatchEvent(new Event(AwayBuilderLibMain.DISPOSE));
 					abLib.eventDispatcher = null;
