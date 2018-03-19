@@ -24,6 +24,7 @@ package actionScripts.ui.menu.renderers
 	import flash.geom.Point;
 	
 	import mx.containers.HBox;
+	import mx.controls.Image;
 	import mx.controls.ToolTip;
 	import mx.core.UIComponent;
 	import mx.core.mx_internal;
@@ -34,6 +35,7 @@ package actionScripts.ui.menu.renderers
 	import actionScripts.ui.menu.MenuModel;
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 	import actionScripts.utils.moonshine_internal;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 
 	use namespace moonshine_internal;
@@ -70,8 +72,8 @@ package actionScripts.ui.menu.renderers
 
 
 		private var _label:String;
-		
 		private var _tooltip:String;
+		private var _checked:Boolean;
 
 		public function set label(v:String):void
 		{
@@ -83,6 +85,16 @@ package actionScripts.ui.menu.renderers
 		public function get label():String
 		{
 			return _label;
+		}
+		
+		public function get checked():Boolean
+		{
+			return _checked;
+		}
+		
+		public function set checked(value:Boolean):void
+		{
+			_checked = value;
 		}
 		
 		public function set tooltip(v:String):void
@@ -302,6 +314,15 @@ package actionScripts.ui.menu.renderers
 
 			labelView = createLabel(_label);
 			labelView.setStyle("paddingRight", 25);
+			
+			if (checked)
+			{
+				var tick:Image = new Image();
+				tick.source = new ConstantsCoreVO.menuTickIcon;
+				tick.width = tick.height = 16;
+				tick.x = (checkBoxGap.width - tick.width) / 2;
+				checkBoxGap.addChild(tick);
+			}
 
 			if (data && !data.enabled)
 			{

@@ -54,6 +54,8 @@ package actionScripts.valueObjects
 		public static var loaderIcon: Class;
 		[Embed(source='/elements/images/icoSource.png')]
 		public static var sourceFolderIcon: Class;
+		[Embed(source='/elements/images/icoTick.png')]
+		public static var menuTickIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		public static var TEMPLATE_AS3CLASS: FileLocation;
@@ -87,6 +89,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var NON_CLOSEABLE_TABS:Array;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
 		  <!-- Output SWF options -->
@@ -361,6 +364,8 @@ package actionScripts.valueObjects
 				{label:"Build and Run as Javascript",tooltip:"Create JS/HTML files from AS/MXML files using FlexJS SDK"},{label:"Build Release",tooltip:"Build & Release of Project"},{label:"Clean Project",tooltip:"Clean Project"},
 				{label:"Build & Debug",tooltip:"Build & Debug Project"},{label:"Step Over",tooltip:"Step to next line"},{label:"Resume",tooltip:"Continue execution till next breakpoint"},{label:"Stop",tooltip:"Terminate debug execution"},
 				{label:"Ant Build",tooltip:"Build Project through Ant script"},{label:"Configure",tooltip:"Select xml file for Ant build"}]);
+			
+			NON_CLOSEABLE_TABS = ["Home", "*Away Builder", "Away Builder"];
 		}
 		
 		public static function generateDevices():void

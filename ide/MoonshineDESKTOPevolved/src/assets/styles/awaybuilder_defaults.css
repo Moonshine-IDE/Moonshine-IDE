@@ -1,0 +1,522 @@
+@namespace skins "awaybuilder.view.skins.*";
+@namespace awaybuilder "awaybuilder.view.components.*";
+@namespace renderers "awaybuilder.view.components.renderers.*";
+@namespace propertyEditors "awaybuilder.view.components.propertyEditors.*";
+@namespace controls "awaybuilder.view.components.controls.*";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace tree "awaybuilder.view.components.controls.tree.*";
+
+/*@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/arial.ttf");
+	font-family:            mainFont;
+	font-style:             normal;
+	font-weight:            normal;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/arialbd.ttf");
+	font-family:            mainFont;
+	font-style:             normal;
+	font-weight:            bold;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/ariali.ttf");
+	font-family:            mainFont;
+	font-style:             italic;
+	font-weight:            normal;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/arialbi.ttf");
+	font-family:            mainFont;
+	font-style:             italic;
+	font-weight:            bold;
+	embed-as-cff:           true;
+	advanced-anti-aliasing: true;
+}
+@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/arial.ttf");
+	font-family:            mxmainFont;
+	embed-as-cff:           false;
+}
+@font-face 
+{
+	src:                    url("/assets/awaybuilderassets/arialbd.ttf");
+	font-family:            mxmainFont;
+	font-weight:            bold;
+	embed-as-cff:           false;
+}
+mx|ToolTip 
+{
+	font-family: mxmainFont;
+}
+mx|Button 
+{
+	font-family: mxmainFont;
+}
+mx|TextInput 
+{
+	font-family: mxmainFont;
+}
+mx|Alert 
+{
+	font-family: mxmainFont;
+}*/
+
+awaybuilder|CoreEditor s|TitleWindow
+{
+	color: #ebebeb;
+	backgroundColor: #2d2d2c;
+	chromeColor: #2d2d2c;
+	symbolColor: #ebebeb;
+	skinClass: ClassReference("awaybuilder.view.skins.PopupSkin");
+}
+
+awaybuilder|CoreEditor s|TitleWindow #controlBar
+{
+	color: #ebebeb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+awaybuilder|CoreEditor
+{	
+	backgroundColor: #dbdbdb; 
+	color: #1d1d1c;
+	chromeColor: #dbdbdb;
+}
+awaybuilder|CoreEditor s|Window
+{
+	color: #dbdbdb;
+	backgroundColor: #1d1d1c;
+	chromeColor: #1d1d1c;
+	symbolColor: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.desktop.view.skins.WindowSkin");
+}
+awaybuilder|CoreEditor s|Window #controlBar
+{
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+tree|Tree
+{
+	skinClass: ClassReference("awaybuilder.view.skins.tree.TreeSkin")
+}
+tree|TreeItemRenderer.light
+{
+	icon: Embed("/assets/awaybuilderassets/images/weather_sun.png");
+}
+tree|TreeItemRenderer.lightPicker
+{
+	icon: Embed("/assets/awaybuilderassets/images/category.png");
+}
+tree|TreeItemRenderer.default
+{
+	icon: Embed("/assets/awaybuilderassets/images/plugin.png");
+}
+tree|TreeItemRenderer.texture
+{
+	icon: Embed("/assets/awaybuilderassets/images/map.png");
+}
+tree|TreeItemRenderer.material
+{
+	icon: Embed("/assets/awaybuilderassets/images/block.png");
+}
+tree|TreeItemRenderer.geometry
+{
+	icon: Embed("/assets/awaybuilderassets/images/origami.png");
+}
+tree|TreeItemRenderer.skeleton
+{
+	icon: Embed("/assets/awaybuilderassets/images/skull.png");
+}
+tree|TreeItemRenderer.mesh
+{
+	icon: Embed("/assets/awaybuilderassets/images/mesh_box_closed.png");
+}
+tree|TreeItemRenderer.container
+{
+	icon: Embed("/assets/awaybuilderassets/images/box_closed.png");
+}
+tree|TreeItemRenderer.animationNode
+{
+	icon: Embed("/assets/awaybuilderassets/images/film-medium.png");
+}
+tree|TreeItemRenderer.animationSet
+{
+	icon: Embed("/assets/awaybuilderassets/images/inbox-film.png");
+}
+tree|TreeItemRenderer.animator
+{
+	icon: Embed("/assets/awaybuilderassets/images/walk.png");
+}
+tree|TreeItemRenderer.bear
+{
+	icon: Embed("/assets/awaybuilderassets/images/teddy_bear.png");
+}
+tree|TreeItemRenderer.shadow
+{
+	icon: Embed("/assets/awaybuilderassets/images/blue-document-attribute-s.png");
+}
+tree|TreeItemRenderer.effect
+{
+	icon: Embed("/assets/awaybuilderassets/images/blue-document-attribute-e.png");
+}
+tree|TreeItemRenderer.skyBox
+{
+	icon: Embed("/assets/awaybuilderassets/images/weather_clouds.png");
+}
+tree|TreeItemRenderer.camera
+{
+	icon: Embed("/assets/awaybuilderassets/images/camera.png");
+}
+tree|TreeItemRenderer.lens
+{
+	icon: Embed("/assets/awaybuilderassets/images/camera-lens.png");
+}
+
+s|NumericStepper
+{
+	color: #000000;
+}
+
+/*** tool/status bars ***/
+
+awaybuilder|EditToolBar
+{
+	chromeColor: #1d1d1c;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+awaybuilder|EditStatusBar
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+.toolBar
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarSkin");
+}
+
+propertyEditors|LabelPropertyEditor s|TextArea
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ResizingTextAreaSkin");
+}
+
+/*** toolbar ***/
+
+mx|VRule
+{
+	strokeWidth: 2;
+	strokeColor: #70706d;
+	shadowColor: #383836;
+}
+
+.toolbarButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+}
+
+s|ToggleButton.toolbarButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+}
+
+s|RadioButton.toolbarButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolBarRadioButtonSkin");
+}
+
+.toolbarButton#newDocumentButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/page_white_star.png");
+}
+
+.toolbarButton#openDocumentButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/folder_page_white.png");
+}
+.toolbarButton#importDocumentButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/document-import.png");
+}
+.toolbarButton#saveDocumentButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/disk.png");
+}
+
+.toolbarButton#printDocumentButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/printer.png");
+}
+
+.toolbarButton#undoButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/arrow_undo.png");
+}
+
+.toolbarButton#redoButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/arrow_redo.png");
+}
+
+.toolbarButton#zoomInButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/zoom_in.png");
+}
+
+.toolbarButton#zoomOutButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/zoom_out.png");
+}
+
+.toolbarButton#helpButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/help.png");
+}
+
+.toolbarButton#applicationSettingsButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/cog.png");
+}
+
+.toolbarButton#documentSettingsButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/page_white_gear.png");
+}
+
+.toolbarButton#statsButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/information.png");
+}
+
+.toolbarButton#cutButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/cut.png");
+}
+
+.toolbarButton#copyButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/page_copy.png");
+}
+
+.toolbarButton#pasteButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/paste_plain.png");
+}
+
+.toolbarButton#deleteButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/delete.png");
+}
+
+.toolbarButton#rotateClockwiseButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/shape_rotate_clockwise.png");
+}
+
+.toolbarButton#rotateCounterClockwiseButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/shape_rotate_anticlockwise.png");
+}
+
+.toolbarButton#targetCameraButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/cursor.png");
+}
+
+.toolbarButton#freeCameraButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/hand.png");
+}
+.toolbarButton#translateButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/arrow_nsew.png");
+}
+.toolbarButton#rotateButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/arrow_rotate_anticlockwise.png");
+}
+.toolbarButton#scaleButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/arrow_out_longer.png");
+}
+
+.toolbarButton#resetButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/control_start_blue.png");
+}
+
+.toolbarButton#advanceButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/control_fastforward_blue.png");
+}
+
+.toolbarButton#focusButton
+{
+    icon: Embed("/assets/awaybuilderassets/images/eye.png");
+}
+
+.toolbarButton#playPauseButton
+{
+	icon: Embed("/assets/awaybuilderassets/images/control_play_blue.png");
+	selectedIcon: Embed("/assets/awaybuilderassets/images/control_pause_blue.png");
+}
+
+s|Button.editSharedObjectButtonStyle
+{
+    skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/arrow-transition.png");
+}
+
+s|Button.editParentObjectButtonStyle
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarToggleButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/arrow-transition-180.png");
+}
+
+s|Button.addItemButton
+{
+	skinClass: ClassReference("awaybuilder.view.skins.AddButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/add.png");
+}
+
+s|Button.playButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control.png");
+}
+s|Button.pauseButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control-pause.png");
+}
+s|Button.stopButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control-stop-square.png");
+}
+s|Button.rewindButton 
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control-stop-180.png");
+}
+
+s|Button.stepForwardButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control-double.png");
+}
+s|Button.stepBackButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/control-double-180.png");
+}
+s|Button.addButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/add.png");
+}
+s|Button.removeButton
+{
+	chromeColor: #004F8F;
+	skinClass: ClassReference("awaybuilder.view.skins.ToolbarButtonSkin");
+	icon: Embed("/assets/awaybuilderassets/images/delete.png");
+}
+
+awaybuilder|ApplicationSettingsForm s|List
+{
+	borderVisible: false;
+}
+
+awaybuilder|SamplePicker s|List
+{
+	skinClass: ClassReference("awaybuilder.view.skins.SamplesListSkin");
+	borderVisible: false;
+	contentBackgroundColor: #111110;
+	contentBackgroundAlpha: 0.45;
+	color: #dbdbdb;
+}
+
+awaybuilder|SampleItemRenderer #titleLabel
+{
+	fontWeight: bold;
+	fontSize: 14;
+	color: #40a9ff;
+}
+
+awaybuilder|CoreEditor s|DataGrid
+{
+	contentBackgroundColor: #333333;
+	selectionColor: #111111;
+	rollOverColor: #222222;
+}
+awaybuilder|CoreEditor s|RadioButton
+{
+	symbolColor: #90BFFF;
+}
+
+.toolsPanel
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 11;
+	backgroundColor:#1d1d1c;
+}
+
+controls|CollapsiblePanel
+{
+    chromeColor: #1d1d1c;
+    color: #dbdbdb;
+    fontSize: 11;
+    backgroundColor: #1d1d1c;
+    skinClass: ClassReference("awaybuilder.view.skins.CollapsibleDropdownPanelSkin");
+}
+controls|LibraryCollapsiblePanel
+{
+	chromeColor: #1d1d1c;
+	color: #dbdbdb;
+	fontSize: 11;
+	backgroundColor: #1d1d1c;
+	skinClass: ClassReference("awaybuilder.view.skins.CollapsibleDropdownLibraryPanelSkin");
+}
+controls|DragableNumericStepper
+{
+	skinClass: ClassReference("awaybuilder.view.skins.DragableNumericStepperSkin");
+	focusSkin: ClassReference("awaybuilder.view.skins.DragableLabelFocusSkin");
+}
+controls|PropertiesItemContainer
+{
+	skinClass: ClassReference("awaybuilder.view.components.controls.PropertiesItemContainerSkin");
+}
+
+mx|ColorPicker
+{
+	color: #000000;
+}
+	
+controls|ExtendedDropDownList
+{
+	skinClass: ClassReference("awaybuilder.view.skins.ExtendedDropDownListSkin");
+}

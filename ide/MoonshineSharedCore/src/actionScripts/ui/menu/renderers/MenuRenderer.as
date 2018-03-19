@@ -135,6 +135,7 @@ package actionScripts.ui.menu.renderers
 				renderer.separator = currMenuItem.isSeparator;
 				renderer.submenu = currMenuItem.submenu ? true : false;
 				renderer.label = currMenuItem.label;
+				renderer.checked = currMenuItem.checked;
 				renderer.tooltip = setTooTip(currMenuItem.label);
 				itemContainer.addChildAt(renderer, i);
 			}

@@ -59,15 +59,15 @@ package actionScripts.ui.menu.vo
 		}
 
 		/* INTERFACE com.moonshineproject.plugin.menu.interfaces.ICustomMenuItem */
-
+		private var _checked:Boolean;
 		public function get checked():Boolean
 		{
-			return false;
+			return _checked;
 		}
 
 		public function set checked(value:Boolean):void
 		{
-
+			_checked = value;
 		}
 
 		private var _data:Object

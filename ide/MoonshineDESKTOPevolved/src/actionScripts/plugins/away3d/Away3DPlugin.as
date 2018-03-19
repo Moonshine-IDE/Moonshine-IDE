@@ -20,7 +20,6 @@ package actionScripts.plugins.away3d
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
-	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
@@ -31,12 +30,9 @@ package actionScripts.plugins.away3d
 	import flash.system.System;
 	import flash.utils.IDataInput;
 	
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -45,8 +41,11 @@ package actionScripts.plugins.away3d
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
+	
+	import components.containers.AwayBuilderView;
 	
 	public class Away3DPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -63,6 +62,7 @@ package actionScripts.plugins.away3d
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var awdFileObject:File;
+		private var abView:AwayBuilderView;
 		
 		private var finalExecutablePath:String;
 		public function get executablePath():String
@@ -98,35 +98,26 @@ package actionScripts.plugins.away3d
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
-			return Vector.<ISetting>([
-				new PathSetting(this, 'executablePath', 'Away3D Builder', false, null, false, false)
-				]);
+			return null;
 		}
 		
 		private function openAway3DBuilder(event:Event):void
 		{
-			if (!executablePath) Alert.show("Application unavailable. Please locate the Away3D Builder to run.", "Error!", Alert.OK, FlexGlobals.topLevelApplication as Sprite, locateHandler);
-			else runHandler();
-			
-			function locateHandler(value:CloseEvent):void
+			if (abView)
 			{
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.away3d::Away3DPlugin"));
-				
-				for each (var tab:IContentWindow in model.editors)
-				{
-					if (tab["className"] == "SettingsView")
-					{
-						tab.addEventListener(SettingsView.EVENT_SAVE, onAway3DSettingsUpdated, false, 0, true);
-						tab.addEventListener(SettingsView.EVENT_CLOSE, onAway3DSettingsCanceled, false, 0, true);
-						return;
-					}
-				}
+				/*abView.awdFileObject = awdFileObject;
+				abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));*/
+				abView.awdFileObject = awdFileObject;
+				abView.setFocus();
+				abView.loadAwayBuilderFile();
+				return;
 			}
 			
-			function runHandler():void
-			{
-				runAwdFile(); // no parameter to open the application only
-			}
+			abView = new AwayBuilderView;
+			abView.awdFileObject = awdFileObject;
+			abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+			GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));
 		}
 		
 		private function onAway3DSettingsUpdated(event:Event):void
@@ -139,6 +130,12 @@ package actionScripts.plugins.away3d
 		{
 			event.target.removeEventListener(SettingsView.EVENT_SAVE, onAway3DSettingsUpdated);
 			event.target.removeEventListener(SettingsView.EVENT_CLOSE, onAway3DSettingsCanceled);
+		}
+		
+		private function onAwayBuilderTabClosed(event:CloseTabEvent):void
+		{
+			abView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+			abView = null;
 		}
 		
 		private function onAway3DProjectOpen(event:ProjectEvent):void
