@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
   <includeClasses>
-    <classEntry path="actionScripts.interfaces.IFlexCoreBridge"/>
-    <classEntry path="actionScripts.valueObjects.ConstantsCoreVO"/>
-    <classEntry path="actionScripts.interfaces.IFileBridge"/>
-    <classEntry path="actionScripts.valueObjects.FileWrapper"/>
-    <classEntry path="components.MainEntryPoint"/>
-    <classEntry path="actionScripts.valueObjects.ProjectVO"/>
     <classEntry path="actionScripts.factory.FileLocation"/>
-    <classEntry path="actionScripts.utils.FileCoreUtil"/>
-    <classEntry path="actionScripts.interfaces.IContextMenuBridge"/>
-    <classEntry path="actionScripts.interfaces.INativeMenuItemBridge"/>
     <classEntry path="actionScripts.factory.NativeMenuItemLocation"/>
     <classEntry path="actionScripts.interfaces.IAboutBridge"/>
+    <classEntry path="actionScripts.interfaces.IContextMenuBridge"/>
+    <classEntry path="actionScripts.interfaces.IFileBridge"/>
+    <classEntry path="actionScripts.interfaces.IFlexCoreBridge"/>
+    <classEntry path="actionScripts.interfaces.INativeMenuItemBridge"/>
+    <classEntry path="actionScripts.utils.FileCoreUtil"/>
+    <classEntry path="actionScripts.valueObjects.ConstantsCoreVO"/>
+    <classEntry path="actionScripts.valueObjects.FileWrapper"/>
+    <classEntry path="actionScripts.valueObjects.ProjectVO"/>
+    <classEntry path="components.MainEntryPoint"/>
+    <classEntry path="components.views.other.SearchInProjectView"/>
+    <classEntry path="elements.skins.IDEProgressBarSkin"/>
+    <classEntry path="components.popup.SearchInProjectPreviewPopup"/>
+    <classEntry path="actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
