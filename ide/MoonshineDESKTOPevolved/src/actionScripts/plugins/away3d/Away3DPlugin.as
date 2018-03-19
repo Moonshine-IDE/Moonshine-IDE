@@ -31,7 +31,6 @@ package actionScripts.plugins.away3d
 	import flash.utils.IDataInput;
 	
 	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
@@ -39,7 +38,6 @@ package actionScripts.plugins.away3d
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -117,7 +115,7 @@ package actionScripts.plugins.away3d
 			abView = new AwayBuilderView;
 			abView.awdFileObject = awdFileObject;
 			abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
-			GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));
+			dispatcher.dispatchEvent(new AddTabEvent(abView as IContentWindow));
 		}
 		
 		private function onAway3DSettingsUpdated(event:Event):void
