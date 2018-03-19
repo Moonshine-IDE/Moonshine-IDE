@@ -18,25 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
-    import components.views.splashscreen.SplashScreen;
-
     import flash.display.DisplayObject;
-	
-	import mx.binding.utils.BindingUtils;
-	import mx.containers.VBox;
-	import mx.events.CollectionEvent;
-	
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.divider.IDEHDividedBox;
-	import actionScripts.ui.divider.IDEVDividedBox;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.ui.tabview.TabEvent;
-	import actionScripts.ui.tabview.TabView;
-	
-	import components.views.project.TreeView;
-
+    
+    import mx.binding.utils.BindingUtils;
+    import mx.containers.VBox;
+    import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.divider.IDEHDividedBox;
+    import actionScripts.ui.divider.IDEVDividedBox;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.ui.tabview.TabView;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    
+    import components.views.project.TreeView;
+    import components.views.splashscreen.SplashScreen;
 
     // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox
@@ -54,6 +53,7 @@ package actionScripts.ui
 		{
 			super();
 			
+			setStyle('backgroundAlpha', 0);
 			model = IDEModel.getInstance();
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange);
 			BindingUtils.bindSetter(activeEditorChanged, model, 'activeEditor');
@@ -113,7 +113,7 @@ package actionScripts.ui
 				case CollectionEventKind.REMOVE:
 				{
 					var editor:DisplayObject = event.items[0] as DisplayObject;
-					if (!(editor is SplashScreen))
+					if (ConstantsCoreVO.NON_CLOSEABLE_TABS.indexOf(IContentWindow(editor).label) == -1)
                     {
                         _mainContent.removeChild(editor);
                     }

@@ -188,7 +188,8 @@ package actionScripts.ui.menu
 					return null;
 
 			}
-			var menu:MenuRenderer = positionMenu(menuItems, base, new Point(base.x, base.y + base.height + (bar.localToGlobal(new Point(bar.x, bar.y)).y)));
+			var localPoint:Point = bar.localToGlobal(new Point(bar.x, bar.y));
+			var menu:MenuRenderer = positionMenu(menuItems, base, new Point(base.x + localPoint.x, base.y + base.height + localPoint.y));
 			setTopLevelMenu(menu);
 			return menu;
 		}

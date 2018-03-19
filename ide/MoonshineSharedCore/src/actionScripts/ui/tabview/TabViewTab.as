@@ -21,18 +21,20 @@ package actionScripts.ui.tabview
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
     import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.filters.DropShadowFilter;
-	import flash.filters.GlowFilter;
-	import flash.geom.Matrix;
+    import flash.events.MouseEvent;
+    import flash.filters.DropShadowFilter;
+    import flash.filters.GlowFilter;
+    import flash.geom.Matrix;
     import flash.ui.ContextMenu;
     import flash.ui.ContextMenuItem;
-
+    
     import mx.core.UIComponent;
-	
-	import spark.components.Label;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.utils.SharedObjectUtil;
+    
+    import spark.components.Label;
+    
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.utils.SharedObjectUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class TabViewTab extends UIComponent
 	{	
@@ -46,8 +48,9 @@ package actionScripts.ui.tabview
 		protected var labelViewMask:Sprite;
 		
 		protected var closeButtonWidth:int = 27;
-		
+		protected var isCloseButtonAvailable:Boolean = true;
 		protected var needsRedrawing:Boolean;
+		protected var closeButtonAlpha:Number = 0.8;
 		
 		public var backgroundColor:uint = 			0x424242;//0x464d55;
 		public var selectedBackgroundColor:uint = 	0x812137;
@@ -178,9 +181,16 @@ package actionScripts.ui.tabview
 			labelViewMask.cacheAsBitmap = true;
 			labelView.mask = labelViewMask;
 			
+			// lets not enable close button to tabs which
+			// we not want to let close 
+			if (ConstantsCoreVO.NON_CLOSEABLE_TABS.indexOf(label) != -1)
+			{
+				isCloseButtonAvailable = false;
+				closeButtonAlpha = 0.2;
+			}
+			
 			closeButton = new Sprite();
 			closeButton.visible = false;
-
 			// Vertical line separators
 			closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.05);
 			closeButton.graphics.moveTo(0, 1);
@@ -189,12 +199,12 @@ package actionScripts.ui.tabview
 			closeButton.graphics.moveTo(1, 1);
 			closeButton.graphics.lineTo(1, 24);
 			// Circle
-			closeButton.graphics.lineStyle(1, closeButtonColor, 0.8);
+			closeButton.graphics.lineStyle(1, closeButtonColor, closeButtonAlpha);
 			closeButton.graphics.beginFill(0x0, 0);
 			closeButton.graphics.drawCircle(14, 12, 6);
 			closeButton.graphics.endFill();
 			// X (\)
-			closeButton.graphics.lineStyle(2, closeButtonColor, 0.8, true);
+			closeButton.graphics.lineStyle(2, closeButtonColor, closeButtonAlpha, true);
 			closeButton.graphics.moveTo(12, 10);
 			closeButton.graphics.lineTo(16, 14);
 			// X (/)
@@ -205,8 +215,8 @@ package actionScripts.ui.tabview
 			closeButton.graphics.beginFill(0x0, 0);
 			closeButton.graphics.drawRect(0, 0, closeButtonWidth, 25);
 			closeButton.graphics.endFill();
+			if (isCloseButtonAvailable) closeButton.addEventListener(MouseEvent.CLICK, closeButtonClicked);
 			
-			closeButton.addEventListener(MouseEvent.CLICK, closeButtonClicked);
 			addChild(closeButton);
 			
 			drawButtonState();
