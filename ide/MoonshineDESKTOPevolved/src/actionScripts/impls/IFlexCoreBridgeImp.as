@@ -19,88 +19,87 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.events.OrganizeImportsEvent;
-	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
-
 	import flash.desktop.NativeApplication;
-    import flash.display.DisplayObject;
-    import flash.display.Screen;
-    import flash.display.Stage;
-    import flash.filesystem.File;
-    import flash.ui.Keyboard;
-    
-    import mx.controls.HTML;
-    import mx.core.FlexGlobals;
-    import mx.core.IFlexDisplayObject;
-    import mx.core.IVisualElement;
-    import mx.resources.IResourceManager;
-    import mx.resources.ResourceManager;
-    
-    import actionScripts.events.ChangeLineEncodingEvent;
-    import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.RenameEvent;
-    import actionScripts.events.SettingsEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.interfaces.IFlexCoreBridge;
-    import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
-    import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
-    import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.console.ConsolePlugin;
-    import actionScripts.plugin.core.compiler.CompilerEventBase;
-    import actionScripts.plugin.findResources.FindResourcesPlugin;
-    import actionScripts.plugin.findreplace.FindReplacePlugin;
-    import actionScripts.plugin.fullscreen.FullscreenPlugin;
-    import actionScripts.plugin.help.HelpPlugin;
-    import actionScripts.plugin.project.ProjectPlugin;
-    import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-    import actionScripts.plugin.rename.RenamePlugin;
-    import actionScripts.plugin.search.SearchPlugin;
-    import actionScripts.plugin.settings.SettingsPlugin;
-    import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
-    import actionScripts.plugin.syntax.AS3SyntaxPlugin;
-    import actionScripts.plugin.syntax.CSSSyntaxPlugin;
-    import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.JSSyntaxPlugin;
-    import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.XMLSyntaxPlugin;
-    import actionScripts.plugin.templating.TemplatingPlugin;
-    import actionScripts.plugins.ant.AntBuildPlugin;
-    import actionScripts.plugins.ant.AntBuildScreen;
-    import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
-    import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-    import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-    import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
-    import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
-    import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
-    import actionScripts.plugins.away3d.Away3DPlugin;
-    import actionScripts.plugins.core.ProjectBridgeImplBase;
-    import actionScripts.plugins.help.view.TourDeFlexContentsView;
-    import actionScripts.plugins.problems.ProblemsPlugin;
-    import actionScripts.plugins.references.ReferencesPlugin;
-    import actionScripts.plugins.svn.SVNPlugin;
-    import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
-    import actionScripts.plugins.symbols.SymbolsPlugin;
-    import actionScripts.plugins.ui.editor.TourDeTextEditor;
-    import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
-    import actionScripts.ui.IPanelWindow;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.MenuPlugin;
-    import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.SHClassTest;
-    import actionScripts.utils.SWFTrustPolicyModifier;
-    import actionScripts.utils.SoftwareVersionChecker;
-    import actionScripts.utils.TypeAheadProcess;
-    import actionScripts.utils.Untar;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.Settings;
-    
-    import components.containers.DownloadNewFlexSDK;
-    import components.popup.DefineFolderAccessPopup;
-    import components.popup.SoftwareInformation;
+	import flash.display.DisplayObject;
+	import flash.display.Screen;
+	import flash.display.Stage;
+	import flash.filesystem.File;
+	import flash.ui.Keyboard;
+	
+	import mx.controls.HTML;
+	import mx.core.FlexGlobals;
+	import mx.core.IFlexDisplayObject;
+	import mx.core.IVisualElement;
+	import mx.resources.IResourceManager;
+	import mx.resources.ResourceManager;
+	
+	import actionScripts.events.ChangeLineEncodingEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.OrganizeImportsEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.RenameEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
+	import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
+	import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.console.ConsolePlugin;
+	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.findResources.FindResourcesPlugin;
+	import actionScripts.plugin.findreplace.FindReplacePlugin;
+	import actionScripts.plugin.fullscreen.FullscreenPlugin;
+	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
+	import actionScripts.plugin.project.ProjectPlugin;
+	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+	import actionScripts.plugin.rename.RenamePlugin;
+	import actionScripts.plugin.search.SearchPlugin;
+	import actionScripts.plugin.settings.SettingsPlugin;
+	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+	import actionScripts.plugin.startup.StartupHelperPlugin;
+	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
+	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
+	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
+	import actionScripts.plugin.syntax.JSSyntaxPlugin;
+	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
+	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
+	import actionScripts.plugin.templating.TemplatingPlugin;
+	import actionScripts.plugins.ant.AntBuildPlugin;
+	import actionScripts.plugins.ant.AntBuildScreen;
+	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
+	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
+	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
+	import actionScripts.plugins.away3d.Away3DPlugin;
+	import actionScripts.plugins.core.ProjectBridgeImplBase;
+	import actionScripts.plugins.help.view.TourDeFlexContentsView;
+	import actionScripts.plugins.problems.ProblemsPlugin;
+	import actionScripts.plugins.references.ReferencesPlugin;
+	import actionScripts.plugins.svn.SVNPlugin;
+	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
+	import actionScripts.plugins.symbols.SymbolsPlugin;
+	import actionScripts.plugins.ui.editor.TourDeTextEditor;
+	import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
+	import actionScripts.ui.IPanelWindow;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.SHClassTest;
+	import actionScripts.utils.SWFTrustPolicyModifier;
+	import actionScripts.utils.SoftwareVersionChecker;
+	import actionScripts.utils.TypeAheadProcess;
+	import actionScripts.utils.Untar;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.Settings;
+	
+	import components.containers.DownloadNewFlexSDK;
+	import components.popup.DefineFolderAccessPopup;
+	import components.popup.SoftwareInformation;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -209,7 +208,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin,];
+			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

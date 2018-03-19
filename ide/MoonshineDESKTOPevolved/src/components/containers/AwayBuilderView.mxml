@@ -120,7 +120,7 @@
 			
 			public function loadAwayBuilderFile():void
 			{
-				abLib.openFileByURL(awdFileObject.url, awdFileObject.name);
+				if (awdFileObject) abLib.openFileByURL(awdFileObject.url, awdFileObject.name);
 			}
 			
 			private function onAwayBuilderChanged(event:Event):void

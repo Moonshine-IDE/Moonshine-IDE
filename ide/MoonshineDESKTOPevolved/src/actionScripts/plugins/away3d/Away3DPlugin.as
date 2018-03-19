@@ -98,9 +98,7 @@ package actionScripts.plugins.away3d
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
-			return Vector.<ISetting>([
-				new PathSetting(this, 'executablePath', 'Away3D Builder', false, null, false, false)
-				]);
+			return null;
 		}
 		
 		private function openAway3DBuilder(event:Event):void
