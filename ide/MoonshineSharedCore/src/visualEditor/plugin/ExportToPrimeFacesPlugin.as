@@ -133,6 +133,9 @@ package visualEditor.plugin
         {
             _exportedProject.projectFolder = null;
             _exportedProject.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
+            var separator:String = _currentProject.sourceFolder.fileBridge.separator;
+
+            newProjectPathSetting.setMessage(newProjectPathSetting.stringValue + separator + newProjectNameSetting.stringValue);
         }
 
         private function onProjectCreateExecute(event:Event):void
