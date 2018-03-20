@@ -29,6 +29,8 @@ package actionScripts.plugins.away3d
 	import flash.filesystem.FileStream;
 	import flash.system.System;
 	import flash.utils.IDataInput;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.ProjectEvent;
@@ -103,19 +105,36 @@ package actionScripts.plugins.away3d
 		{
 			if (abView)
 			{
-				/*abView.awdFileObject = awdFileObject;
-				abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new AddTabEvent(abView as IContentWindow));*/
 				abView.awdFileObject = awdFileObject;
 				abView.setFocus();
 				abView.loadAwayBuilderFile();
 				return;
 			}
 			
+			// lets remove the listener until builder loaded completely
+			// else it'll create open file queue against every double-click 
+			// from .awd files and inject them all at once to the builder
+			// which will cause event injection problem to the builder
+			dispatcher.removeEventListener(ProjectEvent.OPEN_PROJECT_AWAY3D, onAway3DProjectOpen);
+			
 			abView = new AwayBuilderView;
 			abView.awdFileObject = awdFileObject;
 			abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
+			abView.addEventListener(Event.COMPLETE, onAwayBuilderReady);
 			dispatcher.dispatchEvent(new AddTabEvent(abView as IContentWindow));
+		}
+		
+		private function onAwayBuilderReady(event:Event):void
+		{
+			abView.removeEventListener(Event.COMPLETE, onAwayBuilderReady);
+			
+			// add back the listener after a second else queued mouse-events 
+			// may injected all along 
+			var interval:uint = setTimeout(function():void
+			{
+				dispatcher.addEventListener(ProjectEvent.OPEN_PROJECT_AWAY3D, onAway3DProjectOpen, false, 0, true);
+				clearTimeout(interval);
+			}, 1000);
 		}
 		
 		private function onAway3DSettingsUpdated(event:Event):void
