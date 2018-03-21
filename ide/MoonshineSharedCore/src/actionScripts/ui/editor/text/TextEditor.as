@@ -473,7 +473,8 @@ package actionScripts.ui.editor.text
 			if (model.renderersNeeded > 0)
 			{
 				var caretPos:int = colorManager.calculateWidth(model.selectedLine.text.slice(0,model.caretIndex));
-				
+				var scrollPos:Number;
+
 				if (model.selectedLineIndex < verticalScrollBar.scrollPosition || model.renderersNeeded <= 2 && model.selectedLineIndex > verticalScrollBar.scrollPosition)
 				{
 					verticalScrollBar.scrollPosition = model.selectedLineIndex;
@@ -481,12 +482,24 @@ package actionScripts.ui.editor.text
 				}
 				else if (model.renderersNeeded > 2 && model.selectedLineIndex + 2 > verticalScrollBar.scrollPosition + model.renderersNeeded)
 				{
-					verticalScrollBar.scrollPosition = Math.max(model.selectedLineIndex-model.renderersNeeded+2, 0);
+                    scrollPos = model.selectedLineIndex - model.renderersNeeded + 2;
+					if (scrollPos < 0)
+					{
+						scrollPos = 0;
+					}
+
+					verticalScrollBar.scrollPosition = scrollPos;
 					invalidateFlag(INVALID_SCROLL);
 				}
 				if (caretPos < model.horizontalScrollPosition)
 				{
-					model.horizontalScrollPosition = horizontalScrollBar.scrollPosition = Math.max(caretPos - HORIZONTAL_LOOKAHEAD, 0);
+                    scrollPos = caretPos - HORIZONTAL_LOOKAHEAD;
+					if (scrollPos < 0)
+					{
+						scrollPos = 0;
+					}
+
+					model.horizontalScrollPosition = horizontalScrollBar.scrollPosition = scrollPos;
 					invalidateFlag(INVALID_SCROLL);
 				}
 				else if (caretPos > model.horizontalScrollPosition + model.viewWidth)
