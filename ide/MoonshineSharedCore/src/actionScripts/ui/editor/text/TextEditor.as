@@ -46,22 +46,21 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.Location;
     import actionScripts.valueObjects.Position;
     import actionScripts.valueObjects.SignatureHelp;
-	
-	/*
-	Line-based text editor. Text rendering with Flash Text Engine. 
-	DataProvider (String) is split up newline & each TextLineRenderer gets one line to render.
-	Only what can be seen on screen is rendered & item-renderers are reused.
-	
-	This class handles scrolling & rendering, MVC style. 
-	Different types of rendering can be triggered with various invalidateSomething() calls,
-	upon which a flag will be set & when the frame exists rendering will happen (the Flex way).
-	
-	Managers handle non-rendering actions and affect TextEditorModel, which is the base for rendering.
-	See EditManager, UndoManager, SelectionManager & ColorManager.
-	
-	WORK IN PROGRESS
-	
-	*/
+
+    /**
+     *	Line-based text editor. Text rendering with Flash Text Engine.
+     *	DataProvider (String) is split up newline & each TextLineRenderer gets one line to render.
+     *	Only what can be seen on screen is rendered & item-renderers are reused.
+     *
+     *	This class handles scrolling & rendering, MVC style.
+     *	Different types of rendering can be triggered with various invalidateSomething() calls,
+     *	upon which a flag will be set & when the frame exists rendering will happen (the Flex way).
+     *
+     *	Managers handle non-rendering actions and affect TextEditorModel, which is the base for rendering.
+     *	See EditManager, UndoManager, SelectionManager & ColorManager.
+     *
+     *	WORK IN PROGRESS
+     */
 	[Style(name="backgroundColor",type="uint",format="Color",inherit="no")]
 	[Style(name="backgroundAlpha",type="Number",format="Number",inherit="no")]
 	[Style(name="selectionColor",type="uint",format="Color",inherit="yes")]
@@ -541,27 +540,6 @@ package actionScripts.ui.editor.text
 			}
 			
 			return "";
-		}
-		
-		public function getCaretIndex():int
-		{
-			return TextUtil.lineCharIdx2charIdx(dataProvider, model.selectedLineIndex, model.caretIndex, lineDelim);
-		}
-		
-		public function getLineCharIndex():Point
-		{
-			return new Point( model.caretIndex,model.selectedLineIndex);
-		}
-		
-		public function getLines():Vector.<String>
-		{
-			var lines:Vector.<String> = new Vector.<String>();
-			var len:int = model.lines.length;
-			for (var i:int = 0; i < len; i++)
-			{
-				lines[i] = model.lines[i].text;	
-			}
-			return lines;
 		}
 
 		private function handleChange(event:ChangeEvent):void
