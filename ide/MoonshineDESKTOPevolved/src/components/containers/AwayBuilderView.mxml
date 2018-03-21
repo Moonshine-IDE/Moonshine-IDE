@@ -143,6 +143,8 @@
 			{
 				abLib.removeEventListener(SceneReadyEvent.READY, onAwayBuilderReady);
 				loadAwayBuilderFile();
+				
+				this.dispatchEvent(new Event(Event.COMPLETE));
 			}
 			
 			private function onThisClosing(event:CloseTabEvent):void
