@@ -690,7 +690,6 @@ package actionScripts.plugin.templating
 							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
 						{
 							ed.currentFile = customNewLocation;
-							ed.label = newFileNameWithExtension;
 						}
 					}
 					
