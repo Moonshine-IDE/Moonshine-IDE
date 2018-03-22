@@ -20,8 +20,7 @@ package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-    
-    import mx.containers.Canvas;
+
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
     import mx.managers.IFocusManagerComponent;
@@ -47,8 +46,10 @@ package actionScripts.ui.editor
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedFlexProject;
     import components.views.project.TreeView;
-	
-	public class BasicTextEditor extends Canvas implements IContentWindow, IFocusManagerComponent
+
+    import spark.components.Group;
+
+    public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent
 	{
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
@@ -73,15 +74,15 @@ package actionScripts.ui.editor
 
         protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
-		override public function get label():String
+		public function get label():String
 		{
-			var ch:String = (_isChanged) ? "*":"";
+			var labelChangeIndicator:String = _isChanged ? "*" : "";
 			if (!file)
             {
-                return ch + defaultLabel;
+                return labelChangeIndicator + defaultLabel;
             }
 
-			return ch + file.fileBridge.name;
+			return labelChangeIndicator + file.fileBridge.name;
 		}
 
 		public function get longLabel():String
@@ -95,9 +96,15 @@ package actionScripts.ui.editor
 		{
 			return file;
 		}
+
 		public function set currentFile(value:FileLocation):void
 		{
-			file = value;
+			if (file != value)
+            {
+                file = value;
+
+                dispatchEvent(new Event('labelChanged'));
+            }
 		}
 
 		public function get text():String
@@ -175,7 +182,7 @@ package actionScripts.ui.editor
 		{
 			if (!isVisualEditor)
             {
-                addChild(editor);
+				this.addElement(editor);
             }
 			
 			super.createChildren();

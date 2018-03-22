@@ -46,22 +46,21 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.Location;
     import actionScripts.valueObjects.Position;
     import actionScripts.valueObjects.SignatureHelp;
-	
-	/*
-	Line-based text editor. Text rendering with Flash Text Engine. 
-	DataProvider (String) is split up newline & each TextLineRenderer gets one line to render.
-	Only what can be seen on screen is rendered & item-renderers are reused.
-	
-	This class handles scrolling & rendering, MVC style. 
-	Different types of rendering can be triggered with various invalidateSomething() calls,
-	upon which a flag will be set & when the frame exists rendering will happen (the Flex way).
-	
-	Managers handle non-rendering actions and affect TextEditorModel, which is the base for rendering.
-	See EditManager, UndoManager, SelectionManager & ColorManager.
-	
-	WORK IN PROGRESS
-	
-	*/
+
+    /**
+     *	Line-based text editor. Text rendering with Flash Text Engine.
+     *	DataProvider (String) is split up newline & each TextLineRenderer gets one line to render.
+     *	Only what can be seen on screen is rendered & item-renderers are reused.
+     *
+     *	This class handles scrolling & rendering, MVC style.
+     *	Different types of rendering can be triggered with various invalidateSomething() calls,
+     *	upon which a flag will be set & when the frame exists rendering will happen (the Flex way).
+     *
+     *	Managers handle non-rendering actions and affect TextEditorModel, which is the base for rendering.
+     *	See EditManager, UndoManager, SelectionManager & ColorManager.
+     *
+     *	WORK IN PROGRESS
+     */
 	[Style(name="backgroundColor",type="uint",format="Color",inherit="no")]
 	[Style(name="backgroundAlpha",type="Number",format="Number",inherit="no")]
 	[Style(name="selectionColor",type="uint",format="Color",inherit="yes")]
@@ -474,7 +473,8 @@ package actionScripts.ui.editor.text
 			if (model.renderersNeeded > 0)
 			{
 				var caretPos:int = colorManager.calculateWidth(model.selectedLine.text.slice(0,model.caretIndex));
-				
+				var scrollPos:Number;
+
 				if (model.selectedLineIndex < verticalScrollBar.scrollPosition || model.renderersNeeded <= 2 && model.selectedLineIndex > verticalScrollBar.scrollPosition)
 				{
 					verticalScrollBar.scrollPosition = model.selectedLineIndex;
@@ -482,12 +482,24 @@ package actionScripts.ui.editor.text
 				}
 				else if (model.renderersNeeded > 2 && model.selectedLineIndex + 2 > verticalScrollBar.scrollPosition + model.renderersNeeded)
 				{
-					verticalScrollBar.scrollPosition = Math.max(model.selectedLineIndex-model.renderersNeeded+2, 0);
+                    scrollPos = model.selectedLineIndex - model.renderersNeeded + 2;
+					if (scrollPos < 0)
+					{
+						scrollPos = 0;
+					}
+
+					verticalScrollBar.scrollPosition = scrollPos;
 					invalidateFlag(INVALID_SCROLL);
 				}
 				if (caretPos < model.horizontalScrollPosition)
 				{
-					model.horizontalScrollPosition = horizontalScrollBar.scrollPosition = Math.max(caretPos - HORIZONTAL_LOOKAHEAD, 0);
+                    scrollPos = caretPos - HORIZONTAL_LOOKAHEAD;
+					if (scrollPos < 0)
+					{
+						scrollPos = 0;
+					}
+
+					model.horizontalScrollPosition = horizontalScrollBar.scrollPosition = scrollPos;
 					invalidateFlag(INVALID_SCROLL);
 				}
 				else if (caretPos > model.horizontalScrollPosition + model.viewWidth)
@@ -541,27 +553,6 @@ package actionScripts.ui.editor.text
 			}
 			
 			return "";
-		}
-		
-		public function getCaretIndex():int
-		{
-			return TextUtil.lineCharIdx2charIdx(dataProvider, model.selectedLineIndex, model.caretIndex, lineDelim);
-		}
-		
-		public function getLineCharIndex():Point
-		{
-			return new Point( model.caretIndex,model.selectedLineIndex);
-		}
-		
-		public function getLines():Vector.<String>
-		{
-			var lines:Vector.<String> = new Vector.<String>();
-			var len:int = model.lines.length;
-			for (var i:int = 0; i < len; i++)
-			{
-				lines[i] = model.lines[i].text;	
-			}
-			return lines;
 		}
 
 		private function handleChange(event:ChangeEvent):void
@@ -744,10 +735,33 @@ package actionScripts.ui.editor.text
 			{
 				verticalOffsetLineIndex = lineIndex - verticalScrollBar.pageSize / 2;
 			}
-			verticalScrollBar.scrollPosition = Math.min(Math.max(verticalOffsetLineIndex, verticalScrollBar.minScrollPosition), verticalScrollBar.maxScrollPosition);
+
+			var scrollPos:Number = verticalOffsetLineIndex;
+			if (scrollPos < verticalScrollBar.minScrollPosition)
+			{
+				scrollPos = verticalScrollBar.minScrollPosition;
+			}
+
+			if (verticalScrollBar.maxScrollPosition < scrollPos)
+			{
+				scrollPos = verticalScrollBar.maxScrollPosition;
+			}
+
+			verticalScrollBar.scrollPosition = scrollPos;
 			if (horizontalScrollBar.visible)
 			{
-				horizontalScrollBar.scrollPosition = Math.min(Math.max(x, horizontalScrollBar.minScrollPosition), horizontalScrollBar.maxScrollPosition);
+				scrollPos = x;
+				if (x < horizontalScrollBar.minScrollPosition)
+				{
+					scrollPos = horizontalScrollBar.minScrollPosition;
+				}
+
+				if (horizontalScrollBar.maxScrollPosition < scrollPos)
+				{
+					scrollPos = horizontalScrollBar.maxScrollPosition;
+				}
+
+				horizontalScrollBar.scrollPosition = scrollPos;
 			}
 			invalidateFlag(INVALID_SCROLL);
 		}
@@ -924,7 +938,12 @@ package actionScripts.ui.editor.text
 		private function updateDataProvider():void
 		{
 			clearAllRenderers();
-			var needed:int = Math.min(model.renderersNeeded, model.lines.length - model.scrollPosition);
+			var needed:int = model.lines.length - model.scrollPosition;
+			if (model.renderersNeeded < needed)
+			{
+				needed = model.renderersNeeded;
+			}
+
 			model.itemRenderersInUse = getItemRenderers(needed, model.scrollPosition);
 			
 			invalidateFlag(INVALID_LAYOUT);
@@ -980,7 +999,12 @@ package actionScripts.ui.editor.text
 		
 		private function updateVerticalScrollbar():void
 		{
-			var maxScroll:int = Math.max(model.lines.length - model.renderersNeeded + 1, 0);
+			var maxScroll:int = model.lines.length - model.renderersNeeded + 1;
+			if (maxScroll < 0)
+			{
+				maxScroll = 0;
+			}
+
 			verticalScrollBar.maxScrollPosition = maxScroll;
 			verticalScrollBar.pageSize = model.renderersNeeded;
 			verticalScrollBar.visible = maxScroll > 0;
@@ -993,12 +1017,18 @@ package actionScripts.ui.editor.text
 		
 		private function updateHorizontalScrollbar():void
 		{
-			var maxScroll:int = Math.max(model.textWidth - model.viewWidth + HORIZONTAL_LOOKAHEAD, 0);
+			var maxScroll:int = model.textWidth - model.viewWidth + HORIZONTAL_LOOKAHEAD;
+			if (maxScroll < 0)
+			{
+				maxScroll = 0;
+			}
+
 			horizontalScrollBar.maxScrollPosition = maxScroll;
 			horizontalScrollBar.pageSize = model.viewWidth;
 			horizontalScrollBar.visible = maxScroll > 0;
 			
-			if (horizontalScrollBar.scrollPosition > maxScroll) {
+			if (horizontalScrollBar.scrollPosition > maxScroll)
+			{
 				horizontalScrollBar.scrollPosition = maxScroll;
 				invalidateFlag(INVALID_SCROLL);
 			}
@@ -1061,8 +1091,12 @@ package actionScripts.ui.editor.text
 			{
 				bottomLine = model.scrollPosition + model.renderersNeeded;
 				linesRemaining = model.lines.length - bottomLine;
-				affectedLines = Math.min(scrollDelta, linesRemaining);
-				
+				affectedLines = scrollDelta;
+				if (linesRemaining < scrollDelta)
+				{
+					affectedLines = linesRemaining;
+				}
+
 				freeRenderersAtTop(scrollDelta);
 				newRenderers = getItemRenderers(affectedLines, bottomLine);
 				model.itemRenderersInUse = model.itemRenderersInUse.concat(newRenderers);
@@ -1070,7 +1104,11 @@ package actionScripts.ui.editor.text
 			else // Scroll up
 			{
 				linesRemaining = model.scrollPosition;
-				affectedLines = Math.min(-scrollDelta, linesRemaining);
+				affectedLines = -scrollDelta;
+				if (linesRemaining < affectedLines)
+				{
+					affectedLines = linesRemaining;
+				}
 				
 				freeRenderersAtBottom(affectedLines);
 				newRenderers = getItemRenderers(affectedLines, model.scrollPosition - affectedLines);
@@ -1079,7 +1117,13 @@ package actionScripts.ui.editor.text
 				// Restore any unused lines to the bottom
 				bottomLine = model.scrollPosition - affectedLines + model.itemRenderersInUse.length;
 				linesRemaining = model.lines.length - bottomLine;
-				affectedLines = Math.min(model.renderersNeeded - model.itemRenderersInUse.length, linesRemaining);
+
+				affectedLines = model.renderersNeeded - model.itemRenderersInUse.length;
+				if (linesRemaining < affectedLines)
+				{
+					affectedLines = linesRemaining;
+				}
+
 				if (affectedLines > 0)
 				{
 					newRenderers = getItemRenderers(affectedLines, bottomLine);

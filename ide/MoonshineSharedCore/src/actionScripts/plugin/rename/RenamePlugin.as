@@ -210,7 +210,6 @@ package actionScripts.plugin.rename
 					&& ed.currentFile.fileBridge.nativePath == oldPath)
 				{
 					ed.currentFile = newFile;
-					ed.label = newFile.name;
 					break;
 				}
 			}
