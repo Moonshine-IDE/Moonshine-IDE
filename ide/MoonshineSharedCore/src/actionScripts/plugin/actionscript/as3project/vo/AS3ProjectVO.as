@@ -18,19 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.factory.FileLocation;
-    import actionScripts.interfaces.ICloneable;
-
     import flash.events.Event;
     import flash.events.MouseEvent;
-
+    
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
     
     import __AS3__.vec.Vector;
     
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.ICloneable;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
@@ -49,6 +48,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.ResourceVO;
 	
 	public class AS3ProjectVO extends ProjectVO implements ICloneable
 	{
@@ -64,6 +64,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const FLEXJS_RELEASE_PATH:String = "bin/js-release";
 		
 		[Bindable] public var isLibraryProject:Boolean;
+		[Bindable] public var filesList:ArrayCollection; // all acceptable files list those can be opened in Moonshine editor (mainly generates for VisualEditor project)
 		
 		public var fromTemplate:FileLocation;
 		public var sourceFolder:FileLocation;
@@ -109,7 +110,6 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isProjectFromExistingSource:Boolean;
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
-		public var isPrimeFacesVisualEditorProject:Boolean;
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
@@ -126,6 +126,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set air(v:Boolean):void
 		{
 			this.testMovie = v ? TEST_MOVIE_AIR : "";
+		}
+		
+		private var _isPrimeFacesVisualEditorProject:Boolean;
+		public function get isPrimeFacesVisualEditorProject():Boolean
+		{
+			return _isPrimeFacesVisualEditorProject;
+		}
+		public function set isPrimeFacesVisualEditorProject(value:Boolean):void
+		{
+			if (_isPrimeFacesVisualEditorProject == value) return;
+			_isPrimeFacesVisualEditorProject = value;
+			
+			if (_isPrimeFacesVisualEditorProject) GlobalEventDispatcher.getInstance().addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded, false, 0, true);
+			else GlobalEventDispatcher.getInstance().removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded);
 		}
 		
 		public function get customSDKPath():String
@@ -369,6 +383,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 			config.write(this);
 			configInvalid = false;
 			//}
+		}
+		
+		private function onNewFileAdded(event:TreeMenuItemEvent):void
+		{
+			// add resource only relative to the project
+			if (event.data.projectReference.path == this.projectFolder.nativePath)
+				filesList.addItem(new ResourceVO(FileLocation(event.extra).name, event.data));
 		}
 		
 		private function dispatchNativeExtensionMessageRequest(event:MouseEvent):void

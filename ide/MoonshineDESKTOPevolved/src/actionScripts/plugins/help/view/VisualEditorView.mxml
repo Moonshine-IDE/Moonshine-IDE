@@ -5,7 +5,7 @@
     <mx:ViewStack id="viewStack" width="100%" height="100%">
         <s:NavigatorContent label="Visual">
            <s:Scroller width="100%" height="100%">
-                <view:VisualEditor id="visualEditor" right="0" left="0" visualEditorType="{_visualEditorType}"/>
+                <view:VisualEditor id="visualEditor" right="0" left="0" visualEditorType="{_visualEditorType}" filesList="{visualEditorProject.filesList}"/>
            </s:Scroller>
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
@@ -21,6 +21,7 @@
     <fx:Script><![CDATA[
         import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
         import actionScripts.ui.editor.text.TextEditor;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
         import mx.events.FlexEvent;
 
@@ -29,6 +30,8 @@
         import utils.VisualEditorType;
         private var _codeEditor:TextEditor;
 
+		[Bindable] public var visualEditorProject:AS3ProjectVO;
+		
         [Bindable]
         private var _visualEditorType:String;
 

@@ -24,6 +24,7 @@ package actionScripts.utils
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ICollectionView;
+	import mx.collections.IList;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -46,6 +47,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.ResourceVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.ModifiedFileListPopup;
@@ -737,6 +739,56 @@ package actionScripts.utils
 				// notify the caller
 				if (completionHandler != null) completionHandler();
 			}
+		}
+		
+		/**
+		 * Parse all acceptable files in a given project
+		 */
+		public static function parseFilesList(collection:IList, project:ProjectVO=null, readableExtensions:Array=null):void
+		{
+			if (project) parseChildrens(project.projectFolder, collection, readableExtensions);
+			else
+			{
+				for each (var i:ProjectVO in model.projects)
+				{
+					parseChildrens(i.projectFolder, collection, readableExtensions);
+				}
+			}
+		}
+		private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
+		{
+			if (!value) return;
+			
+			var extension:String = value.file.fileBridge.extension;
+			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+			{
+				collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
+				return;
+			}
+			
+			if ((value.children is Array) && (value.children as Array).length > 0)
+			{
+				for each (var c:FileWrapper in value.children)
+				{
+					extension = c.file.fileBridge.extension;
+					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
+					{
+						collection.addItem(new ResourceVO(c.file.fileBridge.name, c));
+					}
+					else if (c.file.fileBridge.isDirectory)
+					{
+						parseChildrens(c, collection, readableExtensions);
+					}
+				}
+			}
+		}
+		private static function isAcceptableResource(extension:String, readableExtensions:Array=null):Boolean
+		{
+			readableExtensions ||= ConstantsCoreVO.READABLE_FILES;
+			return readableExtensions.some(
+				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+					return item == extension;
+				});
 		}
 	}
 }

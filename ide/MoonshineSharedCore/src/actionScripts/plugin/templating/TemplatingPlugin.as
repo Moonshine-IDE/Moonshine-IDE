@@ -1274,9 +1274,9 @@ package actionScripts.plugin.templating
             // the containing folder to make newly created file show
             if (insideLocation)
             {
-                dispatcher.dispatchEvent(
-                        new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, insideLocation)
-                );
+				var treeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, insideLocation);
+				treeEvent.extra = fileToSave;
+				dispatcher.dispatchEvent(treeEvent);
             }
 		}
 	}

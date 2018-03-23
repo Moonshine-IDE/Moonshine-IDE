@@ -59,6 +59,7 @@ package actionScripts.plugins.ui.editor
             visualEditorProject.isPrimeFacesVisualEditorProject ?
             visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
             visualEditorView.visualEditorType = VisualEditorType.FLEX;
+			visualEditorView.visualEditorProject = visualEditorProject;
 
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;

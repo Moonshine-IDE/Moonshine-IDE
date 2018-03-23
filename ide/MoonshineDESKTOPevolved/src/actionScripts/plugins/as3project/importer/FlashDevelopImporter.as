@@ -20,6 +20,8 @@ package actionScripts.plugins.as3project.importer
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -28,6 +30,7 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -141,6 +144,12 @@ package actionScripts.plugins.as3project.importer
 
 			if (project.isVisualEditorProject)
 			{
+				if (project.isPrimeFacesVisualEditorProject)
+				{
+					project.filesList = new ArrayCollection();
+					UtilsCore.parseFilesList(project.filesList, project as ProjectVO, ["xhtml"]); // to be use in includes files list in primefaces 
+				}
+				
 				project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src"
 				);
