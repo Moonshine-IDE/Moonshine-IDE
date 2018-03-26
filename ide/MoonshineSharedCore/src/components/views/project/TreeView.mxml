@@ -681,6 +681,8 @@
 				// check if the wrapper is the source folder to the project
 				var tmpProject:AS3ProjectVO = getProjectFromProjectFolder(value) as AS3ProjectVO;
 				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
+				
+				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 			}
 
 			/*

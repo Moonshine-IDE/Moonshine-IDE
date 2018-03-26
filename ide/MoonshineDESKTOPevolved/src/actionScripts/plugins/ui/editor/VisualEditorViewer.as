@@ -25,6 +25,7 @@ package actionScripts.plugins.ui.editor
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ChangeEvent;
+    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
     import actionScripts.interfaces.IVisualEditorViewer;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugins.help.view.VisualEditorView;
@@ -33,15 +34,16 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
-
+    
     import utils.VisualEditorType;
-
+    
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
         private var visualEditorView:VisualEditorView;
         private var hasChangedProperties:Boolean;
 
         private var visualEditorProject:AS3ProjectVO;
+		private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
         
         public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
         {
@@ -53,6 +55,14 @@ package actionScripts.plugins.ui.editor
         override protected function initializeChildrens():void
         {
             isVisualEditor = true;
+			
+			// at this moment prifefaces projects only using the bridge
+			// this condition can be remove if requires
+			if (visualEditorProject.isPrimeFacesVisualEditorProject)
+			{
+				visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
+				visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
+			}
             
             visualEditorView = new VisualEditorView();
 
@@ -60,6 +70,7 @@ package actionScripts.plugins.ui.editor
             visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
             visualEditorView.visualEditorType = VisualEditorType.FLEX;
 			visualEditorView.visualEditorProject = visualEditorProject;
+			visualEditorView.visualEditorLibraryBridgeImp = visualEditoryLibraryCore;
 
             visualEditorView.percentWidth = 100;
             visualEditorView.percentHeight = 100;
@@ -92,7 +103,7 @@ package actionScripts.plugins.ui.editor
 
             updateChangeStatus()
         }
-
+		
         override protected function createChildren():void
         {
             addElement(visualEditorView);

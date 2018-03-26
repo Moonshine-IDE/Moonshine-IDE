@@ -144,12 +144,6 @@ package actionScripts.plugins.as3project.importer
 
 			if (project.isVisualEditorProject)
 			{
-				if (project.isPrimeFacesVisualEditorProject)
-				{
-					project.filesList = new ArrayCollection();
-					UtilsCore.parseFilesList(project.filesList, project as ProjectVO, ["xhtml"]); // to be use in includes files list in primefaces 
-				}
-				
 				project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src"
 				);
