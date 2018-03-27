@@ -31,6 +31,7 @@ package actionScripts.plugin.rename
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.RenameEvent;
+	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -181,6 +182,8 @@ package actionScripts.plugin.rename
 					
 					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
 					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+					
+					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, event.insideLocation));
 					clearTimeout(timeoutValue);
 				}, 300);
 		}

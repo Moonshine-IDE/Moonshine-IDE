@@ -52,6 +52,7 @@ package actionScripts.impls
 				UtilsCore.parseFilesList(visualEditorProject.filesList, visualEditorProject as ProjectVO, ["xhtml"]); // to be use in includes files list in primefaces
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_DELETED, onFileRemoved, false, 0, true);
+				dispatcher.addEventListener(TreeMenuItemEvent.FILE_RENAMED, onFileRenamed, false, 0, true);
 				
 				// remove footprint when project is removed
 				model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange, false, 0, true);
@@ -97,6 +98,24 @@ package actionScripts.impls
 			}
 		}
 		
+		private function onFileRenamed(event:TreeMenuItemEvent):void
+		{
+			// remove resource only relative to the project
+			if (event.data.projectReference.path == visualEditorProject.projectFolder.nativePath)
+			{
+				for each (var i:ResourceVO in visualEditorProject.filesList)
+				{
+					if (event.data.file.fileBridge.nativePath == i.sourceWrapper.file.fileBridge.nativePath)
+					{
+						i.name = event.data.name;
+						i.resourcePath = event.data.nativePath;
+						break;
+					}
+				}
+				sendXHtmlUpdates();
+			}
+		}
+		
 		private function sendXHtmlUpdates():void
 		{
 			this.updateHandler(visualEditorProject.filesList);
@@ -109,6 +128,7 @@ package actionScripts.impls
 				model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange);
 				dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded);
 				dispatcher.removeEventListener(TreeMenuItemEvent.FILE_DELETED, onFileRemoved);
+				dispatcher.removeEventListener(TreeMenuItemEvent.FILE_RENAMED, onFileRenamed);
 				
 				this.updateHandler = null;
 			}
