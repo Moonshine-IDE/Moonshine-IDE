@@ -227,7 +227,7 @@ package actionScripts.plugins.as3project
 				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 				if (isFlexJSTemplate)
 				{
-					project.projectName = "NewRoyaleBrowserProject";
+					project.projectName = "NewJavaScriptBrowserProject";
                 }
 				else
 				{

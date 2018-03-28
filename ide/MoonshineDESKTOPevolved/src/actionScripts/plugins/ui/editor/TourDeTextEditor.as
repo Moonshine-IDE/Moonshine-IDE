@@ -85,7 +85,7 @@ package actionScripts.plugins.ui.editor
 				swfLoader = new SWFLoader();
 				swfLoader.trustContent = false;
 				swfLoader.scaleContent = false;
-				swfLoader.percentHeight = 50;
+				swfLoader.percentHeight = 45;
 				swfLoader.percentWidth = 100;
 			}
 			else
@@ -96,8 +96,6 @@ package actionScripts.plugins.ui.editor
 				htmlLinkDisplay.percentWidth = 100;
 			}
 			
-			super.createChildren();
-			
 			var vDivider: VDividedBox = new VDividedBox();
 			vDivider.percentWidth = vDivider.percentHeight = 100;
 			vDivider.setStyle('dividerThickness', 2);
@@ -105,7 +103,7 @@ package actionScripts.plugins.ui.editor
 			vDivider.setStyle('verticalGap', 12);
 			vDivider.setStyle('dividerBarColor', 0x444444);
 			vDivider.setStyle('backgroundColor', 0x444444);
-			addChild(vDivider);
+			addElement(vDivider);
 			
 			if (!isWebsiteLink)
 			{
@@ -120,6 +118,8 @@ package actionScripts.plugins.ui.editor
 			}
 			
 			vDivider.addChild(editor);
+			
+			super.createChildren();
 		}
 		
 		private function onDividerRelease(event:DividerEvent):void
