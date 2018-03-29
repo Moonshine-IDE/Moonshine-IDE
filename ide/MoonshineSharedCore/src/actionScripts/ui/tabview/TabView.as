@@ -18,21 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.geom.Matrix;
+    import flash.utils.Dictionary;
+    
+    import mx.containers.Canvas;
+    import mx.core.UIComponent;
+    import mx.events.ResizeEvent;
+    
+    import spark.events.IndexChangeEvent;
+    
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;
-
-    import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.geom.Matrix;
-	import flash.utils.Dictionary;
-	
-	import mx.containers.Canvas;
-	import mx.core.UIComponent;
-	import mx.events.ResizeEvent;
-
-    import spark.events.IndexChangeEvent;
 	
     /*
         TODO:
@@ -258,6 +259,11 @@ package actionScripts.ui.tabview
 		{
             addTabFromHamburgerMenu(hamburgerMenuTabs.selectedItem as HamburgerMenuTabsVO);
         }
+		
+		private function isNonCloseableChild(child:DisplayObject):Boolean
+		{
+			return ((child.hasOwnProperty("label") && ConstantsCoreVO.NON_CLOSEABLE_TABS.indexOf(child["label"]) != -1));
+		}
 
 		override public function getChildIndex(child:DisplayObject):int
 		{
@@ -329,7 +335,18 @@ package actionScripts.ui.tabview
         private function addTabFromHamburgerMenu(hamburgerMenuTabsVO:HamburgerMenuTabsVO):void
         {
             _model.hamburgerTabs.removeItem(hamburgerMenuTabsVO);
-			addChild(hamburgerMenuTabsVO.tabData);
+			
+			// in case of non-closeable tabs, add only its tabViewTab considering
+			// its view never removed in previous step (updateTabLayout())
+			if (isNonCloseableChild(hamburgerMenuTabsVO.tabData))
+			{
+				addTabFor(hamburgerMenuTabsVO.tabData);
+				selectedIndex = 0;
+			}
+			else
+			{
+				addChild(hamburgerMenuTabsVO.tabData);
+			}
         }
 
         protected function focusNewTab():void
@@ -359,7 +376,18 @@ package actionScripts.ui.tabview
 					if (!tab.selected && tabData)
 					{
 						_model.hamburgerTabs.addItem(new HamburgerMenuTabsVO(tab["label"], tabData));
-						removeChild(tabData);
+						
+						// do not remove display object in case of non-closeable tabs
+						// but let remove its tabViewTab only
+						if (isNonCloseableChild(tabData) && tabLookup[tabData] != undefined)
+						{
+							removeTabFor(tabData);
+						}
+						else
+						{
+							removeChild(tabData);
+						}
+						
 						needsNewSelectedTab = false;
                         validateDisplayList();
 						break;
