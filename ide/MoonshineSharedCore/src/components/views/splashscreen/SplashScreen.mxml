@@ -92,7 +92,7 @@
 
 			public function get longLabel():String
 			{
-				return "But what is it good for?";
+				return "Home";
 			}
 
 			public function isChanged():Boolean
