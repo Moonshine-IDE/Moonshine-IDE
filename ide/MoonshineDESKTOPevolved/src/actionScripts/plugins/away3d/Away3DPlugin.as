@@ -106,7 +106,7 @@ package actionScripts.plugins.away3d
 			if (abView)
 			{
 				abView.awdFileObject = awdFileObject;
-				abView.setFocus();
+				model.activeEditor = abView;
 				abView.loadAwayBuilderFile();
 				return;
 			}
