@@ -449,49 +449,17 @@ package actionScripts.utils
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
 			var config:String = _project.air ? "air" : "flex";
-			var compilerOptions:Object = {};
-			compilerOptions["warnings"] = buildOptions.warnings;
-			var sourcePathCount:int = _project.classpaths.length;
-			if(sourcePathCount > 0)
-			{
-				var sourcePaths:Array = [];
-				for(var i:int = 0; i < sourcePathCount; i++)
-				{
-					var sourcePath:String = _project.classpaths[i].fileBridge.nativePath;
-					sourcePaths[i] = sourcePath;
-				}
-				compilerOptions["source-path"] = sourcePaths;
-			}
-			var libraryPathCount:int = _project.libraries.length;
-			if(libraryPathCount > 0)
-			{
-				var libraryPaths:Array = [];
-				for(i = 0; i < libraryPathCount; i++)
-				{
-					var libraryPath:String = _project.libraries[i].fileBridge.nativePath;
-					libraryPaths[i] = libraryPath;
-				}
-				compilerOptions["library-path"] = libraryPaths;
-			}
-			var externalLibraryPathCount:int = _project.externalLibraries.length;
-			if(externalLibraryPathCount > 0)
-			{
-				var externalLibraryPaths:Array = [];
-				for(i = 0; i < externalLibraryPathCount; i++)
-				{
-					var externalLibraryPath:String = _project.externalLibraries[i].fileBridge.nativePath;
-					externalLibraryPaths[i] = externalLibraryPath;
-				}
-				compilerOptions["external-library-path"] = externalLibraryPaths;
-			}
+			var buildArgs:String =
+				"-load-config+=" + _project.config.file.fileBridge.nativePath +
+				" " +
+				buildOptions.getArguments();
 			var files:Array = [];
 			var filesCount:int = _project.targets.length;
-			for(i = 0; i < filesCount; i++)
+			for(var i:int = 0; i < filesCount; i++)
 			{
 				var file:String = _project.targets[i].fileBridge.nativePath;
 				files[i] = file;
 			}
-			var additionalOptions:String = buildOptions.additional;
 
 			//this object is designed to be similar to the asconfig.json
 			//format used by vscode-nextgenas
@@ -502,13 +470,8 @@ package actionScripts.utils
 			DidChangeConfigurationParams.type = type;
 			DidChangeConfigurationParams.config = config;
 			DidChangeConfigurationParams.files = files;
-			DidChangeConfigurationParams.compilerOptions = compilerOptions;
-			if(additionalOptions)
-			{
-				//debug is handled separately and should not be duplicated
-				additionalOptions = additionalOptions.replace(/--?debug=\w+/, "");
-				DidChangeConfigurationParams.additionalOptions = additionalOptions;
-			}
+			DidChangeConfigurationParams.compilerOptions = {};
+			DidChangeConfigurationParams.additionalOptions = buildArgs;
 			var params:Object = new Object();
 			params.DidChangeConfigurationParams = DidChangeConfigurationParams;
 			obj.params = params;

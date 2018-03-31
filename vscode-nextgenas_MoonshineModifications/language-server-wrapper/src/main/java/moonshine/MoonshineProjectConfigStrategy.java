@@ -95,29 +95,7 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
             for (int i = 0, count = jsonSourcePath.size(); i < count; i++)
             {
                 String pathString = jsonSourcePath.get(i).getAsString();
-                compilerOptions.add("--source-path+=" + pathString);
-
                 sourcePaths.add(Paths.get(pathString));
-            }
-        }
-
-        if(jsonOptions.has(CompilerOptions.LIBRARY_PATH))
-        {
-            JsonArray jsonLibraryPath = jsonOptions.getAsJsonArray(CompilerOptions.LIBRARY_PATH);
-            for (int i = 0, count = jsonLibraryPath.size(); i < count; i++)
-            {
-                String pathString = jsonLibraryPath.get(i).getAsString();
-                compilerOptions.add("--library-path+=" + pathString);
-            }
-        }
-
-        if(jsonOptions.has(CompilerOptions.EXTERNAL_LIBRARY_PATH))
-        {
-            JsonArray jsonExternalLibraryPath = jsonOptions.getAsJsonArray(CompilerOptions.EXTERNAL_LIBRARY_PATH);
-            for (int i = 0, count = jsonExternalLibraryPath.size(); i < count; i++)
-            {
-                String pathString = jsonExternalLibraryPath.get(i).getAsString();
-                compilerOptions.add("--external-library-path+=" + pathString);
             }
         }
         
