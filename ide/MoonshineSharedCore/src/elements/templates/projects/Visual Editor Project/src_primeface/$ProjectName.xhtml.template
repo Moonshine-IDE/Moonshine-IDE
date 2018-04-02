@@ -5,6 +5,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
     <h:head>
+        <link rel="stylesheet" type="text/css" href="resources/layout-styles.css"></link>
         <title>$ProjectName</title>
     </h:head>
     <h:body>

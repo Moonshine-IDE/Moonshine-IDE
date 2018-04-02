@@ -1,0 +1,72 @@
+/**
+* Vertical Layout setup
+***/
+.flexVerticalLayoutWrap {
+	display:flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	flex-flow: column wrap;
+}
+
+.flexVerticalLayout {
+	display:flex;
+	flex-direction: column;
+}
+
+.flexVerticalLayoutLeft {
+	align-items: flex-start;
+}
+
+.flexVerticalLayoutRight {
+	align-items: flex-end;
+}
+
+.flexVerticalLayoutTop {
+	justify-content: flex-start;
+}
+
+.flexVerticalLayoutBottom {
+	justify-content: flex-end;
+}
+
+/**
+* Horizontal Layout setup
+***/
+.flexHorizontalLayoutWrap {
+	display:flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	flex-flow: row wrap;
+}
+
+.flexHorizontalLayout {
+	display:flex;
+	flex-direction: row;
+}
+
+.flexHorizontalLayoutLeft {
+	justify-content: flex-start;
+}
+
+.flexHorizontalLayoutRight {
+	justify-content: flex-end;
+}
+
+.flexHorizontalLayoutTop {
+	align-items: flex-start;
+}
+
+.flexHorizontalLayoutBottom {
+	align-items: flex-end;
+}
+
+/**
+* Horizontal/Vertical Center
+**/
+.flexMiddle {
+	align-items: center;
+}
+
+.flexCenter {
+	justify-content: center;
+}
