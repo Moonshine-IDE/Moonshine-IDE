@@ -20,6 +20,9 @@ package actionScripts.controllers
 {
     import flash.events.Event;
     
+    import mx.controls.Alert;
+    import mx.events.CloseEvent;
+    
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.FileChangeEvent;
@@ -215,13 +218,20 @@ package actionScripts.controllers
 		
 		private function openBinaryFile():void
 		{
+			Alert.show("Unable to open binary file "+ file.name +".\nDo you want to open the file by operating system?", "Error!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					file.fileBridge.openWithDefaultApplication();
+				}
+			});
 			// Let WebKit try to display binary files (works for images)
-			var htmlViewer:BasicHTMLViewer = new BasicHTMLViewer();
+			/*var htmlViewer:BasicHTMLViewer = new BasicHTMLViewer();
 			htmlViewer.open(file);
 			
 			ged.dispatchEvent(
 				new AddTabEvent(htmlViewer)
-			);
+			);*/
 		}
 		
 		private function openTextFile(value:Object, asTourDe:Boolean=false):void

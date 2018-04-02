@@ -449,9 +449,7 @@ package actionScripts.utils
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
 			var config:String = _project.air ? "air" : "flex";
-			var buildArgs:String =
-				"-load-config+=" + _project.config.file.fileBridge.nativePath +
-				" " +
+			var buildArgs:String = _project.config.file ? "-load-config+=" + _project.config.file.fileBridge.nativePath + " " + buildOptions.getArguments() :
 				buildOptions.getArguments();
 			var files:Array = [];
 			var filesCount:int = _project.targets.length;

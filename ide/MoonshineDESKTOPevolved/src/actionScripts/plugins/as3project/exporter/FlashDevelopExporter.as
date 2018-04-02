@@ -57,6 +57,7 @@ package actionScripts.plugins.as3project.exporter
 			
 			project.appendChild(exportPaths(p.classpaths, <classpaths />, <class />, p));
 			project.appendChild(exportPaths(p.resourcePaths, <moonshineResourcePaths />, <class />, p));
+			project.appendChild(exportPaths(p.nativeExtensions, <moonshineNativeExtensionPaths />, <class />, p));
 			
 			project.appendChild(p.buildOptions.toXML());
 			
