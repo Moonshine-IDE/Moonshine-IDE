@@ -146,6 +146,7 @@ package visualEditor.plugin
 
             copyPrimeFacesPom(destination);
             copyPrimeFacesWebFile(destination);
+            copyPrimeFacesResources(destination);
             copySources(destination);
 
             success("PrimeFaces project " + newProjectNameSetting.stringValue + " has been successfully saved.");
@@ -246,6 +247,16 @@ package visualEditor.plugin
             var webPath:String = "src/main/webapp/WEB-INF/web.xml";
             var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
             destination = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
+
+            webForCopy.fileBridge.copyTo(destination);
+        }
+
+        private function copyPrimeFacesResources(destination:FileLocation):void
+        {
+            var currentFolder:FileLocation = _currentProject.folderLocation;
+            var webPath:String = "src/main/resources";
+            var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
+            destination = destination.resolvePath("src/main/resources");
 
             webForCopy.fileBridge.copyTo(destination);
         }
