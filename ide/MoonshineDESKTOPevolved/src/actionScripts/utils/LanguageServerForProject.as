@@ -317,6 +317,7 @@ package actionScripts.utils
 			processArgs.push(jarFile.nativePath);
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = _cmdFile;
+			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 			initShell();
 		}
 
@@ -448,9 +449,32 @@ package actionScripts.utils
 			obj.method = "workspace/didChangeConfiguration";
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
-			var config:String = _project.air ? "air" : "flex";
-			var buildArgs:String = _project.config.file ? "-load-config+=" + _project.config.file.fileBridge.nativePath + " " + buildOptions.getArguments() :
-				buildOptions.getArguments();
+			var config:String = "flex";
+			if(_project.air)
+			{
+				if(_project.isMobile)
+				{
+					config = "airmobile";
+				}
+				else
+				{
+					config = "air";
+				}
+			}
+			if(_project.config.file)
+			{
+				var projectPath:File = new File(project.folderLocation.fileBridge.nativePath);
+				var configPath:File = new File(_project.config.file.fileBridge.nativePath);
+				var buildArgs:String = "-load-config+=" +
+					projectPath.getRelativePath(configPath, true)
+					" " +
+					buildOptions.getArguments();
+			}
+			else
+			{
+				buildArgs = buildOptions.getArguments();
+			}
+				
 			var files:Array = [];
 			var filesCount:int = _project.targets.length;
 			for(var i:int = 0; i < filesCount; i++)
