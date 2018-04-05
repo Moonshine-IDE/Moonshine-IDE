@@ -18,21 +18,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-import actionScripts.ui.menu.MenuPlugin;
-
+import flash.events.Event;
 import flash.events.FocusEvent;
-    import flash.events.KeyboardEvent;
-	import flash.ui.Keyboard;
-	
-	import mx.utils.StringUtil;
-	
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.plugin.console.ConsoleCommandEvent;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.change.TextChangeMulti;
+import flash.events.KeyboardEvent;
+import flash.events.MouseEvent;
+import flash.ui.Keyboard;
+
+import mx.controls.Alert;
+import mx.core.FlexGlobals;
+import mx.events.SandboxMouseEvent;
+import mx.utils.StringUtil;
+
+import actionScripts.events.ChangeEvent;
+import actionScripts.plugin.console.ConsoleCommandEvent;
+import actionScripts.ui.editor.text.TextEditor;
+import actionScripts.ui.editor.text.TextLineModel;
+import actionScripts.ui.editor.text.change.TextChangeBase;
+import actionScripts.ui.editor.text.change.TextChangeInsert;
+import actionScripts.ui.editor.text.change.TextChangeMulti;
+import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class CommandLineEditor extends TextEditor
 	{
@@ -47,8 +51,10 @@ import flash.events.FocusEvent;
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
+			
+			if (ConstantsCoreVO.IS_MACOS) this.addEventListener(MouseEvent.CLICK, onMouseClicked, false, 0, true);
 		}
-
+		
 		private function handleChange(event:ChangeEvent):void
 		{
 			var change:TextChangeBase = event.change;
@@ -161,5 +167,10 @@ import flash.events.FocusEvent;
         {
             hasFocus = false;
         }
+		
+		private function onMouseClicked(event:MouseEvent):void
+		{
+			hasFocus = true;
+		}
     }
 }
