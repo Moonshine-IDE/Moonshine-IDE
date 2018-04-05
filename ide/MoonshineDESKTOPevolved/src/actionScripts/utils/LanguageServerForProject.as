@@ -487,6 +487,22 @@ package actionScripts.utils
 				files[i] = file;
 			}
 
+			//all of the compiler options are actually included in buildArgs,
+			//but the language server needs to be able to read some of them more
+			//easily, so we pass them in manually
+			var compilerOptions:Object = {};
+			var sourcePathCount:int = _project.classpaths.length;
+			if(sourcePathCount > 0)
+			{
+				var sourcePaths:Array = [];
+				for(i = 0; i < sourcePathCount; i++)
+				{
+					var sourcePath:String = _project.classpaths[i].fileBridge.nativePath;
+					sourcePaths[i] = sourcePath;
+				}
+				compilerOptions["source-path"] = sourcePaths;
+			}
+
 			//this object is designed to be similar to the asconfig.json
 			//format used by vscode-nextgenas
 			//https://github.com/BowlerHatLLC/vscode-nextgenas/wiki/asconfig.json
@@ -496,7 +512,7 @@ package actionScripts.utils
 			DidChangeConfigurationParams.type = type;
 			DidChangeConfigurationParams.config = config;
 			DidChangeConfigurationParams.files = files;
-			DidChangeConfigurationParams.compilerOptions = {};
+			DidChangeConfigurationParams.compilerOptions = compilerOptions;
 			DidChangeConfigurationParams.additionalOptions = buildArgs;
 			var params:Object = new Object();
 			params.DidChangeConfigurationParams = DidChangeConfigurationParams;
