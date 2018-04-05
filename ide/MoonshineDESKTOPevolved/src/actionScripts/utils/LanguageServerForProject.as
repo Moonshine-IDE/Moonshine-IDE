@@ -449,6 +449,10 @@ package actionScripts.utils
 			obj.method = "workspace/didChangeConfiguration";
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
+			if(_project.isLibraryProject)
+			{
+				type = "lib";
+			}
 			var config:String = "flex";
 			if(_project.air)
 			{
