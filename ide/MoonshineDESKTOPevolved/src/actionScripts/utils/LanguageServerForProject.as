@@ -465,6 +465,11 @@ package actionScripts.utils
 					config = "air";
 				}
 			}
+			else if (_project.isRoyale)
+			{
+				config = "royale";
+			}
+
 			if(_project.config.file)
 			{
 				var projectPath:File = new File(project.folderLocation.fileBridge.nativePath);
