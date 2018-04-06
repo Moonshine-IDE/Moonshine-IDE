@@ -52,7 +52,7 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
 			
-			if (ConstantsCoreVO.IS_MACOS) this.addEventListener(MouseEvent.CLICK, onMouseClicked, false, 0, true);
+			this.addEventListener(MouseEvent.CLICK, onMouseClicked, false, 0, true);
 		}
 		
 		private function handleChange(event:ChangeEvent):void
