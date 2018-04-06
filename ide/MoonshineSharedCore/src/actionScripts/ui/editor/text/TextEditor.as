@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-    import flash.events.FocusEvent;
     import flash.events.MouseEvent;
     import flash.events.TimerEvent;
     import flash.geom.Point;
@@ -256,11 +255,11 @@ package actionScripts.ui.editor.text
 		}
 		
 		private var _hasFocus:Boolean;
-		protected function get hasFocus():Boolean
+		public function get hasFocus():Boolean
 		{
 			return _hasFocus;
 		}
-		protected function set hasFocus(value:Boolean):void
+		public function set hasFocus(value:Boolean):void
 		{
 			_hasFocus = value;
 			if(model.hasTraceSelection)
@@ -442,13 +441,13 @@ package actionScripts.ui.editor.text
 			}
 		}
 		
-		override protected function focusInHandler(event:FocusEvent):void
+		/*override protected function focusInHandler(event:FocusEvent):void
 		{
 			super.focusInHandler(event);
 			
 			hasFocus = true;
-		}
-
+		}*/
+		
 		public function invalidateLines():void
 		{
 			invalidateFlag(INVALID_FULL);
