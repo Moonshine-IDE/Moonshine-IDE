@@ -20,11 +20,14 @@ package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-
+    import flash.utils.setTimeout;
+    
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
     import mx.managers.IFocusManagerComponent;
     import mx.managers.PopUpManager;
+    
+    import spark.components.Group;
     
     import actionScripts.controllers.DataAgent;
     import actionScripts.events.ChangeEvent;
@@ -46,8 +49,6 @@ package actionScripts.ui.editor
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedFlexProject;
     import components.views.project.TreeView;
-
-    import spark.components.Group;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent
 	{
@@ -175,7 +176,10 @@ package actionScripts.ui.editor
 		override public function setFocus():void
 		{
 			if (editor)
+			{
+				editor.hasFocus = true;
 				editor.setFocus();
+			}
 		}
 
 		override protected function createChildren():void

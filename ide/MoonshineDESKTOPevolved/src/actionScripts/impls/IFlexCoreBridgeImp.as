@@ -48,6 +48,7 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsolePlugin;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.mouse.MouseManagerPlugin;
 	import actionScripts.plugin.findResources.FindResourcesPlugin;
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
@@ -179,6 +180,7 @@ package actionScripts.impls
 				FullscreenPlugin,
 				AntBuildPlugin,
 				SearchPlugin,
+				MouseManagerPlugin,
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin
 			];
@@ -215,7 +217,7 @@ package actionScripts.impls
 		public function getPluginsNotToShowInSettings():Array
 		{
 			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, 
-					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin];
+					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
