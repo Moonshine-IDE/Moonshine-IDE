@@ -441,13 +441,6 @@ package actionScripts.ui.editor.text
 			}
 		}
 		
-		/*override protected function focusInHandler(event:FocusEvent):void
-		{
-			super.focusInHandler(event);
-			
-			hasFocus = true;
-		}*/
-		
 		public function invalidateLines():void
 		{
 			invalidateFlag(INVALID_FULL);
