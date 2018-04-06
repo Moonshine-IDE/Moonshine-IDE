@@ -165,10 +165,6 @@
 			else
 			{
 				fileNameTextInput.setFocus();
-				if (fileNameTextInput.text)
-				{
-					fileNameTextInput.selectRange(fileNameTextInput.text.length, fileNameTextInput.text.length);
-				}
 			}
 		}
 
