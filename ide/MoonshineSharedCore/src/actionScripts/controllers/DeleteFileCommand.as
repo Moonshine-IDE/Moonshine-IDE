@@ -18,15 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
 	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.DeleteFileEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.findreplace.view.SearchView;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -35,12 +39,15 @@ package actionScripts.controllers
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
+	
+	import components.popup.ProjectDeletionPopup;
 
 	public class DeleteFileCommand implements ICommand
 	{
 		private var file: FileLocation;
 		private var wrapper: FileWrapper;
 		private var treeViewHandler: Function;
+		private var projectDeletePopup:ProjectDeletionPopup;
 		
 		public function execute(event:Event):void
 		{
@@ -53,7 +60,14 @@ package actionScripts.controllers
 			// project deletion
 			if (e.wrapper.isRoot && e.showAlert)
 			{
-				Alert.show("Are you sure you want to delete project '"+ e.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
+				if (!projectDeletePopup)
+				{
+					projectDeletePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ProjectDeletionPopup, true) as ProjectDeletionPopup;
+					projectDeletePopup.wrapperBelongToProject = e.wrapper;
+					PopUpManager.centerPopUp(projectDeletePopup);
+				}
+				
+				//Alert.show("Are you sure you want to delete project '"+ e.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
 				return;
 			}
 			else if (e.wrapper.isRoot)
