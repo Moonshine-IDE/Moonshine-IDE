@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.mouse
 {
+	import flash.events.Event;
 	import flash.events.FocusEvent;
 	
 	import mx.core.FlexGlobals;
@@ -41,6 +42,7 @@ package actionScripts.plugin.core.mouse
 			// we need to watch all the focus change event to
 			// track and keep one cursor at a time
 			FlexGlobals.topLevelApplication.systemManager.addEventListener(FocusEvent.FOCUS_IN, onCursorUpdated);
+			FlexGlobals.topLevelApplication.stage.addEventListener(Event.DEACTIVATE, onApplicationLostFocus);
 		}
 		
 		private function onCursorUpdated(event:FocusEvent):void
@@ -57,6 +59,26 @@ package actionScripts.plugin.core.mouse
 				setFocusToTextEditor(event.target as TextEditor, true);
 				lastKnownEditor = event.target as TextEditor;
 			}
+			else
+			{
+				lastKnownEditor = null;
+			}
+		}
+		
+		private function onApplicationLostFocus(event:Event):void
+		{
+			FlexGlobals.topLevelApplication.stage.removeEventListener(Event.DEACTIVATE, onApplicationLostFocus);
+			FlexGlobals.topLevelApplication.stage.addEventListener(Event.ACTIVATE, onApplicationReturnFocus);
+			
+			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, false);
+		}
+		
+		private function onApplicationReturnFocus(event:Event):void
+		{
+			FlexGlobals.topLevelApplication.stage.addEventListener(Event.DEACTIVATE, onApplicationLostFocus);
+			FlexGlobals.topLevelApplication.stage.removeEventListener(Event.ACTIVATE, onApplicationReturnFocus);
+			
+			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, true);
 		}
 		
 		private function setFocusToTextEditor(editor:TextEditor, value:Boolean):void
