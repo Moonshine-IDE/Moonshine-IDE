@@ -18,35 +18,35 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-import actionScripts.ui.menu.interfaces.ICustomMenu;
-
 import flash.display.NativeMenu;
-    import flash.events.Event;
-    import flash.utils.Dictionary;
-    
-    import mx.core.FlexGlobals;
-    import mx.events.MenuEvent;
-    
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.ShortcutEvent;
-    import actionScripts.events.TemplatingEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.factory.NativeMenuItemLocation;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.MultiOptionSetting;
-    import actionScripts.plugin.settings.vo.NameValuePair;
-    import actionScripts.plugin.templating.TemplatingPlugin;
-    import actionScripts.ui.menu.vo.CustomMenu;
-    import actionScripts.ui.menu.vo.CustomMenuItem;
-    import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.utils.KeyboardShortcutManager;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.KeyboardShortcut;
-    import actionScripts.valueObjects.Settings;
+import flash.display.NativeMenuItem;
+import flash.events.Event;
+import flash.utils.Dictionary;
+
+import mx.core.FlexGlobals;
+import mx.events.MenuEvent;
+
+import actionScripts.events.ProjectEvent;
+import actionScripts.events.ShortcutEvent;
+import actionScripts.events.TemplatingEvent;
+import actionScripts.factory.FileLocation;
+import actionScripts.factory.NativeMenuItemLocation;
+import actionScripts.locator.IDEModel;
+import actionScripts.plugin.PluginBase;
+import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.plugin.settings.ISettingsProvider;
+import actionScripts.plugin.settings.vo.ISetting;
+import actionScripts.plugin.settings.vo.MultiOptionSetting;
+import actionScripts.plugin.settings.vo.NameValuePair;
+import actionScripts.plugin.templating.TemplatingPlugin;
+import actionScripts.ui.menu.interfaces.ICustomMenu;
+import actionScripts.ui.menu.vo.CustomMenu;
+import actionScripts.ui.menu.vo.CustomMenuItem;
+import actionScripts.ui.menu.vo.MenuItem;
+import actionScripts.utils.KeyboardShortcutManager;
+import actionScripts.valueObjects.ConstantsCoreVO;
+import actionScripts.valueObjects.KeyboardShortcut;
+import actionScripts.valueObjects.Settings;
 
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -654,12 +654,47 @@ import flash.display.NativeMenu;
             // for mac only
             if (buildingNativeMenu)
             {
+				// for #162 feature request
+				// introduce hide/unhide/show-all in macOS menu
+				ensureHideUnhideMenuOption(mainMenu);
+				
                 FlexGlobals.topLevelApplication.nativeApplication.menu = mainMenu;
                 FlexGlobals.topLevelApplication.nativeWindow.menu = mainMenu;
             }
 
             return mainMenu;
         }
+		
+		private function ensureHideUnhideMenuOption(nativeMenu:Object):void
+		{
+			var topLevel:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+			
+			// the receipe is get-remove-add to make it work correctly
+			var itemsToExtract:Array = ["hide adl", "hide moonshine", "hide others", "show all"];
+			
+			// we want the above options to come before Quit option
+			var quitOptionIndex:int = nativeMenu.items[0].submenu.items.length - 2;
+			
+			// search against each items we needs
+			for each (var i:String in itemsToExtract)
+			{
+				var itemsToExtractFrom:Array = topLevel.getItemAt(0).submenu.items;
+				for (var j:int=0; j < itemsToExtractFrom.length; j++)
+				{
+					if (itemsToExtractFrom[j].label.toLowerCase() == i)
+					{
+						var tmpOption: * = itemsToExtractFrom[j];
+						topLevel.getItemAt(0).submenu.removeItemAt(j);
+						nativeMenu.items[0].submenu.addItemAt(tmpOption, ++quitOptionIndex);
+						break;
+					}
+				}
+			}
+			
+			// we also wants to add a separator!
+			var separatorItem:* = createNewMenuItem(new MenuItem(null));
+			nativeMenu.items[0].submenu.addItemAt(NativeMenuItemLocation(separatorItem).item.getNativeMenuItem, ++quitOptionIndex);
+		}
 
         // Take events and redispatch them through GED.
 		protected function redispatch(event:Event):void
