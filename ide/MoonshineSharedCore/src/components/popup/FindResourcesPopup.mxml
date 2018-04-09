@@ -136,10 +136,10 @@
 		{
 			var isKeyDown:Boolean = event.keyCode == Keyboard.DOWN;
 			var isKeyUp:Boolean = event.keyCode == Keyboard.UP;
+			var focusedComponent:IFocusManagerComponent = lstResources.focusManager.getFocus();
 
 			if (isKeyDown || isKeyUp)
 			{
-				var focusedComponent:IFocusManagerComponent = lstResources.focusManager.getFocus();
 				if (lstResources != focusedComponent)
 				{
 					lstResources.setFocus();
@@ -164,7 +164,18 @@
 			}
 			else
 			{
+				var wasFocusedList:Boolean;
+				if (lstResources === focusedComponent && fileNameTextInput.text)
+				{
+					wasFocusedList = true;
+				}
+
 				fileNameTextInput.setFocus();
+				if (wasFocusedList)
+				{
+					var textLenght:int = fileNameTextInput.text.length;
+					fileNameTextInput.selectRange(textLenght, textLenght);
+				}
 			}
 		}
 
