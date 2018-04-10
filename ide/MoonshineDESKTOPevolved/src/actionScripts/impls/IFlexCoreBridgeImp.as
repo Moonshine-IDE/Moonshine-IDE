@@ -268,13 +268,13 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','FIND'), null, FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, FindReplacePlugin.EVENT_FIND_PREV,
+					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, FindReplacePlugin.EVENT_FIND_PREV,
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
-						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem(null),
+						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),*/
 					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
+					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS,
 						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
@@ -353,8 +353,8 @@ package actionScripts.impls
 			{
 				var projectMenuItems:Vector.<MenuItem> = wmn[3].items;
 				projectMenuItems.splice(0, 0, new MenuItem(resourceManager.getString('resources','SEARCH_IN_PROJECTS'), null, SearchPlugin.SEARCH_IN_PROJECTS,
-					'h', [Keyboard.COMMAND],
-					'h', [Keyboard.CONTROL]));
+					'f', [Keyboard.COMMAND, Keyboard.SHIFT],
+					'f', [Keyboard.CONTROL, Keyboard.SHIFT]));
 			}
 			
 			// add a new menuitem after Access Manager
