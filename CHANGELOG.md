@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.11.0 - Pending]
+
+### Added
+* Integrate [Away Builder](http://awaytools.com/awaybuilder/) with Moonshine.
+
+### Changed
+* Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.10.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.10.0).
+* Royale: Changed default project name during project creation from `NewRoyaleBrowserProject` to `NewJavaScriptBrowserProject`.
+* Setup `requestedDisplayResolution` to `high` in order to avoid fuzzy fonts in windows scaling for high DPI screens.
+
+### Fixed
+* Fixed issue where cursor flashing for editor and console at the same time.
+* Language server: Fixed issue where during library build +configname was not pass properly to language server.
+* Fixed issue where nothing happen once user opens binary file.
+* Settings: Fixed issue where ANE settings were lost after IDE restart.
+* Fixed issue with `Error #1125 (Index ouf of bounds)` occurs on Tab close.
+* Code Completion: Fixed issue where some stiles attributes does not show up in the list.
+
 ## Moonshine IDE [1.10.0]
 
 ### Added
