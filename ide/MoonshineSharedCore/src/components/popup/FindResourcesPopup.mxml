@@ -38,6 +38,8 @@
 
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.utils.UtilsCore;
+
 		import mx.collections.ArrayCollection;
 		import mx.controls.Alert;
 		import mx.events.FlexEvent;
@@ -47,9 +49,6 @@
 		import actionScripts.events.OpenFileEvent;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.findResources.FindResourcesPlugin;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.ResourceVO;
 		
 		import elements.skins.DarkButtonSkin;
