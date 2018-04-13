@@ -38,24 +38,21 @@
 
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.plugin.findResources.FindResourcesPlugin;
-
 		import mx.collections.ArrayCollection;
 		import mx.controls.Alert;
-
+		import mx.events.FlexEvent;
+		import mx.managers.IFocusManagerComponent;
+		
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.OpenFileEvent;
 		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.findResources.FindResourcesPlugin;
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.ResourceVO;
-
+		
 		import elements.skins.DarkButtonSkin;
-
-		import mx.events.FlexEvent;
-
-		import mx.managers.IFocusManagerComponent;
 
 		[Bindable]
 		private var resources:ArrayCollection = new ArrayCollection();
@@ -162,7 +159,7 @@
 					}
 				}
 			}
-			else
+			else if (event.keyCode == Keyboard.LEFT || event.keyCode == Keyboard.RIGHT)
 			{
 				fileNameTextInput.setFocus();
 				if (lstResources === focusedComponent && fileNameTextInput.text)
