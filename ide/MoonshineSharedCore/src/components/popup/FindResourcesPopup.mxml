@@ -164,14 +164,8 @@
 			}
 			else
 			{
-				var wasFocusedList:Boolean;
-				if (lstResources === focusedComponent && fileNameTextInput.text)
-				{
-					wasFocusedList = true;
-				}
-
 				fileNameTextInput.setFocus();
-				if (wasFocusedList)
+				if (lstResources === focusedComponent && fileNameTextInput.text)
 				{
 					var textLenght:int = fileNameTextInput.text.length;
 					fileNameTextInput.selectRange(textLenght, textLenght);
