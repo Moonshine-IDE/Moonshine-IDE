@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.10.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.10.0).
 * Royale: Changed default project name during project creation from `NewRoyaleBrowserProject` to `NewJavaScriptBrowserProject`.
 * Setup `requestedDisplayResolution` to `high` in order to avoid fuzzy fonts in windows scaling for high DPI screens.
+* Global Search: Changed shortcuts for launch searching to Windows: CTRL+SHIFT+F and Mac: CMD+Shift+F
 
 ### Fixed
 * Fixed issue where cursor flashing for editor and console at the same time.
@@ -20,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Settings: Fixed issue where ANE settings were lost after IDE restart.
 * Fixed issue with `Error #1125 (Index ouf of bounds)` occurs on Tab close.
 * Code Completion: Fixed issue where some stiles attributes does not show up in the list.
+* Apache Flex Installer: Fixed issue where downloading OSMF was failing.
+* Local Search: Fixed issue where order of search results was incorrect.
 
 ## Moonshine IDE [1.10.0]
 
