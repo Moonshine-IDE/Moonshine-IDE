@@ -40,7 +40,7 @@
 			private function find():void
 			{
 				if (rbDirection.selectedIndex == 0) dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_NEXT) );
-				else dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_PREV) );
+				//else dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_PREV) );
 			}
 			
 			private function replaceOne(isFindNext:Boolean=false):void
@@ -79,7 +79,6 @@
 			width="100%"
 			styleName="textInputStatus"
 			creationComplete="{focusInput()}"
-			enter="find()"
 			tabIndex="1"
 			text="{initialSearchString}"/>
 		<view:PromptTextInput
