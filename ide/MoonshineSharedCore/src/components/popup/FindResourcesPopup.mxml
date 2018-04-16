@@ -93,16 +93,19 @@
 		{
 			var isKeyDown:Boolean = event.keyCode == Keyboard.DOWN;
 			var isKeyUp:Boolean = event.keyCode == Keyboard.UP;
+			var isKeyTab:Boolean = event.keyCode == Keyboard.TAB;
 			var focusedComponent:IFocusManagerComponent = lstResources.focusManager.getFocus();
-
-			if (isKeyDown || isKeyUp)
+			
+			if (isKeyDown || isKeyUp || (isKeyTab && !event.shiftKey))
 			{
 				if (lstResources != focusedComponent)
 				{
+					event.preventDefault();
+					
 					lstResources.setFocus();
-					var resourceSelectedIndex:int = lstResources.selectedIndex + 1;
-
-					if (isKeyDown)
+					var resourceSelectedIndex:int = isKeyTab ? lstResources.selectedIndex : lstResources.selectedIndex + 1;
+					
+					if (isKeyDown || isKeyTab)
 					{
 						if (resourceSelectedIndex < resources.length)
 						{
@@ -119,8 +122,10 @@
 					}
 				}
 			}
-			else if (event.keyCode == Keyboard.LEFT || event.keyCode == Keyboard.RIGHT)
+			else if (event.keyCode == Keyboard.LEFT || event.keyCode == Keyboard.RIGHT || (isKeyTab && event.shiftKey))
 			{
+				if (isKeyTab && event.shiftKey) event.preventDefault();
+				
 				fileNameTextInput.setFocus();
 				if (lstResources === focusedComponent && fileNameTextInput.text)
 				{
