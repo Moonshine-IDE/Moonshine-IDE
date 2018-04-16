@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.11.0 - Pending]
+## Moonshine IDE [1.11.0]
 
 ### Added
 * Integrate [Away Builder](http://awaytools.com/awaybuilder/) with Moonshine.
