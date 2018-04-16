@@ -133,35 +133,32 @@
 				filesBelongsToProject.children = [];
 				
 				var i:FileLocation;
+				var acceptableLocation:FileLocation;
 				
 				// class paths checks
-				for each (i in project.classpaths)
-				{
-					if (isProjectRelativePath(i))
-					{
-						filesBelongsToProject.children.push(new FileWrapper(i, false, project.projectFolder.projectReference));
-					}
-				}
+				checkFileLists(project.classpaths);
 				
 				// resource paths checks
-				for each (i in project.resourcePaths)
-				{
-					if (isProjectRelativePath(i))
-					{
-						filesBelongsToProject.children.push(new FileWrapper(i, false, project.projectFolder.projectReference));
-					}
-				}
+				checkFileLists(project.resourcePaths);
 				
 				// library paths checks
-				for each (i in project.libraries)
-				{
-					if (isProjectRelativePath(i))
-					{
-						filesBelongsToProject.children.push(new FileWrapper(i, false, project.projectFolder.projectReference));
-					}
-				}
+				checkFileLists(project.libraries);
 				
 				tree.expandItem(filesBelongsToProject, true);
+				
+				/*
+				 * @local
+				 */
+				function checkFileLists(list:Vector.<FileLocation>):void
+				{
+					for each (i in list)
+					{
+						if (acceptableLocation = isProjectRelativePath(i))
+						{
+							filesBelongsToProject.children.push(new FileWrapper(acceptableLocation, false, project.projectFolder.projectReference));
+						}
+					}
+				}
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -170,11 +167,19 @@
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 			}
 			
-			private function isProjectRelativePath(value:FileLocation):Boolean
+			private function isProjectRelativePath(value:FileLocation):FileLocation
 			{
 				if (!value.fileBridge.isDirectory) value = value.fileBridge.parent;
 				
-				return (value.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator) != -1);
+				// in two condition we don't add items to the list
+				// 1. item is located off-project-path
+				// 2. item is located inside project's source folder - because project source
+				// will added as individual item
+				if (value.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator) != -1 &&
+					value.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
+						return value;
+				
+				return null;
 			}
 			
 		]]>
