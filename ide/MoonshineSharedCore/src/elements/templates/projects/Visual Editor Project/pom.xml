@@ -80,7 +80,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/${name}-${version}/resources/</outputDirectory>
+							<outputDirectory>target/${project.name}-${project.version}/resources/</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/resources</directory>
