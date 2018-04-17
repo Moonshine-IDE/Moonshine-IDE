@@ -6,23 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.11.0]
 
 ### Added
-* Integrate [Away Builder](http://awaytools.com/awaybuilder/) with Moonshine.
+* Integrated [Away Builder](http://awaytools.com/awaybuilder/) editor.
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.10.0](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.10.0).
 * Royale: Changed default project name during project creation from `NewRoyaleBrowserProject` to `NewJavaScriptBrowserProject`.
-* Setup `requestedDisplayResolution` to `high` in order to avoid fuzzy fonts in windows scaling for high DPI screens.
-* Global Search: Changed shortcuts for launch searching to Windows: CTRL+SHIFT+F and Mac: CMD+Shift+F
+* Setup `requestedDisplayResolution` to `high` to avoid issues in Windows for high DPI screens.
+* Global Search:  Updated shortcuts to CTRL-SHIFT-F (Windows) and CMD-SHIFT-F (macOS)
+* Global Search:  Added editor highlighting for matches
 
 ### Fixed
-* Fixed issue where cursor flashing for editor and console at the same time.
-* Language server: Fixed issue where during library build +configname was not pass properly to language server.
-* Fixed issue where nothing happen once user opens binary file.
+* Fixed issue where cursor flashed for editor and console at the same time.
+* Language server: Fixed issue where +configname was not pass properly to language server for a library build.
+* Fixed issue with opening binary files from the project tree
 * Settings: Fixed issue where ANE settings were lost after IDE restart.
-* Fixed issue with `Error #1125 (Index ouf of bounds)` occurs on Tab close.
-* Code Completion: Fixed issue where some stiles attributes does not show up in the list.
-* Apache Flex Installer: Fixed issue where downloading OSMF was failing.
+* Code Completion: Fixed issue where some style attributes does not show up in the list.
+* Apache Flex Installer: Fixed issue where downloading OSMF failed.
 * Local Search: Fixed issue where order of search results was incorrect.
+
+### Known Issues
+* Away Builder Editor tab can not be closed.  This is necessary for now until we find a way to reinitialize the tab
+
 
 ## Moonshine IDE [1.10.0]
 
