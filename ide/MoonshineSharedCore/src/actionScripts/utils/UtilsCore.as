@@ -678,7 +678,6 @@ package actionScripts.utils
 				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && (!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
 				{
                     var editor:BasicTextEditor = model.editors[i];
-					//var parentProjectPath: String = projectReferencePath + model.fileCore.separator;
 					if (editor)
 					{
 						editorsToClose.push(editor);
@@ -699,6 +698,13 @@ package actionScripts.utils
 				else if (model.editors[i] is SearchInProjectView && !projectReferencePath)
 				{
 					editorsToClose.push(model.editors[i]);
+				}
+				else if (model.editors[i].hasOwnProperty("label") && model.editors[i].label.indexOf("Away Builder") != -1)
+				{
+					if (!isSkipSaveConfirmation && model.editors[i].isChanged())
+					{
+						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+					}
 				}
 			}
 			

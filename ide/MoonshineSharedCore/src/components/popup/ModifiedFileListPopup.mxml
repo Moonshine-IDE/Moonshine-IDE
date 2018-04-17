@@ -35,7 +35,6 @@
 			import mx.collections.ArrayCollection;
 			
 			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.ui.editor.BasicTextEditor;
 			import actionScripts.ui.menu.MenuPlugin;
 			
 			[Bindable] public var collection:ArrayCollection;
@@ -95,13 +94,16 @@
 					<s:ItemRenderer minHeight="25">
 						<fx:Script>
 							<![CDATA[
+								import actionScripts.factory.FileLocation;
 								import actionScripts.plugin.settings.SettingsView;
 								override public function set data(value:Object):void
 								{
 									if (value)
 									{
 										super.data = value;
-										labelDisplay.text = (data.file is SettingsView) ? "Settings - "+ data.file.associatedData.name : data.file.currentFile.name +' - '+ data.file.currentFile.fileBridge.nativePath;
+										labelDisplay.text = (data.file is SettingsView) ? "Settings - "+ data.file.associatedData.name : 
+											((data.file.currentFile is FileLocation) ? (data.file.currentFile.name +' - '+ data.file.currentFile.fileBridge.nativePath) :
+												(data.file.currentFile.name +' - '+ data.file.currentFile.nativePath));
 									}
 								}
 							]]>
