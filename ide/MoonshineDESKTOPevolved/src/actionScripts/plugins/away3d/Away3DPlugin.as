@@ -61,7 +61,7 @@ package actionScripts.plugins.away3d
 		
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
-		private var awdFileObject:File;
+		private var currentFile:File;
 		private var abView:AwayBuilderView;
 		
 		private var finalExecutablePath:String;
@@ -93,7 +93,7 @@ package actionScripts.plugins.away3d
 		
 		override public function resetSettings():void
 		{
-			awdFileObject = null;
+			currentFile = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -105,7 +105,7 @@ package actionScripts.plugins.away3d
 		{
 			if (abView)
 			{
-				abView.awdFileObject = awdFileObject;
+				abView.currentFile = currentFile;
 				model.activeEditor = abView;
 				abView.loadAwayBuilderFile();
 				return;
@@ -118,7 +118,7 @@ package actionScripts.plugins.away3d
 			dispatcher.removeEventListener(ProjectEvent.OPEN_PROJECT_AWAY3D, onAway3DProjectOpen);
 			
 			abView = new AwayBuilderView;
-			abView.awdFileObject = awdFileObject;
+			abView.currentFile = currentFile;
 			abView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onAwayBuilderTabClosed);
 			abView.addEventListener(Event.COMPLETE, onAwayBuilderReady);
 			dispatcher.dispatchEvent(new AddTabEvent(abView as IContentWindow));
@@ -139,7 +139,7 @@ package actionScripts.plugins.away3d
 		
 		private function onAway3DSettingsUpdated(event:Event):void
 		{
-			if (executablePath) runAwdFile(awdFileObject);
+			if (executablePath) runAwdFile(currentFile);
 			else error("Application unavailable. Terminating.");
 		}
 		
@@ -157,12 +157,12 @@ package actionScripts.plugins.away3d
 		
 		private function onAway3DProjectOpen(event:ProjectEvent):void
 		{
-			awdFileObject = FileLocation(event.anObject).fileBridge.getFile as File;
+			currentFile = FileLocation(event.anObject).fileBridge.getFile as File;
 			
-			if (awdFileObject) 
+			if (currentFile) 
 			{
 				if (!executablePath) openAway3DBuilder(null);
-				else runAwdFile(awdFileObject);
+				else runAwdFile(currentFile);
 			}
 			else error("No Away3D file found.");
 		}

@@ -31,6 +31,7 @@
 			import flash.utils.setTimeout;
 			
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
 			import actionScripts.factory.NativeMenuItemLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.IContentWindow;
@@ -44,7 +45,7 @@
 			import awaybuilder.controller.events.SaveDocumentEvent;
 			import awaybuilder.controller.events.SceneReadyEvent;
 			
-			public var awdFileObject:File;
+			public var currentFile:File;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
@@ -85,6 +86,8 @@
 			 */
 			public function initThis():void
 			{
+				dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject, false, 0, true);
+				
 				//dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);
 				model.mainView.bodyPanel.setStyle('backgroundAlpha', 0);
 				model.mainView.mainPanel.setStyle('backgroundAlpha', 0);
@@ -116,7 +119,7 @@
 			
 			public function loadAwayBuilderFile():void
 			{
-				if (awdFileObject) abLib.openFileByURL(awdFileObject.url, awdFileObject.name);
+				if (currentFile) abLib.openFileByURL(currentFile.url, currentFile.name);
 			}
 			
 			private function onAwayBuilderChanged(event:Event):void
@@ -203,6 +206,13 @@
 				}
 				
 				return menuItem;
+			}
+			
+			private function handleRemoveProject(event:ProjectEvent):void
+			{
+				// in case of close project lets init editor with blank document
+				abLib.openNewDocument(false);
+				onAwayBuilderSaved(null);
 			}
 			
 		]]>
