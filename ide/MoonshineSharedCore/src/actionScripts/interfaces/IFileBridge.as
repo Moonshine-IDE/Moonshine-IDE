@@ -53,6 +53,7 @@ package actionScripts.interfaces
 		function read():Object;
 		function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void;
 		function deleteFile():void;
+		function deleteFileAsync():void;
 		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void;
 		function moveToTrashAsync():void;
 		function openWithDefaultApplication():void;

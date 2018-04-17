@@ -21,7 +21,6 @@ package actionScripts.controllers
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -30,7 +29,6 @@ package actionScripts.controllers
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.findreplace.view.SearchView;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -48,47 +46,49 @@ package actionScripts.controllers
 		private var wrapper: FileWrapper;
 		private var treeViewHandler: Function;
 		private var projectDeletePopup:ProjectDeletionPopup;
+		private var thisEvent:DeleteFileEvent;
 		
 		public function execute(event:Event):void
 		{
-			var e:DeleteFileEvent = DeleteFileEvent(event);
+			thisEvent = DeleteFileEvent(event);
+			
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
 			
-			if (!e.file.fileBridge.exists) return;
+			if (!thisEvent.file.fileBridge.exists) return;
 			
 			// project deletion
-			if (e.wrapper.isRoot && e.showAlert)
+			if (thisEvent.wrapper.isRoot && thisEvent.showAlert)
 			{
 				if (!projectDeletePopup)
 				{
 					projectDeletePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ProjectDeletionPopup, true) as ProjectDeletionPopup;
-					projectDeletePopup.wrapperBelongToProject = e.wrapper;
+					projectDeletePopup.wrapperBelongToProject = thisEvent.wrapper;
+					projectDeletePopup.addEventListener(DeleteFileEvent.EVENT_DELETE_FILE, onProjectDeletionConfirmed);
+					projectDeletePopup.addEventListener(CloseEvent.CLOSE, onProjectDeletePopupClosed);
 					PopUpManager.centerPopUp(projectDeletePopup);
 				}
-				
-				//Alert.show("Are you sure you want to delete project '"+ e.wrapper.name +"'?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
 				return;
 			}
-			else if (e.wrapper.isRoot)
+			else if (thisEvent.wrapper.isRoot)
 			{
-				onProjectDeleteConfirm(null);
+				onProjectDeletionConfirmed(null);
 				return;
 			}
 			
 			// file/folder deletion for desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (e.file.fileBridge.isDirectory) e.file.fileBridge.deleteDirectory(true);
-				else e.file.fileBridge.deleteFile();
-				if (e.wrapper.sourceController) e.wrapper.sourceController.remove(e.file);
+				if (thisEvent.file.fileBridge.isDirectory) thisEvent.file.fileBridge.deleteDirectory(true);
+				else thisEvent.file.fileBridge.deleteFile();
+				if (thisEvent.wrapper.sourceController) thisEvent.wrapper.sourceController.remove(thisEvent.file);
 				
 				for each (tab in IDEModel.getInstance().editors)
 				{
 					ed = tab as BasicTextEditor;
 					if (ed 
 						&& ed.currentFile
-						&& ed.currentFile.fileBridge.nativePath == e.file.fileBridge.nativePath)
+						&& ed.currentFile.fileBridge.nativePath == thisEvent.file.fileBridge.nativePath)
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
 							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
@@ -97,15 +97,15 @@ package actionScripts.controllers
 				}
 				
 				// removing the wrapper in tree view
-				e.wrapper.isDeleting = true;
-				e.treeViewCompletionHandler(e.wrapper);
+				thisEvent.wrapper.isDeleting = true;
+				thisEvent.treeViewCompletionHandler(thisEvent.wrapper);
 			}
-				// for web
+			// for web
 			else
 			{
-				file = e.file;
-				treeViewHandler = e.treeViewCompletionHandler;
-				wrapper = e.wrapper;
+				file = thisEvent.file;
+				treeViewHandler = thisEvent.treeViewCompletionHandler;
+				wrapper = thisEvent.wrapper;
 				wrapper.isWorking = true;
 				wrapper.isDeleting = true;
 				
@@ -113,59 +113,59 @@ package actionScripts.controllers
 				file.addEventListener(Event.CLOSE, onDeleteFault);
 				file.deleteFileOrDirectory();
 			}
+		}
+		
+		private function onProjectDeletionConfirmed(event:DeleteFileEvent):void
+		{
+			var model: IDEModel = IDEModel.getInstance();
+			// sends delete call to factory classes
 			
-			/*
-			* @local
-			* to access method chain parameters
-			*/
-			function onProjectDeleteConfirm(event:CloseEvent):void
+			var projectRef:ProjectReferenceVO = event.wrapper.projectReference;
+			SharedObjectUtil.removeCookieByName("projectFiles" + projectRef.name);
+			SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
+				{name: projectRef.name, path: projectRef.path}, "name", "path");
+			
+			// removal from the recently opened project in splash screen
+			var toRemove:int = -1;
+			for each (var file:Object in model.recentlyOpenedProjects)
 			{
-				if (!event || event.detail == Alert.YES)
+				if (file.path == event.wrapper.file.fileBridge.nativePath)
 				{
-					var model: IDEModel = IDEModel.getInstance();
-					// sends delete call to factory classes
-
-					var projectRef:ProjectReferenceVO = e.wrapper.projectReference;
-                    SharedObjectUtil.removeCookieByName("projectFiles" + projectRef.name);
-                    SharedObjectUtil.removeProjectTreeItemFromOpenedItems(
-                            {name: projectRef.name, path: projectRef.path}, "name", "path");
-					
-					// removal from the recently opened project in splash screen
-					var toRemove:int = -1;
-					for each (var file:Object in model.recentlyOpenedProjects)
-					{
-						if (file.path == e.wrapper.file.fileBridge.nativePath)
-						{
-							toRemove = model.recentlyOpenedProjects.getItemIndex(file);
-							break;
-						}
-					}
-					if (toRemove != -1) 
-					{
-						model.recentlyOpenedProjects.removeItemAt(toRemove);
-						model.recentlyOpenedProjectOpenedOption.removeItemAt(toRemove);
-						GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
-					}
-					
-					// removal from the recently opened files in splash screen
-					// Find item & remove it if already present (path-based, since it's two different File objects)
-					toRemove = -1;
-					for (var i:int = 0; i < model.recentlyOpenedFiles.length; i++)
-					{
-						if (model.recentlyOpenedFiles[i].path.indexOf(e.wrapper.file.fileBridge.nativePath + e.wrapper.file.fileBridge.separator) != -1)
-						{
-							model.recentlyOpenedFiles.removeItemAt(i);
-							toRemove = 0;
-							i--;
-						}
-					}
-					
-					if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
-					
-					// finally
-					model.flexCore.deleteProject(e.wrapper, e.treeViewCompletionHandler);
+					toRemove = model.recentlyOpenedProjects.getItemIndex(file);
+					break;
 				}
 			}
+			if (toRemove != -1) 
+			{
+				model.recentlyOpenedProjects.removeItemAt(toRemove);
+				model.recentlyOpenedProjectOpenedOption.removeItemAt(toRemove);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
+			}
+			
+			// removal from the recently opened files in splash screen
+			// Find item & remove it if already present (path-based, since it's two different File objects)
+			toRemove = -1;
+			for (var i:int = 0; i < model.recentlyOpenedFiles.length; i++)
+			{
+				if (model.recentlyOpenedFiles[i].path.indexOf(event.wrapper.file.fileBridge.nativePath + event.wrapper.file.fileBridge.separator) != -1)
+				{
+					model.recentlyOpenedFiles.removeItemAt(i);
+					toRemove = 0;
+					i--;
+				}
+			}
+			
+			if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
+			
+			// finally
+			model.flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler);
+		}
+		
+		private function onProjectDeletePopupClosed(event:CloseEvent):void
+		{
+			projectDeletePopup.removeEventListener(DeleteFileEvent.EVENT_DELETE_FILE, onProjectDeletionConfirmed);
+			projectDeletePopup.removeEventListener(CloseEvent.CLOSE, onProjectDeletePopupClosed);
+			projectDeletePopup = null;
 		}
 		
 		private function onFileDeleted(event:Event):void
