@@ -34,14 +34,10 @@
 			import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
-			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
-			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
-			
-			import spark.events.DropDownEvent;
 			
 			import actionScripts.events.DeleteFileEvent;
 			import actionScripts.events.GlobalEventDispatcher;
@@ -52,45 +48,12 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.FileWrapper;
 			
-			import components.renderers.DividerRenderer;
-			import components.renderers.FileTypeRenderer;
-
 			[Bindable] public var wrapperBelongToProject:FileWrapper;
 			
 			[Bindable] private var filesBelongsToProject:FileWrapper;
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
 	
-			public var wrapperOfFolderLocation:FileWrapper;
-			public var folderLocation:FileLocation;
-	
-			[Bindable]
-			private var modifiedName:String = "";
-			[Bindable]
-			private var projectFolders:ArrayCollection;
-			[Bindable]
-			private var model:IDEModel = IDEModel.getInstance();
-			[Bindable]
-			private var warningMessage:String = "Class files allowed to create inside source folder only.";
-	
-			[Bindable]
-			private var componentTemplates:ArrayCollection;
-	
-			private var lastSelectedItem:Object;
-			private var projectSelectionWindow:NewFileProjectSelectionPopup;
 			private var project:AS3ProjectVO;
-			
-			private var _isDestinationValid:Boolean;
-	
-			[Bindable]
-			private function set isDestinationValid(value:Boolean):void
-			{
-				_isDestinationValid = value;
-				if (!value) warningMessage = "Class files allowed to create inside source folder only.";
-			}
-	
-			private function get isDestinationValid():Boolean
-			{
-				return _isDestinationValid;
-			}
 	
 			override protected function closeByCrossSign(event:Event):void
 			{
@@ -124,17 +87,6 @@
 				}
 			}
 	
-			private function getItemRenderer(item:*):IFactory
-			{
-				var renderer:Class = item is String ? DividerRenderer : FileTypeRenderer;
-				return new ClassFactory(renderer);
-			}
-	
-			protected function onDropDownClosed(event:DropDownEvent):void
-			{
-				if (event.target.selectedItem is String) event.target.selectedItem = lastSelectedItem;
-			}
-	
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
@@ -156,22 +108,16 @@
 				
 				var acceptableLocation:FileLocation;
 				var tmpPathsAdded:Dictionary = new Dictionary();
+				var filesList:Array = [project.swfOutput.path, project.htmlPath, new FileLocation(project.buildOptions.antBuildPath), project.folderLocation.fileBridge.resolvePath("bin-debug"),
+					project.folderLocation.fileBridge.resolvePath("html-template"), project.folderLocation.fileBridge.resolvePath("build"), project.libraries, project.includeLibraries,
+					project.externalLibraries, project.nativeExtensions, project.runtimeSharedLibraries, project.hiddenPaths, project.resourcePaths, project.classpaths, project.config.file,
+					project.projectFile]; // either FileLocation or Vector.<FileLocation>
 				
-				checkFileLists(null, project.swfOutput.path);
-				checkFileLists(null, project.htmlPath);
-				checkFileLists(null, new FileLocation(project.buildOptions.antBuildPath));
-				checkFileLists(null, project.folderLocation.fileBridge.resolvePath("build")); // generally 'build' path does not managed separately
-				checkFileLists(project.libraries);
-				checkFileLists(project.includeLibraries);
-				checkFileLists(project.externalLibraries);
-				checkFileLists(project.nativeExtensions);
-				checkFileLists(project.runtimeSharedLibraries);
-				checkFileLists(project.hiddenPaths);
-				checkFileLists(project.resourcePaths);
-				checkFileLists(project.classpaths);
-
-				checkFileLists(null, project.config.file);
-				checkFileLists(null, project.projectFile);
+				for (var i:int; i < filesList.length; i++)
+				{
+					if (filesList[i] is FileLocation) checkFileLists(null, filesList[i]);
+					else checkFileLists(filesList[i]);
+				}
 				
 				tree.callLater(function():void
 				{
@@ -196,10 +142,7 @@
 					{
 						checkByFile(singleFile);
 					}
-					
-					/*
-					 * @local
-					 */
+
 					function checkByFile(file:FileLocation):void
 					{
 						// make sure not to add same location multiple times
@@ -210,12 +153,6 @@
 						}
 					}
 				}
-			}
-	
-			protected function onTreeItemClicked(event:ListEvent):void
-			{
-				// re-validate upon folder location change
-				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 			}
 			
 			private function isProjectRelativePath(value:FileLocation):FileLocation
@@ -234,7 +171,7 @@
 				// in two condition we don't add items to the list
 				// 1. item is located off-project-path
 				// 2. item is located inside project's source folder - because project source
-				// will added as individual item
+				// will be added as individual item
 				if (value.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator) != -1 &&
 					value.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 						return value;
@@ -265,8 +202,7 @@
 				 useRollOver="true"
 				 doubleClickEnabled="true"
 				 labelField="name"
-				 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-				 itemClick="onTreeItemClicked(event)"/>
+				 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"/>
 	</s:VGroup>
 	
 	<s:Label id="lblWorking" 

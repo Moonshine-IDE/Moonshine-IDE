@@ -243,7 +243,7 @@ package actionScripts.impls
 			}
 		}
 		
-		public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void
+		public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function, isDeleteRoot:Boolean=false):void
 		{
 			loader = new DataAgent(URLDescriptorVO.PROJECT_REMOVE, onProjectRemoveSuccess, onProjectRemoveFault, {projectName:projectWrapper.name});
 			

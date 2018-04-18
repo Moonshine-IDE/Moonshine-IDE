@@ -30,7 +30,7 @@ package actionScripts.interfaces
          * @param projectWrapper
          * @param finishHandler - handler must return FileWrapper object
          */
-        function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void;
+        function deleteProject(projectWrapper:FileWrapper, finishHandler:Function, isDeleteRoot:Boolean=false):void;
 
         function getCorePlugins():Array;
         function getDefaultPlugins():Array;

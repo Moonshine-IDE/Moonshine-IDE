@@ -181,6 +181,11 @@ package actionScripts.impls
 			_file.deleteFileOrDirectory();
 		}
 		
+		public function deleteFileAsync():void
+		{
+			_file.deleteFileOrDirectory();
+		}
+		
 		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void
 		{
 			

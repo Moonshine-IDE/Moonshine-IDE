@@ -33,21 +33,35 @@ package actionScripts.plugins.core
             executeCreateProject = new CreateProject(event);
         }
 
-        public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function):void
+        public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function, isDeleteRoot:Boolean=false):void
         {
-			// go for only one level of file/folder deletion
-			for each (var wrapper:FileWrapper in projectWrapper.children)
+			if (isDeleteRoot)
 			{
-	            try
-	            {
-					if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectory(true);
-					else wrapper.file.fileBridge.deleteFile();
-	            }
-	            catch (e:Error)
-	            {
-					if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectoryAsync(true);
-					else wrapper.file.fileBridge.deleteFileAsync();
-	            }
+				try
+				{
+					projectWrapper.file.fileBridge.deleteDirectory(true);
+				}
+				catch (e:Error)
+				{
+					projectWrapper.file.fileBridge.deleteDirectoryAsync(true);
+				}
+			}
+			else
+			{
+				// go for only one level of file/folder deletion
+				for each (var wrapper:FileWrapper in projectWrapper.children)
+				{
+		            try
+		            {
+						if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectory(true);
+						else wrapper.file.fileBridge.deleteFile();
+		            }
+		            catch (e:Error)
+		            {
+						if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectoryAsync(true);
+						else wrapper.file.fileBridge.deleteFileAsync();
+		            }
+				}
 			}
 
             // when done call the finish handler

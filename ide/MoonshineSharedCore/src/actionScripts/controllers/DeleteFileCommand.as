@@ -72,7 +72,10 @@ package actionScripts.controllers
 			}
 			else if (thisEvent.wrapper.isRoot)
 			{
-				onProjectDeletionConfirmed(null);
+				// this generally when deleting a template project
+				// ideally, deleting a normal project without above prompting
+				// not going to happen
+				onProjectDeletionConfirmed(thisEvent, true);
 				return;
 			}
 			
@@ -115,7 +118,7 @@ package actionScripts.controllers
 			}
 		}
 		
-		private function onProjectDeletionConfirmed(event:DeleteFileEvent):void
+		private function onProjectDeletionConfirmed(event:DeleteFileEvent, isDeleteRoot:Boolean=false):void
 		{
 			var model: IDEModel = IDEModel.getInstance();
 			// sends delete call to factory classes
@@ -158,7 +161,7 @@ package actionScripts.controllers
 			if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 			
 			// finally
-			model.flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler);
+			model.flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, isDeleteRoot);
 		}
 		
 		private function onProjectDeletePopupClosed(event:CloseEvent):void
