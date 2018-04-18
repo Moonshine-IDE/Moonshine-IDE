@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Known Issues
 * Away Builder Editor tab can not be closed.  This is necessary for now until we find a way to reinitialize the tab
+* Renaming a newly created project template is not working
 
 
 ## Moonshine IDE [1.10.0]
