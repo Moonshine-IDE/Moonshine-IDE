@@ -390,7 +390,8 @@ package actionScripts.plugin.templating
 			var separator:MenuItem = new MenuItem(null);
 			newFileMenu.items.push(separator);
 			
-			for each (var projectTemplate:FileLocation in projectTemplates)
+			var filteredProjectTemplatesToMenu:Array = projectTemplates.filter(filterProjectsTemplates);
+			for each (var projectTemplate:FileLocation in filteredProjectTemplatesToMenu)
 			{
 				if (projectTemplate.fileBridge.isHidden) continue;
 				lbl = TemplatingHelper.getTemplateLabel(projectTemplate);
@@ -1172,6 +1173,11 @@ package actionScripts.plugin.templating
 		protected function handleNewProjectFile(event:Event):void
 		{
             newProjectFromTemplate(event.type);
+		}
+		
+		private function filterProjectsTemplates(item:FileLocation, index:int, arr:Array):Boolean
+		{
+			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.name) == -1;
 		}
 
         private function handleExportNewProjectFromTemplate(event:ProjectEvent):void
