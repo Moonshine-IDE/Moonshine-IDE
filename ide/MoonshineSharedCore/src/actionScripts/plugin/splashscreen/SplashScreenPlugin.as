@@ -19,23 +19,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.splashscreen
 {
-    import actionScripts.valueObjects.TemplateVO;
-
     import flash.events.Event;
-	
-	import mx.collections.ArrayCollection;
-
-	import actionScripts.plugin.IMenuPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.menu.vo.MenuItem;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.views.splashscreen.SplashScreen;
+    
+    import mx.collections.ArrayCollection;
+    
+    import actionScripts.plugin.IMenuPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.TemplateVO;
+    
+    import components.views.splashscreen.SplashScreen;
 
 	public class SplashScreenPlugin extends PluginBase implements IMenuPlugin, ISettingsProvider
 	{
@@ -52,8 +51,6 @@ package actionScripts.plugin.splashscreen
 
 		[Bindable]
 		public var projectsTemplates:ArrayCollection = new ArrayCollection();
-
-		private var _excludedTemplatesOnSplashScreen:Array = ["Royale Browser Project"];
 
 		override public function activate():void
 		{
@@ -133,7 +130,7 @@ package actionScripts.plugin.splashscreen
 
 		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
 		{
-			return _excludedTemplatesOnSplashScreen.indexOf(item.title) == -1;
+			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.title) == -1;
         }
     }
 }
