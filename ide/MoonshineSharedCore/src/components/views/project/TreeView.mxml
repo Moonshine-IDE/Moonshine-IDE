@@ -649,7 +649,7 @@
 				UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void {
 					for each (var as3Project:AS3ProjectVO in projects)
 					{
-						if (as3Project.projectFolder == value)
+						if (as3Project.projectFolder.nativePath === value.nativePath)
 						{
 							projects.removeItem(as3Project);
 							updateTreeView();
