@@ -302,6 +302,11 @@ package actionScripts.impls
 			_file.deleteFile();
 		}
 		
+		public function deleteFileAsync():void
+		{
+			_file.deleteFileAsync();
+		}
+		
 		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void
 		{
 			var filters:Array;
