@@ -807,7 +807,18 @@ package actionScripts.utils
 				_connected = false;
 				_connecting = false;
 				_xmlSocket.send("SHUTDOWN");
-                cleanUpXmlSocket();
+				
+				// @note
+				// devsena@
+				// return from _xmlSocket.send("SHUTDOWN") when arrives
+				// _xmlSocket already made null due to cleanUpXmlSocket() call
+				// thus the _xmlSocket.send("SHUTDOWN") again restarts a
+				// parseData -> connectToJava process with new socket instance
+				// created; this throws in case of project deletion.
+				// _xmlSocket.send("SHUTDOWN") returns eventually calls cleanUpXmlSocket()
+				// so commenting-out the following call
+				
+                //cleanUpXmlSocket();
 			}
 		}
 
