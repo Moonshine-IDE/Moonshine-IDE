@@ -22,13 +22,16 @@ package actionScripts.plugin.findreplace
     import flash.events.Event;
     
     import mx.core.FlexGlobals;
+    import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.findreplace.view.GoToLineView;
     import actionScripts.plugin.findreplace.view.SearchView;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.utils.TextUtil;
 
@@ -39,8 +42,10 @@ package actionScripts.plugin.findreplace
 		public static const EVENT_REPLACE_ONE:String = "replaceOneEvent";
 		public static const EVENT_REPLACE_ALL:String = "replaceAllEvent";
 		public static const EVENT_FIND_SHOW_ALL:String = "findAndShowAllEvent";
+		public static const EVENT_GO_TO_LINE:String = "goToLine";
 
 		private var searchView:SearchView;
+		private var gotoLineView:GoToLineView;
 		
 		private var searchReplaceRe:RegExp = /^(?:\/)?((?:\\[^\/]|\\\/|\[(?:\\[^\]]|\\\]|[^\\\]])+\]|[^\[\]\\\/])+)\/((?:\\[^\/]|\\\/|[^\\\/])+)?(?:\/([gismx]*))?$/;
 		private var tempObj:Object;
@@ -76,6 +81,7 @@ package actionScripts.plugin.findreplace
 			dispatcher.addEventListener(EVENT_FIND_NEXT, handleSearch);
             dispatcher.addEventListener(EVENT_FIND_PREV, handleSearch);
 			dispatcher.addEventListener(EVENT_FIND_SHOW_ALL, onFindAndShowAll);
+			dispatcher.addEventListener(EVENT_GO_TO_LINE, onGoToLineRequest);
 		}
 		
 		protected function handleSearch(event:Event):void
@@ -119,6 +125,39 @@ package actionScripts.plugin.findreplace
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 			editor.searchAndShowAll(event.value.search);
 			if (event.value.range) editor.selectRangeAtLine(event.value.search, event.value.range);
+		}
+		
+		protected function onGoToLineRequest(event:Event):void
+		{
+			// probable termination
+			if (!(model.activeEditor is BasicTextEditor)) return;
+			
+			if (!gotoLineView)
+			{
+				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+				
+				gotoLineView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GoToLineView, true) as GoToLineView;
+				gotoLineView.totalLinesCount = editor.getEditorComponent().model.lines.length;
+				gotoLineView.addEventListener(CloseEvent.CLOSE, onGotoLineClosed);
+				PopUpManager.centerPopUp(gotoLineView);
+			}
+		}
+		
+		private function onGotoLineClosed(event:CloseEvent):void
+		{
+			if (gotoLineView.lineNumber != -1)
+			{
+				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+				var tmpLineIndex:int = --gotoLineView.lineNumber != -1 ? gotoLineView.lineNumber : 0;
+				
+				var textEditor:TextEditor = editor.getEditorComponent();
+				textEditor.model.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
+				textEditor.scrollViewIfNeeded();
+				textEditor.invalidateLines();
+			}
+			
+			gotoLineView.removeEventListener(CloseEvent.CLOSE, onGotoLineClosed);
+			gotoLineView = null;
 		}
 
 		protected function closeSearchView(event:Event):void
