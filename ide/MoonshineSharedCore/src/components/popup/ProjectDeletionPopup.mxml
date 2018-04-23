@@ -74,17 +74,8 @@
 	
 			protected function onDeleteButton(event:MouseEvent):void
 			{
-				// last and final confirmation
-				Alert.show("Are you sure you want to delete all the displayed files?", "Confirm", Alert.YES | Alert.NO, null, onProjectDeleteConfirm);
-			}
-			
-			private function onProjectDeleteConfirm(event:CloseEvent):void
-			{
-				if (!event || event.detail == Alert.YES)
-				{
-					dispatchEvent(new DeleteFileEvent(null, filesBelongsToProject));
-					PopUpManager.removePopUp(this);
-				}
+				dispatchEvent(new DeleteFileEvent(null, filesBelongsToProject));
+				closeByCrossSign(event);
 			}
 	
 			protected function onCreationCompletes(event:FlexEvent):void
@@ -214,5 +205,9 @@
 		<s:Button id="btnDelete" label="Delete"
 				  styleName="darkButton" enabled="false"
 				  click="onDeleteButton(event)"/>
+		<s:Spacer width="100%"/>
+		<s:Button label="Cancel"
+				  styleName="darkButton"
+				  click="closeByCrossSign(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
