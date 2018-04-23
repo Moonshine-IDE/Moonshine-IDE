@@ -78,10 +78,6 @@
 	
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
-				focusManager.showFocusIndicator = true;
-				focusManager.setFocus(btnCancel);
-				focusManager.showFocus();
-				
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 				var timeoutId:uint = setTimeout(function():void
 				{
@@ -117,6 +113,10 @@
 					lblWorking.includeInLayout = lblWorking.visible = false;
 					btnDelete.enabled = true;
 					tree.expandItem(filesBelongsToProject, true);
+					
+					focusManager.showFocusIndicator = true;
+					focusManager.setFocus(btnCancel);
+					focusManager.showFocus();
 				});
 				
 				/*
@@ -172,6 +172,13 @@
 				return null;
 			}
 			
+			private function getDirectoryName(item:Object):String
+			{
+				if (item.file) return item.file.fileBridge.name;
+				else if (item.projectRef && item.projectRef.name) return item.projectRef.name;
+				return "NO INFORMATION"; 
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -194,8 +201,8 @@
 				 rowHeight="18"
 				 useRollOver="true"
 				 doubleClickEnabled="true"
-				 labelField="name"
-				 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"/>
+				 labelFunction="getDirectoryName"
+				 itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"/>
 	</s:VGroup>
 	
 	<s:Label id="lblWorking" 
