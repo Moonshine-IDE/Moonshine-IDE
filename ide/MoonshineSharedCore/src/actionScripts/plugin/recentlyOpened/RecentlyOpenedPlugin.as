@@ -18,30 +18,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-    import actionScripts.utils.SharedObjectConst;
-
     import flash.events.Event;
-	import flash.net.SharedObject;
+    import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
-	
-	import mx.collections.ArrayCollection;
-	
-	import actionScripts.events.FilePluginEvent;
-	import actionScripts.events.GeneralEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.ui.LayoutModifier;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import actionScripts.utils.ObjectTranslator;
-	import actionScripts.utils.SDKUtils;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.MobileDeviceVO;
-	import actionScripts.valueObjects.ProjectReferenceVO;
-	
-	import components.views.project.TreeView;
+    
+    import mx.collections.ArrayCollection;
+    
+    import actionScripts.events.FilePluginEvent;
+    import actionScripts.events.GeneralEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.ui.LayoutModifier;
+    import actionScripts.utils.OSXBookmarkerNotifiers;
+    import actionScripts.utils.ObjectTranslator;
+    import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.SharedObjectConst;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.MobileDeviceVO;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+    
+    import components.views.project.TreeView;
 
 	public class RecentlyOpenedPlugin extends PluginBase
 	{
@@ -73,6 +72,8 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, onJavaPathForTypeaheadSave);
 			dispatcher.addEventListener(LayoutModifier.SAVE_LAYOUT_CHANGE_EVENT, onSaveLayoutChangeEvent);
 			dispatcher.addEventListener(GeneralEvent.DEVICE_UPDATED, onDeviceListUpdated, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
 		}
@@ -226,9 +227,6 @@ package actionScripts.plugin.recentlyOpened
 				clearTimeout(timeoutValue);
 			}, 200);
 			
-			save(model.recentlyOpenedProjects.source, 'recentProjects');
-			save(model.recentlyOpenedProjectOpenedOption.source, 'recentProjectsOpenedOption');
-
             var timeoutRecentProjectListValue:uint = setTimeout(function():void
 			{
 				dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
@@ -262,13 +260,21 @@ package actionScripts.plugin.recentlyOpened
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders
 			
-			// Persist to disk
-			save(model.recentlyOpenedFiles.source, 'recentFiles');
-			
 			setTimeout(function():void
 			{
 				dispatcher.dispatchEvent(new Event(RECENT_FILES_LIST_UPDATED));
 			}, 300);
+		}
+		
+		private function updateRecetProjectList(event:Event):void
+		{
+			save(model.recentlyOpenedProjects.source, 'recentProjects');
+			save(model.recentlyOpenedProjectOpenedOption.source, 'recentProjectsOpenedOption');
+		}
+		
+		private function updateRecetFileList(event:Event):void
+		{
+			save(model.recentlyOpenedFiles.source, 'recentFiles');
 		}
 		
 		private function onFlexSDKUpdated(event:ProjectEvent):void
