@@ -176,7 +176,7 @@
 			{
 				if (item.file) return item.file.fileBridge.name;
 				else if (item.projectRef && item.projectRef.name) return item.projectRef.name;
-				return "NO INFORMATION";
+				return "NO INFORMATION"; 
 			}
 			
 		]]>
