@@ -34,10 +34,8 @@
 			import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
-			import mx.controls.Alert;
-			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
-			import mx.managers.PopUpManager;
+			import mx.managers.IFocusManagerComponent;
 			
 			import actionScripts.events.DeleteFileEvent;
 			import actionScripts.events.GlobalEventDispatcher;
@@ -80,6 +78,10 @@
 	
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
+				focusManager.showFocusIndicator = true;
+				focusManager.setFocus(btnCancel);
+				focusManager.showFocus();
+				
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 				var timeoutId:uint = setTimeout(function():void
 				{
@@ -206,7 +208,8 @@
 				  styleName="darkButton" enabled="false"
 				  click="onDeleteButton(event)"/>
 		<s:Spacer width="100%"/>
-		<s:Button label="Cancel"
+		<s:Button id="btnCancel" 
+				  label="Cancel"
 				  styleName="darkButton"
 				  click="closeByCrossSign(event)"/>
 	</resizableTitleWindow:controlBarContent>
