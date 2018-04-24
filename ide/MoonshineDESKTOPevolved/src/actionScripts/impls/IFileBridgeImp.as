@@ -30,8 +30,6 @@ package actionScripts.impls
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
-    import org.apache.flex.ant.tags.filesetClasses.exceptions.IOException;
-
     CONFIG::OSX
 	{
 		// ** IMPORTANT **
