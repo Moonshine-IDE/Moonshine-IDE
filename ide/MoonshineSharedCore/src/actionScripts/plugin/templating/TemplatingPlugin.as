@@ -679,7 +679,7 @@ package actionScripts.plugin.templating
 				var isDirectory:Boolean = custom.fileBridge.isDirectory; // detect this before moveTo else it'll always return false to older file instance
 				custom.fileBridge.moveTo(customNewLocation, true);
 				
-				if (!isDirectory)	
+				if (!isDirectory)
 				{
 					// we need to update file location of the (if any) opened instance 
 					// of the file template

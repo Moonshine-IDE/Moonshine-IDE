@@ -54,7 +54,7 @@ package actionScripts.utils
 		private function addProjectHandler(event:ProjectEvent):void
 		{
 			var project:AS3ProjectVO = event.project as AS3ProjectVO;
-			if(!project)
+			if(!project || project.projectFolder.projectReference.isTemplate)
 			{
 				return;
 			}
