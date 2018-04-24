@@ -62,6 +62,20 @@ package actionScripts.plugins.core
 						else wrapper.file.fileBridge.deleteFileAsync();
 		            }
 				}
+				
+				// when done check if the root folder is empty
+				// if it is, go delete it irrespective of 'isDeleteRoot' value
+				if (projectWrapper.file.fileBridge.getDirectoryListing().length == 0)
+				{
+					try
+					{
+						projectWrapper.file.fileBridge.deleteDirectory(true);
+					}
+					catch (e:Error)
+					{
+						projectWrapper.file.fileBridge.deleteDirectoryAsync(true);
+					}
+				}
 			}
 
             // when done call the finish handler

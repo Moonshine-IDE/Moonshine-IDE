@@ -97,10 +97,10 @@
 				
 				var acceptableLocation:FileLocation;
 				var tmpPathsAdded:Dictionary = new Dictionary();
-				var filesList:Array = [project.swfOutput.path, project.htmlPath, new FileLocation(project.buildOptions.antBuildPath), project.folderLocation.fileBridge.resolvePath("bin-debug"),
-					project.folderLocation.fileBridge.resolvePath("html-template"), project.folderLocation.fileBridge.resolvePath("build"), project.libraries, project.includeLibraries,
-					project.externalLibraries, project.nativeExtensions, project.runtimeSharedLibraries, project.hiddenPaths, project.resourcePaths, project.classpaths, project.config.file,
-					project.projectFile]; // either FileLocation or Vector.<FileLocation>
+				var filesList:Array = [project.swfOutput.path, project.htmlPath, new FileLocation(project.buildOptions.antBuildPath), project.folderLocation.fileBridge.resolvePath("bin"),
+					project.folderLocation.fileBridge.resolvePath("bin-debug"), project.folderLocation.fileBridge.resolvePath("html-template"), project.folderLocation.fileBridge.resolvePath("build"), 
+					project.libraries, project.includeLibraries, project.externalLibraries, project.nativeExtensions, project.runtimeSharedLibraries, project.hiddenPaths, project.resourcePaths, 
+					project.classpaths, project.config.file, project.projectFile]; // either FileLocation or Vector.<FileLocation>
 				
 				for (var i:int; i < filesList.length; i++)
 				{
