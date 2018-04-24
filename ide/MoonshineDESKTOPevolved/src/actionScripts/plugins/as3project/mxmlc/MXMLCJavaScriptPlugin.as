@@ -126,12 +126,12 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			var tempObj:Object  = new Object();
 			tempObj.callback = runCommand;
-			tempObj.commandDesc = "Build and run the currently selected Apache FlexJS/Royale® project.";
+			tempObj.commandDesc = "Build and run the currently selected Apache Royale® project.";
 			registerCommand('runjs',tempObj);
 			
 			tempObj = new Object();
 			tempObj.callback = buildCommand;
-			tempObj.commandDesc = "Build the currently selected Apache FlexJS/Royale® project.";
+			tempObj.commandDesc = "Build the currently selected Apache Royale® project.";
 			registerCommand('buildjs',tempObj);
 			
 			
@@ -152,7 +152,7 @@ package actionScripts.plugins.as3project.mxmlc
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache FlexJS/Royale® or Feathers SDK', true,null,true),
+				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true,null,true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation')
 			])
 		}
@@ -283,7 +283,7 @@ package actionScripts.plugins.as3project.mxmlc
 					model.noSDKNotifier.notifyNoFlexSDK(false);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
 					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVE_CANCELLED, sdkSelectionCancelled);
-					error("No Apache FlexJS/Royale® SDK found. Setup one in Settings menu.");
+					error("No Apache Royale® SDK found. Setup one in Settings menu.");
 					return;
 				}
 
@@ -291,8 +291,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var fschFile:File = currentSDK.resolvePath(fcshPath);
 				if (!fschFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
 					return;
 				}
 				

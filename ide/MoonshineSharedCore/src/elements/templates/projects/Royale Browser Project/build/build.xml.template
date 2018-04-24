@@ -68,7 +68,7 @@
     //==========================================================================
     -->
 
-    <!-- Compile web Apache FlexJS/Royale application -->
+    <!-- Compile web Apache Royale application -->
     <target name="compileJavascript" depends="init">
 	    <if>
 			<!-- Command with special argument for FlexJS versions after 0.7  -->

@@ -190,7 +190,7 @@
 			<s:VGroup height="100%" width="100%"  id="vgContainer"  paddingLeft="15" paddingTop="15" paddingRight="15"  paddingBottom="15" >
 				<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
 				<s:HGroup width="100%">
-					<s:Label styleName="uiTextSettingsLabel" text="Default Apache Flex®, Apache FlexJS/Royale® or Feathers SDK" />
+					<s:Label styleName="uiTextSettingsLabel" text="Default Apache Flex®, Apache Royale® or Feathers SDK" />
 					<mx:Spacer width="100%"/>
 					<s:Button id="btnDownload"  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
 							  label="Download a New SDK" 

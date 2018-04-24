@@ -402,7 +402,7 @@ package actionScripts.plugins.as3project
 				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
 				newProjectNameSetting, // No space input either plx
 				newProjectPathSetting,
-				new PathSetting(this,'customFlexSDK', 'Apache Flex®, Apache FlexJS/Royale® or Feathers SDK', true, customFlexSDK, true),
+				new PathSetting(this,'customFlexSDK', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customFlexSDK, true),
 				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
 				newProjectWithExistingSourcePathSetting
 			]));

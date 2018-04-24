@@ -301,10 +301,10 @@ package actionScripts.valueObjects
 			FLEXDESKTOP_PROJECT.fileBridge.isDirectory = true;
 			FLEXDESKTOP_PROJECT.fileBridge.data = "Create a Flex project that will generate a desktop application. This can be used to generate .AIR, .EXE (Windows only) and .DMG (OSX) installers.";
 			
-			FLEXJS_PROJECT = new FileLocation("Flex Browser Project (FlexJS, Royale)");
-			FLEXJS_PROJECT.fileBridge.name = "Flex Browser Project (FlexJS, Royale)";
+			FLEXJS_PROJECT = new FileLocation("Flex Browser Project (Royale)");
+			FLEXJS_PROJECT.fileBridge.name = "Flex Browser Project (Royale)";
 			FLEXJS_PROJECT.fileBridge.isDirectory = true;
-			FLEXJS_PROJECT.fileBridge.data = "Create a FlexJS/Royale project that will generate an SWF and HTML files, to run on browser.";
+			FLEXJS_PROJECT.fileBridge.data = "Create a Apache Royale project that will generate an SWF and HTML files, to run on browser.";
 
             ROYALE_PROJECT = new FileLocation("Royale Browser Project");
             ROYALE_PROJECT.fileBridge.name = "Royale Browser Project";
@@ -328,7 +328,7 @@ package actionScripts.valueObjects
 
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
-			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/JS Project..";
+			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/Royale Project...";
 			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png";
 			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open an ActionScript or Apache® Flex Project in Moonshine.";
 			openTemplateProjectVO.file = openTemplateProject;
@@ -337,7 +337,7 @@ package actionScripts.valueObjects
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
 			
-			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = ["Royale Browser Project"];
+			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = [];
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
