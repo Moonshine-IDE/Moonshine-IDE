@@ -128,6 +128,15 @@ package actionScripts.utils
 		}
 		
 		/**
+		 * Checks content of files to determine between
+		 * binary and text
+		 */
+		public static function isBinary(fileContent:String):Boolean
+		{
+			return (/[\x00-\x08\x0E-\x1F]/.test(fileContent));
+		}
+		
+		/**
 		 * Positions the toolTip
 		 */
 		public static function positionTip(event:ToolTipEvent):void

@@ -259,7 +259,7 @@ package actionScripts.plugins.as3project.mxmlc
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache FlexJS/Royale® or Feathers SDK', true, defaultFlexSDK, true),
+				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
 				new PathSetting(new JavaSettingsProvider(),
 						"currentJavaPath",
@@ -468,7 +468,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// terminate if it's a debug call against FlexJS
 				if (debugAfterBuild)
 				{
-					Alert.show("Moonshine does not currently support Apache FlexJS/Royale® project debugging.", "Note!");
+					Alert.show("Moonshine does not currently support Apache Royale® project debugging.", "Note!");
 					return;
 				}
 				
@@ -520,8 +520,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc"+ compilerExtension);
 				if (!mxmlcFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
 					return;
 				}
 				
@@ -538,8 +538,8 @@ package actionScripts.plugins.as3project.mxmlc
 						currentSDK.resolvePath("bin/fcsh.bat");
 				if (fcshFile.exists)
 				{
-					Alert.show("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache FlexJS/Royale® SDK instead");
+					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
+					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
 					return;
 				}
 				fschstr = mxmlcFile.nativePath;

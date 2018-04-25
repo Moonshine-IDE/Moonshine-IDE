@@ -28,8 +28,10 @@ package actionScripts.plugin.rename
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.DuplicateEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
+	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.events.TypeAheadEvent;
@@ -48,12 +50,13 @@ package actionScripts.plugin.rename
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.TextEdit;
 	
+	import components.popup.NewFilePopup;
 	import components.popup.RenamePopup;
-	import components.renderers.RecentProjectRenderer;
 
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameView:RenameView = new RenameView();
+		private var newFilePopup:NewFilePopup;
 		private var renameFileView:RenamePopup;
 		
 		public function RenamePlugin() {	}
@@ -73,6 +76,7 @@ package actionScripts.plugin.rename
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
 			dispatcher.addEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
+			dispatcher.addEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
 
 		override public function deactivate():void
@@ -81,6 +85,7 @@ package actionScripts.plugin.rename
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
 			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
+			dispatcher.removeEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
 
 		private function handleOpenRenameView(event:Event):void
@@ -186,6 +191,51 @@ package actionScripts.plugin.rename
 					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, event.insideLocation));
 					clearTimeout(timeoutValue);
 				}, 300);
+		}
+		
+		private function handleOpenDuplicateFileView(event:DuplicateEvent):void
+		{
+			if (!newFilePopup)
+			{
+				newFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewFilePopup, true) as NewFilePopup;
+				newFilePopup.addEventListener(CloseEvent.CLOSE, handleFilePopupClose);
+				newFilePopup.addEventListener(DuplicateEvent.EVENT_APPLY_DUPLICATE, onFileDuplicateRequest);
+				newFilePopup.openType = NewFilePopup.AS_DUPLICATE_FILE;
+				newFilePopup.folderFileLocation = event.fileWrapper.file;
+				
+				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(event.fileWrapper));
+				newFilePopup.wrapperOfFolderLocation = creatingItemIn;
+				newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+				
+				PopUpManager.centerPopUp(newFilePopup);
+			}
+		}
+		
+		private function handleFilePopupClose(event:CloseEvent):void
+		{
+			newFilePopup.removeEventListener(CloseEvent.CLOSE, handleFilePopupClose);
+			newFilePopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onFileDuplicateRequest);
+			newFilePopup = null;
+		}
+		
+		private function onFileDuplicateRequest(event:DuplicateEvent):void
+		{
+			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName +"."+ event.fileLocation.fileBridge.extension);
+			event.fileLocation.fileBridge.copyTo(fileToSave, true);
+			
+			// opens the file after writing done
+			/*dispatcher.dispatchEvent(
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, event.insideLocation)
+			);*/
+			
+			// notify the tree view if it needs to refresh
+			// the containing folder to make newly created file show
+			if (event.fileWrapper)
+			{
+				dispatcher.dispatchEvent(
+					new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.fileWrapper)
+				);
+			}
 		}
 		
 		private function updateChildrenPath(fw:FileWrapper, oldPath:String, newPath:String):void
