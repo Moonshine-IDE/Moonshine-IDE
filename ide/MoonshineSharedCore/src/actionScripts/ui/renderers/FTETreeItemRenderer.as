@@ -64,6 +64,7 @@ package actionScripts.ui.renderers
 		public static const COPY_PATH:String = "Copy Path";
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
+		public static const DUPLICATE_FILE:String = "Duplicate";
 		public static const RENAME:String = "Rename";
 		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
@@ -240,6 +241,8 @@ package actionScripts.ui.renderers
 
 				if (!fw.isRoot)
 				{
+					if (!fw.children) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
+					
 					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
 					
 					// avail only for .as and .mxml files

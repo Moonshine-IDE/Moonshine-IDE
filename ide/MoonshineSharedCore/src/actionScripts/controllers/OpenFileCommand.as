@@ -35,7 +35,6 @@ package actionScripts.controllers
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.ActionScriptTextEditor;
-    import actionScripts.ui.editor.BasicHTMLViewer;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
@@ -178,10 +177,7 @@ package actionScripts.controllers
 		
 		private function fileLoadedFromServer(value:Object, message:String=null):void
 		{
-			// Test if file is binary
-			var binary:Boolean = /[\x00-\x08\x0E-\x1F]/.test(value.toString());
-			
-			if (binary) openBinaryFile();
+			if (UtilsCore.isBinary(value.toString())) openBinaryFile();
 			else openTextFile(value);
 			
 			fileFault(null);
@@ -191,10 +187,7 @@ package actionScripts.controllers
 		{
 			event.target.removeEventListener(Event.COMPLETE, fileLoadedFromLocal);
 			
-			// Test if file is binary
-			var binary:Boolean = /[\x00-\x08\x0E-\x1F]/.test(file.fileBridge.data.toString());
-			
-			if (binary)
+			if (UtilsCore.isBinary(file.fileBridge.data.toString()))
 			{
 				openBinaryFile();
             }

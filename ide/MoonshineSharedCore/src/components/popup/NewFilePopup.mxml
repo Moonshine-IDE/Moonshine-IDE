@@ -44,6 +44,7 @@
 			import spark.events.DropDownEvent;
 			import spark.events.TextOperationEvent;
 			
+			import actionScripts.events.DuplicateEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
 			import actionScripts.extResources.com.validator.ValidatorType;
@@ -63,11 +64,12 @@
 			public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
 			public static var AS_XML:String = "AS_XML";
 			public static var AS_CUSTOM:String = "AS_CUSTOM";
+			public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";
 			
 			[Bindable] public var wrapperBelongToProject:ProjectVO;
 			
 			public var wrapperOfFolderLocation:FileWrapper;
-			public var folderLocation:FileLocation;
+			public var folderFileLocation:FileLocation;
 			public var openType:String;
 			public var fileTemplate:FileLocation;
 			
@@ -142,9 +144,18 @@
 					if (openType == AS_XML) fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
 					else if (openType == AS_PLAIN_TEXT) fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
 					
-					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
-					tmpEvent.fileName = txtFileName.text;
-					dispatchEvent(tmpEvent);
+					if (openType == AS_DUPLICATE_FILE)
+					{
+						var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
+						tmpDuplicateEvent.fileName = txtFileName.text;
+						dispatchEvent(tmpDuplicateEvent);
+					}
+					else
+					{
+						var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
+						tmpEvent.fileName = txtFileName.text;
+						dispatchEvent(tmpEvent);
+					}
 					
 					doBeforeExit();
 					super.closeThis();
@@ -166,7 +177,17 @@
 			{
 				minHeight = height;
 				txtFileName.restrict = "0-9A-Za-z_.";
-				if (openType == AS_XML) 
+				if (openType == AS_DUPLICATE_FILE)
+				{
+					title = "Duplicate File";
+					lblExtension.text = "."+ folderFileLocation.fileBridge.extension;
+					lblName.text = "New File Name:";
+					
+					var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
+					nameOnly.pop();
+					txtFileName.prompt = nameOnly.join(".");
+				}
+				else if (openType == AS_XML) 
 				{
 					title = "New XML File";
 					lblExtension.text = ".xml";
@@ -272,7 +293,8 @@
 					 itemClick="onTreeItemClicked(event)"/>
 		</s:VGroup>
 		<s:VGroup width="100%">
-			<s:Label text="Name:"/>
+			<s:Label id="lblName" 
+					 text="Name:"/>
 			<s:Group width="100%">
 				<view:PromptTextInput id="txtFileName"
 									  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"

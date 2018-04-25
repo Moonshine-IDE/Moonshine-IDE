@@ -42,6 +42,7 @@
 			
 			import actionScripts.events.AddFolderEvent;
 			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.DuplicateEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
 			import actionScripts.events.OpenFileEvent;
@@ -439,6 +440,11 @@
 				case FTETreeItemRenderer.RENAME:
 				{
 					renameFileFolder(event.renderer as FTETreeItemRenderer);
+					break;
+				}
+				case FTETreeItemRenderer.DUPLICATE_FILE:
+				{
+					dispatcher.dispatchEvent(new DuplicateEvent(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, fileWrapper));
 					break;
 				}
 				case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
