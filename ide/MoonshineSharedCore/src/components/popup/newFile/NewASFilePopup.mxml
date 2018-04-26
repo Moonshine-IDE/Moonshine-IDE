@@ -171,7 +171,6 @@
 			if (isDestinationValid)
 			{
 				hgExistingWarning.visible = false;
-				hgInterfacesExistingWarning.visible = false;
 			}
 
 			tree.callLater(parseFolders);
