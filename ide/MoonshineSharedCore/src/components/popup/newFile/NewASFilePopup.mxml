@@ -241,19 +241,12 @@
 		<view:PromptTextInput id="txtSuperclass"
 							  prompt="{isInterfaceDialog ? 'Interfaces to extend with' : 'Class to extend with'}"
 							  width="100%" styleName="textInput"/>
-		<s:HGroup id="hgExistingWarning"
-				  width="100%" verticalAlign="middle"
-				  includeInLayout="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}"
-				  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
-			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
-			<s:Label text="{warningMessage}" width="100%"/>
-		</s:HGroup>
 	</s:VGroup>
 	<s:VGroup width="100%" visible="{!isInterfaceDialog}" includeInLayout="{!isInterfaceDialog}">
 		<s:Label text="Interfaces:"/>
 		<view:PromptTextInput id="txtInterfaces"
 							  prompt="Interface to extend with" width="100%" styleName="textInput"/>
-		<s:HGroup id="hgInterfacesExistingWarning"
+		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
 				  includeInLayout="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}"
 				  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
