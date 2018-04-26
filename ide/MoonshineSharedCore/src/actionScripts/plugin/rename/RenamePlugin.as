@@ -37,6 +37,7 @@ package actionScripts.plugin.rename
 	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.plugin.rename.view.RenameView;
 	import actionScripts.ui.IContentWindow;
@@ -48,6 +49,7 @@ package actionScripts.plugin.rename
 	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.TextEdit;
 	
 	import components.popup.NewFilePopup;
@@ -219,7 +221,18 @@ package actionScripts.plugin.rename
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
 			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName +"."+ event.fileLocation.fileBridge.extension);
-			event.fileLocation.fileBridge.copyTo(fileToSave, true);
+			
+			// based on request, we also updates class name and package path
+			// to the duplicated file, in case of actionScript class
+			if (event.fileLocation.fileBridge.extension == "as")
+			{
+				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedContent);
+			}
+			else
+			{
+				event.fileLocation.fileBridge.copyTo(fileToSave, true);
+			}
 			
 			// opens the file after writing done
 			/*dispatcher.dispatchEvent(
@@ -234,6 +247,56 @@ package actionScripts.plugin.rename
 					new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.fileWrapper)
 				);
 			}
+		}
+		
+		private function getUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
+		{
+			var sourceContentLines:Array = String(source.fileBridge.read()).split("\n");
+			var classNameStartIndex:int;
+			
+			var nameOnly:Array = source.fileBridge.name.split(".");
+			nameOnly.pop();
+			var sourceFileName:String = nameOnly.join(".");
+			
+			var isPackageFound:Boolean;
+			var isClassDecFound:Boolean;
+			var isConstructorFound:Boolean;
+			
+			sourceContentLines = sourceContentLines.map(function(line:String, index:int, arr:Array):String
+			{
+				if (!isPackageFound && line.indexOf("package") !== -1)
+				{
+					isPackageFound = true;
+					
+					var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(projectRef) as AS3ProjectVO;
+					var isInsideSourceDirectory:Boolean = source.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + source.fileBridge.separator) != -1;
+					
+					// do not update package path if not inside source directory
+					if (isInsideSourceDirectory)
+					{
+						var tmpPackagePath:String = UtilsCore.getPackageReferenceByProjectPath(project.sourceFolder.fileBridge.nativePath, projectRef.nativePath, null, null, false);
+						if (tmpPackagePath.charAt(0) == ".") tmpPackagePath = tmpPackagePath.substr(1, tmpPackagePath.length);
+						
+						return "package "+ tmpPackagePath;
+					}
+				}
+				
+				if (!isClassDecFound && (classNameStartIndex = line.indexOf(" class "+ sourceFileName)) !== -1)
+				{
+					isClassDecFound = true;
+					return line.substr(0, classNameStartIndex + 7) + newFileName + line.substr(classNameStartIndex + 7 + sourceFileName.length, line.length);
+				}
+				
+				if (!isConstructorFound && (classNameStartIndex = line.indexOf(" function "+ sourceFileName +"(")) !== -1)
+				{
+					isConstructorFound = true;
+					return line.substr(0, classNameStartIndex + 10) + newFileName + line.substr(classNameStartIndex + 10 + sourceFileName.length, line.length);
+				}
+				
+				return line;
+			});
+			
+			return sourceContentLines.join("\n");
 		}
 		
 		private function updateChildrenPath(fw:FileWrapper, oldPath:String, newPath:String):void
