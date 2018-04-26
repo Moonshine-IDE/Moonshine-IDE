@@ -47,8 +47,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function writeApplicationConfig(pvo:AS3ProjectVO):void 
 		{
-			var i:int;
-			
+			if (pvo.isVisualEditorProject) return;
+
 			var oldIC:Boolean = XML.ignoreComments;
 			XML.ignoreComments = false;
 			
@@ -126,7 +126,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function writeLibraryConfig(pvo:AS3ProjectVO):void
 		{
-			var i:int;
 			var oldIC:Boolean = XML.ignoreComments;
 			XML.ignoreComments = false;
 			
