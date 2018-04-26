@@ -76,10 +76,22 @@
 			[Bindable] private var modifiedName:String = "";
 			[Bindable] private var projectFolders:ArrayCollection;
 			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			[Bindable] private var warningMessage:String;
+			[Bindable] private var warningMessage:String = "Named file already exists.";
 			
 			private var lastSelectedItem:Object;
 			private var projectSelectionWindow:NewFileProjectSelectionPopup;
+			
+			private var _isDestinationValid:Boolean;
+			
+			[Bindable]
+			public function set isDestinationValid(value:Boolean):void
+			{
+				_isDestinationValid = value;
+			}
+			public function get isDestinationValid():Boolean
+			{
+				return _isDestinationValid;
+			}
 			
 			override protected function closeByCrossSign(event:Event):void
 			{
@@ -250,7 +262,7 @@
 				modifiedName = txtFileName.text;
 				
 				if (txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css").fileBridge.exists;
+				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text).fileBridge.exists;
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void
