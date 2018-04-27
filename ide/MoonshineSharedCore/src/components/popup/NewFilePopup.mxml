@@ -262,7 +262,13 @@
 				modifiedName = txtFileName.text;
 				
 				if (txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text).fileBridge.exists;
+				else 
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text);
+					targetFile.fileBridge.canonicalize();
+					
+					btnCreate.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void

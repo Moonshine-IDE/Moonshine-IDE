@@ -31,29 +31,28 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
 		import mx.collections.ArrayCollection;
 		import mx.events.CloseEvent;
 		import mx.events.FlexEvent;
 		import mx.events.ListEvent;
 		import mx.managers.PopUpManager;
-
+		
 		import spark.events.DropDownEvent;
 		import spark.events.TextOperationEvent;
-
+		
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.NewFileEvent;
 		import actionScripts.extResources.com.validator.ValidatorType;
 		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 		import actionScripts.ui.menu.MenuPlugin;
 		import actionScripts.utils.SimpleValidator;
 		import actionScripts.utils.UtilsCore;
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
-
+		
 		import components.renderers.DividerRenderer;
 		import components.renderers.FileTypeRenderer;
 
@@ -257,7 +256,13 @@
 			if (isDestinationValid) warningMessage = modifiedName + ".mxml is already exists.";
 
 			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-			else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".mxml").fileBridge.exists;
+			else 
+			{
+				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".mxml");
+				targetFile.fileBridge.canonicalize();
+				
+				btnCreate.enabled = !targetFile.fileBridge.exists;
+			}
 		}
 
 		protected function onTreeItemClicked(event:ListEvent):void

@@ -221,7 +221,13 @@
 				if (isDestinationValid) warningMessage = modifiedName + ".css is already exists.";
 				
 				if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css").fileBridge.exists;
+				else 
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css");
+					targetFile.fileBridge.canonicalize();
+					
+					btnCreate.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void

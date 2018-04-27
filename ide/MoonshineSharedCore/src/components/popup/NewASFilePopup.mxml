@@ -241,7 +241,13 @@
 			if (isDestinationValid) warningMessage = modifiedName + ".as is already exists.";
 
 			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-			else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".as").fileBridge.exists;
+			else 
+			{
+				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".as");
+				targetFile.fileBridge.canonicalize();
+				
+				btnCreate.enabled = !targetFile.fileBridge.exists;
+			}
 		}
 
 		protected function onTreeItemClicked(event:ListEvent):void

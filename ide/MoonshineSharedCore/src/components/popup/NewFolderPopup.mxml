@@ -41,6 +41,7 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
+			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.utils.UtilsCore;
@@ -139,7 +140,13 @@
 				modifiedName = txtFileName.text;
 				
 				if (txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text).fileBridge.exists;
+				else 
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text);
+					targetFile.fileBridge.canonicalize();
+					
+					btnCreate.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void
