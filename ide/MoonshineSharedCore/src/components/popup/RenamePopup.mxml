@@ -39,6 +39,7 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
+			import actionScripts.factory.FileLocation;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.valueObjects.FileWrapper;
 			
@@ -105,7 +106,13 @@
 				modifiedName = txtFileName.text;
 				
 				if (txtFileName.text == "") btnChange.enabled = false;
-				else btnChange.enabled = !wrapperOfFolderLocation.file.fileBridge.parent.fileBridge.resolvePath(txtFileName.text + fileExtension).fileBridge.exists;
+				else 
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.parent.fileBridge.resolvePath(txtFileName.text + fileExtension);
+					targetFile.fileBridge.canonicalize();
+					
+					btnChange.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 		]]>

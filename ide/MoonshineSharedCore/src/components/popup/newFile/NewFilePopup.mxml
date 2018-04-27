@@ -29,7 +29,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+		import actionScripts.events.DuplicateEvent;
+
+		import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
 			import spark.events.TextOperationEvent;
@@ -47,9 +49,11 @@
 			public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
 			public static var AS_XML:String = "AS_XML";
 			public static var AS_CUSTOM:String = "AS_CUSTOM";
+			public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";
 
 			public var openType:String;
 			public var fileTemplate:FileLocation;
+			public var folderFileLocation:FileLocation;
 
 			override protected function onBrowseButton(event:MouseEvent):void
 			{
@@ -83,12 +87,27 @@
 				var validateArr: Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
 				if (SimpleValidator.validate(validateArr))
 				{
-					if (openType == AS_XML) fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
-					else if (openType == AS_PLAIN_TEXT) fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
-					
-					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
-					tmpEvent.fileName = txtFileName.text;
-					dispatchEvent(tmpEvent);
+					if (openType == AS_XML)
+					{
+						fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
+					}
+					else if (openType == AS_PLAIN_TEXT)
+					{
+						fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
+					}
+
+					if (openType == AS_DUPLICATE_FILE)
+					{
+						var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
+						tmpDuplicateEvent.fileName = txtFileName.text;
+						dispatchEvent(tmpDuplicateEvent);
+					}
+					else
+					{
+						var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
+						tmpEvent.fileName = txtFileName.text;
+						dispatchEvent(tmpEvent);
+					}
 					
 					doBeforeExit();
 					super.closeThis();
@@ -130,9 +149,18 @@
 				// it shows only the origianl set text to PromptTextInput.text if
 				// binded to a label component, thus:
 				modifiedName = txtFileName.text;
-				
-				if (txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css").fileBridge.exists;
+
+				if (txtFileName.text == "")
+				{
+					btnCreate.enabled = false;
+				}
+				else
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text);
+					targetFile.fileBridge.canonicalize();
+
+					btnCreate.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -150,7 +178,17 @@
 
 				minHeight = height;
 				txtFileName.restrict = "0-9A-Za-z_.";
-				if (openType == AS_XML)
+				if (openType == AS_DUPLICATE_FILE)
+				{
+					title = "Duplicate File";
+					lblExtension.text = "."+ folderFileLocation.fileBridge.extension;
+					lblName.text = "New File Name:";
+
+					var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
+					nameOnly.pop();
+					txtFileName.prompt = nameOnly.join(".");
+				}
+				else if (openType == AS_XML)
 				{
 					title = "New XML File";
 					lblExtension.text = ".xml";
@@ -158,7 +196,10 @@
 				else
 				{
 					title = "New File";
-					if (!fileTemplate) lblExtension.text = ".txt";
+					if (!fileTemplate)
+					{
+						lblExtension.text = ".txt";
+					}
 					else
 					{
 						var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
@@ -199,7 +240,7 @@
 				 itemClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
-		<s:Label text="Name:"/>
+		<s:Label id="lblName" text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"

@@ -145,10 +145,22 @@
 			// it shows only the origianl set text to PromptTextInput.text if
 			// binded to a label component, thus:
 			modifiedName = txtFileName.text;
-			if (isDestinationValid) warningMessage = modifiedName + ".mxml is already exists.";
+			if (isDestinationValid)
+			{
+				warningMessage = modifiedName + ".mxml is already exists.";
+			}
 
-			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-			else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".mxml").fileBridge.exists;
+			if (!isDestinationValid || txtFileName.text == "")
+			{
+				btnCreate.enabled = false;
+			}
+			else
+			{
+				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".mxml");
+				targetFile.fileBridge.canonicalize();
+
+				btnCreate.enabled = !targetFile.fileBridge.exists;
+			}
 		}
 
 		protected function onTreeItemClicked(event:ListEvent):void

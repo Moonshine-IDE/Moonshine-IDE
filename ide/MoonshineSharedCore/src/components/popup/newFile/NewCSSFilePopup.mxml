@@ -30,7 +30,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+		import actionScripts.factory.FileLocation;
+
+		import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
 			import spark.events.TextOperationEvent;
@@ -121,9 +123,18 @@
 				// binded to a label component, thus:
 				modifiedName = txtFileName.text;
 				if (isDestinationValid) warningMessage = modifiedName + ".css is already exists.";
-				
-				if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-				else btnCreate.enabled = !wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css").fileBridge.exists;
+
+				if (!isDestinationValid || txtFileName.text == "")
+				{
+					btnCreate.enabled = false;
+				}
+				else
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text +".css");
+					targetFile.fileBridge.canonicalize();
+
+					btnCreate.enabled = !targetFile.fileBridge.exists;
+				}
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void
