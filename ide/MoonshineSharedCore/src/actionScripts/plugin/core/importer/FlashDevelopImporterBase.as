@@ -43,7 +43,7 @@ package actionScripts.plugin.core.importer
 				{
 					// file separator fix
 					path = UtilsCore.fixSlashes(path);
-					var f:FileLocation = p.folderLocation.resolvePath(path);;
+					var f:FileLocation = p.folderLocation.resolvePath(path);
 					
 					if (ConstantsCoreVO.IS_AIR) f.fileBridge.canonicalize();
 					v.push(f);

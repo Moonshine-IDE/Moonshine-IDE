@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.rename
 {
-	import flash.display.DisplayObject;
+    import components.popup.newFile.NewFilePopup;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
@@ -31,7 +33,6 @@ package actionScripts.plugin.rename
 	import actionScripts.events.DuplicateEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.events.TypeAheadEvent;
@@ -49,10 +50,8 @@ package actionScripts.plugin.rename
 	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.TextEdit;
-	
-	import components.popup.NewFilePopup;
+
 	import components.popup.RenamePopup;
 
 	public class RenamePlugin extends PluginBase
@@ -189,6 +188,8 @@ package actionScripts.plugin.rename
 					
 					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
 					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+					
+					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, event.insideLocation));
 					clearTimeout(timeoutValue);
 				}, 300);
 		}

@@ -125,8 +125,9 @@ package actionScripts.plugin.syntax
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "html"
-				|| event.fileExtension == "htm")
+			if (event.fileExtension == "html" ||
+				event.fileExtension == "htm" ||
+				event.fileExtension == "xhtml")
 			{
 				var lineParser:XMLContextSwitchLineParser = new XMLContextSwitchLineParser();
 				

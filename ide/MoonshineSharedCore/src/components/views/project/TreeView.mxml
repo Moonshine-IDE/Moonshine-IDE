@@ -529,7 +529,8 @@
 			{
 				if (event2.detail == Alert.YES)
 				{
-					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert));
+					var projectAssociatedWithFile:ProjectVO = getProjectFromProjectFolder(fileWrapper);
+					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
 				}
 			}
 
@@ -686,6 +687,8 @@
 				// check if the wrapper is the source folder to the project
 				var tmpProject:AS3ProjectVO = getProjectFromProjectFolder(value) as AS3ProjectVO;
 				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
+				
+				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 			}
 
 			/*

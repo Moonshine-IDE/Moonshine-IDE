@@ -20,6 +20,8 @@ package actionScripts.plugins.as3project.importer
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -28,6 +30,7 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -51,7 +54,7 @@ package actionScripts.plugins.as3project.importer
 			var folder:File = (file.fileBridge.getFile as File).parent;
 			
 			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
-			project.isVisualEditorProject = file.fileBridge.extension == "veditorproj";
+			project.isVisualEditorProject = file.fileBridge.name.indexOf("veditorproj") > -1;
 
 			project.projectFile = file;
 			
@@ -95,6 +98,7 @@ package actionScripts.plugins.as3project.importer
             project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
 
             project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
+            project.isPrimeFacesVisualEditorProject = UtilsCore.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
 
 			if (project.targets.length > 0)
 			{

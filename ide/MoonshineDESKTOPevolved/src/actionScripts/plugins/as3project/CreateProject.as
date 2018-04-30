@@ -394,7 +394,8 @@ package actionScripts.plugins.as3project
                 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
-                    newProjectPathSetting
+                    newProjectPathSetting,
+					new ListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES]))
                 ]));
             }
 
@@ -547,9 +548,6 @@ package actionScripts.plugins.as3project
 			{
                 dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
-			
-			// close the Settings tab
-			event.target.dispatchEvent(new Event(SettingsView.EVENT_CLOSE));
 		}
 
 		private function exportVisualEditorProject(project:AS3ProjectVO, exportProject:AS3ProjectVO):void
@@ -600,6 +598,10 @@ package actionScripts.plugins.as3project
 			{
 				// we creates library project without any default created file inside
 				sourceFileWithExtension = null;
+			}
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+			{
+				sourceFileWithExtension = pvo.projectName + ".xhtml";
 			}
 			else
 			{
@@ -721,6 +723,30 @@ package actionScripts.plugins.as3project
 					}
 				}
 			}
+			if (isVisualEditorProject)
+			{
+				if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_FLEX)
+				{
+					th.projectTemplate(templateDir.resolvePath("src_flex"), targetFolder.resolvePath("src"));
+				}
+				else if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+				{
+					th.projectTemplate(templateDir.resolvePath("src_primeface"), targetFolder.resolvePath("src"));
+				}
+				
+				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");
+				var folderToDelete7:FileLocation = targetFolder.resolvePath("src_flex");
+				try
+				{
+					folderToDelete6.fileBridge.deleteDirectory(true);
+					folderToDelete7.fileBridge.deleteDirectory(true);
+				}
+				catch (e:Error)
+				{
+					folderToDelete6.fileBridge.deleteDirectoryAsync(true);
+					folderToDelete7.fileBridge.deleteDirectoryAsync(true);
+				}
+			}
 			if (isLibraryProject)
 			{
 				// get the configuration from the library settings component
@@ -776,7 +802,12 @@ package actionScripts.plugins.as3project
 				if (pvo.isMobile) pvo.buildOptions.additional = "+configname=airmobile";
 				if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
 			}
-			
+
+			if (isVisualEditorProject)
+			{
+				pvo.isPrimeFacesVisualEditorProject = projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES;
+			}
+
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			_customFlexSDK = null;
 			

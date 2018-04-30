@@ -58,7 +58,7 @@ package actionScripts.utils
 			{
 				return;
 			}
-			if(hasLanguageServerForProject(project))
+			if(hasLanguageServerForProject(project) || project.isVisualEditorProject)
 			{
 				//Moonshine sometimes dispatches ProjectEvent.ADD_PROJECT for
 				//projects that have already been added

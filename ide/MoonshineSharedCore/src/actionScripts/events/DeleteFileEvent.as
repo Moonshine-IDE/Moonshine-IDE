@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import flash.events.Event;
+    import actionScripts.valueObjects.ProjectVO;
+
+    import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.FileWrapper;
@@ -31,14 +33,18 @@ package actionScripts.events
 		public var wrapper:FileWrapper;
 		public var treeViewCompletionHandler:Function;
 		public var showAlert:Boolean;
-		
+		public var projectAssociatedWithFile:ProjectVO;
+
 		// If you don't supply a filewrapper with a version control object it won't be registered with vc
-		public function DeleteFileEvent(file:FileLocation, wrapper:FileWrapper=null, treeViewHandler:Function=null, showAlert:Boolean=true)
+		public function DeleteFileEvent(file:FileLocation, wrapper:FileWrapper=null, treeViewHandler:Function=null,
+										showAlert:Boolean=true, projectAssociatedWithFile:ProjectVO = null)
 		{
 			this.file = file;
 			this.wrapper = wrapper;
 			this.showAlert = showAlert;
 			this.treeViewCompletionHandler = treeViewHandler;
+			this.projectAssociatedWithFile = projectAssociatedWithFile;
+
 			super(EVENT_DELETE_FILE, false, false);
 		}
 		

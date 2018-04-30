@@ -245,7 +245,7 @@ package actionScripts.controllers
 					project = model.activeProject as AS3ProjectVO;
                 }
 
-				if (project && project.isVisualEditorProject && extension == "mxml")
+				if (project && project.isVisualEditorProject && (extension == "mxml" || extension == "xhtml"))
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project);
 				}

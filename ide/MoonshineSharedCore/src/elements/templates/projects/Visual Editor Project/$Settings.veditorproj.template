@@ -50,11 +50,14 @@
   </compileTargets>
   <hiddenPaths>
     <hidden path="visualeditor-src" />
+	<hidden path="src/main" />
+	<hidden path="pom.xml" />
   </hiddenPaths>
   <preBuildCommand/>
   <postBuildCommand alwaysRun="False"/>
   <options>
     <option showHiddenPaths="False"/>
     <option testMovieCommand="ExternalPlayer"/>
+    <option isPrimeFacesVisualEditor="False"/>
   </options>
 </project>

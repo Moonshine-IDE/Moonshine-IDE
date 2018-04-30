@@ -47,7 +47,7 @@ package actionScripts.plugin.templating
 			copyFiles(fromDir, toDir);
 		}
 		
-		private function copyFiles(fromDir:FileLocation, toDir:FileLocation):void
+		protected function copyFiles(fromDir:FileLocation, toDir:FileLocation):void
 		{
 			var files:Array = fromDir.fileBridge.getDirectoryListing();
 			var newFile:FileLocation;

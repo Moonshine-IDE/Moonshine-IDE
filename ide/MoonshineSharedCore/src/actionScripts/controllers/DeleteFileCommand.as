@@ -20,6 +20,9 @@ package actionScripts.controllers
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
+    import flash.events.Event;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -82,9 +85,30 @@ package actionScripts.controllers
 			// file/folder deletion for desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (thisEvent.file.fileBridge.isDirectory) thisEvent.file.fileBridge.deleteDirectory(true);
-				else thisEvent.file.fileBridge.deleteFile();
-				if (thisEvent.wrapper.sourceController) thisEvent.wrapper.sourceController.remove(thisEvent.file);
+				if (thisEvent.file.fileBridge.isDirectory)
+				{
+					thisEvent.file.fileBridge.deleteDirectory(true);
+                }
+            	else
+                {
+                    thisEvent.file.fileBridge.deleteFile();
+
+                    if (thisEvent.projectAssociatedWithFile)
+                    {
+                        var as3ProjectVO:AS3ProjectVO = thisEvent.projectAssociatedWithFile as AS3ProjectVO;
+                        if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
+                        {
+                            var fileName:String = thisEvent.file.name.replace(/.mxml$|.xhtml$/, ".xml");
+                            var visualEditorFile:FileLocation = as3ProjectVO.visualEditorSourceFolder.resolvePath(fileName);
+                            visualEditorFile.fileBridge.deleteFile();
+                        }
+                    }
+                }
+				
+				if (thisEvent.wrapper.sourceController)
+				{
+                    thisEvent.wrapper.sourceController.remove(thisEvent.file);
+                }
 				
 				for each (tab in IDEModel.getInstance().editors)
 				{

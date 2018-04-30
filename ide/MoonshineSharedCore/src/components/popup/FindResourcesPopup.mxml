@@ -38,6 +38,8 @@
 
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.utils.UtilsCore;
+
 		import mx.collections.ArrayCollection;
 		import mx.controls.Alert;
 		import mx.events.FlexEvent;
@@ -47,9 +49,6 @@
 		import actionScripts.events.OpenFileEvent;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.findResources.FindResourcesPlugin;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.ResourceVO;
 		
 		import elements.skins.DarkButtonSkin;
@@ -60,52 +59,13 @@
 		private var model:IDEModel = IDEModel.getInstance();
 		private function onFindResourcesPopupCreationComplete(event:FlexEvent):void
 		{
-			for each (var i:ProjectVO in model.projects)
-			{
-				parseChildrens(i.projectFolder);
-			}
+			UtilsCore.parseFilesList(resources);
 
 			//Workaround for unresolved issue https://issues.apache.org/jira/browse/FLEX-26797
 			openBtn.setStyle("skinClass", DarkButtonSkin);
 
 			resources.filterFunction = resourceFilterFunction;
 			resources.refresh();
-		}
-
-		private function parseChildrens(value:FileWrapper):void
-		{
-			if (!value) return;
-
-			var extension:String = value.file.fileBridge.extension;
-			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
-			{
-				resources.addItem(new ResourceVO(value.file.fileBridge.name, value));
-				return;
-			}
-
-			if ((value.children is Array) && (value.children as Array).length > 0)
-			{
-				for each (var c:FileWrapper in value.children)
-				{
-					extension = c.file.fileBridge.extension;
-					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
-					{
-						resources.addItem(new ResourceVO(c.file.fileBridge.name, c));
-					}
-					else if (c.file.fileBridge.isDirectory)
-					{
-						parseChildrens(c);
-					}
-				}
-			}
-		}
-
-		private function isAcceptableResource(extension:String):Boolean
-		{
-			return ConstantsCoreVO.READABLE_FILES.some(
-					function isValidExtension(item:Object, index:int, arr:Array):Boolean {
-						return item == extension;
-					});
 		}
 
 		private function getResourceName(item:Object):String

@@ -46,13 +46,16 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'TOUR_DE_FLEX'),
             resourceManager.getString('resources', 'OPEN_IMPORT_PROJECT'),
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'),
 			resourceManager.getString('resources', 'SEARCH_IN_PROJECTS'),
             resourceManager.getString('resources', 'USEFUL_LINKS'),
             resourceManager.getString('resources', 'REFRESH'),
             resourceManager.getString('resources', 'SETTINGS'),
             resourceManager.getString('resources', 'DELETE'),
             resourceManager.getString('resources', 'RENAME'),
-            "Visual Editor Flex File",
+            resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
+            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE'),
             "Copy Path",
             "Show in Explorer",
             "Show in Finder"
@@ -60,7 +63,10 @@ package actionScripts.ui.menu
 
         private static var menuItemsDisabledNoneVEProject:Array = [
             resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'),
-            "Visual Editor Flex File"
+            resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
+            resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'),
+            resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES')
         ];
 
         public static function isMenuItemEnabledInVisualEditor(label:String, project:ProjectVO = null):Boolean
@@ -74,13 +80,13 @@ package actionScripts.ui.menu
 
             if (currentProject && currentProject.isVisualEditorProject)
             {
-                return menuItemsEnabledInVEProject.indexOf(label) > -1;
+                return isMenuDisabledInVisualEditorProject(label, currentProject);
             }
 
             return !isMenuItemDisabledNoneVisualEditorProject(label, project);
         }
 
-        public static function isMenuItemDisabledNoneVisualEditorProject(label:String, project:ProjectVO = null):Boolean
+        private static function isMenuItemDisabledNoneVisualEditorProject(label:String, project:ProjectVO = null):Boolean
         {
             var currentProject:AS3ProjectVO = project as AS3ProjectVO;
             if (!currentProject)
@@ -100,6 +106,22 @@ package actionScripts.ui.menu
             }
 
             return false;
+        }
+
+        private static function isMenuDisabledInVisualEditorProject(label:String, project:AS3ProjectVO):Boolean
+        {
+            if (project.isPrimeFacesVisualEditorProject && label &&
+                label.indexOf(resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE')) > -1)
+            {
+                return false;
+            }
+            else if (!project.isPrimeFacesVisualEditorProject && label &&
+                    label.indexOf(resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE')) > -1)
+            {
+                return false;
+            }
+
+            return menuItemsEnabledInVEProject.indexOf(label) > -1;
         }
     }
 }

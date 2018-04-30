@@ -100,7 +100,8 @@ package actionScripts.plugins.as3project.exporter
 				showHiddenPaths		:	UtilsCore.serializeBoolean(p.showHiddenPaths),
 				testMovie			:	UtilsCore.serializeString(p.testMovie),
 				defaultBuildTargets	:	UtilsCore.serializeString(p.defaultBuildTargets),
-				testMovieCommand	:	UtilsCore.serializeString(p.testMovieCommand)
+				testMovieCommand	:	UtilsCore.serializeString(p.testMovieCommand),
+                isPrimeFacesVisualEditor: UtilsCore.serializeBoolean(p.isPrimeFacesVisualEditorProject)
 			}
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{

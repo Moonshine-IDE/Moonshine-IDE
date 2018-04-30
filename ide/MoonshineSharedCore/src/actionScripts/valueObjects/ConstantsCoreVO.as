@@ -65,6 +65,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
+		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
@@ -72,7 +73,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_FLEXJS_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_ROYALE_COMPONENTS:ArrayCollection = new ArrayCollection();
-        public static var TEMPLATES_VISUALEDITOR_FILES_COMPONENTS:ArrayCollection = new ArrayCollection();
+        public static var TEMPLATES_VISUALEDITOR_FILES_FLEX:ArrayCollection = new ArrayCollection();
+        public static var TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES:ArrayCollection = new ArrayCollection();
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
@@ -251,7 +253,7 @@ package actionScripts.valueObjects
 	</fx:Declarations>
 </s:Group>]]></root>;
 			
-			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj"];
+			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
@@ -280,6 +282,26 @@ package actionScripts.valueObjects
 																			xmlns:s="library://ns.adobe.com/flex/spark"
 																			xmlns:mx="library://ns.adobe.com/flex/mx">
 																	</s:Group>]]></root>;
+
+            TEMPLATE_VISUAL_EDITOR_PRIMEFACES = new FileLocation("TEMPLATE");
+            TEMPLATE_VISUAL_EDITOR_PRIMEFACES.fileBridge.name = "Visual Editor PrimeFaces File.mxml";
+            TEMPLATE_VISUAL_EDITOR_PRIMEFACES.fileBridge.isDirectory = false;
+            TEMPLATE_VISUAL_EDITOR_PRIMEFACES.fileBridge.extension = "xhml";
+            TEMPLATE_VISUAL_EDITOR_PRIMEFACES.fileBridge.data = <root><![CDATA[<?xml version='1.0' encoding='UTF-8' ?>
+																				<!DOCTYPE html>
+																				<html xmlns="http://www.w3.org/1999/xhtml"
+																					  xmlns:h="http://xmlns.jcp.org/jsf/html"
+																					  xmlns:p="http://primefaces.org/ui">
+
+																					<h:head>
+																						<title></title>
+																					</h:head>
+
+																					<h:body>
+																						<div>
+																						</div>
+																					</h:body>
+																				</html>]]></root>;
 
 			ACTIONSCRIPT_PROJECT = new FileLocation("ActionScript Project (SWF, Desktop)");
 			ACTIONSCRIPT_PROJECT.fileBridge.name = "ActionScript Project (SWF, Desktop)";
@@ -334,7 +356,7 @@ package actionScripts.valueObjects
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX]);
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
 			
 			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = [];
