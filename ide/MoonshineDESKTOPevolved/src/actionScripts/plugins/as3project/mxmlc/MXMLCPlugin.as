@@ -945,6 +945,8 @@ package actionScripts.plugins.as3project.mxmlc
 					var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
 
 					dispatcher.dispatchEvent(new RefreshTreeEvent(currentSuccessfullProject.swfOutput.path.fileBridge.parent));
+
+                    print("%s", data);
 					
 					if (!isLibraryProject)
 					{
@@ -955,7 +957,7 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (debugAfterBuild)
 						{
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-							getResourceCopied(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
+							copyingResources(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
 							dispatcher.dispatchEvent(
 								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
 							);
@@ -967,12 +969,11 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
-							getResourceCopied(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
+							copyingResources(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
 						}
 					}
 
-                    print("%s", data);
-                    success("Project Build Successfully");
+                    success("Project Build Successfully.");
 					if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
                     {
                         reset();
@@ -998,10 +999,10 @@ package actionScripts.plugins.as3project.mxmlc
 			// to debug folder if any
 			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
 			{
-				getResourceCopied(pvo, swfFile);
+				copyingResources(pvo, swfFile);
 				return;
 			}
-			
+
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
 			{
 				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
@@ -1012,6 +1013,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
+                warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
 					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo, currentSDK)
@@ -1021,7 +1023,8 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				var htmlWrapperFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] +".html");
 				getHTMLTemplatesCopied(pvo, htmlWrapperFile);
-				
+
+                warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher runs SWF file
 				dispatcher.dispatchEvent(
 					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo) 
@@ -1032,12 +1035,14 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		
 		private var resourceCopiedIndex:int;
-		private function getResourceCopied(pvo:AS3ProjectVO, swfFile:File):void
+		private function copyingResources(pvo:AS3ProjectVO, swfFile:File):void
 		{
 			if (pvo.resourcePaths.length == 0) return;
-			
+
 			var destination:File = swfFile.parent;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
+            warning("Copying resource: %s", fl.name);
+
 			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopiedHandler, false, 0, true);
 			(fl.fileBridge.getFile as File).copyToAsync(destination.resolvePath(fl.fileBridge.name), true);
 			
@@ -1048,7 +1053,10 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				resourceCopiedIndex++;
 				event.target.removeEventListener(Event.COMPLETE, onFileCopiedHandler);
-				if (resourceCopiedIndex < pvo.resourcePaths.length) getResourceCopied(pvo, swfFile);
+				if (resourceCopiedIndex < pvo.resourcePaths.length)
+				{
+					copyingResources(pvo, swfFile);
+                }
 				else if (runAfterBuild) 
 				{
 					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));

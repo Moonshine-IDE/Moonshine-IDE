@@ -583,7 +583,9 @@ package actionScripts.plugins.as3project.mxmlc
 					// this problem also arise. Ideally the 'bin' folder was supposed to create at
 					// <projectRoot>. 
 					// Following folder move will fix this problem
-					
+
+                    print("%s", data);
+
 					// source location
 					var sourcePath:String = currentProject.folderLocation.fileBridge.getRelativePath((currentProject as AS3ProjectVO).classpaths[0]);
 					var sourcePathSplit:Array = sourcePath.split("/");
@@ -603,16 +605,16 @@ package actionScripts.plugins.as3project.mxmlc
 							if (sourceFolder.fileBridge.exists)
 							{
                                 timeoutValue = setTimeout(function():void {
-									onSuccesfullBuildCompleted(null, data);
+									onSuccesfullBuildCompleted(null);
 									clearTimeout(timeoutValue)
-                                }, 20);
+                                }, 50);
                             }
 						}
 					}
 					else
                     {
                         timeoutValue = setTimeout(function():void {
-                            onSuccesfullBuildCompleted(null, data);
+                            onSuccesfullBuildCompleted(null);
                             clearTimeout(timeoutValue)
                         }, 50);
                     }
@@ -627,7 +629,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		private function onSuccesfullBuildCompleted(event:Event, message:String = null):void
+		private function onSuccesfullBuildCompleted(event:Event):void
 		{
             if (event)
 			{
@@ -637,17 +639,18 @@ package actionScripts.plugins.as3project.mxmlc
             dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
             if(runAfterBuild)
             {
-                testMovie();
+                launchApplication();
             }
             else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
             {
                 var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
-                getResourceCopied(currentProject as AS3ProjectVO, swfFile);
+                copyingResources(currentProject as AS3ProjectVO, swfFile);
             }
-            success("%s", message || successMessage);
-		}
 
-		private function testMovie():void 
+            success("Project Build Successfully.");
+        }
+
+		private function launchApplication():void
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
 			var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
@@ -656,7 +659,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// to debug folder if any
 			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
 			{
-				getResourceCopied(pvo, swfFile);
+				copyingResources(pvo, swfFile);
 				return;
 			}
 			
@@ -670,6 +673,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
+                warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
 					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo, currentSDK)
@@ -678,6 +682,8 @@ package actionScripts.plugins.as3project.mxmlc
 			else 
 			{
 				if (!pvo.htmlPath) pvo.getHTMLPath;
+
+                warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
 					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo)
@@ -688,10 +694,12 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		
 		private var resourceCopiedIndex:int;
-		private function getResourceCopied(pvo:AS3ProjectVO, swfFile:File):void
+		private function copyingResources(pvo:AS3ProjectVO, swfFile:File):void
 		{
 			var debugDestination:File = swfFile.parent;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
+            print("Copying resource: %s", fl.name);
+
 			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopiedHandler, false, 0, true);
 			
 			// copying to bin/bin-debug
@@ -709,11 +717,11 @@ package actionScripts.plugins.as3project.mxmlc
 				var releaseDestination:File = pvo.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_RELEASE_PATH).fileBridge.getFile as File;
 				(fl.fileBridge.getFile as File).copyToAsync(releaseDestination.resolvePath(fl.fileBridge.name), true);
 				
-				if (resourceCopiedIndex < pvo.resourcePaths.length) getResourceCopied(pvo, swfFile);
+				if (resourceCopiedIndex < pvo.resourcePaths.length) copyingResources(pvo, swfFile);
 				else if (runAfterBuild) 
 				{
 					dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
-					testMovie();
+					launchApplication();
 				}
 				else
 				{

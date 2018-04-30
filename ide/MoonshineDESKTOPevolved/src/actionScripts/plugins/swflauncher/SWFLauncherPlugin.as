@@ -100,6 +100,8 @@ package actionScripts.plugins.swflauncher
 				// Open with default app
 				launchExternal(event.file);
 			}
+
+			warning("Application " + event.project.name + " started.");
 		}
 		
 		// when user has already one session ins progress and tries to build/run the application again- close current session and start new one
@@ -165,14 +167,14 @@ package actionScripts.plugins.swflauncher
 			
 			var executableFile:File;
 			if( Settings.os == "win")
-				executableFile = currentSDK.resolvePath("bin/adl.exe");
+            {
+                executableFile = currentSDK.resolvePath("bin/adl.exe");
+            }
 			else
-				executableFile = currentSDK.resolvePath("bin/adl");
-			//	customInfo.executable = executable;
-			
-			// Find air debug launcher
-			print("Launching application...");
-			
+            {
+                executableFile = currentSDK.resolvePath("bin/adl");
+            }
+
 			//var executableFile: File = new File("C:\\Program Files\\Adobe\\Adobe Flash Builder 4.6\\sdks\\4.14\\bin\\adl.exe");
 			customInfo.executable = executableFile;
 			var processArgs:Vector.<String> = new Vector.<String>;               
