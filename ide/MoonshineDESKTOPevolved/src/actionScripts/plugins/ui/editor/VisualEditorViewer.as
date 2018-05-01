@@ -100,6 +100,7 @@ package actionScripts.plugins.ui.editor
         {
             visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
             visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
+			visualEditorView.visualEditor.editingSurface.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
             visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
         }
@@ -164,6 +165,11 @@ package actionScripts.plugins.ui.editor
             hasChangedProperties = _isChanged = true;
             dispatchEvent(new Event('labelChanged'));
         }
+		
+		private function onEditingSurfaceItemAdded(event:PropertyEditorChangeEvent):void
+		{
+			undoManager.handleChange(event);
+		}
 
         private function onTabAdd(event:Event):void
         {
