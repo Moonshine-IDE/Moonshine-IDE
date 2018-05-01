@@ -62,7 +62,7 @@ package actionScripts.plugins.ui.editor.text
 				var change:PropertyChangeReferenceVO = history.pop();
 				future.push(change);
 				
-				change.reverse();
+				change.reverse(editor.visualEditor);
 			}
 		}
 		
@@ -73,7 +73,7 @@ package actionScripts.plugins.ui.editor.text
 				var change:PropertyChangeReferenceVO = future.pop();
 				history.push(change);
 				
-				change.restore();
+				change.restore(editor.visualEditor);
 			}
 		}
 		
@@ -102,7 +102,11 @@ package actionScripts.plugins.ui.editor.text
 		
 		public function handleChange(event:PropertyEditorChangeEvent):void
 		{
-			if (event.changedReference) collectChange(event.changedReference);
+			if (event.changedReference) 
+			{
+				event.changedReference.eventType = event.type;
+				collectChange(event.changedReference);
+			}
 		}
 		
 		private function collectChange(change:PropertyChangeReferenceVO):void
