@@ -202,6 +202,10 @@ package actionScripts.plugins.ui.editor
             {
                 visualEditorView.visualEditor.editingSurface.selectedItem = null;
             }
+			else
+			{
+				visualEditorView.setFocus();
+			}
         }
 
         private function getMxmlCode():String
