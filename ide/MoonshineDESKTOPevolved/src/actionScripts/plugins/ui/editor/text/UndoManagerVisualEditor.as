@@ -20,10 +20,7 @@ package actionScripts.plugins.ui.editor.text
 {
 	import flash.events.KeyboardEvent;
 	
-	import actionScripts.events.ChangeEvent;
 	import actionScripts.plugins.help.view.VisualEditorView;
-	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	
 	import view.events.PropertyEditorChangeEvent;
 	import view.models.PropertyChangeReferenceVO;
@@ -118,7 +115,7 @@ package actionScripts.plugins.ui.editor.text
 			{
 				var lastChange:PropertyChangeReferenceVO = history[history.length-1];
 				
-				if (change === lastChange || (change.fieldClass === lastChange.fieldClass && change.fieldLastValue === lastChange.fieldLastValue && change.fieldName === lastChange.fieldName &&
+				if (change === lastChange || (change.eventType == lastChange.eventType && change.fieldClass === lastChange.fieldClass && change.fieldLastValue === lastChange.fieldLastValue && change.fieldName === lastChange.fieldName &&
 						change.fieldNewValue === lastChange.fieldNewValue)) return;
 			}
 			// Add change to history
