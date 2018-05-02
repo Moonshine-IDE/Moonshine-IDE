@@ -12,3 +12,6 @@ ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 vscode-nextgenas_MoonshineModifications/vscode-nextgenas_MoonshineModifications.iml
 vscode-nextgenas_MoonshineModifications/dist/
 .DS_Store
+*.code-workspace
+.vscode/
+asconfig.json
