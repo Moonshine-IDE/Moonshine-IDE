@@ -92,6 +92,7 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.plugin.syntax.AS3SyntaxPlugin;
     import actionScripts.plugin.syntax.CSSSyntaxPlugin;
+    import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
     import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.JSSyntaxPlugin;
@@ -126,7 +127,8 @@ package actionScripts.plugin.settings
 		// If the syntax plugins are combined this might be removed
 		private var excludeFromSettings:Array = [MenuPlugin,MXMLSyntaxPlugin,
 												 AS3SyntaxPlugin, SplashScreenPlugin,
-												 XMLSyntaxPlugin,CSSSyntaxPlugin,JavaSyntaxPlugin,JSSyntaxPlugin,HTMLSyntaxPlugin,
+												 XMLSyntaxPlugin,CSSSyntaxPlugin,JSSyntaxPlugin,HTMLSyntaxPlugin,
+												 GroovySyntaxPlugin,JavaSyntaxPlugin,
 												 FullscreenPlugin, VisualEditorProjectPlugin];
 
 		public function SettingsPlugin()

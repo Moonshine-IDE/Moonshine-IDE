@@ -63,6 +63,7 @@ package actionScripts.impls
 	import actionScripts.plugin.startup.StartupHelperPlugin;
 	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
+	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
 	import actionScripts.plugin.syntax.JSSyntaxPlugin;
@@ -196,6 +197,7 @@ package actionScripts.impls
 				AS3ProjectPlugin,
 				AS3SyntaxPlugin,
 				CSSSyntaxPlugin,
+				GroovySyntaxPlugin,
 				JavaSyntaxPlugin,
 				JSSyntaxPlugin,
 				HTMLSyntaxPlugin,
