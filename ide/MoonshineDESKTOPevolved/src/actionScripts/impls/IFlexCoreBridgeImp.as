@@ -64,6 +64,7 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
+	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
 	import actionScripts.plugin.syntax.JSSyntaxPlugin;
 	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
@@ -195,6 +196,7 @@ package actionScripts.impls
 				AS3ProjectPlugin,
 				AS3SyntaxPlugin,
 				CSSSyntaxPlugin,
+				JavaSyntaxPlugin,
 				JSSyntaxPlugin,
 				HTMLSyntaxPlugin,
 				MXMLSyntaxPlugin,
