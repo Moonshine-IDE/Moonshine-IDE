@@ -38,7 +38,7 @@ package actionScripts.plugins.ui.editor
     
     import utils.VisualEditorType;
     
-    import view.events.PropertyEditorChangeEvent;
+    import view.suportClasses.events.PropertyEditorChangeEvent;
     
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {

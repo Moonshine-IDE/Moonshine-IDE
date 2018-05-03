@@ -22,15 +22,15 @@ package actionScripts.plugins.ui.editor.text
 	
 	import actionScripts.plugins.help.view.VisualEditorView;
 	
-	import view.events.PropertyEditorChangeEvent;
-	import view.models.PropertyChangeReferenceVO;
+	import view.suportClasses.PropertyChangeReference;
+	import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class UndoManagerVisualEditor
 	{
 		private var editor:VisualEditorView;
 		
-		private var history:Vector.<PropertyChangeReferenceVO> = new Vector.<PropertyChangeReferenceVO>();
-		private var future:Vector.<PropertyChangeReferenceVO> = new Vector.<PropertyChangeReferenceVO>();
+		private var history:Vector.<PropertyChangeReference> = new Vector.<PropertyChangeReference>();
+		private var future:Vector.<PropertyChangeReference> = new Vector.<PropertyChangeReference>();
 		
 		private var savedAt:int = 0;
 		
@@ -56,7 +56,7 @@ package actionScripts.plugins.ui.editor.text
 		{
 			if (history.length > 0)
 			{
-				var change:PropertyChangeReferenceVO = history.pop();
+				var change:PropertyChangeReference = history.pop();
 				future.push(change);
 				
 				change.reverse(editor.visualEditor);
@@ -67,7 +67,7 @@ package actionScripts.plugins.ui.editor.text
 		{
 			if (future.length > 0)
 			{
-				var change:PropertyChangeReferenceVO = future.pop();
+				var change:PropertyChangeReference = future.pop();
 				history.push(change);
 				
 				change.restore(editor.visualEditor);
@@ -106,14 +106,14 @@ package actionScripts.plugins.ui.editor.text
 			}
 		}
 		
-		private function collectChange(change:PropertyChangeReferenceVO):void
+		private function collectChange(change:PropertyChangeReference):void
 		{
 			// Clear any future changes
 			future.length = 0;
 			// Check if change can be merged into last change
-			if (history.length > 0 && history[history.length-1] is PropertyChangeReferenceVO)
+			if (history.length > 0 && history[history.length-1] is PropertyChangeReference)
 			{
-				var lastChange:PropertyChangeReferenceVO = history[history.length-1];
+				var lastChange:PropertyChangeReference = history[history.length-1];
 				
 				if (change === lastChange || (change.eventType == lastChange.eventType && change.fieldClass === lastChange.fieldClass && change.fieldLastValue === lastChange.fieldLastValue && change.fieldName === lastChange.fieldName &&
 						change.fieldNewValue === lastChange.fieldNewValue)) return;
