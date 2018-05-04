@@ -312,6 +312,7 @@
 				delete cookie.data["lastSelectedProjectPath"];
 				delete cookie.data["recentProjectPath"];
 				cookie.flush();
+				model.recentSaveProjectPath = new ArrayCollection();
 			}
 			
 		]]>

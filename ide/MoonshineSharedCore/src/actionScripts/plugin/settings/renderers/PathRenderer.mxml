@@ -88,7 +88,7 @@
 					return;
 				}
 				
-				if (isDropDown && historyPaths && historyPaths.length == 0 && ConstantsCoreVO.IS_MACOS)
+				if (isDropDown && historyPaths && historyPaths.length == 0)
 				{
 					value = "Select path to continue";
 					type = PathSetting.MESSAGE_CRITICAL;
