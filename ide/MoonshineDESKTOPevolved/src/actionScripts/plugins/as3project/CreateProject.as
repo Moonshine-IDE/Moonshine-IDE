@@ -95,6 +95,7 @@ package actionScripts.plugins.as3project
 		private var _projectTemplateType:String;
 		private var _libraryProjectTemplateType:String;
 		private var _customFlexSDK:String;
+		private var _currentCauseToBeInvalid:String;
 		
 		public function CreateProject(event:NewProjectEvent)
 		{
@@ -415,11 +416,18 @@ package actionScripts.plugins.as3project
 			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && !isProjectFromExistingSource && value.fileBridge.exists) tmpFile = value;
 			
-			if (tmpFile) newProjectPathSetting.setMessage("Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_CRITICAL);
+			if (tmpFile) 
+			{
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), PathSetting.MESSAGE_CRITICAL);
+			}
 			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_IMPORTANT);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
-			if (newProjectPathSetting.stringValue == "") isInvalidToSave = true;
+			if (newProjectPathSetting.stringValue == "") 
+			{
+				isInvalidToSave = true;
+				_currentCauseToBeInvalid = 'Unable to access Project Directory ('+ value.fileBridge.nativePath +').  Please click the "Change" link and open the target directory again.';
+			}
 			else isInvalidToSave = tmpFile ? true : false;
 		}
 
@@ -473,7 +481,11 @@ package actionScripts.plugins.as3project
 		
 		private function createSave(event:Event):void
 		{
-			if (isInvalidToSave) return;
+			if (isInvalidToSave) 
+			{
+				Alert.show(_currentCauseToBeInvalid +"\nProject creation terminated.", "Note!");
+				return;
+			}
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
