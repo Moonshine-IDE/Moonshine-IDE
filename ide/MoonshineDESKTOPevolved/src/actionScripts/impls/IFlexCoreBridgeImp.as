@@ -338,13 +338,13 @@ package actionScripts.impls
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','ANT'), [
-					new MenuItem("Build Apache Ant® File", null, AntBuildPlugin.EVENT_ANTBUILD)
+					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, SVNPlugin.CHECKOUT_REQUEST)
 				]),
 				new MenuItem("Others", [
-					new MenuItem("Build an Away3D Model", null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
+					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
 				]),
 				new MenuItem("Help", Settings.os == "win"? [ 
 					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT),
