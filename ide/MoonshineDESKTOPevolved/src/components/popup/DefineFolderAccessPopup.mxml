@@ -47,6 +47,7 @@
 			import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.utils.SharedObjectConst;
 			import actionScripts.valueObjects.FileWrapper;
 			
 			private var _requisitePaths:Vector.<ISetting>;
@@ -306,6 +307,11 @@
 				// remove local holdings
 				OSXBookmarkerNotifiers.availableBookmarkedPaths = "";
 				projectFolders.removeAll();
+				
+				var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+				delete cookie.data["lastSelectedProjectPath"];
+				delete cookie.data["recentProjectPath"];
+				cookie.flush();
 			}
 			
 		]]>

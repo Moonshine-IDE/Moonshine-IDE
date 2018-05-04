@@ -419,7 +419,8 @@ package actionScripts.plugins.as3project
 			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_IMPORTANT);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
-			isInvalidToSave = tmpFile ? true : false;
+			if (newProjectPathSetting.stringValue == "") isInvalidToSave = true;
+			else isInvalidToSave = tmpFile ? true : false;
 		}
 
 		//--------------------------------------------------------------------------

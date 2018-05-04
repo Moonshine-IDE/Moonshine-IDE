@@ -65,11 +65,11 @@
 	        public var isSDKPath:Boolean;
 	        [Bindable]
 	        public var isDropDown:Boolean;
+	        [Bindable]
+	        public var historyPaths:ArrayCollection;
 	
 	        [Bindable]
 	        private var model:IDEModel = IDEModel.getInstance();
-	        [Bindable]
-	        private var historyPaths:ArrayCollection;
 	
 	        private var file:FileLocation;
 	        private var sdkPopup:SDKSelectorPopup;
@@ -86,6 +86,12 @@
 				if (!lblMessage)
 				{
 					return;
+				}
+				
+				if (isDropDown && historyPaths && historyPaths.length == 0 && ConstantsCoreVO.IS_MACOS)
+				{
+					value = "Select path to continue";
+					type = PathSetting.MESSAGE_CRITICAL;
 				}
 
 				switch(type)
@@ -224,7 +230,7 @@
 	            {
 	                historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
 	                cmbPath.callLater(function ():void {
-	                    cmbPath.selectedItem = setting.provider[setting.name];
+	                    cmbPath.selectedItem = (historyPaths.length == 0) ? null : setting.provider[setting.name];
 	                });
 	            }
 	

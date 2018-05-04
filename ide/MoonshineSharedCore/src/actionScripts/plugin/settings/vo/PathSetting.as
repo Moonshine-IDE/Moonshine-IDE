@@ -74,6 +74,12 @@ package actionScripts.plugin.settings.vo
 			}
 		}
 		
+		override public function get stringValue():String
+		{
+			if (isDropDown && rdr && rdr.historyPaths.length == 0) return "";
+			return super.stringValue;
+		}
+		
 		override public function get renderer():IVisualElement
 		{
 			rdr = new PathRenderer();
