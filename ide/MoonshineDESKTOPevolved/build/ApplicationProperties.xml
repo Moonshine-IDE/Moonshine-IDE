@@ -26,8 +26,8 @@
 	<certSignedAIRPass><![CDATA[]]></certSignedAIRPass>
 	<certSignedWindowsBinary><![CDATA[]]></certSignedWindowsBinary> <!-- Relative path to Windows binary installer certificate (.p12) distributed by signer authorities -->
 	<certSignedWindowsBinaryPass><![CDATA[]]></certSignedWindowsBinaryPass>
-	<certSignedDevIDKeychainName><![CDATA[Developer ID Application: Prominic.NET, Inc.]]></certSignedDevIDKeychainName> <!-- apple developer ID name as installed in keychain -->
-	<certSignedMacOSKeychainName><![CDATA[3rd Party Mac Developer Application: Prominic.NET, Inc.]]></certSignedMacOSKeychainName> <!-- apple developer certificate name as installed in keychain -->
-	<certSignedMacOSKeychainInstallerName><![CDATA[3rd Party Mac Developer Installer: Prominic.NET, Inc.]]></certSignedMacOSKeychainInstallerName> <!-- apple installer certificate name as installed in keychain -->
-	<certSignedMacOSKeychainPass><![CDATA[D72fX84q]]></certSignedMacOSKeychainPass> <!-- keychain password is required to sign with installed certificate -->
+	<certSignedDevIDKeychainName><![CDATA[]]></certSignedDevIDKeychainName> <!-- apple developer ID name as installed in keychain -->
+	<certSignedMacOSKeychainName><![CDATA[]]></certSignedMacOSKeychainName> <!-- apple developer certificate name as installed in keychain -->
+	<certSignedMacOSKeychainInstallerName><![CDATA[]]></certSignedMacOSKeychainInstallerName> <!-- apple installer certificate name as installed in keychain -->
+	<certSignedMacOSKeychainPass><![CDATA[]]></certSignedMacOSKeychainPass> <!-- keychain password is required to sign with installed certificate -->
 </root>
