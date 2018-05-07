@@ -37,44 +37,22 @@ package actionScripts.plugins.core
         {
 			if (isDeleteRoot)
 			{
-				try
-				{
-					projectWrapper.file.fileBridge.deleteDirectory(true);
-				}
-				catch (e:Error)
-				{
-					projectWrapper.file.fileBridge.deleteDirectoryAsync(true);
-				}
+				projectWrapper.file.fileBridge.deleteDirectory(true);
 			}
 			else
 			{
 				// go for only one level of file/folder deletion
 				for each (var wrapper:FileWrapper in projectWrapper.children)
 				{
-		            try
-		            {
-						if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectory(true);
-						else wrapper.file.fileBridge.deleteFile();
-		            }
-		            catch (e:Error)
-		            {
-						if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectoryAsync(true);
-						else wrapper.file.fileBridge.deleteFileAsync();
-		            }
+					if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectory(true);
+					else wrapper.file.fileBridge.deleteFile();
 				}
 				
 				// when done check if the root folder is empty
 				// if it is, go delete it irrespective of 'isDeleteRoot' value
 				if (projectWrapper.file.fileBridge.getDirectoryListing().length == 0)
 				{
-					try
-					{
-						projectWrapper.file.fileBridge.deleteDirectory(true);
-					}
-					catch (e:Error)
-					{
-						projectWrapper.file.fileBridge.deleteDirectoryAsync(true);
-					}
+					projectWrapper.file.fileBridge.deleteDirectory(true);
 				}
 			}
 

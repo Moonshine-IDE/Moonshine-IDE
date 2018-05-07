@@ -21,8 +21,10 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.net.SharedObject;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.events.CloseEvent;
@@ -128,7 +130,16 @@ package actionScripts.utils
 		
 		public static function isPathBookmarked(value:String):Boolean
 		{
-			if (availableBookmarkedPathsArr.indexOf(value) != -1) return true;
+			// sandbox application default directory
+			if (value.indexOf("Library/Containers/com.moonshine-ide/Data/Documents") != -1) return true;
+			
+			var separator:String = IDEModel.getInstance().fileCore.separator;
+			availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
+			for each (var i:String in availableBookmarkedPathsArr)
+			{
+				if ((value.indexOf(i) != -1) ||
+					(value.indexOf(i + separator) != -1)) return true;
+			}
 			
 			return false;
 		}
@@ -149,6 +160,16 @@ package actionScripts.utils
 			
 			// if invalid
 			return null;
+		}
+		
+		public static  function removeFlashCookies():void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			delete cookie.data["lastSelectedProjectPath"];
+			delete cookie.data["recentProjectPath"];
+			cookie.flush();
+
+			IDEModel.getInstance().recentSaveProjectPath = new ArrayCollection();
 		}
 		
 		private static function getUnbookmarkedPaths(provider:Object, className:String, bList:Array, title:String):Vector.<ISetting>

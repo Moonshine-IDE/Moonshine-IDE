@@ -24,19 +24,27 @@ package actionScripts.plugin.console
 	{
 		public static const CONSOLE_OUTPUT:String = "consoleOutput";
 		public static const CONSOLE_CLEAR:String = "consoleClear";
+		public static const CONSOLE_PRINT:String = "consolePrint"; // this uses regular commands to print message to console other than how things works by CONSOLE_OUTPUT
+		
+		public static const TYPE_ERROR:String = "typeError";
+		public static const TYPE_INFO:String = "typeInfo";
+		public static const TYPE_SUCCESS:String = "typeSuccess";
+		public static const TYPE_NOTE:String = "typeNotice";
 		
 		public var text:*;
 		public var hideOtherOutput:Boolean;
+		public var messageType:String;
 		
 		/*
 			Text can be String or array of TextLineModel
 		*/
 		public function ConsoleOutputEvent(type:String,
 										   text:*,
-										   hideOtherOutput:Boolean=false, cancelable:Boolean=false)
+										   hideOtherOutput:Boolean=false, cancelable:Boolean=false, messageType:String=TYPE_INFO)
 		{
 			this.text = text;
 			this.hideOtherOutput = hideOtherOutput;
+			this.messageType = messageType;
 			super(type, false, cancelable);
 		}
 	}

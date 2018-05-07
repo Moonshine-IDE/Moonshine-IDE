@@ -42,6 +42,8 @@ package actionScripts.impls
 	import actionScripts.interfaces.IScopeBookmarkInterface;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import flash.events.IOErrorEvent;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	
 	/**
 	 * IFileBridgeImp
@@ -141,7 +143,14 @@ package actionScripts.impls
 		
 		public function createDirectory():void
 		{
-			_file.createDirectory();
+			try
+			{
+				_file.createDirectory();
+			}
+			catch (e:Error)
+			{
+				reportPathAccessError();
+			}
 		}
 		
 		public function getRelativePath(ref:FileLocation, useDotDot:Boolean=false):String
@@ -212,12 +221,26 @@ package actionScripts.impls
 		
 		public function deleteDirectory(deleteDirectoryContents:Boolean=false):void
 		{
-			_file.deleteDirectory(deleteDirectoryContents);
+			try
+			{
+				_file.deleteDirectory(deleteDirectoryContents);
+			}
+			catch (e:Error)
+			{
+				deleteDirectoryAsync(deleteDirectoryContents);
+			}
 		}
 		
 		public function deleteDirectoryAsync(deleteDirectoryContents:Boolean=false):void
 		{
-			_file.deleteDirectoryAsync(deleteDirectoryContents);
+			try
+			{
+				_file.deleteDirectoryAsync(deleteDirectoryContents);
+			}
+			catch (e:Error)
+			{
+				reportPathAccessError();
+			}
 		}
 		
 		public function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation
@@ -297,12 +320,26 @@ package actionScripts.impls
 		
 		public function deleteFile():void
 		{
-			_file.deleteFile();
+			try
+			{
+				_file.deleteFile();
+			}
+			catch (e:Error)
+			{
+				deleteFileAsync();
+			}
 		}
 		
 		public function deleteFileAsync():void
 		{
-			_file.deleteFileAsync();
+			try
+			{
+				_file.deleteFileAsync();
+			}
+			catch (e:Error)
+			{
+				reportPathAccessError();
+			}
 		}
 		
 		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void
@@ -555,6 +592,12 @@ package actionScripts.impls
 			}
 			
 			return content;
+		}
+		
+		protected function reportPathAccessError():void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "\nUnable to access path: "+ _file.nativePath, false, false, ConsoleOutputEvent.TYPE_ERROR));
 		}
 	}
 }

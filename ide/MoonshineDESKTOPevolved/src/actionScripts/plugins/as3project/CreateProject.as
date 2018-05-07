@@ -41,6 +41,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.SettingsView;
@@ -58,6 +59,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.OSXBookmarkerNotifiers;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.UtilsCore;
@@ -190,7 +192,12 @@ package actionScripts.plugins.as3project
 			var lastSelectedProjectPath:String;
 
             setProjectType(event.templateDir.fileBridge.name);
-
+			
+			CONFIG::OSX
+				{
+					if (OSXBookmarkerNotifiers.availableBookmarkedPaths == "") OSXBookmarkerNotifiers.removeFlashCookies();
+				}
+			
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			//Read recent project path from shared object
 			
@@ -318,6 +325,11 @@ package actionScripts.plugins.as3project
 			tempName = tempName.replace(/ /g, "");
 			
 			project = new AS3ProjectVO(model.fileCore.resolveDocumentDirectoryPath(), tempName, false);
+			CONFIG::OSX
+				{
+					if (OSXBookmarkerNotifiers.availableBookmarkedPaths == "") OSXBookmarkerNotifiers.removeFlashCookies();
+				}
+				
 			cookie = SharedObject.getLocal("moonshine-ide-local");
 			
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
@@ -479,11 +491,16 @@ package actionScripts.plugins.as3project
 			);
 		}
 		
+		private function throwError():void
+		{
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+		}
+		
 		private function createSave(event:Event):void
 		{
 			if (isInvalidToSave) 
 			{
-				Alert.show(_currentCauseToBeInvalid +"\nProject creation terminated.", "Note!");
+				throwError();
 				return;
 			}
 			
@@ -534,6 +551,7 @@ package actionScripts.plugins.as3project
 			}
 
             project = createFileSystemBeforeSave(project, view.exportProject);
+			if (!project) return;
 
             if (view.exportProject)
             {
@@ -629,6 +647,16 @@ package actionScripts.plugins.as3project
 			// Create project root directory
 			if (!_isProjectFromExistingSource)
 			{
+				CONFIG::OSX
+					{
+						if (!OSXBookmarkerNotifiers.isPathBookmarked(targetFolder.fileBridge.nativePath))
+						{
+							_currentCauseToBeInvalid = 'Unable to access Parent Directory ('+ targetFolder.fileBridge.nativePath +').  Please click the "Change" link and open the target directory again.';
+							throwError();
+							return null;
+						}
+					}
+				
 				targetFolder = targetFolder.resolvePath(projectName);
 				targetFolder.fileBridge.createDirectory();
 			}
@@ -707,34 +735,19 @@ package actionScripts.plugins.as3project
 				var folderToDelete3:FileLocation = targetFolder.resolvePath("bin-debug_web");
 				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
 				var folderToDelete5:FileLocation = targetFolder.resolvePath("build");
-				try
+				
+				folderToDelete1.fileBridge.deleteDirectory(true);
+				if (isActionScriptProject)
 				{
-					folderToDelete1.fileBridge.deleteDirectory(true);
-					if (isActionScriptProject)
-					{
-						folderToDelete2.fileBridge.deleteDirectory(true);
-						folderToDelete3.fileBridge.deleteDirectory(true);
-						folderToDelete4.fileBridge.deleteDirectory(true);
-					}
-					if (isAway3DProject)
-					{
-						folderToDelete5.fileBridge.deleteDirectory(true);
-					}
+					folderToDelete2.fileBridge.deleteDirectory(true);
+					folderToDelete3.fileBridge.deleteDirectory(true);
+					folderToDelete4.fileBridge.deleteDirectory(true);
 				}
-				catch (e:Error)
+				if (isAway3DProject)
 				{
-					folderToDelete1.fileBridge.deleteDirectoryAsync(true);
-					if (isActionScriptProject)
-					{
-						folderToDelete2.fileBridge.deleteDirectoryAsync(true);
-						folderToDelete3.fileBridge.deleteDirectoryAsync(true);
-						folderToDelete4.fileBridge.deleteDirectoryAsync(true);
-					}
-					if (isAway3DProject)
-					{
-						folderToDelete5.fileBridge.deleteDirectoryAsync(true);
-					}
+					folderToDelete5.fileBridge.deleteDirectory(true);
 				}
+
 			}
 			if (isVisualEditorProject)
 			{
@@ -749,16 +762,9 @@ package actionScripts.plugins.as3project
 				
 				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");
 				var folderToDelete7:FileLocation = targetFolder.resolvePath("src_flex");
-				try
-				{
-					folderToDelete6.fileBridge.deleteDirectory(true);
-					folderToDelete7.fileBridge.deleteDirectory(true);
-				}
-				catch (e:Error)
-				{
-					folderToDelete6.fileBridge.deleteDirectoryAsync(true);
-					folderToDelete7.fileBridge.deleteDirectoryAsync(true);
-				}
+					
+				folderToDelete6.fileBridge.deleteDirectory(true);
+				folderToDelete7.fileBridge.deleteDirectory(true);
 			}
 			if (isLibraryProject)
 			{

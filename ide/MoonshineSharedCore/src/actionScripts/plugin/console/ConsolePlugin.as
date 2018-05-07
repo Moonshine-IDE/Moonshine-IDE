@@ -21,8 +21,8 @@ package actionScripts.plugin.console
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.containers.dividedBoxClasses.BoxDivider;
 	import mx.events.DividerEvent;
@@ -121,6 +121,7 @@ package actionScripts.plugin.console
             }
 
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, addOutputHandler);
+			dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_PRINT, addOutputPrintHandler);
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, clearOutputHandler);
 
             dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
@@ -175,6 +176,7 @@ package actionScripts.plugin.console
 			unregisterCommand("help");
 			
 			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, addOutputHandler);
+			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_PRINT, addOutputPrintHandler);
             dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, clearOutputHandler);
 
 			dispatcher.removeEventListener(ConsoleModeEvent.CHANGE, changeMode);
@@ -384,6 +386,25 @@ package actionScripts.plugin.console
 			{
 				consoleView.setOutputHeightByLines(numNewLines);
 				loadedFirstTime = false;
+			}
+		}
+		
+		private function addOutputPrintHandler(event:ConsoleOutputEvent):void
+		{
+			switch(event.messageType)
+			{
+				case ConsoleOutputEvent.TYPE_ERROR:
+					error(event.text);
+					break;
+				case ConsoleOutputEvent.TYPE_SUCCESS:
+					success(event.text);
+					break;
+				case ConsoleOutputEvent.TYPE_NOTE:
+					notice(event.text);
+					break;
+				default:
+					print(event.text);
+					break;
 			}
 		}
 
