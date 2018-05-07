@@ -438,7 +438,7 @@ package actionScripts.plugins.as3project
 			if (newProjectPathSetting.stringValue == "") 
 			{
 				isInvalidToSave = true;
-				_currentCauseToBeInvalid = 'Unable to access Project Directory ('+ value.fileBridge.nativePath +').  Please click the "Change" link and open the target directory again.';
+				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'.\nPlease try to create the project again and usethe "Change" link to open the target directory again.';
 			}
 			else isInvalidToSave = tmpFile ? true : false;
 		}
@@ -493,7 +493,8 @@ package actionScripts.plugins.as3project
 		
 		private function throwError():void
 		{
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+			Alert.show(_currentCauseToBeInvalid +"\nProject creation terminated.", "Error!");
+			//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
 		}
 		
 		private function createSave(event:Event):void

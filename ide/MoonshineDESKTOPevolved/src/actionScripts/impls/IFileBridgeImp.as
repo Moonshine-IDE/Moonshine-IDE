@@ -596,8 +596,14 @@ package actionScripts.impls
 		
 		protected function reportPathAccessError():void
 		{
+			var errorMessage:String = "\nUnable to access directory: "+ _file.nativePath;
+			CONFIG::OSX
+				{
+					errorMessage += '\nPlease open File > Access Manager and click "Add Access" to to allow access to this directory.'
+				}
+			
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "\nUnable to access path: "+ _file.nativePath, false, false, ConsoleOutputEvent.TYPE_ERROR));
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
 		}
 	}
 }
