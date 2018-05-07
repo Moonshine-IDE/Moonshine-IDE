@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.12.0]
 
 ### Added
-* New type of Visual Editor project which allows you to build [PrimeFaces](https://www.primefaces.org/) applications mockups and export them as web applications.
+* New type of basic Visual Editor project which allows you to build [PrimeFaces](https://www.primefaces.org/) applications mockups and export them as web applications.
 * Editor: **Go To Line** feature CTRL+L (Windows) and CMD+L (macOS).
 * Project Tree: File **Duplicate** option in context menu.
 
