@@ -438,7 +438,7 @@ package actionScripts.plugins.as3project
 			if (newProjectPathSetting.stringValue == "") 
 			{
 				isInvalidToSave = true;
-				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'.\nPlease try to create the project again and usethe "Change" link to open the target directory again.';
+				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and usethe "Change" link to open the target directory again.';
 			}
 			else isInvalidToSave = tmpFile ? true : false;
 		}
@@ -652,7 +652,7 @@ package actionScripts.plugins.as3project
 					{
 						if (!OSXBookmarkerNotifiers.isPathBookmarked(targetFolder.fileBridge.nativePath))
 						{
-							_currentCauseToBeInvalid = 'Unable to access Parent Directory ('+ targetFolder.fileBridge.nativePath +').  Please click the "Change" link and open the target directory again.';
+							_currentCauseToBeInvalid = 'Unable to access Parent Directory:\n'+ targetFolder.fileBridge.nativePath +'\nPlease try to create the project again and usethe "Change" link to open the target directory again.';
 							throwError();
 							return null;
 						}
