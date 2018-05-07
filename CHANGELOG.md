@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.12.0]
+
+### Added
+* New type of Visual Editor project which allows you to build [PrimeFaces](https://www.primefaces.org/) applications mockups and export them as web applications.
+* Editor: **Go To Line** feature CTRL+L (Windows) and CMD+L (macOS).
+* Project Tree: File **Duplicate** option in context menu.
+
+### Changed
+* Improvement to Project deletion.
+
+### Fixed
+* Fixed issue where renaming newly created project template was not working.
+* New File: Fixed issue where in new file popup errors were doubled. 
+
 ## Moonshine IDE [1.11.0]
 
 ### Added
