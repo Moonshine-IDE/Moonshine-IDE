@@ -12,6 +12,7 @@
         <s:State name="Class" />
         <s:State name="Field" />
         <s:State name="Property" />
+        <s:State name="Method" />
         <s:State name="info" />
     </s:states>
     <s:Ellipse verticalCenter="0" horizontalCenter="0"
@@ -25,6 +26,7 @@
                           color.Variable="0x6d5a9c"
                           color.Field="0xC28627"
                           color.Property="0x3E8854"
+                          color.Method="0x3382dd"
                           color.info="0xFFB05B"/>
         </s:fill>
     </s:Ellipse>
@@ -39,6 +41,7 @@
              text.Variable="V"
              text.Field="E"
              text.Property="P"
+             text.Method="M"
              text.info="i"/>
     <fx:Script><![CDATA[
         import actionScripts.valueObjects.CompletionItem;

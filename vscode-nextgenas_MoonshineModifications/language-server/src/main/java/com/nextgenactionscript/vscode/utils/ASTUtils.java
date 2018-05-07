@@ -25,7 +25,10 @@ import java.util.Set;
 import org.apache.royale.compiler.definitions.IDefinition;
 import org.apache.royale.compiler.definitions.ITypeDefinition;
 import org.apache.royale.compiler.projects.ICompilerProject;
+import org.apache.royale.compiler.tree.ASTNodeID;
 import org.apache.royale.compiler.tree.as.IASNode;
+import org.apache.royale.compiler.tree.as.IBinaryOperatorNode;
+import org.apache.royale.compiler.tree.as.IBlockNode;
 import org.apache.royale.compiler.tree.as.IClassNode;
 import org.apache.royale.compiler.tree.as.IFunctionCallNode;
 import org.apache.royale.compiler.tree.as.IFunctionNode;
@@ -35,6 +38,7 @@ import org.apache.royale.compiler.tree.as.IInterfaceNode;
 import org.apache.royale.compiler.tree.as.IScopedNode;
 import org.apache.royale.compiler.tree.as.ITransparentContainerNode;
 import org.apache.royale.compiler.tree.as.IVariableNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLScriptNode;
 import org.apache.royale.compiler.units.ICompilationUnit;
 
 public class ASTUtils
@@ -133,59 +137,80 @@ public class ASTUtils
             if (child instanceof IIdentifierNode)
             {
                 IIdentifierNode identifierNode = (IIdentifierNode) child;
+                String identifierName = identifierNode.getName();
                 IDefinition definition = identifierNode.resolve(project);
                 if (definition == null)
                 {
                     if (node instanceof IFunctionCallNode)
                     {
+                        //new Identifier()
+                        //x = Identifier(y)
                         IFunctionCallNode functionCallNode = (IFunctionCallNode) node;
-                        if (functionCallNode.isNewExpression())
+                        if (functionCallNode.getNameNode().equals(identifierNode))
                         {
-							importsToAdd.add(identifierNode.getName());
+                            importsToAdd.add(identifierName);
                         }
 					}
                     else if (node instanceof IVariableNode)
                     {
+                        //var x:Identifier
                         IVariableNode variableNode = (IVariableNode) node;
                         if (variableNode.getVariableTypeNode().equals(identifierNode))
                         {
-							importsToAdd.add(identifierNode.getName());
+							importsToAdd.add(identifierName);
                         }
 					}
 					else if (node instanceof IFunctionNode)
 					{
+                        //function():Identifier
 						IFunctionNode functionNode = (IFunctionNode) node;
 						if (functionNode.getReturnTypeNode().equals(identifierNode))
 						{
-							importsToAdd.add(identifierNode.getName());
-						}
+							importsToAdd.add(identifierName);
+                        }
 					}
 					else if (node instanceof IClassNode)
 					{
+                        //class x extends Identifier
 						IClassNode classNode = (IClassNode) node;
 						if (classNode.getBaseClassExpressionNode().equals(identifierNode))
 						{
-							importsToAdd.add(identifierNode.getName());
+							importsToAdd.add(identifierName);
 						}
 					}
 					else if (node instanceof ITransparentContainerNode
 							&& gp instanceof IClassNode)
 					{
+                        //class x extends y implements Identifier
 						IClassNode classNode = (IClassNode) gp;
 						if (Arrays.asList(classNode.getImplementedInterfaceNodes()).contains(identifierNode))
 						{
-							importsToAdd.add(identifierNode.getName());
+							importsToAdd.add(identifierName);
 						}
 					}
 					else if (node instanceof ITransparentContainerNode
 							&& gp instanceof IInterfaceNode)
 					{
+                        //interface x extends Identifier
 						IInterfaceNode classNode = (IInterfaceNode) gp;
 						if (Arrays.asList(classNode.getExtendedInterfaceNodes()).contains(identifierNode))
 						{
-							importsToAdd.add(identifierNode.getName());
+							importsToAdd.add(identifierName);
 						}
-					}
+                    }
+                    else if (node instanceof IBinaryOperatorNode
+                            && (node.getNodeID().equals(ASTNodeID.Op_IsID) || node.getNodeID().equals(ASTNodeID.Op_AsID))
+                            && ((IBinaryOperatorNode) node).getRightOperandNode().equals(identifierNode))
+                    {
+                        //x is Identifier
+                        //x as Identifier
+                        importsToAdd.add(identifierName);
+                    }
+                    else if (node instanceof IScopedNode && node instanceof IBlockNode)
+                    {
+                        //{ Identifier; }
+                        importsToAdd.add(identifierName);
+                    }
                 }
             }
             findUnresolvedIdentifiersToImport(child, project, importsToAdd);
@@ -195,17 +220,21 @@ public class ASTUtils
     protected static void findImportNodesToRemove(IASNode node, ICompilerProject project, Set<String> referencedDefinitions, Set<IImportNode> importsToRemove)
     {
         Set<IImportNode> childImports = null;
-        if (node instanceof IScopedNode)
+        if (node instanceof IScopedNode || node instanceof IMXMLScriptNode)
         {
             childImports = new HashSet<>();
         }
         for (int i = 0, count = node.getChildCount(); i < count; i++)
         {
             IASNode child = node.getChild(i);
-            if (childImports != null && child instanceof IImportNode)
+            if (child instanceof IImportNode)
             {
-                IImportNode importNode = (IImportNode) child;
-                childImports.add(importNode);
+                if (childImports != null)
+                {
+                    IImportNode importNode = (IImportNode) child;
+                    childImports.add(importNode);
+                }
+                //import nodes can't be references
                 continue;
             }
             if (child instanceof IIdentifierNode)
@@ -249,5 +278,16 @@ public class ASTUtils
             });
             importsToRemove.addAll(childImports);
         }
+    }
+
+    public static String getIndentBeforeNode(IASNode node, String fileText)
+    {
+        int indentLength = node.getColumn();
+        int indentStart = node.getAbsoluteStart() - indentLength;
+        if (indentStart != -1 && indentLength != -1)
+        {
+            return fileText.substring(indentStart, indentStart + indentLength);
+        }
+        return "";
     }
 }

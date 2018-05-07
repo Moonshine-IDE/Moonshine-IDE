@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.nextgenactionscript.vscode.services.ActionScriptLanguageClient;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -21,7 +22,7 @@ import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.xsocket.connection.INonBlockingConnection;
 
-public class MoonshineLanguageClient implements LanguageClient
+public class MoonshineLanguageClient implements ActionScriptLanguageClient
 {
     public INonBlockingConnection connection;
 
@@ -114,6 +115,16 @@ public class MoonshineLanguageClient implements LanguageClient
         {
             return;
         }
+    }
+
+    public void logCompilerShellOutput(String message)
+    {
+        //does nothing since Moonshine doesn't use the compiler shell
+    }
+
+    public void clearCompilerShellOutput()
+    {
+        //does nothing since Moonshine doesn't use the compiler shell
     }
 
     public static class DiagnosticSeveritySerializer implements JsonSerializer<DiagnosticSeverity>

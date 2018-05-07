@@ -299,6 +299,19 @@ package actionScripts.utils
 			return vo;
 		}
 
+		private function parseHover(original:Object):String
+		{
+			if(original === null)
+			{
+				return null;
+			}
+			if(original is String)
+			{
+				return original as String;
+			}
+			return original.value;
+		}
+
 		private function parseTextEdit(original:Object):TextEdit
 		{
 			var vo:TextEdit = new TextEdit();
@@ -717,22 +730,8 @@ package actionScripts.utils
 						var resultContentsCount:int = resultContents.length;
 						for(i = 0; i < resultContentsCount; i++)
 						{
-							var resultContent:String = resultContents[i];
-							//strip markdown formatting
-							if(resultContent.indexOf(MARKDOWN_NEXTGENAS_START) === 0)
-							{
-								resultContent = resultContent.substr(MARKDOWN_NEXTGENAS_START.length);
-							}
-							if(resultContent.indexOf(MARKDOWN_MXML_START) === 0)
-							{
-								resultContent = resultContent.substr(MARKDOWN_MXML_START.length);
-							}
-							var expectedEndIndex:int = resultContent.length - MARKDOWN_CODE_END.length;
-							if(resultContent.lastIndexOf(MARKDOWN_CODE_END) === expectedEndIndex)
-							{
-								resultContent = resultContent.substr(0, expectedEndIndex);
-							}
-							eventContents[i] = resultContent;
+							var resultContent:Object = resultContents[i];
+							eventContents[i] = parseHover(resultContent);
 						}
 						_dispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
 					}

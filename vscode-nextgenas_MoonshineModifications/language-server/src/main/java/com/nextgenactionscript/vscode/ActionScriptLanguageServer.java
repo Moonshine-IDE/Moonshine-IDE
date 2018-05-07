@@ -24,10 +24,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.nextgenactionscript.vscode.DidChangeWatchedFilesRegistrationOptions.FileSystemWatcher;
 import com.nextgenactionscript.vscode.commands.ICommandConstants;
 import com.nextgenactionscript.vscode.project.ASConfigProjectConfigStrategy;
+import com.nextgenactionscript.vscode.services.ActionScriptLanguageClient;
 import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
 
 import org.apache.royale.compiler.tree.as.IASNode;
@@ -71,7 +73,7 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
     private WorkspaceService workspaceService;
     private ActionScriptTextDocumentService textDocumentService;
     private ASConfigProjectConfigStrategy projectConfigStrategy;
-    private LanguageClient languageClient;
+    private ActionScriptLanguageClient languageClient;
 
     public ActionScriptLanguageServer()
     {
@@ -104,6 +106,7 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
         Path workspaceRoot = Paths.get(rootURI).toAbsolutePath().normalize();
         projectConfigStrategy.setASConfigPath(workspaceRoot.resolve(ASCONFIG_JSON));
         textDocumentService.setWorkspaceRoot(workspaceRoot);
+        textDocumentService.setClientCapabilities(params.getCapabilities());
 
         InitializeResult result = new InitializeResult();
 
@@ -141,7 +144,8 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
             ICommandConstants.GENERATE_GETTER_AND_SETTER,
             ICommandConstants.GENERATE_LOCAL_VARIABLE,
             ICommandConstants.GENERATE_FIELD_VARIABLE,
-            ICommandConstants.GENERATE_METHOD
+            ICommandConstants.GENERATE_METHOD,
+            ICommandConstants.QUICK_COMPILE
         ));
         serverCapabilities.setExecuteCommandProvider(executeCommandOptions);
 
@@ -202,18 +206,38 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
                 @Override
                 public void didChangeConfiguration(DidChangeConfigurationParams params)
                 {
-                    if(!(params.getSettings() instanceof LinkedTreeMap))
+                    if(!(params.getSettings() instanceof JsonObject))
                     {
                         return;
                     }
-                    LinkedTreeMap<?,?> settings = (LinkedTreeMap<?,?>) params.getSettings();
-                    LinkedTreeMap<?,?> nextgenas = (LinkedTreeMap<?,?>) settings.get("nextgenas");
-                    LinkedTreeMap<?,?> sdk = (LinkedTreeMap<?,?>) nextgenas.get("sdk");
-                    String frameworkSDK = (String) sdk.get("framework");
-                    if (frameworkSDK == null)
+                    JsonObject settings = (JsonObject) params.getSettings();
+                    if (!settings.has("nextgenas"))
+                    {
+                        return;
+                    }
+                    JsonObject nextgenas = settings.get("nextgenas").getAsJsonObject();
+                    if (!nextgenas.has("sdk"))
+                    {
+                        return;
+                    }
+                    JsonObject sdk = nextgenas.get("sdk").getAsJsonObject();
+                    String frameworkSDK = null;
+                    if (sdk.has("framework"))
+                    {
+                        JsonElement frameworkValue = sdk.get("framework");
+                        if (!frameworkValue.isJsonNull())
+                        {
+                            frameworkSDK = frameworkValue.getAsString();
+                        }
+                    }
+                    if (frameworkSDK == null && sdk.has("editor"))
                     {
                         //for legacy reasons, we fall back to the editor SDK
-                        frameworkSDK = (String) sdk.get("editor");
+                        JsonElement editorValue = sdk.get("editor");
+                        if (!editorValue.isJsonNull())
+                        {
+                            frameworkSDK = editorValue.getAsString();
+                        }
                     }
                     if (frameworkSDK == null)
                     {
@@ -311,17 +335,22 @@ public class ActionScriptLanguageServer implements LanguageServer, LanguageClien
         return textDocumentService;
     }
 
-    /**
-     * Passes in a set of functions to communicate with VSCode.
-     */
-    @Override
-    public void connect(LanguageClient client)
+    public void connect(ActionScriptLanguageClient client)
     {
         languageClient = client;
         if (textDocumentService != null)
         {
             textDocumentService.setLanguageClient(languageClient);
         }
+    }
+
+    /**
+     * Passes in a set of functions to communicate with VSCode.
+     */
+    @Override
+    public void connect(LanguageClient client)
+    {
+        connect((ActionScriptLanguageClient) client);
     }
 
     /**

@@ -172,7 +172,6 @@ public class ASConfigC
 	private String jsOutputType;
 	private String outputPath;
 	private String mainFile;
-	private String additionalOptions;
 	private String airDescriptorPath;
 	private List<String> sourcePaths;
 	private boolean configRequiresRoyale;
@@ -298,7 +297,25 @@ public class ASConfigC
 		}
 		if(json.has(TopLevelFields.ADDITIONAL_OPTIONS))
 		{
-			additionalOptions = json.get(TopLevelFields.ADDITIONAL_OPTIONS).asText();
+			String additionalOptions = json.get(TopLevelFields.ADDITIONAL_OPTIONS).asText();
+			if(additionalOptions != null)
+			{
+				//parse the additional options by splitting on whitespace
+				//except when an option is wrapped in quotes
+				Matcher matcher = ADDITIONAL_OPTIONS_PATTERN.matcher(additionalOptions);
+				while(matcher.find())
+				{
+					String quotedOption = matcher.group(1);
+					if(quotedOption != null)
+					{
+						compilerOptions.add(quotedOption);
+					}
+					else //not quoted
+					{
+						compilerOptions.add(matcher.group(2));
+					}
+				}
+			}
 		}
 		if(json.has(TopLevelFields.APPLICATION))
 		{
@@ -524,74 +541,7 @@ public class ASConfigC
 	
 	private void compileProject() throws ASConfigCException
 	{
-		Path jarPath = ProjectUtils.findCompilerJarPath(projectType, sdkHome, !outputIsJS);
-		if(jarPath == null)
-		{
-			throw new ASConfigCException("Compiler not found in SDK. Expected in SDK: " + sdkHome);
-		}
-		Path frameworkPath = Paths.get(sdkHome, "frameworks");
-		if(sdkIsRoyale)
-		{
-			//royale is a special case that has renamed many of the common
-			//configuration options for the compiler
-			compilerOptions.add(0, "+royalelib=" + frameworkPath.toString());
-			compilerOptions.add(0, jarPath.toString());
-			compilerOptions.add(0, "-jar");
-			compilerOptions.add(0, "-Droyalelib=" + frameworkPath.toString());
-			compilerOptions.add(0, "-Droyalecompiler=" + sdkHome.toString());
-		}
-		else
-		{
-			//other SDKs all use the same options
-			compilerOptions.add(0, "+flexlib=" + frameworkPath.toString());
-			compilerOptions.add(0, jarPath.toString());
-			compilerOptions.add(0, "-jar");
-			compilerOptions.add(0, "-Dflexlib=" + frameworkPath.toString());
-			compilerOptions.add(0, "-Dflexcompiler=" + sdkHome.toString());
-		}
-		Path javaExecutablePath = Paths.get(System.getProperty("java.home"), "bin", "java");
-		compilerOptions.add(0, javaExecutablePath.toString());
-
-		if(additionalOptions != null)
-		{
-			//parse the additional options by splitting on whitespace
-			//except when an option is wrapped in quotes
-			Matcher matcher = ADDITIONAL_OPTIONS_PATTERN.matcher(additionalOptions);
-			while(matcher.find())
-			{
-				String quotedOption = matcher.group(1);
-				if(quotedOption != null)
-				{
-					compilerOptions.add(quotedOption);
-				}
-				else //not quoted
-				{
-					compilerOptions.add(matcher.group(2));
-				}
-			}
-		}
-		try
-		{
-			File cwd = new File(System.getProperty("user.dir"));
-			Process process = new ProcessBuilder()
-				.command(compilerOptions)
-				.directory(cwd)
-				.inheritIO()
-				.start();
-			int status = process.waitFor();
-			if(status != 0)
-			{
-				throw new ASConfigCException(status);
-			}
-		}
-		catch(InterruptedException e)
-		{
-			throw new ASConfigCException("Failed to execute compiler: " + e.getMessage());
-		}
-		catch(IOException e)
-		{
-			throw new ASConfigCException("Failed to execute compiler: " + e.getMessage());
-		}
+		options.compiler.compile(projectType, compilerOptions, Paths.get(System.getProperty("user.dir")), Paths.get(sdkHome));
 	}
 
 	private void copySourcePathAssetToOutputDirectory(String assetPath, String outputDirectory) throws ASConfigCException

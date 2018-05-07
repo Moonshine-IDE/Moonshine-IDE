@@ -19,9 +19,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import com.nextgenactionscript.vscode.services.ActionScriptLanguageClient;
+
 import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.eclipse.lsp4j.launch.LSPLauncher;
-import org.eclipse.lsp4j.services.LanguageClient;
 
 /**
  * Contains the entry point for the JAR.
@@ -55,14 +55,14 @@ public class Main
                 outputStream = socket.getOutputStream();
             }
             ActionScriptLanguageServer server = new ActionScriptLanguageServer();
-            Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(
-                    server, inputStream, outputStream);
+            Launcher<ActionScriptLanguageClient> launcher = Launcher.createLauncher(
+                server, ActionScriptLanguageClient.class, inputStream, outputStream);
             server.connect(launcher.getRemoteProxy());
             launcher.startListening();
         }
         catch (Exception e)
         {
-            System.err.println("ActionScript and MXML language server failed to connect.");
+            System.err.println("ActionScript & MXML language server failed to connect.");
             System.err.println("Visit the following URL to file an issue, and please include this log: https://github.com/BowlerHatLLC/vscode-nextgenas/issues");
             e.printStackTrace(System.err);
             System.exit(SERVER_CONNECT_ERROR);
