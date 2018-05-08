@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 * Fixed issue where renaming newly created project template was not working.
 * New File: Fixed issue where in new file popup errors were doubled. 
+* New Project: Fixed issue where new project creation fails silently under certain scenario in macOS.
 
 ## Moonshine IDE [1.11.0]
 
