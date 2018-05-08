@@ -514,7 +514,7 @@
 		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing -->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_OffAppStore_Distribution.pkg'/>
+			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonAppStore_Distribution.pkg'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>

@@ -149,7 +149,7 @@ package actionScripts.impls
 			}
 			catch (e:Error)
 			{
-				reportPathAccessError();
+				reportPathAccessError(true);
 			}
 		}
 		
@@ -239,7 +239,7 @@ package actionScripts.impls
 			}
 			catch (e:Error)
 			{
-				reportPathAccessError();
+				reportPathAccessError(true);
 			}
 		}
 		
@@ -338,7 +338,7 @@ package actionScripts.impls
 			}
 			catch (e:Error)
 			{
-				reportPathAccessError();
+				reportPathAccessError(false);
 			}
 		}
 		
@@ -594,12 +594,13 @@ package actionScripts.impls
 			return content;
 		}
 		
-		protected function reportPathAccessError():void
+		protected function reportPathAccessError(isDirectory:Boolean):void
 		{
-			var errorMessage:String = "\nUnable to access directory: "+ _file.nativePath;
+			var errorMessage:String = "\nUnable to access "+ (isDirectory ? "directory:" : "file:") + _file.nativePath;
 			CONFIG::OSX
 				{
-					errorMessage += '\nPlease open File > Access Manager and click "Add Access" to to allow access to this directory.'
+					if (isDirectory)
+						errorMessage += '\nPlease open File > Access Manager and click "Add Access" to to allow access to this directory.'
 				}
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(
