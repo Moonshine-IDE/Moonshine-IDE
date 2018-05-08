@@ -231,21 +231,31 @@ package actionScripts.ui.editor.text
 		
 		public function drawCaret(beforeCharAtIndex:int):void
 		{
+			var modelTextLength:int = model.text.length;
 			var bounds:Rectangle;
 			var markerPos:Number = 0;
-			
-			if (beforeCharAtIndex == 0)
+            var atom:int;
+
+            if (beforeCharAtIndex == 0)
 			{
 				// Draw on empty line
 			}
-			else if (beforeCharAtIndex >= model.text.length)
+			else if (beforeCharAtIndex >= modelTextLength)
 			{
-				bounds = textLine.getAtomBounds(model.text.length-1);
+                atom = modelTextLength > textLine.atomCount ?
+                        textLine.atomCount - 1 :
+                        modelTextLength - 1;
+
+				bounds = textLine.getAtomBounds(atom);
 				markerPos = bounds.x+bounds.width;
 			}
 			else
 			{
-				bounds = textLine.getAtomBounds(beforeCharAtIndex);
+                atom = beforeCharAtIndex > textLine.atomCount ?
+						textLine.atomCount - 1 :
+                        beforeCharAtIndex;
+
+				bounds = textLine.getAtomBounds(atom);
 				markerPos = bounds.x;
 			}
 			
