@@ -6,18 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.12.0]
 
 ### Added
-* New type of basic Visual Editor project which allows you to build [PrimeFaces](https://www.primefaces.org/) applications mockups and export them as web applications.
-* Editor: **Go To Line** feature CTRL+L (Windows) and CMD+L (macOS).
+* New type of basic Visual Editor project which allows you to build [PrimeFaces](https://www.primefaces.org/) application mockups and export them as web applications.
+* Editor: **Go To Line** feature.  The shortcut is CTRL+L for Windows and CMD+L for macOS.
 * Project Tree: File **Duplicate** option in context menu.
 
 ### Changed
 * Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.11.1](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.11.1).
-* Improvement to Project deletion.
+* Improved project deletion prompt.
 
 ### Fixed
-* Fixed issue where renaming newly created project template was not working.
-* New File: Fixed issue where in new file popup errors were doubled. 
-* New Project: Fixed issue where new project creation fails silently under certain scenario in macOS.
+* Fixed issue where newly created project template could not be renamed.
+* New File: Fixed issue where in new file popup errors were duplicated. 
+* New Project: Fixed issue where new project creation failed silently under some conditions on macOS.
 
 ## Moonshine IDE [1.11.0]
 
