@@ -166,7 +166,7 @@ package actionScripts.valueObjects
 
         public function get isMethod():Boolean
         {
-            return _kind == "Function" && _detail.indexOf("(method)") > -1;
+            return _kind == "Method" && _detail.indexOf("(method)") > -1;
         }
 
         private function get isEvent():Boolean
@@ -183,7 +183,7 @@ package actionScripts.valueObjects
         {
             if (_detail)
             {
-                return _kind == "Function" && _detail.indexOf("(property)") > -1;
+                return _kind == "Field" && _detail.indexOf("(property)") > -1;
             }
 
             return false;
