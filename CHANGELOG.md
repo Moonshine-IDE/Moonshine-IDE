@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Tree: File **Duplicate** option in context menu.
 
 ### Changed
+* Updated [NexGenActionscript](https://nextgenactionscript.com/) engine to version [0.11.1](https://github.com/BowlerHatLLC/vscode-nextgenas/releases/tag/v0.11.1).
 * Improvement to Project deletion.
 
 ### Fixed
