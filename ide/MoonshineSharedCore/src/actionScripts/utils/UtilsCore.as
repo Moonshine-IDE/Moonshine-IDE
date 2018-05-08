@@ -621,7 +621,7 @@ package actionScripts.utils
             {
                 // FlexJS Application
                 project.isFlexJS  = true;
-				project.isRoyale = hasRoyaleNamespace;
+				project.isRoyale = hasRoyaleNamespace || hasJewelNamespace;
 				
                 // FlexJS MDL applicaiton
                 project.isMDLFlexJS = isMdlApp;
