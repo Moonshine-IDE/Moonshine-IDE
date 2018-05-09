@@ -67,7 +67,7 @@
 		[Bindable]
 		protected var model:IDEModel = IDEModel.getInstance();
 		[Bindable]
-		protected var warningMessage:String = "Visual editor files allowed to create inside source folder only.";
+		protected var warningMessage:String = "Class files allowed to create inside source folder only.";
 
 		[Bindable]
 		protected var componentTemplates:ArrayCollection;
