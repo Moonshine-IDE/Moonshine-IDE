@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where newly created project template could not be renamed.
 * New File: Fixed issue where in new file popup errors were duplicated. 
 * New Project: Fixed issue where new project creation failed silently under some conditions on macOS.
+* Settings: Library paths will be written to library-path instead of external-library-path
 
 ## Moonshine IDE [1.11.0]
 
