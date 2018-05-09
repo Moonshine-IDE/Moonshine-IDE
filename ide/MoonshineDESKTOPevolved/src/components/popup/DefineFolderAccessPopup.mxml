@@ -29,7 +29,9 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.core.IVisualElement;
+			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.events.ResizeEvent;
 			import mx.graphics.SolidColorStroke;
@@ -300,15 +302,26 @@
 			
 			protected function onRemoveAllAccess(event:MouseEvent):void
 			{
-				CONFIG::OSX
-				{
-					model.fileCore.getSSBInterface().disposeKeys();
-				}
+				Alert.show("Revoking all access may cause your projects behave unexpectedly.\nAre you sure you want to revoke?", "Warning!", Alert.YES|Alert.NO, this, revokeConfirmHandler);
 				
-				// remove local holdings
-				OSXBookmarkerNotifiers.availableBookmarkedPaths = "";
-				projectFolders.removeAll();
-				OSXBookmarkerNotifiers.removeFlashCookies();
+				/*
+				 * @local
+				 */
+				function revokeConfirmHandler(event2:CloseEvent):void
+				{
+					if (event2.detail == Alert.YES)
+					{
+						CONFIG::OSX
+							{
+								model.fileCore.getSSBInterface().disposeKeys();
+							}
+							
+						// remove local holdings
+						OSXBookmarkerNotifiers.availableBookmarkedPaths = "";
+						projectFolders.removeAll();
+						OSXBookmarkerNotifiers.removeFlashCookies();
+					}
+				}
 			}
 			
 		]]>

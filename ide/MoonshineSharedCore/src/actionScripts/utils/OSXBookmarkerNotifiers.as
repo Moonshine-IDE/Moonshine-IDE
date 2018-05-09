@@ -24,12 +24,10 @@ package actionScripts.utils
 	import flash.net.SharedObject;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
-	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -51,6 +49,9 @@ package actionScripts.utils
 		public static var availableBookmarkedPaths: String = "";
 		public static var availableBookmarkedPathsArr: Array;
 		
+		private static const ERROR_TYPE_UNACCESSIBLE:String = "ERROR_TYPE_UNACCESSIBLE";
+		private static const ERROR_TYPE_NOT_EXISTS:String = "ERROR_TYPE_NOT_EXISTS";
+		
 		private static var workspacePopup: DefineWorkspacePopup;
 		private static var accessManagerPopup: IFlexDisplayObject;
 		
@@ -63,20 +64,24 @@ package actionScripts.utils
 		
 		public static function checkAccessDependencies(projects:ArrayCollection, title:String="Access Manager", openByMenu:Boolean=false): Boolean
 		{
-			// # Resources that may needs access parse
-			// ====================================================
-			availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
-			if (availableBookmarkedPathsArr.length >= 1)
-			{
-				if (availableBookmarkedPathsArr[0] == "") availableBookmarkedPathsArr.shift(); // [0] will always blank
-				else if (availableBookmarkedPathsArr[0] == "INITIALIZED") availableBookmarkedPathsArr.shift(); // very first time initialization after Moonshine installation
-			}
-			
 			// gets bookmark access
 			var settings:Vector.<ISetting> = new Vector.<ISetting>();
 			for each (var project:AS3ProjectVO in projects)
 			{
-				var classSettings:Vector.<ISetting> = getUnbookmarkedPaths(project, "classpaths", availableBookmarkedPathsArr, "Class Paths: "+ project.name);
+				var classSettings:Vector.<ISetting>;
+				
+				// check project's root path
+				if (!isPathBookmarked(project.folderLocation.fileBridge.nativePath))
+				{
+					classSettings = new Vector.<ISetting>();
+					classSettings.push(getNewPathSetting(ERROR_TYPE_UNACCESSIBLE, false, project.folderLocation, project.folderLocation.fileBridge.nativePath, project));
+					
+					var fileLabel:StaticLabelSetting = new StaticLabelSetting("Project Path", 14);
+					classSettings.unshift(fileLabel);
+					settings = settings.concat(classSettings);
+				}
+				
+				classSettings = getUnbookmarkedPaths(project, "classpaths", availableBookmarkedPathsArr, "Class Paths: "+ project.name);
 				if (classSettings.length > 0) settings = settings.concat(classSettings);
 				classSettings = getUnbookmarkedPaths(project, "resourcePaths", availableBookmarkedPathsArr, "Resource Paths: "+ project.name);
 				if (classSettings.length > 0) settings = settings.concat(classSettings);
@@ -135,8 +140,16 @@ package actionScripts.utils
 			if (value.indexOf("Library/Containers/com.moonshine-ide/Data/Documents") != -1) return true;
 			
 			var separator:String = IDEModel.getInstance().fileCore.separator;
+			
+			// # Resources that may needs access parse
+			// ====================================================
 			availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
-			if (availableBookmarkedPathsArr.length > 0) availableBookmarkedPathsArr.shift();
+			if (availableBookmarkedPathsArr.length >= 1)
+			{
+				if (availableBookmarkedPathsArr[0] == "") availableBookmarkedPathsArr.shift(); // [0] will always blank
+				else if (availableBookmarkedPathsArr[0] == "INITIALIZED") availableBookmarkedPathsArr.shift(); // very first time initialization after Moonshine installation
+			}
+			
 			for each (var i:String in availableBookmarkedPathsArr)
 			{
 				if ((value.indexOf(i) != -1) ||
@@ -178,6 +191,8 @@ package actionScripts.utils
 		{
 			var settings:Vector.<ISetting> = new Vector.<ISetting>();
 			var projectNativePath:String = AS3ProjectVO(provider).folderLocation.fileBridge.nativePath;
+			
+			// check if project's varied file fields has access
 			for each(var i:FileLocation in provider[className])
 			{
 				var classPath:String = i.fileBridge.nativePath;
@@ -212,10 +227,7 @@ package actionScripts.utils
 				
 				if (!isFound)
 				{
-					path = new PathAccessSetting(i);
-					path.project = provider as AS3ProjectVO;
-					path.isLocalePath = isLocalePath;
-					path.errorType = "Moonshine does not have access to:\n"+ (!isLocalePath ? classPath : i.fileBridge.nativePath);
+					path = getNewPathSetting(ERROR_TYPE_UNACCESSIBLE, isLocalePath, i, (!isLocalePath ? classPath : i.fileBridge.nativePath), provider as AS3ProjectVO);
 					settings.push(path);
 				}
 				
@@ -227,11 +239,7 @@ package actionScripts.utils
 					if (path) path.errorType = "The dependency file/folder does not exist:\n"+ (!isLocalePath ? classPath : i.fileBridge.nativePath);
 					else
 					{
-						path = new PathAccessSetting(i);
-						path.project = provider as AS3ProjectVO;
-						path.isLocalePath = isLocalePath;
-						path.errorType = "The dependency file/folder does not exist:\n"+ (!isLocalePath ? classPath : i.fileBridge.nativePath);
-						settings.push(path);
+						settings.push(getNewPathSetting(ERROR_TYPE_NOT_EXISTS, isLocalePath, i, (!isLocalePath ? classPath : i.fileBridge.nativePath), provider as AS3ProjectVO));
 					}
 				}
 			}
@@ -244,6 +252,25 @@ package actionScripts.utils
 			}
 			
 			return settings;
+		}
+		
+		private static function getNewPathSetting(errorType:String, isLocale:Boolean, fl:FileLocation, finalPath:String, project:AS3ProjectVO):PathAccessSetting
+		{
+			var path:PathAccessSetting = new PathAccessSetting(fl);
+			path.project = project;
+			path.isLocalePath = isLocale;
+			
+			switch(errorType)
+			{
+				case ERROR_TYPE_UNACCESSIBLE:
+					path.errorType = "Moonshine does not have access to:\n"+ finalPath;
+					break;
+				case ERROR_TYPE_NOT_EXISTS:
+					path.errorType = "The dependency file/folder does not exist:\n"+ finalPath;
+					break;
+			}
+			
+			return path;
 		}
 		
 		private static function onWorkspaceClosed(event:CloseEvent):void

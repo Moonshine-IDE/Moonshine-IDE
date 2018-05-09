@@ -64,6 +64,9 @@
 				if (setting.originalPath.fileBridge.exists) path = setting.project.folderLocation.fileBridge.getRelativePath(setting.originalPath, true);
 				else path = setting.originalPath.fileBridge.nativePath;
 				
+				// even if the path comes blank, in case of project.getRelativePath(project)
+				if (path == "") path = setting.originalPath.fileBridge.nativePath;
+				
 				onResizeEvent(null);
 			}
 			
