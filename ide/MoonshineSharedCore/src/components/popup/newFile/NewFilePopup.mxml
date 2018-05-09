@@ -149,7 +149,7 @@
 				// it shows only the origianl set text to PromptTextInput.text if
 				// binded to a label component, thus:
 				modifiedName = txtFileName.text;
-
+				
 				if (txtFileName.text == "")
 				{
 					btnCreate.enabled = false;
@@ -160,6 +160,10 @@
 					targetFile.fileBridge.canonicalize();
 
 					btnCreate.enabled = !targetFile.fileBridge.exists;
+					if (!btnCreate.enabled)
+					{
+						warningMessage = modifiedName + lblExtension.text + " is already exists.";
+					}
 				}
 			}
 			
@@ -169,6 +173,7 @@
 				
 				// re-validate upon folder location change
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+				isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
 				onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
 			}
 
