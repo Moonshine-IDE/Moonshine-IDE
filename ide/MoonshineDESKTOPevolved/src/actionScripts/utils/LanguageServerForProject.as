@@ -71,16 +71,46 @@ package actionScripts.utils
 
 	import no.doomsday.console.ConsoleUtil;
 
+	/**
+	 * An implementation of the language server protocol for Moonshine IDE.
+	 * 
+	 * NOT currently implemented to spec -JT
+	 * 
+	 * @see https://microsoft.github.io/language-server-protocol/specification Language Server Protocol Specification
+	 */
 	public class LanguageServerForProject
 	{
-		private static const MARKDOWN_NEXTGENAS_START:String = "```nextgenas\n";
-		private static const MARKDOWN_MXML_START:String = "```mxml\n";
-		private static const MARKDOWN_CODE_END:String = "\n```";
-		private static const INCOMING_FIELD_METHOD:String = "method";
-		private static const INCOMING_FIELD_RESULT:String = "result";
-		private static const INCOMING_FIELD_ID:String = "id";
-		private static const METHOD_TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS:String = "textDocument/publishDiagnostics";
-		private static const METHOD_WORKSPACE_APPLY_EDIT:String = "workspace/applyEdit";
+		private static const SOCKET_ADDRESS:String = "127.0.0.1";
+		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
+		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
+		private static const FIELD_METHOD:String = "method";
+		private static const FIELD_RESULT:String = "result";
+		private static const FIELD_ID:String = "id";
+		private static const FIELD_COMMAND:String = "command";
+		private static const FIELD_CHANGES:String = "changes";
+		private static const FIELD_CONTENTS:String = "contents";
+		private static const FIELD_SIGNATURES:String = "signatures";
+		private static const FIELD_ITEMS:String = "items";
+		private static const JSON_RPC_VERSION:String = "2.0";
+		private static const METHOD_INITIALIZE:String = "initialize";
+		private static const METHOD_INITIALIZED:String = "initialized";
+		private static const METHOD_SHUTDOWN:String = "shutdown";
+		private static const METHOD_EXIT:String = "exit";
+		private static const METHOD_CANCEL_REQUEST:String = "$/cancelRequest";
+		private static const METHOD_TEXT_DOCUMENT__DID_CHANGE:String = "textDocument/didChange";
+		private static const METHOD_TEXT_DOCUMENT__DID_OPEN:String = "textDocument/didOpen";
+		private static const METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:String = "textDocument/publishDiagnostics";
+		private static const METHOD_TEXT_DOCUMENT__COMPLETION:String = "textDocument/completion";
+		private static const METHOD_TEXT_DOCUMENT__SIGNATURE_HELP:String = "textDocument/signatureHelp";
+		private static const METHOD_TEXT_DOCUMENT__HOVER:String = "textDocument/hover";
+		private static const METHOD_TEXT_DOCUMENT__DEFINITION:String = "textDocument/definition";
+		private static const METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL:String = "textDocument/documentSymbol";
+		private static const METHOD_TEXT_DOCUMENT__REFERENCES:String = "textDocument/references";
+		private static const METHOD_TEXT_DOCUMENT__RENAME:String = "textDocument/rename";
+		private static const METHOD_WORKSPACE__APPLY_EDIT:String = "workspace/applyEdit";
+		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
+		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
+		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 
 		private var _project:AS3ProjectVO;
 		private var _requestID:int = 0;
@@ -262,7 +292,7 @@ package actionScripts.utils
 		private function parseCompletionItem(original:Object):CompletionItem
 		{
 			var command:Command = null;
-            if("command" in original)
+            if(FIELD_COMMAND in original)
             {
                 command = parseCommand(original.command);
             }
@@ -324,7 +354,7 @@ package actionScripts.utils
 		{
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
-			var jarFile:File = File.applicationDirectory.resolvePath("elements/codecompletion.jar");
+			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			processArgs.push("-Dmoonshine.port=" + _port);
 			processArgs.push("-jar");
 			processArgs.push(jarFile.nativePath);
@@ -375,7 +405,7 @@ package actionScripts.utils
 				_xmlSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
 				_xmlSocket.addEventListener(Event.CLOSE,closeHandler);
 				_connecting = true;
-				_xmlSocket.connect("127.0.0.1", _port);
+				_xmlSocket.connect(SOCKET_ADDRESS, _port);
 			}
 		}
 		
@@ -404,9 +434,9 @@ package actionScripts.utils
 			_initialized = true;
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "initialize";
+			obj.method = METHOD_INITIALIZE;
 			var params:Object = new Object();
 			params.frameworkSDK = sdkPath;
 			params.workspacePath = _project.folderPath;
@@ -435,12 +465,12 @@ package actionScripts.utils
 		private function sendDidOpenRequest(uri:String):void
 		{
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/didOpen";
+			obj.method = METHOD_TEXT_DOCUMENT__DID_OPEN;
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
-			textDocument.languageId = "1";
+			textDocument.languageId = LANGUAGE_ID_ACTIONSCRIPT;
 			textDocument.version = 1;
 			textDocument.text = "";
 			var params:Object = new Object();
@@ -457,9 +487,9 @@ package actionScripts.utils
 				return;
 			}
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "workspace/didChangeConfiguration";
+			obj.method = METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION;
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
 			if(_project.isLibraryProject)
@@ -661,17 +691,17 @@ package actionScripts.utils
 				trace("invalid JSON");
 				return;
 			}
-			if(INCOMING_FIELD_METHOD in object)
+			if(FIELD_METHOD in object)
 			{
 				var method:String = object.method;
 				switch(method)
 				{
-					case METHOD_TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS:
+					case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
 					{
 						this.textDocument__publishDiagnostics(object);
 						break;
 					}
-					case METHOD_WORKSPACE_APPLY_EDIT:
+					case METHOD_WORKSPACE__APPLY_EDIT:
 					{
 						this.workspace__applyEdit(object);
 						break;
@@ -683,11 +713,11 @@ package actionScripts.utils
 					}
 				}
 			}
-			else if(INCOMING_FIELD_RESULT in object && INCOMING_FIELD_ID in object)
+			else if(FIELD_RESULT in object && FIELD_ID in object)
 			{
 				var result:Object = object.result;
 				var requestID:int = object.id as int;
-				if("items" in result) //completion
+				if(FIELD_ITEMS in result) //completion
 				{
 					var resultCompletionItems:Array = result.items as Array;
 					if(resultCompletionItems)
@@ -702,7 +732,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
 					}
 				}
-				if("signatures" in result) //signature help
+				if(FIELD_SIGNATURES in result) //signature help
 				{
 					var resultSignatures:Array = result.signatures as Array;
 					if(resultSignatures && resultSignatures.length > 0)
@@ -721,7 +751,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
 					}
 				}
-				if("contents" in result) //hover
+				if(FIELD_CONTENTS in result) //hover
 				{
 					var resultContents:Array = result.contents as Array;
 					if(resultContents)
@@ -736,7 +766,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
 					}
 				}
-				if("changes" in result) //rename
+				if(FIELD_CHANGES in result) //rename
 				{
 					var resultChanges:Object = result.changes;
 					var eventChanges:Object = {};
@@ -897,9 +927,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/didChange";
+			obj.method = METHOD_TEXT_DOCUMENT__DID_CHANGE;
 
 			var textDocument:Object = new Object();
 			textDocument.version = 1;
@@ -945,9 +975,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/completion";
+			obj.method = METHOD_TEXT_DOCUMENT__COMPLETION;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -981,9 +1011,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/signatureHelp";
+			obj.method = METHOD_TEXT_DOCUMENT__SIGNATURE_HELP;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -1017,9 +1047,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/hover";
+			obj.method = METHOD_TEXT_DOCUMENT__HOVER;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -1053,9 +1083,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/definition";
+			obj.method = METHOD_TEXT_DOCUMENT__DEFINITION;
 			_gotoDefinitionLookup[obj.id] = new Position(event.endLineNumber, event.endLinePos);
 
 			var textDocument:Object = new Object();
@@ -1092,9 +1122,9 @@ package actionScripts.utils
 			var query:String = event.newText;
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "workspace/symbol";
+			obj.method = METHOD_WORKSPACE__SYMBOL;
 
 			var WorkspaceSymbolParams:Object = new Object();
 			WorkspaceSymbolParams.query = query;
@@ -1120,9 +1150,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/documentSymbol";
+			obj.method = METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -1151,9 +1181,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/references";
+			obj.method = METHOD_TEXT_DOCUMENT__REFERENCES;
 			_findReferencesLookup[obj.id] = true;
 
 			var textDocument:Object = new Object();
@@ -1192,9 +1222,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "textDocument/rename";
+			obj.method = METHOD_TEXT_DOCUMENT__RENAME;
 			_findReferencesLookup[obj.id] = true;
 
 			var textDocument:Object = new Object();
@@ -1230,9 +1260,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var obj:Object = new Object();
-			obj.jsonrpc = "2.0";
+			obj.jsonrpc = JSON_RPC_VERSION;
 			obj.id = getNextRequestID();
-			obj.method = "workspace/executeCommand";
+			obj.method = METHOD_WORKSPACE__EXECUTE_COMMAND;
 
 			var ExecuteCommandParams:Object = new Object();
 			ExecuteCommandParams.command = event.command;
