@@ -22,6 +22,9 @@ package actionScripts.plugin.core.mouse
 	import flash.events.FocusEvent;
 	
 	import mx.core.FlexGlobals;
+	import mx.core.ITextInput;
+	
+	import spark.components.Button;
 	
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -47,6 +50,13 @@ package actionScripts.plugin.core.mouse
 		
 		private function onCursorUpdated(event:FocusEvent):void
 		{
+			// this should handle any non-input type of component focus
+			if (!(event.target is TextEditor) && !event.target.hasOwnProperty("text") && lastKnownEditor)
+			{
+				setFocusToTextEditor(lastKnownEditor, true);
+				return;
+			}
+			
 			if (lastKnownEditor && lastKnownEditor != event.target) 
 			{
 				setFocusToTextEditor(lastKnownEditor, false);
@@ -83,6 +93,8 @@ package actionScripts.plugin.core.mouse
 		
 		private function setFocusToTextEditor(editor:TextEditor, value:Boolean):void
 		{
+			if (value) editor.setFocus();
+			
 			editor.hasFocus = value;
 			editor.updateSelection();
 		}
