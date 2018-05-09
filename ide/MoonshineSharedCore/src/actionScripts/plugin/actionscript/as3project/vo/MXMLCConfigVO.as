@@ -164,14 +164,23 @@ package actionScripts.plugin.actionscript.as3project.vo
 			);
 			
 			generateLibraryConfigByProjectType(pvo, data, sdkPath, pvo.swfOutput.swfVersion);
-			
-			for each (var lib:FileLocation in pvo.libraries)
+
+			var lib:FileLocation;
+
+			for each (lib in pvo.externalLibraries)
 			{
 				data.compiler["external-library-path"].appendChild(
 					  <path-element>{lib.fileBridge.nativePath}</path-element>
 					);
 			}
-			
+
+            for each (lib in pvo.libraries)
+            {
+                data.compiler["library-path"].appendChild(
+                        <path-element>{lib.fileBridge.nativePath}</path-element>
+                );
+            }
+
 			data.appendChild(
 				<target-player>{pvo.swfOutput.swfVersion}</target-player>
 			);
