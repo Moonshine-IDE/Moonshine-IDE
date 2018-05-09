@@ -29,6 +29,7 @@ package actionScripts.utils
 	import mx.core.IFlexDisplayObject;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
+	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -135,6 +136,7 @@ package actionScripts.utils
 			
 			var separator:String = IDEModel.getInstance().fileCore.separator;
 			availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
+			if (availableBookmarkedPathsArr.length > 0) availableBookmarkedPathsArr.shift();
 			for each (var i:String in availableBookmarkedPathsArr)
 			{
 				if ((value.indexOf(i) != -1) ||
