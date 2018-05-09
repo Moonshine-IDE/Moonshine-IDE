@@ -108,11 +108,9 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     if(txtSrv == null)
                     {
-                        System.clearProperty("royalelib");
-                        String royaleLibPath = param.get("frameworkSDK").getAsString().concat("/frameworks");
-                        System.setProperty("royalelib", royaleLibPath);
                         txtSrv = new ActionScriptTextDocumentService();
-                        Path workspaceRoot = Paths.get(param.get("workspacePath").getAsString());
+                        String rootUri = param.get("rootUri").getAsString();
+                        Path workspaceRoot = Paths.get(URI.create(rootUri));
                         projectConfigStrategy = new MoonshineProjectConfigStrategy();
                         languageClient = new MoonshineLanguageClient();
                         languageClient.connection = nbc;

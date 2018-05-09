@@ -10,16 +10,24 @@ import org.xsocket.connection.Server;
 public class Main
 {
     private static final String SYSTEM_PROPERTY_PORT = "moonshine.port";
+    private static final String SYSTEM_PROPERTY_FRAMEWORK_LIB = "royalelib";
     private static final int ERROR_CODE_PORT = 1000;
+    private static final int ERROR_CODE_FRAMEWORK_LIB = 1001;
     
     protected static IServer srv = null;
 
     public static void main(String[] args)
     {
+        String frameworkLib = System.getProperty(SYSTEM_PROPERTY_FRAMEWORK_LIB);
+        if(frameworkLib == null)
+        {
+            System.err.println("Error: Missing royalelib system property. Usage: -Droyalelib=path/to/frameworks");
+            System.exit(ERROR_CODE_FRAMEWORK_LIB);
+        }
         String portAsString = System.getProperty(SYSTEM_PROPERTY_PORT);
         if(portAsString == null)
         {
-            System.err.println("Error: Missing moonshine.port");
+            System.err.println("Error: Missing moonshine.port system property. Usage: -Dmoonshine-port=PORT_NUMBER");
             System.exit(ERROR_CODE_PORT);
         }
         int portAsInt = -1;

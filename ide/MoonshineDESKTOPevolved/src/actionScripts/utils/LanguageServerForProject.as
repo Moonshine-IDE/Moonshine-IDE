@@ -352,10 +352,22 @@ package actionScripts.utils
 
 		private function startNativeProcess():void
 		{
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			if(!sdkPath)
+			{
+				//we can't start the process yet because we don't have an SDK
+				//for this project
+				return;
+			}
+
+			var frameworksPath:String = (new File(sdkPath)).resolvePath("frameworks").nativePath;
+
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			processArgs.push("-Dfile.encoding=UTF8");
 			processArgs.push("-Dmoonshine.port=" + _port);
+			processArgs.push("-Droyalelib=" + frameworksPath);
 			processArgs.push("-jar");
 			processArgs.push(jarFile.nativePath);
 			_shellInfo.arguments = processArgs;
@@ -438,8 +450,13 @@ package actionScripts.utils
 			obj.id = getNextRequestID();
 			obj.method = METHOD_INITIALIZE;
 			var params:Object = new Object();
-			params.frameworkSDK = sdkPath;
-			params.workspacePath = _project.folderPath;
+			params.rootUri = _project.folderLocation.fileBridge.url;
+			params.rootPath = _project.folderLocation.fileBridge.nativePath;
+			params.capabilities = {};
+			params.workspaceFolders =
+			[
+				{ name: _project.name, uri: _project.folderLocation.fileBridge.url },
+			];
 			obj.params = params;
 			var jsonstr:String = JSON.stringify(obj);
 			_xmlSocket.send(jsonstr);
@@ -853,18 +870,18 @@ package actionScripts.utils
 
 		private function projectChangeCustomSDKHandler(event:Event):void
 		{
+			trace("Change custom SDK Path:", _project.customSDKPath);
+			trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
 			if(_initialized)
 			{
 				//we've already initialized the server
-				trace("Change custom SDK Path:", _project.customSDKPath);
-				trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
 				DidChangeConfigurationParams();
 			}
 			else
 			{
-				//we haven't initialized the server yet
+				//we haven't started the native process yet
 				//it's possible that we couldn't find any SDK at all
-				initializeLanguageServer();
+				startNativeProcess();
 			}
 		}
 		
@@ -879,24 +896,24 @@ package actionScripts.utils
 
 		private function changeMenuSDKStateHandler(event:Event):void
 		{
+			var defaultSDKPath:String = "None";
+			var defaultSDK:FileLocation = _model.defaultSDK;
+			if(defaultSDK)
+			{
+				defaultSDKPath = _model.defaultSDK.fileBridge.nativePath;
+			}
+			trace("change global SDK:", defaultSDKPath);
+			trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
 			if(_initialized)
 			{
 				//we've already initialized the server
-				var defaultSDKPath:String = "None";
-				var defaultSDK:FileLocation = _model.defaultSDK;
-				if(defaultSDK)
-				{
-					defaultSDKPath = _model.defaultSDK.fileBridge.nativePath;
-				}
-				trace("change global SDK:", defaultSDKPath);
-				trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
 				DidChangeConfigurationParams();
 			}
 			else
 			{
-				//we haven't initialized the server yet
+				//we haven't started the native process yet
 				//it's possible that we couldn't find any SDK at all
-				initializeLanguageServer();
+				startNativeProcess();
 			}
 		}
 
