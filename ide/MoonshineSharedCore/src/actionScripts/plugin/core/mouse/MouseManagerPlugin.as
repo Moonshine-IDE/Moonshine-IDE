@@ -22,9 +22,7 @@ package actionScripts.plugin.core.mouse
 	import flash.events.FocusEvent;
 	
 	import mx.core.FlexGlobals;
-	import mx.core.ITextInput;
-	
-	import spark.components.Button;
+	import mx.events.FlexEvent;
 	
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -46,14 +44,21 @@ package actionScripts.plugin.core.mouse
 			// track and keep one cursor at a time
 			FlexGlobals.topLevelApplication.systemManager.addEventListener(FocusEvent.FOCUS_IN, onCursorUpdated);
 			FlexGlobals.topLevelApplication.stage.addEventListener(Event.DEACTIVATE, onApplicationLostFocus);
+			
+			// removeElement from FlexGlobals.topLevelApplication do not return focus to TextEditor
+			FlexGlobals.topLevelApplication.addEventListener(FlexEvent.UPDATE_COMPLETE, onTopLevelUpdated);
+		}
+		
+		private function onTopLevelUpdated(event:FlexEvent):void
+		{
+			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, true);
 		}
 		
 		private function onCursorUpdated(event:FocusEvent):void
 		{
 			// this should handle any non-input type of component focus
-			if (!(event.target is TextEditor) && !event.target.hasOwnProperty("text") && lastKnownEditor)
+			if (!(event.target is TextEditor) && !event.target.hasOwnProperty("text"))
 			{
-				setFocusToTextEditor(lastKnownEditor, true);
 				return;
 			}
 			
