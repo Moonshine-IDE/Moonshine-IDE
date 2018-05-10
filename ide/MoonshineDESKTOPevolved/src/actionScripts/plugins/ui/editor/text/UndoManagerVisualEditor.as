@@ -21,8 +21,10 @@ package actionScripts.plugins.ui.editor.text
 	import flash.events.KeyboardEvent;
 	
 	import actionScripts.plugins.help.view.VisualEditorView;
-	
-	import view.suportClasses.PropertyChangeReference;
+
+    import flash.ui.Keyboard;
+
+    import view.suportClasses.PropertyChangeReference;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class UndoManagerVisualEditor
@@ -87,10 +89,10 @@ package actionScripts.plugins.ui.editor.text
 			{
 				switch (event.keyCode)
 				{
-					case 0x59:		// Y
+					case Keyboard.Y:		// Y
 						redo();
 						break;
-					case 0x5A:		// Z
+					case Keyboard.Z:		// Z
 						undo();
 						break;
 				}
