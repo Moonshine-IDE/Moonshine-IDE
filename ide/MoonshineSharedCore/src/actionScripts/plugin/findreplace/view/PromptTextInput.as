@@ -35,7 +35,7 @@ package actionScripts.plugin.findreplace.view
 		public var promptView:RichText;
 		public var marginRight:int = 4;
 		
-		private var _prompt:String
+		private var _prompt:String;
 		
 		private var promptChanged:Boolean;
 		
@@ -44,7 +44,8 @@ package actionScripts.plugin.findreplace.view
 		{
 			return _prompt;
 		}
-		public function set prompt(v:String):void
+
+		override public function set prompt(v:String):void
 		{
 			_prompt = v;	
 			promptChanged = true;

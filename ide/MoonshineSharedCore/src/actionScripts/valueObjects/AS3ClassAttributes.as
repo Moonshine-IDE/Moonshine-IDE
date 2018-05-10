@@ -26,7 +26,8 @@ package actionScripts.valueObjects
 		public var modifierC:String;
 		public var extendsClassInterface:String;
 		public var implementsInterface:String;
-		
+		public var imports:Array = [];
+
 		public function AS3ClassAttributes()
 		{
 		}
@@ -38,6 +39,27 @@ package actionScripts.valueObjects
 			if (modifierC) tempModifArr.push(modifierC);
 			
 			return tempModifArr.join(" ");
+		}
+
+		public function getImports(importKeyword:String = "import"):String
+		{
+			var allImports:String = "";
+
+			var countImports:int = imports.length;
+			for (var i:int = 0; i < countImports; i++)
+			{
+				var imp:String = imports[i];
+				if (i == 0)
+				{
+                    allImports += importKeyword + " " + imp + ";\n";
+				}
+				else
+				{
+                    allImports += "    " + importKeyword + " " + imp + ";\n";
+				}
+			}
+
+			return allImports;
 		}
 	}
 }

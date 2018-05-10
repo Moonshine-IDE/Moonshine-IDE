@@ -250,6 +250,7 @@ package actionScripts.utils
 			var vo:SymbolInformation = new SymbolInformation();
 			vo.name = original.name;
 			vo.kind = original.kind;
+			vo.containerName = original.containerName;
 			vo.location = parseLocation(original.location);
 			return vo;
 		}

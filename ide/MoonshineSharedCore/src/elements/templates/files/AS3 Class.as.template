@@ -1,5 +1,6 @@
 package $packageName
 {
+    $imports
 	$modifierA $modifierB class $fileName $exstends $implements
 	{
 		public function $fileName()
