@@ -30,12 +30,15 @@ package actionScripts.plugins.ui.editor
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugins.help.view.VisualEditorView;
     import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
     
     import utils.VisualEditorType;
+    
+    import view.suportClasses.events.PropertyEditorChangeEvent;
     
     public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
     {
@@ -44,6 +47,7 @@ package actionScripts.plugins.ui.editor
 
         private var visualEditorProject:AS3ProjectVO;
 		private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
+		private var undoManager:UndoManagerVisualEditor;
         
         public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
         {
@@ -76,6 +80,8 @@ package actionScripts.plugins.ui.editor
             visualEditorView.percentHeight = 100;
             visualEditorView.addEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
             visualEditorView.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
+			
+			undoManager = new UndoManagerVisualEditor(visualEditorView);
 
             editor = new TextEditor(true);
             editor.percentHeight = 100;
@@ -94,7 +100,9 @@ package actionScripts.plugins.ui.editor
         {
             visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
             visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
-            visualEditorView.visualEditor.propertyEditor.addEventListener("propertyEditorChanged", onPropertyEditorChanged);
+			visualEditorView.visualEditor.editingSurface.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
+            visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
         }
 
         private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -150,11 +158,18 @@ package actionScripts.plugins.ui.editor
             updateChangeStatus();
         }
 
-        private function onPropertyEditorChanged(event:Event):void
+        private function onPropertyEditorChanged(event:PropertyEditorChangeEvent):void
         {
+			undoManager.handleChange(event);
+			
             hasChangedProperties = _isChanged = true;
             dispatchEvent(new Event('labelChanged'));
         }
+		
+		private function onEditingSurfaceItemAdded(event:PropertyEditorChangeEvent):void
+		{
+			undoManager.handleChange(event);
+		}
 
         private function onTabAdd(event:Event):void
         {
@@ -187,6 +202,10 @@ package actionScripts.plugins.ui.editor
             {
                 visualEditorView.visualEditor.editingSurface.selectedItem = null;
             }
+			else
+			{
+				visualEditorView.setFocus();
+			}
         }
 
         private function getMxmlCode():String
