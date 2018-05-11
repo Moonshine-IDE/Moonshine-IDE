@@ -194,8 +194,21 @@
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 
 			newAsFileCompletionManager = new NewASFileCompletionManager(this);
+			newAsFileCompletionManager.addEventListener("itemSelected", onCompletionManagerItemSelected);
 
 			this.btnCreate.setStyle("skinClass", DarkButtonSkin);
+		}
+
+		override protected function closeThis():void
+		{
+			newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
+			super.closeThis();
+		}
+
+		override protected function closeByCrossSign(event:Event):void
+		{
+			newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
+			super.closeByCrossSign(event);
 		}
 
 		private function onTxtSuperClassChange(event:TextOperationEvent):void
@@ -218,6 +231,12 @@
 			var completionListPosition:Point = this.txtInterfaces.localToGlobal(
 					new Point(this.txtInterfaces.x, this.txtInterfaces.y));
 			newAsFileCompletionManager.showCompletionListInterfaces(this.txtInterfaces.text, completionListPosition);
+		}
+
+		private function onCompletionManagerItemSelected(event:Event):void
+		{
+			txtSuperclass.selectRange(txtSuperclass.text.length, txtSuperclass.text.length);
+			txtInterfaces.selectRange(txtInterfaces.text.length, txtInterfaces.text.length);
 		}
 		]]>
 	</fx:Script>

@@ -25,8 +25,6 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.CompletionItem;
     import actionScripts.valueObjects.SymbolInformation;
 
-    import components.popup.newFile.NewASFilePopup;
-
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.KeyboardEvent;
@@ -38,6 +36,9 @@ package actionScripts.ui.editor.text
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
 
+    import spark.components.TitleWindow;
+
+    [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager
     {
         private static const CLASSES_LIST:String = "classesList";
@@ -45,16 +46,16 @@ package actionScripts.ui.editor.text
 
         protected var dispatcher:EventDispatcher = GlobalEventDispatcher.getInstance();
 
-        private var newAsFileView:NewASFilePopup;
+        private var view:TitleWindow;
 
         private var completionList:CodeCompletionList;
         private var menuCollection:ArrayCollection;
 
         private var completionListType:String;
 
-        public function NewASFileCompletionManager(newAsFileView:NewASFilePopup)
+        public function NewASFileCompletionManager(view:TitleWindow)
         {
-            this.newAsFileView = newAsFileView;
+            this.view = view;
 
             completionList = new CodeCompletionList();
             completionList.requireSelection = true;
@@ -63,9 +64,9 @@ package actionScripts.ui.editor.text
             completionList.dataProvider = menuCollection;
 
             dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
-            newAsFileView.addEventListener(MouseEvent.CLICK, onNewFileViewClick);
-            newAsFileView.addEventListener(CloseEvent.CLOSE, onNewAsFileClose);
-            newAsFileView.addEventListener(KeyboardEvent.KEY_DOWN, onNewAsFileKeyDown);
+            view.addEventListener(MouseEvent.CLICK, onViewClick);
+            view.addEventListener(CloseEvent.CLOSE, onViewClose);
+            view.addEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
         }
 
         [Bindable]
@@ -143,22 +144,22 @@ package actionScripts.ui.editor.text
             this.showCompletionList();
         }
 
-        private function onNewAsFileClose(event:Event):void
+        private function onViewClose(event:Event):void
         {
             dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
-            newAsFileView.removeEventListener(MouseEvent.CLICK, onNewFileViewClick);
-            newAsFileView.removeEventListener(CloseEvent.CLOSE, onNewAsFileClose);
-            newAsFileView.removeEventListener(KeyboardEvent.KEY_DOWN, onNewAsFileKeyDown);
+            view.removeEventListener(MouseEvent.CLICK, onViewClick);
+            view.removeEventListener(CloseEvent.CLOSE, onViewClose);
+            view.removeEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
 
             this.closeCompletionList();
         }
 
-        private function onNewFileViewClick(event:MouseEvent):void
+        private function onViewClick(event:MouseEvent):void
         {
             this.closeCompletionList();
         }
 
-        private function onNewAsFileKeyDown(event:KeyboardEvent):void
+        private function onViewKeyDown(event:KeyboardEvent):void
         {
             if (!completionList.isPopUp) return;
 
@@ -202,6 +203,7 @@ package actionScripts.ui.editor.text
                 }
             }
 
+            dispatchEvent(new Event("itemSelected"));
             this.closeCompletionList();
         }
 
@@ -219,8 +221,8 @@ package actionScripts.ui.editor.text
         {
             if (completionList.isPopUp) return;
 
-            PopUpManager.addPopUp(completionList, this.newAsFileView, false);
-            completionList.addEventListener(KeyboardEvent.KEY_DOWN, onNewAsFileKeyDown);
+            PopUpManager.addPopUp(completionList, this.view, false);
+            completionList.addEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
             completionList.addEventListener(MouseEvent.DOUBLE_CLICK, onCompletionListDoubleClick);
             completionList.addEventListener(Event.REMOVED_FROM_STAGE, onCompletionListRemovedFromStage);
         }
@@ -230,7 +232,7 @@ package actionScripts.ui.editor.text
             if(!completionList.isPopUp) return;
 
             PopUpManager.removePopUp(completionList);
-            completionList.removeEventListener(KeyboardEvent.KEY_DOWN, onNewAsFileKeyDown);
+            completionList.removeEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
             completionList.removeEventListener(Event.REMOVED_FROM_STAGE, onCompletionListRemovedFromStage);
             completionList.removeEventListener(MouseEvent.DOUBLE_CLICK, onCompletionListDoubleClick);
 
