@@ -40,6 +40,7 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler;
 import org.xsocket.MaxReadSizeExceededException;
 import org.xsocket.connection.IDataHandler;
 import org.xsocket.connection.IDisconnectHandler;
@@ -51,6 +52,14 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
     private String fileUrl = "";
     private MoonshineProjectConfigStrategy projectConfigStrategy;
     private MoonshineLanguageClient languageClient;
+    private Gson gson;
+
+    public xSocketDataHandler()
+    {
+        super();
+        MessageJsonHandler messageJsonHandler = new MessageJsonHandler(new HashMap<>());
+        gson = messageJsonHandler.getGson();
+    }
 
     public String readTextFile(String filePath)
     {
@@ -97,7 +106,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             }
             else
             {
-                Gson g = new Gson();
                 JsonObject jsonObject = new JsonParser().parse(data).getAsJsonObject();
 
                 int requestID = jsonObject.get("id").getAsInt();
@@ -123,7 +131,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-                        TextDocumentItem txtDocItm = g.fromJson(param.get("textDocument"), TextDocumentItem.class);
+                        TextDocumentItem txtDocItm = gson.fromJson(param.get("textDocument"), TextDocumentItem.class);
                         fileUrl = txtDocItm.getUri();
                         txtDocItm.setUri(fileUrl);
 
@@ -167,9 +175,9 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     {
                         JsonObject version = param.getAsJsonObject("DidChangeTextDocumentParams");
 
-                        VersionedTextDocumentIdentifier versionTxtDoc = g.fromJson(version.get("textDocument"), VersionedTextDocumentIdentifier.class);
+                        VersionedTextDocumentIdentifier versionTxtDoc = gson.fromJson(version.get("textDocument"), VersionedTextDocumentIdentifier.class);
                         List<TextDocumentContentChangeEvent> val = new ArrayList<TextDocumentContentChangeEvent>();
-                        val.add(g.fromJson(version.get("contentChanges"), TextDocumentContentChangeEvent.class));
+                        val.add(gson.fromJson(version.get("contentChanges"), TextDocumentContentChangeEvent.class));
 
                         DidChangeTextDocumentParams changeTxtParam = new DidChangeTextDocumentParams()
                         {
@@ -206,7 +214,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-                        TextDocumentPositionParams txtPosParam = g.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
+                        TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
                         CompletableFuture<Either<List<CompletionItem>,CompletionList>> lst = txtSrv.completion(txtPosParam);
                         String json = getJSON(requestID, lst.get());
                         //System.out.println("completion result : " + json);
@@ -220,7 +228,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/hover"))
                 {
-                    TextDocumentPositionParams txtPosParam = g.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
+                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
                     CompletableFuture<Hover> hoverInfo = txtSrv.hover(txtPosParam);
                     String json = getJSON(requestID, hoverInfo.get());
                     //System.out.println("hover result : " + json);
@@ -228,7 +236,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/signatureHelp"))
                 {
-                    TextDocumentPositionParams txtPosParam = g.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
+                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
                     CompletableFuture<SignatureHelp> signatureInfo = txtSrv.signatureHelp(txtPosParam);
                     String json = getJSON(requestID, signatureInfo.get());
                     //System.out.println("signature help result : " + json);
@@ -236,7 +244,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/definition"))
                 {
-                    TextDocumentPositionParams txtPosParam = g.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
+                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
                     CompletableFuture<List<? extends Location>> signatureInfo = txtSrv.definition(txtPosParam);
                     String json = getJSON(requestID, signatureInfo.get());
                     //System.out.println("definition result: " + json);
@@ -244,7 +252,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/documentSymbol"))
                 {
-                    DocumentSymbolParams docSymbolParams = g.fromJson(param.getAsJsonObject("DocumentSymbolParams"), DocumentSymbolParams.class);
+                    DocumentSymbolParams docSymbolParams = gson.fromJson(param.getAsJsonObject("DocumentSymbolParams"), DocumentSymbolParams.class);
                     CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.documentSymbol(docSymbolParams);
                     String json = getJSON(requestID, symbolInfo.get());
                     //System.out.println("document symbol result: " + json);
@@ -252,7 +260,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("workspace/symbol"))
                 {
-                    WorkspaceSymbolParams workspaceSymbolParams = g.fromJson(param.getAsJsonObject("WorkspaceSymbolParams"), WorkspaceSymbolParams.class);
+                    WorkspaceSymbolParams workspaceSymbolParams = gson.fromJson(param.getAsJsonObject("WorkspaceSymbolParams"), WorkspaceSymbolParams.class);
                     CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.workspaceSymbol(workspaceSymbolParams);
                     String json = getJSON(requestID, symbolInfo.get());
                     //System.out.println("workspace symbol result: " + json);
@@ -260,7 +268,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/references"))
                 {
-                    ReferenceParams refParams = g.fromJson(param.getAsJsonObject("ReferenceParams"), ReferenceParams.class);
+                    ReferenceParams refParams = gson.fromJson(param.getAsJsonObject("ReferenceParams"), ReferenceParams.class);
                     CompletableFuture<List<? extends Location>> refs = txtSrv.references(refParams);
                     String json = getJSON(requestID, refs.get());
                     //System.out.println("references result: " + json);
@@ -268,7 +276,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("textDocument/rename"))
                 {
-                    RenameParams renameParams = g.fromJson(param.getAsJsonObject("RenameParams"), RenameParams.class);
+                    RenameParams renameParams = gson.fromJson(param.getAsJsonObject("RenameParams"), RenameParams.class);
                     CompletableFuture<WorkspaceEdit> edits = txtSrv.rename(renameParams);
                     String json = getJSON(requestID, edits.get());
                     //System.out.println("rename result: " + json);
@@ -276,7 +284,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 else if (method.equalsIgnoreCase("workspace/executeCommand"))
                 {
-                    ExecuteCommandParams executeCommandParams = g.fromJson(param.getAsJsonObject("ExecuteCommandParams"), ExecuteCommandParams.class);
+                    ExecuteCommandParams executeCommandParams = gson.fromJson(param.getAsJsonObject("ExecuteCommandParams"), ExecuteCommandParams.class);
                     CompletableFuture<Object> result = txtSrv.executeCommand(executeCommandParams);
                     String json = getJSON(requestID, result.get());
                     //System.out.println("executeCommand result: " + json);
@@ -298,20 +306,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         HashMap<String, Object> wrapper = new HashMap<>();
         wrapper.put("id", id);
         wrapper.put("result", result);
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.registerTypeAdapter(Either.class, new EitherSerializer()).create();
         return gson.toJson(wrapper);
-    }
-    
-    private class EitherSerializer implements JsonSerializer<Either>
-    {
-        public JsonElement serialize(Either either, Type type, JsonSerializationContext context)
-        {
-            if(either.isLeft())
-            {
-                return context.serialize(either.getLeft());
-            }
-            return context.serialize(either.getRight());
-        }
     }
 }
