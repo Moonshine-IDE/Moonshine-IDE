@@ -251,7 +251,7 @@ package actionScripts.ui.editor.text
 			}
 			else
 			{
-                atom = beforeCharAtIndex > textLine.atomCount ?
+                atom = beforeCharAtIndex >= textLine.atomCount ?
 						textLine.atomCount - 1 :
                         beforeCharAtIndex;
 
@@ -276,7 +276,17 @@ package actionScripts.ui.editor.text
 				start = end;
 				end = tmp;
 			}
-		
+
+            if (start > textLine.atomCount)
+            {
+                start = textLine.atomCount - 1;
+            }
+
+            if (end > textLine.atomCount)
+            {
+                end = textLine.atomCount;
+            }
+
 			var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
 			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
 			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
@@ -425,7 +435,10 @@ package actionScripts.ui.editor.text
 				return new Rectangle(lineNumberWidth, 0, 0, lineHeight);
 			}
 			
-			if (charIndex == textLine.atomCount) charIndex--;
+			if (charIndex >= textLine.atomCount)
+			{
+				charIndex = textLine.atomCount - 1;
+            }
 			var bounds:Rectangle = textLine.getAtomBounds(charIndex);
 			bounds.x += lineNumberWidth;
 			
@@ -481,7 +494,12 @@ package actionScripts.ui.editor.text
 				model.isQuoteTextOpen = textToElementLength == 1 || textToElement.charAt(textToElementLength - 1) != startChar;
 				model.lastQuoteText = startChar;
 			}
-			
+			else
+			{
+				model.isQuoteTextOpen = false;
+				model.lastQuoteText = null;
+			}
+
 			textBlock.content = groupElement;
 
 			var newTextLine:TextLine = null;

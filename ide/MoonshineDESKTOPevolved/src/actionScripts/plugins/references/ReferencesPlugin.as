@@ -30,7 +30,6 @@ package actionScripts.plugins.references
 	import flash.events.Event;
 
 	import mx.collections.ArrayCollection;
-	import mx.core.UIComponent;
 	import mx.managers.PopUpManager;
 
 	public class ReferencesPlugin extends PluginBase
