@@ -61,7 +61,7 @@ package actionScripts.plugins.ui.editor.text
 				var change:PropertyChangeReference = history.pop();
 				future.push(change);
 				
-				change.reverse(editor.visualEditor);
+				change.undo(editor.visualEditor);
 			}
 		}
 		
@@ -72,7 +72,7 @@ package actionScripts.plugins.ui.editor.text
 				var change:PropertyChangeReference = future.pop();
 				history.push(change);
 				
-				change.restore(editor.visualEditor);
+				change.redo(editor.visualEditor);
 			}
 		}
 		
