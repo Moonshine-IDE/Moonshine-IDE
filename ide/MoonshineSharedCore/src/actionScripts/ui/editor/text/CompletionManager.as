@@ -40,6 +40,7 @@ package actionScripts.ui.editor.text
     import spark.collections.Sort;
 
     import spark.collections.SortField;
+    import actionScripts.valueObjects.CompletionItemKind;
 
     public class CompletionManager
 	{
@@ -173,13 +174,13 @@ package actionScripts.ui.editor.text
 			}
 
             var hasSelectedLineAutoCloseAttr:Boolean = false;
-			if (item.kind != "Class" && item.kind != "Value" && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
+			if (item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
             {
                 var itemWithNamespaceRegExp:RegExp = /\w+(?=:)/;
                 if (!itemWithNamespaceRegExp.test(item.insertText))
                 {
                     hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
-                    if (item.kind == "Variable" && item.insertText != null)
+                    if (item.kind == CompletionItemKind.VARIABLE && item.insertText != null)
                     {
                         hasSelectedLineAutoCloseAttr = false;
                     }
@@ -199,7 +200,7 @@ package actionScripts.ui.editor.text
             editor.setCompletionData(startIndex, endIndex, text);
 
 			if ((item.isMethod || hasSelectedLineAutoCloseAttr)
-					&& item.kind != "Class" && item.kind != "Value")
+					&& item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE)
 			{
                 var lineIndex:int = model.selectedLineIndex;
                 var cursorIndex:int = startIndex + text.length - 1;

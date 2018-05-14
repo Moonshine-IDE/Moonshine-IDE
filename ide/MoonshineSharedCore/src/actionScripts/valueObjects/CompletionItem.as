@@ -19,10 +19,10 @@ package actionScripts.valueObjects
 			return this._sortLabel;
 		}
 		
-		private var _kind:String;
+		private var _kind:int;
 		
 		[Bindable("kindChange")]
-		public function get kind():String
+		public function get kind():int
 		{
 			return this._kind;
 		}
@@ -81,7 +81,7 @@ package actionScripts.valueObjects
 		private var _displayKind:String;
 
         public function CompletionItem(label:String = "", insertText:String = "",
-									   kind:String = "", detail:String = "",
+									   kind:int = -1, detail:String = "",
 									   documentation:String = "", command:Command = null, data:* = undefined):void
 		{
 			this._label = label;
@@ -95,7 +95,7 @@ package actionScripts.valueObjects
 
 			this.displayLabel = label;
 			this.displayType = detail;
-			this.displayKind = kind;
+			this.displayKind = getDisplayKind(kind);
 		}
 
 		[Bindable("displayTypeChange")]
@@ -113,7 +113,7 @@ package actionScripts.valueObjects
             }
 			else
 			{
-                _displayType = this._kind;
+                _displayType = getDisplayKind(this._kind);
 			}
 		}
 
@@ -166,14 +166,14 @@ package actionScripts.valueObjects
 
         public function get isMethod():Boolean
         {
-            return _kind == "Method" && _detail.indexOf("(method)") > -1;
+            return _displayKind == "Method" && _detail.indexOf("(method)") > -1;
         }
 
         private function get isEvent():Boolean
         {
             if (_detail)
             {
-                return _kind == "Field" && _detail.indexOf("(event)") > -1;
+                return _displayKind == "Field" && _detail.indexOf("(event)") > -1;
             }
 
             return false;
@@ -183,7 +183,7 @@ package actionScripts.valueObjects
         {
             if (_detail)
             {
-                return _kind == "Field" && _detail.indexOf("(property)") > -1;
+                return _displayKind == "Field" && _detail.indexOf("(property)") > -1;
             }
 
             return false;
@@ -191,12 +191,120 @@ package actionScripts.valueObjects
 
         private function get isVariable():Boolean
         {
-            return _kind == "Variable" && _detail.indexOf("(variable)") > -1;
+            return _displayKind == "Variable" && _detail.indexOf("(variable)") > -1;
         }
 
 		private function get isClass():Boolean
 		{
-			return _kind == "Class" && _detail.indexOf("(Class)") > -1;
+			return _displayKind == "Class" && _detail.indexOf("(Class)") > -1;
+		}
+
+		private function getDisplayKind(kind:int):String
+		{
+			switch(kind)
+			{
+				case CompletionItemKind.CLASS:
+				{
+					return "Class";
+				}
+				case CompletionItemKind.COLOR:
+				{
+					return "Color";
+				}
+				case CompletionItemKind.CONSTANT:
+				{
+					return "Constant";
+				}
+				case CompletionItemKind.CONSTRUCTOR:
+				{
+					return "Constructor";
+				}
+				case CompletionItemKind.ENUM:
+				{
+					return "Enum";
+				}
+				case CompletionItemKind.ENUM_MEMBER:
+				{
+					return "EnumMember";
+				}
+				case CompletionItemKind.EVENT:
+				{
+					return "Event";
+				}
+				case CompletionItemKind.FIELD:
+				{
+					return "Field";
+				}
+				case CompletionItemKind.FILE:
+				{
+					return "File";
+				}
+				case CompletionItemKind.FOLDER:
+				{
+					return "Folder";
+				}
+				case CompletionItemKind.FUNCTION:
+				{
+					return "Function";
+				}
+				case CompletionItemKind.INTERFACE:
+				{
+					return "Interface";
+				}
+				case CompletionItemKind.KEYWORD:
+				{
+					return "Keyword";
+				}
+				case CompletionItemKind.METHOD:
+				{
+					return "Method";
+				}
+				case CompletionItemKind.MODULE:
+				{
+					return "Module";
+				}
+				case CompletionItemKind.OPERATOR:
+				{
+					return "Operator";
+				}
+				case CompletionItemKind.PROPERTY:
+				{
+					return "Property";
+				}
+				case CompletionItemKind.REFERENCE:
+				{
+					return "Reference";
+				}
+				case CompletionItemKind.SNIPPET:
+				{
+					return "Snippet";
+				}
+				case CompletionItemKind.STRUCT:
+				{
+					return "Struct";
+				}
+				case CompletionItemKind.TEXT:
+				{
+					return "Text";
+				}
+				case CompletionItemKind.TYPE_PARAMETER:
+				{
+					return "TypeParameter";
+				}
+				case CompletionItemKind.UNIT:
+				{
+					return "Unit";
+				}
+				case CompletionItemKind.VALUE:
+				{
+					return "Value";
+				}
+				case CompletionItemKind.VARIABLE:
+				{
+					return "Variable";
+				}
+			}
+			return null;
 		}
     }
 }

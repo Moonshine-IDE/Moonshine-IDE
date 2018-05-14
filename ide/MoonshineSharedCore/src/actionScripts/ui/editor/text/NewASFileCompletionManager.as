@@ -37,6 +37,7 @@ package actionScripts.ui.editor.text
     import mx.managers.PopUpManager;
 
     import spark.components.TitleWindow;
+    import actionScripts.valueObjects.SymbolKind;
 
     [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager
@@ -241,12 +242,12 @@ package actionScripts.ui.editor.text
 
         private function filterClasses(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
         {
-            return item.kind == "Class";
+            return item.kind == SymbolKind.CLASS;
         }
 
         private function filterInterfaces(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
         {
-            return item.kind == "Interface";
+            return item.kind == SymbolKind.INTERFACE;
         }
     }
 }

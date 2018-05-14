@@ -8,7 +8,7 @@ package actionScripts.valueObjects
 
 		public var name:String;
 		public var containerName:String;
-		public var kind:String;
+		public var kind:int;
 		public var location:Location;
 	}
 }
