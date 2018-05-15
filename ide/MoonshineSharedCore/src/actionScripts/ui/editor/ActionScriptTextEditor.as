@@ -138,7 +138,7 @@ package actionScripts.ui.editor
 		private function onTextChange(event:ChangeEvent):void
 		{
 			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider));
+				TypeAheadEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
 
 		private function onKeyDown(event:KeyboardEvent):void

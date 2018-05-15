@@ -70,6 +70,7 @@ package actionScripts.utils
 	import mx.collections.ArrayCollection;
 
 	import no.doomsday.console.ConsoleUtil;
+	import flash.errors.IllegalOperationError;
 
 	/**
 	 * An implementation of the language server protocol for Moonshine IDE.
@@ -127,6 +128,8 @@ package actionScripts.utils
 		private var _connected:Boolean = false;
 		private var _connecting:Boolean = false;
 		private var _initialized:Boolean = false;
+		private var _initializeID:int = -1;
+		private var _shutdownID:int = -1;
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 
@@ -429,6 +432,11 @@ package actionScripts.utils
 				//we haven't yet connected to the process
 				return;
 			}
+			if(_initializeID != -1)
+			{
+				//we're already initializing...
+				return;
+			}
 			if(_initialized)
 			{
 				//we're already initialized...
@@ -444,12 +452,6 @@ package actionScripts.utils
 			trace("Language server workspace root: " + project.folderPath);
 			trace("Language Server framework SDK: " + sdkPath);
 
-			_initialized = true;
-
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_INITIALIZE;
 			var params:Object = new Object();
 			params.rootUri = _project.folderLocation.fileBridge.url;
 			params.rootPath = _project.folderLocation.fileBridge.nativePath;
@@ -458,9 +460,45 @@ package actionScripts.utils
 			[
 				{ name: _project.name, uri: _project.folderLocation.fileBridge.url },
 			];
+			this._initializeID = this.sendRequest(METHOD_INITIALIZE, params);
+		}
+
+		private function sendRequest(method:String, params:Object):int
+		{
+			if(!_xmlSocket)
+			{
+				throw new IllegalOperationError("Request failed. Socket is not connected to language server.");
+			}
+			if(!_initialized && method != METHOD_INITIALIZE)
+			{
+				throw new IllegalOperationError("Request failed. Language server is not initialized. Unexpected method: " + method);
+			}
+			var id:int = getNextRequestID();
+			var obj:Object = new Object();
+			obj.jsonrpc = JSON_RPC_VERSION;
+			obj.id = id;
+			obj.method = method;
 			obj.params = params;
 			var jsonstr:String = JSON.stringify(obj);
+			//trace(">>>", jsonstr);
 			_xmlSocket.send(jsonstr);
+			return id;
+		}
+
+		private function sendInitialized():void
+		{
+			if(this._initializeID != -1)
+			{
+				throw new IllegalOperationError("Cannot send initialized notification until initialize request completes.");
+			}
+			if(this._initialized)
+			{
+				throw new IllegalOperationError("Cannot send initialized notification multiple times.");
+			}
+			this._initialized = true;
+
+			var params:Object = new Object();
+			this.sendRequest(METHOD_INITIALIZED, params);
 			
 			DidChangeConfigurationParams();
 			var editors:ArrayCollection = _model.editors;
@@ -474,28 +512,26 @@ package actionScripts.utils
 					if(isEditorInProject(asEditor))
 					{
 						var uri:String = asEditor.currentFile.fileBridge.url;
-						sendDidOpenRequest(uri);
+						sendDidOpenRequest(uri, asEditor.text);
 					}
 				}
 			}
 		}
 
-		private function sendDidOpenRequest(uri:String):void
+		private function sendDidOpenRequest(uri:String, text:String):void
 		{
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__DID_OPEN;
+			if(!_xmlSocket || !_initialized)
+			{
+				return;
+			}
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 			textDocument.languageId = LANGUAGE_ID_ACTIONSCRIPT;
 			textDocument.version = 1;
-			textDocument.text = "";
+			textDocument.text = text;
 			var params:Object = new Object();
 			params.textDocument = textDocument;
-			obj.params = params;
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
 		}
 
 		private function DidChangeConfigurationParams():void
@@ -504,10 +540,6 @@ package actionScripts.utils
 			{
 				return;
 			}
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION;
 			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
 			if(_project.isLibraryProject)
@@ -585,9 +617,7 @@ package actionScripts.utils
 			DidChangeConfigurationParams.additionalOptions = buildArgs;
 			var params:Object = new Object();
 			params.DidChangeConfigurationParams = DidChangeConfigurationParams;
-			obj.params = params;
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			this.sendRequest(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 		
 		private function textDocument__publishDiagnostics(jsonObject:Object):void
@@ -700,6 +730,7 @@ package actionScripts.utils
 		{
 			var data:String = event.data;
 			var object:Object = null;
+			//trace("<<<", data);
 			try
 			{
 				object = JSON.parse(data);
@@ -731,11 +762,21 @@ package actionScripts.utils
 					}
 				}
 			}
-			else if(FIELD_RESULT in object && FIELD_ID in object)
+			else if(FIELD_ID in object)
 			{
 				var result:Object = object.result;
 				var requestID:int = object.id as int;
-				if(FIELD_ITEMS in result) //completion
+				if(this._initializeID != -1 && this._initializeID == requestID)
+				{
+					this._initializeID = -1;
+					this.sendInitialized();
+				}
+				else if(this._shutdownID != -1 && this._shutdownID == requestID)
+				{
+					this._shutdownID = -1;
+					this.sendExit();
+				}
+				else if(result && FIELD_ITEMS in result) //completion
 				{
 					var resultCompletionItems:Array = result.items as Array;
 					if(resultCompletionItems)
@@ -750,7 +791,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
 					}
 				}
-				if(FIELD_SIGNATURES in result) //signature help
+				else if(result && FIELD_SIGNATURES in result) //signature help
 				{
 					var resultSignatures:Array = result.signatures as Array;
 					if(resultSignatures && resultSignatures.length > 0)
@@ -769,7 +810,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
 					}
 				}
-				if(FIELD_CONTENTS in result) //hover
+				else if(result && FIELD_CONTENTS in result) //hover
 				{
 					var resultContents:Array = result.contents as Array;
 					if(resultContents)
@@ -784,7 +825,7 @@ package actionScripts.utils
 						_dispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
 					}
 				}
-				if(FIELD_CHANGES in result) //rename
+				else if(result && FIELD_CHANGES in result) //rename
 				{
 					var resultChanges:Object = result.changes;
 					var eventChanges:Object = {};
@@ -802,7 +843,7 @@ package actionScripts.utils
 					}
 					_dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
 				}
-				if(result is Array) //definitions
+				else if(result && result is Array) //definitions
 				{
 					if(requestID in _gotoDefinitionLookup)
 					{
@@ -847,26 +888,28 @@ package actionScripts.utils
 			}
 		}
 
-		//For shutdown java socket
 		public function shutdownHandler(event:Event):void{
-			if(_xmlSocket)
+			if(!_xmlSocket)
 			{
-				_connected = false;
-				_connecting = false;
-				_xmlSocket.send("SHUTDOWN");
-				
-				// @note
-				// devsena@
-				// return from _xmlSocket.send("SHUTDOWN") when arrives
-				// _xmlSocket already made null due to cleanUpXmlSocket() call
-				// thus the _xmlSocket.send("SHUTDOWN") again restarts a
-				// parseData -> connectToJava process with new socket instance
-				// created; this throws in case of project deletion.
-				// _xmlSocket.send("SHUTDOWN") returns eventually calls cleanUpXmlSocket()
-				// so commenting-out the following call
-				
-                //cleanUpXmlSocket();
+				return;
 			}
+			this._shutdownID = this.sendRequest(METHOD_SHUTDOWN, null);
+		}
+
+		private function sendExit():void
+		{
+			if(!_xmlSocket)
+			{
+				return;
+			}
+
+			this.sendRequest(METHOD_EXIT, null);
+
+			_connected = false;
+			_connecting = false;
+			_initialized = false;
+			_initializeID = -1;
+			_shutdownID = -1;
 		}
 
 		private function projectChangeCustomSDKHandler(event:Event):void
@@ -918,8 +961,8 @@ package actionScripts.utils
 			}
 		}
 
-		//Call Didopen from Java
-		private function didOpenCall(event:TypeAheadEvent):void{
+		private function didOpenCall(event:TypeAheadEvent):void
+		{
 			if(!_xmlSocket || !_initialized)
 			{
 				return;
@@ -930,10 +973,11 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			sendDidOpenRequest(event.uri);
+			sendDidOpenRequest(event.uri, event.newText);
 		}
 
-		private function didChangeCall(event:TypeAheadEvent):void{
+		private function didChangeCall(event:TypeAheadEvent):void
+		{
 			if(!_xmlSocket || !_initialized)
 			{
 				return;
@@ -943,15 +987,10 @@ package actionScripts.utils
 				return;
 			}
 			event.preventDefault();
-
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__DID_CHANGE;
 
 			var textDocument:Object = new Object();
 			textDocument.version = 1;
-			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = event.uri;
 
 			var range:Object = new Object();
 			var startposition:Object = new Object();
@@ -970,18 +1009,15 @@ package actionScripts.utils
 			contentChanges.rangeLength = 0;//evt.textlen;
 			contentChanges.text = event.newText;
 
-			var DidChangeTextDocumentParams:Object = new Object();
-			DidChangeTextDocumentParams.textDocument = textDocument;
-			DidChangeTextDocumentParams.contentChanges = contentChanges;
-
 			var params:Object = new Object();
-			params.DidChangeTextDocumentParams = DidChangeTextDocumentParams;
-			obj.params = params;
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			params.textDocument = textDocument;
+			params.contentChanges = contentChanges;
+
+			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_CHANGE, params);
 		}
 
-		private function completionHandler(event:TypeAheadEvent):void{
+		private function completionHandler(event:TypeAheadEvent):void
+		{
 			if(!_xmlSocket || !_initialized)
 			{
 				return;
@@ -991,11 +1027,6 @@ package actionScripts.utils
 				return;
 			}
 			event.preventDefault();
-
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__COMPLETION;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -1010,10 +1041,8 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.TextDocumentPositionParams = TextDocumentPositionParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
 		}
 
 		private function signatureHelpHandler(event:TypeAheadEvent):void
@@ -1028,11 +1057,6 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__SIGNATURE_HELP;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
@@ -1046,10 +1070,8 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.TextDocumentPositionParams = TextDocumentPositionParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_TEXT_DOCUMENT__SIGNATURE_HELP, params);
 		}
 
 		private function hoverHandler(event:TypeAheadEvent):void
@@ -1064,11 +1086,6 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__HOVER;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
@@ -1082,10 +1099,8 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.TextDocumentPositionParams = TextDocumentPositionParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
 		}
 
 		private function gotoDefinitionHandler(event:TypeAheadEvent):void
@@ -1100,12 +1115,6 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__DEFINITION;
-			_gotoDefinitionLookup[obj.id] = new Position(event.endLineNumber, event.endLinePos);
-
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
@@ -1119,10 +1128,9 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.TextDocumentPositionParams = TextDocumentPositionParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
+			_gotoDefinitionLookup[id] = new Position(event.endLineNumber, event.endLinePos);
 		}
 
 		private function workspaceSymbolsHandler(event:TypeAheadEvent):void
@@ -1139,20 +1147,13 @@ package actionScripts.utils
 
 			var query:String = event.newText;
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_WORKSPACE__SYMBOL;
-
 			var WorkspaceSymbolParams:Object = new Object();
 			WorkspaceSymbolParams.query = query;
 
 			var params:Object = new Object();
 			params.WorkspaceSymbolParams = WorkspaceSymbolParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_WORKSPACE__SYMBOL, params);
 		}
 
 		private function documentSymbolsHandler(event:TypeAheadEvent):void
@@ -1167,11 +1168,6 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
@@ -1180,10 +1176,8 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.DocumentSymbolParams = DocumentSymbolParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
 		}
 
 		private function findReferencesHandler(event:TypeAheadEvent):void
@@ -1197,13 +1191,6 @@ package actionScripts.utils
 				return;
 			}
 			event.preventDefault();
-
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__REFERENCES;
-			_findReferencesLookup[obj.id] = true;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
@@ -1221,10 +1208,9 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.ReferenceParams = ReferenceParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__REFERENCES, params);
+			_findReferencesLookup[id] = true;
 		}
 
 		private function renameHandler(event:TypeAheadEvent):void
@@ -1238,12 +1224,6 @@ package actionScripts.utils
 				return;
 			}
 			event.preventDefault();
-
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_TEXT_DOCUMENT__RENAME;
-			_findReferencesLookup[obj.id] = true;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
@@ -1259,10 +1239,8 @@ package actionScripts.utils
 
 			var params:Object = new Object();
 			params.RenameParams = RenameParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_TEXT_DOCUMENT__RENAME, params);
 		}
 		
 		private function executeCommandHandler(event:ExecuteLanguageServerCommandEvent):void
@@ -1277,26 +1255,22 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = getNextRequestID();
-			obj.method = METHOD_WORKSPACE__EXECUTE_COMMAND;
-
 			var ExecuteCommandParams:Object = new Object();
 			ExecuteCommandParams.command = event.command;
 			ExecuteCommandParams.arguments = event.arguments;
 
 			var params:Object = new Object();
 			params.ExecuteCommandParams = ExecuteCommandParams;
-			obj.params = params;
-
-			var jsonstr:String = JSON.stringify(obj);
-			_xmlSocket.send(jsonstr);
+			
+			this.sendRequest(METHOD_WORKSPACE__EXECUTE_COMMAND, params);
 		}
 
 		private function cleanUpXmlSocket():void
 		{
-			if (!_xmlSocket) return;
+			if (!_xmlSocket)
+			{
+				return;
+			}
 			
             _xmlSocket.removeEventListener(Event.CONNECT, onSocketConnect);
             _xmlSocket.removeEventListener(DataEvent.DATA, onIncomingData);
