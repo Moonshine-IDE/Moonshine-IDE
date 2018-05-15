@@ -957,7 +957,7 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (debugAfterBuild)
 						{
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-							copyingResources(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
+							copyingResources();
 							dispatcher.dispatchEvent(
 								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
 							);
@@ -969,7 +969,7 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
-							copyingResources(currentSuccessfullProject, currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File);
+							copyingResources();
 						}
 					}
 
@@ -999,7 +999,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// to debug folder if any
 			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
 			{
-				copyingResources(pvo, swfFile);
+				copyingResources();
 				return;
 			}
 
@@ -1035,40 +1035,56 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		
 		private var resourceCopiedIndex:int;
-		private function copyingResources(pvo:AS3ProjectVO, swfFile:File):void
+		private function copyingResources():void
 		{
+            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
 			if (pvo.resourcePaths.length == 0) return;
 
-			var destination:File = swfFile.parent;
+			var destination:File = pvo.swfOutput.path.fileBridge.parent.fileBridge.getFile as File;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
             warning("Copying resource: %s", fl.name);
 
-			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopiedHandler, false, 0, true);
+			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopyComplete);
+			(fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
 			(fl.fileBridge.getFile as File).copyToAsync(destination.resolvePath(fl.fileBridge.name), true);
-			
-			/*
-			* @local
-			*/
-			function onFileCopiedHandler(event:Event):void
-			{
-				resourceCopiedIndex++;
-				event.target.removeEventListener(Event.COMPLETE, onFileCopiedHandler);
-				if (resourceCopiedIndex < pvo.resourcePaths.length)
-				{
-					copyingResources(pvo, swfFile);
-                }
-				else if (runAfterBuild) 
-				{
-					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
-					testMovie();
-				}
-				else
-				{
-					dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
-				}
-			}
 		}
-		
+
+        private function onFileCopyComplete(event:Event):void
+        {
+            event.currentTarget.removeEventListener(Event.COMPLETE, onFileCopyComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
+
+            resourceCopiedIndex++;
+
+            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
+            print("Copying %s complete", event.target.nativePath);
+
+            event.target.removeEventListener(Event.COMPLETE, onFileCopyComplete);
+            if (resourceCopiedIndex < pvo.resourcePaths.length)
+            {
+
+                print("Copying more resources");
+                copyingResources();
+            }
+            else if (runAfterBuild)
+            {
+                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.swfOutput.path.fileBridge.parent));
+                testMovie();
+            }
+            else
+            {
+                dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
+            }
+        }
+
+		private function onFileCopyFailed(event:IOErrorEvent):void
+		{
+            event.currentTarget.removeEventListener(Event.COMPLETE, onFileCopyComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
+
+			error("Copying resources failed %s\n", event.text);
+		}
+
 		private function getHTMLTemplatesCopied(pvo:AS3ProjectVO, htmlFile:File):void
 		{
 			if (!htmlFile.exists)
