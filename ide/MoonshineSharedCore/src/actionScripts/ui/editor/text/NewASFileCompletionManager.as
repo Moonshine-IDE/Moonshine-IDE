@@ -23,6 +23,7 @@ package actionScripts.ui.editor.text
     import actionScripts.events.TypeAheadEvent;
     import actionScripts.ui.codeCompletionList.CodeCompletionList;
     import actionScripts.valueObjects.CompletionItem;
+    import actionScripts.valueObjects.CompletionItemKind;
     import actionScripts.valueObjects.SymbolInformation;
 
     import flash.events.Event;
@@ -136,8 +137,10 @@ package actionScripts.ui.editor.text
             {
                 var symbolInformation:SymbolInformation = symbols[i];
                 var packageName:String = symbolInformation.containerName ? symbolInformation.containerName + "." + symbolInformation.name : "";
+                var completionItemKind:int = getCompletionItemType(symbolInformation.kind);
+
                 menuCollection.source.push(new CompletionItem(symbolInformation.name,
-                        "", symbolInformation.kind, packageName));
+                        "", completionItemKind, packageName));
             }
 
             menuCollection.refresh();
@@ -248,6 +251,16 @@ package actionScripts.ui.editor.text
         private function filterInterfaces(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
         {
             return item.kind == SymbolKind.INTERFACE;
+        }
+
+        private function getCompletionItemType(symbolKind:int):int
+        {
+            if (SymbolKind.CLASS == symbolKind)
+            {
+                return CompletionItemKind.CLASS;
+            }
+
+            return CompletionItemKind.INTERFACE;
         }
     }
 }
