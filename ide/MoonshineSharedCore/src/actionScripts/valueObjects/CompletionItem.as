@@ -166,14 +166,14 @@ package actionScripts.valueObjects
 
         public function get isMethod():Boolean
         {
-            return _displayKind == "Method" && _detail.indexOf("(method)") > -1;
+            return kind == CompletionItemKind.METHOD && _detail.indexOf("(method)") > -1;
         }
 
         private function get isEvent():Boolean
         {
             if (_detail)
             {
-                return _displayKind == "Field" && _detail.indexOf("(event)") > -1;
+                return kind == CompletionItemKind.FIELD && _detail.indexOf("(event)") > -1;
             }
 
             return false;
@@ -183,7 +183,7 @@ package actionScripts.valueObjects
         {
             if (_detail)
             {
-                return _displayKind == "Field" && _detail.indexOf("(property)") > -1;
+                return kind == CompletionItemKind.FIELD && _detail.indexOf("(property)") > -1;
             }
 
             return false;
@@ -191,12 +191,12 @@ package actionScripts.valueObjects
 
         private function get isVariable():Boolean
         {
-            return _displayKind == "Variable" && _detail.indexOf("(variable)") > -1;
+            return kind == CompletionItemKind.FIELD && _detail.indexOf("(variable)") > -1;
         }
 
 		private function get isClass():Boolean
 		{
-			return _displayKind == "Class" && _detail.indexOf("(Class)") > -1;
+			return kind == CompletionItemKind.CLASS && _detail.indexOf("(Class)") > -1;
 		}
 
 		private function getDisplayKind(kind:int):String
