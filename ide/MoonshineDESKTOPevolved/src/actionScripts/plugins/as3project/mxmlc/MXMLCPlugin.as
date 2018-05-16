@@ -1073,24 +1073,23 @@ package actionScripts.plugins.as3project.mxmlc
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
             warning("Copying resource: %s", fl.name);
 
-			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopyComplete);
-			(fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
+			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+			(fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 			(fl.fileBridge.getFile as File).copyToAsync(destination.resolvePath(fl.fileBridge.name), true);
 		}
 
-        private function onFileCopyComplete(event:Event):void
+        private function onResourcesCopyingComplete(event:Event):void
         {
-            event.currentTarget.removeEventListener(Event.COMPLETE, onFileCopyComplete);
-            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
+            event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 
             resourceCopiedIndex++;
 
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-            print("Copying %s complete", event.target.nativePath);
+            print("Copying %s complete", event.currentTarget.nativePath);
 
             if (resourceCopiedIndex < pvo.resourcePaths.length)
             {
-                print("Copying more resources");
                 copyingResources();
             }
 			else if (debugAfterBuild)
@@ -1109,10 +1108,10 @@ package actionScripts.plugins.as3project.mxmlc
             }
         }
 
-		private function onFileCopyFailed(event:IOErrorEvent):void
+		private function onResourcesCopyingFailed(event:IOErrorEvent):void
 		{
-            event.currentTarget.removeEventListener(Event.COMPLETE, onFileCopyComplete);
-            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
+            event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 
 			error("Copying resources failed %s\n", event.text);
             error("Project Build failed.");

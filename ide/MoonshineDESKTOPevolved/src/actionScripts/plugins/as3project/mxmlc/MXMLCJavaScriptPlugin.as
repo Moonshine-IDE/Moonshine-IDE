@@ -641,13 +641,10 @@ package actionScripts.plugins.as3project.mxmlc
             {
                 launchApplication();
             }
-            else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
+            else
             {
-                var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
-                copyingResources(currentProject as AS3ProjectVO, swfFile);
+                copyingResources();
             }
-
-            success("Project Build Successfully.");
         }
 
 		private function launchApplication():void
@@ -659,10 +656,12 @@ package actionScripts.plugins.as3project.mxmlc
 			// to debug folder if any
 			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
 			{
-				copyingResources(pvo, swfFile);
+				copyingResources();
 				return;
 			}
-			
+
+            success("Project Build Successfully.");
+
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
 			{
 				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
@@ -694,42 +693,62 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		
 		private var resourceCopiedIndex:int;
-		private function copyingResources(pvo:AS3ProjectVO, swfFile:File):void
+		private function copyingResources():void
 		{
-			var debugDestination:File = swfFile.parent;
-			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
-            print("Copying resource: %s", fl.name);
+            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
 
-			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onFileCopiedHandler, false, 0, true);
-			
+            if (pvo.resourcePaths.length == 0)
+			{
+                success("Project Build Successfully.");
+				return;
+			}
+
+            var buildResultFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+			var debugDestination:File = buildResultFile.parent;
+			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
+
+            warning("Copying resource: %s", fl.name);
+
+			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+            (fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 			// copying to bin/bin-debug
 			(fl.fileBridge.getFile as File).copyToAsync(debugDestination.resolvePath(fl.fileBridge.name), true);
-			
-			/*
-			 * @local
-			 */
-			function onFileCopiedHandler(event:Event):void
-			{
-				resourceCopiedIndex++;
-				event.target.removeEventListener(Event.COMPLETE, onFileCopiedHandler);
-				
-				// copying to bin/bin-release
-				var releaseDestination:File = pvo.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_RELEASE_PATH).fileBridge.getFile as File;
-				(fl.fileBridge.getFile as File).copyToAsync(releaseDestination.resolvePath(fl.fileBridge.name), true);
-				
-				if (resourceCopiedIndex < pvo.resourcePaths.length) copyingResources(pvo, swfFile);
-				else if (runAfterBuild) 
-				{
-					dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
-					launchApplication();
-				}
-				else
-				{
-					dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
-				}
-			}
 		}
-		
+
+        private function onResourcesCopyingComplete(event:Event):void
+		{
+            event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
+
+            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
+            print("Copying %s complete", event.currentTarget.nativePath);
+
+            resourceCopiedIndex++;
+            if (resourceCopiedIndex < pvo.resourcePaths.length)
+			{
+				copyingResources();
+            }
+            else if (runAfterBuild)
+            {
+                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+                launchApplication();
+            }
+            else
+            {
+                success("Project Build Successfully.");
+                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+            }
+		}
+
+        private function onResourcesCopyingFailed(event:IOErrorEvent):void
+        {
+            event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+            event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
+
+            error("Copying resources failed %s\n", event.text);
+            error("Project Build failed.");
+        }
+
 		private function shellError(e:ProgressEvent):void 
 		{
 			if(fcsh)
