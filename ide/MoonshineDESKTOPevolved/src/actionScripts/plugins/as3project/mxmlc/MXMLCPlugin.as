@@ -718,16 +718,10 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			initShell();
 		}
-		
-		private function clearConsoleBeforeRun():void
-		{
-			if (ConstantsCoreVO.IS_CONSOLE_CLEARED_ONCE) clearOutput();
-			ConstantsCoreVO.IS_CONSOLE_CLEARED_ONCE = true;
-		}
-		
+
 		private function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
 		{
-			clearConsoleBeforeRun();
+            clearOutput();
 			dispatcher.dispatchEvent(new MXMLCPluginEvent(CompilerEventBase.PREBUILD, new FileLocation(currentSDK.nativePath)));
 			print("Compiling "+pvo.projectName);
 			
@@ -957,27 +951,29 @@ package actionScripts.plugins.as3project.mxmlc
 						else if (debugAfterBuild)
 						{
 							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
-							copyingResources();
-							dispatcher.dispatchEvent(
-								new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject)
-							);
-							if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
+							if (currentSuccessfullProject.resourcePaths.length == 0)
 							{
-								//install and launch on device
-								testMovie();
+                                launchDebuggingAfterBuild();
 							}
+							else
+                            {
+                                copyingResources();
+                            }
 						}
 						else if (AS3ProjectVO(currentProject).resourcePaths.length != 0)
 						{
 							copyingResources();
 						}
+						else
+						{
+                            projectBuildSuccessfully();
+						}
+					}
+					else
+					{
+						projectBuildSuccessfully();
 					}
 
-                    success("Project Build Successfully.");
-					if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
-                    {
-                        reset();
-                    }
 					return;
 				}
 
@@ -989,7 +985,34 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			
 		}
-		
+
+		private function projectBuildSuccessfully():void
+		{
+            var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
+            success("Project Build Successfully.");
+            if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
+            {
+                reset();
+            }
+		}
+
+		private function launchDebuggingAfterBuild():void
+		{
+            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
+
+            if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
+            {
+                dispatcher.dispatchEvent(new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject));
+                //install and launch on device
+                testMovie();
+            }
+			else
+			{
+                projectBuildSuccessfully();
+                dispatcher.dispatchEvent(new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject));
+			}
+		}
+
 		private function testMovie():void 
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
@@ -1002,6 +1025,8 @@ package actionScripts.plugins.as3project.mxmlc
 				copyingResources();
 				return;
 			}
+
+            projectBuildSuccessfully();
 
 			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
 			{
@@ -1038,7 +1063,11 @@ package actionScripts.plugins.as3project.mxmlc
 		private function copyingResources():void
 		{
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			if (pvo.resourcePaths.length == 0) return;
+			if (pvo.resourcePaths.length == 0)
+			{
+				projectBuildSuccessfully();
+				return;
+            }
 
 			var destination:File = pvo.swfOutput.path.fileBridge.parent.fileBridge.getFile as File;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
@@ -1059,13 +1088,15 @@ package actionScripts.plugins.as3project.mxmlc
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
             print("Copying %s complete", event.target.nativePath);
 
-            event.target.removeEventListener(Event.COMPLETE, onFileCopyComplete);
             if (resourceCopiedIndex < pvo.resourcePaths.length)
             {
-
                 print("Copying more resources");
                 copyingResources();
             }
+			else if (debugAfterBuild)
+			{
+				launchDebuggingAfterBuild();
+			}
             else if (runAfterBuild)
             {
                 dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.swfOutput.path.fileBridge.parent));
@@ -1073,6 +1104,7 @@ package actionScripts.plugins.as3project.mxmlc
             }
             else
             {
+				projectBuildSuccessfully();
                 dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).swfOutput.path.fileBridge.parent));
             }
         }
@@ -1083,6 +1115,7 @@ package actionScripts.plugins.as3project.mxmlc
             event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyFailed);
 
 			error("Copying resources failed %s\n", event.text);
+            error("Project Build failed.");
 		}
 
 		private function getHTMLTemplatesCopied(pvo:AS3ProjectVO, htmlFile:File):void
