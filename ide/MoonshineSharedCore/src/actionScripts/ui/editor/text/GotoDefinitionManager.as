@@ -74,6 +74,12 @@ package actionScripts.ui.editor.text
 				return;
 			}
 			savedLocation = locations[0];
+			if(savedLocation.uri.indexOf("file:/") != 0)
+			{
+				//we don't know how to handle other URI schemes yet
+				this.closeDefinitionLink();
+				return;
+			}
 			var lineIndex:int = position.line;
 			var charIndex:int = position.character;
 			var line:TextLineModel = model.lines[lineIndex];
