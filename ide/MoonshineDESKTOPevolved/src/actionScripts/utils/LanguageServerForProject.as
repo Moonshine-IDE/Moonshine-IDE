@@ -524,13 +524,16 @@ package actionScripts.utils
 			{
 				return;
 			}
+
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 			textDocument.languageId = LANGUAGE_ID_ACTIONSCRIPT;
 			textDocument.version = 1;
 			textDocument.text = text;
+
 			var params:Object = new Object();
 			params.textDocument = textDocument;
+
 			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
 		}
 
@@ -1035,12 +1038,9 @@ package actionScripts.utils
 			position.line = event.endLineNumber;
 			position.character = event.endLinePos;
 
-			var TextDocumentPositionParams:Object = new Object();
-			TextDocumentPositionParams.textDocument = textDocument;
-			TextDocumentPositionParams.position = position;
-
 			var params:Object = new Object();
-			params.TextDocumentPositionParams = TextDocumentPositionParams;
+			params.textDocument = textDocument;
+			params.position = position;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
 		}
@@ -1064,12 +1064,9 @@ package actionScripts.utils
 			position.line = event.endLineNumber;
 			position.character = event.endLinePos;
 
-			var TextDocumentPositionParams:Object = new Object();
-			TextDocumentPositionParams.textDocument = textDocument;
-			TextDocumentPositionParams.position = position;
-
 			var params:Object = new Object();
-			params.TextDocumentPositionParams = TextDocumentPositionParams;
+			params.textDocument = textDocument;
+			params.position = position;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__SIGNATURE_HELP, params);
 		}
@@ -1093,12 +1090,9 @@ package actionScripts.utils
 			position.line = event.endLineNumber;
 			position.character = event.endLinePos;
 
-			var TextDocumentPositionParams:Object = new Object();
-			TextDocumentPositionParams.textDocument = textDocument;
-			TextDocumentPositionParams.position = position;
-
 			var params:Object = new Object();
-			params.TextDocumentPositionParams = TextDocumentPositionParams;
+			params.textDocument = textDocument;
+			params.position = position;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
 		}
@@ -1122,12 +1116,9 @@ package actionScripts.utils
 			position.line = event.endLineNumber;
 			position.character = event.endLinePos;
 
-			var TextDocumentPositionParams:Object = new Object();
-			TextDocumentPositionParams.textDocument = textDocument;
-			TextDocumentPositionParams.position = position;
-
 			var params:Object = new Object();
-			params.TextDocumentPositionParams = TextDocumentPositionParams;
+			params.textDocument = textDocument;
+			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
 			_gotoDefinitionLookup[id] = new Position(event.endLineNumber, event.endLinePos);
@@ -1147,11 +1138,8 @@ package actionScripts.utils
 
 			var query:String = event.newText;
 
-			var WorkspaceSymbolParams:Object = new Object();
-			WorkspaceSymbolParams.query = query;
-
 			var params:Object = new Object();
-			params.WorkspaceSymbolParams = WorkspaceSymbolParams;
+			params.query = query;
 			
 			this.sendRequest(METHOD_WORKSPACE__SYMBOL, params);
 		}
@@ -1171,11 +1159,8 @@ package actionScripts.utils
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as BasicTextEditor).currentFile.fileBridge.url;
 
-			var DocumentSymbolParams:Object = new Object();
-			DocumentSymbolParams.textDocument = textDocument;
-
 			var params:Object = new Object();
-			params.DocumentSymbolParams = DocumentSymbolParams;
+			params.textDocument = textDocument;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
 		}
@@ -1201,13 +1186,10 @@ package actionScripts.utils
 			var context:Object = new Object();
 			context.includeDeclaration = true;
 
-			var ReferenceParams:Object = new Object();
-			ReferenceParams.textDocument = textDocument;
-			ReferenceParams.position = position;
-			ReferenceParams.context = context;
-
 			var params:Object = new Object();
-			params.ReferenceParams = ReferenceParams;
+			params.textDocument = textDocument;
+			params.position = position;
+			params.context = context;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__REFERENCES, params);
 			_findReferencesLookup[id] = true;
@@ -1232,13 +1214,10 @@ package actionScripts.utils
 			position.line = event.endLineNumber;
 			position.character = event.endLinePos;
 
-			var RenameParams:Object = new Object();
-			RenameParams.textDocument = textDocument;
-			RenameParams.position = position;
-			RenameParams.newName = event.newText;
-
 			var params:Object = new Object();
-			params.RenameParams = RenameParams;
+			params.textDocument = textDocument;
+			params.position = position;
+			params.newName = event.newText;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__RENAME, params);
 		}
@@ -1255,12 +1234,9 @@ package actionScripts.utils
 			}
 			event.preventDefault();
 
-			var ExecuteCommandParams:Object = new Object();
-			ExecuteCommandParams.command = event.command;
-			ExecuteCommandParams.arguments = event.arguments;
-
 			var params:Object = new Object();
-			params.ExecuteCommandParams = ExecuteCommandParams;
+			params.command = event.command;
+			params.arguments = event.arguments;
 			
 			this.sendRequest(METHOD_WORKSPACE__EXECUTE_COMMAND, params);
 		}

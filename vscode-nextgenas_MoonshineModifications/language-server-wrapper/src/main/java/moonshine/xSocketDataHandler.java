@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
@@ -112,10 +113,9 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     if(txtSrv == null)
                     {
-                        JsonObject param = jsonObject.getAsJsonObject("params");
+                        InitializeParams initializeParams = gson.fromJson(jsonObject.getAsJsonObject("params"), InitializeParams.class);
                         txtSrv = new ActionScriptTextDocumentService();
-                        String rootUri = param.get("rootUri").getAsString();
-                        Path workspaceRoot = Paths.get(URI.create(rootUri));
+                        Path workspaceRoot = Paths.get(URI.create(initializeParams.getRootUri()));
                         projectConfigStrategy = new MoonshineProjectConfigStrategy();
                         languageClient = new MoonshineLanguageClient();
                         languageClient.connection = nbc;
@@ -148,8 +148,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-                        JsonObject param = jsonObject.getAsJsonObject("params");
-                        DidOpenTextDocumentParams didOpenTextDocumentParams = gson.fromJson(param, DidOpenTextDocumentParams.class);
+                        DidOpenTextDocumentParams didOpenTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidOpenTextDocumentParams.class);
                         txtSrv.didOpen(didOpenTextDocumentParams);
                     }
                     catch (Exception e)
@@ -165,8 +164,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-                        JsonObject param = jsonObject.getAsJsonObject("params");
-                        DidChangeTextDocumentParams didChangeTextDocumentParams = gson.fromJson(param, DidChangeTextDocumentParams.class);
+                        DidChangeTextDocumentParams didChangeTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidChangeTextDocumentParams.class);
                         txtSrv.didChange(didChangeTextDocumentParams);
                     }
                     catch (Exception e)
@@ -190,9 +188,8 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 {
                     try
                     {
-                        JsonObject param = jsonObject.getAsJsonObject("params");
-                        TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
-                        CompletableFuture<Either<List<CompletionItem>,CompletionList>> lst = txtSrv.completion(txtPosParam);
+                        TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                        CompletableFuture<Either<List<CompletionItem>,CompletionList>> lst = txtSrv.completion(textDocumentPositionParams);
                         String json = getJSONResponse(requestID, lst.get());
                         //System.out.println("completion result : " + json);
                         nbc.write(json + "\0");
@@ -206,9 +203,8 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/hover":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
-                    CompletableFuture<Hover> hoverInfo = txtSrv.hover(txtPosParam);
+                    TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                    CompletableFuture<Hover> hoverInfo = txtSrv.hover(textDocumentPositionParams);
                     String json = getJSONResponse(requestID, hoverInfo.get());
                     //System.out.println("hover result : " + json);
                     nbc.write(json + "\0");
@@ -216,9 +212,8 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/signatureHelp":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
-                    CompletableFuture<SignatureHelp> signatureInfo = txtSrv.signatureHelp(txtPosParam);
+                    TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                    CompletableFuture<SignatureHelp> signatureInfo = txtSrv.signatureHelp(textDocumentPositionParams);
                     String json = getJSONResponse(requestID, signatureInfo.get());
                     //System.out.println("signature help result : " + json);
                     nbc.write(json + "\0");
@@ -226,8 +221,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/definition":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    TextDocumentPositionParams txtPosParam = gson.fromJson(param.getAsJsonObject("TextDocumentPositionParams"), TextDocumentPositionParams.class);
+                    TextDocumentPositionParams txtPosParam = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
                     CompletableFuture<List<? extends Location>> signatureInfo = txtSrv.definition(txtPosParam);
                     String json = getJSONResponse(requestID, signatureInfo.get());
                     //System.out.println("definition result: " + json);
@@ -236,8 +230,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/documentSymbol":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    DocumentSymbolParams docSymbolParams = gson.fromJson(param.getAsJsonObject("DocumentSymbolParams"), DocumentSymbolParams.class);
+                    DocumentSymbolParams docSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DocumentSymbolParams.class);
                     CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.documentSymbol(docSymbolParams);
                     String json = getJSONResponse(requestID, symbolInfo.get());
                     //System.out.println("document symbol result: " + json);
@@ -246,8 +239,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "workspace/symbol":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    WorkspaceSymbolParams workspaceSymbolParams = gson.fromJson(param.getAsJsonObject("WorkspaceSymbolParams"), WorkspaceSymbolParams.class);
+                    WorkspaceSymbolParams workspaceSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), WorkspaceSymbolParams.class);
                     CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.workspaceSymbol(workspaceSymbolParams);
                     String json = getJSONResponse(requestID, symbolInfo.get());
                     //System.out.println("workspace symbol result: " + json);
@@ -256,8 +248,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/references":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    ReferenceParams refParams = gson.fromJson(param.getAsJsonObject("ReferenceParams"), ReferenceParams.class);
+                    ReferenceParams refParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ReferenceParams.class);
                     CompletableFuture<List<? extends Location>> refs = txtSrv.references(refParams);
                     String json = getJSONResponse(requestID, refs.get());
                     //System.out.println("references result: " + json);
@@ -266,8 +257,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "textDocument/rename":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    RenameParams renameParams = gson.fromJson(param.getAsJsonObject("RenameParams"), RenameParams.class);
+                    RenameParams renameParams = gson.fromJson(jsonObject.getAsJsonObject("params"), RenameParams.class);
                     CompletableFuture<WorkspaceEdit> edits = txtSrv.rename(renameParams);
                     String json = getJSONResponse(requestID, edits.get());
                     //System.out.println("rename result: " + json);
@@ -276,8 +266,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "workspace/executeCommand":
                 {
-                    JsonObject param = jsonObject.getAsJsonObject("params");
-                    ExecuteCommandParams executeCommandParams = gson.fromJson(param.getAsJsonObject("ExecuteCommandParams"), ExecuteCommandParams.class);
+                    ExecuteCommandParams executeCommandParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ExecuteCommandParams.class);
                     CompletableFuture<Object> result = txtSrv.executeCommand(executeCommandParams);
                     String json = getJSONResponse(requestID, result.get());
                     //System.out.println("executeCommand result: " + json);
