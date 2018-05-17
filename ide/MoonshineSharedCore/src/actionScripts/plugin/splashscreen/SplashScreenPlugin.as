@@ -62,7 +62,6 @@ package actionScripts.plugin.splashscreen
 			}
 			
 			dispatcher.addEventListener(EVENT_SHOW_SPLASH, handleShowSplash);
-			dispatcher.addEventListener(CloseTabEvent.EVENT_ALL_TABS_CLOSED, handleShowSplash);
 		}
 		
 		override public function deactivate():void
@@ -70,7 +69,6 @@ package actionScripts.plugin.splashscreen
 			super.deactivate();
 			
 			dispatcher.removeEventListener(EVENT_SHOW_SPLASH, handleShowSplash);
-			dispatcher.removeEventListener(CloseTabEvent.EVENT_ALL_TABS_CLOSED, handleShowSplash);
 		}
 		
 		public function getMenu():MenuItem
@@ -109,10 +107,10 @@ package actionScripts.plugin.splashscreen
             {
                 splashScreen = new SplashScreen();
                 splashScreen.plugin = this;
-
-                model.editors.addItem(splashScreen);
             }
 
+            model.editors.addItem(splashScreen);
+			
             // following will load template data from local for desktop
             if (ConstantsCoreVO.IS_AIR)
             {

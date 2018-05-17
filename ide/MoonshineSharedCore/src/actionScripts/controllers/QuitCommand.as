@@ -96,7 +96,7 @@ package actionScripts.controllers
             var editorsToClose:Array = [];
             for each (var tab:IContentWindow in editors)
             {
-                if (!(tab is SplashScreen) && !tab.isChanged())
+                if (!tab.isChanged())
                 {
                     editorsToClose.push(tab);
                 }
@@ -110,7 +110,7 @@ package actionScripts.controllers
             }
 
             // One editor is auto-created when last is removed
-            if (editors.length <= 1)
+            if (editors.length == 0)
             {
                 onApplicationClosing();
             }

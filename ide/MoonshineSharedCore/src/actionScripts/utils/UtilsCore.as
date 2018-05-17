@@ -55,6 +55,7 @@ package actionScripts.utils
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.other.SearchInProjectView;
+	import components.views.splashscreen.SplashScreen;
 
 	public class UtilsCore 
 	{
@@ -706,15 +707,15 @@ package actionScripts.utils
 						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
                     }
 				}
-				else if (model.editors[i] is SearchInProjectView && !projectReferencePath)
-				{
-					editorsToClose.push(model.editors[i]);
-				}
-				else if (model.editors[i].hasOwnProperty("label") && model.editors[i].label.indexOf("Away Builder") != -1)
+				else if (model.editors[i].hasOwnProperty("label") && ConstantsCoreVO.NON_CLOSEABLE_TABS.indexOf(model.editors[i].label) == -1)
 				{
 					if (!isSkipSaveConfirmation && model.editors[i].isChanged())
 					{
 						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
+					}
+					else if (project == null && model.editors[i] != SplashScreen)
+					{
+						editorsToClose.push(model.editors[i]);
 					}
 				}
 			}

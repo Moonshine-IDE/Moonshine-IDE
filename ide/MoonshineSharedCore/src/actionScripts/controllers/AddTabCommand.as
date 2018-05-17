@@ -22,7 +22,6 @@ package actionScripts.controllers
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class AddTabCommand implements ICommand
 	{
@@ -30,16 +29,7 @@ package actionScripts.controllers
 		
 		public function execute(event:Event):void
 		{
-			var e:AddTabEvent = AddTabEvent(event);
-			// Remove empty 'New' editor or splashscreen
-			// Update - Moon-103 implementation want splash screen to be open so adding one more clause to check if tab is splashscreen 
-			if (model.activeEditor && model.activeEditor.isEmpty() && (ConstantsCoreVO.NON_CLOSEABLE_TABS.indexOf(model.activeEditor.label) == -1))
-			{
-				var index:int = model.editors.getItemIndex(model.activeEditor);
-				
-				if (index > -1) model.editors.removeItemAt(index);
-			}
-			
+			var e:AddTabEvent = AddTabEvent(event);		
 			model.editors.addItem(e.tab);
 		}
 		

@@ -368,7 +368,7 @@ package actionScripts.valueObjects
 				{label:"Build & Debug",tooltip:"Build & Debug Project"},{label:"Step Over",tooltip:"Step to next line"},{label:"Resume",tooltip:"Continue execution till next breakpoint"},{label:"Stop",tooltip:"Terminate debug execution"},
 				{label:"Ant Build",tooltip:"Build Project through Ant script"},{label:"Configure",tooltip:"Select xml file for Ant build"}]);
 			
-			NON_CLOSEABLE_TABS = ["Home", "*Away Builder", "Away Builder"];
+			NON_CLOSEABLE_TABS = ["*Away Builder", "Away Builder"];
 		}
 		
 		public static function generateDevices():void
