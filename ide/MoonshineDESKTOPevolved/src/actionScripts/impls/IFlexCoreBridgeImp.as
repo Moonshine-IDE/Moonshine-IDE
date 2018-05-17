@@ -249,6 +249,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','OPEN'), null, OpenFileEvent.OPEN_FILE,
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources','OPEN_RECENT'),[]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','SAVE'), null, MenuPlugin.MENU_SAVE_EVENT,
 						's', [Keyboard.COMMAND],

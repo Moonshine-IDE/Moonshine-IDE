@@ -31,6 +31,7 @@ package actionScripts.ui.menu
         public static var menuItemsEnabledInVEProject:Array = [
             resourceManager.getString('resources', 'NEW'),
             resourceManager.getString('resources', 'OPEN'),
+			resourceManager.getString('resources', 'OPEN_RECENT'),
             resourceManager.getString('resources', 'SAVE'),
             resourceManager.getString('resources', 'SAVE_AS'),
             resourceManager.getString('resources', 'CLOSE'),

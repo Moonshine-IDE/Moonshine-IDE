@@ -34,6 +34,7 @@ import actionScripts.factory.NativeMenuItemLocation;
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.PluginBase;
 import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 import actionScripts.plugin.settings.ISettingsProvider;
 import actionScripts.plugin.settings.vo.ISetting;
 import actionScripts.plugin.settings.vo.MultiOptionSetting;
@@ -189,6 +190,7 @@ import actionScripts.valueObjects.Settings;
 			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -440,6 +442,37 @@ import actionScripts.valueObjects.Settings;
 					}
 					else CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.removeAt(i);
 					return;
+				}
+			}
+		}
+		
+		private function updateRecetProjectList(event:Event):void
+		{
+			var subItemsLength:int = -1;
+			if (buildingNativeMenu)
+			{
+				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				subItemsLength = tmpTopMenu.items[1].submenu.items[2].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+			}
+			else
+			{
+				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				subItemsLength = CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).data.items.length;
+			}
+			
+			if (subItemsLength != -1)
+			{
+				for (var i:int; i < subItemsLength; i++)
+				{
+					if (buildingNativeMenu) 
+					{
+						tmpTopMenu.items[1].submenu.items[2].submenu.items[0].menu.removeItemAt(0);
+						windowMenus[1].items[0].items.removeAt(0);
+					}
+					else
+					{
+						CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).data.items.removeAt(0);
+					}
 				}
 			}
 		}

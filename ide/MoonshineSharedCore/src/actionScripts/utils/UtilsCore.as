@@ -30,6 +30,7 @@ package actionScripts.utils
 	import mx.events.CloseEvent;
 	import mx.events.ToolTipEvent;
 	import mx.managers.PopUpManager;
+	import mx.resources.ResourceManager;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -41,6 +42,7 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.DataHTMLType;
@@ -54,7 +56,6 @@ package actionScripts.utils
 	import components.popup.SDKDefinePopup;
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
-	import components.views.other.SearchInProjectView;
 	import components.views.splashscreen.SplashScreen;
 
 	public class UtilsCore 
@@ -807,6 +808,30 @@ package actionScripts.utils
 				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
 					return item == extension;
 				});
+		}
+		
+		/**
+		 * Returns menu options on current
+		 * recent opened projects
+		 */
+		public static function getRecentProjectsMenu():MenuItem
+		{
+			var openRecentLabel:String = ResourceManager.getInstance().getString('resources','OPEN_RECENT');
+			var openProjectMenu:MenuItem = new MenuItem(openRecentLabel);
+			openProjectMenu.parents = ["File", openRecentLabel];
+			openProjectMenu.items = new Vector.<MenuItem>();
+			
+			for each (var i:ProjectReferenceVO in model.recentlyOpenedProjects)
+			{
+				if (i.name)
+				{
+					var menuItem:MenuItem = new MenuItem(i.name, null, "eventOpenRecentProject");
+					menuItem.data = i; 
+					openProjectMenu.items.push(menuItem);
+				}
+			}
+			
+			return openProjectMenu;
 		}
 	}
 }

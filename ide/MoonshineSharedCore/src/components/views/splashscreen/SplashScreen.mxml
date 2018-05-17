@@ -108,6 +108,84 @@
 			public function save():void
 			{
 			}
+			
+			public function openRecentItem(refVO:ProjectReferenceVO):void
+			{
+				// do not open an already opened project
+				if (model.mainView.getTreeViewPanel() &&  UtilsCore.checkProjectIfAlreadyOpened(refVO.path)) return;
+				
+				// desktop
+				if (ConstantsCoreVO.IS_AIR)
+				{
+					recentOpenedProjectObject = new FileLocation(refVO.path);
+					
+					if (!FileLocation(recentOpenedProjectObject).fileBridge.exists)
+					{
+						Alert.show("Can't import: The file does not exist anymore.", "Error!");
+						return;
+					}
+					
+					if (recentOpenedProjectObject.fileBridge.isDirectory)
+					{
+						var project:AS3ProjectVO;
+						var lastOpenedOption:String;
+						
+						// check if any last opend option is associated with the project
+						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
+						{
+							if (i.path == recentOpenedProjectObject.fileBridge.nativePath)
+							{
+								lastOpenedOption = i.option;
+								break;
+							}
+						}
+						
+						project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
+						
+						if (!project)
+						{
+							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
+							return;
+						}
+						
+						// save old sdk details to the project
+						project.buildOptions.oldDefaultSDKPath = refVO.sdk;
+						
+						// trigger the project to open
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
+					}
+					else
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
+						);
+					}
+				}
+					// web
+				else
+				{
+					recentOpenedProjectObject = refVO;
+					// check if there is no login or not
+					if (URLDescriptorVO.BASE_URL_MIRROR == "")
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(
+							new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {
+								path: recentOpenedProjectObject.path,
+								name: recentOpenedProjectObject.name
+							})
+						);
+					}
+					else if (ConstantsCoreVO.IS_AUTH_REQUIRED)
+					{
+						loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onProjectLoadSuccess, onLoginTestFault, null);
+					}
+					else
+					{
+						loadRecentProject();
+					}
+				}
+			}
 
 			private function updateRecetProjectList(event:Event):void
 			{
@@ -204,80 +282,7 @@
 			private function handleRecentClick(event:Event):void
 			{
 				var refVO:ProjectReferenceVO = RecentProjectRenderer(event.target).project;
-				// do not open an already opened project
-				if (model.mainView.getTreeViewPanel() &&  UtilsCore.checkProjectIfAlreadyOpened(refVO.path)) return;
-				
-				// desktop
-				if (ConstantsCoreVO.IS_AIR)
-				{
-					recentOpenedProjectObject = new FileLocation(refVO.path);
-					
-					if (!FileLocation(recentOpenedProjectObject).fileBridge.exists)
-					{
-						Alert.show("Can't import: The file does not exist anymore.", "Error!");
-						return;
-					}
-					
-					if (recentOpenedProjectObject.fileBridge.isDirectory)
-					{
-						var project:AS3ProjectVO;
-						var lastOpenedOption:String;
-						
-						// check if any last opend option is associated with the project
-						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
-						{
-							if (i.path == recentOpenedProjectObject.fileBridge.nativePath)
-							{
-								lastOpenedOption = i.option;
-								break;
-							}
-						}
-
-						project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
-
-						if (!project)
-						{
-							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
-							return;
-						}
-
-						// save old sdk details to the project
-						project.buildOptions.oldDefaultSDKPath = refVO.sdk;
-						
-						// trigger the project to open
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
-					}
-					else
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
-						);
-					}
-				}
-				// web
-				else
-				{
-					recentOpenedProjectObject = refVO;
-					// check if there is no login or not
-					if (URLDescriptorVO.BASE_URL_MIRROR == "")
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {
-									path: recentOpenedProjectObject.path,
-									name: recentOpenedProjectObject.name
-								})
-						);
-					}
-					else if (ConstantsCoreVO.IS_AUTH_REQUIRED)
-					{
-						loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onProjectLoadSuccess, onLoginTestFault, null);
-					}
-					else
-					{
-						loadRecentProject();
-					}
-				}
+				openRecentItem(refVO);
 			}
 
 			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):AS3ProjectVO
@@ -354,6 +359,10 @@
 				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
+				dispatcher.addEventListener("eventOpenRecentProject", function(menuEvent:MenuEvent):void
+				{
+					openRecentItem(menuEvent.data as ProjectReferenceVO);
+				});
 
 				grpNoSDKMess.y = this.height;
 				
