@@ -39,8 +39,7 @@ package actionScripts.plugins.as3project.mxmlc
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     import mx.resources.ResourceManager;
-    
-    import actionScripts.events.GlobalEventDispatcher;
+
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.StatusBarEvent;
@@ -856,7 +855,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// stop running debug process for run/build if debug process in running
 			if (!debugAfterBuild)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG, false));
+				dispatcher.dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG, false));
 			}
 
 			fcsh = new NativeProcess();
@@ -950,7 +949,7 @@ package actionScripts.plugins.as3project.mxmlc
 						}
 						else if (debugAfterBuild)
 						{
-							GlobalEventDispatcher.getInstance().dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
+							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							if (currentSuccessfullProject.resourcePaths.length == 0)
 							{
                                 launchDebuggingAfterBuild();
