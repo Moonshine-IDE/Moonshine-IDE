@@ -816,7 +816,7 @@ package actionScripts.utils
 		 */
 		public static function getRecentProjectsMenu():MenuItem
 		{
-			var openRecentLabel:String = ResourceManager.getInstance().getString('resources','OPEN_RECENT');
+			var openRecentLabel:String = ResourceManager.getInstance().getString('resources','OPEN_RECENT_PROJECTS');
 			var openProjectMenu:MenuItem = new MenuItem(openRecentLabel);
 			openProjectMenu.parents = ["File", openRecentLabel];
 			openProjectMenu.items = new Vector.<MenuItem>();
@@ -832,6 +832,30 @@ package actionScripts.utils
 			}
 			
 			return openProjectMenu;
+		}
+		
+		/**
+		 * Returns menu options on current
+		 * recent opened projects
+		 */
+		public static function getRecentFilesMenu():MenuItem
+		{
+			var openRecentLabel:String = ResourceManager.getInstance().getString('resources','OPEN_RECENT_FILES');
+			var openFileMenu:MenuItem = new MenuItem(openRecentLabel);
+			openFileMenu.parents = ["File", openRecentLabel];
+			openFileMenu.items = new Vector.<MenuItem>();
+			
+			for each (var i:ProjectReferenceVO in model.recentlyOpenedFiles)
+			{
+				if (i.name)
+				{
+					var menuItem:MenuItem = new MenuItem(i.name, null, "eventOpenRecentFile");
+					menuItem.data = i; 
+					openFileMenu.items.push(menuItem);
+				}
+			}
+			
+			return openFileMenu;
 		}
 	}
 }

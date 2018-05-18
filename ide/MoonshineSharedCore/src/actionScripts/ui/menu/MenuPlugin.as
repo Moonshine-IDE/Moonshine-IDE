@@ -192,6 +192,7 @@ import actionScripts.valueObjects.Settings;
 			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
 			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -477,6 +478,39 @@ import actionScripts.valueObjects.Settings;
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentProjectsMenu();
 				addMenus(tmpMI.items, buildingNativeMenu ? tmpTopMenu.items[1].submenu.items[2].submenu : CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).submenu);
+			}
+		}
+		
+		private function updateRecetFileList(event:Event):void
+		{
+			var subItemsLength:int = -1;
+			if (buildingNativeMenu)
+			{
+				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+				subItemsLength = tmpTopMenu.items[1].submenu.items[3].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+			}
+			else
+			{
+				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				subItemsLength = CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).data.items.length;
+			}
+			
+			if (subItemsLength != -1)
+			{
+				for (var i:int; i < subItemsLength; i++)
+				{
+					if (buildingNativeMenu) 
+					{
+						tmpTopMenu.items[1].submenu.items[3].submenu.items[0].menu.removeItemAt(0);
+					}
+					else
+					{
+						CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).data.items.removeAt(0);
+					}
+				}
+				
+				var tmpMI:MenuItem = UtilsCore.getRecentFilesMenu();
+				addMenus(tmpMI.items, buildingNativeMenu ? tmpTopMenu.items[1].submenu.items[3].submenu : CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).submenu);
 			}
 		}
 		

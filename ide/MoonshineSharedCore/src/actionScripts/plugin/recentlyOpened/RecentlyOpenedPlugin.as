@@ -29,20 +29,23 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.LayoutModifier;
+    import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.utils.OSXBookmarkerNotifiers;
     import actionScripts.utils.ObjectTranslator;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.SharedObjectConst;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectReferenceVO;
     
     import components.views.project.TreeView;
 
-	public class RecentlyOpenedPlugin extends PluginBase
+	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{
 		public static const RECENT_PROJECT_LIST_UPDATED:String = "RECENT_PROJECT_LIST_UPDATED";
 		public static const RECENT_FILES_LIST_UPDATED:String = "RECENT_FILES_LIST_UPDATED";
@@ -76,6 +79,11 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
+		}
+		
+		public function getMenu():MenuItem
+		{
+			return UtilsCore.getRecentFilesMenu();
 		}
 		
 		private function restoreFromCookie():void

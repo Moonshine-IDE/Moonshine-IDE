@@ -363,6 +363,10 @@
 				{
 					openRecentItem(menuEvent.data as ProjectReferenceVO);
 				});
+				dispatcher.addEventListener("eventOpenRecentFile", function(menuEvent:MenuEvent):void
+				{
+					openRecentItem(menuEvent.data as ProjectReferenceVO);
+				});
 
 				grpNoSDKMess.y = this.height;
 				

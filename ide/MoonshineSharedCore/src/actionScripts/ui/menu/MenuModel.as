@@ -224,7 +224,7 @@ package actionScripts.ui.menu
 		private function dispatchMenuEvent(menuItem:ICustomMenuItem):void
 		{
 
-			if (menuItem.data && menuItem.data.event)
+			if (menuItem.data && menuItem.data.hasOwnProperty("event") && menuItem.data.event)
 			{
 				var data:Object = menuItem.data;
 
