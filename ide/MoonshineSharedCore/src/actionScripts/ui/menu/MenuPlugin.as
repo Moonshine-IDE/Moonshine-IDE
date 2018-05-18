@@ -45,6 +45,7 @@ import actionScripts.ui.menu.vo.CustomMenu;
 import actionScripts.ui.menu.vo.CustomMenuItem;
 import actionScripts.ui.menu.vo.MenuItem;
 import actionScripts.utils.KeyboardShortcutManager;
+import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.KeyboardShortcut;
 import actionScripts.valueObjects.Settings;
@@ -190,7 +191,7 @@ import actionScripts.valueObjects.Settings;
 			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
-			//dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -474,6 +475,9 @@ import actionScripts.valueObjects.Settings;
 						CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).data.items.removeAt(0);
 					}
 				}
+				
+				var tmpMI:MenuItem = UtilsCore.getRecentProjectsMenu();
+				addMenus(tmpMI.items, CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).submenu);
 			}
 		}
 		
