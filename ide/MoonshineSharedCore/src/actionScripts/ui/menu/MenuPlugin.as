@@ -468,7 +468,6 @@ import actionScripts.valueObjects.Settings;
 					if (buildingNativeMenu) 
 					{
 						tmpTopMenu.items[1].submenu.items[2].submenu.items[0].menu.removeItemAt(0);
-						windowMenus[1].items[0].items.removeAt(0);
 					}
 					else
 					{
@@ -477,7 +476,7 @@ import actionScripts.valueObjects.Settings;
 				}
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentProjectsMenu();
-				addMenus(tmpMI.items, CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).submenu);
+				addMenus(tmpMI.items, buildingNativeMenu ? tmpTopMenu.items[1].submenu.items[2].submenu : CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).submenu);
 			}
 		}
 		
@@ -741,7 +740,7 @@ import actionScripts.valueObjects.Settings;
 				var eventType:String = event.target.data.event as String;
 				if (eventType)
 				{
-					shortcutManager.stopEvent(eventType); // use to stop pending event from shortcut					
+					shortcutManager.stopEvent(eventType, event.target.data.eventData); // use to stop pending event from shortcut					
 				}
 			}
 		}

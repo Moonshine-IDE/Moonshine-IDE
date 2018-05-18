@@ -41,7 +41,7 @@ package actionScripts.plugin.splashscreen
     
     import components.views.splashscreen.SplashScreen;
 
-	public class SplashScreenPlugin extends PluginBase implements IMenuPlugin, ISettingsProvider
+	public class SplashScreenPlugin extends PluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "Splash Screen Plugin"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
@@ -76,13 +76,13 @@ package actionScripts.plugin.splashscreen
 			dispatcher.removeEventListener(EVENT_SHOW_SPLASH, handleShowSplash);
 		}
 		
-		public function getMenu():MenuItem
+		/*public function getMenu():MenuItem
 		{
 			// Since plugin will be activated if needed we can return null to block menu
 			if( !_activated ) return null;
 			
 			return UtilsCore.getRecentProjectsMenu();
-		}
+		}*/
 		
 		protected function handleOpenRecentProject(event:MenuEvent):void
 		{

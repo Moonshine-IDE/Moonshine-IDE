@@ -72,8 +72,8 @@
 	
 			protected function onDeleteButton(event:MouseEvent):void
 			{
-				dispatchEvent(new DeleteFileEvent(null, filesBelongsToProject));
 				closeByCrossSign(event);
+				dispatchEvent(new DeleteFileEvent(null, filesBelongsToProject));
 			}
 	
 			protected function onCreationCompletes(event:FlexEvent):void

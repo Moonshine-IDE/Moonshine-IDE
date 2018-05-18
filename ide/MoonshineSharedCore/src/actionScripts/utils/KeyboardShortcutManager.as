@@ -23,6 +23,7 @@ package actionScripts.utils
 	import flash.events.KeyboardEvent;
 	
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.MenuEvent;
 	import actionScripts.events.ShortcutEvent;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.KeyboardShortcut;
@@ -57,11 +58,11 @@ package actionScripts.utils
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, true);
 		}
 
-		public function stopEvent(event:String):void
+		public function stopEvent(event:String, data:Object=null):void
 		{
 			if (pendingEvent && pendingEvent == event)
 				clearPendingEvent();
-			dispatch(event);
+			dispatch(event, data);
 		}
 
 		private function markEventAsPending(event:String):void
@@ -80,12 +81,14 @@ package actionScripts.utils
 			dispatch(event);
 		}
 
-		private function dispatch(event:String):void
+		private function dispatch(event:String, data:Object=null):void
 		{
 			if (event &&
 				dispatcher.dispatchEvent(new ShortcutEvent(
 				ShortcutEvent.SHORTCUT_PRE_FIRED, false, true, event)))
-				dispatcher.dispatchEvent(new Event(event));
+			{
+				dispatcher.dispatchEvent(data ? new MenuEvent(event, false, false, data) : new Event(event));
+			}
 		}
 
 		private function clearPendingEvent():void
