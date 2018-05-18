@@ -34,9 +34,9 @@ package actionScripts.impls
 	import mx.resources.ResourceManager;
 	
 	import actionScripts.events.ChangeLineEncodingEvent;
+	import actionScripts.events.ExportVisualEditorProjectEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.OrganizeImportsEvent;
-	import actionScripts.events.ExportVisualEditorProjectEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.SettingsEvent;
@@ -49,6 +49,7 @@ package actionScripts.impls
 	import actionScripts.plugin.console.ConsolePlugin;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugin.core.mouse.MouseManagerPlugin;
+	import actionScripts.plugin.errors.UncaughtErrorsPlugin;
 	import actionScripts.plugin.findResources.FindResourcesPlugin;
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
@@ -65,8 +66,8 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
 	import actionScripts.plugin.syntax.JSSyntaxPlugin;
+	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
 	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
 	import actionScripts.plugin.templating.TemplatingPlugin;
@@ -104,9 +105,9 @@ package actionScripts.impls
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
 	import components.popup.SoftwareInformation;
-
-    import visualEditor.plugin.ExportToFlexPlugin;
-    import visualEditor.plugin.ExportToPrimeFacesPlugin;
+	
+	import visualEditor.plugin.ExportToFlexPlugin;
+	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -184,7 +185,8 @@ package actionScripts.impls
 				SearchPlugin,
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
-				ExportToPrimeFacesPlugin
+				ExportToPrimeFacesPlugin,
+				UncaughtErrorsPlugin
 			];
 		}
 		
@@ -221,7 +223,8 @@ package actionScripts.impls
 		public function getPluginsNotToShowInSettings():Array
 		{
 			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, 
-					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin];
+					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
+					UncaughtErrorsPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

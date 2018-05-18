@@ -131,7 +131,6 @@
 		 */
 		private function onComplete():void
 		{
-			//loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
 			// opens scope bookmarked urls
 			CONFIG::OSX
 			{
@@ -222,26 +221,6 @@
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 						new OpenFileEvent(OpenFileEvent.OPEN_FILE, f)
 				);
-			}
-		}
-
-		private function uncaughtErrorHandler(event:UncaughtErrorEvent):void
-		{
-			Alert.show(event.text);
-			if (event.error is Error)
-			{
-				var error:Error = event.error as Error;
-				Alert.show(error.message);
-			}
-			else if (event.error is ErrorEvent)
-			{
-				var errorEvent:ErrorEvent = event.error as ErrorEvent;
-				Alert.show(errorEvent.text);
-			}
-			else
-			{
-				// a non-Error, non-ErrorEvent type was thrown and uncaught
-				Alert.show(event.toString());
 			}
 		}
 
