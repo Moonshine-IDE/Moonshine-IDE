@@ -18,17 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu.renderers
 {
-	import actionScripts.ui.menu.MenuModel;
-	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
-	import actionScripts.utils.moonshine_internal;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-
 	import flash.display.Sprite;
 	import flash.filters.DropShadowFilter;
 	import flash.utils.getTimer;
 	
 	import mx.containers.Canvas;
 	import mx.containers.VBox;
+	import mx.core.FlexGlobals;
+	import mx.core.ScrollPolicy;
+	
+	import actionScripts.ui.menu.MenuModel;
+	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+	import actionScripts.utils.moonshine_internal;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class MenuRenderer extends Canvas
 	{
@@ -50,6 +52,8 @@ package actionScripts.ui.menu.renderers
 			itemContainer.setStyle("paddingBottom", 3);
 			itemContainer.setStyle("verticalGap", 0);
 			itemContainer.setStyle("backgroundColor", 0xf0f0f0);
+			itemContainer.horizontalScrollPolicy = ScrollPolicy.OFF;
+			itemContainer.maxHeight = FlexGlobals.topLevelApplication.height - 200;
 
 			// TODO : Add an extra comp to offset the dropshadow a bit
 			itemContainer.filters = [new DropShadowFilter(5, 55, 0x979797, .22, 5, 5)];
