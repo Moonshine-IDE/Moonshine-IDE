@@ -26,6 +26,7 @@ package actionScripts.ui.menu
 	
 	import mx.containers.Canvas;
 	import mx.controls.Image;
+	import mx.controls.Spacer;
 	import mx.core.ScrollPolicy;
 	import mx.graphics.GradientEntry;
 	import mx.graphics.LinearGradient;
@@ -36,14 +37,21 @@ package actionScripts.ui.menu
 	
 	public class CustomMenuBox extends Canvas
 	{
+		private const rendererHeight:int = 22;
+		
 		private var upArrow:BorderContainer;
 		private var downArrow:BorderContainer;
+		private var bottomPadding:Spacer;
 		
 		public function CustomMenuBox()
 		{
 			super();
 			
 			this.addEventListener(Event.REMOVED_FROM_STAGE, onRemoved);
+			
+			/*bottomPadding = new Spacer();
+			bottomPadding.height = 3;
+			super.addChildAt(bottomPadding, 0);*/
 			
 			setStyle("paddingTop", 3);
 			setStyle("paddingBottom", 3);
@@ -80,8 +88,15 @@ package actionScripts.ui.menu
 				var tmpChild:DisplayObject = getChildAt(index - 1);
 				child.y = tmpChild.y + tmpChild.height;
 			}
+			else if (index == 0)
+				child.y = 3;
 			
 			return super.addChildAt(child, index);
+		}
+		
+		override protected function createChildren():void
+		{
+			super.createChildren();
 		}
 		
 		protected function addScrollButtons():void
@@ -106,7 +121,7 @@ package actionScripts.ui.menu
 				upArrow.addEventListener(MouseEvent.MOUSE_OVER, onUpArrowOver);
 				upArrow.addEventListener(MouseEvent.MOUSE_OUT, onUpArrowOut);
 				upArrow.visible = false;
-				upArrow.y = -2;
+				upArrow.y = 0;
 				upArrow.addElement(upArrowImage);
 				super.addChildAt(upArrow, numChildren);
 				
@@ -117,6 +132,7 @@ package actionScripts.ui.menu
 				downArrow.addEventListener(MouseEvent.MOUSE_OVER, onDownArrowOver);
 				downArrow.addEventListener(MouseEvent.MOUSE_OUT, onDownArrowOut);
 				downArrow.addElement(downArrowImage);
+				downArrow.setStyle("paddingBottom", 3);
 				super.addChildAt(downArrow, numChildren);
 			}
 		}
@@ -145,9 +161,9 @@ package actionScripts.ui.menu
 		{
 			if (detectMouseOver(downArrow))
 			{
-				this.verticalScrollPosition += 22;
-				downArrow.y += 22;
-				upArrow.y += 22;
+				this.verticalScrollPosition += rendererHeight;
+				downArrow.y += rendererHeight;
+				upArrow.y += rendererHeight;
 				upArrow.visible = true;
 				
 				if (verticalScrollPosition >= maxVerticalScrollPosition)
@@ -155,10 +171,12 @@ package actionScripts.ui.menu
 					this.verticalScrollPosition = this.maxVerticalScrollPosition;
 					downArrow.removeEventListener(Event.ENTER_FRAME, onDownArrowClicked);
 					downArrow.visible = false;
-					upArrow.y -= 16;
-					downArrow.y -= 16;
+					
+					// get last most children instance - downArrow.instance
+					var tmpLastRenderer:DisplayObject = getChildAt(numChildren - 3);
+					upArrow.y = (tmpLastRenderer.y + tmpLastRenderer.height) - measuredHeight + 2;
+					downArrow.y = tmpLastRenderer.y + 4;
 				}
-				
 			}
 		}
 		
@@ -166,9 +184,9 @@ package actionScripts.ui.menu
 		{
 			if (detectMouseOver(upArrow))
 			{
-				this.verticalScrollPosition -= 22;
-				upArrow.y -= 22;
-				downArrow.y -= 22;
+				this.verticalScrollPosition -= rendererHeight;
+				upArrow.y -= rendererHeight;
+				downArrow.y -= rendererHeight;
 				downArrow.visible = true;
 				
 				if (verticalScrollPosition <= 0)
@@ -176,7 +194,7 @@ package actionScripts.ui.menu
 					this.verticalScrollPosition = 0;
 					upArrow.removeEventListener(Event.ENTER_FRAME, onDownArrowClicked);
 					upArrow.visible = false;
-					upArrow.y = -2;
+					upArrow.y = 0;
 					downArrow.y = measuredHeight - downArrow.height;
 				}
 			}
@@ -196,7 +214,6 @@ package actionScripts.ui.menu
 				measuredHeight = this.maxHeight;
 				addScrollButtons();
 			}
-			
 			commitProperties();
 		}
 		
