@@ -27,6 +27,7 @@ package actionScripts.ui.menu.renderers
 	import mx.core.FlexGlobals;
 	import mx.core.ScrollPolicy;
 	
+	import actionScripts.ui.menu.CustomMenuBox;
 	import actionScripts.ui.menu.MenuModel;
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 	import actionScripts.utils.moonshine_internal;
@@ -35,7 +36,7 @@ package actionScripts.ui.menu.renderers
 	public class MenuRenderer extends Canvas
 	{
 		private var needsRedrawing:Boolean = false;
-		private var itemContainer:VBox;
+		private var itemContainer:CustomMenuBox;
 		private var needsRendererLayout:Boolean = false;
 
 		public function MenuRenderer()
@@ -47,19 +48,8 @@ package actionScripts.ui.menu.renderers
 		{
 			super.createChildren();
 
-			itemContainer = new VBox();
-			itemContainer.setStyle("paddingTop", 3);
-			itemContainer.setStyle("paddingBottom", 3);
-			itemContainer.setStyle("verticalGap", 0);
-			itemContainer.setStyle("backgroundColor", 0xf0f0f0);
-			itemContainer.horizontalScrollPolicy = ScrollPolicy.OFF;
+			itemContainer = new CustomMenuBox();
 			itemContainer.maxHeight = FlexGlobals.topLevelApplication.height - 200;
-
-			// TODO : Add an extra comp to offset the dropshadow a bit
-			itemContainer.filters = [new DropShadowFilter(5, 55, 0x979797, .22, 5, 5)];
-			itemContainer.setStyle("borderStyle", "solid");
-			itemContainer.setStyle("borderColor", 0x979797);
-			itemContainer.setStyle("borderThickeness", 0);
 
 			addChild(itemContainer);
 		}
@@ -200,19 +190,22 @@ package actionScripts.ui.menu.renderers
 				
 				for (var i:int = 0; i < containerNumOfChildren; i++)
 				{
-					rdr = itemContainer.getChildAt(i) as MenuItemRenderer;
-
-					if (rdr.shortcut)
-						hasShortcut = true;
-
-					currentWidth = rdr.getLabelWidth();
-					if (currentWidth > maxRendererLabelWidth)
-						maxRendererLabelWidth = currentWidth;
-
-					currentWidth = rdr.getShortcutLabelWidth();
-
-					if (currentWidth > maxRendererShortcutLabelWidth)
-						maxRendererShortcutLabelWidth = currentWidth;
+					if (itemContainer.getChildAt(i) is MenuItemRenderer)
+					{
+						rdr = itemContainer.getChildAt(i) as MenuItemRenderer;
+	
+						if (rdr.shortcut)
+							hasShortcut = true;
+	
+						currentWidth = rdr.getLabelWidth();
+						if (currentWidth > maxRendererLabelWidth)
+							maxRendererLabelWidth = currentWidth;
+	
+						currentWidth = rdr.getShortcutLabelWidth();
+	
+						if (currentWidth > maxRendererShortcutLabelWidth)
+							maxRendererShortcutLabelWidth = currentWidth;
+					}
 
 
 				}
@@ -230,8 +223,11 @@ package actionScripts.ui.menu.renderers
 
 				for (i = 0; i < containerNumOfChildren; i++)
 				{
-					rdr = itemContainer.getChildAt(i) as MenuItemRenderer;
-					rdr.resizeLabels(maxRendererLabelWidth, maxRendererShortcutLabelWidth);
+					if (itemContainer.getChildAt(i) is MenuItemRenderer)
+					{
+						rdr = itemContainer.getChildAt(i) as MenuItemRenderer;
+						rdr.resizeLabels(maxRendererLabelWidth, maxRendererShortcutLabelWidth);
+					}
 
 				}
 				
