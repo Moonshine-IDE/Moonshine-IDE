@@ -61,7 +61,8 @@ package actionScripts.plugin.errors
 			// print to console only for now
 			if (event.error is Error)
 			{
-				error(Error(event.error).getStackTrace());
+				var err:Error = event.error as Error;
+				error(err.message +"\n"+ err.getStackTrace());
 			}
 			else if (event.error is ErrorEvent)
 			{

@@ -58,6 +58,11 @@ package actionScripts.valueObjects
 		public static var menuTickIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
+		[Embed("/elements/images/upArrow_menuScroll.png")]
+		public static var up_icon_menu_scroll:Class;
+		[Embed("/elements/images/downArrow_menuScroll.png")]
+		public static var down_icon_menu_scroll:Class;
+		
 		public static var TEMPLATE_AS3CLASS: FileLocation;
 		public static var TEMPLATE_AS3INTERFACE: FileLocation;
 		public static var TEMPLATE_CSS: FileLocation;
