@@ -146,7 +146,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 			var pending:Vector.<FileLocation> = new Vector.<FileLocation>();
 			for each (var item:PathListItemVO in copiedPaths)
 			{
-				pending.push(item.file);
+				if (item.label != PathListSettingRenderer.NOT_SET_PATH_MESSAGE) pending.push(item.file);
 			}
 			
 			provider[name] = pending;
