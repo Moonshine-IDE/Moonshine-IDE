@@ -16,11 +16,6 @@ package actionScripts.ui.tabNavigator
 
 			this.setStyle("skinClass", TabNavigatorWithOrientationSkin);
 		}
-		
-		protected function updatePropertyChangeReference(fieldName:String, oldValue:*, newValue:*):void
-		{
-			throw new Error("needs to be override in an ISurfaceComponent class.");
-		}
 
 		[SkinPart(required=true)]
 		public var tabBar:TabBarWithScroller;
@@ -38,8 +33,6 @@ package actionScripts.ui.tabNavigator
 		{
 			if (_orientation != value)
 			{
-				updatePropertyChangeReference("orientation", _orientation, value);
-				
 				_orientation = value;
 				dispatchEvent(new Event("orientationChanged"));
 				this.invalidateSkinState();
@@ -57,8 +50,6 @@ package actionScripts.ui.tabNavigator
 		{
 			if (_scrollable != value)
 			{
-				updatePropertyChangeReference("scrollable", _scrollable, value);
-				
 				_scrollable = value;
 				dispatchEvent(new Event("scrollableChanged"));
 				this.invalidateSkinState();
@@ -99,8 +90,6 @@ package actionScripts.ui.tabNavigator
 			if (selectedTab.label != label)
 			{
 				var item:ButtonBarButton = tabBar.dataGroup.getElementAt(this.selectedIndex) as ButtonBarButton;
-				
-				updatePropertyChangeReference("label", [{field:selectedIndex, value:selectedTab.label}, {field:selectedIndex, value:item.label}], [{field:selectedIndex, value:label}, {field:selectedIndex, value:label}]);
 
 				selectedTab.label = label;
 				item.label = label;
