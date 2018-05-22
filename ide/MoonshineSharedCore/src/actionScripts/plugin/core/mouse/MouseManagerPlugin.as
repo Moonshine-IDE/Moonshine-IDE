@@ -35,6 +35,7 @@ package actionScripts.plugin.core.mouse
 		override public function get description():String	{ return "Mouse Manager Plugin. Esc exits."; }
 		
 		private var lastKnownEditor:TextEditor;
+		private var isApplicationDeactivated:Boolean;
 		
 		override public function activate():void
 		{
@@ -51,6 +52,7 @@ package actionScripts.plugin.core.mouse
 		
 		private function onTopLevelUpdated(event:FlexEvent):void
 		{
+			if (isApplicationDeactivated) return;
 			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, true);
 		}
 		
@@ -84,6 +86,7 @@ package actionScripts.plugin.core.mouse
 		{
 			FlexGlobals.topLevelApplication.stage.removeEventListener(Event.DEACTIVATE, onApplicationLostFocus);
 			FlexGlobals.topLevelApplication.stage.addEventListener(Event.ACTIVATE, onApplicationReturnFocus);
+			isApplicationDeactivated = true;
 			
 			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, false);
 		}
@@ -92,6 +95,7 @@ package actionScripts.plugin.core.mouse
 		{
 			FlexGlobals.topLevelApplication.stage.addEventListener(Event.DEACTIVATE, onApplicationLostFocus);
 			FlexGlobals.topLevelApplication.stage.removeEventListener(Event.ACTIVATE, onApplicationReturnFocus);
+			isApplicationDeactivated = false;
 			
 			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, true);
 		}
