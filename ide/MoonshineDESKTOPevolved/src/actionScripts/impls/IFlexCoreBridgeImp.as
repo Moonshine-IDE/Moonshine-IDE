@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import flash.desktop.NativeApplication;
+    import actionScripts.plugin.projectPanel.ProjectPanelPlugin;
+
+    import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
 	import flash.display.Stage;
@@ -174,6 +176,7 @@ package actionScripts.impls
 			return [
 				SettingsPlugin, 
 				ProjectPlugin,
+				ProjectPanelPlugin,
 				TemplatingPlugin,
 				HelpPlugin,
 				FindReplacePlugin,

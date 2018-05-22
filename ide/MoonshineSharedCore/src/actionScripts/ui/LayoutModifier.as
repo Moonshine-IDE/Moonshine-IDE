@@ -37,8 +37,8 @@ package actionScripts.ui
 	public class LayoutModifier
 	{
 		public static const SAVE_LAYOUT_CHANGE_EVENT:String = "SAVE_LAYOUT_CHANGE_EVENT";
-		public static const CONSOLE_COLLAPSED_FIELD:String = "isConsoleCollapsed";
-		public static const CONSOLE_HEIGHT:String = "consoleHeight";
+		public static const PROJECT_PANEL_COLLAPSED_FIELD:String = "isProjectPanelCollapsed";
+		public static const CONSOLE_HEIGHT:String = "projectPanelHeight";
 		public static const SIDEBAR_WIDTH:String = "sidebarWidth";
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
 		public static const MAIN_WINDOW_WIDTH_HEIGHT:String = "MAIN_WINDOW_WIDTH_HEIGHT";
@@ -57,8 +57,8 @@ package actionScripts.ui
 		
 		public static function parseCookie(value:SharedObject):void
 		{
-			if (value.data.hasOwnProperty(CONSOLE_COLLAPSED_FIELD)) isConsoleCollapsed = value.data[CONSOLE_COLLAPSED_FIELD];
-			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) consoleHeight = value.data[CONSOLE_HEIGHT];
+			if (value.data.hasOwnProperty(PROJECT_PANEL_COLLAPSED_FIELD)) isProjectPanelCollapsed = value.data[PROJECT_PANEL_COLLAPSED_FIELD];
+			if (value.data.hasOwnProperty(CONSOLE_HEIGHT)) projectPanelHeight = value.data[CONSOLE_HEIGHT];
 			if (value.data.hasOwnProperty(IS_MAIN_WINDOW_MAXIMIZED)) isAppMaximized = value.data[IS_MAIN_WINDOW_MAXIMIZED];
 			if (value.data.hasOwnProperty(MAIN_WINDOW_WIDTH_HEIGHT)) applicationSize = value.data[MAIN_WINDOW_WIDTH_HEIGHT];
 			if (value.data.hasOwnProperty(SIDEBAR_WIDTH)) sidebarWidth = value.data[SIDEBAR_WIDTH];
@@ -218,27 +218,27 @@ package actionScripts.ui
 			}
 		}
 		
-		private static var _isConsoleCollapsed:Boolean;
+		private static var _isProjectPanelCollapsed:Boolean;
 		
-		public static function get isConsoleCollapsed():Boolean
+		public static function get isProjectPanelCollapsed():Boolean
 		{
-			return _isConsoleCollapsed;
+			return _isProjectPanelCollapsed;
 		}
-		public static function set isConsoleCollapsed(value:Boolean):void
+		public static function set isProjectPanelCollapsed(value:Boolean):void
 		{
-			_isConsoleCollapsed = value;
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_COLLAPSED_FIELD, value:value}));
+			_isProjectPanelCollapsed = value;
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:PROJECT_PANEL_COLLAPSED_FIELD, value:value}));
 		}
 		
-		private static var _consoleHeight:int = -1;
+		private static var _projectPanelHeight:int = -1;
 		
-		public static function get consoleHeight():int
+		public static function get projectPanelHeight():int
 		{
-			return _consoleHeight;
+			return _projectPanelHeight;
 		}
-		public static function set consoleHeight(value:int):void
+		public static function set projectPanelHeight(value:int):void
 		{
-			_consoleHeight = value;
+			_projectPanelHeight = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:CONSOLE_HEIGHT, value:value}));
 		}
 		

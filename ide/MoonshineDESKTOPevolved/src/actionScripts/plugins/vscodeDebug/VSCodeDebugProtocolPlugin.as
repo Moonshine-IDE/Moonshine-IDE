@@ -19,6 +19,7 @@
 package actionScripts.plugins.vscodeDebug
 {
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 
     import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -131,7 +132,9 @@ package actionScripts.plugins.vscodeDebug
 			super.activate();
 			
 			this._debugPanel = new VSCodeDebugProtocolView();
-			
+
+            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+
 			dispatcher.addEventListener(EVENT_SHOW_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			///dispatcher.addEventListener(CompilerEventBase.PREBUILD, handleCompile);
@@ -151,16 +154,7 @@ package actionScripts.plugins.vscodeDebug
 		override public function deactivate():void
 		{
 			super.deactivate();
-			
-			if(this._debugPanel)
-			{
-				if(this._debugPanel.parent)
-				{
-					LayoutModifier.removeFromSidebar(this._debugPanel);
-				}
-				this._debugPanel = null;
-			}
-			
+
 			dispatcher.removeEventListener(EVENT_SHOW_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
@@ -790,9 +784,6 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function showDebugView(event:Event):void
 		{
-			LayoutModifier.addToSidebar(_debugPanel, event);
-			
-			_debugPanel.validateNow();
 			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
 			_debugPanel.pauseButton.addEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
 			_debugPanel.stepOverButton.addEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
@@ -959,7 +950,6 @@ package actionScripts.plugins.vscodeDebug
 			_socket.addEventListener(Event.CLOSE, socket_closeHandler);
 			
 			showDebugView(event);
-			clearOutput();
 			
 			sendRequest(COMMAND_INITIALIZE,
 				{

@@ -23,11 +23,11 @@
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	xmlns:project="actionScripts.ui.project.*"
-	implements="actionScripts.ui.IPanelWindow"
+	implements="actionScripts.ui.IPanelWindow, actionScripts.interfaces.IViewWithTitle"
 	width="100%"
 	height="100%"
 	backgroundColor="0x444444"
-	verticalGap="0">
+	verticalGap="0" label="Debug">
 	
 	<mx:Metadata>
 		[Event(name="loadVariables",type="actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent")]
@@ -51,6 +51,11 @@
 
 		[Bindable]
 		public var scopesAndVars:IHierarchicalData;
+
+		public function get title():String
+		{
+			return this.label;
+		}
 
 		private function initHeader():void
 		{
