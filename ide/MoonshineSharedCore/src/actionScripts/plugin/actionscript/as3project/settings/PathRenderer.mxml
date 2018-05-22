@@ -54,7 +54,7 @@
 				{
 					super.data = value;
 					path.buttonMode = false;
-					path.editable = path.mouseChildren = true;
+					path.editable = path.mouseChildren = ((value.label == PathListSettingRenderer.NOT_SET_PATH_MESSAGE) ? false : true);
 					icoMainSourceFolder.includeInLayout = icoMainSourceFolder.visible = value.isMainSourceFolder;
 					onCreationCompletes(null);
 				}
@@ -71,7 +71,11 @@
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				var tmpLocalCheckPath:String;
-				if (data && (data.file.fileBridge.nativePath.indexOf("{locale}") != -1))
+				if (data && data.label == PathListSettingRenderer.NOT_SET_PATH_MESSAGE)
+				{
+					isFileExists = false;
+				}
+				else if (data && (data.file.fileBridge.nativePath.indexOf("{locale}") != -1))
 				{
 					tmpLocalCheckPath = OSXBookmarkerNotifiers.isValidLocalePath(data.file as FileLocation);
 					if (tmpLocalCheckPath != null)
