@@ -70,6 +70,7 @@ package actionScripts.plugin.projectPanel
             divider.addEventListener(MouseEvent.MOUSE_OUT, onDividerMouseOut);
 
             dispatcher.addEventListener(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, addViewToProjectPanelHandler);
+            dispatcher.addEventListener(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, removeViewToProjectPanelHandler);
         }
 
         override public function deactivate():void
@@ -88,6 +89,7 @@ package actionScripts.plugin.projectPanel
             divider.removeEventListener(MouseEvent.MOUSE_OUT, onDividerMouseOut);
 
             dispatcher.removeEventListener(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, addViewToProjectPanelHandler);
+            dispatcher.removeEventListener(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, removeViewToProjectPanelHandler);
         }
 
         private function addViewToProjectPanelHandler(event:ProjectPanelPluginEvent):void
@@ -107,6 +109,27 @@ package actionScripts.plugin.projectPanel
                 views.push(event.view.title);
 
                 view.selectedIndex = view.numElements - 1;
+            }
+        }
+
+        private function removeViewToProjectPanelHandler(event:ProjectPanelPluginEvent):void
+        {
+            if (event.view && views.some(function hasView(item:String, index:int, arr:Array):Boolean
+                {
+                    return item == event.view.title;
+                }))
+            {
+                var tabsCount:int = view.numElements;
+                for (var i:int = 0; i < tabsCount; i++)
+                {
+                    var tab:NavigatorContent = view.getItemAt(i) as NavigatorContent;
+                    if (tab.label == event.view.title)
+                    {
+                        view.removeElement(tab);
+                        views.removeAt(i);
+                        break;
+                    }
+                }
             }
         }
 
