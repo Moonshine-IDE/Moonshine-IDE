@@ -34,6 +34,12 @@ package actionScripts.plugin.errors
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "Catch any uncaught errors in the application"; }
 		
+		private var _problemList:ArrayList;
+		public function get problemList():ArrayList
+		{
+			return _problemList;
+		}
+		
 		public function UncaughtErrorsPlugin() {}
 		
 		override public function activate():void
@@ -60,7 +66,7 @@ package actionScripts.plugin.errors
 		
 		private function uncaughtErrorHandler(event:UncaughtErrorEvent):void
 		{
-			if (!model.problemList) model.problemList = new ArrayList();
+			if (!_problemList) _problemList = new ArrayList();
 			
 			var errorString:String;
 			// print to console only for now
@@ -81,7 +87,7 @@ package actionScripts.plugin.errors
 				error(errorString);
 			}
 			
-			model.problemList.addItem(errorString);
+			_problemList.addItem(errorString);
 		}
 	}
 }

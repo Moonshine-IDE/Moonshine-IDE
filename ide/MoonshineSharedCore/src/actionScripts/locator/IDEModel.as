@@ -19,7 +19,6 @@
 package actionScripts.locator
 {
     import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.factory.FileLocation;
@@ -68,8 +67,6 @@ package actionScripts.locator
 		public var antScriptFile:FileLocation; 
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
-		
-		public var problemList:ArrayList;
 		
 		public var recentlyOpenedFiles:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
