@@ -105,6 +105,8 @@ package actionScripts.plugin.projectPanel
                 view.addElement(navContent);
 
                 views.push(event.view.title);
+
+                view.selectedIndex = view.numElements - 1;
             }
         }
 

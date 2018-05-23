@@ -21,11 +21,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:s="library://ns.adobe.com/flex/spark"
-	xmlns:project="actionScripts.ui.project.*"
-	implements="actionScripts.interfaces.IViewWithTitle"
-	horizontalGap="2"
-	width="100%" height="100%" backgroundColor="0x444444">
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:project="actionScripts.ui.project.*" xmlns:containers="spark.containers.*"
+		 implements="actionScripts.interfaces.IViewWithTitle"
+		 horizontalGap="2"
+		 width="100%" height="100%" backgroundColor="0x444444">
 	<mx:Metadata>
 		[Event(name="loadVariables",type="actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent")]
 	</mx:Metadata>
@@ -122,75 +122,77 @@
 			enabled="false"/>
 	</s:VGroup>
 
-	<s:VGroup gap="0" verticalAlign="middle" horizontalAlign="left"
-			  percentWidth="50" percentHeight="100">
-		<project:ProjectViewHeader
-			label="Variables"
-			showCloseButton="false"
-			width="100%"/>
-
-		<mx:AdvancedDataGrid id="variablesTree"
-			width="100%" height="100%"
-			draggableColumns="false"
-			sortableColumns="false"
-			color="0xe0e0e0"
-			fontSize="11"
-			verticalScrollBarStyleName="black"
-			contentBackgroundColor="0x0"
-			textRollOverColor="0xFFFFFF"
-			rollOverColor="0x393939"
-			selectionColor="0x393939"
-			alternatingItemColors="[0x444444, 0x4d4c4c]"
-			textSelectedColor="0xe0e0e0"
-			borderVisible="false"
-			useRollOver="true"
-			headerColors="[0x6a6a6a,0x303030]"
-			headerStyleName="variablesTreeHeaderStyles"
-			sortExpertMode="true"
-			headerSortSeparatorSkin="mx.skins.ProgrammaticSkin"
-			sortItemRenderer="mx.core.UIComponent"
-			chromeColor="#393939"
-			dataProvider="{scopesAndVars}"
-			itemOpen="variablesTree_itemOpenHandler(event)">
-			<mx:columns>
-				<mx:AdvancedDataGridColumn headerText="Variable"
-					dataField="name" headerWordWrap=""
-					showDataTips="true" dataTipField="type"/>
-				<mx:AdvancedDataGridColumn headerText="Value"
-					labelFunction="{variablesValueLabelFunction}"
-					showDataTips="true" dataTipFunction="{variablesValueLabelFunction}"/>
-			</mx:columns>
-		</mx:AdvancedDataGrid>
-	</s:VGroup>
-	<s:VGroup gap="0" verticalAlign="middle" horizontalAlign="left"
-			  percentWidth="50" percentHeight="100">
-		<project:ProjectViewHeader
-				label="Call Stack"
+	<containers:HDividerGroup gap="1" percentWidth="100" percentHeight="100">
+		<s:VGroup gap="0" verticalAlign="middle" horizontalAlign="left"
+				  percentWidth="50" percentHeight="100">
+			<project:ProjectViewHeader
+				label="Variables"
 				showCloseButton="false"
 				width="100%"/>
-		<mx:DataGrid id="callStackList"
-					 width="100%" height="100%"
-					 draggableColumns="false"
-					 sortableColumns="false"
-					 color="0xe0e0e0"
-					 fontSize="11"
-					 contentBackgroundColor="0x0"
-					 textRollOverColor="0xFFFFFF"
-					 rollOverColor="0x393939"
-					 selectionColor="0x393939"
-					 alternatingItemColors="[0x444444, 0x4d4c4c]"
-					 textSelectedColor="0xe0e0e0"
-					 borderVisible="false"
-					 useRollOver="true"
-					 chromeColor="#393939"
-					 verticalScrollBarStyleName="black"
-					 dataProvider="{stackFrames}"
-					 itemClick="callStackList_itemClickHandler(event)">
-			<mx:columns>
-				<mx:DataGridColumn headerText="Stack Frame" dataField="name"
-								   dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
-				<mx:DataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
-			</mx:columns>
-		</mx:DataGrid>
-	</s:VGroup>
+
+			<mx:AdvancedDataGrid id="variablesTree"
+				width="100%" height="100%"
+				draggableColumns="false"
+				sortableColumns="false"
+				color="0xe0e0e0"
+				fontSize="11"
+				verticalScrollBarStyleName="black"
+				contentBackgroundColor="0x0"
+				textRollOverColor="0xFFFFFF"
+				rollOverColor="0x393939"
+				selectionColor="0x393939"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+				textSelectedColor="0xe0e0e0"
+				borderVisible="false"
+				useRollOver="true"
+				headerColors="[0x6a6a6a,0x303030]"
+				headerStyleName="variablesTreeHeaderStyles"
+				sortExpertMode="true"
+				headerSortSeparatorSkin="mx.skins.ProgrammaticSkin"
+				sortItemRenderer="mx.core.UIComponent"
+				chromeColor="#393939"
+				dataProvider="{scopesAndVars}"
+				itemOpen="variablesTree_itemOpenHandler(event)">
+				<mx:columns>
+					<mx:AdvancedDataGridColumn headerText="Variable"
+						dataField="name" headerWordWrap=""
+						showDataTips="true" dataTipField="type"/>
+					<mx:AdvancedDataGridColumn headerText="Value"
+						labelFunction="{variablesValueLabelFunction}"
+						showDataTips="true" dataTipFunction="{variablesValueLabelFunction}"/>
+				</mx:columns>
+			</mx:AdvancedDataGrid>
+		</s:VGroup>
+		<s:VGroup gap="0" verticalAlign="middle" horizontalAlign="left"
+				  percentWidth="50" percentHeight="100">
+			<project:ProjectViewHeader
+					label="Call Stack"
+					showCloseButton="false"
+					width="100%"/>
+			<mx:DataGrid id="callStackList"
+						 width="100%" height="100%"
+						 draggableColumns="false"
+						 sortableColumns="false"
+						 color="0xe0e0e0"
+						 fontSize="11"
+						 contentBackgroundColor="0x0"
+						 textRollOverColor="0xFFFFFF"
+						 rollOverColor="0x393939"
+						 selectionColor="0x393939"
+						 alternatingItemColors="[0x444444, 0x4d4c4c]"
+						 textSelectedColor="0xe0e0e0"
+						 borderVisible="false"
+						 useRollOver="true"
+						 chromeColor="#393939"
+						 verticalScrollBarStyleName="black"
+						 dataProvider="{stackFrames}"
+						 itemClick="callStackList_itemClickHandler(event)">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Stack Frame" dataField="name"
+									   dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
+					<mx:DataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
+				</mx:columns>
+			</mx:DataGrid>
+		</s:VGroup>
+	</containers:HDividerGroup>
 </mx:HBox>
