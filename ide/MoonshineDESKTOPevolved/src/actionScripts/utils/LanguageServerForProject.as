@@ -86,6 +86,7 @@ package actionScripts.utils
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
 		private static const FIELD_METHOD:String = "method";
 		private static const FIELD_RESULT:String = "result";
+		private static const FIELD_ERROR:String = "error";
 		private static const FIELD_ID:String = "id";
 		private static const FIELD_COMMAND:String = "command";
 		private static const FIELD_CHANGES:String = "changes";
@@ -112,6 +113,7 @@ package actionScripts.utils
 		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
+		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
 
 		private var _project:AS3ProjectVO;
 		private var _requestID:int = 0;
@@ -500,7 +502,7 @@ package actionScripts.utils
 			var params:Object = new Object();
 			this.sendRequest(METHOD_INITIALIZED, params);
 			
-			DidChangeConfigurationParams();
+			sendProjectConfiguration();
 			var editors:ArrayCollection = _model.editors;
 			var count:int = editors.length;
 			for(var i:int = 0; i < count; i++)
@@ -537,7 +539,17 @@ package actionScripts.utils
 			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
 		}
 
-		private function DidChangeConfigurationParams():void
+		private function sendWorkspaceSettings():void
+		{
+			var frameworkSDK:String = getProjectSDKPath(_project, _model);
+			var settings:Object = { nextgenas: { sdk: { framework: frameworkSDK } } };
+			
+			var params:Object = new Object();
+			params.settings = settings;
+			this.sendRequest(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
+		}
+
+		private function sendProjectConfiguration():void
 		{
 			if(!_xmlSocket || !_initialized)
 			{
@@ -611,16 +623,13 @@ package actionScripts.utils
 			//format used by vscode-nextgenas
 			//https://github.com/BowlerHatLLC/vscode-nextgenas/wiki/asconfig.json
 			//https://github.com/BowlerHatLLC/vscode-nextgenas/blob/master/distribution/src/assembly/schemas/asconfig.schema.json
-			var DidChangeConfigurationParams:Object = {};
-			DidChangeConfigurationParams.frameworkSDK = getProjectSDKPath(_project, _model);
-			DidChangeConfigurationParams.type = type;
-			DidChangeConfigurationParams.config = config;
-			DidChangeConfigurationParams.files = files;
-			DidChangeConfigurationParams.compilerOptions = compilerOptions;
-			DidChangeConfigurationParams.additionalOptions = buildArgs;
 			var params:Object = new Object();
-			params.DidChangeConfigurationParams = DidChangeConfigurationParams;
-			this.sendRequest(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
+			params.type = type;
+			params.config = config;
+			params.files = files;
+			params.compilerOptions = compilerOptions;
+			params.additionalOptions = buildArgs;
+			this.sendRequest(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 		
 		private function textDocument__publishDiagnostics(jsonObject:Object):void
@@ -772,12 +781,20 @@ package actionScripts.utils
 				if(this._initializeID != -1 && this._initializeID == requestID)
 				{
 					this._initializeID = -1;
+					if(FIELD_ERROR in object)
+					{
+						trace("Error in language server. Initialize failed.");
+					}
 					this.sendInitialized();
 				}
 				else if(this._shutdownID != -1 && this._shutdownID == requestID)
 				{
 					this._shutdownID = -1;
 					this.sendExit();
+				}
+				else if(FIELD_ERROR in object)
+				{
+					trace("Error in language server. Code: " + object.error.code + ", Message: " + object.error.message);
 				}
 				else if(result && FIELD_ITEMS in result) //completion
 				{
@@ -922,7 +939,7 @@ package actionScripts.utils
 			if(_initialized)
 			{
 				//we've already initialized the server
-				DidChangeConfigurationParams();
+				sendWorkspaceSettings();
 			}
 			else
 			{
@@ -938,7 +955,7 @@ package actionScripts.utils
 			{
 				return;
 			}
-			DidChangeConfigurationParams();
+			sendProjectConfiguration();
 		}
 
 		private function changeMenuSDKStateHandler(event:Event):void
@@ -954,7 +971,7 @@ package actionScripts.utils
 			if(_initialized)
 			{
 				//we've already initialized the server
-				DidChangeConfigurationParams();
+				sendWorkspaceSettings();
 			}
 			else
 			{

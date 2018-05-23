@@ -55,9 +55,6 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         {
             options = new ProjectOptions();
         }
-        System.clearProperty("royalelib");
-        String royaleLibPath = params.get("frameworkSDK").getAsString().concat("/frameworks");
-        System.setProperty("royalelib", royaleLibPath);
         
         String projectType = params.get(TopLevelFields.TYPE).getAsString();
 

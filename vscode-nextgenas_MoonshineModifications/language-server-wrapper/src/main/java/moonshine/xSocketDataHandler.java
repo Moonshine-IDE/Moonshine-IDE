@@ -1,6 +1,8 @@
 package moonshine;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.BufferUnderflowException;
@@ -20,9 +22,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.nextgenactionscript.vscode.ActionScriptLanguageServer;
 import com.nextgenactionscript.vscode.ActionScriptTextDocumentService;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
@@ -44,6 +48,8 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler;
+import org.eclipse.lsp4j.services.TextDocumentService;
+import org.eclipse.lsp4j.services.WorkspaceService;
 import org.xsocket.MaxReadSizeExceededException;
 import org.xsocket.connection.IDataHandler;
 import org.xsocket.connection.IDisconnectHandler;
@@ -51,7 +57,7 @@ import org.xsocket.connection.INonBlockingConnection;
 
 public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 {
-    private ActionScriptTextDocumentService txtSrv;
+    private ActionScriptLanguageServer languageServer;
     private String fileUrl = "";
     private MoonshineProjectConfigStrategy projectConfigStrategy;
     private MoonshineLanguageClient languageClient;
@@ -60,6 +66,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
     public xSocketDataHandler()
     {
         super();
+        languageServer = new ActionScriptLanguageServer();
         MessageJsonHandler messageJsonHandler = new MessageJsonHandler(new HashMap<>());
         gson = messageJsonHandler.getGson();
     }
@@ -102,7 +109,20 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             nbc.setAutoflush(true);
             String data = nbc.readStringByDelimiter("\0");
 
-            JsonObject jsonObject = new JsonParser().parse(data).getAsJsonObject();
+            JsonObject jsonObject = null;
+            
+            try
+            {
+                jsonObject = new JsonParser().parse(data).getAsJsonObject();
+            }
+            catch(Exception e)
+            {
+                StringWriter stackTrace = new StringWriter();
+                e.printStackTrace(new PrintWriter(stackTrace));
+                String json = getJSONError(null, -32600, "Invalid request. " + stackTrace.toString());
+                nbc.write(json + "\0");
+                return true;
+            }
 
             int requestID = jsonObject.get("id").getAsInt();
             String method = jsonObject.get("method").getAsString();
@@ -111,19 +131,49 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             {
                 case "initialize":
                 {
-                    if(txtSrv == null)
+                    if(languageClient != null)
                     {
-                        InitializeParams initializeParams = gson.fromJson(jsonObject.getAsJsonObject("params"), InitializeParams.class);
-                        txtSrv = new ActionScriptTextDocumentService();
-                        Path workspaceRoot = Paths.get(URI.create(initializeParams.getRootUri()));
-                        projectConfigStrategy = new MoonshineProjectConfigStrategy();
-                        languageClient = new MoonshineLanguageClient();
-                        languageClient.connection = nbc;
-                        txtSrv.setProjectConfigStrategy(projectConfigStrategy);
-                        txtSrv.setLanguageClient(languageClient);
-                        txtSrv.setWorkspaceRoot(workspaceRoot);
+                        System.err.println("Error initialize: Already initialized.");
+                        break;
                     }
-                    String json = getJSONResponse(requestID, new InitializeResult(new ServerCapabilities()));
+
+                    String json = null;
+                    InitializeParams initializeParams = null;
+                    try
+                    {
+                        initializeParams = gson.fromJson(jsonObject.getAsJsonObject("params"), InitializeParams.class);
+                    }
+                    catch (Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    
+                    if(json == null)
+                    {
+                        try
+                        {
+                            languageClient = new MoonshineLanguageClient();
+                            languageClient.connection = nbc;
+                            languageServer.connect(languageClient);
+                            
+                            projectConfigStrategy = new MoonshineProjectConfigStrategy();
+    
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            ((ActionScriptTextDocumentService) txtSrv).setProjectConfigStrategy(projectConfigStrategy);
+
+                            languageServer.initialize(initializeParams);
+                            json = getJSONResponse(requestID, new InitializeResult(new ServerCapabilities()));
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+
                     nbc.write(json + "\0");
                     break;
                 }
@@ -140,142 +190,444 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 }
                 case "exit":
                 {
-                    Main.shutdownServer();
+                    try
+                    {
+                        Main.shutdownServer();
+                    }
+                    catch(Exception e)
+                    {
+                        //ignore
+                    }
                     //this is a notification. send no response!
                     break;
                 }
                 case "textDocument/didOpen":
                 {
+                    String json = null;
+                    DidOpenTextDocumentParams didOpenTextDocumentParams = null;
                     try
                     {
-                        DidOpenTextDocumentParams didOpenTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidOpenTextDocumentParams.class);
-                        txtSrv.didOpen(didOpenTextDocumentParams);
+                        didOpenTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidOpenTextDocumentParams.class);
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
-                        System.err.println("Error didopen: " + e.getMessage());
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
                     }
 
-                    //this is a notification. send no response!
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            txtSrv.didOpen(didOpenTextDocumentParams);
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+
+                    //this is a notification. send no response unless there's
+                    //an error!
+                    if(json != null)
+                    {
+                        nbc.write(json + "\0");
+                    }
                     break;
                 }
                 case "textDocument/didChange":
                 {
+                    String json = null;
+                    DidChangeTextDocumentParams didChangeTextDocumentParams = null;
                     try
                     {
-                        DidChangeTextDocumentParams didChangeTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidChangeTextDocumentParams.class);
-                        txtSrv.didChange(didChangeTextDocumentParams);
+                        didChangeTextDocumentParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidChangeTextDocumentParams.class);
                     }
                     catch (Exception e)
                     {
-                        System.err.println("Error didchange: " + e.getMessage());
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            txtSrv.didChange(didChangeTextDocumentParams);
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
                     }
 
-                    //this is a notification. send no response!
+                    //this is a notification. send no response unless there's
+                    //an error!
+                    if(json != null)
+                    {
+                        nbc.write(json + "\0");
+                    }
                     break;
                 }
                 case "workspace/didChangeConfiguration":
                 {
+                    String json = null;
+                    DidChangeConfigurationParams didChangeConfigurationParams = null;
+                    try
+                    {
+                        didChangeConfigurationParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DidChangeConfigurationParams.class);
+                    }
+                    catch (Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    
+                    if(json == null)
+                    {
+                        try
+                        {
+                            WorkspaceService wkspSrv = languageServer.getWorkspaceService();
+                            wkspSrv.didChangeConfiguration(didChangeConfigurationParams);
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+
+                    //this is a notification. send no response unless there's
+                    //an error!
+                    if(json != null)
+                    {
+                        nbc.write(json + "\0");
+                    }
+                    break;
+                }
+                case "moonshine/didChangeProjectConfiguration":
+                {
                     JsonObject param = jsonObject.getAsJsonObject("params");
-                    JsonObject config = param.getAsJsonObject("DidChangeConfigurationParams");
                     projectConfigStrategy.setChanged(true);
-                    projectConfigStrategy.setConfigParams(config);
+                    projectConfigStrategy.setConfigParams(param);
+
+                    TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                    ((ActionScriptTextDocumentService) txtSrv).checkForProblemsNow();
+
                     //this is a notification. send no response!
                     break;
                 }
                 case "textDocument/completion":
                 {
+                    String json = null;
+                    TextDocumentPositionParams textDocumentPositionParams = null;
                     try
                     {
-                        TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
-                        CompletableFuture<Either<List<CompletionItem>,CompletionList>> lst = txtSrv.completion(textDocumentPositionParams);
-                        String json = getJSONResponse(requestID, lst.get());
-                        //System.out.println("completion result : " + json);
-                        nbc.write(json + "\0");
-
+                        textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
                     }
-                    catch (Exception e)
+                    catch(Exception e)
                     {
-                        System.err.println("Error completion: " + e.getMessage());
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
                     }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<Either<List<CompletionItem>,CompletionList>> lst = txtSrv.completion(textDocumentPositionParams);
+                            json = getJSONResponse(requestID, lst.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+                    //System.out.println("completion result: " + json);
+                    nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/hover":
                 {
-                    TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
-                    CompletableFuture<Hover> hoverInfo = txtSrv.hover(textDocumentPositionParams);
-                    String json = getJSONResponse(requestID, hoverInfo.get());
-                    //System.out.println("hover result : " + json);
+                    String json = null;
+                    TextDocumentPositionParams textDocumentPositionParams = null;
+                    try
+                    {
+                        textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<Hover> hoverInfo = txtSrv.hover(textDocumentPositionParams);
+                            json = getJSONResponse(requestID, hoverInfo.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+                    //System.out.println("hover result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/signatureHelp":
                 {
-                    TextDocumentPositionParams textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
-                    CompletableFuture<SignatureHelp> signatureInfo = txtSrv.signatureHelp(textDocumentPositionParams);
-                    String json = getJSONResponse(requestID, signatureInfo.get());
-                    //System.out.println("signature help result : " + json);
+                    String json = null;
+                    TextDocumentPositionParams textDocumentPositionParams = null;
+                    try
+                    {
+                        textDocumentPositionParams = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<SignatureHelp> signatureInfo = txtSrv.signatureHelp(textDocumentPositionParams);
+                            json = getJSONResponse(requestID, signatureInfo.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
+                    //System.out.println("signature help result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/definition":
                 {
-                    TextDocumentPositionParams txtPosParam = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
-                    CompletableFuture<List<? extends Location>> signatureInfo = txtSrv.definition(txtPosParam);
-                    String json = getJSONResponse(requestID, signatureInfo.get());
+                    String json = null;
+                    TextDocumentPositionParams txtPosParam = null;
+                    try
+                    {
+                        txtPosParam = gson.fromJson(jsonObject.getAsJsonObject("params"), TextDocumentPositionParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<List<? extends Location>> definitionInfo = txtSrv.definition(txtPosParam);
+                            json = getJSONResponse(requestID, definitionInfo.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("definition result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/documentSymbol":
                 {
-                    DocumentSymbolParams docSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DocumentSymbolParams.class);
-                    CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.documentSymbol(docSymbolParams);
-                    String json = getJSONResponse(requestID, symbolInfo.get());
+                    String json = null;
+                    DocumentSymbolParams docSymbolParams = null;
+                    try
+                    {
+                        docSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), DocumentSymbolParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.documentSymbol(docSymbolParams);
+                            json = getJSONResponse(requestID, symbolInfo.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("document symbol result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "workspace/symbol":
                 {
-                    WorkspaceSymbolParams workspaceSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), WorkspaceSymbolParams.class);
-                    CompletableFuture<List<? extends SymbolInformation>> symbolInfo = txtSrv.workspaceSymbol(workspaceSymbolParams);
-                    String json = getJSONResponse(requestID, symbolInfo.get());
+                    String json = null;
+                    WorkspaceSymbolParams workspaceSymbolParams = null;
+                    try
+                    {
+                        workspaceSymbolParams = gson.fromJson(jsonObject.getAsJsonObject("params"), WorkspaceSymbolParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            WorkspaceService wkspSrv = languageServer.getWorkspaceService();
+                            CompletableFuture<List<? extends SymbolInformation>> symbolInfo = wkspSrv.symbol(workspaceSymbolParams);
+                            json = getJSONResponse(requestID, symbolInfo.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("workspace symbol result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/references":
                 {
-                    ReferenceParams refParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ReferenceParams.class);
-                    CompletableFuture<List<? extends Location>> refs = txtSrv.references(refParams);
-                    String json = getJSONResponse(requestID, refs.get());
+                    String json = null;
+                    ReferenceParams refParams = null;
+                    try
+                    {
+                        refParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ReferenceParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<List<? extends Location>> refs = txtSrv.references(refParams);
+                            json = getJSONResponse(requestID, refs.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("references result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "textDocument/rename":
                 {
-                    RenameParams renameParams = gson.fromJson(jsonObject.getAsJsonObject("params"), RenameParams.class);
-                    CompletableFuture<WorkspaceEdit> edits = txtSrv.rename(renameParams);
-                    String json = getJSONResponse(requestID, edits.get());
+                    String json = null;
+                    RenameParams renameParams = null;
+                    try
+                    {
+                        renameParams = gson.fromJson(jsonObject.getAsJsonObject("params"), RenameParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            TextDocumentService txtSrv = languageServer.getTextDocumentService();
+                            CompletableFuture<WorkspaceEdit> edits = txtSrv.rename(renameParams);
+                            json = getJSONResponse(requestID, edits.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("rename result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 case "workspace/executeCommand":
                 {
-                    ExecuteCommandParams executeCommandParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ExecuteCommandParams.class);
-                    CompletableFuture<Object> result = txtSrv.executeCommand(executeCommandParams);
-                    String json = getJSONResponse(requestID, result.get());
+                    String json = null;
+                    ExecuteCommandParams executeCommandParams = null;
+                    try
+                    {
+                        executeCommandParams = gson.fromJson(jsonObject.getAsJsonObject("params"), ExecuteCommandParams.class);
+                    }
+                    catch(Exception e)
+                    {
+                        StringWriter stackTrace = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stackTrace));
+                        json = getJSONError(requestID, -32602, "Invalid params. " + stackTrace.toString());
+                    }
+                    if(json == null)
+                    {
+                        try
+                        {
+                            WorkspaceService wkspSrv = languageServer.getWorkspaceService();
+                            CompletableFuture<Object> result = wkspSrv.executeCommand(executeCommandParams);
+                            json = getJSONResponse(requestID, result.get());
+                        }
+                        catch(Exception e)
+                        {
+                            StringWriter stackTrace = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stackTrace));
+                            json = getJSONError(requestID, -32603, "Internal error. " + stackTrace.toString());
+                        }
+                    }
                     //System.out.println("executeCommand result: " + json);
                     nbc.write(json + "\0");
                     break;
                 }
                 default:
                 {
-                    System.err.println("Unknown method: " + method);
+                    String json = getJSONError(requestID, -32601, "Method not found: " + method);
+                    nbc.write(json + "\0");
                 }
             }
         }
@@ -294,6 +646,18 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         wrapper.put("jsonrpc", "2.0");
         wrapper.put("id", id);
         wrapper.put("result", result);
+        return gson.toJson(wrapper);
+    }
+
+    private String getJSONError(Integer id, int code, String message)
+    {
+        HashMap<String, Object> error = new HashMap<>();
+        error.put("code", code);
+        error.put("message", message);
+        HashMap<String, Object> wrapper = new HashMap<>();
+        wrapper.put("jsonrpc", "2.0");
+        wrapper.put("id", id);
+        wrapper.put("error", error);
         return gson.toJson(wrapper);
     }
 }
