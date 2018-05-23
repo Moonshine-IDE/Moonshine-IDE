@@ -139,7 +139,7 @@
 				// Since in either Flash Builder or Moonshine project type, Moonshine always saves
 				// it's saved data to .as3proj file only, we should check the .as3proj file existence first
 				var project:AS3ProjectVO = associatedData as AS3ProjectVO;
-				var projectFile:FileLocation = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name + ".as3proj");
+				var projectFile:FileLocation = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name + (project.isVisualEditorProject ? ".veditorproj" : ".as3proj"));
 				if (projectFile.fileBridge.exists)
 				{
 					goSave();
