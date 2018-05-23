@@ -21,7 +21,7 @@ package actionScripts.plugin.errors
 	import flash.events.ErrorEvent;
 	import flash.events.UncaughtErrorEvent;
 	
-	import mx.controls.Alert;
+	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.plugin.IMenuPlugin;
@@ -33,6 +33,8 @@ package actionScripts.plugin.errors
 		override public function get name():String { return "Uncaught Error Handlers Plugin"; }
 		override public function get author():String { return "Moonshine Project Team"; }
 		override public function get description():String { return "Catch any uncaught errors in the application"; }
+		
+		public static var problemList:ArrayList;
 		
 		public function UncaughtErrorsPlugin() {}
 		
@@ -47,7 +49,9 @@ package actionScripts.plugin.errors
 		override public function deactivate():void
 		{
 			super.deactivate();
+			
 			// remove event listeners
+			FlexGlobals.topLevelApplication.loaderInfo.uncaughtErrorEvents.removeEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
 		}
 		
 		public function getMenu():MenuItem
@@ -58,21 +62,28 @@ package actionScripts.plugin.errors
 		
 		private function uncaughtErrorHandler(event:UncaughtErrorEvent):void
 		{
+			if (!problemList) problemList = new ArrayList();
+			
+			var errorString:String;
 			// print to console only for now
 			if (event.error is Error)
 			{
-				var err:Error = event.error as Error;
-				error(err.message +"\n"+ err.getStackTrace());
+				errorString = (event.error as Error).message +"\n"+ (event.error as Error).getStackTrace();
+				error(errorString);
 			}
 			else if (event.error is ErrorEvent)
 			{
-				error(ErrorEvent(event.error).text);
+				errorString = (event.error as ErrorEvent).text;
+				error(errorString);
 			}
 			else
 			{
 				// a non-Error, non-ErrorEvent type was thrown and uncaught
-				error(event.toString());
+				errorString = event.toString();
+				error(errorString);
 			}
+			
+			problemList.addItem(errorString);
 		}
 	}
 }
