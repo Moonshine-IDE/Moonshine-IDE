@@ -17,7 +17,8 @@ package actionScripts.ui.tabNavigator
 		public function TabBarWithScroller()
 		{
 			super();
-			
+
+            this.setStyle("cornerRadius", 0);
 			this.setStyle("skinClass", TabBarWithScrollerSkin);
 		}
 

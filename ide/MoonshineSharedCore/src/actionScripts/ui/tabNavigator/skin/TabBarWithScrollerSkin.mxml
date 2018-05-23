@@ -170,7 +170,7 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 			</s:layout>
 			<s:itemRenderer>
 				<fx:Component>
-					<s:ButtonBarButton skinClass="spark.skins.spark.TabBarButtonSkin" />
+					<s:ButtonBarButton buttonMode="true" skinClass="actionScripts.ui.tabNavigator.skin.TabBarWithScrollerTabBarButtonSkin" />
 				</fx:Component>
 			</s:itemRenderer>
 		</s:DataGroup>
