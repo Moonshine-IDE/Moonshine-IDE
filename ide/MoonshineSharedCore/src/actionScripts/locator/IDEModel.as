@@ -18,21 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-    import actionScripts.interfaces.IClipboardBridge;
-    import actionScripts.interfaces.IVisualEditorBridge;
-
     import mx.collections.ArrayCollection;
+    import mx.collections.ArrayList;
     import mx.core.IFlexDisplayObject;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.interfaces.IAboutBridge;
-	import actionScripts.interfaces.IContextMenuBridge;
-	import actionScripts.interfaces.IFileBridge;
-	import actionScripts.interfaces.IFlexCoreBridge;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.MainView;
-	import actionScripts.utils.NoSDKNotifier;
-	import actionScripts.valueObjects.ProjectVO;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.IAboutBridge;
+    import actionScripts.interfaces.IClipboardBridge;
+    import actionScripts.interfaces.IContextMenuBridge;
+    import actionScripts.interfaces.IFileBridge;
+    import actionScripts.interfaces.IFlexCoreBridge;
+    import actionScripts.interfaces.IVisualEditorBridge;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.MainView;
+    import actionScripts.utils.NoSDKNotifier;
+    import actionScripts.valueObjects.ProjectVO;
 
 	[Bindable] public class IDEModel
 	{
@@ -68,6 +68,8 @@ package actionScripts.locator
 		public var antScriptFile:FileLocation; 
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
+		
+		public var problemList:ArrayList;
 		
 		public var recentlyOpenedFiles:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
