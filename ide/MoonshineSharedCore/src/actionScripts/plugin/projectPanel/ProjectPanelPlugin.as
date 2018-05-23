@@ -10,6 +10,7 @@ package actionScripts.plugin.projectPanel
     import flash.events.MouseEvent;
 
     import mx.containers.dividedBoxClasses.BoxDivider;
+    import mx.core.IUIComponent;
     import mx.core.UIComponent;
 
     import mx.events.DividerEvent;
@@ -34,6 +35,8 @@ package actionScripts.plugin.projectPanel
         private var cursorID:int = CursorManager.NO_CURSOR;
         private var isProjectPanelHidden:Boolean;
 
+        private var views:Array;
+
         public function ProjectPanelPlugin()
         {
             super();
@@ -42,6 +45,8 @@ package actionScripts.plugin.projectPanel
         override public function activate():void
         {
             super.activate();
+
+            views = [];
 
             view = new TabNavigatorWithOrientation();
             view.addEventListener(FlexEvent.CREATION_COMPLETE, onViewCreationComplete);
@@ -71,6 +76,8 @@ package actionScripts.plugin.projectPanel
         {
             super.deactivate();
 
+            views = null;
+
             unregisterCommand("hide");
 
             model.mainView.bodyPanel.removeEventListener(DividerEvent.DIVIDER_RELEASE, onProjectPanelDividerRelease);
@@ -85,12 +92,20 @@ package actionScripts.plugin.projectPanel
 
         private function addViewToProjectPanelHandler(event:ProjectPanelPluginEvent):void
         {
-            var navContent:NavigatorContent = new NavigatorContent();
-            navContent.label = event.view.title;
+            if (event.view && !views.some(function hasView(item:String, index:int, arr:Array):Boolean
+                {
+                        return item == event.view.title;
+                }))
+            {
+                var navContent:NavigatorContent = new NavigatorContent();
+                navContent.label = event.view.title;
 
-            navContent.addElement(event.view as UIComponent);
+                navContent.addElement(event.view as UIComponent);
 
-            view.addElement(navContent);
+                view.addElement(navContent);
+
+                views.push(event.view.title);
+            }
         }
 
         private function onViewCreationComplete(event:FlexEvent):void

@@ -133,8 +133,6 @@ package actionScripts.plugins.vscodeDebug
 			
 			this._debugPanel = new VSCodeDebugProtocolView();
 
-            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
-
 			dispatcher.addEventListener(EVENT_SHOW_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			///dispatcher.addEventListener(CompilerEventBase.PREBUILD, handleCompile);
@@ -784,7 +782,9 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function showDebugView(event:Event):void
 		{
-			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
+            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+
+            _debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
 			_debugPanel.pauseButton.addEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
 			_debugPanel.stepOverButton.addEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
 			_debugPanel.stepIntoButton.addEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);

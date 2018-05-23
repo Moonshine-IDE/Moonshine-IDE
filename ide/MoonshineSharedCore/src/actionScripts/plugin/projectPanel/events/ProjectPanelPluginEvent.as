@@ -7,6 +7,7 @@ package actionScripts.plugin.projectPanel.events
     public class ProjectPanelPluginEvent extends Event
     {
         public static const ADD_VIEW_TO_PROJECT_PANEL:String = "addViewToProjectPanel";
+        public static const REMOVE_VIEW_TO_PROJECT_PANEL:String = "removeViewToProjectPanel";
 
         private var _view:IViewWithTitle;
 
