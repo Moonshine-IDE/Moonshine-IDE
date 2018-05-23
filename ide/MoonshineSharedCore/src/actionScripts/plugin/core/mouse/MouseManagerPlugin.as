@@ -59,7 +59,7 @@ package actionScripts.plugin.core.mouse
 		private function onCursorUpdated(event:FocusEvent):void
 		{
 			// this should handle any non-input type of component focus
-			if (!(event.target is TextEditor) && !event.target.hasOwnProperty("text"))
+			if (!(event.target is TextEditor) && !event.target.hasOwnProperty("text") && !event.target.hasOwnProperty("selectable"))
 			{
 				return;
 			}

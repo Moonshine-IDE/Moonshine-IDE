@@ -30,6 +30,7 @@ package actionScripts.ui.menu
 	import mx.core.ScrollPolicy;
 	import mx.graphics.GradientEntry;
 	import mx.graphics.LinearGradient;
+	import mx.graphics.SolidColor;
 	import mx.graphics.SolidColorStroke;
 	
 	import spark.components.BorderContainer;
@@ -104,10 +105,7 @@ package actionScripts.ui.menu
 		{
 			if (!downArrow)
 			{
-				var upLinearGradient:LinearGradient = new LinearGradient();
-				upLinearGradient.rotation = 90;
-				upLinearGradient.entries = [new GradientEntry(0xffffff), new GradientEntry(0xcccccc)];
-				
+				var backgroundColor:SolidColor = new SolidColor(0xf0f0f0);
 				var stroke:SolidColorStroke = new SolidColorStroke(0, 0, 0);
 				
 				var upArrowImage:Image = new Image();
@@ -119,7 +117,7 @@ package actionScripts.ui.menu
 				downArrowImage.horizontalCenter = downArrowImage.verticalCenter = 0;
 				
 				upArrow = new BorderContainer();
-				upArrow.backgroundFill = upLinearGradient;
+				upArrow.backgroundFill = backgroundColor;
 				upArrow.borderStroke = stroke;
 				upArrow.height = 20;
 				upArrow.addEventListener(MouseEvent.MOUSE_OVER, onUpArrowOver);
@@ -130,7 +128,7 @@ package actionScripts.ui.menu
 				super.addChildAt(upArrow, numChildren);
 				
 				downArrow = new BorderContainer();
-				downArrow.backgroundFill = upLinearGradient;
+				downArrow.backgroundFill = backgroundColor;
 				downArrow.borderStroke = stroke;
 				downArrow.height = 20;
 				downArrow.y = measuredHeight - downArrow.height;
