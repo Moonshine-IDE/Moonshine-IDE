@@ -46,7 +46,7 @@ package actionScripts.plugins.ui.editor.text
 		{
 			this.editor = editor;
 			
-			editor.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+			editor.addEventListener(KeyboardEvent.KEY_UP, handleKeyDown);
 		}
 		
 		public function save():void
