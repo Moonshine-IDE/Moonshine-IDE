@@ -388,7 +388,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     public void setClientCapabilities(ClientCapabilities value)
     {
         clientCapabilities = value;
-        completionSupportsSnippets = clientCapabilities.getTextDocument().getCompletion().getCompletionItem().getSnippetSupport();
+        try
+        {
+            completionSupportsSnippets = clientCapabilities.getTextDocument().getCompletion().getCompletionItem().getSnippetSupport();
+        }
+        catch(Exception e)
+        {
+            completionSupportsSnippets = false;
+        }
     }
 
     public void setLanguageClient(ActionScriptLanguageClient value)
@@ -4197,25 +4204,30 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (definitionPath.endsWith(SWC_EXTENSION))
             {
                 DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, currentProject);
-                //if we get here, we couldn't find a framework source file and
-                //the definition path still ends with .swc
-                //we're going to try our best to display "decompiled" content
-                Location location = new Location();
-                String text = UrlEscapers.urlFragmentEscaper().escape(definitionText.text);
-                String path = definitionText.path;
-                URI uri = URI.create("swc://" + path + "?" + text);
-                location.setUri(uri.toString());
-                Position start = new Position();
-                start.setLine(definitionText.startLine);
-                start.setCharacter(definitionText.startColumn);
-                Position end = new Position();
-                end.setLine(definitionText.endLine);
-                end.setCharacter(definitionText.endColumn);
-                Range range = new Range();
-                range.setStart(start);
-                range.setEnd(end);
-                location.setRange(range);
-                result.add(location);
+                //may be null if definitionToTextDocument() doesn't know how
+                //to parse that type of definition
+                if (definitionText != null)
+                {
+                    //if we get here, we couldn't find a framework source file and
+                    //the definition path still ends with .swc
+                    //we're going to try our best to display "decompiled" content
+                    Location location = new Location();
+                    String text = UrlEscapers.urlFragmentEscaper().escape(definitionText.text);
+                    String path = definitionText.path;
+                    URI uri = URI.create("swc://" + path + "?" + text);
+                    location.setUri(uri.toString());
+                    Position start = new Position();
+                    start.setLine(definitionText.startLine);
+                    start.setCharacter(definitionText.startColumn);
+                    Position end = new Position();
+                    end.setLine(definitionText.endLine);
+                    end.setCharacter(definitionText.endColumn);
+                    Range range = new Range();
+                    range.setStart(start);
+                    range.setEnd(end);
+                    location.setRange(range);
+                    result.add(location);
+                }
                 return;
             }
             if (!definitionPath.endsWith(AS_EXTENSION)
