@@ -1008,7 +1008,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function socket_ioErrorHandler(event:IOErrorEvent):void
 		{
-			trace("socket io error:", event.toString());
+			error("Socket connection problem: %s", event.toString());
 		}
 		
 		protected function socket_socketDataHandler(event:ProgressEvent):void
@@ -1028,7 +1028,8 @@ package actionScripts.plugins.vscodeDebug
 		{
 			var output:IDataInput = _nativeProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			trace("[swf-debugger]", data);
+
+			error("Process error: %s", data);
 		}
 		
 		protected function nativeProcess_exitHandler(event:NativeProcessExitEvent):void
