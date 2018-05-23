@@ -50,7 +50,7 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 			this.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
 			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
-			this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
+			//this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
 			
 			this.addEventListener(MouseEvent.CLICK, onMouseClicked, false, 0, true);
 		}
@@ -165,6 +165,7 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 
         private function handleFocusOut(event:FocusEvent):void
         {
+			trace(event.type);
             hasFocus = false;
         }
 		
