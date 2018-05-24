@@ -16,13 +16,19 @@
     </fx:Metadata>
 
     <fx:Script fb:purpose="styling" >
+        import actionScripts.ui.tabNavigator.CloseTabButton;
 
         static private const exclusions:Array = ["labelDisplay"];
+
+        private var closeButton:CloseTabButton;
 
         /**
          * @private
          */
-        override public function get colorizeExclusions():Array {return exclusions;}
+        override public function get colorizeExclusions():Array
+        {
+            return exclusions;
+        }
 
         /**
          * @private
@@ -73,7 +79,7 @@
             // right edges of an s:Rect, along with the top left,right rounded corners.
             // Otherwise, we draw a full path.
             var path:String = "";
-            path +=  "M " + left + " " + bottom;
+            path += "M " + left + " " + bottom;
             path += " L " + left + " " + (top + cornerRadius);
             path += " Q " + left + " " + (top + s) + " " + (left + a) + " " + (top + a);
             path += " Q " + (left + s) + " " + top + " " + (left + cornerRadius) + " " + top;
@@ -111,6 +117,15 @@
             }
         }
 
+        private function updateCloseButton():void
+        {
+            closeButton.visible = closeButton.includeInLayout = getStyle("closeButtonVisible");
+            if (!closeButton.visible)
+            {
+                (labelDisplay as Label).right = 10;
+            }
+        }
+
         /**
          *  @private
          */
@@ -118,7 +133,21 @@
         {
             updateCornerRadius();
             updateBorderTop(unscaledWidth, unscaledHeight);
+            updateCloseButton();
+
             super.updateDisplayList(unscaledWidth, unscaledHeight);
+        }
+
+        override protected function childrenCreated():void
+        {
+            super.childrenCreated();
+
+            closeButton = new CloseTabButton();
+            closeButton.width = 27;
+            closeButton.height = 25;
+            closeButton.right = closeButton.top = closeButton.bottom = 0;
+            closeButton.verticalCenter = 0;
+            this.addElement(closeButton);
         }
     </fx:Script>
 
@@ -174,10 +203,6 @@
     <!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay -->
     <s:Label id="labelDisplay"
              textAlign="center"
-             verticalAlign="middle"
-             maxDisplayedLines="1"
-             horizontalCenter="0" verticalCenter="1"
-             left="10" right="10" top="2" bottom="2">
-    </s:Label>
+             maxDisplayedLines="1" left="10" top="2" right="32"  verticalCenter="0" />
 
 </s:SparkButtonSkin>

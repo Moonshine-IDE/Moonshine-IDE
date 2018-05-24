@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
           xmlns:s="library://ns.adobe.com/flex/spark"
-          xmlns:view="view.*" xmlns:containers="spark.containers.*">
+          xmlns:view="view.*" xmlns:containers="spark.containers.*"
+          xmlns:tabnavigator="actionScripts.ui.tabNavigator.*">
     <containers:Navigator id="viewStack" width="100%" height="100%" creationPolicy="all">
         <s:NavigatorContent label="Visual">
            <s:Scroller width="100%" height="100%">
@@ -17,9 +18,10 @@
             </s:Scroller>
         </s:NavigatorContent>
     </containers:Navigator>
-    <s:TabBar id="tabBar" dataProvider="{viewStack}" color="#FFFFFF"
-              skinClass="components.skins.EditorTabBarSkin" cornerRadius="1"
-              change="onTabBarChange(event)"/>
+    <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}" color="#FFFFFF"
+                                     skinClass="components.skins.EditorTabBarSkin"
+                                     cornerRadius="1" closeButtonVisible="false"
+                                     change="onTabBarChange(event)"/>
     <fx:Script><![CDATA[
         import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
         import actionScripts.ui.editor.text.TextEditor;

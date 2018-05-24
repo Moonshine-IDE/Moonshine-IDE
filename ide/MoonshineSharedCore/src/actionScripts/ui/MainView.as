@@ -73,7 +73,7 @@ package actionScripts.ui
 			bodyPanel = new IDEVDividedBox();
 			bodyPanel.percentHeight = 100;
 			bodyPanel.percentWidth = 100;
-			bodyPanel.setStyle('backgroundColor', 0xa0a0a0);
+			bodyPanel.setStyle('backgroundColor', 0x424242);
 			bodyPanel.setStyle('dividerThickness', 6);
 			bodyPanel.setStyle('dividerAffordance', 2);
 			bodyPanel.setStyle('verticalGap', 6);

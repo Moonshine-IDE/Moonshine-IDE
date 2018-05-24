@@ -10,6 +10,8 @@ package actionScripts.ui.tabNavigator
     import spark.components.TabBar;
 	import flash.events.Event;
 
+    [Style(name="closeButtonVisible", type="Boolean", inherit="no", theme="spark")]
+
 	public class TabBarWithScroller extends TabBar 
 	{
         private var _maxElementCountWithoutScroller:int;
@@ -19,6 +21,7 @@ package actionScripts.ui.tabNavigator
 			super();
 
             this.setStyle("cornerRadius", 1);
+            this.setStyle("closeButtonVisible", true);
 			this.setStyle("skinClass", TabBarWithScrollerSkin);
 		}
 

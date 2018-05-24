@@ -69,11 +69,16 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 		{
 			const numElements:int = dataGroup.numElements;
 			const cornerRadius:int = hostComponent.getStyle("cornerRadius");
+			const closeButtonVisible:Boolean = hostComponent.getStyle("closeButtonVisible");
+
 			for (var i:int = 0; i < numElements; i++)
 			{
 				var elt:UIComponent = dataGroup.getElementAt(i) as UIComponent;
 				if (elt)
+				{
 					elt.setStyle("cornerRadius", cornerRadius);
+					elt.setStyle("closeButtonVisible", closeButtonVisible);
+				}
 			}
 
 			super.updateDisplayList(unscaledWidth, unscaledHeight);
