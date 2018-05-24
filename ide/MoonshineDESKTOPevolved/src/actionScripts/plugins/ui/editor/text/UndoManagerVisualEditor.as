@@ -85,7 +85,7 @@ package actionScripts.plugins.ui.editor.text
 		
 		private function handleKeyDown(event:KeyboardEvent):void
 		{
-			if ((ConstantsCoreVO.IS_MACOS ? event.commandKey : event.ctrlKey) && !event.altKey)
+			if ((event.commandKey || event.ctrlKey) && !event.altKey)
 			{
 				switch (event.keyCode)
 				{
