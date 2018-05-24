@@ -52,7 +52,7 @@
         </s:layout>
         <s:itemRenderer>
             <fx:Component>
-                <s:ButtonBarButton skinClass="components.skins.EditorTabBarButtonSkin" />
+                <s:ButtonBarButton buttonMode="true" skinClass="components.skins.TabBarButtonSkin" />
             </fx:Component>
         </s:itemRenderer>
     </s:DataGroup>
