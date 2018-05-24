@@ -57,11 +57,15 @@ import org.xsocket.connection.INonBlockingConnection;
 
 public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 {
+    private static final String MESSAGE_DELIMITER = "\r\n";
+    private static final String END_OF_HEADER = "\r\n\r\n";
+    private static final String HEADER_FIELD_CONTENT_LENGTH = "Content-Length: ";
+
     private ActionScriptLanguageServer languageServer;
-    private String fileUrl = "";
     private MoonshineProjectConfigStrategy projectConfigStrategy;
     private MoonshineLanguageClient languageClient;
     private Gson gson;
+    private int contentLength = -1;
 
     public xSocketDataHandler()
     {
@@ -100,14 +104,53 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         }
         try
         {
-            int index = nbc.indexOf("\0");
-            if(index == -1)
+            boolean needsHeader = contentLength == -1;
+            if(needsHeader && nbc.indexOf(END_OF_HEADER) == -1)
             {
-                //the full data has not yet arrived -JT
+                //header not complete yet
                 return false;
             }
+            while(needsHeader)
+            {
+                int index = nbc.indexOf(MESSAGE_DELIMITER);
+                if(index == -1)
+                {
+                    System.err.println("Missing header delimiter.");
+                }
+                String headerField = nbc.readStringByDelimiter(MESSAGE_DELIMITER);
+                if(index == 0)
+                {
+                    //this is the end of the header
+                    needsHeader = false;
+                }
+                else if(headerField.startsWith(HEADER_FIELD_CONTENT_LENGTH))
+                {
+                    String contentLengthAsString = headerField.substring(HEADER_FIELD_CONTENT_LENGTH.length());
+                    contentLength = Integer.parseInt(contentLengthAsString);
+                }
+            }
+            if(contentLength == -1)
+            {
+                System.err.println("Language server failed to parse Content-Length header");
+                return false;
+            }
+            if(nbc.available() < contentLength)
+            {
+                //the full content part has not yet arrived -JT
+                return false;
+            }
+
             nbc.setAutoflush(true);
-            String data = nbc.readStringByDelimiter("\0");
+
+            String data = nbc.readStringByLength(contentLength);
+            if(nbc.available() > 0 && nbc.indexOf("\0") == 0)
+            {
+                //flash.net.XMLSocket null byte
+                nbc.readByte();
+            }
+            
+            //get ready for the next message
+            contentLength = -1;
 
             JsonObject jsonObject = null;
             
@@ -646,7 +689,15 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         wrapper.put("jsonrpc", "2.0");
         wrapper.put("id", id);
         wrapper.put("result", result);
-        return gson.toJson(wrapper);
+        String json = gson.toJson(wrapper);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Content-Length: ");
+        builder.append(json.getBytes().length);
+        builder.append("\r\n");
+        builder.append("\r\n");
+        builder.append(json);
+        return builder.toString();
     }
 
     private String getJSONError(Integer id, int code, String message)
@@ -658,6 +709,14 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         wrapper.put("jsonrpc", "2.0");
         wrapper.put("id", id);
         wrapper.put("error", error);
-        return gson.toJson(wrapper);
+        String json = gson.toJson(wrapper);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Content-Length: ");
+        builder.append(json.getBytes().length);
+        builder.append("\r\n");
+        builder.append("\r\n");
+        builder.append(json);
+        return builder.toString();
     }
 }

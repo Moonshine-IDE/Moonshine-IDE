@@ -71,6 +71,7 @@ package actionScripts.utils
 
 	import no.doomsday.console.ConsoleUtil;
 	import flash.errors.IllegalOperationError;
+	import flash.utils.ByteArray;
 
 	/**
 	 * An implementation of the language server protocol for Moonshine IDE.
@@ -84,6 +85,9 @@ package actionScripts.utils
 		private static const SOCKET_ADDRESS:String = "127.0.0.1";
 		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
+		private static const PROTOCOL_HEADER_FIELD_CONTENT_LENGTH:String = "Content-Length: ";
+		private static const PROTOCOL_HEADER_DELIMITER:String = "\r\n";
+		private static const PROTOCOL_END_OF_HEADER:String = "\r\n\r\n";
 		private static const FIELD_METHOD:String = "method";
 		private static const FIELD_RESULT:String = "result";
 		private static const FIELD_ERROR:String = "error";
@@ -114,6 +118,7 @@ package actionScripts.utils
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
+		private static const HELPER_BYTES:ByteArray = new ByteArray();
 
 		private var _project:AS3ProjectVO;
 		private var _requestID:int = 0;
@@ -134,6 +139,8 @@ package actionScripts.utils
 		private var _shutdownID:int = -1;
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
+
+		private var _contentLength:int = -1;
 
 		public function LanguageServerForProject(project:AS3ProjectVO, javaPath:String)
 		{
@@ -475,15 +482,27 @@ package actionScripts.utils
 			{
 				throw new IllegalOperationError("Request failed. Language server is not initialized. Unexpected method: " + method);
 			}
+			
 			var id:int = getNextRequestID();
-			var obj:Object = new Object();
-			obj.jsonrpc = JSON_RPC_VERSION;
-			obj.id = id;
-			obj.method = method;
-			obj.params = params;
-			var jsonstr:String = JSON.stringify(obj);
-			//trace(">>>", jsonstr);
-			_xmlSocket.send(jsonstr);
+			var contentPart:Object = new Object();
+			contentPart.jsonrpc = JSON_RPC_VERSION;
+			contentPart.id = id;
+			contentPart.method = method;
+			contentPart.params = params;
+			var contentJSON:String = JSON.stringify(contentPart);
+
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+
+			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
+			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
+			
+			//trace(">>>", message);
+			
+			_xmlSocket.send(message);
+
 			return id;
 		}
 
@@ -741,10 +760,38 @@ package actionScripts.utils
 		private function onIncomingData(event:DataEvent):void
 		{
 			var data:String = event.data;
-			var object:Object = null;
 			//trace("<<<", data);
+			var object:Object = null;
 			try
 			{
+				var needsHeaderPart:Boolean = this._contentLength == -1;
+				if(needsHeaderPart && data.indexOf(PROTOCOL_END_OF_HEADER) == -1)
+				{
+					//not enough data for the header yet
+					return;
+				}
+				while(needsHeaderPart)
+				{
+					var index:int = data.indexOf(PROTOCOL_HEADER_DELIMITER);
+					var headerField:String = data.substr(0, index);
+					data = data.substr(index + PROTOCOL_HEADER_DELIMITER.length);
+					if(index == 0)
+					{
+						//this is the end of the header
+						needsHeaderPart = false;
+					}
+					else if(headerField.indexOf(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH) == 0)
+					{
+						var contentLengthAsString:String = headerField.substr(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH.length);
+						this._contentLength = parseInt(contentLengthAsString, 10);
+					}
+				}
+				if(this._contentLength == -1)
+				{
+					trace("Language client failed to parse Content-Length header");
+					return;
+				}
+				this._contentLength = -1;
 				object = JSON.parse(data);
 			}
 			catch(error:Error)
@@ -909,7 +956,7 @@ package actionScripts.utils
 		}
 
 		public function shutdownHandler(event:Event):void{
-			if(!_xmlSocket)
+			if(!_xmlSocket || !_initialized)
 			{
 				return;
 			}
