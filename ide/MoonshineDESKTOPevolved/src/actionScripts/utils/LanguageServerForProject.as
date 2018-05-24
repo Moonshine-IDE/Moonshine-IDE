@@ -63,7 +63,6 @@ package actionScripts.utils
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.filesystem.File;
-	import flash.net.XMLSocket;
 	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 
@@ -72,6 +71,7 @@ package actionScripts.utils
 	import no.doomsday.console.ConsoleUtil;
 	import flash.errors.IllegalOperationError;
 	import flash.utils.ByteArray;
+	import flash.net.Socket;
 
 	/**
 	 * An implementation of the language server protocol for Moonshine IDE.
@@ -127,7 +127,8 @@ package actionScripts.utils
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _xmlSocket:XMLSocket;
+		private var _socket:Socket;
+		private var _socketBuffer:String = "";
 		private var _shellInfo:NativeProcessStartupInfo;
 		private var _nativeProcess:NativeProcess;
 		private var _cmdFile:File;
@@ -420,17 +421,17 @@ package actionScripts.utils
 
 		protected function connectToJava():void
 		{
-			if(!_xmlSocket)
+			if(!_socket)
 			{
 				//Alert.show("XML Socket Start");
-				_xmlSocket = new XMLSocket();
-				_xmlSocket.addEventListener(Event.CONNECT, onSocketConnect);
-				_xmlSocket.addEventListener(DataEvent.DATA, onIncomingData);
-				_xmlSocket.addEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-				_xmlSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-				_xmlSocket.addEventListener(Event.CLOSE,closeHandler);
+				_socket = new Socket();
+				_socket.addEventListener(Event.CONNECT, onSocketConnect);
+				_socket.addEventListener(ProgressEvent.SOCKET_DATA, onIncomingData);
+				_socket.addEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
+				_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
+				_socket.addEventListener(Event.CLOSE,closeHandler);
 				_connecting = true;
-				_xmlSocket.connect(SOCKET_ADDRESS, _port);
+				_socket.connect(SOCKET_ADDRESS, _port);
 			}
 		}
 		
@@ -474,7 +475,7 @@ package actionScripts.utils
 
 		private function sendRequest(method:String, params:Object):int
 		{
-			if(!_xmlSocket)
+			if(!_socket)
 			{
 				throw new IllegalOperationError("Request failed. Socket is not connected to language server.");
 			}
@@ -501,7 +502,8 @@ package actionScripts.utils
 			
 			//trace(">>>", message);
 			
-			_xmlSocket.send(message);
+			_socket.writeUTFBytes(message);
+			_socket.flush();
 
 			return id;
 		}
@@ -541,7 +543,7 @@ package actionScripts.utils
 
 		private function sendDidOpenRequest(uri:String, text:String):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -570,7 +572,7 @@ package actionScripts.utils
 
 		private function sendProjectConfiguration():void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -650,131 +652,23 @@ package actionScripts.utils
 			params.additionalOptions = buildArgs;
 			this.sendRequest(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
-		
-		private function textDocument__publishDiagnostics(jsonObject:Object):void
+
+		private function parseMessageBuffer():void
 		{
-			var diagnosticsParams:Object = jsonObject.params;
-			var uri:String = diagnosticsParams.uri;
-			var path:String = (new File(uri)).nativePath;
-			var resultDiagnostics:Array = diagnosticsParams.diagnostics;
-			var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
-			var diagnosticsCount:int = resultDiagnostics.length;
-			for(var i:int = 0; i < diagnosticsCount; i++)
-			{
-				var resultDiagnostic:Object = resultDiagnostics[i];
-				diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
-			}
-			GlobalEventDispatcher.getInstance().dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
-		}
-		
-		private function workspace__applyEdit(jsonObject:Object):void
-		{
-			var applyEditParams:Object = jsonObject.params;
-			var edit:Object = applyEditParams.edit;
-			var changes:Object = edit.changes;
-			for(var uri:String in changes)
-			{
-				//the key is the file path, the value is a list of TextEdits
-				var file:FileLocation = new FileLocation(uri, true);
-				var resultChanges:Array = changes[uri];
-				var resultChangesCount:int = resultChanges.length;
-				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
-				for(var i:int = 0; i < resultChangesCount; i++)
-				{
-					var resultChange:Object = resultChanges[i];
-					var textEdit:TextEdit = this.parseTextEdit(resultChange);
-					textEdits[i] = textEdit;
-				}
-				applyTextEditsToFile(file, textEdits);
-			}
-		}
-
-		private function shellData(e:ProgressEvent):void
-		{
-			var output:IDataInput = _nativeProcess.standardOutput;
-			parseData(output.readUTFBytes(output.bytesAvailable));
-		}
-
-		private function shellError(e:ProgressEvent):void
-		{
-			var output:IDataInput = _nativeProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleUtil.print("shellError " + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
-			var match:Array;
-			//A new filter added here which will detect command for FDB exit
-			match = data.match(/.*\ onConnected */);
-			if(match)
-			{
-				trace(data);
-				parseData(data);
-			}
-			else
-			{
-				trace(data);
-				//Alert.show("jar connection "+data);
-			}
-
-		}
-
-		private function shellExit(e:NativeProcessExitEvent):void
-		{
-			if(_xmlSocket)
-			{
-				shutdownHandler(null);
-			}
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.exit();
-			_nativeProcess = null;
-		}
-
-		private function closeHandler(evt:Event):void{
-			if(_xmlSocket){
-				_connected = false;
-				_connecting = false;
-				_xmlSocket.close();
-                cleanUpXmlSocket();
-			}
-		}
-
-		private function onSocketConnect(event:Event):void
-		{
-			_connecting = false;
-			_connected = true;
-			initializeLanguageServer();
-		}
-
-		private function onSocketIOError(event:IOErrorEvent):void {
-			ConsoleUtil.print("ioError " + event.text + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa("ioError "+event, null), 'weak');
-		}
-
-		private function onSocketSecurityErr(event:SecurityErrorEvent):void {
-			ConsoleUtil.print("securityError " + event.text + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa("securityError "+event, null), 'weak');
-		}
-
-		//Read Incoming data
-		private function onIncomingData(event:DataEvent):void
-		{
-			var data:String = event.data;
-			//trace("<<<", data);
 			var object:Object = null;
 			try
 			{
 				var needsHeaderPart:Boolean = this._contentLength == -1;
-				if(needsHeaderPart && data.indexOf(PROTOCOL_END_OF_HEADER) == -1)
+				if(needsHeaderPart && this._socketBuffer.indexOf(PROTOCOL_END_OF_HEADER) == -1)
 				{
 					//not enough data for the header yet
 					return;
 				}
 				while(needsHeaderPart)
 				{
-					var index:int = data.indexOf(PROTOCOL_HEADER_DELIMITER);
-					var headerField:String = data.substr(0, index);
-					data = data.substr(index + PROTOCOL_HEADER_DELIMITER.length);
+					var index:int = this._socketBuffer.indexOf(PROTOCOL_HEADER_DELIMITER);
+					var headerField:String = this._socketBuffer.substr(0, index);
+					this._socketBuffer = this._socketBuffer.substr(index + PROTOCOL_HEADER_DELIMITER.length);
 					if(index == 0)
 					{
 						//this is the end of the header
@@ -791,14 +685,34 @@ package actionScripts.utils
 					trace("Language client failed to parse Content-Length header");
 					return;
 				}
+				HELPER_BYTES.clear();
+				HELPER_BYTES.writeUTFBytes(this._socketBuffer);
+				if(HELPER_BYTES.length < this._contentLength)
+				{
+					HELPER_BYTES.clear();
+					//we don't have the full content part of the message yet
+					return;
+				}
+				HELPER_BYTES.position = 0;
+				var message:String = HELPER_BYTES.readUTFBytes(this._contentLength);
+				HELPER_BYTES.clear();
 				this._contentLength = -1;
-				object = JSON.parse(data);
+				this._socketBuffer = this._socketBuffer.substr(message.length);
+				object = JSON.parse(message);
 			}
 			catch(error:Error)
 			{
 				trace("invalid JSON");
 				return;
 			}
+			this.parseMessage(object);
+
+			//check if there's another message in the buffer
+			this.parseMessageBuffer();
+		}
+
+		private function parseMessage(object:Object):void
+		{
 			if(FIELD_METHOD in object)
 			{
 				var method:String = object.method;
@@ -954,9 +868,121 @@ package actionScripts.utils
 				}
 			}
 		}
+		
+		private function textDocument__publishDiagnostics(jsonObject:Object):void
+		{
+			var diagnosticsParams:Object = jsonObject.params;
+			var uri:String = diagnosticsParams.uri;
+			var path:String = (new File(uri)).nativePath;
+			var resultDiagnostics:Array = diagnosticsParams.diagnostics;
+			var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+			var diagnosticsCount:int = resultDiagnostics.length;
+			for(var i:int = 0; i < diagnosticsCount; i++)
+			{
+				var resultDiagnostic:Object = resultDiagnostics[i];
+				diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
+			}
+			GlobalEventDispatcher.getInstance().dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+		}
+		
+		private function workspace__applyEdit(jsonObject:Object):void
+		{
+			var applyEditParams:Object = jsonObject.params;
+			var edit:Object = applyEditParams.edit;
+			var changes:Object = edit.changes;
+			for(var uri:String in changes)
+			{
+				//the key is the file path, the value is a list of TextEdits
+				var file:FileLocation = new FileLocation(uri, true);
+				var resultChanges:Array = changes[uri];
+				var resultChangesCount:int = resultChanges.length;
+				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+				for(var i:int = 0; i < resultChangesCount; i++)
+				{
+					var resultChange:Object = resultChanges[i];
+					var textEdit:TextEdit = this.parseTextEdit(resultChange);
+					textEdits[i] = textEdit;
+				}
+				applyTextEditsToFile(file, textEdits);
+			}
+		}
+
+		private function shellData(e:ProgressEvent):void
+		{
+			var output:IDataInput = _nativeProcess.standardOutput;
+			parseData(output.readUTFBytes(output.bytesAvailable));
+		}
+
+		private function shellError(e:ProgressEvent):void
+		{
+			var output:IDataInput = _nativeProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			ConsoleUtil.print("shellError " + data + ".");
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			var match:Array;
+			//A new filter added here which will detect command for FDB exit
+			match = data.match(/.*\ onConnected */);
+			if(match)
+			{
+				trace(data);
+				parseData(data);
+			}
+			else
+			{
+				trace(data);
+				//Alert.show("jar connection "+data);
+			}
+
+		}
+
+		private function shellExit(e:NativeProcessExitEvent):void
+		{
+			if(_socket)
+			{
+				shutdownHandler(null);
+			}
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			_nativeProcess.exit();
+			_nativeProcess = null;
+		}
+
+		private function closeHandler(evt:Event):void{
+			if(_socket){
+				_connected = false;
+				_connecting = false;
+				_socket.close();
+                cleanUpXmlSocket();
+			}
+		}
+
+		private function onSocketConnect(event:Event):void
+		{
+			_connecting = false;
+			_connected = true;
+			initializeLanguageServer();
+		}
+
+		private function onSocketIOError(event:IOErrorEvent):void {
+			ConsoleUtil.print("ioError " + event.text + ".");
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa("ioError "+event, null), 'weak');
+		}
+
+		private function onSocketSecurityErr(event:SecurityErrorEvent):void {
+			ConsoleUtil.print("securityError " + event.text + ".");
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa("securityError "+event, null), 'weak');
+		}
+
+		//Read Incoming data
+		private function onIncomingData(event:ProgressEvent):void
+		{
+			this._socketBuffer += this._socket.readUTFBytes(this._socket.bytesAvailable);
+			this.parseMessageBuffer();
+		}
 
 		public function shutdownHandler(event:Event):void{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -965,7 +991,7 @@ package actionScripts.utils
 
 		private function sendExit():void
 		{
-			if(!_xmlSocket)
+			if(!_socket)
 			{
 				return;
 			}
@@ -1030,7 +1056,7 @@ package actionScripts.utils
 
 		private function didOpenCall(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1045,7 +1071,7 @@ package actionScripts.utils
 
 		private function didChangeCall(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1085,7 +1111,7 @@ package actionScripts.utils
 
 		private function completionHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1111,7 +1137,7 @@ package actionScripts.utils
 
 		private function signatureHelpHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1137,7 +1163,7 @@ package actionScripts.utils
 
 		private function hoverHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1163,7 +1189,7 @@ package actionScripts.utils
 
 		private function gotoDefinitionHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1190,7 +1216,7 @@ package actionScripts.utils
 
 		private function workspaceSymbolsHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1210,7 +1236,7 @@ package actionScripts.utils
 
 		private function documentSymbolsHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1231,7 +1257,7 @@ package actionScripts.utils
 
 		private function findReferencesHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1261,7 +1287,7 @@ package actionScripts.utils
 
 		private function renameHandler(event:TypeAheadEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1288,7 +1314,7 @@ package actionScripts.utils
 		
 		private function executeCommandHandler(event:ExecuteLanguageServerCommandEvent):void
 		{
-			if(!_xmlSocket || !_initialized)
+			if(!_socket || !_initialized)
 			{
 				return;
 			}
@@ -1307,17 +1333,17 @@ package actionScripts.utils
 
 		private function cleanUpXmlSocket():void
 		{
-			if (!_xmlSocket)
+			if (!_socket)
 			{
 				return;
 			}
 			
-            _xmlSocket.removeEventListener(Event.CONNECT, onSocketConnect);
-            _xmlSocket.removeEventListener(DataEvent.DATA, onIncomingData);
-            _xmlSocket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-            _xmlSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-            _xmlSocket.removeEventListener(Event.CLOSE,closeHandler);
-            _xmlSocket = null;
+            _socket.removeEventListener(Event.CONNECT, onSocketConnect);
+            _socket.removeEventListener(DataEvent.DATA, onIncomingData);
+            _socket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
+            _socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
+            _socket.removeEventListener(Event.CLOSE,closeHandler);
+            _socket = null;
 		}
 	}
 }

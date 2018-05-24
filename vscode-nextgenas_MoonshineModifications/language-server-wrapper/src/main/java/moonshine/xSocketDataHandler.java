@@ -96,6 +96,8 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         return true;
     }
 
+    
+
     public boolean onData(INonBlockingConnection nbc) throws IOException, BufferUnderflowException, ClosedChannelException, MaxReadSizeExceededException
     {
         if(!nbc.isOpen())
@@ -143,11 +145,6 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
             nbc.setAutoflush(true);
 
             String data = nbc.readStringByLength(contentLength);
-            if(nbc.available() > 0 && nbc.indexOf("\0") == 0)
-            {
-                //flash.net.XMLSocket null byte
-                nbc.readByte();
-            }
             
             //get ready for the next message
             contentLength = -1;
@@ -163,7 +160,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
                 String json = getJSONError(null, -32600, "Invalid request. " + stackTrace.toString());
-                nbc.write(json + "\0");
+                nbc.write(json);
                 return true;
             }
 
@@ -217,7 +214,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
 
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "initialized":
@@ -228,7 +225,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 case "shutdown":
                 {
                     String json = getJSONResponse(requestID, null);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "exit":
@@ -278,7 +275,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -316,7 +313,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -354,7 +351,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -400,7 +397,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("completion result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/hover":
@@ -433,7 +430,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("hover result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/signatureHelp":
@@ -466,7 +463,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("signature help result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/definition":
@@ -499,7 +496,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("definition result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/documentSymbol":
@@ -532,7 +529,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("document symbol result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "workspace/symbol":
@@ -565,7 +562,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("workspace symbol result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/references":
@@ -598,7 +595,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("references result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/rename":
@@ -631,7 +628,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("rename result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "workspace/executeCommand":
@@ -664,13 +661,13 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("executeCommand result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 default:
                 {
                     String json = getJSONError(requestID, -32601, "Method not found: " + method);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                 }
             }
         }
