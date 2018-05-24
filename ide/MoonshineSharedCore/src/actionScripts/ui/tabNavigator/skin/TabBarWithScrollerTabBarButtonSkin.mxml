@@ -145,8 +145,8 @@
     <s:Line id="borderBottom" left="0" right="0" bottom="0">
         <s:stroke>
             <s:SolidColorStroke weight="1"
-                                color="0x424242"
-                                color.selectedStates="0x424242"
+                                color="0xCFCFCF"
+                                color.selectedStates="0xCFCFCF"
                                 alpha="0.75"
                                 alpha.down="0.85"
                                 alpha.selectedStates="0.5" />
@@ -158,11 +158,11 @@
     <s:Path id="borderTop" left="0" right="0" top="0" bottom="0" includeInLayout="false">
         <s:stroke>
             <s:LinearGradientStroke rotation="90" weight="1">
-                <s:GradientEntry color="0x424242"
+                <s:GradientEntry color="0xCFCFCF"
                                  alpha="0.5625"
                                  alpha.down="0.6375"
                                  alpha.selectedStates="0.6375" />
-                <s:GradientEntry color="0x424242"
+                <s:GradientEntry color="0xCFCFCF"
                                  alpha="0.75"
                                  alpha.down="0.85"
                                  alpha.selectedStates="0.85" />
