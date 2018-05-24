@@ -29,10 +29,12 @@ package actionScripts.impls
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	
+	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
@@ -69,6 +71,14 @@ package actionScripts.impls
 			dispatcher.dispatchEvent(
 				new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpOpenFile)
 			);
+		}
+		
+		public function getVisualEditorComponent():VisualEditor
+		{
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (editor) return editor.editorView.visualEditor;
+			
+			return null;
 		}
 		
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
