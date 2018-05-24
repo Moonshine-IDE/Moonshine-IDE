@@ -19,12 +19,12 @@
 package actionScripts.plugins.ui.editor.text
 {
 	import flash.events.KeyboardEvent;
+	import flash.ui.Keyboard;
 	
 	import actionScripts.plugins.help.view.VisualEditorView;
-
-    import flash.ui.Keyboard;
-
-    import view.suportClasses.PropertyChangeReference;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import view.suportClasses.PropertyChangeReference;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class UndoManagerVisualEditor
@@ -85,7 +85,7 @@ package actionScripts.plugins.ui.editor.text
 		
 		private function handleKeyDown(event:KeyboardEvent):void
 		{
-			if (event.ctrlKey && !event.altKey)
+			if ((ConstantsCoreVO.IS_MACOS ? event.commandKey : event.ctrlKey) && !event.altKey)
 			{
 				switch (event.keyCode)
 				{

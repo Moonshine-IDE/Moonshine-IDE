@@ -49,6 +49,11 @@ package actionScripts.plugins.ui.editor
 		private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
 		private var undoManager:UndoManagerVisualEditor;
 		
+		public function get editorView():VisualEditorView
+		{
+			return visualEditorView;
+		}
+		
 		public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
 		{
 			this.visualEditorProject = visualEditorProject;
