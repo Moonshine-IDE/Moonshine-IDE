@@ -23,6 +23,7 @@ import flash.display.NativeMenuItem;
 import flash.events.Event;
 import flash.utils.Dictionary;
 
+import mx.collections.ArrayList;
 import mx.core.FlexGlobals;
 import mx.events.MenuEvent;
 
@@ -73,6 +74,7 @@ import actionScripts.valueObjects.Settings;
 		private var noSDKOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var isFileNewMenuIsEnabled:Boolean;
+		private var moonshineMenu:NativeMenuItem;
 
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
@@ -560,6 +562,8 @@ import actionScripts.valueObjects.Settings;
 		
 		private function onMacNoMenuStateChange(event:Event):void
 		{
+			// keep this to repopulate later
+			moonshineMenu = FlexGlobals.topLevelApplication.nativeApplication.menu.items[0];
             applyNewNativeMenu(new Vector.<MenuItem>());
 			
 			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
@@ -737,7 +741,14 @@ import actionScripts.valueObjects.Settings;
 		
 		private function ensureHideUnhideMenuOption(nativeMenu:Object):void
 		{
+			if (nativeMenu.items.length == 0) return;
+			
 			var topLevel:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+			if (topLevel.items.length == 0)
+			{
+				topLevel = new ArrayList([moonshineMenu]);
+				moonshineMenu = null;
+			}
 			
 			// the receipe is get-remove-add to make it work correctly
 			var itemsToExtract:Array = ["hide adl", "hide moonshine", "hide others", "show all"];
