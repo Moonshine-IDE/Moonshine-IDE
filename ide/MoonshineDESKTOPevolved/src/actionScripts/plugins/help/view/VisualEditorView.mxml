@@ -18,7 +18,8 @@
             </s:Scroller>
         </s:NavigatorContent>
     </containers:Navigator>
-    <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}" color="#FFFFFF"
+    <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
+                                     fontSize="11" fontFamily="DejaVuSans" color="0xEEEEEE"
                                      skinClass="components.skins.EditorTabBarSkin"
                                      cornerRadius="1" closeButtonVisible="false"
                                      change="onTabBarChange(event)"/>

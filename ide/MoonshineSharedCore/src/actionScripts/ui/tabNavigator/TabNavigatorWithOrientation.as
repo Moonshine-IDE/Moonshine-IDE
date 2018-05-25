@@ -1,13 +1,17 @@
 package actionScripts.ui.tabNavigator
 {
+    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
+    import actionScripts.ui.tabNavigator.event.TabNavigatorEvent;
     import actionScripts.ui.tabNavigator.skin.TabNavigatorWithOrientationSkin;
 
     import flash.events.Event;
-    
+    import flash.events.MouseEvent;
+
     import spark.components.ButtonBarButton;
     import spark.components.NavigatorContent;
     import spark.containers.Navigator;
 
+    [Event(name="tabClose", type="actionScripts.ui.tabNavigator.event.TabNavigatorEvent")]
     public class TabNavigatorWithOrientation extends Navigator
 	{
 		public function TabNavigatorWithOrientation()
@@ -54,9 +58,32 @@ package actionScripts.ui.tabNavigator
 				dispatchEvent(new Event("scrollableChanged"));
 				this.invalidateSkinState();
 			}	
-		}		
-		
-		override protected function getCurrentSkinState():String
+		}
+
+        override protected function partAdded(partName:String, instance:Object):void
+        {
+            super.partAdded(partName, instance);
+
+			if (instance == tabBar)
+			{
+                tabBar.setStyle("color", "0xEEEEEE");
+                tabBar.setStyle("fontSize", 11);
+                tabBar.setStyle("fontFamily", "DejaVuSans");
+				tabBar.addEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
+			}
+        }
+
+        override protected function partRemoved(partName:String, instance:Object):void
+        {
+            super.partRemoved(partName, instance);
+
+            if (instance == tabBar)
+            {
+                tabBar.removeEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
+            }
+        }
+
+        override protected function getCurrentSkinState():String
 		{
 			var state:String = super.getCurrentSkinState();
 
@@ -97,5 +124,10 @@ package actionScripts.ui.tabNavigator
 				dispatchEvent(new Event("itemUpdated"));
 			}
 		}
-	}
+
+        private function onTabBarWithScrollerCloseButtonClick(event:ButtonBarButtonWithCloseEvent):void
+        {
+            this.dispatchEvent(new TabNavigatorEvent(TabNavigatorEvent.TAB_CLOSE, event.itemIndex));
+        }
+    }
 }

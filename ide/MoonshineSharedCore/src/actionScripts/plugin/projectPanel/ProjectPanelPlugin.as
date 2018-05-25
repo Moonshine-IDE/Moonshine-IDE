@@ -6,6 +6,7 @@ package actionScripts.plugin.projectPanel
     import actionScripts.ui.LayoutModifier;
     import actionScripts.ui.divider.IDEVDividedBox;
     import actionScripts.ui.tabNavigator.TabNavigatorWithOrientation;
+    import actionScripts.ui.tabNavigator.event.TabNavigatorEvent;
 
     import flash.events.MouseEvent;
 
@@ -50,6 +51,8 @@ package actionScripts.plugin.projectPanel
 
             view = new TabNavigatorWithOrientation();
             view.addEventListener(FlexEvent.CREATION_COMPLETE, onViewCreationComplete);
+            view.addEventListener(TabNavigatorEvent.TAB_CLOSE, onViewTabClose);
+
             view.percentWidth = 100;
 
             var tempObj:Object = {};
@@ -131,6 +134,12 @@ package actionScripts.plugin.projectPanel
                     }
                 }
             }
+        }
+
+        private function onViewTabClose(event:TabNavigatorEvent):void
+        {
+            view.removeElementAt(event.tabIndex);
+            views.removeAt(event.tabIndex);
         }
 
         private function onViewCreationComplete(event:FlexEvent):void

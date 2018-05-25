@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <s:SparkButtonSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
                    xmlns:s="library://ns.adobe.com/flex/spark"
-                   xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+                   xmlns:fb="http://ns.adobe.com/flashbuilder/2009" xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
                    minWidth="21" minHeight="21"
                    alpha.disabled="0.5">
 
@@ -16,11 +16,9 @@
     </fx:Metadata>
 
     <fx:Script fb:purpose="styling" >
-        import actionScripts.ui.tabNavigator.CloseTabButton;
+        import spark.components.ButtonBarButton;
 
         static private const exclusions:Array = ["labelDisplay"];
-
-        private var closeButton:CloseTabButton;
 
         /**
          * @private
@@ -119,8 +117,9 @@
 
         private function updateCloseButton():void
         {
-            closeButton.visible = closeButton.includeInLayout = getStyle("closeButtonVisible");
-            if (!closeButton.visible)
+            var buttonBarButton:ButtonBarButton = this.hostComponent as ButtonBarButton;
+            closeTabButton.visible = closeTabButton.includeInLayout = getStyle("closeButtonVisible") &amp;&amp; buttonBarButton.itemIndex > 0;
+            if (!closeTabButton.visible)
             {
                 (labelDisplay as Label).right = 10;
             }
@@ -138,17 +137,6 @@
             super.updateDisplayList(unscaledWidth, unscaledHeight);
         }
 
-        override protected function childrenCreated():void
-        {
-            super.childrenCreated();
-
-            closeButton = new CloseTabButton();
-            closeButton.width = 27;
-            closeButton.height = 25;
-            closeButton.right = closeButton.top = closeButton.bottom = 0;
-            closeButton.verticalCenter = 0;
-            this.addElement(closeButton);
-        }
     </fx:Script>
 
     <!-- states -->
@@ -202,7 +190,8 @@
     <!-- layer 8: text -->
     <!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay -->
     <s:Label id="labelDisplay"
-             textAlign="center"
-             maxDisplayedLines="1" left="10" top="2" right="32"  verticalCenter="0" />
-
+             textAlign="center" showTruncationTip="true"
+             maxDisplayedLines="1" left="10" top="2" right="32"  verticalCenter="0"/>
+    <tabnavigator:CloseTabButton id="closeTabButton" width="27" height="25"
+                                 right="0" top="0" bottom="0" verticalCenter="0"/>
 </s:SparkButtonSkin>

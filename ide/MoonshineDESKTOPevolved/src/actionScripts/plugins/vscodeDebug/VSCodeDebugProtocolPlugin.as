@@ -789,6 +789,7 @@ package actionScripts.plugins.vscodeDebug
 			_debugPanel.stepIntoButton.addEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);
 			_debugPanel.stepOutButton.addEventListener(MouseEvent.CLICK, stepOutButton_clickHandler);
 			_debugPanel.stopButton.addEventListener(MouseEvent.CLICK, stopButton_clickHandler);
+			_debugPanel.addEventListener(Event.REMOVED_FROM_STAGE, debugPanel_RemovedFromStage);
 			_debugPanel.addEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
 			_debugPanel.addEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
 		}
@@ -803,6 +804,7 @@ package actionScripts.plugins.vscodeDebug
             _debugPanel.stopButton.removeEventListener(MouseEvent.CLICK, stopButton_clickHandler);
             _debugPanel.removeEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
             _debugPanel.removeEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
+            _debugPanel.removeEventListener(Event.REMOVED_FROM_STAGE, debugPanel_RemovedFromStage);
 		}
 
 		private function refreshView():void
@@ -1090,5 +1092,10 @@ package actionScripts.plugins.vscodeDebug
 		{
 			this.sendRequest(COMMAND_STEP_OUT);
 		}
-	}
+
+        private function debugPanel_RemovedFromStage(event:Event):void
+        {
+            isDebugViewVisible = false;
+        }
+    }
 }

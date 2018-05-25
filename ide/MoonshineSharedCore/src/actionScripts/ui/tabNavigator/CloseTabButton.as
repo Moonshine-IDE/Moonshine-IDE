@@ -31,8 +31,21 @@ package actionScripts.ui.tabNavigator
             this.graphics.beginFill(0x0, 0);
             this.graphics.drawRect(0, 0, 27, 25);
             this.graphics.endFill();
+
+            this.buttonMode = true;
+            this.depth = 1;
         }
 
+        private var _itemIndex:int = -1;
 
+        public function get itemIndex():int
+        {
+            return _itemIndex;
+        }
+
+        public function set itemIndex(value:int):void
+        {
+            _itemIndex = value;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package actionScripts.ui.tabNavigator
 {
     import actionScripts.ui.tabNavigator.skin.TabBarWithScrollerSkin;
+    import actionScripts.ui.tabview.TabEvent;
 
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
@@ -11,7 +12,7 @@ package actionScripts.ui.tabNavigator
 	import flash.events.Event;
 
     [Style(name="closeButtonVisible", type="Boolean", inherit="no", theme="spark")]
-
+    [Event(name="closeButtonClick", type="flash.events.MouseEvent")]
 	public class TabBarWithScroller extends TabBar 
 	{
         private var _maxElementCountWithoutScroller:int;
