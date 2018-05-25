@@ -57,11 +57,15 @@ import org.xsocket.connection.INonBlockingConnection;
 
 public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
 {
+    private static final String MESSAGE_DELIMITER = "\r\n";
+    private static final String END_OF_HEADER = "\r\n\r\n";
+    private static final String HEADER_FIELD_CONTENT_LENGTH = "Content-Length: ";
+
     private ActionScriptLanguageServer languageServer;
-    private String fileUrl = "";
     private MoonshineProjectConfigStrategy projectConfigStrategy;
     private MoonshineLanguageClient languageClient;
     private Gson gson;
+    private int contentLength = -1;
 
     public xSocketDataHandler()
     {
@@ -92,6 +96,8 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         return true;
     }
 
+    
+
     public boolean onData(INonBlockingConnection nbc) throws IOException, BufferUnderflowException, ClosedChannelException, MaxReadSizeExceededException
     {
         if(!nbc.isOpen())
@@ -100,14 +106,48 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         }
         try
         {
-            int index = nbc.indexOf("\0");
-            if(index == -1)
+            boolean needsHeader = contentLength == -1;
+            if(needsHeader && nbc.indexOf(END_OF_HEADER) == -1)
             {
-                //the full data has not yet arrived -JT
+                //header not complete yet
                 return false;
             }
+            while(needsHeader)
+            {
+                int index = nbc.indexOf(MESSAGE_DELIMITER);
+                if(index == -1)
+                {
+                    System.err.println("Missing header delimiter.");
+                }
+                String headerField = nbc.readStringByDelimiter(MESSAGE_DELIMITER);
+                if(index == 0)
+                {
+                    //this is the end of the header
+                    needsHeader = false;
+                }
+                else if(headerField.startsWith(HEADER_FIELD_CONTENT_LENGTH))
+                {
+                    String contentLengthAsString = headerField.substring(HEADER_FIELD_CONTENT_LENGTH.length());
+                    contentLength = Integer.parseInt(contentLengthAsString);
+                }
+            }
+            if(contentLength == -1)
+            {
+                System.err.println("Language server failed to parse Content-Length header");
+                return false;
+            }
+            if(nbc.available() < contentLength)
+            {
+                //the full content part has not yet arrived -JT
+                return false;
+            }
+
             nbc.setAutoflush(true);
-            String data = nbc.readStringByDelimiter("\0");
+
+            String data = nbc.readStringByLength(contentLength);
+            
+            //get ready for the next message
+            contentLength = -1;
 
             JsonObject jsonObject = null;
             
@@ -120,7 +160,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
                 String json = getJSONError(null, -32600, "Invalid request. " + stackTrace.toString());
-                nbc.write(json + "\0");
+                nbc.write(json);
                 return true;
             }
 
@@ -174,7 +214,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
 
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "initialized":
@@ -185,7 +225,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                 case "shutdown":
                 {
                     String json = getJSONResponse(requestID, null);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "exit":
@@ -235,7 +275,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -273,7 +313,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -311,7 +351,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                     //an error!
                     if(json != null)
                     {
-                        nbc.write(json + "\0");
+                        nbc.write(json);
                     }
                     break;
                 }
@@ -357,7 +397,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("completion result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/hover":
@@ -390,7 +430,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("hover result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/signatureHelp":
@@ -423,7 +463,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("signature help result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/definition":
@@ -456,7 +496,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("definition result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/documentSymbol":
@@ -489,7 +529,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("document symbol result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "workspace/symbol":
@@ -522,7 +562,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("workspace symbol result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/references":
@@ -555,7 +595,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("references result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "textDocument/rename":
@@ -588,7 +628,7 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("rename result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 case "workspace/executeCommand":
@@ -621,13 +661,13 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
                         }
                     }
                     //System.out.println("executeCommand result: " + json);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                     break;
                 }
                 default:
                 {
                     String json = getJSONError(requestID, -32601, "Method not found: " + method);
-                    nbc.write(json + "\0");
+                    nbc.write(json);
                 }
             }
         }
@@ -646,7 +686,15 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         wrapper.put("jsonrpc", "2.0");
         wrapper.put("id", id);
         wrapper.put("result", result);
-        return gson.toJson(wrapper);
+        String json = gson.toJson(wrapper);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Content-Length: ");
+        builder.append(json.getBytes().length);
+        builder.append("\r\n");
+        builder.append("\r\n");
+        builder.append(json);
+        return builder.toString();
     }
 
     private String getJSONError(Integer id, int code, String message)
@@ -658,6 +706,14 @@ public class xSocketDataHandler implements IDataHandler, IDisconnectHandler
         wrapper.put("jsonrpc", "2.0");
         wrapper.put("id", id);
         wrapper.put("error", error);
-        return gson.toJson(wrapper);
+        String json = gson.toJson(wrapper);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Content-Length: ");
+        builder.append(json.getBytes().length);
+        builder.append("\r\n");
+        builder.append("\r\n");
+        builder.append(json);
+        return builder.toString();
     }
 }
