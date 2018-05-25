@@ -19,6 +19,7 @@
 package actionScripts.plugins.vscodeDebug
 {
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 
     import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -66,7 +67,7 @@ package actionScripts.plugins.vscodeDebug
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
-		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
+		public static const EVENT_SHOW_HIDE_DEBUG_VIEW:String = "EVENT_SHOW_HIDE_DEBUG_VIEW";
 		private static const MAX_RETRY_COUNT:int = 5;
 		private static const TWO_CRLF:String = "\r\n\r\n";
 		private static const CONTENT_LENGTH_PREFIX:String = "Content-Length: ";
@@ -116,7 +117,8 @@ package actionScripts.plugins.vscodeDebug
 		private var _variablesLookup:Dictionary = new Dictionary();
 		private var _currentProject:AS3ProjectVO;
 		private var isStartupCall:Boolean = true;
-		
+		private var isDebugViewVisible:Boolean;
+
 		private var _connected:Boolean = false;
 		public function set connected(value:Boolean):void {	DebugHighlightManager.IS_DEBUGGER_CONNECTED = _connected = value;	}
 		public function get connected():Boolean {	return _connected;	}
@@ -131,8 +133,8 @@ package actionScripts.plugins.vscodeDebug
 			super.activate();
 			
 			this._debugPanel = new VSCodeDebugProtocolView();
-			
-			dispatcher.addEventListener(EVENT_SHOW_DEBUG_VIEW, dispatcher_showDebugViewHandler);
+
+			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			///dispatcher.addEventListener(CompilerEventBase.PREBUILD, handleCompile);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
@@ -151,17 +153,8 @@ package actionScripts.plugins.vscodeDebug
 		override public function deactivate():void
 		{
 			super.deactivate();
-			
-			if(this._debugPanel)
-			{
-				if(this._debugPanel.parent)
-				{
-					LayoutModifier.removeFromSidebar(this._debugPanel);
-				}
-				this._debugPanel = null;
-			}
-			
-			dispatcher.removeEventListener(EVENT_SHOW_DEBUG_VIEW, dispatcher_showDebugViewHandler);
+
+			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
@@ -788,21 +781,32 @@ package actionScripts.plugins.vscodeDebug
 			}
 		}
 		
-		private function showDebugView(event:Event):void
+		private function initializeDebugViewEventHandlers(event:Event):void
 		{
-			LayoutModifier.addToSidebar(_debugPanel, event);
-			
-			_debugPanel.validateNow();
-			_debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
+            _debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
 			_debugPanel.pauseButton.addEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
 			_debugPanel.stepOverButton.addEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
 			_debugPanel.stepIntoButton.addEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);
 			_debugPanel.stepOutButton.addEventListener(MouseEvent.CLICK, stepOutButton_clickHandler);
 			_debugPanel.stopButton.addEventListener(MouseEvent.CLICK, stopButton_clickHandler);
+			_debugPanel.addEventListener(Event.REMOVED_FROM_STAGE, debugPanel_RemovedFromStage);
 			_debugPanel.addEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
 			_debugPanel.addEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
 		}
-		
+
+		private function cleanupDebugViewEventHandlers():void
+		{
+            _debugPanel.playButton.removeEventListener(MouseEvent.CLICK, playButton_clickHandler);
+            _debugPanel.pauseButton.removeEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
+            _debugPanel.stepOverButton.removeEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
+            _debugPanel.stepIntoButton.removeEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);
+            _debugPanel.stepOutButton.removeEventListener(MouseEvent.CLICK, stepOutButton_clickHandler);
+            _debugPanel.stopButton.removeEventListener(MouseEvent.CLICK, stopButton_clickHandler);
+            _debugPanel.removeEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
+            _debugPanel.removeEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
+            _debugPanel.removeEventListener(Event.REMOVED_FROM_STAGE, debugPanel_RemovedFromStage);
+		}
+
 		private function refreshView():void
 		{
 			if(!_debugPanel.parent)
@@ -841,7 +845,18 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
 		{
-			showDebugView(event);
+			if (!isDebugViewVisible)
+            {
+                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+                initializeDebugViewEventHandlers(event);
+				isDebugViewVisible = true;
+            }
+			else
+			{
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+                cleanupDebugViewEventHandlers();
+				isDebugViewVisible = false;
+			}
 			isStartupCall = false;
 		}
 		
@@ -957,9 +972,10 @@ package actionScripts.plugins.vscodeDebug
 			_socket.addEventListener(IOErrorEvent.IO_ERROR, socket_ioErrorHandler);
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, socket_socketDataHandler);
 			_socket.addEventListener(Event.CLOSE, socket_closeHandler);
-			
-			showDebugView(event);
-			clearOutput();
+
+            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+            initializeDebugViewEventHandlers(event);
+			isDebugViewVisible = true;
 			
 			sendRequest(COMMAND_INITIALIZE,
 				{
@@ -994,7 +1010,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function socket_ioErrorHandler(event:IOErrorEvent):void
 		{
-			trace("socket io error:", event.toString());
+			error("Socket connection problem: %s", event.toString());
 		}
 		
 		protected function socket_socketDataHandler(event:ProgressEvent):void
@@ -1014,7 +1030,8 @@ package actionScripts.plugins.vscodeDebug
 		{
 			var output:IDataInput = _nativeProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			trace("[swf-debugger]", data);
+
+			error("Process error: %s", data);
 		}
 		
 		protected function nativeProcess_exitHandler(event:NativeProcessExitEvent):void
@@ -1075,5 +1092,10 @@ package actionScripts.plugins.vscodeDebug
 		{
 			this.sendRequest(COMMAND_STEP_OUT);
 		}
-	}
+
+        private function debugPanel_RemovedFromStage(event:Event):void
+        {
+            isDebugViewVisible = false;
+        }
+    }
 }

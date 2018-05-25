@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+
+
+<!--- 
+
+The default skin class for the Spark TabBar component. The ButtonBarButtons 
+created by the TabBarSkin use the TabBarButtonSkin class.  
+
+@see spark.components.TabBar
+@see spark.components.ButtonBarButton
+@see spark.skins.spark.TabBarButtonSkin
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 1.5
+@productversion Flex 4
+
+-->
+
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark" xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
+		alpha.disabled="0.5" currentStateChanging="onTabNavigatorCurrentStateChanging(event)">
+    
+    <fx:Metadata>
+        <![CDATA[ 
+        /** 
+         * @copy spark.skins.spark.ApplicationSkin#hostComponent
+         */
+        [HostComponent("actionScripts.ui.tabNavigator.TabBarWithScroller")]
+        ]]>
+    </fx:Metadata> 
+    
+    <fx:Script>
+        <![CDATA[
+		import actionScripts.ui.tabNavigator.ButtonBarButtonWithClose;
+		import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
+
+		import mx.core.UIComponent;
+		import mx.core.ScrollPolicy;
+		import mx.events.StateChangeEvent;
+
+		import spark.layouts.ColumnAlign;
+		import spark.layouts.HorizontalLayout;
+
+		import spark.layouts.TileLayout;
+		import spark.layouts.TileOrientation;
+		import spark.layouts.VerticalLayout;
+
+		/**
+		 *  @private
+		 *  Push the cornerRadius style to the item renderers.
+		 */
+		override protected function updateDisplayList(unscaledWidth:Number, unscaleHeight:Number):void
+		{
+			const numElements:int = dataGroup.numElements;
+			const cornerRadius:int = hostComponent.getStyle("cornerRadius");
+			const closeButtonVisible:Boolean = hostComponent.getStyle("closeButtonVisible");
+
+			for (var i:int = 0; i < numElements; i++)
+			{
+				var elt:UIComponent = dataGroup.getElementAt(i) as UIComponent;
+				if (elt)
+				{
+					elt.setStyle("cornerRadius", cornerRadius);
+					elt.setStyle("closeButtonVisible", closeButtonVisible);
+					if (!elt.hasEventListener("closeButtonClick"))
+					{
+						(elt as ButtonBarButtonWithClose).closeTabButton.addEventListener(MouseEvent.CLICK, onCloseButtonClick);
+					}
+				}
+			}
+
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+		}
+
+		private function onTabNavigatorCurrentStateChanging(event:StateChangeEvent):void
+		{
+			this.setTabBarLayout(event.newState);
+		}
+
+		private function getVerticalLayoutWithoutGap():VerticalLayout
+		{
+			var vertLayout:VerticalLayout = new VerticalLayout();
+			vertLayout.gap = 0;
+
+			return vertLayout;
+		}
+
+		private function getHorizontalLayoutWithoutGap():HorizontalLayout
+		{
+			var horizontalLayout:HorizontalLayout = new HorizontalLayout();
+			horizontalLayout.gap = 0;
+
+			return horizontalLayout;
+		}
+
+		private function getVerticalTileLayoutWithoutGap():TileLayout
+		{
+			var vertLayout:TileLayout = new TileLayout();
+			vertLayout.verticalGap = vertLayout.horizontalGap = 0;
+			vertLayout.orientation = TileOrientation.COLUMNS;
+			vertLayout.columnAlign = ColumnAlign.JUSTIFY_USING_WIDTH;
+
+			return vertLayout;
+		}
+
+		private function getHorizontalTileLayoutWithoutGap():TileLayout
+		{
+			var horLayout:TileLayout = new TileLayout();
+			horLayout.verticalGap = horLayout.horizontalGap = 0;
+			horLayout.orientation = TileOrientation.ROWS;
+			horLayout.columnAlign = ColumnAlign.JUSTIFY_USING_WIDTH;
+
+			return horLayout;
+		}
+
+		private function setTabBarLayout(state:String):void
+		{
+			if (hostComponent.scrollable)
+			{
+				if (state == "normalWithTopScroller" || state == "normalWithBottomScroller")
+				{
+					this.dataGroup.layout = this.getHorizontalLayoutWithoutGap();
+				}
+				else
+				{
+					this.dataGroup.layout = this.getVerticalLayoutWithoutGap();
+				}
+			}
+			else
+			{
+				if (hostComponent.orientation == "top" || hostComponent.orientation == "bottom")
+				{
+					this.dataGroup.layout = this.getHorizontalTileLayoutWithoutGap();
+				}
+				else
+				{
+					this.dataGroup.layout = this.getVerticalTileLayoutWithoutGap();
+				}
+			}
+		}
+
+		private function onCloseButtonClick(event:MouseEvent):void
+		{
+			hostComponent.dispatchEvent(new ButtonBarButtonWithCloseEvent(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, event.target.itemIndex));
+		}
+		]]>
+    </fx:Script>
+
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="normalWithLeftRightNoScroller" />
+		<s:State name="normalWithTopScroller" stateGroups="withScroller"/>
+		<s:State name="normalWithBottomScroller" stateGroups="withScroller"/>
+	</s:states>
+
+	<s:Scroller id="tabBarScroller" verticalScrollPolicy="{ScrollPolicy.OFF}"
+				horizontalScrollPolicy.normal="{ScrollPolicy.OFF}"
+				horizontalScrollPolicy.withScroller="{ScrollPolicy.AUTO}"
+				minViewportInset.withScroller="16" minViewportInset.normal="0"
+				bottom.normal="0" top.normal="0" bottom.withScroller="-16" top.withScroller="-16"
+				width.withScroller="{hostComponent.width}" width="100%"
+				skinClass="actionScripts.ui.tabNavigator.skin.TabBarScrollerSkin" >
+		<s:DataGroup id="dataGroup" width.normal="{hostComponent.width}"
+					 			    width.withScroller="{Number.NaN}" width.normalWithLeftRightNoScroller="{Number.NaN}">
+			<s:layout>
+				<s:ButtonBarHorizontalLayout gap="-1"/>
+			</s:layout>
+			<s:itemRenderer>
+				<fx:Component>
+					<tabnavigator:ButtonBarButtonWithClose color="#FFFFFF"
+														   minWidth="90" maxWidth="150"
+														   skinClass="components.skins.TabBarButtonSkin"/>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:DataGroup>
+	</s:Scroller>
+</s:Skin>

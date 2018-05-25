@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import flash.desktop.NativeApplication;
+    import actionScripts.plugin.projectPanel.ProjectPanelPlugin;
+
+    import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
 	import flash.display.Stage;
@@ -174,6 +176,7 @@ package actionScripts.impls
 			return [
 				SettingsPlugin, 
 				ProjectPlugin,
+				ProjectPanelPlugin,
 				TemplatingPlugin,
 				HelpPlugin,
 				FindReplacePlugin,
@@ -296,7 +299,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, ProjectEvent.SHOW_PROJECT_VIEW),
 					new MenuItem(resourceManager.getString('resources','FULLSCREEN'), null, FullscreenPlugin.EVENT_FULLSCREEN),
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, ProblemsPlugin.EVENT_PROBLEMS),
-					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, VSCodeDebugProtocolPlugin.EVENT_SHOW_DEBUG_VIEW),
+					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, VSCodeDebugProtocolPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),

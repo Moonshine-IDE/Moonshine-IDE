@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
+    import actionScripts.ui.tabNavigator.CloseTabButton;
+
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
     import flash.events.Event;
@@ -42,7 +44,7 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
 		public static const EVENT_TABP_CLOSE_ALL:String = "tabCloseAll";
 
-		protected var closeButton:Sprite;
+		protected var closeButton:CloseTabButton;
 		protected var background:Sprite;
 		protected var labelView:Label;
 		protected var labelViewMask:Sprite;
@@ -189,9 +191,10 @@ package actionScripts.ui.tabview
 				closeButtonAlpha = 0.2;
 			}
 			
-			closeButton = new Sprite();
+			closeButton = new CloseTabButton();
 			closeButton.visible = false;
 			// Vertical line separators
+			closeButton.graphics.clear();
 			closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.05);
 			closeButton.graphics.moveTo(0, 1);
 			closeButton.graphics.lineTo(0, 24);
