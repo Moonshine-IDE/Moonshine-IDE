@@ -63,6 +63,9 @@ package actionScripts.ui.menu
             resourceManager.getString('resources', 'RENAME'),
             resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'),
             resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE'),
+			resourceManager.getString('resources', 'HIDE_MOONSHINE'),
+			resourceManager.getString('resources', 'HIDE_OTHERS'),
+			resourceManager.getString('resources', 'SHOW_ALL'),
             "Copy Path",
             "Show in Explorer",
             "Show in Finder"
