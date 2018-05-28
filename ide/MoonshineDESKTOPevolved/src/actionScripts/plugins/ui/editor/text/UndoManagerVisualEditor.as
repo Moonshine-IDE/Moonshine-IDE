@@ -18,11 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor.text
 {
+	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
 	
 	import actionScripts.plugins.help.view.VisualEditorView;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import view.suportClasses.PropertyChangeReference;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
@@ -35,6 +35,7 @@ package actionScripts.plugins.ui.editor.text
 		private var future:Vector.<PropertyChangeReference> = new Vector.<PropertyChangeReference>();
 		
 		private var savedAt:int = 0;
+		private var pendingEvent:String;
 		
 		public function get hasChanged():Boolean
 		{
@@ -46,7 +47,8 @@ package actionScripts.plugins.ui.editor.text
 		{
 			this.editor = editor;
 			
-			editor.addEventListener(KeyboardEvent.KEY_UP, handleKeyDown);
+			editor.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			editor.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 		}
 		
 		public function save():void
@@ -83,19 +85,73 @@ package actionScripts.plugins.ui.editor.text
 			savedAt = 0;
 		}
 		
+		private function onRemovedFromStage(event:Event):void
+		{
+			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			editor.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			
+			if (editor.stage)
+			{
+				editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				editor.stage.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+				editor.stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
+			}
+			else
+			{
+				editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			}
+			
+			editor = null;
+		}
+		
+		private function addedToStageHandler(event:Event):void
+		{
+			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			editor.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+		}
+		
 		private function handleKeyDown(event:KeyboardEvent):void
 		{
-			if ((event.commandKey || event.ctrlKey) && !event.altKey)
+			if ((event.keyCode == 22 || event.ctrlKey) && !event.altKey)
 			{
+				event.stopImmediatePropagation();
+				event.preventDefault();
+				
 				switch (event.keyCode)
 				{
 					case Keyboard.Y:		// Y
-						redo();
+						markEventAsPending('redo');
 						break;
 					case Keyboard.Z:		// Z
-						undo();
+						markEventAsPending('undo');
 						break;
 				}
+			}
+		}
+		
+		private function markEventAsPending(event:String):void
+		{
+			// Since Air Default windows may or maynot disptach Event.SELECT for 
+			// shortcuts we will use this pendingEvent system to delay the event
+			// one frame
+			pendingEvent = event;
+			editor.stage.addEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
+		}
+		
+		private function dispatchPendingEvent(e:Event):void
+		{
+			var lastEvent:String = pendingEvent;
+			editor.stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
+			pendingEvent = null;
+			
+			switch (lastEvent)
+			{
+				case "redo":
+					redo();
+					break;
+				case "undo":
+					undo();
+					break;
 			}
 		}
 		
