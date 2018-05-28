@@ -29,22 +29,22 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.events.DuplicateEvent;
-
 		import mx.events.FlexEvent;
-			import mx.events.ListEvent;
-			import mx.managers.PopUpManager;
-			import spark.events.TextOperationEvent;
-			
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.extResources.com.validator.ValidatorType;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.utils.SimpleValidator;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.FileWrapper;
+		import mx.events.ListEvent;
+		import mx.managers.PopUpManager;
+		
+		import spark.events.TextOperationEvent;
+		
+		import actionScripts.events.DuplicateEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.extResources.com.validator.ValidatorType;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.ui.menu.MenuPlugin;
+		import actionScripts.utils.SimpleValidator;
+		import actionScripts.utils.UtilsCore;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.FileWrapper;
 
 			public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
 			public static var AS_XML:String = "AS_XML";
@@ -182,12 +182,17 @@
 				super.onNewFileCreationComplete(event);
 
 				minHeight = height;
-				txtFileName.restrict = "0-9A-Za-z_.";
 				if (openType == AS_DUPLICATE_FILE)
 				{
+					var extension:String = folderFileLocation.fileBridge.extension.toLowerCase();
 					title = "Duplicate File";
-					lblExtension.text = "."+ folderFileLocation.fileBridge.extension;
+					lblExtension.text = "."+ extension;
 					lblName.text = "New File Name:";
+					
+					if (extension == "as" || extension == "mxml")
+					{
+						txtFileName.restrict = "0-9A-Za-z_.";
+					}
 
 					var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
 					nameOnly.pop();
@@ -248,7 +253,7 @@
 		<s:Label id="lblName" text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label id="lblExtension"
 					 styleName="textInputLabel" textAlign="right"
