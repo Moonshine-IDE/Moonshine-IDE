@@ -386,6 +386,9 @@
 
 			var project:ProjectVO;
 			var fileWrapper:FileWrapper = FileWrapper(event.data);
+			
+			// lets handle files those does not exists in physical system
+			if (!checkFileExistence(fileWrapper)) return;
 
 			switch (event.menuLabel)
 			{
@@ -795,6 +798,28 @@
 			currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_END, handleItemCreateEnd);
 			currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_CANCEL, handleItemCreateCancel);
 		}
+			
+		private function checkFileExistence(value:FileWrapper):Boolean
+		{
+			if (!value.file.fileBridge.exists)
+			{
+				if (value.isRoot) Alert.show(value.name +" does not exists anymore.\nClick on OK to remove the project.", "Error!", Alert.OK, null, onDeletedProjectRemoveConfirm);
+				else Alert.show(value.name +" does not exists anymore.", "Error!");
+				return false;
+			}
+			
+			return true;
+			
+			/*
+			* @local
+			* removes the opened instance of a project that might
+			* deleted off-Moonshine
+			*/
+			function onDeletedProjectRemoveConfirm(event3:CloseEvent):void
+			{
+				onFileDeletedOnServer(value, FTETreeItemRenderer.DELETE);
+			}
+		}
 
 		/*
         Custom implementation of editing, instead of using mx:Trees builtin capabilities
@@ -876,6 +901,8 @@
 		private function fileDoubleClickedInTree(event:ListEvent):void
 		{
 			var item:FileWrapper = tree.selectedItem as FileWrapper;
+			if (!checkFileExistence(item)) return;
+			
 			if (tree.dataDescriptor.isBranch(item))
 			{
 
