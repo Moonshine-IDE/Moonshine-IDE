@@ -83,7 +83,7 @@ package actionScripts.plugins.svn
 			var EditMenu:MenuItem = new MenuItem('Subversion');
 			EditMenu.parents = ["Subversion"];
 			EditMenu.items = new Vector.<MenuItem>();
-			EditMenu.items.push(new MenuItem("Checkout", null, CHECKOUT_REQUEST));
+			EditMenu.items.push(new MenuItem("Checkout", null, [], CHECKOUT_REQUEST));
 			return EditMenu;
 			
 		}*/

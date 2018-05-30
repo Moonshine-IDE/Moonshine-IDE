@@ -18,10 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-    import actionScripts.events.ExportVisualEditorProjectEvent;
-
-    import components.popup.newFile.NewVisualEditorFilePopup;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     
@@ -36,6 +32,7 @@ package actionScripts.plugin.templating
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewFileEvent;
@@ -61,6 +58,7 @@ package actionScripts.plugin.templating
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.MenuUtils;
     import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.TextUtil;
@@ -74,6 +72,7 @@ package actionScripts.plugin.templating
     import components.popup.newFile.NewCSSFilePopup;
     import components.popup.newFile.NewFilePopup;
     import components.popup.newFile.NewMXMLFilePopup;
+    import components.popup.newFile.NewVisualEditorFilePopup;
 	
 	/*
 	Templating plugin
@@ -382,6 +381,7 @@ package actionScripts.plugin.templating
 		public function getMenu():MenuItem
 		{	
 			var newFileMenu:MenuItem = new MenuItem('New');
+			var enableTypes:Array;
 			newFileMenu.parents = ["File", "New"];
 			newFileMenu.items = new Vector.<MenuItem>();
 			
@@ -395,7 +395,15 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewTemplateFile);
 				
-				var menuItem:MenuItem = new MenuItem(lbl, null, eventType);
+				if (ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(lbl) != -1)
+				{
+					if (lbl == ProjectMenuTypes.VISUAL_EDITOR_FLEX_FILE_TEMPLATE_NAME) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
+					else if (lbl == ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES_FILE_TEMPLATE_NAME) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+				}
+				else
+					enableTypes = [];
+				
+				var menuItem:MenuItem = new MenuItem(lbl, null, enableTypes, eventType);
 				menuItem.data = fileTemplate; 
 				
 				newFileMenu.items.push(menuItem);
@@ -414,7 +422,7 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
-				menuItem = new MenuItem(lbl, null, eventType);
+				menuItem = new MenuItem(lbl, null, null, eventType);
 				menuItem.data = projectTemplate;
 				
 				newFileMenu.items.push(menuItem);	

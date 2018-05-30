@@ -55,6 +55,10 @@ package actionScripts.ui.menu.vo
 				{
 					data = options.data;
 				}
+				if (options.enableTypes)
+				{
+					enableTypes = options.enableTypes;
+				}
 			}
 		}
 
@@ -136,5 +140,7 @@ package actionScripts.ui.menu.vo
 		{
 			return _enabled;
 		}
+		
+		public var enableTypes:Array;
 	}
 }

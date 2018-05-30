@@ -43,6 +43,7 @@ package actionScripts.utils
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.DataHTMLType;
@@ -825,7 +826,7 @@ package actionScripts.utils
 			{
 				if (i.name)
 				{
-					var menuItem:MenuItem = new MenuItem(i.name, null, "eventOpenRecentProject");
+					var menuItem:MenuItem = new MenuItem(i.name, null, null, "eventOpenRecentProject");
 					menuItem.data = i; 
 					openProjectMenu.items.push(menuItem);
 				}
@@ -849,13 +850,25 @@ package actionScripts.utils
 			{
 				if (i.name)
 				{
-					var menuItem:MenuItem = new MenuItem(i.name, null, "eventOpenRecentFile");
+					var menuItem:MenuItem = new MenuItem(i.name, null, null, "eventOpenRecentFile");
 					menuItem.data = i; 
 					openFileMenu.items.push(menuItem);
 				}
 			}
 			
 			return openFileMenu;
+		}
+		
+		/**
+		 * Set project menu type based on possible field
+		 */
+		public static function setProjectMenuType(value:AS3ProjectVO):void
+		{
+			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS) value.menuType = ProjectMenuTypes.JS_ROYALE;
+			else if (value.isLibraryProject) value.menuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
+			else if (value.isPrimeFacesVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+			else if (value.isVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
+			else value.menuType = ProjectMenuTypes.FLEX_AS;
 		}
 	}
 }

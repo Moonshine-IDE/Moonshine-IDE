@@ -64,6 +64,8 @@ package actionScripts.plugins.as3project.importer
 				}
 			}
 			
+			UtilsCore.setProjectMenuType(p);
+			
 			return p;
 		}
 		

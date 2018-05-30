@@ -254,11 +254,26 @@ import actionScripts.valueObjects.Settings;
 		private function recursiveDisabledMenuForVisualEditor(menuItems:Object, currentProject:AS3ProjectVO):void
 		{
             var countMenuItems:int = menuItems.length;
+			var enable:Boolean;
             for (var i:int = 0; i < countMenuItems; i++)
             {
 				var menuItem:Object = menuItems[i];
-				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
-				isFileNewMenuIsEnabled = menuItem.enabled;
+				
+				if (!menuItem.enableTypes) menuItem.enabled = true;
+				else if (currentProject && menuItem.enableTypes) 
+				{
+					menuItem.enabled = false;
+					enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
+					menuItem.enabled = enable;
+				}
+				/*if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
+				else if (!menuItem.enableTypes || menuItem.enableTypes.length == 0) menuItem.enabled = true;*/
+				
+				/*if (currentProject && menuItem.enableTypes) menuItem.enabled = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
+				else if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
+				else if (!menuItem.enableTypes || menuItem.enableTypes.length == 0) menuItem.enabled = true;*/
+				/*menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
+				isFileNewMenuIsEnabled = menuItem.enabled;*/
 				
 				if (menuItem.submenu)
                 {
@@ -286,14 +301,14 @@ import actionScripts.valueObjects.Settings;
 							for each (file in TemplatingPlugin.fileTemplates)
 							{
 								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."));
-								menuitem = new MenuItem(fileName,null,fileName);
+								menuitem = new MenuItem(fileName,null,null,fileName);
 								m.items.push(menuitem);
 							}
 							menuitem = new MenuItem(null);
 							m.items.push(menuitem);
 							for each (file in TemplatingPlugin.projectTemplates)
 							{
-								menuitem = new MenuItem(file.fileBridge.name,null,file.fileBridge.name);
+								menuitem = new MenuItem(file.fileBridge.name,null,null,file.fileBridge.name);
 								m.items.push(menuitem);
 							}	
 							break;
@@ -389,7 +404,7 @@ import actionScripts.valueObjects.Settings;
 		
 		private function onNewMenuAddRequest(event:TemplatingEvent):void
 		{
-			var tmpMI:MenuItem = new MenuItem(event.label, null, event.listener);
+			var tmpMI:MenuItem = new MenuItem(event.label, null, null, event.listener);
 			var menuItem:* = createNewMenuItem(tmpMI);
 			var itemToAddAt:int = event.isProject ? TemplatingPlugin.projectTemplates.length + TemplatingPlugin.fileTemplates.length : TemplatingPlugin.fileTemplates.length - 1;
 			var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
@@ -407,7 +422,7 @@ import actionScripts.valueObjects.Settings;
 					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
 					subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
 					
-					windowMenus[1].items[0].items.insertAt(itemToAddAt, new MenuItem(event.label, null, event.listener));
+					windowMenus[1].items[0].items.insertAt(itemToAddAt, new MenuItem(event.label, null, null, event.listener));
 				}
 				else
 				{
@@ -650,7 +665,7 @@ import actionScripts.valueObjects.Settings;
 			}
 			else
 			{
-				menuItem = new CustomMenuItem(item.label, item.isSeparator);
+				menuItem = new CustomMenuItem(item.label, item.isSeparator, {enableTypes:item.enableTypes});
 				if (shortcut)
 				{
 					menuItem.shortcut = shortcut;

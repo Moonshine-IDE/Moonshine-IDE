@@ -195,7 +195,9 @@ package actionScripts.plugins.as3project.importer
             project.buildOptions.certAndroid = UtilsCore.deserializeString(data.moonshineRunCustomization.certAndroid);
             project.buildOptions.certIos = UtilsCore.deserializeString(data.moonshineRunCustomization.certIos);
             project.buildOptions.certIosProvisioning = UtilsCore.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
-
+			
+			UtilsCore.setProjectMenuType(project);
+			
 			return project;
 		}
 	}

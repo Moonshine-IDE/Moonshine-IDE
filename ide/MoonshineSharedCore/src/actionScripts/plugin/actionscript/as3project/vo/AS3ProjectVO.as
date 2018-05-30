@@ -109,6 +109,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
+		
+		public var menuType:String;
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
