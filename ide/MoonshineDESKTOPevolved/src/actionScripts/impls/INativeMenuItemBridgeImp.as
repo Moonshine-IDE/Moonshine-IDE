@@ -19,10 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.interfaces.INativeMenuItemBridge;
-	import actionScripts.ui.menu.vo.CustomMenuItem;
-	import actionScripts.valueObjects.KeyboardShortcut;
-	
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
@@ -34,13 +30,19 @@ package actionScripts.impls
 	
 	import spark.components.Button;
 	
+	import actionScripts.interfaces.INativeMenuItemBridge;
+	import actionScripts.ui.menu.vo.CustomMenuItem;
+	import actionScripts.valueObjects.KeyboardShortcut;
+	import actionScripts.vo.NativeMenuItemMoonshine;
+	
 	public class INativeMenuItemBridgeImp extends CustomMenuItem implements INativeMenuItemBridge
 	{
 		protected var nativeMenuItem:NativeMenuItem;
 		
-		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null):void
+		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null):void
 		{
-			nativeMenuItem = new NativeMenuItem(label, isSeparator);
+			nativeMenuItem = new NativeMenuItemMoonshine(label, isSeparator);
+			(nativeMenuItem as NativeMenuItemMoonshine).enableTypes = enableTypes;
 		}
 	
 	    public function get keyEquivalent():String

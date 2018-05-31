@@ -208,17 +208,17 @@ import actionScripts.valueObjects.Settings;
 			
 			// disable File-New menu as default
 			isFileNewMenuIsEnabled = false;
-            disableMenuOptionsForVEProject();
+            updateMenuOptionsBasedOnActiveProject();
 			disableNewFileMenuOptions();
 		}
 
         private function onMenusDisableStateChange(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
-			disableMenuOptionsForVEProject();
+			updateMenuOptionsBasedOnActiveProject();
         }
 
-		private function disableMenuOptionsForVEProject(lastSelectedProject:AS3ProjectVO=null):void
+		private function updateMenuOptionsBasedOnActiveProject(lastSelectedProject:AS3ProjectVO=null):void
 		{
 			var activeProject:AS3ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject as AS3ProjectVO;
 
@@ -243,7 +243,7 @@ import actionScripts.valueObjects.Settings;
 						menuItem = menu.items[i];
 						if (menuItem.submenu)
                         {
-                            recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, activeProject);
+                            recursiveDisableMenuOptionsByProject(menuItem.submenu.items, activeProject);
                         }
                     }
 
@@ -251,25 +251,38 @@ import actionScripts.valueObjects.Settings;
             }
 		}
 
-		private function recursiveDisabledMenuForVisualEditor(menuItems:Object, currentProject:AS3ProjectVO):void
+		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:AS3ProjectVO):void
 		{
             var countMenuItems:int = menuItems.length;
 			var enable:Boolean;
+			var isEnableTypePresent:Boolean = true;
             for (var i:int = 0; i < countMenuItems; i++)
             {
 				var menuItem:Object = menuItems[i];
 				
-				if (!menuItem.enableTypes) menuItem.enabled = true;
-				else if (currentProject && menuItem.enableTypes) 
+				// in macOS few items extracted from adl, i.e.
+				// hide adl, show all etc. are pure NativeMenuItem
+				// and they won't have 'enableTypes'
+				if (buildingNativeMenu)
 				{
-					menuItem.enabled = false;
-					enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
-					menuItem.enabled = enable;
+					isEnableTypePresent = ('enableTypes' in menuItem) ? true : false; 
+				}
+				
+				if (!buildingNativeMenu || isEnableTypePresent)
+				{
+					if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
+					else if (!menuItem.enableTypes) menuItem.enabled = true;
+					else if (currentProject && menuItem.enableTypes) 
+					{
+						menuItem.enabled = false;
+						enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
+						menuItem.enabled = enable;
+					}
 				}
 				
 				if (menuItem.submenu)
                 {
-                    recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, currentProject);
+                    recursiveDisableMenuOptionsByProject(menuItem.submenu.items, currentProject);
                 }
             }
 		}
@@ -572,7 +585,7 @@ import actionScripts.valueObjects.Settings;
 			applyNewNativeMenu(windowMenus);
 			
 			// update menus for VE project
-			disableMenuOptionsForVEProject(lastSelectedProjectBeforeMacDisableStateChange);
+			updateMenuOptionsBasedOnActiveProject(lastSelectedProjectBeforeMacDisableStateChange);
 		}
 		
 		private function onSDKStateChange(event:Event):void
@@ -629,7 +642,7 @@ import actionScripts.valueObjects.Settings;
 			if (buildingNativeMenu)
 			{
 				// in case of AIR
-				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator);
+				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator, null, item.enableTypes);
 				if (item[Settings.os + "_key"])
 					nativeMenuItem.item.keyEquivalent = item[Settings.os + "_key"];
 				if (item[Settings.os + "_mod"])

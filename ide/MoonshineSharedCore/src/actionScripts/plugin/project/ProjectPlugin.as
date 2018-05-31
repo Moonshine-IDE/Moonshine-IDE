@@ -278,10 +278,10 @@ package actionScripts.plugin.project
 					model.activeProject = null;
                 }
 				
-				if (lastActiveProjectMenuType != (model.activeProject as AS3ProjectVO).menuType)
+				if (!model.activeProject || (lastActiveProjectMenuType != (model.activeProject as AS3ProjectVO).menuType))
 				{
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
-					lastActiveProjectMenuType = (model.activeProject as AS3ProjectVO).menuType;
+					lastActiveProjectMenuType = model.activeProject ? (model.activeProject as AS3ProjectVO).menuType : null;
 				}
 			}
 

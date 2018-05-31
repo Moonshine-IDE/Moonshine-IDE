@@ -326,7 +326,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
 					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_RELEASE),
 					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem("Build with Apache Ant®", null, null, AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem("Build with Apache Ant®", null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,
