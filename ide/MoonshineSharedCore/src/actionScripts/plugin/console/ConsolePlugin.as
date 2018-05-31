@@ -22,14 +22,10 @@ package actionScripts.plugin.console
 
     import flash.events.Event;
 	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-	
-	import mx.containers.dividedBoxClasses.BoxDivider;
-	import mx.events.DividerEvent;
-	import mx.managers.CursorManager;
-	import mx.managers.CursorManagerPriority;
+
+    import mx.events.FlexEvent;
 	import mx.resources.ResourceManager;
 	
 	import actionScripts.plugin.IPlugin;
@@ -40,7 +36,6 @@ package actionScripts.plugin.console
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
@@ -51,13 +46,14 @@ package actionScripts.plugin.console
 	public class ConsolePlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		private var consoleView:ConsoleView;
-		private var _consolePopsOver:Boolean = false;
-		//private var loadedFirstTime:Boolean = true;
-		private var consoleCmd:Boolean  =false;
-		private var consoleCtrl:Boolean = false;
+		private var consoleCmd:Boolean;
+		private var consoleCtrl:Boolean;
 		private var mode:String = "";
+		private var consoleTextCache:Array;
+
+        private var _consolePopsOver:Boolean;
 		private var _consoleTriggerKey:String;
-		
+
 		public var consoleTriggerKeyPropertyName:String = "charCode";
 		public var consoleTriggerKeyValue:int = 27; // Escape
 		public var ctrl:Boolean = false;
@@ -89,19 +85,14 @@ package actionScripts.plugin.console
 		
 		override public function activate():void
         {
-            consoleView = new ConsoleView();
-            consoleView.consolePopOver = consolePopsOver;
+            consoleTextCache = [];
 
+            consoleView = new ConsoleView();
+			consoleView.addEventListener(FlexEvent.CREATION_COMPLETE, onConsoleViewCreationComplete);
+
+            consoleView.consolePopOver = consolePopsOver;
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, consoleView));
 
-            if (consoleView.stage)
-            {
-                addKeyListener();
-            }
-            else
-            {
-                consoleView.addEventListener(Event.ADDED_TO_STAGE, addKeyListener);
-            }
 
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, consoleOutputHandler);
 			dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_PRINT, consolePrintHandler);
@@ -172,38 +163,6 @@ package actionScripts.plugin.console
 			showDebugMessages = true;
 		}
 
-		private function addKeyListener(event:Event=null):void
-		{
-			consoleView.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-		}
-		
-		private function handleKeyDown(event:KeyboardEvent):void
-		{
-			if(event.keyCode == 15 )
-				consoleCmd = true;
-			if(event.keyCode == 17)
-				consoleCtrl = true;
-			//cmd 17ctrl
-			
-			if (consoleTriggerKeyPropertyName=="charCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
-			{
-				// For combinatio key
-				if(cmd && consoleCmd)//for command key
-				{
-					toggleConsole(event);
-				}
-				else if(ctrl && consoleCtrl )// for Control Key
-				{
-					toggleConsole(event);
-				}
-				else if(alt && event.altKey)
-				{
-					toggleConsole(event);
-				}
-			}
-			
-		}
-		
 		public function get consoleTriggerKey():String
 		{
 			return _consoleTriggerKey;
@@ -231,90 +190,6 @@ package actionScripts.plugin.console
 				new BooleanSetting(this, "consolePopsOver", "Console should glide over editor"),// This line is commented for now becuase it only hide console view for now 
 				new BooleanSetting(this, "showDebugMessages", "Show Moonshine debug messages")
 			]);
-		}
-		
-		private function toggleConsole(event:KeyboardEvent):void
-		{
-			if (consoleView.stage.focus != consoleView.commandLine)
-			{
-				event.preventDefault();
-				consoleView.commandLine.setFocus();
-				consoleCmd = false;
-				consoleCtrl = false;
-			}
-		}
-		
-		
-		private function changeMode(e:ConsoleModeEvent):void 
-		{
-			mode = e.mode;
-			consoleView.commandPrefix.text = " "+mode+">"
-		}
-		
-		private function execCommand(event:ConsoleCommandEvent):void
-		{
-			if (mode == "")	
-			{
-				if (console::commands[event.command])
-				{
-					var obj:Object = console::commands[event.command];
-					var func:Function = obj.callback;
-					func(event.args);
-					//console::commands[event.command](event.args);	
-				}
-				else
-				{
-					print("%s: command not found", event.command);
-				}
-			} 
-			else 
-			{
-				// Command is an argument in a mode
-				var args:Array = [event.command];
-				args = args.concat(event.args);
-				console::commands[mode](args);
-			}
-		}
-
-		private function consoleClearHandler(event:ConsoleOutputEvent):void
-		{
-            consoleView.history.text = "";
-		}
-
-		private function consoleOutputHandler(event:ConsoleOutputEvent):void
-		{
-            consoleView.history.appendtext(event.text);
-			/*var numNewLines:int =
-
-			if (!LayoutModifier.isProjectPanelCollapsed && LayoutModifier.projectPanelHeight != -1)
-			{
-				consoleView.setOutputHeight(LayoutModifier.projectPanelHeight);
-				loadedFirstTime = false;
-			}
-			else if (loadedFirstTime && consoleView.history.numVisibleLines < numNewLines)
-			{
-				consoleView.setOutputHeightByLines(numNewLines);
-				loadedFirstTime = false;
-			}*/
-		}
-		
-		private function consolePrintHandler(event:ConsoleOutputEvent):void
-		{
-			switch(event.messageType)
-			{
-				case ConsoleOutputEvent.TYPE_ERROR:
-					error(event.text);
-					break;
-				case ConsoleOutputEvent.TYPE_SUCCESS:
-					success(event.text);
-					break;
-				case ConsoleOutputEvent.TYPE_NOTE:
-					notice(event.text);
-					break;
-				default:
-					print(event.text);
-					break;
-			}
 		}
 
 		public function clearCommand(args:Array):void
@@ -357,5 +232,129 @@ package actionScripts.plugin.console
 			if (ConstantsCoreVO.IS_AIR) ntc += "Running on Adobe AIR " + model.flexCore.runtimeVersion;
 			notice(ntc);
 		}
+
+        private function addKeyListener(event:Event=null):void
+        {
+            consoleView.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+        }
+
+        private function handleKeyDown(event:KeyboardEvent):void
+        {
+            if(event.keyCode == 15 )
+                consoleCmd = true;
+            if(event.keyCode == 17)
+                consoleCtrl = true;
+            //cmd 17ctrl
+
+            if (consoleTriggerKeyPropertyName=="charCode" && event[consoleTriggerKeyPropertyName] == consoleTriggerKeyValue)
+            {
+                // For combinatio key
+                if(cmd && consoleCmd)//for command key
+                {
+                    toggleConsole(event);
+                }
+                else if(ctrl && consoleCtrl )// for Control Key
+                {
+                    toggleConsole(event);
+                }
+                else if(alt && event.altKey)
+                {
+                    toggleConsole(event);
+                }
+            }
+
+        }
+
+        private function toggleConsole(event:KeyboardEvent):void
+        {
+            if (consoleView.stage.focus != consoleView.commandLine)
+            {
+                event.preventDefault();
+                consoleView.commandLine.setFocus();
+                consoleCmd = false;
+                consoleCtrl = false;
+            }
+        }
+
+
+        private function changeMode(e:ConsoleModeEvent):void
+        {
+            mode = e.mode;
+            consoleView.commandPrefix.text = " "+mode+">"
+        }
+
+        private function execCommand(event:ConsoleCommandEvent):void
+        {
+            if (mode == "")
+            {
+                if (console::commands[event.command])
+                {
+                    var obj:Object = console::commands[event.command];
+                    var func:Function = obj.callback;
+                    func(event.args);
+                    //console::commands[event.command](event.args);
+                }
+                else
+                {
+                    print("%s: command not found", event.command);
+                }
+            }
+            else
+            {
+                // Command is an argument in a mode
+                var args:Array = [event.command];
+                args = args.concat(event.args);
+                console::commands[mode](args);
+            }
+        }
+
+        private function consoleClearHandler(event:ConsoleOutputEvent):void
+        {
+            consoleView.history.text = "";
+        }
+
+        private function consoleOutputHandler(event:ConsoleOutputEvent):void
+        {
+			if (!consoleView.history.textFlow)
+			{
+				this.consoleTextCache.push(event.text);
+			}
+			else
+			{
+                consoleView.history.appendtext(event.text);
+			}
+        }
+
+        private function consolePrintHandler(event:ConsoleOutputEvent):void
+        {
+            switch(event.messageType)
+            {
+                case ConsoleOutputEvent.TYPE_ERROR:
+                    error(event.text);
+                    break;
+                case ConsoleOutputEvent.TYPE_SUCCESS:
+                    success(event.text);
+                    break;
+                case ConsoleOutputEvent.TYPE_NOTE:
+                    notice(event.text);
+                    break;
+                default:
+                    print(event.text);
+                    break;
+            }
+        }
+
+        private function onConsoleViewCreationComplete(event:FlexEvent):void
+        {
+            consoleView.removeEventListener(FlexEvent.CREATION_COMPLETE, onConsoleViewCreationComplete);
+
+			for each (var text:String in consoleTextCache)
+			{
+				consoleView.history.appendtext(text);
+			}
+
+			consoleTextCache = null;
+            consoleView.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+        }
 	}
 }

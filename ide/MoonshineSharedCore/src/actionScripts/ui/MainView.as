@@ -74,9 +74,9 @@ package actionScripts.ui
 			bodyPanel.percentHeight = 100;
 			bodyPanel.percentWidth = 100;
 			bodyPanel.setStyle('backgroundColor', 0x424242);
-			bodyPanel.setStyle('dividerThickness', 6);
-			bodyPanel.setStyle('dividerAffordance', 2);
-			bodyPanel.setStyle('verticalGap', 6);
+			bodyPanel.setStyle('dividerThickness', 7);
+			bodyPanel.setStyle('dividerAffordance', 4);
+			bodyPanel.setStyle('verticalGap', 7);
 			addChild(bodyPanel);
 			
 			mainPanel = new IDEHDividedBox();
