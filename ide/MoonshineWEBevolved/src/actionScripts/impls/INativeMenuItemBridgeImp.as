@@ -27,9 +27,10 @@ package actionScripts.impls
 	{
 		protected var nativeMenuItem: CustomMenuItem;
 		
-		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null):void
+		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null):void
 		{
 			nativeMenuItem = new CustomMenuItem(label, isSeparator);
+			nativeMenuItem.enableTypes = enableTypes;
 		}
 		
 		public function get keyEquivalent():String
