@@ -57,6 +57,7 @@
 	textAlign="right"
 	mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
 	useHandCursor="true" buttonMode="true" mouseChildren="false"
+	width="100%"
   	/>
   
 </s:HGroup>
