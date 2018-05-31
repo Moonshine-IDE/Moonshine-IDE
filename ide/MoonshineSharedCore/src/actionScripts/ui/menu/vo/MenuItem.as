@@ -16,13 +16,21 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * [props..]
+ * [enableTypes]
+ * null = To avail option against any type of project
+ * [ProjectMenuTypes.., ProjectMenuTypes..] = To avail option against specific type of project(s)
+ * [] = (Not recommended) May disable option against all type of project(s)
+ */
 package actionScripts.ui.menu.vo
 {
 	import __AS3__.vec.Vector;
 	
 	public class MenuItem extends Object
 	{
-		public function MenuItem(label:String , items:Array=null, event:String=null,
+		public function MenuItem(label:String , items:Array=null, enableTypes:Array=null, 
+								 event:String=null,
 								 mac_key:*=null, mac_mod:Array=null,
 								 win_key:*=null, win_mod:Array=null,
 								 lnx_key:*=null, lnx_mod:Array=null,
@@ -50,6 +58,8 @@ package actionScripts.ui.menu.vo
 			
 			this.lnx_key = lnx_key;
 			this.lnx_mod = lnx_mod;
+			
+			this.enableTypes = enableTypes;
 		}
 		
 		
@@ -72,5 +82,7 @@ package actionScripts.ui.menu.vo
 		
 		public var isSeparator:Boolean;
 		public var parents:Array; 
+		
+		public var enableTypes:Array;
 	}
 }

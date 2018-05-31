@@ -41,7 +41,6 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.SettingsView;
@@ -58,6 +57,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
     import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.OSXBookmarkerNotifiers;
     import actionScripts.utils.SDKUtils;
@@ -89,6 +89,7 @@ package actionScripts.plugins.as3project
 		private var isAway3DProject:Boolean;
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
+		private var isFlexJSRoyalProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
 		
@@ -227,13 +228,13 @@ package actionScripts.plugins.as3project
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
-
-			var isFlexJSTemplate:Boolean = event.templateDir.fileBridge.name.indexOf("FlexJS") != -1;
+			
+			isFlexJSRoyalProject = event.templateDir.fileBridge.name.indexOf("Royale") != -1 || event.templateDir.fileBridge.name.indexOf("FlexJS") != -1;
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
 				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
-				if (isFlexJSTemplate)
+				if (isFlexJSRoyalProject)
 				{
 					project.projectName = "NewJavaScriptBrowserProject";
                 }
@@ -293,7 +294,7 @@ package actionScripts.plugins.as3project
 			{
 				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
 			}
-			else if (isFlexJSTemplate)
+			else if (isFlexJSRoyalProject)
 			{
                 settings.getSettingsList().splice(3, 0,
 						new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
@@ -829,6 +830,7 @@ package actionScripts.plugins.as3project
 			}
 
 			pvo.buildOptions.customSDKPath = _customFlexSDK;
+			pvo.menuType = getProjectMenuType(pvo);
 			_customFlexSDK = null;
 			
 			// in case of Flex project (where mx or spark controls can be included)
@@ -849,14 +851,11 @@ package actionScripts.plugins.as3project
 		private function getProjectWithTemplate(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
 		{
 			if (!projectTemplateType) return pvo;
-
-			var isRoyaleTemplates:Boolean = projectTemplateType.indexOf("Royale") != -1 ||
-					projectTemplateType.indexOf("FlexJS") != -1;
 			
-            if (isOpenProjectCall || isRoyaleTemplates)
+            if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
-                var projectsTemplates:ArrayCollection = isRoyaleTemplates ?
+                var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
                         ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
                         allProjectTemplates;
 
@@ -922,5 +921,29 @@ package actionScripts.plugins.as3project
                 isActionScriptProject = false;
             }
         }
+		
+		private function getProjectMenuType(pvo:AS3ProjectVO):String
+		{
+			if (pvo.isPrimeFacesVisualEditorProject)
+			{
+				return ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+			}
+			if (isVisualEditorProject)
+			{
+				return ProjectMenuTypes.VISUAL_EDITOR_FLEX;
+			}
+			
+			if (isLibraryProject)
+			{
+				return ProjectMenuTypes.LIBRARY_FLEX_AS;
+			}
+			
+			if (isFlexJSRoyalProject)
+			{
+				return ProjectMenuTypes.JS_ROYALE;
+			}
+			
+			return ProjectMenuTypes.FLEX_AS;
+		}
     }
 }

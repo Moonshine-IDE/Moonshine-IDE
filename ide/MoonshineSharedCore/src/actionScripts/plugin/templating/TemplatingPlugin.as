@@ -18,10 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-    import actionScripts.events.ExportVisualEditorProjectEvent;
-
-    import components.popup.newFile.NewVisualEditorFilePopup;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     
@@ -36,6 +32,7 @@ package actionScripts.plugin.templating
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewFileEvent;
@@ -59,8 +56,8 @@ package actionScripts.plugin.templating
     import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.MenuUtils;
     import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.TextUtil;
@@ -74,6 +71,7 @@ package actionScripts.plugin.templating
     import components.popup.newFile.NewCSSFilePopup;
     import components.popup.newFile.NewFilePopup;
     import components.popup.newFile.NewMXMLFilePopup;
+    import components.popup.newFile.NewVisualEditorFilePopup;
 	
 	/*
 	Templating plugin
@@ -242,8 +240,6 @@ package actionScripts.plugin.templating
 				if (!file.isHidden && file.isDirectory)
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
-					// updating VE item menu list to be enabled in case of VE projects
-					MenuUtils.menuItemsEnabledInVEProject.push(file.name);
 				}
 			}
 			
@@ -273,8 +269,6 @@ package actionScripts.plugin.templating
 					&& !file.isHidden && file.isDirectory)
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
-					// updating VE item menu list to be enabled in case of VE projects
-					MenuUtils.menuItemsEnabledInVEProject.push(file.name);
 				}
 			}
 
@@ -382,9 +376,11 @@ package actionScripts.plugin.templating
 		public function getMenu():MenuItem
 		{	
 			var newFileMenu:MenuItem = new MenuItem('New');
+			var enableTypes:Array;
 			newFileMenu.parents = ["File", "New"];
 			newFileMenu.items = new Vector.<MenuItem>();
 			
+			var visualEditorFileIndex:int;
 			for each (var fileTemplate:FileLocation in fileTemplates)
 			{
 				if (fileTemplate.fileBridge.isHidden) continue;
@@ -395,7 +391,11 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewTemplateFile);
 				
-				var menuItem:MenuItem = new MenuItem(lbl, null, eventType);
+				visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(lbl);
+				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
+				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+				
+				var menuItem:MenuItem = new MenuItem(lbl, null, enableTypes, eventType);
 				menuItem.data = fileTemplate; 
 				
 				newFileMenu.items.push(menuItem);
@@ -414,7 +414,7 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
-				menuItem = new MenuItem(lbl, null, eventType);
+				menuItem = new MenuItem(lbl, null, null, eventType);
 				menuItem.data = projectTemplate;
 				
 				newFileMenu.items.push(menuItem);	

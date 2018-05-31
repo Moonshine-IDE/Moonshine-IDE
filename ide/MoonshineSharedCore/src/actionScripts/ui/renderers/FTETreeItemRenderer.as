@@ -46,7 +46,7 @@ package actionScripts.ui.renderers
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.MenuUtils;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.notifier.ErrorTipManager;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -215,7 +215,6 @@ package actionScripts.ui.renderers
 			if (fw)
 			{
 				contextMenu = model.contextMenuCore.getContextMenu();
-				contextMenu.addEventListener(ContextMenuEvent.MENU_SELECT, contextMenuSelectHandler);
 
                 model.contextMenuCore.addItem(contextMenu,
                         model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
@@ -349,7 +348,9 @@ package actionScripts.ui.renderers
 			{
 				model.activeProject = activeProject;
 			}
-
+			
+			var visualEditorFileIndex:int;
+			var enableTypes:Array;
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
@@ -361,7 +362,12 @@ package actionScripts.ui.renderers
 				var eventType:String = "eventNewFileFromTemplate"+label;
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
-				item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(label, as3ProjectVO);
+				
+				visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(label);
+				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
+				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+				
+				item.enabled = (enableTypes.indexOf(as3ProjectVO.menuType) != -1);
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
@@ -574,24 +580,5 @@ package actionScripts.ui.renderers
 	        	}
 			}
 		} // updateDisplayList
-
-
-        private function contextMenuSelectHandler(event:ContextMenuEvent):void
-        {
-            disableMenuItems(contextMenu["items"]);
-        }
-
-        private function disableMenuItems(items:Array):void
-		{
-			var currentProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
-            for each (var item:NativeMenuItem in items)
-            {
-                item.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(item["label"], currentProject);
-				if (item["submenu"])
-				{
-                    disableMenuItems(item["submenu"].items);
-				}
-            }
-		}
 	}
 }

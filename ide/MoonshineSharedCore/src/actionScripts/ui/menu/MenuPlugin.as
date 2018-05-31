@@ -208,17 +208,17 @@ import actionScripts.valueObjects.Settings;
 			
 			// disable File-New menu as default
 			isFileNewMenuIsEnabled = false;
-            disableMenuOptionsForVEProject();
+            updateMenuOptionsBasedOnActiveProject();
 			disableNewFileMenuOptions();
 		}
 
         private function onMenusDisableStateChange(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
-			disableMenuOptionsForVEProject();
+			updateMenuOptionsBasedOnActiveProject();
         }
 
-		private function disableMenuOptionsForVEProject(lastSelectedProject:AS3ProjectVO=null):void
+		private function updateMenuOptionsBasedOnActiveProject(lastSelectedProject:AS3ProjectVO=null):void
 		{
 			var activeProject:AS3ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject as AS3ProjectVO;
 
@@ -243,7 +243,7 @@ import actionScripts.valueObjects.Settings;
 						menuItem = menu.items[i];
 						if (menuItem.submenu)
                         {
-                            recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, activeProject);
+                            recursiveDisableMenuOptionsByProject(menuItem.submenu.items, activeProject);
                         }
                     }
 
@@ -251,18 +251,38 @@ import actionScripts.valueObjects.Settings;
             }
 		}
 
-		private function recursiveDisabledMenuForVisualEditor(menuItems:Object, currentProject:AS3ProjectVO):void
+		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:AS3ProjectVO):void
 		{
             var countMenuItems:int = menuItems.length;
+			var enable:Boolean;
+			var isEnableTypePresent:Boolean = true;
             for (var i:int = 0; i < countMenuItems; i++)
             {
 				var menuItem:Object = menuItems[i];
-				menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
-				isFileNewMenuIsEnabled = menuItem.enabled;
+				
+				// in macOS few items extracted from adl, i.e.
+				// hide adl, show all etc. are pure NativeMenuItem
+				// and they won't have 'enableTypes'
+				if (buildingNativeMenu)
+				{
+					isEnableTypePresent = ('enableTypes' in menuItem) ? true : false; 
+				}
+				
+				if (!buildingNativeMenu || isEnableTypePresent)
+				{
+					if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
+					else if (!menuItem.enableTypes) menuItem.enabled = true;
+					else if (currentProject && menuItem.enableTypes) 
+					{
+						menuItem.enabled = false;
+						enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
+						menuItem.enabled = enable;
+					}
+				}
 				
 				if (menuItem.submenu)
                 {
-                    recursiveDisabledMenuForVisualEditor(menuItem.submenu.items, currentProject);
+                    recursiveDisableMenuOptionsByProject(menuItem.submenu.items, currentProject);
                 }
             }
 		}
@@ -286,14 +306,14 @@ import actionScripts.valueObjects.Settings;
 							for each (file in TemplatingPlugin.fileTemplates)
 							{
 								var fileName:String = file.fileBridge.name.substring(0,file.fileBridge.name.lastIndexOf("."));
-								menuitem = new MenuItem(fileName,null,fileName);
+								menuitem = new MenuItem(fileName,null,null,fileName);
 								m.items.push(menuitem);
 							}
 							menuitem = new MenuItem(null);
 							m.items.push(menuitem);
 							for each (file in TemplatingPlugin.projectTemplates)
 							{
-								menuitem = new MenuItem(file.fileBridge.name,null,file.fileBridge.name);
+								menuitem = new MenuItem(file.fileBridge.name,null,null,file.fileBridge.name);
 								m.items.push(menuitem);
 							}	
 							break;
@@ -389,14 +409,11 @@ import actionScripts.valueObjects.Settings;
 		
 		private function onNewMenuAddRequest(event:TemplatingEvent):void
 		{
-			var tmpMI:MenuItem = new MenuItem(event.label, null, event.listener);
+			var tmpMI:MenuItem = new MenuItem(event.label, null, null, event.listener);
 			var menuItem:* = createNewMenuItem(tmpMI);
 			var itemToAddAt:int = event.isProject ? TemplatingPlugin.projectTemplates.length + TemplatingPlugin.fileTemplates.length : TemplatingPlugin.fileTemplates.length - 1;
 			var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
 			if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
-			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject.push(event.label);
 			
 			if (menuItem)
 			{
@@ -407,7 +424,7 @@ import actionScripts.valueObjects.Settings;
 					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
 					subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
 					
-					windowMenus[1].items[0].items.insertAt(itemToAddAt, new MenuItem(event.label, null, event.listener));
+					windowMenus[1].items[0].items.insertAt(itemToAddAt, new MenuItem(event.label, null, null, event.listener));
 				}
 				else
 				{
@@ -431,9 +448,6 @@ import actionScripts.valueObjects.Settings;
 				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
-			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject.splice(MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label), 1);
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
@@ -530,9 +544,6 @@ import actionScripts.valueObjects.Settings;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
 			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject[MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label)] = event.newLabel;
-			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
 				if (subItemsInItemOfTopMenu[i].label == event.label)
@@ -574,7 +585,7 @@ import actionScripts.valueObjects.Settings;
 			applyNewNativeMenu(windowMenus);
 			
 			// update menus for VE project
-			disableMenuOptionsForVEProject(lastSelectedProjectBeforeMacDisableStateChange);
+			updateMenuOptionsBasedOnActiveProject(lastSelectedProjectBeforeMacDisableStateChange);
 		}
 		
 		private function onSDKStateChange(event:Event):void
@@ -631,7 +642,7 @@ import actionScripts.valueObjects.Settings;
 			if (buildingNativeMenu)
 			{
 				// in case of AIR
-				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator);
+				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator, null, item.enableTypes);
 				if (item[Settings.os + "_key"])
 					nativeMenuItem.item.keyEquivalent = item[Settings.os + "_key"];
 				if (item[Settings.os + "_mod"])
@@ -650,7 +661,7 @@ import actionScripts.valueObjects.Settings;
 			}
 			else
 			{
-				menuItem = new CustomMenuItem(item.label, item.isSeparator);
+				menuItem = new CustomMenuItem(item.label, item.isSeparator, {enableTypes:item.enableTypes});
 				if (shortcut)
 				{
 					menuItem.shortcut = shortcut;

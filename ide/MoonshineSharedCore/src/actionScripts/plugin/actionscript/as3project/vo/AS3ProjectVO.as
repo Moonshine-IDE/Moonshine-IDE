@@ -42,6 +42,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
     import actionScripts.plugin.settings.vo.StringSetting;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -109,6 +110,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
+		
+		public var menuType:String = ProjectMenuTypes.FLEX_AS;
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
