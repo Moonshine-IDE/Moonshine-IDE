@@ -266,14 +266,6 @@ import actionScripts.valueObjects.Settings;
 					enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
 					menuItem.enabled = enable;
 				}
-				/*if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
-				else if (!menuItem.enableTypes || menuItem.enableTypes.length == 0) menuItem.enabled = true;*/
-				
-				/*if (currentProject && menuItem.enableTypes) menuItem.enabled = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
-				else if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
-				else if (!menuItem.enableTypes || menuItem.enableTypes.length == 0) menuItem.enabled = true;*/
-				/*menuItem.enabled = MenuUtils.isMenuItemEnabledInVisualEditor(menuItem.label);
-				isFileNewMenuIsEnabled = menuItem.enabled;*/
 				
 				if (menuItem.submenu)
                 {
@@ -410,9 +402,6 @@ import actionScripts.valueObjects.Settings;
 			var menuObject:Object = (menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem;
 			if (!isFileNewMenuIsEnabled) menuObject.enabled = false; 
 			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject.push(event.label);
-			
 			if (menuItem)
 			{
 				if (buildingNativeMenu)
@@ -446,9 +435,6 @@ import actionScripts.valueObjects.Settings;
 				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
-			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject.splice(MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label), 1);
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{
@@ -544,9 +530,6 @@ import actionScripts.valueObjects.Settings;
 				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
-			
-			// updating arraylist to use against VE project
-			MenuUtils.menuItemsEnabledInVEProject[MenuUtils.menuItemsEnabledInVEProject.indexOf(event.label)] = event.newLabel;
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
 			{

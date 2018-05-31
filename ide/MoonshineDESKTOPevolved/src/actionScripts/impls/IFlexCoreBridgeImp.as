@@ -314,10 +314,10 @@ package actionScripts.impls
 						new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES)
 					]),
                     new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD,
+					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS], CompilerEventBase.BUILD_AND_RUN,
 						"\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','BUILD_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AS_JAVASCRIPT,

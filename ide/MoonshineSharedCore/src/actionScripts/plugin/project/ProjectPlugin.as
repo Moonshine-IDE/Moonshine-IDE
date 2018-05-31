@@ -18,35 +18,34 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.project
 {
+    import flash.events.Event;
+    import flash.net.SharedObject;
+    
+    import __AS3__.vec.Vector;
+    
+    import actionScripts.events.AddTabEvent;
     import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RefreshTreeEvent;
+    import actionScripts.events.ShowSettingsEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.SettingsWrapper;
+    import actionScripts.ui.LayoutModifier;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
-    import flash.events.Event;
-
-	import __AS3__.vec.Vector;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.ShowSettingsEvent;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.ui.LayoutModifier;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ProjectVO;
-	
-	import components.views.project.OpenResourceView;
-	import components.views.project.TreeView;
-
-    import flash.net.SharedObject;
+    import actionScripts.valueObjects.ProjectVO;
+    
+    import components.views.project.OpenResourceView;
+    import components.views.project.TreeView;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -59,6 +58,7 @@ package actionScripts.plugin.project
 		
 		private var treeView:TreeView;
 		private var openResourceView:OpenResourceView;
+		private var lastActiveProjectMenuType:String;
 
 		public function ProjectPlugin()
 		{
@@ -197,7 +197,12 @@ package actionScripts.plugin.project
 					// Newly created project, add it to project explorer & show it
 					model.projects.addItem(pvo);
                     model.activeProject = pvo;
-                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+					
+					if (lastActiveProjectMenuType != (pvo as AS3ProjectVO).menuType)
+					{
+	                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+						lastActiveProjectMenuType = (pvo as AS3ProjectVO).menuType;
+					}
 
 					showProjectPanel();
 					
@@ -230,7 +235,12 @@ package actionScripts.plugin.project
 			{
 				model.projects.addItemAt(event.project, 0);
 				model.activeProject = event.project;
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
+				
+				if (lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
+					lastActiveProjectMenuType = (event.project as AS3ProjectVO).menuType;
+				}
 			}
 
             openRecentlyUsedFiles(event.project);
@@ -267,8 +277,12 @@ package actionScripts.plugin.project
 				{
 					model.activeProject = null;
                 }
-
-                dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+				
+				if (lastActiveProjectMenuType != (model.activeProject as AS3ProjectVO).menuType)
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+					lastActiveProjectMenuType = (model.activeProject as AS3ProjectVO).menuType;
+				}
 			}
 
             SharedObjectUtil.removeProjectFromOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);

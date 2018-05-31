@@ -16,6 +16,13 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * [props..]
+ * [enableTypes]
+ * null = To avail option against any type of project
+ * [ProjectMenuTypes.., ProjectMenuTypes..] = To avail option against specific type of project(s)
+ * [] = (Not recommended) May disable option against all type of project(s)
+ */
 package actionScripts.ui.menu.vo
 {
 	import __AS3__.vec.Vector;

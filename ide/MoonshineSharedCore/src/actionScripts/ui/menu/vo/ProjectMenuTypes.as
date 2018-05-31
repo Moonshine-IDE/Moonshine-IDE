@@ -30,15 +30,13 @@ package actionScripts.ui.menu.vo
 		public static const LIBRARY_FLEX_AS:String = "libraryFlexAS";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;
-		public static var VISUAL_EDITOR_FLEX_FILE_TEMPLATE_NAME:String;
-		public static var VISUAL_EDITOR_PRIMEFACES_FILE_TEMPLATE_NAME:String;
+		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE:Array;
 		
 		private static var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		{
 			VISUAL_EDITOR_FILE_TEMPLATE_ITEMS = [resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE'), resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE')];
-			VISUAL_EDITOR_FLEX_FILE_TEMPLATE_NAME = resourceManager.getString('resources', 'VISUALEDITOR_FLEX_FILE');
-			VISUAL_EDITOR_PRIMEFACES_FILE_TEMPLATE_NAME = resourceManager.getString('resources', 'VISUALEDITOR_PRIMEFACES_FILE');
+			VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE = [VISUAL_EDITOR_FLEX, VISUAL_EDITOR_PRIMEFACES];
 		}
 	}
 }
