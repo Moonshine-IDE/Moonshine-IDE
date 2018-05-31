@@ -804,8 +804,8 @@
 		{
 			if (!value.file.fileBridge.exists)
 			{
-				if (value.isRoot) Alert.show(value.name +" does not exists anymore.\nClick on OK to remove the project.", "Error!", Alert.OK, null, onDeletedProjectRemoveConfirm);
-				else Alert.show(value.name +" does not exists anymore.", "Error!");
+				if (value.isRoot) Alert.show("The "+ value.name +" project does not exist on the filesystem.\nThe project will be removed from Moonshine.", "Error!", Alert.OK, null, onDeletedProjectRemoveConfirm);
+				else Alert.show(value.name +" does not exists on the filesystem.\nOperation canceled.", "Error!");
 				return false;
 			}
 			
