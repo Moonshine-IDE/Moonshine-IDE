@@ -301,12 +301,12 @@ package actionScripts.impls
 		
 		public function getSettingsMenuItem():MenuItem
 		{
-			return (new MenuItem("Settings",null, SettingsEvent.EVENT_OPEN_SETTINGS, ",", [Keyboard.COMMAND], ',', [Keyboard.CONTROL]));
+			return (new MenuItem("Settings",null, null, SettingsEvent.EVENT_OPEN_SETTINGS, ",", [Keyboard.COMMAND], ',', [Keyboard.CONTROL]));
 		}
 		
 		public function getAboutMenuItem():MenuItem
 		{
-			return (new MenuItem("About", null, MenuPlugin.EVENT_ABOUT));
+			return (new MenuItem("About", null, null, MenuPlugin.EVENT_ABOUT));
 			//return null;
 		}
 		
@@ -331,48 +331,48 @@ package actionScripts.impls
 				new MenuItem("File", [
 					new MenuItem("New"),
 					new MenuItem(null),
-					new MenuItem("Save",null, MenuPlugin.MENU_SAVE_EVENT,
+					new MenuItem("Save",null, null, MenuPlugin.MENU_SAVE_EVENT,
 						's', [Keyboard.COMMAND],
 						's', [Keyboard.CONTROL]),
-					new MenuItem("Save As...",null, MenuPlugin.MENU_SAVE_AS_EVENT,
+					new MenuItem("Save As...",null, null, MenuPlugin.MENU_SAVE_AS_EVENT,
 						's', [Keyboard.COMMAND, Keyboard.SHIFT],
 						's', [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem("Close", null, CloseTabEvent.EVENT_CLOSE_TAB,
+					new MenuItem("Close", null, null, CloseTabEvent.EVENT_CLOSE_TAB,
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
 					new MenuItem(null),
 					new MenuItem("Line Endings", [
-						new MenuItem("Windows (CRLF - \\r\\n)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
-						new MenuItem("UNIX (LF - \\n)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_UNIX),
-						new MenuItem("OS9 (CR - \\r)", null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_OS9)
+						new MenuItem("Windows (CRLF - \\r\\n)", null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
+						new MenuItem("UNIX (LF - \\n)", null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_UNIX),
+						new MenuItem("OS9 (CR - \\r)", null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_OS9)
 					])
 				]),
 				new MenuItem("Edit", [ 
-					new MenuItem("Find", null, FindReplacePlugin.EVENT_FIND_NEXT,
+					new MenuItem("Find", null, null, FindReplacePlugin.EVENT_FIND_NEXT,
 					'f', [Keyboard.COMMAND],
 					'f', [Keyboard.CONTROL]),
-					new MenuItem("Find previous", null, FindReplacePlugin.EVENT_FIND_PREV,
+					new MenuItem("Find previous", null, null, FindReplacePlugin.EVENT_FIND_PREV,
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem("Find Resource", null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
+					new MenuItem("Find Resource", null, null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT])
 				]),
 				new MenuItem("View",[
-					new MenuItem('Project view', null, ProjectEvent.SHOW_PROJECT_VIEW)
+					new MenuItem('Project view', null, null, ProjectEvent.SHOW_PROJECT_VIEW)
 				]),
 				new MenuItem("Project",[
-					new MenuItem("Open/Import Flex Project", null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
+					new MenuItem("Open/Import Flex Project", null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
 					new MenuItem(null),
-					new MenuItem("Build Project", null, CompilerEventBase.BUILD,
+					new MenuItem("Build Project", null, null, CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
-					new MenuItem("Clean Project", null,  CompilerEventBase.CLEAN_PROJECT)
+					new MenuItem("Clean Project", null, null, CompilerEventBase.CLEAN_PROJECT)
 					
 				]),
 				new MenuItem("Help",[
-					new MenuItem('About', null, MenuPlugin.EVENT_ABOUT)])
+					new MenuItem('About', null, null, MenuPlugin.EVENT_ABOUT)])
 			]));
 		}
 		
