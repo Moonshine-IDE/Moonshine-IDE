@@ -150,7 +150,7 @@ package actionScripts.plugin.projectPanel
             }
             else
             {
-                setProjectPanelHeight(0);
+                setProjectPanelHeight(-1);
             }
         }
 
