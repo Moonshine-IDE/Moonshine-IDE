@@ -70,7 +70,7 @@
 		
 	</mx:Image>
 	
-	<mx:Label text="Photo © Cristian Fattinnanzi"
+	<!--<mx:Label text="Photo © Cristian Fattinnanzi"
 			  bottom="6" right="10"
-			  color="#cccccc" fontSize="14"/>
+			  color="#cccccc" fontSize="14"/>-->
 </mx:Canvas>
