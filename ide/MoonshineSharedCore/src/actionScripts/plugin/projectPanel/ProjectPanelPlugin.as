@@ -11,7 +11,6 @@ package actionScripts.plugin.projectPanel
     import flash.events.MouseEvent;
 
     import mx.containers.dividedBoxClasses.BoxDivider;
-    import mx.core.IUIComponent;
     import mx.core.UIComponent;
 
     import mx.events.DividerEvent;
@@ -167,17 +166,16 @@ package actionScripts.plugin.projectPanel
                 }
                 else
                 {
-                    this.setProjectPanelHeight(0);
+                    this.setProjectPanelHeight(-1);
                 }
 
                 return;
             }
 
             var tmpHeight:int = view.parent.height - view.parent.mouseY - view.minHeight;
-            if (tmpHeight <= 2)
+            if (tmpHeight <= 4)
             {
                 setProjectPanelVisibility(true);
-                LayoutModifier.projectPanelHeight = -1;
             }
             else
             {
@@ -225,7 +223,7 @@ package actionScripts.plugin.projectPanel
         {
             LayoutModifier.isProjectPanelCollapsed = value;
             isProjectPanelHidden = value;
-            model.mainView.bodyPanel.setStyle('dividerSkin', !isProjectPanelHidden ? customDividerSkinCollapse : customDividerSkinExpand);
+            model.mainView.bodyPanel.setStyle('dividerSkin', isProjectPanelHidden ? customDividerSkinExpand : customDividerSkinCollapse);
         }
 
         public function setProjectPanelHeight(newTargetHeight:int):void

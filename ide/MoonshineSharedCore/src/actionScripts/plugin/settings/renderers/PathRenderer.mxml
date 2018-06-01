@@ -37,7 +37,6 @@
 	        import mx.core.FlexGlobals;
 	        import mx.events.CloseEvent;
 	        import mx.events.FlexEvent;
-	        import mx.events.MenuEvent;
 	        import mx.managers.PopUpManager;
 	        import mx.utils.ObjectUtil;
 	        
