@@ -60,8 +60,6 @@ package actionScripts.plugin.projectPanel
             tempObj.commandDesc = "Minimize the console frame.  Click and drag to expand it againMinimize the console frame.  Click and drag to expand it again..";
             registerCommand("hide", tempObj);
 
-            //model.mainView.bodyPanel.addChild(consoleView);
-
             var parentView:IDEVDividedBox = model.mainView.bodyPanel;
             parentView.addElement(view);
 

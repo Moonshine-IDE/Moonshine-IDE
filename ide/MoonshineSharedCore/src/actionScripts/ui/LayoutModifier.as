@@ -19,7 +19,6 @@
 package actionScripts.ui
 {
 	import flash.display.DisplayObject;
-	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
@@ -230,7 +229,7 @@ package actionScripts.ui
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:PROJECT_PANEL_COLLAPSED_FIELD, value:value}));
 		}
 		
-		private static var _projectPanelHeight:int = -1;
+		private static var _projectPanelHeight:int = 165;
 		
 		public static function get projectPanelHeight():int
 		{
