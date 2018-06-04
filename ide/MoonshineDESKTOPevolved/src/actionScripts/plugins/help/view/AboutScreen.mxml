@@ -32,47 +32,76 @@
 	</s:layout>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.locator.IDEModel;
-
-		import mx.core.IVisualElement;
-		import mx.events.FlexEvent;
-
-		private var softwareInformation:IVisualElement;
-
-		public function get longLabel():String
-		{
-			return "About Moonshine";
-		}
-
-		public function get label():String
-		{
-			return "About Moonshine";
-		}
-
-		public function isChanged():Boolean
-		{
-			return false;
-		}
-
-		public function isEmpty():Boolean
-		{
-			return false;
-		}
-
-		public function save():void
-		{
-		}
-
-		private function onAboutScreenCreationComplete(event:FlexEvent):void
-		{
-			vgVersionContainer.removeAllElements();
-			softwareInformation = IDEModel.getInstance().flexCore.getSoftwareInformationView();
-			softwareInformation.percentWidth = 94;
-			softwareInformation.horizontalCenter = 0;
-			vgVersionContainer.addElement(softwareInformation);
-
-			version.text = IDEModel.getInstance().getVersionWithBuildNumber();
-		}
+			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.locator.IDEModel;
+			
+			import components.popup.InfoBackgroundPopup;
+	
+			private var softwareInformation:IVisualElement;
+			private var infoBackground:InfoBackgroundPopup;
+	
+			public function get longLabel():String
+			{
+				return "About Moonshine";
+			}
+	
+			public function get label():String
+			{
+				return "About Moonshine";
+			}
+	
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+	
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+	
+			public function save():void
+			{
+			}
+	
+			private function onAboutScreenCreationComplete(event:FlexEvent):void
+			{
+				vgVersionContainer.removeAllElements();
+				softwareInformation = IDEModel.getInstance().flexCore.getSoftwareInformationView();
+				softwareInformation.percentWidth = 94;
+				softwareInformation.horizontalCenter = 0;
+				vgVersionContainer.addElement(softwareInformation);
+	
+				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
+			}
+			
+			protected function onInfoBackground(event:MouseEvent):void
+			{
+				if (!infoBackground)
+				{
+					infoBackground = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, InfoBackgroundPopup, true) as InfoBackgroundPopup;
+					infoBackground.addEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
+					infoBackground.height = screen.height - 100;
+					
+					PopUpManager.centerPopUp(infoBackground);
+				}
+				else
+				{
+					infoBackground.setFocus();
+				}
+			}
+			
+			private function handleInfoBackgroundPopupClose(event:CloseEvent):void
+			{
+				infoBackground.removeEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
+				infoBackground = null;
+			}
+			
 		]]>
 	</fx:Script>
 	<s:Label text="Moonshine IDE" color="0x8a2a2a"/>
@@ -80,4 +109,8 @@
 	<mx:HRule width="50%"/>
 	<mx:Spacer/>
 	<s:VGroup id="vgVersionContainer" />
+	<s:Label text="Know about background image"
+			 buttonMode="true"
+			 creationComplete="event.target.setStyle('textDecoration', 'underline')"
+			 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
 </s:BorderContainer>
