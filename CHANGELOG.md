@@ -3,6 +3,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.13.0]
+
+### Added
+* Added to menu **File** options **Recent Projects** and **Recent Files**.
+* Visual Editor: Added option which allow for undo/redo. 
+* Visual Editor: Make property Panel and List of components toggleable. 
+* Visual Editor: Added new fields to PrimeFaces autoComplete which allows fill component by data after export.
+
+### Changed
+* Tab **Home** is now closeable. 
+* Debug View has been moved to the console area.
+* Delete Project: Improvement in scenario when user tired to remove project which doesn't exists. 
+* Duplicate: Allow for duplication some types of files which contains dash ("-").
+* Remove all references to FlexJS.
+
+### Fixed
+* Fixed issue where cursor flashes both in Console and Editor at the same time.
+* Editor: Fixed issue where jump to the next line produces unwanted characters.
+* Menu: Fixed issue where some items were disabled.
+* Home Tab: Fixed issue where **Recent** project were invisible when some of the project has long name.
+* Visual Editor: Fixed issue where PrimeFaces Grid component throws range error.
+* Visual Editor: Fixed issue where **Settings** window do not close after click on **Save**.
+
 ## Moonshine IDE [1.12.0]
 
 ### Added
