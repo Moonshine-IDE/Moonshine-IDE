@@ -109,7 +109,7 @@
 	<mx:HRule width="50%"/>
 	<mx:Spacer/>
 	<s:VGroup id="vgVersionContainer" />
-	<s:Label text="Know about background image"
+	<s:Label text="About the background image"
 			 buttonMode="true"
 			 creationComplete="event.target.setStyle('textDecoration', 'underline')"
 			 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>

@@ -23,7 +23,7 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				   xmlns:s="library://ns.adobe.com/flex/spark" 
 				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5" title="Moonshine Background Image"
+				   backgroundColor="0xf5f5f5" title="About the background image"
 				   autoLayout="true" width="640" height="650"
 				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 				   skinClass="components.skins.ResizableTitleWindowSkin" xmlns:divider="actionScripts.ui.divider.*" xmlns:splashscreen="components.views.splashscreen.*">
