@@ -51,7 +51,7 @@ package actionScripts.impls
 			if (!visualEditorProject.filesList)
 			{
 				visualEditorProject.filesList = new ArrayCollection();
-				UtilsCore.parseFilesList(visualEditorProject.filesList, visualEditorProject as ProjectVO, ["xhtml"]); // to be use in includes files list in primefaces
+				UtilsCore.parseFilesList(visualEditorProject.filesList, visualEditorProject as ProjectVO, ["xhtml"], true); // to be use in includes files list in primefaces
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_DELETED, onFileRemoved, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_RENAMED, onFileRenamed, false, 0, true);
@@ -79,6 +79,16 @@ package actionScripts.impls
 			if (editor) return editor.editorView.visualEditor;
 			
 			return null;
+		}
+		
+		public function getCustomTooltipFunction():Function
+		{
+			return UtilsCore.createCustomToolTip;	
+		}
+		
+		public function getPositionTooltipFunction():Function
+		{
+			return UtilsCore.positionTip;
 		}
 		
 		private function onNewFileAdded(event:TreeMenuItemEvent):void

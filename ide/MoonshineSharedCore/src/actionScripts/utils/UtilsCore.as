@@ -764,9 +764,24 @@ package actionScripts.utils
 		/**
 		 * Parse all acceptable files in a given project
 		 */
-		public static function parseFilesList(collection:IList, project:ProjectVO=null, readableExtensions:Array=null):void
+		public static function parseFilesList(collection:IList, project:ProjectVO=null, readableExtensions:Array=null, isSourceFolderOnly:Boolean=false):void
 		{
-			if (project) parseChildrens(project.projectFolder, collection, readableExtensions);
+			if (project)
+			{
+				if (isSourceFolderOnly && (project as AS3ProjectVO).sourceFolder) 
+				{
+					// lets search for the probable existing fileWrapper object
+					// instead of creating a new one - that could be expensive
+					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, (project as AS3ProjectVO).sourceFolder);
+					if (sourceWrapper) 
+					{
+						parseChildrens(sourceWrapper, collection, readableExtensions);
+						return;
+					}
+				}
+				
+				parseChildrens(project.projectFolder, collection, readableExtensions);
+			}
 			else
 			{
 				for each (var i:ProjectVO in model.projects)

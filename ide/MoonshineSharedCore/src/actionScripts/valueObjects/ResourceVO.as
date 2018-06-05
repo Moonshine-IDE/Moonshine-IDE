@@ -28,6 +28,7 @@ package actionScripts.valueObjects
 		
 		private var _resourcePath:String;
 		private var _resourceExtension:String;
+		private var _projectName:String;
 
 		public function ResourceVO(_name:String, _sourceWrapper:FileWrapper)
 		{
@@ -47,6 +48,7 @@ package actionScripts.valueObjects
 				{
 					value = value.replace(folderPath, i.name);
 					_resourcePath = value;
+					_projectName = i.name;
 					break;
 				}
 			}
@@ -60,6 +62,13 @@ package actionScripts.valueObjects
 		public function get resourceExtension():String
 		{
 			return _resourceExtension;
+		}
+		
+		public function get resourcePathWithoutRoot():String
+		{
+			if (_projectName) return _resourcePath.replace(_projectName + sourceWrapper.file.fileBridge.separator, "");
+			
+			return _resourcePath;
 		}
 	}
 }
