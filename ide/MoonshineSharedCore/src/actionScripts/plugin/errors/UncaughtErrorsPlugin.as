@@ -22,11 +22,21 @@ package actionScripts.plugin.errors
 	import flash.events.UncaughtErrorEvent;
 	
 	import mx.collections.ArrayList;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.menu.vo.MenuItem;
+	
+	import flashx.textLayout.elements.LinkElement;
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+	
+	import no.doomsday.console.core.events.ConsoleEvent;
 	
 	public class UncaughtErrorsPlugin extends PluginBase implements IMenuPlugin
 	{
@@ -48,6 +58,7 @@ package actionScripts.plugin.errors
 			
 			// add event listeners
 			FlexGlobals.topLevelApplication.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
+			dispatcher.addEventListener(ConsoleEvent.REPORT_A_BUG, reportBugFromConsole, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -79,15 +90,45 @@ package actionScripts.plugin.errors
 			{
 				errorString = (event.error as ErrorEvent).text;
 				error(errorString);
+				generateMessage(errorString);
 			}
 			else
 			{
 				// a non-Error, non-ErrorEvent type was thrown and uncaught
 				errorString = event.toString();
 				error(errorString);
+				generateMessage(errorString);
 			}
 			
 			_problemList.addItem(errorString);
+		}
+		
+		private function generateMessage(errorMessage:String):void
+		{
+			var p:ParagraphElement = new ParagraphElement();
+			var span1:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+			
+			p.color = 0xFA8072;
+			span1.text = ": To report a bug ";
+			
+			link.href = "event:"+ ConsoleEvent.REPORT_A_BUG;
+			var inf:Object = {color:0xFF0000, textDecoration:TextDecoration.UNDERLINE};   
+			link.linkNormalFormat = inf;
+			
+			var linkSpan:SpanElement = new SpanElement();
+			linkSpan.text = "click here";
+			link.addChild(linkSpan);
+			
+			p.addChild(span1);
+			p.addChild(link);
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
+		}
+		
+		private function reportBugFromConsole(event:ConsoleEvent):void 
+		{
+			Alert.show("Report a Bug window next");
 		}
 	}
 }

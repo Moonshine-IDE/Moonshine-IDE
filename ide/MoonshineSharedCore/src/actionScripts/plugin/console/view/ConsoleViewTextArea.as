@@ -18,18 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-    import actionScripts.plugin.console.ConsoleTextLineModel;
-
+    import spark.components.RichEditableText;
     import spark.components.TextArea;
-	import spark.components.VScrollBar;
-	
-	import actionScripts.ui.editor.text.TextEditorModel;
-	import actionScripts.ui.editor.text.TextLineModel;
-	
-	import flashx.textLayout.conversion.TextConverter;
-	import flashx.textLayout.elements.FlowElement;
-	import flashx.textLayout.elements.ParagraphElement;
-	import flashx.textLayout.elements.TextFlow;
+    import spark.components.VScrollBar;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.plugin.console.ConsoleTextLineModel;
+    import actionScripts.ui.editor.text.TextEditorModel;
+    import actionScripts.ui.editor.text.TextLineModel;
+    
+    import flashx.textLayout.conversion.TextConverter;
+    import flashx.textLayout.elements.FlowElement;
+    import flashx.textLayout.elements.ParagraphElement;
+    import flashx.textLayout.elements.TextFlow;
+    import flashx.textLayout.events.FlowElementMouseEvent;
+    
+    import no.doomsday.console.core.events.ConsoleEvent;
 	
 	public class ConsoleViewTextArea extends TextArea
 	{
@@ -41,8 +45,18 @@ package actionScripts.plugin.console.view
 			this.setStyle("contentBackgroundColor",0x373737);
 			this.setStyle("contentBackgroundAlpha",0.9);
 			this.setStyle("borderVisible",false);
+			
 			this.percentHeight = 100;
 			this.percentWidth = 100;
+		}
+		
+		override protected function partAdded(partName:String, instance:Object):void
+		{
+			super.partAdded(partName, instance);
+			if (instance == textDisplay)
+			{
+				(textDisplay as RichEditableText).textFlow.addEventListener(ConsoleEvent.REPORT_A_BUG, onReportBugFromConsole, false, 0, true);
+			}
 		}
 		
 		public function get numLines():int
@@ -101,7 +115,9 @@ package actionScripts.plugin.console.view
 					//tf = TextFlowUtil.importFromString(String("<p>"+text[i])+"</p>");
 					pe = tf.mxmlChildren[0];
 					for each (fe in pe.mxmlChildren)
-					p.addChild(fe);
+					{
+						p.addChild(fe);
+					}
 					this.textFlow.addChild(p);
 					//model.lines.push( text[i] );
 					//this.appendText( String(text[i]) +"\n");
@@ -112,9 +128,20 @@ package actionScripts.plugin.console.view
 				callLater(setScroll);
 				return this.numLines;
 			}
+			else if (text is ParagraphElement)
+			{
+				this.textFlow.addChild(text);
+			}
+			
 			// Remove initial empty line (first time anything is outputted)
 			return 0;
 		}
+		
+		private function onReportBugFromConsole(event:FlowElementMouseEvent):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleEvent(ConsoleEvent.REPORT_A_BUG));
+		}
+		
 		private function setScroll():void
 		{
 			var scrollBar:VScrollBar = this.scroller.verticalScrollBar;

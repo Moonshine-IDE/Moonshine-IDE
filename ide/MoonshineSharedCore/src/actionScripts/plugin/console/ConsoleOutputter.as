@@ -71,8 +71,7 @@ package actionScripts.plugin.console
 			}
 		}
 		
-		
-		public static function formatOutput(str:String, style:String):void
+		public static function formatOutput(str:String, style:String, showWhenDone:Boolean=true):Vector.<TextLineModel>
 		{
 			var textLines:Array =  str.split("\n");
 			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
@@ -83,7 +82,14 @@ package actionScripts.plugin.console
 				var lineModel:TextLineModel = new ConsoleTextLineModel(text, style);
 				lines.push(lineModel);
 			}
-			outputMsg(lines);
+			
+			if (showWhenDone) 
+			{
+				outputMsg(lines);
+				return null;
+			}
+			
+			return lines;
 		}
 		
 		protected static function outputMsg(msg:*):void

@@ -29,6 +29,8 @@ package no.doomsday.console.core.events
 		public static const COMMAND:String = "consolecommand";
 		public static const MESSAGE:String = "consolemessage";
 		public static const PROPERTY_UPDATE:String = "onpropertyupdate";
+		public static const REPORT_A_BUG:String = "reportABugWithConsoleError";
+		
 		public var args:Array;
 		public var text:String;
 		/**
