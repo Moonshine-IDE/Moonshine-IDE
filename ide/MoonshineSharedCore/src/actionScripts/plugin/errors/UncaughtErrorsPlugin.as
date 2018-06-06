@@ -22,7 +22,6 @@ package actionScripts.plugin.errors
 	import flash.events.UncaughtErrorEvent;
 	
 	import mx.collections.ArrayList;
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -67,6 +66,7 @@ package actionScripts.plugin.errors
 			
 			// remove event listeners
 			FlexGlobals.topLevelApplication.loaderInfo.uncaughtErrorEvents.removeEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
+			dispatcher.removeEventListener(ConsoleEvent.REPORT_A_BUG, reportBugFromConsole);
 		}
 		
 		public function getMenu():MenuItem
@@ -90,20 +90,19 @@ package actionScripts.plugin.errors
 			{
 				errorString = (event.error as ErrorEvent).text;
 				error(errorString);
-				generateMessage(errorString);
 			}
 			else
 			{
 				// a non-Error, non-ErrorEvent type was thrown and uncaught
 				errorString = event.toString();
 				error(errorString);
-				generateMessage(errorString);
 			}
 			
+			generateReportLink(errorString);
 			_problemList.addItem(errorString);
 		}
 		
-		private function generateMessage(errorMessage:String):void
+		private function generateReportLink(errorMessage:String):void
 		{
 			var p:ParagraphElement = new ParagraphElement();
 			var span1:SpanElement = new SpanElement();
@@ -113,7 +112,7 @@ package actionScripts.plugin.errors
 			span1.text = ": To report a bug ";
 			
 			link.href = "event:"+ ConsoleEvent.REPORT_A_BUG;
-			var inf:Object = {color:0xFF0000, textDecoration:TextDecoration.UNDERLINE};   
+			var inf:Object = {color:0xFA8072, textDecoration:TextDecoration.UNDERLINE};   
 			link.linkNormalFormat = inf;
 			
 			var linkSpan:SpanElement = new SpanElement();
@@ -128,7 +127,9 @@ package actionScripts.plugin.errors
 		
 		private function reportBugFromConsole(event:ConsoleEvent):void 
 		{
-			Alert.show("Report a Bug window next");
+			var tmpEvent:ConsoleEvent = new ConsoleEvent(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW);
+			tmpEvent.text = _problemList.source.join("\n\n");
+			dispatcher.dispatchEvent(tmpEvent);
 		}
 	}
 }

@@ -25,7 +25,7 @@
 		   label="Home"
 		   width="100%"
 		   height="100%" xmlns:splashscreen="components.views.splashscreen.*"
-		   creationComplete="onCreationCompletes(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		   creationComplete="onCreationCompletes(event)" removedFromStage="onTabRemoved(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
 	
 	<fx:Script>
 		<![CDATA[
@@ -68,6 +68,8 @@
 			import components.renderers.TemplateItemRenderer;
 			
 			import flashx.textLayout.events.FlowElementMouseEvent;
+			
+			import no.doomsday.console.core.events.ConsoleEvent;
 			
 			[Embed("/elements/images/icoThumbUp.png")]
 			private const ICON_THUMB_UP:Class;
@@ -359,20 +361,25 @@
 				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
-				dispatcher.addEventListener("eventOpenRecentProject", function(menuEvent:MenuEvent):void
-				{
-					openRecentItem(menuEvent.data as ProjectReferenceVO);
-				});
-				dispatcher.addEventListener("eventOpenRecentFile", function(menuEvent:MenuEvent):void
-				{
-					openRecentItem(menuEvent.data as ProjectReferenceVO);
-				});
+				dispatcher.addEventListener(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW, onOpenReportBugWithError, false, 0, true);
+				dispatcher.addEventListener("eventOpenRecentProject", onOpenRecentProject);
+				dispatcher.addEventListener("eventOpenRecentFile", onOpenRecentFile);
 
 				grpNoSDKMess.y = this.height;
 				
 				// manual run for the first time
 				updateRecetProjectList(null);
 				updateRecetFileList(null);
+			}
+			
+			private function onOpenRecentProject(menuEvent:MenuEvent):void
+			{
+				openRecentItem(menuEvent.data as ProjectReferenceVO);
+			}
+			
+			private function onOpenRecentFile(menuEvent:MenuEvent):void
+			{
+				openRecentItem(menuEvent.data as ProjectReferenceVO);
 			}
 
 			private function onStageResized(event:ResizeEvent):void
@@ -429,17 +436,36 @@
 			{
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 			}
-				protected function onPositiveRating(event:MouseEvent):void
-				{
-					positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
-					PopUpManager.centerPopUp(positiveRatingPopup);
-				}
+			
+			protected function onPositiveRating(event:MouseEvent):void
+			{
+				positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
+				PopUpManager.centerPopUp(positiveRatingPopup);
+			}
 
-				protected function onNegativeRating(event:MouseEvent):void
-				{
-					negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
-					PopUpManager.centerPopUp(negativeRatingPopup);
-				}
+			protected function onNegativeRating(event:MouseEvent, withError:String=null):void
+			{
+				negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
+				negativeRatingPopup.errorDetails = withError;
+				PopUpManager.centerPopUp(negativeRatingPopup);
+			}
+			
+			private function onOpenReportBugWithError(event:ConsoleEvent):void
+			{
+				onNegativeRating(null, event.text);
+			}
+			
+			protected function onTabRemoved(event:Event):void
+			{
+				removeEventListener(ResizeEvent.RESIZE, onStageResized);
+				removeEventListener(RecentProjectRenderer.RECENT_PROJECT_RENDERER_CLICK, handleRecentClick);
+				dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
+				dispatcher.removeEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
+				dispatcher.removeEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
+				dispatcher.removeEventListener(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW, onOpenReportBugWithError);
+				dispatcher.removeEventListener("eventOpenRecentProject", onOpenRecentProject);
+				dispatcher.removeEventListener("eventOpenRecentFile", onOpenRecentFile);
+			}
 			
 		]]>
 	</fx:Script>
