@@ -109,14 +109,14 @@ package actionScripts.plugin.errors
 			var link:LinkElement = new LinkElement();
 			
 			p.color = 0xFA8072;
-			span1.text = ": To report a bug ";
+			span1.text = ":\n: Click here to ";
 			
 			link.href = "event:"+ ConsoleEvent.REPORT_A_BUG;
-			var inf:Object = {color:0xFA8072, textDecoration:TextDecoration.UNDERLINE};   
+			var inf:Object = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};   
 			link.linkNormalFormat = inf;
 			
 			var linkSpan:SpanElement = new SpanElement();
-			linkSpan.text = "click here";
+			linkSpan.text = "Report a Bug";
 			link.addChild(linkSpan);
 			
 			p.addChild(span1);

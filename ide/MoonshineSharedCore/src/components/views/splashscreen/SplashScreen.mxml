@@ -446,6 +446,8 @@
 			protected function onNegativeRating(event:MouseEvent, withError:String=null):void
 			{
 				negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
+				negativeRatingPopup.width = screen.width * .6;
+				negativeRatingPopup.height = screen.height * .7;
 				negativeRatingPopup.errorDetails = withError;
 				PopUpManager.centerPopUp(negativeRatingPopup);
 			}
