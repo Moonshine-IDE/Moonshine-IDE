@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Home Tab: Fixed issue where **Recent** project were invisible when some of the project has long name.
 * Visual Editor: Fixed issue where PrimeFaces Grid component throws range error.
 * Visual Editor: Fixed issue where **Settings** window do not close after click on **Save**.
+* Visual Editor: Fixed issue where Tab index wasn't working properly in Property Editor.
 
 ## Moonshine IDE [1.12.0]
 
