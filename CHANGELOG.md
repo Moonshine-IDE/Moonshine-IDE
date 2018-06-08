@@ -6,25 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.13.0]
 
 ### Added
-* Added to menu **File** options **Recent Projects** and **Recent Files**.
-* Visual Editor: Added option which allow for undo/redo. 
-* Visual Editor: Make property Panel and List of components toggleable. 
-* Visual Editor: Added new fields to PrimeFaces autoComplete which allows fill component by data after export.
+* Added **Recent Projects** and **Recent Files** menus to the **File** menu.
+* Visual Editor: Added undo/redo support
+* Visual Editor: Expand/Collapse the comonents and properties panels
+* Visual Editor: Added new properties to PrimeFaces autoComplete component which allows field to be filled by data after export.
 
 ### Changed
-* Tab **Home** is now closeable. 
+* **Home** tab is now closeable. 
 * Debug View has been moved to the console area.
-* Delete Project: Improvement in scenario when user tired to remove project which doesn't exists. 
-* Duplicate: Allow for duplication some types of files which contains dash ("-").
-* Remove all references to FlexJS.
+* Delete Project/File: Improvement in scenario when user tries to remove project which was already removed
+* Allowed '-' filenames except for .as and .mxml
+* Removeed all references to FlexJS.
 
 ### Fixed
 * Fixed issue where cursor flashes both in Console and Editor at the same time.
 * Editor: Fixed issue where jump to the next line produces unwanted characters.
-* Menu: Fixed issue where some items were disabled.
-* Home Tab: Fixed issue where **Recent** project were invisible when some of the project has long name.
-* Visual Editor: Fixed issue where PrimeFaces Grid component throws range error.
-* Visual Editor: Fixed issue where **Settings** window do not close after click on **Save**.
+* Menu: Fixed issue where some items were disabled inappropriately.
+* Home Tab: Fixed issue where **Recent** projects were invisible when some of the projects had long names.
+* Visual Editor: Fixed issue where PrimeFaces Grid component threw range error.
+* Visual Editor: Fixed issue where **Settings** window did not close after clicking on **Save**.
 * Visual Editor: Fixed issue where Tab index wasn't working properly in Property Editor.
 
 ## Moonshine IDE [1.12.0]
