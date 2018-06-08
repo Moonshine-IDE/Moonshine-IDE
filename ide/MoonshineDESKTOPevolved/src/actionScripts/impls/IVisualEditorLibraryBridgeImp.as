@@ -31,6 +31,7 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	
@@ -96,8 +97,13 @@ package actionScripts.impls
 			// add resource only relative to the project
 			if (event.data.projectReference.path == visualEditorProject.projectFolder.nativePath)
 			{
-				visualEditorProject.filesList.addItem(new ResourceVO(FileLocation(event.extra).name, event.data));
-				sendXHtmlUpdates();
+				// make sure we use existing object only and not create new
+				var newFileWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(event.data, (event.extra as FileLocation));
+				if (newFileWrapper)
+				{
+					visualEditorProject.filesList.addItem(new ResourceVO((event.extra as FileLocation).name, newFileWrapper));
+					sendXHtmlUpdates();
+				}
 			}
 		}
 		
@@ -106,14 +112,23 @@ package actionScripts.impls
 			// remove resource only relative to the project
 			if (event.data.projectReference.path == visualEditorProject.projectFolder.nativePath)
 			{
-				for each (var i:ResourceVO in visualEditorProject.filesList)
+				var pathSeparator:String = event.data.file.fileBridge.separator;
+				for (var i:int=0; i < visualEditorProject.filesList.length; i ++)
 				{
-					if (event.data.file.fileBridge.nativePath == i.sourceWrapper.file.fileBridge.nativePath)
+					// direct == path check or
+					// path check if the xhtml file is children of deleted file/folder
+					if (event.data.file.fileBridge.nativePath == visualEditorProject.filesList[i].sourceWrapper.file.fileBridge.nativePath)
 					{
-						visualEditorProject.filesList.removeItem(i);
+						visualEditorProject.filesList.removeItemAt(i);
 						break;
 					}
+					else if (visualEditorProject.filesList[i].sourceWrapper.file.fileBridge.nativePath.indexOf(event.data.file.fileBridge.nativePath + pathSeparator) != -1)
+					{
+						visualEditorProject.filesList.removeItemAt(i);
+						i--;
+					}
 				}
+				
 				sendXHtmlUpdates();
 			}
 		}
