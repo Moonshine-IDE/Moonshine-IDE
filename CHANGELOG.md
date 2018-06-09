@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Added **Recent Projects** and **Recent Files** menus to the **File** menu.
 * Visual Editor: Added undo/redo support
-* Visual Editor: Expand/Collapse the comonents and properties panels
+* Visual Editor: Expand/Collapse the components and properties panels
 * Visual Editor: Added new properties to PrimeFaces autoComplete component which allows field to be filled by data after export.
 
 ### Changed
