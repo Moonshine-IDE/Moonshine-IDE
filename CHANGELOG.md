@@ -16,7 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Debug View has been moved to the console area.
 * Delete Project/File: Improvement in scenario when user tries to remove project which was already removed
 * Allowed '-' filenames except for .as and .mxml
-* Removeed all references to FlexJS.
+* Removed all references to FlexJS.
+* Restricted more special characters from Project names.
 
 ### Fixed
 * Fixed issue where cursor flashes both in Console and Editor at the same time.
