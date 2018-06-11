@@ -376,7 +376,7 @@ package actionScripts.plugins.as3project
 
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
-            newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^\\\\\\/?:"|<>*!@#$%^&*()+{}[]:;~');
+            newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^\\]<[>"{}?!@$+=()*#&~%;:^\\\\\\/^\\-');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
 			newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
