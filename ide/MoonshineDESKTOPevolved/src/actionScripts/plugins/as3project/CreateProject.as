@@ -634,7 +634,7 @@ package actionScripts.plugins.as3project
 			}
 			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
 			{
-				sourceFileWithExtension = pvo.projectName + ".xhtml";
+				sourceFileWithExtension = "main/webapp/" + pvo.projectName + ".xhtml";
 			}
 			else
 			{

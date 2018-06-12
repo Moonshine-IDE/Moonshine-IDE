@@ -50,7 +50,8 @@
   </compileTargets>
   <hiddenPaths>
     <hidden path="visualeditor-src" />
-	<hidden path="src/main" />
+	<hidden path="src/main/webapp/WEB-INF" />
+	<hidden path="src/main/resources" />
 	<hidden path="pom.xml" />
   </hiddenPaths>
   <preBuildCommand/>

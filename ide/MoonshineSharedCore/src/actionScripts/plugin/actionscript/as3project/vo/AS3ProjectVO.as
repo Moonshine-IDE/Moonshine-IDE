@@ -110,7 +110,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
-		
+		public var isExportToExistingSource:Boolean;
+
 		public var menuType:String = ProjectMenuTypes.FLEX_AS;
 
 		private var additional:StringSetting;
@@ -508,14 +509,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function getSettingsForVisualEditorTypeOfProjects():Vector.<SettingsWrapper>
 		{
             return Vector.<SettingsWrapper>([
-					new SettingsWrapper("Output",
-                            Vector.<ISetting>([
-                                new IntSetting(swfOutput,	"frameRate", 	"Framerate (FPS)"),
-                                new IntSetting(swfOutput,	"width", 		"Width"),
-                                new IntSetting(swfOutput,	"height",	 	"Height"),
-                                new ColorSetting(swfOutput,	"background",	"Background color"),
-                                new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
-                            ])),
 					new SettingsWrapper("Paths",
 							Vector.<ISetting>([
 								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
@@ -624,7 +617,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         this.nativeExtensionPath.displaySourceFolder);
             }
 
-			if (this.mobileRunSettings)
+			if (this.mobileRunSettings && !this.isVisualEditorProject)
             {
                 as3Project.mobileRunSettings = new RunMobileSetting(this.mobileRunSettings.provider,
                         this.mobileRunSettings.label, new FileLocation(this.mobileRunSettings.relativeRoot.fileBridge.nativePath));

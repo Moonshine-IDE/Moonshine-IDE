@@ -228,9 +228,10 @@
 	            else
 	            {
 	                historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
-	                cmbPath.callLater(function ():void {
-	                    cmbPath.selectedItem = (historyPaths.length == 0) ? null : setting.provider[setting.name];
-	                });
+					if (historyPaths.length == 0)
+					{
+						historyPaths.addItem(setting.provider[setting.name]);
+					}
 	            }
 	
 	            if (isDropDown)
@@ -378,6 +379,7 @@
 		text="{setting.stringValue? setting.stringValue : 'Not Set' }" visible="{!isDropDown}" includeInLayout="{!isDropDown}"  />
 	<s:ComboBox  width="100%" dataProvider="{historyPaths}" id="cmbPath" visible="{isDropDown}" 
 				 alternatingItemColors="[#FFFFFF, #FFFFFF]"  selectionColor="#cccccc" rollOverColor="#eeeeee"
+				 requireSelection="true"
 				 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
 	<s:Label id="lblMessage" 
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"

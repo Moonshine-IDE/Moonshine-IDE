@@ -24,6 +24,7 @@ package visualEditor.plugin
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -34,6 +35,7 @@ package visualEditor.plugin
     import flash.display.DisplayObject;
 
     import flash.events.Event;
+    import flash.filesystem.File;
 
     public class ExportToPrimeFacesPlugin extends PluginBase
     {
@@ -107,10 +109,11 @@ package visualEditor.plugin
             newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
             newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
             newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
+            var projectWithExistingSource:BooleanSetting = new BooleanSetting(project, "isExportToExistingSource", "Project with existing source", true);
 
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                 new StaticLabelSetting('New ' + project.projectName),
-                newProjectNameSetting, newProjectPathSetting
+                newProjectNameSetting, newProjectPathSetting, projectWithExistingSource
             ]));
         }
 
@@ -162,27 +165,29 @@ package visualEditor.plugin
                 includesFolder.fileBridge.createDirectory();
             }
 
-            var webappFolder:FileLocation = destination.resolvePath("src/main/webapp");
-            var destinationSource:FileLocation = destination.fileBridge.resolvePath("src");
-            var sources:FileLocation = _currentProject.sourceFolder;
-            var dirsToCopy:Array = sources.fileBridge.getDirectoryListing();
+            var webappFolderExported:FileLocation = destination.resolvePath("src/main/webapp");
+
+            var sources:FileLocation = _currentProject.sourceFolder.resolvePath("main/webapp");
+            var sourcesToCopy:Array = sources.fileBridge.getDirectoryListing();
             var mainApplicationFile:FileLocation = _currentProject.targets[0];
-            var mainFolder:FileLocation = sources.fileBridge.resolvePath("main");
+            var mainFolder:FileLocation = _currentProject.sourceFolder.resolvePath("main");
 
-            for each (var item:Object in dirsToCopy)
+            var srcToCopy:Array = _currentProject.sourceFolder.fileBridge.getDirectoryListing();
+            srcToCopy = srcToCopy.filter(function (item:Object, index:int, arr:Array):Boolean
             {
-                if (item.nativePath == mainFolder.fileBridge.nativePath)
-                {
-                    continue;
-                }
+                return item.nativePath != mainFolder.fileBridge.nativePath;
+            });
 
+            sourcesToCopy = sourcesToCopy.concat(srcToCopy);
+            for each (var item:Object in sourcesToCopy)
+            {
                 if (item.nativePath == mainApplicationFile.fileBridge.nativePath)
                 {
-                    mainApplicationFile.fileBridge.copyTo(webappFolder.resolvePath("index.xhtml"));
+                    mainApplicationFile.fileBridge.copyTo(webappFolderExported.resolvePath("index.xhtml"));
                 }
                 else
                 {
-                    item.copyTo(includesFolder.resolvePath(item.name).fileBridge.getFile);
+                    item.copyTo(webappFolderExported.resolvePath(item.name).fileBridge.getFile, true);
                 }
             }
         }
@@ -223,13 +228,16 @@ package visualEditor.plugin
 
         private function copyPrimeFacesPom(destination:FileLocation):void
         {
+            var pomForCopy:FileLocation = destination.fileBridge.resolvePath("pom.xml");
+            //if (pomForCopy.fileBridge.exists && _currentProject.isExportToExistingSource) return;
+
             var currentFolder:FileLocation = _currentProject.folderLocation;
-            var pomForCopy:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
+            var projectPom:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
 
             XML.ignoreWhitespace = true;
             XML.ignoreComments = true;
 
-            var pom:XML = XML(pomForCopy.fileBridge.read());
+            var pom:XML = XML(projectPom.fileBridge.read());
 
             var qName:QName = new QName("http://maven.apache.org/POM/4.0.0", "artifactId");
             pom.replace(qName, <artifactId>{_exportedProject.projectName}</artifactId>);
@@ -237,7 +245,6 @@ package visualEditor.plugin
             qName = new QName("http://maven.apache.org/POM/4.0.0", "name");
             pom.replace(qName, <name>{_exportedProject.projectName}</name>);
 
-            pomForCopy = destination.fileBridge.resolvePath("pom.xml");
             pomForCopy.fileBridge.save(pom.toXMLString());
         }
 
