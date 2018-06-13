@@ -34,6 +34,8 @@
 			
 			import actionScripts.plugin.settings.vo.StringSetting;
 
+			import spark.events.TextOperationEvent;
+
 			[Bindable]
 			public var setting:StringSetting;
 			
@@ -71,7 +73,12 @@
 					text.selectionHighlighting = TextSelectionHighlighting.ALWAYS;
 				}
 			}
-			
+
+			private function onTextChange(event:TextOperationEvent):void
+			{
+				setting.stringValue = text.text;
+				setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));
+			}
 		]]>
 	</fx:Script>
 
@@ -90,7 +97,7 @@
 		contentBackgroundAlpha="1"
 		unfocusedTextSelectionColor="#a8c6ee"
 		focusAlpha="0"
-		change="{setting.stringValue = text.text}; setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));"
+		change="onTextChange(event)"
 		focusOut="updatePrompt()"
 		contentBackgroundColor="#FFFFFF"/>
 

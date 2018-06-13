@@ -35,15 +35,16 @@ package visualEditor.plugin
     import flash.display.DisplayObject;
 
     import flash.events.Event;
-    import flash.filesystem.File;
 
     public class ExportToPrimeFacesPlugin extends PluginBase
     {
         private var newProjectNameSetting:StringSetting;
         private var newProjectPathSetting:PathSetting;
+        private var projectWithExistingsSourceSetting:BooleanSetting;
 
         private var _currentProject:AS3ProjectVO;
         private var _exportedProject:AS3ProjectVO;
+        private var _exportPath:String;
 
         public function ExportToPrimeFacesPlugin()
         {
@@ -53,6 +54,16 @@ package visualEditor.plugin
         override public function get name():String { return "Export Visual Editor Project to PrimeFaces Plugin"; }
         override public function get author():String { return "Moonshine Project Team"; }
         override public function get description():String { return "Exports Visual Editor project to PrimeFaces."; }
+
+        public function get exportPath():String
+        {
+            return _exportPath;
+        }
+
+        public function set exportPath(value:String):void
+        {
+            _exportPath = value;
+        }
 
         override public function activate():void
         {
@@ -106,14 +117,17 @@ package visualEditor.plugin
         private function getProjectSettings(project:AS3ProjectVO):SettingsWrapper
         {
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
-            newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+
+            _exportPath = getExportPath(project);
+            newProjectPathSetting = new PathSetting(this, 'exportPath', 'Parent directory', true, null, false, true);
+            projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportToExistingSource", "Project with existing source", true);
+
             newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
             newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
-            var projectWithExistingSource:BooleanSetting = new BooleanSetting(project, "isExportToExistingSource", "Project with existing source", true);
 
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                 new StaticLabelSetting('New ' + project.projectName),
-                newProjectNameSetting, newProjectPathSetting, projectWithExistingSource
+                newProjectNameSetting, projectWithExistingsSourceSetting, newProjectPathSetting
             ]));
         }
 
@@ -143,9 +157,12 @@ package visualEditor.plugin
 
         private function onProjectCreateExecute(event:Event):void
         {
-            var destination:FileLocation = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
-
-            destination.fileBridge.createDirectory();
+            var destination:FileLocation = _exportedProject.folderLocation;
+            if (!_exportedProject.isExportToExistingSource)
+            {
+                destination = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
+                destination.fileBridge.createDirectory();
+            }
 
             copyPrimeFacesPom(destination);
             copyPrimeFacesWebFile(destination);
@@ -172,6 +189,11 @@ package visualEditor.plugin
             var mainApplicationFile:FileLocation = _currentProject.targets[0];
             var mainFolder:FileLocation = _currentProject.sourceFolder.resolvePath("main");
 
+            sourcesToCopy = sourcesToCopy.filter(function (item:Object, index:int, arr:Array):Boolean
+            {
+                return item.nativePath.lastIndexOf("WEB-INF") == -1;
+            });
+
             var srcToCopy:Array = _currentProject.sourceFolder.fileBridge.getDirectoryListing();
             srcToCopy = srcToCopy.filter(function (item:Object, index:int, arr:Array):Boolean
             {
@@ -183,11 +205,11 @@ package visualEditor.plugin
             {
                 if (item.nativePath == mainApplicationFile.fileBridge.nativePath)
                 {
-                    mainApplicationFile.fileBridge.copyTo(webappFolderExported.resolvePath("index.xhtml"));
+                    mainApplicationFile.fileBridge.copyTo(webappFolderExported.resolvePath("index.xhtml"), _exportedProject.isExportToExistingSource);
                 }
                 else
                 {
-                    item.copyTo(webappFolderExported.resolvePath(item.name).fileBridge.getFile, true);
+                    item.copyTo(webappFolderExported.resolvePath(item.name).fileBridge.getFile, _exportedProject.isExportToExistingSource);
                 }
             }
         }
@@ -229,7 +251,7 @@ package visualEditor.plugin
         private function copyPrimeFacesPom(destination:FileLocation):void
         {
             var pomForCopy:FileLocation = destination.fileBridge.resolvePath("pom.xml");
-            //if (pomForCopy.fileBridge.exists && _currentProject.isExportToExistingSource) return;
+            if (pomForCopy.fileBridge.exists && _exportedProject.isExportToExistingSource) return;
 
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var projectPom:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
@@ -250,10 +272,12 @@ package visualEditor.plugin
 
         private function copyPrimeFacesWebFile(destination:FileLocation):void
         {
+            destination = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
+            if (destination.fileBridge.exists && _exportedProject.isExportToExistingSource) return;
+
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var webPath:String = "src/main/webapp/WEB-INF/web.xml";
             var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
-            destination = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
 
             webForCopy.fileBridge.copyTo(destination);
         }
@@ -263,9 +287,28 @@ package visualEditor.plugin
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var webPath:String = "src/main/resources";
             var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
-            destination = destination.resolvePath("src/main/resources");
+            var dest:FileLocation = destination.resolvePath("src/main/resources");
 
-            webForCopy.fileBridge.copyTo(destination);
+            if (_exportedProject.isExportToExistingSource)
+            {
+                webForCopy.fileBridge.copyInto(dest);
+
+                dest = destination.resolvePath("grails-app/assets/stylesheets");
+                if (dest.fileBridge.exists)
+                {
+                    webForCopy.fileBridge.copyInto(dest);
+                }
+            }
+            else
+            {
+                webForCopy.fileBridge.copyTo(dest);
+            }
+        }
+
+        private function getExportPath(project:AS3ProjectVO):String
+        {
+            var parentFolder:FileLocation = new FileLocation(project.folderPath).fileBridge.parent;
+            return parentFolder.fileBridge.nativePath;
         }
     }
 }
