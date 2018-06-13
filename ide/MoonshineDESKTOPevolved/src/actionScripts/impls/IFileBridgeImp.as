@@ -178,7 +178,7 @@ package actionScripts.impls
                     // Recurse thru folder.
                     new FileLocation(f.nativePath)
 							.fileBridge
-							.copyInto(new FileLocation(f.nativePath), locationCopyingTo.fileBridge.resolvePath(f.name));
+							.copyInto(locationCopyingTo.fileBridge.resolvePath(f.name));
 
                 }
                 else
