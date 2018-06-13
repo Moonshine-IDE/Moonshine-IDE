@@ -346,8 +346,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				// project type - flash builder or flash develop.
 				// also we shall take .as3proj file if exists to project opening,
 				// even there's an .actionScriptProperties file exists
-				
-				var settingsFile:FileLocation;
+
 				/*if (isFlashBuilderProject)
 				{
 				settingsFile = folderLocation.resolvePath(".actionScriptProperties");
@@ -356,7 +355,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				}
 				else
 				{*/
-				settingsFile = folderLocation.resolvePath(projectName+".as3proj");
+                var settingsFile:FileLocation = folderLocation.resolvePath(projectName+".as3proj");
 				// Write settings
 				IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
