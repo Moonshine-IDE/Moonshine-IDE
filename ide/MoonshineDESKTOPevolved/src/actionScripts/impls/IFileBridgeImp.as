@@ -176,7 +176,9 @@ package actionScripts.impls
                     if( copyEmptyFolders ) f.copyTo(locationCopyingTo.fileBridge.getFile.resolvePath(f.name), true);
 
                     // Recurse thru folder.
-                    copyInto(new FileLocation(f.nativePath), locationCopyingTo.fileBridge.resolvePath(f.name));
+                    new FileLocation(f.nativePath)
+							.fileBridge
+							.copyInto(new FileLocation(f.nativePath), locationCopyingTo.fileBridge.resolvePath(f.name));
 
                 }
                 else
