@@ -161,8 +161,10 @@ package actionScripts.plugin.templating
 			return null;
 		}
 		
-		public static function setFileAsDefaultApplication(fw:FileWrapper):void
+		public static function setFileAsDefaultApplication(fw:FileWrapper, parent:FileWrapper):void
 		{
+			if (!fw.file.fileBridge.checkFileExistenceAndReport()) return;
+			
 			var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
 			
 			var nameOnlyPreviousSourceFileArray:Array = project.targets[0].fileBridge.name.split(".");
@@ -180,7 +182,13 @@ package actionScripts.plugin.templating
 				tmpAppDescData = tmpAppDescData.replace(/<filename>(.*?)<\/filename>/, "<filename>"+ nameOnlyRequestedSourceFile +"<\/filename>");
 				tmpAppDescData = tmpAppDescData.replace(/<name>(.*?)<\/name>/, "<name>"+ nameOnlyRequestedSourceFile +"<\/name>");
 				
-				fw.file.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFileArray.join(".") +"-app.xml").fileBridge.save(tmpAppDescData);
+				var newDescriptorFile:FileLocation = fw.file.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFileArray.join(".") +"-app.xml");
+				newDescriptorFile.fileBridge.save(tmpAppDescData);
+				
+				// refresh to project tree UI
+				var tmpTreeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, newDescriptorFile.fileBridge.nativePath, parent);
+				tmpTreeEvent.extra = newDescriptorFile;
+				GlobalEventDispatcher.getInstance().dispatchEvent(tmpTreeEvent);
 			}
 			else
 			{
@@ -208,11 +216,6 @@ package actionScripts.plugin.templating
 			project.targets[0] = fw.file;
 			project.swfOutput.path = project.swfOutput.path.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFile +".swf");
 			project.saveSettings();
-			
-			// refresh to project tree UI
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fw.file.fileBridge.nativePath, fw)
-			);
 		}
 	}
 }

@@ -44,6 +44,7 @@ package actionScripts.impls
 	import flash.events.IOErrorEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
+	import mx.controls.Alert;
 	
 	/**
 	 * IFileBridgeImp
@@ -67,6 +68,7 @@ package actionScripts.impls
 		
 		public function getDirectoryListing():Array
 		{
+			if (!checkFileExistenceAndReport()) return [];
 			return _file.getDirectoryListing();
 		}
 		
@@ -171,7 +173,7 @@ package actionScripts.impls
 		
 		public function load():void
 		{
-			_file.load();
+			if (checkFileExistenceAndReport()) _file.load();
 		}
 		
 		public function copyFileTemplate(dst:FileLocation, data:Object=null):void
@@ -211,12 +213,12 @@ package actionScripts.impls
 		
 		public function moveTo(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			_file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport()) _file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
 		}
 		
 		public function moveToAsync(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			_file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport()) _file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
 		}
 		
 		public function deleteDirectory(deleteDirectoryContents:Boolean=false):void
@@ -278,10 +280,13 @@ package actionScripts.impls
 			var saveData:Object;
 			try
 			{
-				var stream:FileStream = new FileStream();
-				stream.open(_file, FileMode.READ);
-				saveData = stream.readUTFBytes(stream.bytesAvailable);
-				stream.close();
+				if (checkFileExistenceAndReport())
+				{
+					var stream:FileStream = new FileStream();
+					stream.open(_file, FileMode.READ);
+					saveData = stream.readUTFBytes(stream.bytesAvailable);
+					stream.close();
+				}
 			}
 			catch (e:Error)
 			{}
@@ -411,7 +416,7 @@ package actionScripts.impls
 
 		public function openWithDefaultApplication():void
 		{
-			_file.openWithDefaultApplication();
+			if (checkFileExistenceAndReport()) _file.openWithDefaultApplication();
 		}
 
 		public function get url():String
@@ -501,7 +506,7 @@ package actionScripts.impls
 		{
 			try
 			{
-				_file.nativePath = value;
+				if (checkFileExistenceAndReport()) _file.nativePath = value;
 			}
 			catch (e:Error)
 			{
@@ -583,6 +588,22 @@ package actionScripts.impls
 		{
 		}
 		
+		public function checkFileExistenceAndReport():Boolean
+		{
+			// we want to keep this method separate from
+			// 'exists' and not add these alerts to the
+			// said method, because file.exists uses against many
+			// internal checks which are not intentional to throw an alert
+			if (!_file.exists)
+			{
+				Alert.show(_file.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
+				reportPathAccessError(_file.isDirectory, false);
+				return false;
+			}
+			
+			return true;
+		}
+		
 		public static function replace(content:String, data:Object):String
 		{
 			for (var key:String in data)
@@ -594,12 +615,12 @@ package actionScripts.impls
 			return content;
 		}
 		
-		protected function reportPathAccessError(isDirectory:Boolean):void
+		protected function reportPathAccessError(isDirectory:Boolean, isExists:Boolean=true):void
 		{
 			var errorMessage:String = "\nUnable to access "+ (isDirectory ? "directory:" : "file:") + _file.nativePath;
 			CONFIG::OSX
 				{
-					if (isDirectory)
+					if (isDirectory && isExists)
 						errorMessage += '\nPlease open File > Access Manager and click "Add Access" to to allow access to this directory.'
 				}
 			

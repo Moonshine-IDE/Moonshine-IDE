@@ -368,5 +368,12 @@ package actionScripts.impls
 		{
 			_file.data = value;
 		}
+		
+		public function checkFileExistenceAndReport():Boolean
+		{
+			// this method has different importance and
+			// working in desktop project
+			return _file.exists;
+		}
 	}
 }

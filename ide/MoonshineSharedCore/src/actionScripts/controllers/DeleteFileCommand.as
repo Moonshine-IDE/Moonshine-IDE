@@ -58,7 +58,13 @@ package actionScripts.controllers
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
 			
-			if (!thisEvent.file.fileBridge.exists) return;
+			if (!thisEvent.file.fileBridge.exists) 
+			{
+				thisEvent.wrapper.isWorking = false;
+				thisEvent.wrapper.isDeleting = true;
+				thisEvent.treeViewCompletionHandler(thisEvent.wrapper);
+				return;
+			}
 			
 			// project deletion
 			if (thisEvent.wrapper.isRoot && thisEvent.showAlert)
