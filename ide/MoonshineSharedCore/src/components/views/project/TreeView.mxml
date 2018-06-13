@@ -387,9 +387,6 @@
 
 			var project:ProjectVO;
 			var fileWrapper:FileWrapper = FileWrapper(event.data);
-			
-			// lets handle files those does not exists in physical system
-			if (!checkFileExistence(fileWrapper)) return;
 
 			switch (event.menuLabel)
 			{
@@ -431,13 +428,13 @@
 				case FTETreeItemRenderer.DELETE_FILE_FOLDER:
 				{
 					if (fileWrapper.isWorking) return;
-					if (!fileWrapper.isRoot)
+					if (!fileWrapper.isRoot && fileWrapper.file.fileBridge.exists)
 					{
 						Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
 					}
 					else
 					{
-						onFileDeleteConfirm(new CloseEvent("", false, false, Alert.YES));
+						onFileDeleteConfirm(null);
 					}
 					break;
 				}
@@ -453,7 +450,7 @@
 				}
 				case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
 				{
-					TemplatingHelper.setFileAsDefaultApplication(fileWrapper);
+					TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(tree.getParentItem(fileWrapper)));
 					break;
 				}
 				case FTETreeItemRenderer.REFRESH:
@@ -465,7 +462,8 @@
 				{
 					// Right-clicking a directory creates the file in the dir,
 					// otherwise create in same dir as clicked file
-					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory) ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
+					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory || !fileWrapper.file.fileBridge.exists) ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
+					if (!creatingItemIn.file.fileBridge.checkFileExistenceAndReport()) return;
 
 					// for new file type creation
 					if (event.extra != FTETreeItemRenderer.NEW_FOLDER)
@@ -531,7 +529,7 @@
             */
 			function onFileDeleteConfirm(event2:CloseEvent):void
 			{
-				if (event2.detail == Alert.YES)
+				if (!event2 || event2.detail == Alert.YES)
 				{
 					var projectAssociatedWithFile:ProjectVO = getProjectFromProjectFolder(fileWrapper);
 					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
@@ -570,6 +568,10 @@
 				
 				newFileLocation = insideLocation.file.fileBridge.resolvePath(fileName);
 				if (!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
+			}
+			else if ((event as TreeMenuItemEvent).extra && ((event as TreeMenuItemEvent).extra is FileLocation))
+			{
+				newFileLocation = (event as TreeMenuItemEvent).extra as FileLocation;
 			}
 			else
 			{
@@ -799,28 +801,6 @@
 			currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_END, handleItemCreateEnd);
 			currentEditedItem.removeEventListener(TreeMenuItemEvent.EDIT_CANCEL, handleItemCreateCancel);
 		}
-			
-		private function checkFileExistence(value:FileWrapper):Boolean
-		{
-			if (!value.file.fileBridge.exists)
-			{
-				if (value.isRoot) Alert.show("The "+ value.name +" project does not exist on the filesystem.\nThe project will be removed from Moonshine.", "Error!", Alert.OK, null, onDeletedProjectRemoveConfirm);
-				else Alert.show(value.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
-				return false;
-			}
-			
-			return true;
-			
-			/*
-			* @local
-			* removes the opened instance of a project that might
-			* deleted off-Moonshine
-			*/
-			function onDeletedProjectRemoveConfirm(event3:CloseEvent):void
-			{
-				onFileDeletedOnServer(value, FTETreeItemRenderer.DELETE);
-			}
-		}
 
 		/*
         Custom implementation of editing, instead of using mx:Trees builtin capabilities
@@ -902,8 +882,6 @@
 		private function fileDoubleClickedInTree(event:ListEvent):void
 		{
 			var item:FileWrapper = tree.selectedItem as FileWrapper;
-			if (!checkFileExistence(item)) return;
-			
 			if (tree.dataDescriptor.isBranch(item))
 			{
 

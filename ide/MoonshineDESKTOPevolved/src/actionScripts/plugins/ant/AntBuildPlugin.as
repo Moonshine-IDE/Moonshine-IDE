@@ -187,6 +187,8 @@ package actionScripts.plugins.ant
 		}
 		//Call from Project explorer
 		private function runAntScriprHandler(event:Event):void{
+			if (!model.antScriptFile.fileBridge.checkFileExistenceAndReport()) return;
+			
 			_buildWithAnt = true;
 			var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();	
 			selectedProject = tmpTreeView.getProjectBySelection();

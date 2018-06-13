@@ -140,6 +140,8 @@ package actionScripts.plugin.rename
 		
 		private function handleOpenRenameFileView(event:RenameEvent):void
 		{
+			if (!(event.changes as FileWrapper).file.fileBridge.checkFileExistenceAndReport()) return;
+			
 			if (!renameFileView)
 			{
 				renameFileView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RenamePopup, true) as RenamePopup;
@@ -196,6 +198,8 @@ package actionScripts.plugin.rename
 		
 		private function handleOpenDuplicateFileView(event:DuplicateEvent):void
 		{
+			if (!event.fileWrapper.file.fileBridge.checkFileExistenceAndReport()) return;
+			
 			if (!newFilePopup)
 			{
 				newFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewFilePopup, true) as NewFilePopup;
