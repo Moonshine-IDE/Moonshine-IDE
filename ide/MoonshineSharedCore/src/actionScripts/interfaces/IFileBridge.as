@@ -36,6 +36,7 @@ package actionScripts.interfaces
 		function createFile(forceIsDirectory:Boolean=false):void;
 		function createDirectory():void;
 		function copyTo(value:FileLocation, overwrite:Boolean = false):void;
+		function copyInto(locationCopyingTo:FileLocation, copyEmptyFolders:Boolean=true):void
 		function copyFileTemplate(dst:FileLocation, data:Object=null):void;
 		function getRelativePath(ref:FileLocation, useDotDot:Boolean=false):String;
 		function load():void;
