@@ -99,6 +99,8 @@ package actionScripts.plugins.as3project.importer
 
             project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
             project.isPrimeFacesVisualEditorProject = UtilsCore.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
+			project.isExportedToExistingSource = UtilsCore.deserializeBoolean(data.options.option.@isExportedToExistingSource);
+			project.visualEditorExportPath = UtilsCore.deserializeString(data.options.option.@visualEditorExportPath);
 
 			if (project.targets.length > 0)
 			{

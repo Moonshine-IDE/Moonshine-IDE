@@ -44,7 +44,6 @@ package visualEditor.plugin
 
         private var _currentProject:AS3ProjectVO;
         private var _exportedProject:AS3ProjectVO;
-        private var _exportPath:String;
 
         public function ExportToPrimeFacesPlugin()
         {
@@ -54,16 +53,6 @@ package visualEditor.plugin
         override public function get name():String { return "Export Visual Editor Project to PrimeFaces Plugin"; }
         override public function get author():String { return "Moonshine Project Team"; }
         override public function get description():String { return "Exports Visual Editor project to PrimeFaces."; }
-
-        public function get exportPath():String
-        {
-            return _exportPath;
-        }
-
-        public function set exportPath(value:String):void
-        {
-            _exportPath = value;
-        }
 
         override public function activate():void
         {
@@ -118,9 +107,9 @@ package visualEditor.plugin
         {
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 
-            _exportPath = getExportPath(project);
-            newProjectPathSetting = new PathSetting(this, 'exportPath', 'Parent directory', true, null, false, true);
-            projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportToExistingSource", "Project with existing source", true);
+            project.visualEditorExportPath = getExportPath(project);
+            newProjectPathSetting = new PathSetting(project, 'visualEditorExportPath', 'Parent directory', true, null, false, true);
+            projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportedToExistingSource", "Project with existing source", true);
 
             newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
             newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
@@ -158,7 +147,7 @@ package visualEditor.plugin
         private function onProjectCreateExecute(event:Event):void
         {
             var destination:FileLocation = _exportedProject.folderLocation;
-            if (!_exportedProject.isExportToExistingSource)
+            if (!_exportedProject.isExportedToExistingSource)
             {
                 destination = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
                 destination.fileBridge.createDirectory();
@@ -168,6 +157,10 @@ package visualEditor.plugin
             copyPrimeFacesWebFile(destination);
             copyPrimeFacesResources(destination);
             copySources(destination);
+
+            _currentProject.isExportedToExistingSource = _exportedProject.isExportedToExistingSource;
+            _currentProject.visualEditorExportPath = _exportedProject.visualEditorExportPath;
+            _currentProject.saveSettings();
 
             success("PrimeFaces project " + newProjectNameSetting.stringValue + " has been successfully saved.");
 
@@ -205,11 +198,11 @@ package visualEditor.plugin
             {
                 if (item.nativePath == mainApplicationFile.fileBridge.nativePath)
                 {
-                    mainApplicationFile.fileBridge.copyTo(webappFolderExported.resolvePath("index.xhtml"), _exportedProject.isExportToExistingSource);
+                    mainApplicationFile.fileBridge.copyTo(webappFolderExported.resolvePath("index.xhtml"), _exportedProject.isExportedToExistingSource);
                 }
                 else
                 {
-                    item.copyTo(webappFolderExported.resolvePath(item.name).fileBridge.getFile, _exportedProject.isExportToExistingSource);
+                    item.copyTo(webappFolderExported.resolvePath(item.name).fileBridge.getFile, _exportedProject.isExportedToExistingSource);
                 }
             }
         }
@@ -228,7 +221,11 @@ package visualEditor.plugin
 
             newProjectNameSetting = null;
             newProjectPathSetting = null;
+            projectWithExistingsSourceSetting = null;
 
+            _currentProject = null;
+            _exportedProject = null;
+            
             dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject));
         }
 
@@ -251,7 +248,7 @@ package visualEditor.plugin
         private function copyPrimeFacesPom(destination:FileLocation):void
         {
             var pomForCopy:FileLocation = destination.fileBridge.resolvePath("pom.xml");
-            if (pomForCopy.fileBridge.exists && _exportedProject.isExportToExistingSource) return;
+            if (pomForCopy.fileBridge.exists && _exportedProject.isExportedToExistingSource) return;
 
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var projectPom:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
@@ -273,7 +270,7 @@ package visualEditor.plugin
         private function copyPrimeFacesWebFile(destination:FileLocation):void
         {
             destination = destination.resolvePath("src/main/webapp/WEB-INF/web.xml");
-            if (destination.fileBridge.exists && _exportedProject.isExportToExistingSource) return;
+            if (destination.fileBridge.exists && _exportedProject.isExportedToExistingSource) return;
 
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var webPath:String = "src/main/webapp/WEB-INF/web.xml";
@@ -289,7 +286,7 @@ package visualEditor.plugin
             var webForCopy:FileLocation = currentFolder.fileBridge.resolvePath(webPath);
             var dest:FileLocation = destination.resolvePath("src/main/resources");
 
-            if (_exportedProject.isExportToExistingSource)
+            if (_exportedProject.isExportedToExistingSource)
             {
                 webForCopy.fileBridge.copyInto(dest);
 
@@ -307,6 +304,11 @@ package visualEditor.plugin
 
         private function getExportPath(project:AS3ProjectVO):String
         {
+            if (project.visualEditorExportPath)
+            {
+                return project.visualEditorExportPath;
+            }
+
             var parentFolder:FileLocation = new FileLocation(project.folderPath).fileBridge.parent;
             return parentFolder.fileBridge.nativePath;
         }

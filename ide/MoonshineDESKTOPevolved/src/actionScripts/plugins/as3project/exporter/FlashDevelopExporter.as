@@ -101,7 +101,9 @@ package actionScripts.plugins.as3project.exporter
 				testMovie			:	UtilsCore.serializeString(p.testMovie),
 				defaultBuildTargets	:	UtilsCore.serializeString(p.defaultBuildTargets),
 				testMovieCommand	:	UtilsCore.serializeString(p.testMovieCommand),
-                isPrimeFacesVisualEditor: UtilsCore.serializeBoolean(p.isPrimeFacesVisualEditorProject)
+                isPrimeFacesVisualEditor: UtilsCore.serializeBoolean(p.isPrimeFacesVisualEditorProject),
+                isExportedToExistingSource: UtilsCore.serializeBoolean(p.isExportedToExistingSource),
+                visualEditorExportPath: UtilsCore.serializeString(p.visualEditorExportPath)
 			}
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{

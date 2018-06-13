@@ -110,7 +110,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
-		public var isExportToExistingSource:Boolean;
+		public var isExportedToExistingSource:Boolean;
+		public var visualEditorExportPath:String;
 
 		public var menuType:String = ProjectMenuTypes.FLEX_AS;
 
@@ -355,7 +356,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 				}
 				else
 				{*/
-                var settingsFile:FileLocation = folderLocation.resolvePath(projectName+".as3proj");
+
+                var projectFileName:String = this.isVisualEditorProject ? projectName+".veditorproj" : projectName+".as3proj";
+                var settingsFile:FileLocation = folderLocation.resolvePath(projectFileName);
 				// Write settings
 				IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
@@ -591,6 +594,8 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.isLibraryProject = this.isLibraryProject;
             as3Project.isActionScriptOnly = this.isActionScriptOnly;
             as3Project.isPrimeFacesVisualEditorProject = this.isPrimeFacesVisualEditorProject;
+			as3Project.isExportedToExistingSource = this.isExportedToExistingSource;
+			as3Project.visualEditorExportPath = this.visualEditorExportPath;
 
 			as3Project.additional = this.additional;
 
