@@ -42,7 +42,6 @@
 
 		private function onStringRendererCreationComplete(event:FlexEvent):void
 		{
-			text.text = setting.stringValue;
 			text.selectRange(0, text.text.length);
 
 			updatePrompt();
@@ -100,7 +99,7 @@
 		change="onTextChange(event)"
 		focusOut="updatePrompt()"
 		contentBackgroundColor="#FFFFFF"
-		text="{setting.stringValue}"/>
+		text="@{setting.stringValue}"/>
 
 	<s:TextInput id="textPrompt"
 		styleName="uiTextSettingsLabel"
