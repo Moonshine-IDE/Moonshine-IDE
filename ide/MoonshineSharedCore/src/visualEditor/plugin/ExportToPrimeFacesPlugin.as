@@ -200,31 +200,18 @@ package visualEditor.plugin
 
         private function copySources(destination:FileLocation):void
         {
-            var includesFolder:FileLocation = destination.resolvePath("src/main/webapp/WEB-INF/includes");
-            if (!includesFolder.fileBridge.exists)
-            {
-                includesFolder.fileBridge.createDirectory();
-            }
-
             var webappFolderExported:FileLocation = destination.resolvePath("src/main/webapp");
 
-            var sources:FileLocation = _currentProject.sourceFolder.resolvePath("main/webapp");
+            var sources:FileLocation = _currentProject.sourceFolder;
             var sourcesToCopy:Array = sources.fileBridge.getDirectoryListing();
             var mainApplicationFile:FileLocation = _currentProject.targets[0];
-            var mainFolder:FileLocation = _currentProject.sourceFolder.resolvePath("main");
+            var mainFolder:FileLocation = _currentProject.folderLocation.resolvePath("src/main");
 
             sourcesToCopy = sourcesToCopy.filter(function (item:Object, index:int, arr:Array):Boolean
             {
-                return item.nativePath.lastIndexOf("WEB-INF") == -1;
+                return item.nativePath.lastIndexOf("WEB-INF") == -1 && item.nativePath != mainFolder.fileBridge.nativePath;
             });
 
-            var srcToCopy:Array = _currentProject.sourceFolder.fileBridge.getDirectoryListing();
-            srcToCopy = srcToCopy.filter(function (item:Object, index:int, arr:Array):Boolean
-            {
-                return item.nativePath != mainFolder.fileBridge.nativePath;
-            });
-
-            sourcesToCopy = sourcesToCopy.concat(srcToCopy);
             for each (var item:Object in sourcesToCopy)
             {
                 if (item.nativePath == mainApplicationFile.fileBridge.nativePath)

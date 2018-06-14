@@ -616,7 +616,14 @@ package actionScripts.plugins.as3project
 			var projectName:String = pvo.projectName;
 			var sourceFile:String = (_isProjectFromExistingSource && !isLibraryProject) ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
 			var sourceFileWithExtension:String;
-			var sourcePath:String = _isProjectFromExistingSource ? pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) : "src";
+			var sourcePath:String = _isProjectFromExistingSource ?
+									pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) :
+									"src";
+			if (!_isProjectFromExistingSource && isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+			{
+				sourcePath = "src/main/webapp";
+			}
+
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
 			if (_isProjectFromExistingSource && !isLibraryProject)
