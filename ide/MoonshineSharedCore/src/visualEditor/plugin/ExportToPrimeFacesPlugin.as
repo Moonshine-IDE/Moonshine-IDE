@@ -106,13 +106,15 @@ package visualEditor.plugin
         private function getProjectSettings(project:AS3ProjectVO):SettingsWrapper
         {
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
+            newProjectNameSetting.isEditable = !_exportedProject.isExportedToExistingSource;
 
             project.visualEditorExportPath = getExportPath(project);
             newProjectPathSetting = new PathSetting(project, 'visualEditorExportPath', 'Parent directory', true, null, false);
             projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportedToExistingSource", "Project with existing source", true);
 
-            newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
             newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
+            newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+            projectWithExistingsSourceSetting.addEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
 
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                 new StaticLabelSetting('New ' + project.projectName),
@@ -143,11 +145,27 @@ package visualEditor.plugin
 
             if (_exportedProject.isExportedToExistingSource)
             {
+                newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
                 newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
             }
             else
             {
                 newProjectPathSetting.setMessage(newProjectPathSetting.stringValue + separator + newProjectNameSetting.stringValue);
+            }
+        }
+
+        private function onProjectWithExistingSourceValueUpdated(event:Event):void
+        {
+            if (_exportedProject.isExportedToExistingSource)
+            {
+                newProjectNameSetting.isEditable = false;
+                newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
+                newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
+            }
+            else
+            {
+                newProjectNameSetting.isEditable = true;
+                newProjectNameSetting.stringValue = _currentProject.projectName + "_exported";
             }
         }
 
@@ -230,6 +248,7 @@ package visualEditor.plugin
             {
                 newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
                 newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
+                projectWithExistingsSourceSetting.removeEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
             }
 
             newProjectNameSetting = null;

@@ -41,12 +41,14 @@
 			private function onBooleanChange(event:Event):void
 			{
 				setting.value = uiCheckBox.selected;
+				setting.dispatchEvent(new Event(BooleanSetting.VALUE_UPDATED));
 			}
 
 			private function onTextLabelMouseDown(event:MouseEvent):void
 			{
 				uiCheckBox.selected = !uiCheckBox.selected;
 				setting.value = uiCheckBox.selected;
+				setting.dispatchEvent(new Event(BooleanSetting.VALUE_UPDATED));
 			}
 		]]>
 	</fx:Script>
