@@ -140,7 +140,8 @@ public class MXMLDataUtils
                 if (rootTag != null)
                 {
                     PrefixMap prefixMap = rootTag.getPrefixMap();
-                    if (prefixMap.containsPrefix(tag.getPrefix()))
+                    //prefixMap may be null if there are no prefixes
+                    if (prefixMap != null && prefixMap.containsPrefix(tag.getPrefix()))
                     {
                         String ns = prefixMap.getNamespaceForPrefix(tag.getPrefix());
                         return new XMLName(ns, xmlName.getName());
@@ -221,5 +222,15 @@ public class MXMLDataUtils
             return getDefinitionForMXMLTagAttribute(tag, offset, false, project);
         }
         return getDefinitionForMXMLTag(tag, project);
+    }
+
+    public static boolean isMXMLTagValidForCompletion(IMXMLTagData tag)
+    {
+        if (tag.getXMLName().equals(tag.getMXMLDialect().resolveScript()))
+        {
+            //inside an <fx:Script> tag
+            return false;
+        }
+        return true;
     }
 }

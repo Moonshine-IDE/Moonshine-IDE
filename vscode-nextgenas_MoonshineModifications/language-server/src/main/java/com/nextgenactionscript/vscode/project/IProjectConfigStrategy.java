@@ -15,15 +15,39 @@ limitations under the License.
 */
 package com.nextgenactionscript.vscode.project;
 
+import java.nio.file.Path;
+
+import org.eclipse.lsp4j.WorkspaceFolder;
+
 /**
  * Loads the configuration for a project. 
  */
 public interface IProjectConfigStrategy
 {
     /**
+     * The project's workspace folder.
+     */
+    WorkspaceFolder getWorkspaceFolder();
+
+    /**
+     * If the compiler reports a problem without a file path, use this value.
+     */
+    String getDefaultConfigurationProblemPath();
+
+    /**
+     * The path of the configuration file. May return null.
+     */
+    Path getConfigFilePath();
+
+    /**
      * Indicates if the project configuration has changed.
      */
     boolean getChanged();
+
+    /**
+     * Forces the strategy to consider itself changed.
+     */
+    void forceChanged();
 
     /**
      * Returns the project configuration options.

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package moonshine;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,8 +23,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.nextgenactionscript.asconfigc.TopLevelFields;
 import com.nextgenactionscript.asconfigc.compiler.CompilerOptions;
+import com.nextgenactionscript.asconfigc.compiler.ProjectType;
 import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
 import com.nextgenactionscript.vscode.project.ProjectOptions;
+import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
+
+import org.eclipse.lsp4j.WorkspaceFolder;
 
 /**
  * Configures a project for Moonshine IDE.
@@ -34,9 +37,29 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
 {
     private ProjectOptions options;
     private boolean changed = true;
+    private WorkspaceFolder workspaceFolder;
 
-    public MoonshineProjectConfigStrategy()
+    public MoonshineProjectConfigStrategy(WorkspaceFolder workspaceFolder)
     {
+        options = new ProjectOptions();
+        options.type = ProjectType.APP;
+        options.config = "flex";
+    }
+
+    public WorkspaceFolder getWorkspaceFolder()
+    {
+        return workspaceFolder;
+    }
+
+    public String getDefaultConfigurationProblemPath()
+    {
+        String uri = workspaceFolder.getUri();
+        return LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri).toString();
+    }
+
+    public Path getConfigFilePath()
+    {
+        return null;
     }
 
     public boolean getChanged()
@@ -44,20 +67,16 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         return changed;
     }
 
-    public void setChanged(boolean value)
+    public void forceChanged()
     {
-        changed = value;
+        changed = true;
     }
 
     public void setConfigParams(JsonObject params)
     {
-        if (options == null)
-        {
-            options = new ProjectOptions();
-        }
-        
-        String projectType = params.get(TopLevelFields.TYPE).getAsString();
+        changed = true;
 
+        String projectType = params.get(TopLevelFields.TYPE).getAsString();
         String config = params.get(TopLevelFields.CONFIG).getAsString();
 
         JsonArray jsonFiles = params.getAsJsonArray(TopLevelFields.FILES);
@@ -68,8 +87,8 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
             files[i] = jsonFiles.get(i).getAsString();
         }
 
-        ArrayList<String> targets = null;
-        ArrayList<Path> sourcePaths = null;
+        ArrayList<String> targets = new ArrayList<>();;
+        ArrayList<Path> sourcePaths = new ArrayList<>();
         ArrayList<String> compilerOptions = new ArrayList<>();
 
         JsonObject jsonOptions = params.getAsJsonObject(TopLevelFields.COMPILER_OPTIONS);
@@ -77,7 +96,6 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         if(jsonOptions.has(CompilerOptions.TARGETS))
         {
             JsonArray jsonTargets = jsonOptions.getAsJsonArray(CompilerOptions.TARGETS);
-            sourcePaths = new ArrayList<>();
             for (int i = 0, count = jsonTargets.size(); i < count; i++)
             {
                 String targetString = jsonTargets.get(i).getAsString();
@@ -88,7 +106,6 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         if(jsonOptions.has(CompilerOptions.SOURCE_PATH))
         {
             JsonArray jsonSourcePath = jsonOptions.getAsJsonArray(CompilerOptions.SOURCE_PATH);
-            sourcePaths = new ArrayList<>();
             for (int i = 0, count = jsonSourcePath.size(); i < count; i++)
             {
                 String pathString = jsonSourcePath.get(i).getAsString();
@@ -109,15 +126,12 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         options.sourcePaths = sourcePaths;
         options.compilerOptions = compilerOptions;
         options.additionalOptions = additionalOptions;
+        options.warnings = true;
     }
 
     public ProjectOptions getOptions()
     {
         changed = false;
-        if (options == null)
-        {
-            return null;
-        }
         return options;
     }
 }

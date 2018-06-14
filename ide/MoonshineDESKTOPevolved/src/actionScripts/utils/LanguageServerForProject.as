@@ -72,6 +72,8 @@ package actionScripts.utils
 	import flash.errors.IllegalOperationError;
 	import flash.utils.ByteArray;
 	import flash.net.Socket;
+	import flash.net.ServerSocket;
+	import flash.events.ServerSocketConnectEvent;
 
 	/**
 	 * An implementation of the language server protocol for Moonshine IDE.
@@ -82,7 +84,6 @@ package actionScripts.utils
 	 */
 	public class LanguageServerForProject
 	{
-		private static const SOCKET_ADDRESS:String = "127.0.0.1";
 		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
 		private static const PROTOCOL_HEADER_FIELD_CONTENT_LENGTH:String = "Content-Length: ";
@@ -117,6 +118,7 @@ package actionScripts.utils
 		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
+		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
 		private static const HELPER_BYTES:ByteArray = new ByteArray();
 
@@ -127,19 +129,20 @@ package actionScripts.utils
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _socket:Socket;
+		private var _serverSocket:ServerSocket;
+		private var _clientSocket:Socket;
 		private var _socketBuffer:String = "";
 		private var _shellInfo:NativeProcessStartupInfo;
 		private var _nativeProcess:NativeProcess;
 		private var _cmdFile:File;
 		private var _javaPath:File;
-		private var _connected:Boolean = false;
 		private var _connecting:Boolean = false;
 		private var _initialized:Boolean = false;
 		private var _initializeID:int = -1;
 		private var _shutdownID:int = -1;
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
+		private var _documentVersion:int = 1;
 
 		private var _contentLength:int = -1;
 
@@ -175,6 +178,13 @@ package actionScripts.utils
 			//removeProjectHandler()
 
 			_port = findOpenPort();
+
+			_serverSocket = new ServerSocket();
+			_serverSocket.bind(_port);
+			_serverSocket.addEventListener(Event.CONNECT, onSocketConnect);
+			_connecting = true;
+			_serverSocket.listen();
+
 			startNativeProcess();
 		}
 
@@ -410,30 +420,6 @@ package actionScripts.utils
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			_nativeProcess.start(_shellInfo);
 		}
-
-		private function parseData(data:String):void
-		{
-			if(!_connected && !_connecting)
-			{
-				connectToJava();
-			}
-		}
-
-		protected function connectToJava():void
-		{
-			if(!_socket)
-			{
-				//Alert.show("XML Socket Start");
-				_socket = new Socket();
-				_socket.addEventListener(Event.CONNECT, onSocketConnect);
-				_socket.addEventListener(ProgressEvent.SOCKET_DATA, onIncomingData);
-				_socket.addEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-				_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-				_socket.addEventListener(Event.CLOSE,closeHandler);
-				_connecting = true;
-				_socket.connect(SOCKET_ADDRESS, _port);
-			}
-		}
 		
 		private function initializeLanguageServer():void
 		{
@@ -465,7 +451,145 @@ package actionScripts.utils
 			var params:Object = new Object();
 			params.rootUri = _project.folderLocation.fileBridge.url;
 			params.rootPath = _project.folderLocation.fileBridge.nativePath;
-			params.capabilities = {};
+			params.capabilities =
+			{
+				workspace:
+				{
+					applyEdit: true,
+					workspaceEdit:
+					{
+						documentChanges: false	
+					},
+					didChangeConfiguration:
+					{
+						dynamicRegistration: false
+					},
+					didChangeWatchedFiles:
+					{
+						dynamicRegistration: false
+					},
+					symbol:
+					{
+						dynamicRegistration: false
+					},
+					executeCommand:
+					{
+						dynamicRegistration: false
+					},
+					workspaceFolders: false,
+					configuration: false
+				},
+				textDocument:
+				{
+					synchronization:
+					{
+						dynamicRegistration: false,
+						willSave: false,
+						willSaveWaitUntil: false,
+						didSave: false
+					},
+					completion:
+					{
+						dynamicRegistration: false,
+						completionItem:
+						{
+							snippetSupport: false,
+							commitCharactersSupport: false,
+							documentationFormat: ["plaintext"],
+							deprecatedSupport: false
+						},
+						completionItemKind:
+						{
+							//valueSet: []
+						},
+						contextSupport: false
+					},
+					hover:
+					{
+						dynamicRegistration: false,
+						contentFormat: ["plaintext"]
+					},
+					signatureHelp:
+					{
+						dynamicRegistration: false,
+						signatureInformation:
+						{
+							documentationFormat: ["plaintext"]
+						}
+					},
+					references:
+					{
+						dynamicRegistration: false
+					},
+					documentHighlight:
+					{
+						dynamicRegistration: false
+					},
+					documentSymbol:
+					{
+						dynamicRegistration: false,
+						symbolKind:
+						{
+							//valueSet: []
+						}
+					},
+					formatting:
+					{
+						dynamicRegistration: false
+					},
+					rangeFormatting:
+					{
+						dynamicRegistration: false
+					},
+					onTypeFormatting:
+					{
+						dynamicRegistration: false
+					},
+					definition:
+					{
+						dynamicRegistration: false
+					},
+					typeDefinition:
+					{
+						dynamicRegistration: false
+					},
+					implementation:
+					{
+						dynamicRegistration: false
+					},
+					codeAction:
+					{
+						dynamicRegistration: false,
+						codeActionLiteralSupport:
+						{
+							codeActionKind:
+							{
+								//valueSet: []
+							}
+						}
+					},
+					codeLens:
+					{
+						dynamicRegistration: false
+					},
+					documentLink:
+					{
+						dynamicRegistration: false
+					},
+					colorProvider:
+					{
+						dynamicRegistration: false
+					},
+					rename:
+					{
+						dynamicRegistration: false
+					},
+					publishDiagnostics:
+					{
+						relatedInformation: false
+					}
+				}
+			};
 			params.workspaceFolders =
 			[
 				{ name: _project.name, uri: _project.folderLocation.fileBridge.url },
@@ -473,9 +597,40 @@ package actionScripts.utils
 			this._initializeID = this.sendRequest(METHOD_INITIALIZE, params);
 		}
 
+		private function sendNotification(method:String, params:Object):void
+		{
+			if(!_clientSocket)
+			{
+				throw new IllegalOperationError("Notification failed. Socket is not connected to language server.");
+			}
+			if(!_initialized && method != METHOD_INITIALIZE)
+			{
+				throw new IllegalOperationError("Notification failed. Language server is not initialized. Unexpected method: " + method);
+			}
+			
+			var contentPart:Object = new Object();
+			contentPart.jsonrpc = JSON_RPC_VERSION;
+			contentPart.method = method;
+			contentPart.params = params;
+			var contentJSON:String = JSON.stringify(contentPart);
+
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+
+			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
+			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
+			
+			//trace(">>> (NOTIFICATION)", contentJSON);
+			
+			_clientSocket.writeUTFBytes(message);
+			_clientSocket.flush();
+		}
+
 		private function sendRequest(method:String, params:Object):int
 		{
-			if(!_socket)
+			if(!_clientSocket)
 			{
 				throw new IllegalOperationError("Request failed. Socket is not connected to language server.");
 			}
@@ -500,12 +655,50 @@ package actionScripts.utils
 			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
 			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
 			
-			//trace(">>>", message);
+			//trace(">>> (REQUEST)", contentJSON);
 			
-			_socket.writeUTFBytes(message);
-			_socket.flush();
+			_clientSocket.writeUTFBytes(message);
+			_clientSocket.flush();
 
 			return id;
+		}
+
+		private function sendResponse(id:Object, result:Object = null, error:Object = null):void
+		{
+			if(!_clientSocket)
+			{
+				throw new IllegalOperationError("Response failed. Socket is not connected to language server.");
+			}
+			if(!_initialized)
+			{
+				throw new IllegalOperationError("Response failed. Language server is not initialized.");
+			}
+			
+			var contentPart:Object = new Object();
+			contentPart.jsonrpc = JSON_RPC_VERSION;
+			contentPart.id = id;
+			if(result)
+			{
+				contentPart.result = result;
+			}
+			if(error)
+			{
+				contentPart.error = error;
+			}
+			var contentJSON:String = JSON.stringify(contentPart);
+
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+
+			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
+			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
+			
+			//trace(">>> (RESPONSE)", contentJSON);
+			
+			_clientSocket.writeUTFBytes(message);
+			_clientSocket.flush();
 		}
 
 		private function sendInitialized():void
@@ -521,7 +714,7 @@ package actionScripts.utils
 			this._initialized = true;
 
 			var params:Object = new Object();
-			this.sendRequest(METHOD_INITIALIZED, params);
+			this.sendNotification(METHOD_INITIALIZED, params);
 			
 			sendProjectConfiguration();
 			var editors:ArrayCollection = _model.editors;
@@ -543,7 +736,7 @@ package actionScripts.utils
 
 		private function sendDidOpenRequest(uri:String, text:String):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -551,13 +744,14 @@ package actionScripts.utils
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 			textDocument.languageId = LANGUAGE_ID_ACTIONSCRIPT;
-			textDocument.version = 1;
+			textDocument.version = _documentVersion;
 			textDocument.text = text;
+			_documentVersion++;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 
-			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
+			this.sendNotification(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
 		}
 
 		private function sendWorkspaceSettings():void
@@ -567,12 +761,12 @@ package actionScripts.utils
 			
 			var params:Object = new Object();
 			params.settings = settings;
-			this.sendRequest(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
+			this.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
 		private function sendProjectConfiguration():void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -650,7 +844,7 @@ package actionScripts.utils
 			params.files = files;
 			params.compilerOptions = compilerOptions;
 			params.additionalOptions = buildArgs;
-			this.sendRequest(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
+			this.sendNotification(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 
 		private function parseMessageBuffer():void
@@ -698,6 +892,7 @@ package actionScripts.utils
 				HELPER_BYTES.clear();
 				this._contentLength = -1;
 				this._socketBuffer = this._socketBuffer.substr(message.length);
+				//trace("<<<", message);
 				object = JSON.parse(message);
 			}
 			catch(error:Error)
@@ -711,6 +906,25 @@ package actionScripts.utils
 			this.parseMessageBuffer();
 		}
 
+		private function getMessageID(message:Object):int
+		{
+			var id:int = -1;
+			if(!(FIELD_ID in message))
+			{
+				return id;
+			}
+			var untypedID:Object = message.id;
+			if(untypedID is String)
+			{
+				return parseInt(untypedID as String, 10);
+			}
+			else if(untypedID is Number)
+			{
+				return untypedID as Number
+			}
+			return id;
+		}
+
 		private function parseMessage(object:Object):void
 		{
 			if(FIELD_METHOD in object)
@@ -721,11 +935,19 @@ package actionScripts.utils
 					case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
 					{
 						this.textDocument__publishDiagnostics(object);
+						//this is a notification and does not require a response
 						break;
 					}
 					case METHOD_WORKSPACE__APPLY_EDIT:
 					{
 						this.workspace__applyEdit(object);
+						this.sendResponse(object.id, { applied: true });
+						break;
+					}
+					case METHOD_CLIENT__REGISTER_CAPABILITY:
+					{
+						//TODO: implement this
+						this.sendResponse(object.id, {});
 						break;
 					}
 					default:
@@ -793,18 +1015,23 @@ package actionScripts.utils
 				}
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
-					var resultContents:Array = result.contents as Array;
-					if(resultContents)
+					var resultContents:Object = result.contents;
+					var eventContents:Vector.<String> = new <String>[];
+					if(resultContents is Array)
 					{
-						var eventContents:Vector.<String> = new <String>[];
-						var resultContentsCount:int = resultContents.length;
+						var resultContentsArray:Array = resultContents as Array;
+						var resultContentsCount:int = resultContentsArray.length;
 						for(i = 0; i < resultContentsCount; i++)
 						{
-							var resultContent:Object = resultContents[i];
-							eventContents[i] = parseHover(resultContent);
+							var resultContentItem:Object = resultContentsArray[i];
+							eventContents[i] = parseHover(resultContentItem);
 						}
-						_dispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
 					}
+					else
+					{
+						eventContents[0] = parseHover(resultContents);
+					}
+					_dispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
 				}
 				else if(result && FIELD_CHANGES in result) //rename
 				{
@@ -910,7 +1137,7 @@ package actionScripts.utils
 		private function shellData(e:ProgressEvent):void
 		{
 			var output:IDataInput = _nativeProcess.standardOutput;
-			parseData(output.readUTFBytes(output.bytesAvailable));
+			//trace(output.readUTFBytes(output.bytesAvailable));
 		}
 
 		private function shellError(e:ProgressEvent):void
@@ -919,25 +1146,12 @@ package actionScripts.utils
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
-			var match:Array;
-			//A new filter added here which will detect command for FDB exit
-			match = data.match(/.*\ onConnected */);
-			if(match)
-			{
-				trace(data);
-				parseData(data);
-			}
-			else
-			{
-				trace(data);
-				//Alert.show("jar connection "+data);
-			}
-
+			trace(data);
 		}
 
 		private function shellExit(e:NativeProcessExitEvent):void
 		{
-			if(_socket)
+			if(_clientSocket)
 			{
 				shutdownHandler(null);
 			}
@@ -948,19 +1162,22 @@ package actionScripts.utils
 			_nativeProcess = null;
 		}
 
-		private function closeHandler(evt:Event):void{
-			if(_socket){
-				_connected = false;
+		private function clientSocket_closeHandler(evt:Event):void{
+			if(_clientSocket){
 				_connecting = false;
-				_socket.close();
-                cleanUpXmlSocket();
+				_clientSocket.close();
+                cleanupClientSocket();
 			}
 		}
 
-		private function onSocketConnect(event:Event):void
+		private function onSocketConnect(event:ServerSocketConnectEvent):void
 		{
 			_connecting = false;
-			_connected = true;
+			_clientSocket = event.socket;
+			_clientSocket.addEventListener(ProgressEvent.SOCKET_DATA, onIncomingData);
+			_clientSocket.addEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
+			_clientSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
+            _clientSocket.addEventListener(Event.CLOSE,clientSocket_closeHandler);
 			initializeLanguageServer();
 		}
 
@@ -977,12 +1194,12 @@ package actionScripts.utils
 		//Read Incoming data
 		private function onIncomingData(event:ProgressEvent):void
 		{
-			this._socketBuffer += this._socket.readUTFBytes(this._socket.bytesAvailable);
+			this._socketBuffer += this._clientSocket.readUTFBytes(this._clientSocket.bytesAvailable);
 			this.parseMessageBuffer();
 		}
 
 		public function shutdownHandler(event:Event):void{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -991,18 +1208,20 @@ package actionScripts.utils
 
 		private function sendExit():void
 		{
-			if(!_socket)
+			if(!_clientSocket)
 			{
 				return;
 			}
 
-			this.sendRequest(METHOD_EXIT, null);
+			this.sendNotification(METHOD_EXIT, null);
 
-			_connected = false;
+			_clientSocket = null;
 			_connecting = false;
 			_initialized = false;
 			_initializeID = -1;
 			_shutdownID = -1;
+
+			cleanupServerSocket();
 		}
 
 		private function projectChangeCustomSDKHandler(event:Event):void
@@ -1056,7 +1275,7 @@ package actionScripts.utils
 
 		private function didOpenCall(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1071,7 +1290,7 @@ package actionScripts.utils
 
 		private function didChangeCall(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1082,8 +1301,9 @@ package actionScripts.utils
 			event.preventDefault();
 
 			var textDocument:Object = new Object();
-			textDocument.version = 1;
+			textDocument.version = _documentVersion;
 			textDocument.uri = event.uri;
+			_documentVersion++;
 
 			var range:Object = new Object();
 			var startposition:Object = new Object();
@@ -1106,12 +1326,12 @@ package actionScripts.utils
 			params.textDocument = textDocument;
 			params.contentChanges = contentChanges;
 
-			this.sendRequest(METHOD_TEXT_DOCUMENT__DID_CHANGE, params);
+			this.sendNotification(METHOD_TEXT_DOCUMENT__DID_CHANGE, params);
 		}
 
 		private function completionHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1137,7 +1357,7 @@ package actionScripts.utils
 
 		private function signatureHelpHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1163,7 +1383,7 @@ package actionScripts.utils
 
 		private function hoverHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1189,7 +1409,7 @@ package actionScripts.utils
 
 		private function gotoDefinitionHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1216,7 +1436,7 @@ package actionScripts.utils
 
 		private function workspaceSymbolsHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1236,7 +1456,7 @@ package actionScripts.utils
 
 		private function documentSymbolsHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1257,7 +1477,7 @@ package actionScripts.utils
 
 		private function findReferencesHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1287,7 +1507,7 @@ package actionScripts.utils
 
 		private function renameHandler(event:TypeAheadEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1314,7 +1534,7 @@ package actionScripts.utils
 		
 		private function executeCommandHandler(event:ExecuteLanguageServerCommandEvent):void
 		{
-			if(!_socket || !_initialized)
+			if(!_clientSocket || !_initialized)
 			{
 				return;
 			}
@@ -1331,19 +1551,28 @@ package actionScripts.utils
 			this.sendRequest(METHOD_WORKSPACE__EXECUTE_COMMAND, params);
 		}
 
-		private function cleanUpXmlSocket():void
+		private function cleanupServerSocket():void
 		{
-			if (!_socket)
+			if (!_serverSocket)
+			{
+				return;
+			}
+			_serverSocket.removeEventListener(Event.CONNECT, onSocketConnect);
+			_serverSocket = null;
+		}
+
+		private function cleanupClientSocket():void
+		{
+			if (!_clientSocket)
 			{
 				return;
 			}
 			
-            _socket.removeEventListener(Event.CONNECT, onSocketConnect);
-            _socket.removeEventListener(DataEvent.DATA, onIncomingData);
-            _socket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
-            _socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
-            _socket.removeEventListener(Event.CLOSE,closeHandler);
-            _socket = null;
+			_clientSocket.removeEventListener(ProgressEvent.SOCKET_DATA, onIncomingData);
+			_clientSocket.removeEventListener(IOErrorEvent.IO_ERROR,onSocketIOError);
+			_clientSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR,onSocketSecurityErr);
+            _clientSocket.removeEventListener(Event.CLOSE,clientSocket_closeHandler);
+            _clientSocket = null;
 		}
 	}
 }

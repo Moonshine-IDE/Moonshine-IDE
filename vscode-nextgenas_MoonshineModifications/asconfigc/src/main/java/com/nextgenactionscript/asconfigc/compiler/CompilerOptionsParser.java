@@ -144,6 +144,11 @@ public class CompilerOptionsParser
 					appendJSCompilerOptions(key, values, result);
 					break;
 				}
+				case CompilerOptions.JS_DEFAULT_INITIALIZERS:
+				{
+					OptionsFormatter.setBoolean(key, options.get(key).asBoolean(), result);
+					break;
+				}
 				case CompilerOptions.JS_EXTERNAL_LIBRARY_PATH:
 				{
 					List<String> values = JsonUtils.jsonNodeToListOfStrings(options.get(key));
@@ -154,6 +159,11 @@ public class CompilerOptionsParser
 				{
 					List<String> values = JsonUtils.jsonNodeToListOfStrings(options.get(key));
 					OptionsFormatter.appendPaths(key, values, result);
+					break;
+				}
+				case CompilerOptions.JS_OUTPUT:
+				{
+					OptionsFormatter.setPathValue(key, options.get(key).asText(), result);
 					break;
 				}
 				case CompilerOptions.JS_OUTPUT_TYPE:
@@ -279,6 +289,11 @@ public class CompilerOptionsParser
 					OptionsFormatter.setValuesWithCommas(key, values, result);
 					break;
 				}
+				case CompilerOptions.THEME:
+				{
+					OptionsFormatter.setPathValue(key, options.get(key).asText(), result);
+					break;
+				}
 				case CompilerOptions.TOOLS_LOCALE:
 				{
 					OptionsFormatter.setValue(key, options.get(key).asText(), result);
@@ -310,6 +325,11 @@ public class CompilerOptionsParser
 					break;
 				}
 				case CompilerOptions.WARNINGS:
+				{
+					OptionsFormatter.setBoolean(key, options.get(key).asBoolean(), result);
+					break;
+				}
+				case CompilerOptions.WARN_PUBLIC_VARS:
 				{
 					OptionsFormatter.setBoolean(key, options.get(key).asBoolean(), result);
 					break;

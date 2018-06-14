@@ -1,11 +1,16 @@
 package moonshine;
 
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
+import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
+import com.nextgenactionscript.vscode.project.IProjectConfigStrategyFactory;
+import com.nextgenactionscript.vscode.services.ActionScriptLanguageClient;
+
+import org.eclipse.lsp4j.WorkspaceFolder;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.xsocket.connection.IServer;
-import org.xsocket.connection.Server;
 
 public class Main
 {
@@ -13,6 +18,8 @@ public class Main
     private static final String SYSTEM_PROPERTY_FRAMEWORK_LIB = "royalelib";
     private static final int ERROR_CODE_PORT = 1000;
     private static final int ERROR_CODE_FRAMEWORK_LIB = 1001;
+    private static final int ERROR_CODE_CONNECT = 1002;
+    private static final String SOCKET_HOST = "localhost";
     
     protected static IServer srv = null;
 
@@ -25,62 +32,38 @@ public class Main
             System.exit(ERROR_CODE_FRAMEWORK_LIB);
         }
         String portAsString = System.getProperty(SYSTEM_PROPERTY_PORT);
-        if(portAsString == null)
-        {
-            System.err.println("Error: Missing moonshine.port system property. Usage: -Dmoonshine-port=PORT_NUMBER");
-            System.exit(ERROR_CODE_PORT);
-        }
-        int portAsInt = -1;
         try
         {
-            portAsInt = Integer.parseInt(portAsString);
-        }
-        catch (NumberFormatException e)
-        {
-            System.err.println("Error: Invalid moonshine.port " + portAsString);
-            e.printStackTrace();
-            System.exit(ERROR_CODE_PORT);
-        }
-        try
-        {
-            srv = new Server(portAsInt, new xSocketDataHandler());
-            srv.run();
-        }
-        catch (SocketException e)
-        {
-            e.printStackTrace();
-        }
-        catch (UnknownHostException e)
-        {
-            System.err.println("Error: " + e.toString());
-            e.printStackTrace();
+            InputStream inputStream = System.in;
+            OutputStream outputStream = System.out;
+            if (portAsString != null)
+            {
+                Socket socket = new Socket(SOCKET_HOST, Integer.parseInt(portAsString));
+                inputStream = socket.getInputStream();
+                outputStream = socket.getOutputStream();
+            }
 
+            MoonshineProjectConfigStrategyFactory factory = new MoonshineProjectConfigStrategyFactory();
+            MoonshineLanguageServer server = new MoonshineLanguageServer(factory);
+            Launcher<ActionScriptLanguageClient> launcher = Launcher.createLauncher(
+                server, ActionScriptLanguageClient.class, inputStream, outputStream);
+            server.connect(launcher.getRemoteProxy());
+            launcher.startListening();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            System.err.println("Error: " + e.toString());
-            e.printStackTrace();
-        }
-        catch (Throwable e)
-        {
-            e.printStackTrace();
+            System.err.println("ActionScript & MXML language server failed to connect.");
+            e.printStackTrace(System.err);
+            System.exit(ERROR_CODE_CONNECT);
         }
     }
 
-    protected static void shutdownServer()
+    private static class MoonshineProjectConfigStrategyFactory implements IProjectConfigStrategyFactory
     {
-        try
+        public IProjectConfigStrategy create(WorkspaceFolder folder)
         {
-            srv.close();
-
+            return new MoonshineProjectConfigStrategy(folder);
         }
-        catch (Exception ex)
-        {
-            System.err.println("Error: " + ex.toString());
-            ex.printStackTrace();
-        }
-
     }
 }
 

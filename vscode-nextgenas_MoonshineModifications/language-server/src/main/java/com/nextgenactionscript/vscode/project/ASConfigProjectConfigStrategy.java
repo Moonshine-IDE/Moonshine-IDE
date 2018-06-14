@@ -17,6 +17,7 @@ package com.nextgenactionscript.vscode.project;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -32,28 +33,45 @@ import com.nextgenactionscript.asconfigc.TopLevelFields;
 import com.nextgenactionscript.asconfigc.compiler.CompilerOptions;
 import com.nextgenactionscript.asconfigc.compiler.CompilerOptionsParser;
 import com.nextgenactionscript.asconfigc.compiler.ProjectType;
+import com.nextgenactionscript.asconfigc.compiler.CompilerOptionsParser.UnknownCompilerOptionException;
 import com.nextgenactionscript.vscode.utils.ActionScriptSDKUtils;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.lsp4j.WorkspaceFolder;
 
 /**
  * Configures a project using an asconfig.json file.
  */
 public class ASConfigProjectConfigStrategy implements IProjectConfigStrategy
 {
+    private static final String ASCONFIG_JSON = "asconfig.json";
     private static final String PROPERTY_FRAMEWORK_LIB = "royalelib";
     private static final String CONFIG_ROYALE = "royale";
     private static final String CONFIG_FLEX = "flex";
 
     private Path asconfigPath;
     private boolean changed = true;
+    private WorkspaceFolder workspaceFolder;
 
-    public ASConfigProjectConfigStrategy()
+    public ASConfigProjectConfigStrategy(WorkspaceFolder workspaceFolder)
     {
+        this.workspaceFolder = workspaceFolder;
 
+        Path workspacePath = Paths.get(URI.create(workspaceFolder.getUri()));
+        asconfigPath = workspacePath.resolve(ASCONFIG_JSON);
     }
 
-    public Path getASConfigPath()
+    public String getDefaultConfigurationProblemPath()
+    {
+        return ASCONFIG_JSON;
+    }
+
+    public WorkspaceFolder getWorkspaceFolder()
+    {
+        return workspaceFolder;
+    }
+
+    public Path getConfigFilePath()
     {
         return asconfigPath;
     }
@@ -68,9 +86,9 @@ public class ASConfigProjectConfigStrategy implements IProjectConfigStrategy
         return changed;
     }
 
-    public void setChanged(boolean value)
+    public void forceChanged()
     {
-        changed = value;
+        changed = true;
     }
 
     public ProjectOptions getOptions()
@@ -197,6 +215,11 @@ public class ASConfigProjectConfigStrategy implements IProjectConfigStrategy
             {
                 additionalOptions = json.get(TopLevelFields.ADDITIONAL_OPTIONS).asText();
             }
+        }
+        catch (UnknownCompilerOptionException e)
+        {
+            //there's a compiler option that the parser doesn't recognize
+            return null;
         }
         catch (Exception e)
         {
