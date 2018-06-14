@@ -139,6 +139,7 @@
 	        private function clearPath():void
 	        {
 	            setting.stringValue = "";
+				lblMessage.text = "";
 	        }
 	
 	        private function onDownloadNewSDK():void

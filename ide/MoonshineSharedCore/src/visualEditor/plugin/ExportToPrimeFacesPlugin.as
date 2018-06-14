@@ -108,7 +108,7 @@ package visualEditor.plugin
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 
             project.visualEditorExportPath = getExportPath(project);
-            newProjectPathSetting = new PathSetting(project, 'visualEditorExportPath', 'Parent directory', true, null, false, true);
+            newProjectPathSetting = new PathSetting(project, 'visualEditorExportPath', 'Parent directory', true, null, false);
             projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportedToExistingSource", "Project with existing source", true);
 
             newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
@@ -141,11 +141,24 @@ package visualEditor.plugin
             _exportedProject.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
             var separator:String = _currentProject.sourceFolder.fileBridge.separator;
 
-            newProjectPathSetting.setMessage(newProjectPathSetting.stringValue + separator + newProjectNameSetting.stringValue);
+            if (_exportedProject.isExportedToExistingSource)
+            {
+                newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
+            }
+            else
+            {
+                newProjectPathSetting.setMessage(newProjectPathSetting.stringValue + separator + newProjectNameSetting.stringValue);
+            }
         }
 
         private function onProjectCreateExecute(event:Event):void
         {
+            if (_exportedProject.isExportedToExistingSource && !newProjectPathSetting.stringValue)
+            {
+                error("Select path to existing project for successfully export %s.", _currentProject.projectName);
+                return;
+            }
+
             var destination:FileLocation = _exportedProject.folderLocation;
             if (!_exportedProject.isExportedToExistingSource)
             {

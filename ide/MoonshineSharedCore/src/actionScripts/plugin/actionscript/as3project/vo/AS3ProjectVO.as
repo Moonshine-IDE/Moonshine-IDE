@@ -514,7 +514,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					new SettingsWrapper("Paths",
 							Vector.<ISetting>([
 								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
-                                new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath, false, true)
+                                new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
 							])
 					)
 				]);
