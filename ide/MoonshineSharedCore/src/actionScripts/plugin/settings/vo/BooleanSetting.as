@@ -24,6 +24,8 @@ package actionScripts.plugin.settings.vo
 
     public class BooleanSetting extends AbstractSetting
     {
+        public static const VALUE_UPDATED:String = "valueUpdated";
+
 		private var immediateSave:Boolean;
 		
         public function BooleanSetting(provider:Object, name:String, label:String, immediateSave:Boolean=false)

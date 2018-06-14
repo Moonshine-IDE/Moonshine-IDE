@@ -166,6 +166,30 @@ package actionScripts.impls
 			_file.copyTo(value.fileBridge.getFile as File, overwrite);
 		}
 
+        public function copyInto(locationCopyingTo:FileLocation, copyEmptyFolders:Boolean=true):void
+        {
+            var directory:Array = _file.getDirectoryListing();
+
+            for each (var f:File in directory)
+            {
+                if (f.isDirectory)
+                {
+                    // Copies a folder whether it is empty or not.
+                    if( copyEmptyFolders ) f.copyTo(locationCopyingTo.fileBridge.getFile.resolvePath(f.name), true);
+
+                    // Recurse thru folder.
+                    new FileLocation(f.nativePath)
+							.fileBridge
+							.copyInto(locationCopyingTo.fileBridge.resolvePath(f.name));
+
+                }
+                else
+                {
+                    f.copyTo(locationCopyingTo.fileBridge.getFile.resolvePath(f.name), true);
+                }
+            }
+        }
+
 		public function moveToTrashAsync():void
 		{
 			_file.moveToTrashAsync();

@@ -40,15 +40,15 @@ package actionScripts.valueObjects
 		
 		public function set resourcePath(value:String):void
 		{
-			for each (var i:ProjectVO in IDEModel.getInstance().projects)
+			for each (var project:ProjectVO in IDEModel.getInstance().projects)
 			{
-				var folderPath:String = i.folderPath;
-				if (!ConstantsCoreVO.IS_AIR) folderPath = folderPath.substr(i.folderPath.indexOf("?path=") + 7, folderPath.length);
+				var folderPath:String = project.folderPath;
+				if (!ConstantsCoreVO.IS_AIR) folderPath = folderPath.substr(project.folderPath.indexOf("?path=") + 7, folderPath.length);
 				if (value.indexOf(folderPath) != -1)
 				{
-					value = value.replace(folderPath, i.name);
+					value = value.replace(folderPath, project.name);
 					_resourcePath = value;
-					_projectName = i.name;
+					_projectName = project.name;
 					break;
 				}
 			}

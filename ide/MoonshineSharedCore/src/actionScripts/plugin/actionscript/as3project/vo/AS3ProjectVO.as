@@ -110,7 +110,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
-		
+		public var isExportedToExistingSource:Boolean;
+		public var visualEditorExportPath:String;
+
 		public var menuType:String = ProjectMenuTypes.FLEX_AS;
 
 		private var additional:StringSetting;
@@ -345,8 +347,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				// project type - flash builder or flash develop.
 				// also we shall take .as3proj file if exists to project opening,
 				// even there's an .actionScriptProperties file exists
-				
-				var settingsFile:FileLocation;
+
 				/*if (isFlashBuilderProject)
 				{
 				settingsFile = folderLocation.resolvePath(".actionScriptProperties");
@@ -355,7 +356,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 				}
 				else
 				{*/
-				settingsFile = folderLocation.resolvePath(projectName+".as3proj");
+
+                var projectFileName:String = this.isVisualEditorProject ? projectName+".veditorproj" : projectName+".as3proj";
+                var settingsFile:FileLocation = folderLocation.resolvePath(projectFileName);
 				// Write settings
 				IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
 				//}
@@ -508,17 +511,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function getSettingsForVisualEditorTypeOfProjects():Vector.<SettingsWrapper>
 		{
             return Vector.<SettingsWrapper>([
-					new SettingsWrapper("Output",
-                            Vector.<ISetting>([
-                                new IntSetting(swfOutput,	"frameRate", 	"Framerate (FPS)"),
-                                new IntSetting(swfOutput,	"width", 		"Width"),
-                                new IntSetting(swfOutput,	"height",	 	"Height"),
-                                new ColorSetting(swfOutput,	"background",	"Background color"),
-                                new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
-                            ])),
 					new SettingsWrapper("Paths",
 							Vector.<ISetting>([
-								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
+								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
+                                new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
 							])
 					)
 				]);
@@ -599,6 +595,8 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.isLibraryProject = this.isLibraryProject;
             as3Project.isActionScriptOnly = this.isActionScriptOnly;
             as3Project.isPrimeFacesVisualEditorProject = this.isPrimeFacesVisualEditorProject;
+			as3Project.isExportedToExistingSource = this.isExportedToExistingSource;
+			as3Project.visualEditorExportPath = this.visualEditorExportPath;
 
 			as3Project.additional = this.additional;
 
@@ -624,7 +622,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         this.nativeExtensionPath.displaySourceFolder);
             }
 
-			if (this.mobileRunSettings)
+			if (this.mobileRunSettings && !this.isVisualEditorProject)
             {
                 as3Project.mobileRunSettings = new RunMobileSetting(this.mobileRunSettings.provider,
                         this.mobileRunSettings.label, new FileLocation(this.mobileRunSettings.relativeRoot.fileBridge.nativePath));

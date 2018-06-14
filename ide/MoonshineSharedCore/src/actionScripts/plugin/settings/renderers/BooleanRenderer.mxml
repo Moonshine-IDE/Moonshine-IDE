@@ -38,22 +38,29 @@
 			[Bindable]
 			public var setting:BooleanSetting;
 			
-			private function updateSetting():void
+			private function onBooleanChange(event:Event):void
 			{
 				setting.value = uiCheckBox.selected;
+				setting.dispatchEvent(new Event(BooleanSetting.VALUE_UPDATED));
 			}
-			
+
+			private function onTextLabelMouseDown(event:MouseEvent):void
+			{
+				uiCheckBox.selected = !uiCheckBox.selected;
+				setting.value = uiCheckBox.selected;
+				setting.dispatchEvent(new Event(BooleanSetting.VALUE_UPDATED));
+			}
 		]]>
 	</fx:Script>
 	
 	<s:Label styleName="uiTextSettingsLabel"
 		text="{setting.label}"
-		mouseDown="{uiCheckBox.selected = !uiCheckBox.selected; updateSetting()}" />
+		mouseDown="onTextLabelMouseDown(event)" />
 		
 	<mx:Spacer width="100%"/>
 	
 	<s:CheckBox id="uiCheckBox" 
 		selected="{setting.value}"
-		change="updateSetting();" />
+		change="onBooleanChange(event)" />
 	
 </s:HGroup>
