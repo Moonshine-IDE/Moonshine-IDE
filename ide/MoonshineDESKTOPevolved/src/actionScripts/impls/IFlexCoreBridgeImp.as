@@ -82,6 +82,7 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
+    import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
@@ -219,7 +220,8 @@ package actionScripts.impls
 				StartupHelperPlugin,
 				RenamePlugin,
 				OrganizeImportsPlugin,
-				Away3DPlugin
+				Away3DPlugin,
+				GitHubPlugin
 			];
 		}
 		
@@ -348,6 +350,19 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST)
+				]),
+				new MenuItem(resourceManager.getString('resources','GITHUB'), [
+					new MenuItem(resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.COMMIT_REQUEST),
+					new MenuItem(resourceManager.getString('resources','PUSH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PUSH_REQUEST),
+					new MenuItem(resourceManager.getString('resources','PULL'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PULL_REQUEST),
+					new MenuItem(resourceManager.getString('resources','REFRESH_STATUS'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.REFRESH_STATUS_REQUEST),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','NEW_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.NEW_BRANCH_REQUEST),
+					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST)
 				]),
 				new MenuItem("Others", [
 					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER)

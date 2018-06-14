@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   backgroundColor="0xf5f5f5"
+										   width="500" minWidth="400" minHeight="100" autoLayout="true"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()">
+	<fx:Metadata>
+		[Event(name="name", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			
+			public static const TYPE_SVN:String = "typeSVN";
+			public static const TYPE_GIT:String = "typeGit";
+			
+			public var type:String;
+			public var submitObject:Object;
+			
+			private function onCheckoutRequest():void
+			{
+				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:txtTarget.text} : null;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function browse():void
+			{
+				var file:File = File.documentsDirectory;
+				file.addEventListener(Event.SELECT, onDirectorySelected);
+				file.addEventListener(Event.CANCEL, onDirectorySelectionCancelled);
+				file.browseForDirectory("Git checkout target");
+			}
+			
+			private function onDirectorySelected(event:Event):void
+			{
+				var file:File = event.target as File;
+				file.removeEventListener(Event.SELECT, onDirectorySelected);
+				file.removeEventListener(Event.CANCEL, onDirectorySelectionCancelled);
+				
+				txtTarget.text = file.nativePath;
+				file = null;
+			}
+			
+			private function onDirectorySelectionCancelled(event:Event):void
+			{
+				event.target.removeEventListener(Event.SELECT, onDirectorySelected);
+				event.target.removeEventListener(Event.CANCEL, onDirectorySelectionCancelled);
+			}
+			
+			protected function onCreationCompletes():void
+			{
+				btnSubmit.label = (type == TYPE_GIT) ? "Pull" : "Checkout";
+				
+				txtSource.setFocus();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+		<view:PromptTextInput id="txtSource"
+							  width="100%" styleName="textInput"
+							  prompt="Repository URL"/>
+		<s:HGroup verticalAlign="middle" width="100%">
+			<view:PromptTextInput id="txtTarget" 
+								  prompt="Where to download" width="100%" styleName="textInput"
+								  editable="false" tabIndex="2"/>
+			<s:Button width="60" label="Browse" 
+					  styleName="lightButtonTight" 
+					  click="browse()" />
+		</s:HGroup>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit" 
+				  label="Checkout" styleName="darkButton"
+				  click="onCheckoutRequest()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>
