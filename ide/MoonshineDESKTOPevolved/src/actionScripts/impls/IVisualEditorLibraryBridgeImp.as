@@ -66,7 +66,7 @@ package actionScripts.impls
 		
 		public function openXhtmlFile(path:String):void
 		{
-			var tmpOpenFile:FileLocation = new FileLocation(visualEditorProject.folderLocation.fileBridge.nativePath + visualEditorProject.projectFile.fileBridge.separator + path);
+			var tmpOpenFile:FileLocation = new FileLocation(visualEditorProject.sourceFolder.fileBridge.nativePath + visualEditorProject.projectFile.fileBridge.separator + path);
 			if (!tmpOpenFile) return;
 			
 			dispatcher.dispatchEvent(

@@ -76,7 +76,6 @@ package actionScripts.valueObjects
 			return this._data;
 		}
 
-        private var _displayLabel:String;
         private var _displayType:String;
 		private var _displayKind:String;
 
@@ -93,7 +92,6 @@ package actionScripts.valueObjects
 			this._command = command;
 			this._data = data;
 
-			this.displayLabel = label;
 			this.displayType = detail;
 			this.displayKind = getDisplayKind(kind);
 		}
@@ -131,37 +129,6 @@ package actionScripts.valueObjects
 			}
 
 			_displayKind = value;
-		}
-
-		[Bindable("displayLabelChange")]
-        public function get displayLabel():String
-        {
-            return _displayLabel;
-        }
-
-        public function set displayLabel(value:String):void
-		{
-            if (_command && _command.command == "nextgenas.addMXMLNamespace")
-            {
-				var args:Array = _command.arguments;
-                if (args)
-                {
-                    var ns:String = args[1] as String;
-                    if (ns.indexOf("http://") > -1 || ns.indexOf("library://") > -1)
-                    {
-						var prefix:String = args[0] as String;
-                        value = prefix + ":" + _label;
-                    }
-                }
-            }
-			else if (isMethod)
-			{
-				var detailFunctionIndex:int = _detail.lastIndexOf(_label);
-                var lastColonIndex:int = _detail.lastIndexOf(":");
-				value = _detail.substring(detailFunctionIndex, lastColonIndex);
-			}
-
-            _displayLabel = value;
 		}
 
         public function get isMethod():Boolean

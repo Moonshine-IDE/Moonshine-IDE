@@ -20,8 +20,9 @@
 package actionScripts.valueObjects
 {
 	import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
-	public class ResourceVO
+    public class ResourceVO
 	{
 		public var name:String;
 		public var sourceWrapper:FileWrapper;
@@ -29,6 +30,8 @@ package actionScripts.valueObjects
 		private var _resourcePath:String;
 		private var _resourceExtension:String;
 		private var _projectName:String;
+
+		private var sourcePath:String;
 
 		public function ResourceVO(_name:String, _sourceWrapper:FileWrapper)
 		{
@@ -49,6 +52,12 @@ package actionScripts.valueObjects
 					value = value.replace(folderPath, project.name);
 					_resourcePath = value;
 					_projectName = project.name;
+					var as3Project:AS3ProjectVO = project as AS3ProjectVO;
+					if (as3Project)
+					{
+						sourcePath = as3Project.sourceFolder.fileBridge.nativePath.replace(folderPath, "");
+					}
+
 					break;
 				}
 			}
@@ -66,7 +75,11 @@ package actionScripts.valueObjects
 		
 		public function get resourcePathWithoutRoot():String
 		{
-			if (_projectName) return _resourcePath.replace(_projectName + sourceWrapper.file.fileBridge.separator, "");
+			if (sourcePath && _projectName)
+			{
+                var resourcePathWithoutRoot:String = _resourcePath.replace(_projectName, "");
+				return resourcePathWithoutRoot.replace(sourcePath + sourceWrapper.file.fileBridge.separator, "");
+            }
 			
 			return _resourcePath;
 		}

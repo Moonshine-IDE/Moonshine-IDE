@@ -51,7 +51,7 @@ package actionScripts.ui.codeCompletionList
             this.keyboardShortcutManager = KeyboardShortcutManager.getInstance();
             this.styleName = "completionList";
             this.itemRenderer = new ClassFactory(CodeCompletionItemRenderer);
-            this.labelField = "displayLabel";
+            this.labelField = "label";
             this.minWidth = 350;
             this.maxWidth = 650;
             
