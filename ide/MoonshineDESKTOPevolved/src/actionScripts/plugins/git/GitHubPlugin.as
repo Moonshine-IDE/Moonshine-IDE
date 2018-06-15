@@ -27,16 +27,12 @@ package actionScripts.plugins.git
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
 	
 	import components.popup.SourceControlCheckout;
 
-    public class GitHubPlugin extends PluginBase implements IPlugin, ISettingsProvider
+    public class GitHubPlugin extends PluginBase implements IPlugin
 	{
 		public static const CLONE_REQUEST:String = "cloneRequest";
 		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
@@ -61,6 +57,7 @@ package actionScripts.plugins.git
 			if (!_processManager) 
 			{
 				_processManager = new GitProcessManager();
+				_processManager.setGitAvailable = setGitAvailable;
 				if (gitBinaryPath) _processManager.gitPath = new File(gitBinaryPath);
 			}
 			return _processManager;
@@ -78,13 +75,6 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(REFRESH_STATUS_REQUEST, onRefreshRequest, false, 0, true);
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
-		}
-		
-		public function getSettingsList():Vector.<ISetting>
-		{
-			return Vector.<ISetting>([
-				new PathSetting(this,'gitBinaryPath', 'Git Binary', false)
-			]);
 		}
 		
 		override public function deactivate():void 
@@ -106,10 +96,17 @@ package actionScripts.plugins.git
 			gitBinaryPath = null;
 		}
 		
+		protected function setGitAvailable(value:Boolean):void
+		{
+			if (checkoutWindow) checkoutWindow.isGitAvailable = value;
+		}
+		
 		private function onCloneRequest(event:Event):void
 		{
 			if (!checkoutWindow)
 			{
+				processManager.checkGitAvailability();
+				
 				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
 				checkoutWindow.type = SourceControlCheckout.TYPE_GIT;

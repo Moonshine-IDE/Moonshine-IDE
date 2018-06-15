@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git
 {
-	import com.adobe.utils.StringUtil;
-	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -52,25 +50,51 @@ package actionScripts.plugins.git
 		private var windowsAutoJavaLocation:File;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var isAndroid:Boolean;
-		private var isRunAsDebugger:Boolean;
 		private var isErrorClose:Boolean;
 		
 		public var gitPath:File;
+		public var setGitAvailable:Function;
+		
+		protected var processType:String;
+		
+		private var _cloningProjectName:String;
+		private function get cloningProjectName():String
+		{
+			return _cloningProjectName;
+		}
+		private function set cloningProjectName(value:String):void
+		{
+			var quoteIndex:int = value.indexOf("'");
+			_cloningProjectName = value.substring(++quoteIndex, value.indexOf("'", quoteIndex));
+		}
 		
 		public function GitProcessManager()
 		{
 		}
 		
+		public function checkGitAvailability():void
+		{
+			if (customProcess) startShell(false);
+			customInfo = renewProcessInfo();
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue({com:'git&&--version', showInConsole:false});
+			
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
 		public function clone(url:String, target:String):void
 		{
 			if (customProcess) startShell(false);
-			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			customInfo = renewProcessInfo();
 			customInfo.workingDirectory = new File(target);
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:'"c:\\Program Files\\git\\bin\\git.exe"&&clone&&'+ url, showInConsole:false});
+			addToQueue({com:'git&&clone&&'+ url, showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -80,7 +104,6 @@ package actionScripts.plugins.git
 		public function runOnDevice(project:AS3ProjectVO, sdk:File, swf:File, descriptorPath:String, runAsDebugger:Boolean=false):void
 		{
 			isAndroid = (project.buildOptions.targetPlatform == "Android");
-			isRunAsDebugger = runAsDebugger;
 			
 			// checks if the credentials are present
 			if (!ensureCredentialsPresent(project)) return;
@@ -237,7 +260,8 @@ package actionScripts.plugins.git
 			if (queue[0].showInConsole) debug("Sending to command: %s", queue[0].com);
 			
 			var tmpArr:Array = queue[0].com.split("&&");
-			//tmpArr.insertAt(0, "-c");
+			if (Settings.os == "win") tmpArr.insertAt(0, "/c");
+			else tmpArr.insertAt(0, "-c");
 			customInfo.arguments = Vector.<String>(tmpArr);
 			
 			queue.shift();
@@ -265,6 +289,8 @@ package actionScripts.plugins.git
 				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 				customProcess = null;
+				processType = null;
+				isErrorClose = false;
 				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
 			}
 		}
@@ -279,6 +305,7 @@ package actionScripts.plugins.git
 				var syntaxMatch:Array;
 				var generalMatch:Array;
 				var initMatch:Array;
+				var hideDebug:Boolean;
 				
 				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
 				if (syntaxMatch) {
@@ -294,15 +321,32 @@ package actionScripts.plugins.git
 					pathStr = generalMatch[1];
 					errorStr  = generalMatch[2];
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					debug("%s", data);
-				}
-				else if (!isRunAsDebugger)
-				{
-					debug("%s", data);
+					error(data);
+					hideDebug = true;
 				}
 				
+				generalMatch = data.match(/'git' is not recognized as an internal or external command/);
+				if (!syntaxMatch && generalMatch)
+				{
+					setGitAvailable(false);
+					hideDebug = true;
+				}
+				
+				generalMatch = data.match(/Cloning into/);
+				if (!syntaxMatch && generalMatch)
+				{
+					// for some weird reason git clone always
+					// turns to errordata first
+					processType = GitHubPlugin.CLONE_REQUEST;
+					cloningProjectName = data;
+					warning(data);
+					print("...downloading. This may take some time, you will be notified when done.");
+					return;
+				}
+				
+				if (!hideDebug) debug("%s", data);
 				isErrorClose = true;
-				startShell(false)
+				startShell(false);
 			}
 		}
 		
@@ -310,7 +354,11 @@ package actionScripts.plugins.git
 		{
 			if (customProcess) 
 			{
-				if (!isErrorClose) flush();
+				if (!isErrorClose) 
+				{
+					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"'... Downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
+					flush();
+				}
 			}
 		}
 		
@@ -355,7 +403,15 @@ package actionScripts.plugins.git
 				return;
 			}
 			
+			match = data.match(/git version/);
+			if (match) 
+			{
+				setGitAvailable(true);
+				return;
+			}
+			
 			isErrorClose = false;
+			debug("%s", data);
 			
 			/*
 			 * @local
@@ -416,6 +472,14 @@ package actionScripts.plugins.git
 					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
 				}*/
 			}
+		}
+		
+		private function renewProcessInfo():NativeProcessStartupInfo
+		{
+			customInfo = new NativeProcessStartupInfo();
+			customInfo.executable = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			
+			return customInfo;
 		}
 	}
 }

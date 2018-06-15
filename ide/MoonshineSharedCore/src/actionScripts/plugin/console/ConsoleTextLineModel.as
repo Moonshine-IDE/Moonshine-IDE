@@ -41,13 +41,13 @@ package actionScripts.plugin.console
 			switch(consoleOutType)
 			{
 				case ConsoleStyle.ERROR:
-					return 0xFA8072;
+					return 0xff6666;
 					break;
 				case ConsoleStyle.WARNING:
 					return 0xFFBF0F;
 					break;
 				case ConsoleStyle.SUCCESS:
-					return 0x348f37;
+					return 0x33cc33;
                     break;
 				default:
 					return 0xFFFFFF;

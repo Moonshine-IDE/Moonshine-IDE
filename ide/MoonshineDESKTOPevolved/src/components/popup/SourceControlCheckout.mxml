@@ -37,6 +37,8 @@
 			public static const TYPE_SVN:String = "typeSVN";
 			public static const TYPE_GIT:String = "typeGit";
 			
+			[Bindable] public var isGitAvailable:Boolean;
+			
 			public var type:String;
 			public var submitObject:Object;
 			
@@ -93,12 +95,15 @@
 					  styleName="lightButtonTight" 
 					  click="browse()" />
 		</s:HGroup>
+		<s:Label text="You need Git installed on your system to continue."
+				 width="100%" textAlign="center" color="0xff0000"
+				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
-				  label="Checkout" styleName="darkButton"
+				  label="Checkout" styleName="darkButton" enabled="{isGitAvailable}"
 				  click="onCheckoutRequest()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
