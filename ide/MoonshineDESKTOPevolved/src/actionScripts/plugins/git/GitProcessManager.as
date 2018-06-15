@@ -79,7 +79,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:'git&&--version', showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? 'git --version' : 'git&&--version', showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -94,7 +94,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:'git&&clone&&'+ url, showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? 'git clone '+ url : 'git&&clone&&'+ url, showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
