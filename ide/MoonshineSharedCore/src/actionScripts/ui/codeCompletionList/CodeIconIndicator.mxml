@@ -11,6 +11,7 @@
         <s:State name="Interface" />
         <s:State name="Class" />
         <s:State name="Field" />
+        <s:State name="Event" />
         <s:State name="Property" />
         <s:State name="Method" />
         <s:State name="info" />
@@ -24,7 +25,8 @@
                           color.Interface="0x5B4AE4"
                           color.Class="0xa848da"
                           color.Variable="0x6d5a9c"
-                          color.Field="0xC28627"
+                          color.Field="0x6d5a1b"
+                          color.Event="0xC28627"
                           color.Property="0x3E8854"
                           color.Method="0x3382dd"
                           color.info="0xFFB05B"/>
@@ -39,7 +41,8 @@
              text.Interface="I"
              text.Class="C"
              text.Variable="V"
-             text.Field="E"
+             text.Field="F"
+             text.Event="E"
              text.Property="P"
              text.Method="M"
              text.info="i"/>
