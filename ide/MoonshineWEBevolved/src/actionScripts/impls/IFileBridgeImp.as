@@ -375,5 +375,10 @@ package actionScripts.impls
 			// working in desktop project
 			return _file.exists;
 		}
+		
+		public function copyInto(locationCopyingTo:FileLocation, copyEmptyFolders:Boolean=true):void
+		{
+			
+		}
 	}
 }
