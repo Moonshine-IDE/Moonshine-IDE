@@ -106,9 +106,17 @@ package visualEditor.plugin
         private function getProjectSettings(project:AS3ProjectVO):SettingsWrapper
         {
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
-            newProjectNameSetting.isEditable = !_exportedProject.isExportedToExistingSource;
 
-            project.visualEditorExportPath = getExportPath(project);
+            if (!_exportedProject.isExportedToExistingSource)
+            {
+                newProjectNameSetting.isEditable = true;
+                project.visualEditorExportPath = getExportPath(project);
+            }
+            else
+            {
+                newProjectNameSetting.isEditable = false;
+            }
+
             newProjectPathSetting = new PathSetting(project, 'visualEditorExportPath', 'Parent directory', true, null, false);
             projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportedToExistingSource", "Project with existing source", true);
 
@@ -164,8 +172,11 @@ package visualEditor.plugin
             }
             else
             {
+                var separator:String = _currentProject.sourceFolder.fileBridge.separator;
+
                 newProjectNameSetting.isEditable = true;
                 newProjectNameSetting.stringValue = _currentProject.projectName + "_exported";
+                newProjectPathSetting.setMessage(_exportedProject.projectFolder.nativePath + separator + newProjectNameSetting.stringValue);
             }
         }
 
@@ -323,11 +334,6 @@ package visualEditor.plugin
 
         private function getExportPath(project:AS3ProjectVO):String
         {
-            if (project.visualEditorExportPath)
-            {
-                return project.visualEditorExportPath;
-            }
-
             var parentFolder:FileLocation = new FileLocation(project.folderPath).fileBridge.parent;
             return parentFolder.fileBridge.nativePath;
         }
