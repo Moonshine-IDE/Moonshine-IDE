@@ -38,6 +38,8 @@ package visualEditor.plugin
 
     public class ExportToPrimeFacesPlugin extends PluginBase
     {
+        private var exportView:SettingsView;
+
         private var newProjectNameSetting:StringSetting;
         private var newProjectPathSetting:PathSetting;
         private var projectWithExistingsSourceSetting:BooleanSetting;
@@ -60,6 +62,7 @@ package visualEditor.plugin
 
             dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES,
                             exportVisualEditorProjectToPrimeFacesHandler);
+            dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, exportTabClosedHandler);
         }
 
         override public function deactivate():void
@@ -68,6 +71,7 @@ package visualEditor.plugin
 
             dispatcher.removeEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES,
                     exportVisualEditorProjectToPrimeFacesHandler);
+            dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, exportTabClosedHandler);
         }
 
         private function exportVisualEditorProjectToPrimeFacesHandler(event:Event):void
@@ -82,25 +86,36 @@ package visualEditor.plugin
             _exportedProject = _currentProject.clone() as AS3ProjectVO;
             _exportedProject.projectName = _exportedProject.projectName + "_exported";
 
-            var settingsView:SettingsView = new SettingsView();
-            settingsView.exportProject = _exportedProject;
-            settingsView.Width = 150;
-            settingsView.defaultSaveLabel = "Export";
-            settingsView.isNewProjectSettings = true;
+            exportView = new SettingsView();
+            exportView.exportProject = _exportedProject;
+            exportView.Width = 150;
+            exportView.defaultSaveLabel = "Export";
+            exportView.isNewProjectSettings = true;
 
-            settingsView.addCategory("");
+            exportView.addCategory("");
 
             var settings:SettingsWrapper = getProjectSettings(_exportedProject);
-            settingsView.addEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
-            settingsView.addEventListener(SettingsView.EVENT_CLOSE, onProjectCreateClose);
-            settingsView.addSetting(settings, "");
+            exportView.addEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
+            exportView.addEventListener(SettingsView.EVENT_CLOSE, onProjectCreateClose);
+            exportView.addSetting(settings, "");
 
-            settingsView.label = "New Project";
-            settingsView.associatedData = _exportedProject;
+            exportView.label = "New Project";
+            exportView.associatedData = _exportedProject;
 
-            newProjectPathSetting.setMessage(_exportedProject.folderLocation.resolvePath(_exportedProject.projectName).fileBridge.nativePath);
+            if (newProjectPathSetting.stringValue)
+            {
+                newProjectPathSetting.setMessage(_exportedProject.folderLocation.resolvePath(_exportedProject.projectName).fileBridge.nativePath);
+            }
 
-            dispatcher.dispatchEvent(new AddTabEvent(settingsView));
+            dispatcher.dispatchEvent(new AddTabEvent(exportView));
+        }
+
+        private function exportTabClosedHandler(event:CloseTabEvent):void
+        {
+            if (event.tab == exportView)
+            {
+                cleanUpExportView();
+            }
         }
 
         private function getProjectSettings(project:AS3ProjectVO):SettingsWrapper
@@ -110,7 +125,7 @@ package visualEditor.plugin
             if (!_exportedProject.isExportedToExistingSource)
             {
                 newProjectNameSetting.isEditable = true;
-                project.visualEditorExportPath = getExportPath(project);
+                project.visualEditorExportPath = getDefaultExportPath(project);
             }
             else
             {
@@ -153,8 +168,11 @@ package visualEditor.plugin
 
             if (_exportedProject.isExportedToExistingSource)
             {
-                newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
-                newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
+                if (newProjectPathSetting.stringValue)
+                {
+                    newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
+                    newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
+                }
             }
             else
             {
@@ -167,8 +185,12 @@ package visualEditor.plugin
             if (_exportedProject.isExportedToExistingSource)
             {
                 newProjectNameSetting.isEditable = false;
-                newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
-                newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
+                newProjectNameSetting.stringValue = _exportedProject.projectName;
+
+                if (newProjectPathSetting.stringValue)
+                {
+                    newProjectPathSetting.setMessage(getDefaultExportPath(_exportedProject));
+                }
             }
             else
             {
@@ -176,15 +198,19 @@ package visualEditor.plugin
 
                 newProjectNameSetting.isEditable = true;
                 newProjectNameSetting.stringValue = _currentProject.projectName + "_exported";
-                newProjectPathSetting.setMessage(_exportedProject.projectFolder.nativePath + separator + newProjectNameSetting.stringValue);
+
+                if (newProjectPathSetting.stringValue)
+                {
+                    newProjectPathSetting.setMessage(_exportedProject.projectFolder.nativePath + separator + newProjectNameSetting.stringValue);
+                }
             }
         }
 
         private function onProjectCreateExecute(event:Event):void
         {
-            if (_exportedProject.isExportedToExistingSource && !newProjectPathSetting.stringValue)
+            if (!newProjectPathSetting.stringValue)
             {
-                error("Select path to existing project for successfully export %s.", _currentProject.projectName);
+                error("Select path for successfully export %s.", _currentProject.projectName);
                 return;
             }
 
@@ -192,6 +218,7 @@ package visualEditor.plugin
             if (!_exportedProject.isExportedToExistingSource)
             {
                 destination = _exportedProject.folderLocation.resolvePath(newProjectNameSetting.stringValue);
+                _exportedProject.visualEditorExportPath = destination.fileBridge.nativePath;
                 destination.fileBridge.createDirectory();
             }
 
@@ -238,24 +265,7 @@ package visualEditor.plugin
 
         private function onProjectCreateClose(event:Event):void
         {
-            var settings:SettingsView = event.target as SettingsView;
-
-            settings.removeEventListener(SettingsView.EVENT_CLOSE, onProjectCreateClose);
-            settings.removeEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
-            if (newProjectPathSetting)
-            {
-                newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
-                newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
-                projectWithExistingsSourceSetting.removeEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
-            }
-
-            newProjectNameSetting = null;
-            newProjectPathSetting = null;
-            projectWithExistingsSourceSetting = null;
-
-            _currentProject = null;
-            _exportedProject = null;
-            
+            cleanUpExportView();
             dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject));
         }
 
@@ -332,10 +342,36 @@ package visualEditor.plugin
             }
         }
 
-        private function getExportPath(project:AS3ProjectVO):String
+        private function getDefaultExportPath(project:AS3ProjectVO):String
         {
+            if (project.visualEditorExportPath)
+            {
+                return project.visualEditorExportPath;
+            }
+
             var parentFolder:FileLocation = new FileLocation(project.folderPath).fileBridge.parent;
             return parentFolder.fileBridge.nativePath;
+        }
+
+        private function cleanUpExportView():void
+        {
+            exportView.removeEventListener(SettingsView.EVENT_CLOSE, onProjectCreateClose);
+            exportView.removeEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
+            if (newProjectPathSetting)
+            {
+                newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+                newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
+                projectWithExistingsSourceSetting.removeEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
+            }
+
+            newProjectNameSetting = null;
+            newProjectPathSetting = null;
+            projectWithExistingsSourceSetting = null;
+
+            _currentProject = null;
+            _exportedProject = null;
+
+            exportView = null;
         }
     }
 }
