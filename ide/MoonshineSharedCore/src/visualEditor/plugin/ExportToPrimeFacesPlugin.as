@@ -185,11 +185,11 @@ package visualEditor.plugin
             if (_exportedProject.isExportedToExistingSource)
             {
                 newProjectNameSetting.isEditable = false;
-                newProjectNameSetting.stringValue = _exportedProject.projectName;
+                newProjectNameSetting.stringValue = _exportedProject.folderLocation.name;
 
                 if (newProjectPathSetting.stringValue)
                 {
-                    newProjectPathSetting.setMessage(getDefaultExportPath(_exportedProject));
+                    newProjectPathSetting.setMessage(newProjectPathSetting.stringValue);
                 }
             }
             else
