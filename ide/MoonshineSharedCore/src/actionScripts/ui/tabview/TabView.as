@@ -203,7 +203,7 @@ package actionScripts.ui.tabview
 		{
 			var tab:DisplayObject = tabLookup[child];
 			
-			tabLookup[child] = null;
+			delete tabLookup[child];
             tab.parent.removeChild(tab);
 
             child.removeEventListener('labelChanged', updateTabLabel);
