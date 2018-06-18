@@ -239,6 +239,7 @@
 	            {
 	                cmbPath.textInput.editable = false;
 	                cmbPath.setStyle("contentBackgroundColor", "#FFFFFF");
+					cmbPath.selectedItem = setting.provider[setting.name];
 	            }
 				
 				setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
