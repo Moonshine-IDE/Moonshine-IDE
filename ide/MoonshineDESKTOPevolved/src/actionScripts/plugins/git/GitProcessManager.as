@@ -52,10 +52,12 @@ package actionScripts.plugins.git
 		private var isAndroid:Boolean;
 		private var isErrorClose:Boolean;
 		
-		public var gitPath:File;
+		public var gitBinaryPathOSX:String;
 		public var setGitAvailable:Function;
 		
 		protected var processType:String;
+		
+		private var onXCodePathDetection:Function;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -72,6 +74,21 @@ package actionScripts.plugins.git
 		{
 		}
 		
+		public function getOSXXCodePath(completion:Function):void
+		{
+			if (customProcess) startShell(false);
+			onXCodePathDetection = completion;
+			customInfo = renewProcessInfo();
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue({com:'xcode-select -p', showInConsole:false});
+			
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
 		public function checkGitAvailability():void
 		{
 			if (customProcess) startShell(false);
@@ -79,7 +96,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? 'git --version' : 'git&&--version', showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' --version' : 'git&&--version', showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -94,7 +111,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? 'git clone '+ url : 'git&&clone&&'+ url, showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone '+ url : 'git&&clone&&'+ url, showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -356,7 +373,7 @@ package actionScripts.plugins.git
 			{
 				if (!isErrorClose) 
 				{
-					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"'... Downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
+					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"' ...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
 					flush();
 				}
 			}
@@ -407,6 +424,13 @@ package actionScripts.plugins.git
 			if (match) 
 			{
 				setGitAvailable(true);
+				return;
+			}
+			
+			match = data.match(/xcode.app\/contents\/developer/);
+			if (match && (onXCodePathDetection != null))
+			{
+				onXCodePathDetection(data);
 				return;
 			}
 			

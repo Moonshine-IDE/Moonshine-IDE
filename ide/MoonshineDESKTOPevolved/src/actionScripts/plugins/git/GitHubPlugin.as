@@ -21,18 +21,24 @@ package actionScripts.plugins.git
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.filesystem.File;
 	
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
 
-    public class GitHubPlugin extends PluginBase implements IPlugin
+    public class GitHubPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const CLONE_REQUEST:String = "cloneRequest";
 		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
@@ -42,14 +48,17 @@ package actionScripts.plugins.git
 		public static const REFRESH_STATUS_REQUEST:String = "refreshStatusRequest";
 		public static const NEW_BRANCH_REQUEST:String = "newBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "changeBranchRequest";
+		public static const XCODE_PATH_DETECTION:String = "xcodePathDetection";
 		
 		override public function get name():String			{ return "GitHub"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "GitHub Plugin. Esc exits."; }
 		
-		public var gitBinaryPath:String;
+		public var gitBinaryPathOSX:String;
 		
+		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
+		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -58,7 +67,7 @@ package actionScripts.plugins.git
 			{
 				_processManager = new GitProcessManager();
 				_processManager.setGitAvailable = setGitAvailable;
-				if (gitBinaryPath) _processManager.gitPath = new File(gitBinaryPath);
+				if (gitBinaryPathOSX) _processManager.gitBinaryPathOSX = gitBinaryPathOSX;
 			}
 			return _processManager;
 		}
@@ -93,23 +102,75 @@ package actionScripts.plugins.git
 		
 		override public function resetSettings():void
 		{
-			gitBinaryPath = null;
+			gitBinaryPathOSX = null;
+		}
+		
+		public function getSettingsList():Vector.<ISetting>
+		{
+			return Vector.<ISetting>([
+				new PathSetting(this,'gitBinaryPathOSX', 'macOS Git Path', true, gitBinaryPathOSX, true)
+			]);
 		}
 		
 		protected function setGitAvailable(value:Boolean):void
 		{
-			if (checkoutWindow) checkoutWindow.isGitAvailable = value;
+			isGitAvailable = value;
+			if (checkoutWindow) checkoutWindow.isGitAvailable = isGitAvailable;
+		}
+		
+		private function checkOSXGitAccess():Boolean
+		{
+			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
+			{
+				processManager.getOSXXCodePath(onXCodePathDetection);
+				return false;
+			}
+			
+			return true;
+		}
+		
+		private function onXCodePathDetection(path:String):void
+		{
+			if (path && !xCodePermissionWindow)
+			{
+				xCodePermissionWindow = new GitXCodePermissionPopup;
+				xCodePermissionWindow.xCodePath = path;
+				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
+				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
+				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
+			}
+		}
+		
+		private function onXCodePermissionClosed(event:Event):void
+		{
+			var isDiscarded:Boolean = xCodePermissionWindow.isDiscarded;
+			if (!isDiscarded) 
+			{
+				gitBinaryPathOSX = xCodePermissionWindow.xCodePath +"/Contents/Developer/usr/bin/git";
+				Alert.show("Git permission accepted. You can now use Moonshine Git functionalities.", "Success!");
+				
+				var thisSettings: Vector.<ISetting> = getSettingsList();
+				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+			}
+			
+			xCodePermissionWindow.removeEventListener(Event.CLOSE, onXCodePermissionClosed);
+			FlexGlobals.topLevelApplication.removeElement(xCodePermissionWindow);
+			xCodePermissionWindow = null;
 		}
 		
 		private function onCloneRequest(event:Event):void
 		{
 			if (!checkoutWindow)
 			{
+				if (!checkOSXGitAccess()) return;
+				
 				processManager.checkGitAvailability();
 				
 				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
 				checkoutWindow.type = SourceControlCheckout.TYPE_GIT;
+				checkoutWindow.isGitAvailable = isGitAvailable;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				PopUpManager.centerPopUp(checkoutWindow);
 			}
