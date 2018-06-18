@@ -148,7 +148,7 @@ package actionScripts.plugins.as3project.importer
 			if (project.isVisualEditorProject)
 			{
 				project.visualEditorSourceFolder = new FileLocation(
-                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src"
+                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
 				);
 			}
 
