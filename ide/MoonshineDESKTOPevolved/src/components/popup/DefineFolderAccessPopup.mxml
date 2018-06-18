@@ -90,8 +90,8 @@
 				// # Available bookmarked item list parse
 				// ====================================================
 				var tmpBookmarkedPaths: Array = OSXBookmarkerNotifiers.availableBookmarkedPathsArr;
-
-				if (tmpBookmarkedPaths.length >= 1)
+				
+				if (tmpBookmarkedPaths && tmpBookmarkedPaths.length >= 1)
 				{
 					if (OSXBookmarkerNotifiers.workspaceLocation && OSXBookmarkerNotifiers.workspaceLocation.fileBridge.exists)
 					{
