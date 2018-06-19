@@ -34,6 +34,8 @@
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			
+			import actionScripts.locator.IDEModel;
+			
 			public static const TYPE_SVN:String = "typeSVN";
 			public static const TYPE_GIT:String = "typeGit";
 			
@@ -42,9 +44,15 @@
 			public var type:String;
 			public var submitObject:Object;
 			
+			[Bindable] private var isGitURL:Boolean;
+			[Bindable] private var isPathMapped:Boolean;
+			
+			private var mappedPath:String
+			private var model:IDEModel = IDEModel.getInstance();
+			
 			private function onCheckoutRequest():void
 			{
-				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:txtTarget.text} : null;
+				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : null;
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
@@ -62,8 +70,34 @@
 				file.removeEventListener(Event.SELECT, onDirectorySelected);
 				file.removeEventListener(Event.CANCEL, onDirectorySelectionCancelled);
 				
-				txtTarget.text = file.nativePath;
+				mappedPath = file.nativePath;
 				file = null;
+				
+				isPathMapped = true;
+				updatePossiblePath();
+			}
+			
+			private function updatePossiblePath():void
+			{
+				// expected format is https://github.com/{organization/author}/{project}
+				var searchRegExp:RegExp = new RegExp("github.com/.*/.*.$", "i");
+				var results:Array = searchRegExp.exec(txtSource.text);
+				if (results != null)
+				{
+					isGitURL = true;
+					txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
+						"..." + model.fileCore.separator + results[0].split("/").pop();
+				}
+				else if (txtTarget.text != "" && isPathMapped)
+				{
+					isGitURL = false;
+					txtTarget.text = mappedPath + model.fileCore.separator + "...";
+				}
+				else if (!isPathMapped)
+				{
+					isGitURL = false;
+					txtTarget.text = "...";
+				}
 			}
 			
 			private function onDirectorySelectionCancelled(event:Event):void
@@ -86,7 +120,7 @@
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
-							  prompt="Repository URL"/>
+							  prompt="Repository URL" change="updatePossiblePath()"/>
 		<s:HGroup verticalAlign="middle" width="100%">
 			<view:PromptTextInput id="txtTarget" 
 								  prompt="Where to download" width="100%" styleName="textInput"
@@ -103,7 +137,7 @@
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
-				  label="Checkout" styleName="darkButton" enabled="{isGitAvailable}"
+				  label="Checkout" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isGitURL &amp;&amp; isPathMapped}"
 				  click="onCheckoutRequest()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
