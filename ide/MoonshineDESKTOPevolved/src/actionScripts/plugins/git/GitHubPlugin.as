@@ -67,8 +67,9 @@ package actionScripts.plugins.git
 			{
 				_processManager = new GitProcessManager();
 				_processManager.setGitAvailable = setGitAvailable;
-				if (gitBinaryPathOSX) _processManager.gitBinaryPathOSX = gitBinaryPathOSX;
 			}
+			
+			if (gitBinaryPathOSX) _processManager.gitBinaryPathOSX = gitBinaryPathOSX;
 			return _processManager;
 		}
 		

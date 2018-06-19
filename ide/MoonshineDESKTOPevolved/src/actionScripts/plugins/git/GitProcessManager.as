@@ -360,7 +360,7 @@ package actionScripts.plugins.git
 			{
 				if (!isErrorClose) 
 				{
-					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"' ...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
+					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
 					flush();
 				}
 			}
@@ -386,6 +386,13 @@ package actionScripts.plugins.git
 				return;
 			}
 			
+			match = data.match(/commandlinetools/);
+			if (match && (onXCodePathDetection != null))
+			{
+				onXCodePathDetection(data);
+				return;
+			}
+			
 			match = data.match(/'git' is not recognized as an internal or external command/);
 			if (match)
 			{
@@ -403,6 +410,15 @@ package actionScripts.plugins.git
 				processType = GitHubPlugin.CLONE_REQUEST;
 				cloningProjectName = data;
 				warning(data);
+				return;
+			}
+			
+			match = data.match(/fatal: destination path '.*' already exists and is not an empty directory/);
+			if (match)
+			{
+				error(data);
+				isErrorClose = true;
+				startShell(false);
 				return;
 			}
 			

@@ -462,8 +462,8 @@ package actionScripts.plugin.settings
 			var settingsFile:FileLocation = generateSettingsPath(event.name);
 			var className:String = event.name.split("::").pop();
 			use namespace moonshine_internal;
-			var plug:IPlugin = pluginManager.getPluginByClassName(className);
-			commitClassSettings(plug, saveData, settingsFile);
+			//var plug:IPlugin = pluginManager.getPluginByClassName(className);
+			commitClassSettings(null, saveData, settingsFile);
 		}
 
 		private function commitClassSettings(plug:IPlugin, saveData:XML, settingsFile:FileLocation):Boolean
