@@ -19,8 +19,6 @@
 package actionScripts.plugins.ui.editor
 {
 	import flash.events.Event;
-	import flash.filesystem.File;
-	
 	import mx.events.FlexEvent;
 	
 	import actionScripts.events.AddTabEvent;
@@ -35,8 +33,8 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
-	
-	import utils.VisualEditorType;
+
+    import utils.VisualEditorType;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	
@@ -232,19 +230,16 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
-			var splittedFileName:Array = file.fileBridge.name.split(".");
-			
-			if (splittedFileName.length == 2)
+			if (visualEditorProject.visualEditorSourceFolder)
 			{
-				var cleanFileName:String = splittedFileName[0];
-				if (visualEditorProject.visualEditorSourceFolder)
-				{
-					return visualEditorProject.visualEditorSourceFolder
-						.fileBridge.nativePath
-						.concat(File.separator, cleanFileName, ".xml");
-				}
+				var filePath:String = file.fileBridge.nativePath
+						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
+								 visualEditorProject.visualEditorSourceFolder.fileBridge.nativePath)
+						.replace(/.mxml$|.xhtml$/, ".xml");
+
+				return filePath;
 			}
-			
+
 			return null;
 		}
 	}

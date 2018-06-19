@@ -19,7 +19,6 @@
 package actionScripts.controllers
 {
 	import flash.display.DisplayObject;
-	import flash.events.Event;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
     import flash.events.Event;
@@ -91,9 +90,16 @@ package actionScripts.controllers
 			// file/folder deletion for desktop
 			if (ConstantsCoreVO.IS_AIR)
 			{
+                var veSourceFile:FileLocation = null;
 				if (thisEvent.file.fileBridge.isDirectory)
 				{
 					thisEvent.file.fileBridge.deleteDirectory(true);
+
+                    veSourceFile = getVisualEditorSourceFile();
+                    if (veSourceFile && veSourceFile.fileBridge.exists)
+                    {
+                        veSourceFile.fileBridge.deleteDirectory(true);
+                    }
                 }
             	else
                 {
@@ -101,13 +107,11 @@ package actionScripts.controllers
 
                     if (thisEvent.projectAssociatedWithFile)
                     {
-                        var as3ProjectVO:AS3ProjectVO = thisEvent.projectAssociatedWithFile as AS3ProjectVO;
-                        if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
-                        {
-                            var fileName:String = thisEvent.file.name.replace(/.mxml$|.xhtml$/, ".xml");
-                            var visualEditorFile:FileLocation = as3ProjectVO.visualEditorSourceFolder.resolvePath(fileName);
-                            visualEditorFile.fileBridge.deleteFile();
-                        }
+                        veSourceFile = getVisualEditorSourceFile();
+						if (veSourceFile && veSourceFile.fileBridge.exists)
+						{
+							veSourceFile.fileBridge.deleteFile();
+						}
                     }
                 }
 				
@@ -147,7 +151,7 @@ package actionScripts.controllers
 				file.deleteFileOrDirectory();
 			}
 		}
-		
+
 		private function onProjectDeletionConfirmed(event:DeleteFileEvent, isDeleteRoot:Boolean=false):void
 		{
 			var model: IDEModel = IDEModel.getInstance();
@@ -239,5 +243,20 @@ package actionScripts.controllers
 			treeViewHandler = null;
 			wrapper = null;
 		}
+
+        private function getVisualEditorSourceFile():FileLocation
+        {
+            var as3ProjectVO:AS3ProjectVO = thisEvent.projectAssociatedWithFile as AS3ProjectVO;
+            if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
+            {
+                var veSourcePathFile:String = thisEvent.file.fileBridge.nativePath
+                        .replace(as3ProjectVO.sourceFolder.fileBridge.nativePath,
+                                as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath)
+                        .replace(/.mxml$|.xhtml$/, ".xml");
+                return new FileLocation(veSourcePathFile);
+            }
+
+			return null;
+        }
 	}
 }
