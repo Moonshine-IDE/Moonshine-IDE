@@ -44,6 +44,11 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
+	/**
+	 * An implementation of the language server protocol for Moonshine IDE.
+	 * 
+	 * @see https://microsoft.github.io/language-server-protocol/specification Language Server Protocol Specification
+	 */
 	public class LanguageClient extends EventDispatcher
 	{
 		private static const HELPER_BYTES:ByteArray = new ByteArray();

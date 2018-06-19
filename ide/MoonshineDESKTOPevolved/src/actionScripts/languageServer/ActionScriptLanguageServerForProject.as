@@ -43,13 +43,6 @@ package actionScripts.languageServer
 
     import no.doomsday.console.ConsoleUtil;
 
-	/**
-	 * An implementation of the language server protocol for Moonshine IDE.
-	 * 
-	 * NOT currently implemented to spec -JT
-	 * 
-	 * @see https://microsoft.github.io/language-server-protocol/specification Language Server Protocol Specification
-	 */
 	public class ActionScriptLanguageServerForProject
 	{
 		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
