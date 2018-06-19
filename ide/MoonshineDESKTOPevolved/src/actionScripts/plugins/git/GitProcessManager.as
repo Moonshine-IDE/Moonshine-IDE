@@ -111,7 +111,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone '+ url : 'git&&clone&&'+ url, showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, showInConsole:false});
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -291,7 +291,13 @@ package actionScripts.plugins.git
 			{
 				customProcess = new NativeProcess();
 				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+				
+				// @note
+				// for some strange reason all the standard output turns to standard error output by git command line.
+				// to have them dictate and continue the native process (without terminating by assuming as an error)
+				// let's listen standard errors to shellData method only
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
+				
 				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
 				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
@@ -301,7 +307,7 @@ package actionScripts.plugins.git
 				if (!customProcess) return;
 				if (customProcess.running) customProcess.exit();
 				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
 				customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
 				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
@@ -342,25 +348,6 @@ package actionScripts.plugins.git
 					hideDebug = true;
 				}
 				
-				generalMatch = data.match(/'git' is not recognized as an internal or external command/);
-				if (!syntaxMatch && generalMatch)
-				{
-					setGitAvailable(false);
-					hideDebug = true;
-				}
-				
-				generalMatch = data.match(/Cloning into/);
-				if (!syntaxMatch && generalMatch)
-				{
-					// for some weird reason git clone always
-					// turns to errordata first
-					processType = GitHubPlugin.CLONE_REQUEST;
-					cloningProjectName = data;
-					warning(data);
-					print("...downloading. This may take some time, you will be notified when done.");
-					return;
-				}
-				
 				if (!hideDebug) debug("%s", data);
 				isErrorClose = true;
 				startShell(false);
@@ -381,44 +368,9 @@ package actionScripts.plugins.git
 		
 		private function shellData(e:ProgressEvent):void 
 		{
-			var output:IDataInput = customProcess.standardOutput;
+			var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 			var match:Array;
-			
-			match = data.match(/set flex_home/);
-			if (match)
-			{
-				return;
-			}
-			
-			// osx return
-			match = data.match(/list of attached devices/);
-			if (match)
-			{
-				onDeviceListFound();
-				return;
-			}
-			
-			// windows return
-			match = data.match(/list of devices attached/);
-			if (match)
-			{
-				onDeviceListFound();
-				return;
-			}
-			
-			match = data.match(/password/);
-			if (match)
-			{
-				return;
-			}
-			
-			match = data.match(/the application has been packaged with a shared runtime/);
-			if (match) 
-			{
-				print("NOTE: The application has been packaged with a shared runtime.");
-				return;
-			}
 			
 			match = data.match(/git version/);
 			if (match) 
@@ -434,68 +386,28 @@ package actionScripts.plugins.git
 				return;
 			}
 			
+			match = data.match(/'git' is not recognized as an internal or external command/);
+			if (match)
+			{
+				setGitAvailable(false);
+				isErrorClose = true;
+				startShell(false);
+				return;
+			}
+			
+			match = data.match(/cloning into/);
+			if (match)
+			{
+				// for some weird reason git clone always
+				// turns to errordata first
+				processType = GitHubPlugin.CLONE_REQUEST;
+				cloningProjectName = data;
+				warning(data);
+				return;
+			}
+			
 			isErrorClose = false;
 			debug("%s", data);
-			
-			/*
-			 * @local
-			 */
-			function onDeviceListFound():void
-			{
-				/*
-				@example
-				@ios
-				List of attached devices:
-				Handle	DeviceClass	DeviceUUID					DeviceName
-				1	iPad    	6de82fb31xxxxxxxxxxxxcc8	My iPad
-				
-				@android
-				list of devices attached
-				h7azcyxxxx32	device
-				*/
-				
-				/*var devicesLines:Array = data.split("\n");
-				devicesLines.shift(); // one
-				if (!isAndroid) devicesLines.shift(); // two
-				connectedDevices = new Vector.<String>();
-				for (var i:String in devicesLines)
-				{
-					if (StringUtil.trim(devicesLines[i]).length != 0)
-					{
-						var newDevice:DeviceVO = new DeviceVO();
-						var breakups:Array = devicesLines[i].split("\t");
-						
-						if (!isAndroid)
-						{
-							newDevice.deviceID = int(StringUtil.trim(breakups[0]));
-							newDevice.deviceUDID = StringUtil.trim(breakups[2]);
-						}
-						else
-						{
-							newDevice.deviceUDID = StringUtil.trim(breakups[0]);
-						}
-						
-						connectedDevices.push(newDevice);
-					}
-					else
-					{
-						break;
-					}
-				}
-				
-				// probable termination if no device found connected
-				if (connectedDevices.length == 0)
-				{
-					Alert.show("Please make sure your device is connected.", "Error!");
-					startShell(false);
-					return;
-				}
-				else
-				{
-					var deviceString:String = isAndroid ? "&&" : "&&-device&&" + newDevice.deviceID +"&&";
-					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
-				}*/
-			}
 		}
 		
 		private function renewProcessInfo():NativeProcessStartupInfo
