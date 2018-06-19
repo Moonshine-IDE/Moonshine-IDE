@@ -884,6 +884,13 @@ package actionScripts.utils
 			else if (value.isPrimeFacesVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
 			else if (value.isVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
 			else value.menuType = ProjectMenuTypes.FLEX_AS;
+			
+			// git check
+			if (value.folderLocation.fileBridge.resolvePath(".git").fileBridge.exists && 
+				value.folderLocation.fileBridge.resolvePath(".git").fileBridge.resolvePath("index").fileBridge.exists)
+			{
+				value.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+			}
 		}
 	}
 }

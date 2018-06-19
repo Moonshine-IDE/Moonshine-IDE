@@ -275,7 +275,10 @@ import actionScripts.valueObjects.Settings;
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
-						enable = (menuItem.enableTypes.indexOf(currentProject.menuType) != -1);
+						enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+						{
+							return currentProject.menuType.indexOf(item) != -1;
+						});
 						menuItem.enabled = enable;
 					}
 				}
