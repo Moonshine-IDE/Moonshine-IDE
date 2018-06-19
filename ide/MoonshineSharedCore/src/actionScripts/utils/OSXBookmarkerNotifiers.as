@@ -47,13 +47,17 @@ package actionScripts.utils
 		public static var workspaceLocation: FileLocation;
 		public static var isWorkspaceAcknowledged: Boolean;
 		public static var availableBookmarkedPaths: String = "";
-		public static var availableBookmarkedPathsArr: Array;
 		
 		private static const ERROR_TYPE_UNACCESSIBLE:String = "ERROR_TYPE_UNACCESSIBLE";
 		private static const ERROR_TYPE_NOT_EXISTS:String = "ERROR_TYPE_NOT_EXISTS";
 		
 		private static var workspacePopup: DefineWorkspacePopup;
 		private static var accessManagerPopup: IFlexDisplayObject;
+		
+		public static function get availableBookmarkedPathsArr():Array
+		{
+			return (availableBookmarkedPaths ? availableBookmarkedPaths.split(",") : []);
+		}
 		
 		public static function defineWorkspace():void
 		{
@@ -143,7 +147,7 @@ package actionScripts.utils
 			
 			// # Resources that may needs access parse
 			// ====================================================
-			availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
+			//availableBookmarkedPathsArr = (availableBookmarkedPaths) ? availableBookmarkedPaths.split(",") : [];
 			if (availableBookmarkedPathsArr.length >= 1)
 			{
 				if (availableBookmarkedPathsArr[0] == "") availableBookmarkedPathsArr.shift(); // [0] will always blank
