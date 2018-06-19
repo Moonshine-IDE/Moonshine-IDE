@@ -82,7 +82,7 @@ package actionScripts.languageServer
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 
 		public function LanguageClient(languageID:String, project: ProjectVO, globalDispatcher:IEventDispatcher,
-			input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String, output:IDataOutput, outputFlushCallback:Function)
+			input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String, output:IDataOutput, outputFlushCallback:Function = null)
 		{
 			_languageID = languageID;
 			_project = project;
@@ -204,7 +204,10 @@ package actionScripts.languageServer
 			//trace(">>> (RESPONSE)", contentJSON);
 			
 			_output.writeUTFBytes(message);
-			_outputFlushCallback();
+			if(_outputFlushCallback != null)
+			{
+				_outputFlushCallback();
+			}
 		}
 
 		public function sendNotification(method:String, params:Object):void
@@ -231,7 +234,10 @@ package actionScripts.languageServer
 			//trace(">>> (NOTIFICATION)", contentJSON);
 			
 			_output.writeUTFBytes(message);
-			_outputFlushCallback();
+			if(_outputFlushCallback != null)
+			{
+				_outputFlushCallback();
+			}
 		}
 
 		private function sendRequest(method:String, params:Object):int
@@ -260,7 +266,10 @@ package actionScripts.languageServer
 			//trace(">>> (REQUEST)", contentJSON);
 			
 			_output.writeUTFBytes(message);
-			_outputFlushCallback();
+			if(_outputFlushCallback != null)
+			{
+				_outputFlushCallback();
+			}
 
 			return id;
 		}
