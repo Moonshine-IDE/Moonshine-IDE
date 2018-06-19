@@ -39,15 +39,17 @@ package actionScripts.ui.editor
 	import actionScripts.ui.editor.text.change.TextChangeMulti;
 	import actionScripts.valueObjects.Location;
 
-	public class ActionScriptTextEditor extends BasicTextEditor
+	public class ActionScriptTextEditor extends LanguageServerTextEditor
 	{
+		public static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
+
 		private var dispatchTypeAheadPending:Boolean;
 		private var dispatchSignatureHelpPending:Boolean;
 		private var mouseOverForHover:Boolean = false;
 
 		public function ActionScriptTextEditor()
 		{
-			super();
+			super(LANGUAGE_ID_ACTIONSCRIPT);
 			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);

@@ -22,12 +22,13 @@ package actionScripts.utils
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.languageServer.ActionScriptLanguageServerForProject;
 	
 	public class TypeAheadProcess
 	{
 		private var javaPath:String;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var languageServers:Vector.<LanguageServerForProject> = new <LanguageServerForProject>[];
+		private var languageServers:Vector.<ActionScriptLanguageServerForProject> = new <ActionScriptLanguageServerForProject>[];
 		
 		public function TypeAheadProcess(path:String)
 		{
@@ -42,7 +43,7 @@ package actionScripts.utils
 			var languageServerCount:int = languageServers.length;
 			for(var i:int = 0; i < languageServerCount; i++)
 			{
-				var languageServer:LanguageServerForProject = languageServers[i];
+				var languageServer:ActionScriptLanguageServerForProject = languageServers[i];
 				if(languageServer.project === project)
 				{
 					languageServers.splice(i, 1);
@@ -64,7 +65,7 @@ package actionScripts.utils
 				//projects that have already been added
 				return;
 			}
-			var languageServer:LanguageServerForProject = new LanguageServerForProject(project, javaPath);
+			var languageServer:ActionScriptLanguageServerForProject = new ActionScriptLanguageServerForProject(project, javaPath);
 			languageServers.push(languageServer);
 		}
 		
@@ -73,7 +74,7 @@ package actionScripts.utils
 			var serverCount:int = languageServers.length;
 			for(var i:int = 0; i < serverCount; i++)
 			{
-				var languageServer:LanguageServerForProject = languageServers[i];
+				var languageServer:ActionScriptLanguageServerForProject = languageServers[i];
 				if(languageServer.project == project)
 				{
 					return true;
