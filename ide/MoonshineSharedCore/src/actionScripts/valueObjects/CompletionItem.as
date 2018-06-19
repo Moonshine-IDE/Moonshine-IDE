@@ -2,6 +2,15 @@ package actionScripts.valueObjects
 {
 	import flash.events.EventDispatcher;
 
+	/**
+	 * Implementation of CompletionItem interface from Language Server Protocol
+	 * 
+	 * <p><strong>DO NOT</strong> add new properties or methods to this class
+	 * that are specific to Moonshine IDE or to a particular language. Create a
+	 * subclass for new properties or create a utility function for methods.</p>
+	 * 
+	 * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_completion
+	 */
 	public class CompletionItem extends EventDispatcher
 	{
 		private var _label:String;
@@ -14,6 +23,7 @@ package actionScripts.valueObjects
 		
 		private var _sortLabel:String;
 		
+		//TODO: remove sortLabel because it does not exist in language server protocol
 		public function get sortLabel():String
 		{
 			return this._sortLabel;
@@ -96,6 +106,7 @@ package actionScripts.valueObjects
 			this.displayKind = getDisplayKind(kind);
 		}
 
+		//TODO: remove displayType because it does not exist in language server protocol
 		[Bindable("displayTypeChange")]
 		public function get displayType():String
 		{
@@ -115,6 +126,7 @@ package actionScripts.valueObjects
 			}
 		}
 
+		//TODO: remove displayKind because it does not exist in language server protocol
 		[Bindable("displayKindChange")]
         public function get displayKind():String
         {
@@ -131,11 +143,13 @@ package actionScripts.valueObjects
 			_displayKind = value;
 		}
 
+		//TODO: remove isMethod because it does not exist in language server protocol
         public function get isMethod():Boolean
         {
             return kind == CompletionItemKind.METHOD && _detail.indexOf("(method)") > -1;
         }
 
+		//TODO: remove isEvent because it does not exist in language server protocol
         private function get isEvent():Boolean
         {
             if (_detail)
@@ -146,6 +160,7 @@ package actionScripts.valueObjects
             return false;
         }
 
+		//TODO: remove isProperty because it does not exist in language server protocol
         private function get isProperty():Boolean
         {
             if (_detail)
@@ -156,11 +171,13 @@ package actionScripts.valueObjects
             return false;
         }
 
+		//TODO: remove isVariable because it does not exist in language server protocol
         private function get isVariable():Boolean
         {
             return kind == CompletionItemKind.FIELD && _detail.indexOf("(variable)") > -1;
         }
 
+		//TODO: remove isClass because it does not exist in language server protocol
 		private function get isClass():Boolean
 		{
 			return kind == CompletionItemKind.CLASS && _detail.indexOf("(Class)") > -1;

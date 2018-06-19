@@ -1,5 +1,14 @@
 package actionScripts.valueObjects
 {
+	/**
+	 * Implementation of SymbolKind enum from Language Server Protocol
+	 * 
+	 * <p><strong>DO NOT</strong> add new values to this class that are specific
+	 * to Moonshine IDE or to a particular language.</p>
+	 * 
+	 * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol
+	 * @see https://microsoft.github.io/language-server-protocol/specification#workspace_symbol
+	 */
 	public class SymbolKind
 	{
 		public static const FILE:int = 1;
