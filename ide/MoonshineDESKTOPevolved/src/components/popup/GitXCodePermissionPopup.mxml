@@ -91,7 +91,8 @@
 			private function onAllowAccess(event:MouseEvent):void
 			{
 				var binLocation:FileLocation = new FileLocation(xCodePath);
-				binLocation.fileBridge.browseForOpen("Select XCode File", onXCodeDirectorySelected);
+				if (binLocation.fileBridge.isDirectory) binLocation.fileBridge.browseForDirectory("Select Directory", onXCodeDirectorySelected);
+				else binLocation.fileBridge.browseForOpen("Select XCode File", onXCodeDirectorySelected);
 			}
 			
 			private function onXCodeDirectorySelected(dir:Object):void

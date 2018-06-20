@@ -20,15 +20,18 @@ package actionScripts.plugins.git
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	
+	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.events.CloseEvent;
 	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.factory.FileLocation;
@@ -37,12 +40,21 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.Settings;
-
+	
 	public class GitProcessManager extends ConsoleOutputter
 	{
+		public static const GIT_DIFF_CHECKED:String = "gitDiffProcessCompleted";
+		
+		private static const XCODE_PATH_DECTECTION:String = "xcodePathDectection";
+		private static const GIT_AVAIL_DECTECTION:String = "gitAvailableDectection";
+		private static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
+		private static const GIT_DIFF_CHECK:String = "checkGitDiff";
+		
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var queue:Vector.<Object> = new Vector.<Object>();
@@ -58,6 +70,7 @@ package actionScripts.plugins.git
 		protected var processType:String;
 		
 		private var onXCodePathDetection:Function;
+		private var gitTestProject:AS3ProjectVO;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -84,6 +97,7 @@ package actionScripts.plugins.git
 			
 			addToQueue({com:'xcode-select -p', showInConsole:false});
 			
+			processType = XCODE_PATH_DECTECTION;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -98,6 +112,24 @@ package actionScripts.plugins.git
 			
 			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' --version' : 'git&&--version', showInConsole:false});
 			
+			processType = GIT_AVAIL_DECTECTION;
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		public function checkIfGitRepository(project:AS3ProjectVO):void
+		{
+			if (customProcess) startShell(false);
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --is-inside-work-tree' : 'git&&rev-parse&&--is-inside-work-tree', showInConsole:false});
+			
+			gitTestProject = project;
+			processType = GIT_REPOSITORY_TEST;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -113,9 +145,55 @@ package actionScripts.plugins.git
 			
 			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, showInConsole:false});
 			
+			processType = GitHubPlugin.CLONE_REQUEST;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
+		}
+		
+		public function checkDiff():void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
+				'git&&diff&&>&&"'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"', showInConsole:false});
+			
+			processType = GIT_DIFF_CHECK;
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		private function checkDiffFileExistence():void
+		{
+			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
+			if (tmpFile.exists)
+			{
+				var tmpString:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
+				
+				// @note
+				// for some unknown reason, searchRegExp.exec(tmpString) always
+				// failed after 4 records; initial investigation didn't shown
+				// any possible reason of breaking; Thus forEach treatment for now
+				// (but I don't like this)
+				var tmpPositions:ArrayCollection = new ArrayCollection();
+				var contentInLineBreaks:Array = tmpString.split("\n");
+				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
+				{
+					if (element.search(/^\+\+\+/) != -1) 
+					{
+						tmpPositions.addItem(new GenericSelectableObject(true, element.substr(5, element.length)));
+					}
+				});
+				
+				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+			}
 		}
 		
 		public function runOnDevice(project:AS3ProjectVO, sdk:File, swf:File, descriptorPath:String, runAsDebugger:Boolean=false):void
@@ -323,14 +401,14 @@ package actionScripts.plugins.git
 			if (customProcess)
 			{
 				var output:IDataInput = customProcess.standardError;
-				var data:String = output.readUTFBytes(output.bytesAvailable);
+				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 				
 				var syntaxMatch:Array;
 				var generalMatch:Array;
 				var initMatch:Array;
 				var hideDebug:Boolean;
 				
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
+				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) error: (.*).*/);
 				if (syntaxMatch) {
 					var pathStr:String = syntaxMatch[1];
 					var lineNum:int = syntaxMatch[2];
@@ -338,7 +416,7 @@ package actionScripts.plugins.git
 					var errorStr:String = syntaxMatch[4];
 				}
 				
-				generalMatch = data.match(/(.*?): Error: (.*).*/);
+				generalMatch = data.match(/(.*?): error: (.*).*/);
 				if (!syntaxMatch && generalMatch)
 				{ 
 					pathStr = generalMatch[1];
@@ -361,6 +439,7 @@ package actionScripts.plugins.git
 				if (!isErrorClose) 
 				{
 					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
+					if (processType == GIT_DIFF_CHECK) checkDiffFileExistence();
 					flush();
 				}
 			}
@@ -372,54 +451,88 @@ package actionScripts.plugins.git
 			var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 			var match:Array;
 			
-			match = data.match(/git version/);
-			if (match) 
+			switch(processType)
 			{
-				setGitAvailable(true);
-				return;
+				case XCODE_PATH_DECTECTION:
+				{
+					match = data.match(/xcode.app\/contents\/developer/);
+					if (match && (onXCodePathDetection != null))
+					{
+						onXCodePathDetection(data);
+						return;
+					}
+					
+					match = data.match(/commandlinetools/);
+					if (match && (onXCodePathDetection != null))
+					{
+						onXCodePathDetection(data);
+						return;
+					}
+					break;
+				}
+				case GIT_AVAIL_DECTECTION:
+				{
+					match = data.match(/git version/);
+					if (match) 
+					{
+						setGitAvailable(true);
+						return;
+					}
+					
+					match = data.match(/'git' is not recognized as an internal or external command/);
+					if (match)
+					{
+						setGitAvailable(false);
+						isErrorClose = true;
+						startShell(false);
+						return;
+					}
+					break;
+				}
+				case GIT_REPOSITORY_TEST:
+				{
+					match = data.match(/true/);
+					if (match)
+					{
+						gitTestProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+					}
+					gitTestProject = null;
+					return;
+				}
+				case GitHubPlugin.CLONE_REQUEST:
+				{
+					match = data.match(/cloning into/);
+					if (match)
+					{
+						// for some weird reason git clone always
+						// turns to errordata first
+						cloningProjectName = data;
+						warning(data);
+						return;
+					}
+					break;
+				}
+				case GIT_DIFF_CHECK:
+				{
+					return;
+				}
 			}
 			
-			match = data.match(/xcode.app\/contents\/developer/);
-			if (match && (onXCodePathDetection != null))
-			{
-				onXCodePathDetection(data);
-				return;
-			}
-			
-			match = data.match(/commandlinetools/);
-			if (match && (onXCodePathDetection != null))
-			{
-				onXCodePathDetection(data);
-				return;
-			}
-			
-			match = data.match(/'git' is not recognized as an internal or external command/);
-			if (match)
-			{
-				setGitAvailable(false);
-				isErrorClose = true;
-				startShell(false);
-				return;
-			}
-			
-			match = data.match(/cloning into/);
-			if (match)
-			{
-				// for some weird reason git clone always
-				// turns to errordata first
-				processType = GitHubPlugin.CLONE_REQUEST;
-				cloningProjectName = data;
-				warning(data);
-				return;
-			}
-			
-			match = data.match(/fatal: destination path '.*' already exists and is not an empty directory/);
+			match = data.match(/fatal: .*/);
 			if (match)
 			{
 				error(data);
 				isErrorClose = true;
 				startShell(false);
 				return;
+			}
+
+			match = data.match(/(.*?): error: (.*).*/);
+			if (match)
+			{ 
+				error(data);
+				isErrorClose = true;
+				startShell(false);
 			}
 			
 			isErrorClose = false;

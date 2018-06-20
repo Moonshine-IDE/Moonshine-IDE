@@ -886,11 +886,7 @@ package actionScripts.utils
 			else value.menuType = ProjectMenuTypes.FLEX_AS;
 			
 			// git check
-			if (value.folderLocation.fileBridge.resolvePath(".git").fileBridge.exists && 
-				value.folderLocation.fileBridge.resolvePath(".git").fileBridge.resolvePath("index").fileBridge.exists)
-			{
-				value.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
-			}
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
 		}
 	}
 }

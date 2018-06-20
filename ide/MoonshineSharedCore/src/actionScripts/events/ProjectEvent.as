@@ -48,6 +48,8 @@ package actionScripts.events
 		public static const ACCESS_MANAGER: String = "ACCESS_MANAGER";
 		public static const ACTIVE_PROJECT_CHANGED:String = "ACTIVE_PROJECT_CHANGED";
 		
+		public static const CHECK_GIT_PROJECT:String = "checkGitRepository";
+		
 		public var project:ProjectVO;
 		public var anObject:Object;
 		public var extras:Array;

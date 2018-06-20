@@ -22,19 +22,24 @@ package actionScripts.plugins.git
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
+	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	import components.popup.GitCommitSelectionPopup;
 	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
 
@@ -48,7 +53,6 @@ package actionScripts.plugins.git
 		public static const REFRESH_STATUS_REQUEST:String = "refreshStatusRequest";
 		public static const NEW_BRANCH_REQUEST:String = "newBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "changeBranchRequest";
-		public static const XCODE_PATH_DETECTION:String = "xcodePathDetection";
 		
 		override public function get name():String			{ return "GitHub"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
@@ -59,6 +63,7 @@ package actionScripts.plugins.git
 		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
+		private var gitCommitWindow:GitCommitSelectionPopup;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -85,6 +90,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(REFRESH_STATUS_REQUEST, onRefreshRequest, false, 0, true);
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
 		}
 		
 		override public function deactivate():void 
@@ -99,6 +105,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(REFRESH_STATUS_REQUEST, onRefreshRequest);
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
+			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
 		}
 		
 		override public function resetSettings():void
@@ -199,7 +206,46 @@ package actionScripts.plugins.git
 		
 		private function onCommitRequest(event:Event):void
 		{
-			
+			if (!gitCommitWindow)
+			{
+				if (!checkOSXGitAccess()) return;
+				
+				processManager.checkGitAvailability();
+				
+				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				gitCommitWindow.title = "Commit";
+				gitCommitWindow.isGitAvailable = isGitAvailable;
+				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
+				PopUpManager.centerPopUp(gitCommitWindow);
+				
+				// we let the popup opened completely
+				// then run the following process else
+				// there could be a hold before appearing
+				// the window until folling process is finished
+				gitCommitWindow.callLater(function():void
+				{
+					processManager.checkDiff();
+					if (!processManager.hasEventListener(GitProcessManager.GIT_DIFF_CHECKED))
+						processManager.addEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+				});
+			}
+			else
+			{
+				PopUpManager.bringToFront(gitCommitWindow);
+			}
+		}
+		
+		private function onGitCommitWindowClosed(event:CloseEvent):void
+		{
+			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
+			PopUpManager.removePopUp(gitCommitWindow);
+			gitCommitWindow = null;
+		}
+		
+		private function onGitDiffChecked(event:GeneralEvent):void
+		{
+			processManager.removeEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked);
+			if (gitCommitWindow) gitCommitWindow.commitDiffCollection = event.value as ArrayCollection;
 		}
 		
 		private function onPullRequest(event:Event):void
@@ -225,6 +271,11 @@ package actionScripts.plugins.git
 		private function onChangeBranchRequest(event:Event):void
 		{
 			
+		}
+		
+		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void
+		{
+			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
 		}
 	}
 }
