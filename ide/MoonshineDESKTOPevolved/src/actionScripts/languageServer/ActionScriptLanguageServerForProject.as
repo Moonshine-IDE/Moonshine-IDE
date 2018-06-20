@@ -287,7 +287,8 @@ package actionScripts.languageServer
 			_nativeProcess = null;
 		}
 
-		public function shutdownHandler(event:Event):void{
+		public function shutdownHandler(event:Event):void
+		{
 			if(!_languageClient)
 			{
 				return;
@@ -302,6 +303,8 @@ package actionScripts.languageServer
 
 		private function languageClient_closeHandler(event:Event):void
 		{
+			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
+			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
 		}
 

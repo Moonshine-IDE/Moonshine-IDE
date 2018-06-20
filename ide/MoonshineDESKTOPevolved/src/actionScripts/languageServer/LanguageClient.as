@@ -45,6 +45,22 @@ package actionScripts.languageServer
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	/**
+	 * Dispatched when the language client has been initialized.
+	 * 
+	 * @see #initializing
+	 * @see #initialized
+	 */
+	[Event(name="init")]
+
+	/**
+	 * Dispatched when the language client sends its exit request.
+	 * 
+	 * @see #stopping
+	 * @see #stopped
+	 */
+	[Event(name="close")]
+
+	/**
 	 * An implementation of the language server protocol for Moonshine IDE.
 	 * 
 	 * @see https://microsoft.github.io/language-server-protocol/specification Language Server Protocol Specification
@@ -139,6 +155,18 @@ package actionScripts.languageServer
 		{
 			return this._initializeID != -1;
 		}
+		
+		private var _stopped:Boolean = false;
+		
+		public function get stopped():Boolean
+		{
+			return this._stopped;
+		}
+		
+		public function get stopping():Boolean
+		{
+			return this._shutdownID != -1;
+		}
 
 		private var _initializeID:int = -1;
 		private var _shutdownID:int = -1;
@@ -153,7 +181,7 @@ package actionScripts.languageServer
 
 		public function stop():void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -172,54 +200,15 @@ package actionScripts.languageServer
 			_shutdownID = sendRequest(METHOD_SHUTDOWN, null);
 		}
 
-		private function getNextRequestID():int
-		{
-			_requestID++;
-			return _requestID;
-		}
-
-		private function sendResponse(id:Object, result:Object = null, error:Object = null):void
-		{
-			if(!_initialized)
-			{
-				throw new IllegalOperationError("Response failed. Language server is not initialized.");
-			}
-			
-			var contentPart:Object = new Object();
-			contentPart.jsonrpc = JSON_RPC_VERSION;
-			contentPart.id = id;
-			if(result)
-			{
-				contentPart.result = result;
-			}
-			if(error)
-			{
-				contentPart.error = error;
-			}
-			var contentJSON:String = JSON.stringify(contentPart);
-
-			HELPER_BYTES.clear();
-			HELPER_BYTES.writeUTFBytes(contentJSON);
-			var contentLength:int = HELPER_BYTES.length;
-			HELPER_BYTES.clear();
-
-			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
-			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
-			
-			//trace(">>> (RESPONSE)", contentJSON);
-			
-			_output.writeUTFBytes(message);
-			if(_outputFlushCallback != null)
-			{
-				_outputFlushCallback();
-			}
-		}
-
 		public function sendNotification(method:String, params:Object):void
 		{
 			if(!_initialized && method != METHOD_INITIALIZE)
 			{
 				throw new IllegalOperationError("Notification failed. Language server is not initialized. Unexpected method: " + method);
+			}
+			if(_stopped)
+			{
+				throw new IllegalOperationError("Notification failed. Language server is stopped. Unexpected method: " + method);
 			}
 			
 			var contentPart:Object = new Object();
@@ -277,6 +266,49 @@ package actionScripts.languageServer
 			}
 
 			return id;
+		}
+
+		private function sendResponse(id:Object, result:Object = null, error:Object = null):void
+		{
+			if(!_initialized)
+			{
+				throw new IllegalOperationError("Response failed. Language server is not initialized.");
+			}
+			
+			var contentPart:Object = new Object();
+			contentPart.jsonrpc = JSON_RPC_VERSION;
+			contentPart.id = id;
+			if(result)
+			{
+				contentPart.result = result;
+			}
+			if(error)
+			{
+				contentPart.error = error;
+			}
+			var contentJSON:String = JSON.stringify(contentPart);
+
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+
+			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
+			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
+			
+			//trace(">>> (RESPONSE)", contentJSON);
+			
+			_output.writeUTFBytes(message);
+			if(_outputFlushCallback != null)
+			{
+				_outputFlushCallback();
+			}
+		}
+
+		private function getNextRequestID():int
+		{
+			_requestID++;
+			return _requestID;
 		}
 
 		private function sendInitialize():void
@@ -468,7 +500,8 @@ package actionScripts.languageServer
 		{
 			_inputDispatcher.removeEventListener(_inputEvent, input_onData);
 			sendNotification(METHOD_EXIT, null);
-			dispatchEvent(new Event(Event.COMPLETE));
+			_stopped = true;
+			dispatchEvent(new Event(Event.CLOSE));
 		}
 
 		private function sendDidOpenRequest(uri:String, text:String):void
