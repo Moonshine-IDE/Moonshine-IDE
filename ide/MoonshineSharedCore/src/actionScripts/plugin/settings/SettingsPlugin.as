@@ -274,15 +274,18 @@ package actionScripts.plugin.settings
 				var skip:Boolean = false;
 				for each (var omit:Class in excludeFromSettings)
 				{
-					if (plug is omit) 
+					if (plug is omit)
 					{
 						skip = true;
-						continue;
+						break;
 					}
 				}
-				if (skip) continue;
-				
-					
+
+				if (skip)
+				{
+					continue;
+                }
+
 				provider = plug as ISettingsProvider;
 
 				qualifiedClassName = getQualifiedClassName(plug);
@@ -374,7 +377,6 @@ package actionScripts.plugin.settings
 
 			var saveData:XML = getXMLSettingsForSave(content);
 
-			var settingsClassName:String;
 			var propName:String;
 			var propValue:String;
 			for each (var setting:ISetting in settingsList)

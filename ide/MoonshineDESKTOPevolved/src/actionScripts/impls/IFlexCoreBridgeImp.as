@@ -227,7 +227,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin, 
+			return [ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, GitHubPlugin];
 		}

@@ -533,6 +533,7 @@ package actionScripts.ui.renderers
 				if (data.isSourceFolder && !isSourceFolderIcon)
 				{
 					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.toolTip = "Source folder";
 					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
 					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
