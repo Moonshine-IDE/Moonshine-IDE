@@ -135,11 +135,6 @@ package actionScripts.valueObjects
 
         public function set displayKind(value:String):void
 		{
-			if (kind == CompletionItemKind.PROPERTY)
-			{
-				value = "Property";
-			}
-
 			_displayKind = value;
 		}
 
