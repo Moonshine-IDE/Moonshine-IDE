@@ -115,7 +115,7 @@ package actionScripts.valueObjects
 
 		public function set displayType(value:String):void
 		{
-            if (isMethod || isProperty || isVariable)
+            if (kind == CompletionItemKind.METHOD || isProperty || isVariable)
             {
                 var lastColonIndex:int = value.lastIndexOf(":");
                 _displayType = value.substring(lastColonIndex + 1);
@@ -143,23 +143,6 @@ package actionScripts.valueObjects
 			_displayKind = value;
 		}
 
-		//TODO: remove isMethod because it does not exist in language server protocol
-        public function get isMethod():Boolean
-        {
-            return kind == CompletionItemKind.METHOD && _detail.indexOf("(method)") > -1;
-        }
-
-		//TODO: remove isEvent because it does not exist in language server protocol
-        private function get isEvent():Boolean
-        {
-            if (_detail)
-            {
-                return kind == CompletionItemKind.FIELD && _detail.indexOf("(event)") > -1;
-            }
-
-            return false;
-        }
-
 		//TODO: remove isProperty because it does not exist in language server protocol
         private function get isProperty():Boolean
         {
@@ -176,12 +159,6 @@ package actionScripts.valueObjects
         {
             return kind == CompletionItemKind.FIELD && _detail.indexOf("(variable)") > -1;
         }
-
-		//TODO: remove isClass because it does not exist in language server protocol
-		private function get isClass():Boolean
-		{
-			return kind == CompletionItemKind.CLASS && _detail.indexOf("(Class)") > -1;
-		}
 
 		private function getDisplayKind(kind:int):String
 		{

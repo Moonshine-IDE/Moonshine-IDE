@@ -192,14 +192,14 @@ package actionScripts.ui.editor.text
                 }
             }
 
-			if (!hasSelectedLineAutoCloseAttr && item.isMethod)
+			if (!hasSelectedLineAutoCloseAttr && item.kind == CompletionItemKind.METHOD)
 			{
 				text = item.label + "()";
 			}
 
             editor.setCompletionData(startIndex, endIndex, text);
 
-			if ((item.isMethod || hasSelectedLineAutoCloseAttr)
+			if ((item.kind == CompletionItemKind.METHOD || hasSelectedLineAutoCloseAttr)
 					&& item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE)
 			{
                 var lineIndex:int = model.selectedLineIndex;
