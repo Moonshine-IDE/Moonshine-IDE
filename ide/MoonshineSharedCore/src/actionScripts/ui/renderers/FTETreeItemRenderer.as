@@ -367,7 +367,10 @@ package actionScripts.ui.renderers
 				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
 				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
 				
-				item.enabled = (enableTypes.indexOf(as3ProjectVO.menuType) != -1);
+				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+				{
+					return as3ProjectVO.menuType.indexOf(item) != -1;
+				});
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}

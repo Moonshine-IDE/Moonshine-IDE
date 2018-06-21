@@ -20,7 +20,6 @@ package actionScripts.plugins.git
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
-	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
@@ -49,11 +48,13 @@ package actionScripts.plugins.git
 	public class GitProcessManager extends ConsoleOutputter
 	{
 		public static const GIT_DIFF_CHECKED:String = "gitDiffProcessCompleted";
+		public static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
 		
 		private static const XCODE_PATH_DECTECTION:String = "xcodePathDectection";
 		private static const GIT_AVAIL_DECTECTION:String = "gitAvailableDectection";
-		private static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
 		private static const GIT_DIFF_CHECK:String = "checkGitDiff";
+		private static const GIT_PUSH:String = "gitPush";
+		private static const GIT_COMMIT:String = "gitCommit";
 		
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
@@ -87,7 +88,7 @@ package actionScripts.plugins.git
 		{
 		}
 		
-		public function getOSXXCodePath(completion:Function):void
+		public function getOSXCodePath(completion:Function):void
 		{
 			if (customProcess) startShell(false);
 			onXCodePathDetection = completion;
@@ -126,7 +127,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --is-inside-work-tree' : 'git&&rev-parse&&--is-inside-work-tree', showInConsole:false});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' -C "'+ customInfo.workingDirectory.nativePath +'" status' : 'git&&-C&&"'+ customInfo.workingDirectory.nativePath +'"&&status', showInConsole:false});
 			
 			gitTestProject = project;
 			processType = GIT_REPOSITORY_TEST;
@@ -170,6 +171,51 @@ package actionScripts.plugins.git
 			flush();
 		}
 		
+		public function commit(files:ArrayCollection):void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			var filesToCommit:Array = [];
+			for each (var i:GenericSelectableObject in files)
+			{
+				if (i.isSelected) filesToCommit.push(i.data as String);
+			}
+			
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ filesToCommit.join(' ') : 'git&&add&&'+ filesToCommit.join(' '), showInConsole:true});
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "Test data"' : 'git&&commit&&-m&&"Test data"', showInConsole:true});
+			
+			processType = GIT_COMMIT;
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		public function push():void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			//git push https://username:password@github.com/username/repositoryName.git
+			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin master' : 'git&&push&&origin&&master', showInConsole:false});
+			
+			warning("Git push requested...");
+			processType = GIT_PUSH;
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
 		private function checkDiffFileExistence():void
 		{
 			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
@@ -188,7 +234,7 @@ package actionScripts.plugins.git
 				{
 					if (element.search(/^\+\+\+/) != -1) 
 					{
-						tmpPositions.addItem(new GenericSelectableObject(true, element.substr(5, element.length)));
+						tmpPositions.addItem(new GenericSelectableObject(true, element.substr(6, element.length)));
 					}
 				});
 				
@@ -491,12 +537,21 @@ package actionScripts.plugins.git
 				}
 				case GIT_REPOSITORY_TEST:
 				{
-					match = data.match(/true/);
-					if (match)
+					match = data.match(/fatal: .*/);
+					if (!match)
 					{
 						gitTestProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+						gitTestProject = null;
+						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
 					}
-					gitTestProject = null;
+					else if (ConstantsCoreVO.IS_MACOS)
+					{
+						// in case of OSX sandbox if the project's parent folder
+						// consists of '.git' and do not have bookmark access
+						// the running command is tend to be fail, in that case
+						// a brute check
+						initiateSandboxGitRepositoryCheckBrute(gitTestProject);
+					}
 					return;
 				}
 				case GitHubPlugin.CLONE_REQUEST:
@@ -545,6 +600,21 @@ package actionScripts.plugins.git
 			customInfo.executable = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			
 			return customInfo;
+		}
+		
+		private function initiateSandboxGitRepositoryCheckBrute(value:AS3ProjectVO):void
+		{
+			var tmpFile:File = value.folderLocation.fileBridge.getFile as File;
+			do
+			{
+				tmpFile = tmpFile.parent;
+				if (tmpFile && tmpFile.resolvePath(".git").exists && tmpFile.resolvePath(".git/index").exists)
+				{
+					dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST, {project:value, gitRootLocation:tmpFile}));
+					break;
+				}
+				
+			} while (tmpFile != null);
 		}
 	}
 }

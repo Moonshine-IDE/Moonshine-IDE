@@ -40,6 +40,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.popup.GitCommitSelectionPopup;
+	import components.popup.GitRepositoryPermissionPopup;
 	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
 
@@ -63,6 +64,7 @@ package actionScripts.plugins.git
 		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
+		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
 		private var gitCommitWindow:GitCommitSelectionPopup;
 		
 		private var _processManager:GitProcessManager;
@@ -130,7 +132,7 @@ package actionScripts.plugins.git
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
-				processManager.getOSXXCodePath(onXCodePathDetection);
+				processManager.getOSXCodePath(onXCodePathDetection);
 				return false;
 			}
 			
@@ -237,9 +239,13 @@ package actionScripts.plugins.git
 		
 		private function onGitCommitWindowClosed(event:CloseEvent):void
 		{
+			var filesCollection:ArrayCollection = gitCommitWindow.commitDiffCollection;
+			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
 			PopUpManager.removePopUp(gitCommitWindow);
 			gitCommitWindow = null;
+			
+			processManager.commit(filesCollection);
 		}
 		
 		private function onGitDiffChecked(event:GeneralEvent):void
@@ -255,7 +261,7 @@ package actionScripts.plugins.git
 		
 		private function onPushRequest(event:Event):void
 		{
-			
+			processManager.push();
 		}
 		
 		private function onRefreshRequest(event:Event):void
@@ -276,6 +282,29 @@ package actionScripts.plugins.git
 		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void
 		{
 			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
+			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
+				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
+		}
+		
+		private function onGitRepositoryTested(event:GeneralEvent):void
+		{
+			processManager.removeEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested);
+			if (event.value && !gitRepositoryPermissionWindow)
+			{
+				gitRepositoryPermissionWindow = new GitRepositoryPermissionPopup;
+				gitRepositoryPermissionWindow.project = event.value.project;
+				gitRepositoryPermissionWindow.gitRootLocation = event.value.gitRootLocation;
+				gitRepositoryPermissionWindow.horizontalCenter = gitRepositoryPermissionWindow.verticalCenter = 0;
+				gitRepositoryPermissionWindow.addEventListener(Event.CLOSE, onGitRepositoryPermissionClosed, false, 0, true);
+				FlexGlobals.topLevelApplication.addElement(gitRepositoryPermissionWindow);
+			}
+		}
+		
+		private function onGitRepositoryPermissionClosed(event:Event):void
+		{
+			gitRepositoryPermissionWindow.removeEventListener(Event.CLOSE, onGitRepositoryPermissionClosed);
+			FlexGlobals.topLevelApplication.removeElement(gitRepositoryPermissionWindow);
+			gitRepositoryPermissionWindow = null;
 		}
 	}
 }

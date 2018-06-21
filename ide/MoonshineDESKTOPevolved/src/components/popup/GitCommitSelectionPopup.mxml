@@ -7,6 +7,7 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			
 			import actionScripts.valueObjects.GenericSelectableObject;
@@ -19,9 +20,10 @@
 			{
 			}
 			
-			protected function generateUI():void
+			private function onSubmit():void
 			{
-				
+				// for now - testing
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
 			private function getSelectedFilesCount():int
@@ -81,6 +83,6 @@
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCommit" label="Commit Selected"
-				  styleName="darkButton"/>
+				  styleName="darkButton" click="onSubmit()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
