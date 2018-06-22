@@ -36,6 +36,7 @@
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.ui.menu.vo.ProjectMenuTypes;
 			
+			public var isAccepted:Boolean;
 			public var project:AS3ProjectVO;
 			public var gitRootLocation:File;
 			
@@ -91,7 +92,7 @@
 			
 			private function onXCodeDirectorySelected(dir:Object):void
 			{
-				project.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+				isAccepted = true;
 				closeButtonClicked(null);
 			}
 

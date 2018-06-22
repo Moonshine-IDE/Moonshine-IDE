@@ -80,7 +80,7 @@
 			private function updatePossiblePath():void
 			{
 				// expected format is https://github.com/{organization/author}/{project}
-				var searchRegExp:RegExp = new RegExp("github.com/.*/.*.$", "i");
+				var searchRegExp:RegExp = new RegExp("http.*\://github.com/.*/.*.$", "i");
 				var results:Array = searchRegExp.exec(txtSource.text);
 				if (results != null)
 				{
@@ -88,7 +88,7 @@
 					txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
 						"..." + model.fileCore.separator + results[0].split("/").pop();
 				}
-				else if (txtTarget.text != "" && isPathMapped)
+				else if (isPathMapped)
 				{
 					isGitURL = false;
 					txtTarget.text = mappedPath + model.fileCore.separator + "...";

@@ -27,35 +27,36 @@ package actionScripts.plugins.git
 	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
-	import mx.events.CloseEvent;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.vo.NativeProcessQueueVO;
 	
 	public class GitProcessManager extends ConsoleOutputter
 	{
 		public static const GIT_DIFF_CHECKED:String = "gitDiffProcessCompleted";
 		public static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
+		public static const GIT_STATUS_FILE_MODIFIED:String = "gitStatusFileModified";
+		public static const GIT_STATUS_FILE_DELETED:String = "gitStatusFileDeleted";
+		public static const GIT_STATUS_FILE_NEW:String = "gitStatusFileNew";
 		
 		private static const XCODE_PATH_DECTECTION:String = "xcodePathDectection";
 		private static const GIT_AVAIL_DECTECTION:String = "gitAvailableDectection";
 		private static const GIT_DIFF_CHECK:String = "checkGitDiff";
 		private static const GIT_PUSH:String = "gitPush";
+		private static const GIT_REMOTE_ORIGIN_URL:String = "getGitRemoteURL";
 		private static const GIT_COMMIT:String = "gitCommit";
 		
+		private var activeGitRemoteURL:String;
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var queue:Vector.<Object> = new Vector.<Object>();
@@ -69,7 +70,7 @@ package actionScripts.plugins.git
 		public var setGitAvailable:Function;
 		
 		protected var processType:String;
-		
+
 		private var onXCodePathDetection:Function;
 		private var gitTestProject:AS3ProjectVO;
 		
@@ -111,9 +112,8 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' --version' : 'git&&--version', showInConsole:false});
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' --version' : 'git&&--version', false, GIT_AVAIL_DECTECTION));
 			
-			processType = GIT_AVAIL_DECTECTION;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -127,10 +127,9 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' -C "'+ customInfo.workingDirectory.nativePath +'" status' : 'git&&-C&&"'+ customInfo.workingDirectory.nativePath +'"&&status', showInConsole:false});
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' -C "'+ customInfo.workingDirectory.nativePath +'" status' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST));
 			
 			gitTestProject = project;
-			processType = GIT_REPOSITORY_TEST;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -144,9 +143,8 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, showInConsole:false});
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, false, GitHubPlugin.CLONE_REQUEST));
 			
-			processType = GitHubPlugin.CLONE_REQUEST;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -162,10 +160,9 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
-				'git&&diff&&>&&"'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"', showInConsole:false});
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff --name-status > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
+				'git&&diff&&--name-status&&>&&'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt', false, GIT_DIFF_CHECK));
 			
-			processType = GIT_DIFF_CHECK;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -184,33 +181,39 @@ package actionScripts.plugins.git
 			var filesToCommit:Array = [];
 			for each (var i:GenericSelectableObject in files)
 			{
-				if (i.isSelected) filesToCommit.push(i.data as String);
+				if (i.isSelected) filesToCommit.push(i.data.path as String);
 			}
 			
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ filesToCommit.join(' ') : 'git&&add&&'+ filesToCommit.join(' '), showInConsole:true});
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "Test data"' : 'git&&commit&&-m&&"Test data"', showInConsole:true});
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ filesToCommit.join(' ') : 'git&&add&&'+ filesToCommit.join('&&'), false, GIT_COMMIT));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "Test data"' : 'git&&commit&&-m&&"Test data"', false, GIT_COMMIT));
 			
-			processType = GIT_COMMIT;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
 		}
 		
-		public function push():void
+		public function push(userObject:Object=null):void
 		{
 			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
+			
+			// safe-check
+			if (!ConstantsCoreVO.IS_MACOS && !userObject)
+			{
+				error("Git requires to authenticate to Push");
+				return;
+			}
 			
 			customInfo = renewProcessInfo();
 			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 			
-			//git push https://username:password@github.com/username/repositoryName.git
-			addToQueue({com:ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin master' : 'git&&push&&origin&&master', showInConsole:false});
+			//git push https://user:pass@github.com/user/project.git
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config --get remote.origin.url' : 'git&&config&&--get&&remote.origin.url', false, GIT_REMOTE_ORIGIN_URL));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin master' : 'git&&push&&https://'+ userObject.userName +':'+ userObject.password +'@'+ activeGitRemoteURL +'.git', false, GIT_PUSH));
 			
 			warning("Git push requested...");
-			processType = GIT_PUSH;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -230,158 +233,26 @@ package actionScripts.plugins.git
 				// (but I don't like this)
 				var tmpPositions:ArrayCollection = new ArrayCollection();
 				var contentInLineBreaks:Array = tmpString.split("\n");
+				var eachLineSplit:Array;
 				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 				{
-					if (element.search(/^\+\+\+/) != -1) 
+					if (element != "")
 					{
-						tmpPositions.addItem(new GenericSelectableObject(true, element.substr(6, element.length)));
+						eachLineSplit = element.split("\t");
+						tmpPositions.addItem(new GenericSelectableObject(true, {path: eachLineSplit[1], status:getFileStatus(eachLineSplit[0])}));
 					}
 				});
 				
 				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
 			}
-		}
-		
-		public function runOnDevice(project:AS3ProjectVO, sdk:File, swf:File, descriptorPath:String, runAsDebugger:Boolean=false):void
-		{
-			isAndroid = (project.buildOptions.targetPlatform == "Android");
-			
-			// checks if the credentials are present
-			if (!ensureCredentialsPresent(project)) return;
-			
-			// We need the application ID; without pre-guessing any
-			// lets read and find it
-			var descriptorFile:FileLocation = project.folderLocation.fileBridge.resolvePath(descriptorPath);
-			var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
-			var xmlns:Namespace = new Namespace(descriptorXML.namespace());
-			var appID:String = descriptorXML.xmlns::id;
-			
-			var descriptorPathModified:Array = descriptorPath.split(File.separator);
-			var adtPath:String = "-jar&&"+ sdk.nativePath +"/lib/adt.jar&&";
-			
-			// STEP 1
-			//var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
-			var executableFile:File;
-			if (!ConstantsCoreVO.IS_MACOS && windowsAutoJavaLocation) executableFile = windowsAutoJavaLocation;
-			else 
-			{
-				var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
-				if (tmpExecutableJava) executableFile = tmpExecutableJava.fileBridge.getFile as File;
-				if (!ConstantsCoreVO.IS_MACOS && !windowsAutoJavaLocation) windowsAutoJavaLocation = executableFile;
-			}
-			
-			if (!executableFile || !executableFile.exists)
-			{
-				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
-				return;
-			}
-			
-			if (customProcess) startShell(false);
-			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = executableFile;
-			customInfo.workingDirectory = swf.parent;
-			
-			queue = new Vector.<String>();
-			queue.push("-c");
-			
-			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
-			
-			var debugOptions:String = "";
-			if(runAsDebugger)
-			{
-				debugOptions = "&&-connect";
-			}
-
-			var adtPackagingCom:String;
-			if (isAndroid) 
-			{
-				var androidPackagingMode:String = null;
-				if(runAsDebugger)
-				{
-					androidPackagingMode = "apk-debug";
-				}
-				else
-				{
-					androidPackagingMode = "apk";
-				}
-				adtPackagingCom = adtPath +'-package&&-target&&' + androidPackagingMode + debugOptions + '&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certAndroid +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&'+ project.name +'.apk' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
-			}
-			else
-			{
-				var iOSPackagingMode:String = null;
-				if(runAsDebugger)
-				{
-					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
-					{
-						//fast bypasses bytecode translation interprets the SWF
-						iOSPackagingMode = "ipa-debug-interpreter";
-					}
-					else
-					{
-						//standard takes longer to package
-						//debug builds aren't meant for the app store, though
-						iOSPackagingMode = "ipa-debug";
-					}
-				}
-				else //release
-				{
-					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
-					{
-						//fast bypasses bytecode translation interprets the SWF
-						iOSPackagingMode = "ipa-test-interpreter";
-					}
-					else
-					{
-						//standard takes longer to package
-						//release builds are suitable for the app store
-						iOSPackagingMode = "ipa-app-store";
-					}
-				}
-					
-				adtPackagingCom = adtPath +'-package&&-target&&' + iOSPackagingMode + debugOptions + '&&-storetype&&pkcs12&&-keystore&&'+ project.buildOptions.certIos +'&&-storepass&&'+ (isAndroid ? project.buildOptions.certAndroidPassword : project.buildOptions.certIosPassword) +'&&-provisioning-profile&&'+ project.buildOptions.certIosProvisioning +'&&'+ project.name +'.ipa' +'&&'+ descriptorPathModified[descriptorPathModified.length-1] +'&&'+ swf.name;
-			}
-			
-			// extensions and resources
-			if (project.nativeExtensions && project.nativeExtensions.length > 0) adtPackagingCom+= '&&-extdir&&'+ project.nativeExtensions[0].fileBridge.nativePath;
-			if (project.resourcePaths)
-			{
-				for each (var i:FileLocation in project.resourcePaths)
-				{
-					adtPackagingCom += '&&'+ i.fileBridge.nativePath;
-				}
-			}
-			
-			addToQueue({com:adtPackagingCom, showInConsole:true});
-			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"{{DEVICE}}-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			addToQueue({com:adtPath +"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
-		}
-		
-		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
-		{
-			if (isAndroid && (project.buildOptions.certAndroid && project.buildOptions.certAndroid != "") && (project.buildOptions.certAndroidPassword && project.buildOptions.certAndroidPassword != ""))
-			{
-				return true;
-			}
-			else if (!isAndroid && (project.buildOptions.certIos && project.buildOptions.certIos != "") && (project.buildOptions.certIosPassword && project.buildOptions.certIosPassword != "") && (project.buildOptions.certIosProvisioning && project.buildOptions.certIosProvisioning != ""))
-			{
-				return true;
-			}
-			
-			Alert.show("Insufficient information. Process terminates.", "Error!", Alert.OK, null, onProcessTerminatesDueToCredentials);
-			return false;
 			
 			/*
 			 * @local
 			 */
-			function onProcessTerminatesDueToCredentials(event:CloseEvent):void
+			function getFileStatus(value:String):String
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ShowSettingsEvent(project, "run")
-				);
+				if (value == "D") return GIT_STATUS_FILE_DELETED;
+				return GIT_STATUS_FILE_MODIFIED;
 			}
 		}
 		
@@ -403,6 +274,7 @@ package actionScripts.plugins.git
 			var tmpArr:Array = queue[0].com.split("&&");
 			if (Settings.os == "win") tmpArr.insertAt(0, "/c");
 			else tmpArr.insertAt(0, "-c");
+			processType = queue[0].processType;
 			customInfo.arguments = Vector.<String>(tmpArr);
 			
 			queue.shift();
@@ -484,8 +356,19 @@ package actionScripts.plugins.git
 			{
 				if (!isErrorClose) 
 				{
-					if (processType == GitHubPlugin.CLONE_REQUEST) success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
-					if (processType == GIT_DIFF_CHECK) checkDiffFileExistence();
+					switch (processType)
+					{
+						case GitHubPlugin.CLONE_REQUEST:
+							success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
+							break;
+						case GIT_DIFF_CHECK:
+							checkDiffFileExistence();
+							break;
+						case GIT_PUSH:
+							success("...process completed");
+							break;
+					}
+					
 					flush();
 				}
 			}
@@ -570,6 +453,22 @@ package actionScripts.plugins.git
 				case GIT_DIFF_CHECK:
 				{
 					return;
+				}
+				case GIT_REMOTE_ORIGIN_URL:
+				{
+					match = data.match(/.*.$/);
+					if (match)
+					{
+						var tmpResult:Array = new RegExp("http.*\://", "i").exec(data);
+						if (tmpResult != null)
+						{
+							// extracting remote origin URL as 'github/[author]/[project]
+							activeGitRemoteURL = data.substr(tmpResult[0].length, data.length).replace("\n", "");
+							// update actual push command with fetched origin URL 
+							this.queue[0].com = (this.queue[0] as NativeProcessQueueVO).com.replace("null", activeGitRemoteURL);
+						}
+						return;
+					}
 				}
 			}
 			

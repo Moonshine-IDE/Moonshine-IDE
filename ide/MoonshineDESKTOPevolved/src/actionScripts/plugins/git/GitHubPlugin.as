@@ -37,8 +37,10 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	import components.popup.GitAuthenticationPopup;
 	import components.popup.GitCommitSelectionPopup;
 	import components.popup.GitRepositoryPermissionPopup;
 	import components.popup.GitXCodePermissionPopup;
@@ -66,6 +68,7 @@ package actionScripts.plugins.git
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
 		private var gitCommitWindow:GitCommitSelectionPopup;
+		private var gitAuthWindow:GitAuthenticationPopup;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -126,6 +129,7 @@ package actionScripts.plugins.git
 		{
 			isGitAvailable = value;
 			if (checkoutWindow) checkoutWindow.isGitAvailable = isGitAvailable;
+			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
 		}
 		
 		private function checkOSXGitAccess():Boolean
@@ -239,13 +243,11 @@ package actionScripts.plugins.git
 		
 		private function onGitCommitWindowClosed(event:CloseEvent):void
 		{
-			var filesCollection:ArrayCollection = gitCommitWindow.commitDiffCollection;
+			if (gitCommitWindow.isSubmit) processManager.commit(gitCommitWindow.commitDiffCollection);
 			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
 			PopUpManager.removePopUp(gitCommitWindow);
 			gitCommitWindow = null;
-			
-			processManager.commit(filesCollection);
 		}
 		
 		private function onGitDiffChecked(event:GeneralEvent):void
@@ -261,7 +263,38 @@ package actionScripts.plugins.git
 		
 		private function onPushRequest(event:Event):void
 		{
-			processManager.push();
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				if (!gitAuthWindow)
+				{
+					if (!checkOSXGitAccess()) return;
+					
+					processManager.checkGitAvailability();
+					
+					gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, false) as GitAuthenticationPopup;
+					gitAuthWindow.title = "Git Needs Authentication";
+					gitAuthWindow.isGitAvailable = isGitAvailable;
+					gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+					PopUpManager.centerPopUp(gitAuthWindow);
+				}
+				else
+				{
+					PopUpManager.bringToFront(gitAuthWindow);
+				}
+			}
+			else
+			{
+				processManager.push();
+			}
+		}
+		
+		private function onGitAuthWindowClosed(event:CloseEvent):void
+		{
+			if (gitAuthWindow.userObject) processManager.push(gitAuthWindow.userObject);
+			
+			gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			PopUpManager.removePopUp(gitAuthWindow);
+			gitAuthWindow = null;
 		}
 		
 		private function onRefreshRequest(event:Event):void
@@ -303,8 +336,13 @@ package actionScripts.plugins.git
 		private function onGitRepositoryPermissionClosed(event:Event):void
 		{
 			gitRepositoryPermissionWindow.removeEventListener(Event.CLOSE, onGitRepositoryPermissionClosed);
+			
+			if (gitRepositoryPermissionWindow.isAccepted) gitRepositoryPermissionWindow.project.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+			
 			FlexGlobals.topLevelApplication.removeElement(gitRepositoryPermissionWindow);
 			gitRepositoryPermissionWindow = null;
+			
+			checkOSXGitAccess();
 		}
 	}
 }
