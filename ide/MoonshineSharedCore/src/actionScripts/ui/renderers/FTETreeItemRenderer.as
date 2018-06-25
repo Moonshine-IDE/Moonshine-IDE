@@ -18,9 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import flash.display.NativeMenuItem;
     import flash.display.Sprite;
-    import flash.events.ContextMenuEvent;
     import flash.events.Event;
     import flash.events.FocusEvent;
     import flash.events.KeyboardEvent;
@@ -65,6 +63,7 @@ package actionScripts.ui.renderers
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
+        public static const MARK_DIRECOTRY_AS_HIDDEN:String = "Mark Directory as Hidden";
 		public static const RENAME:String = "Rename";
 		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
@@ -131,7 +130,7 @@ package actionScripts.ui.renderers
 			editText.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
 			
 			editText.text = editValue ? editValue : label2.text;
-			
+
 			addChild(editText);
 			
 			editText.setFocus();
@@ -238,11 +237,19 @@ package actionScripts.ui.renderers
 					model.contextMenuCore.addItem(contextMenu, fw.sourceController.getTreeRightClickMenu(fw.file));
 				}
 
+				if (!fw.isSourceFolder)
+				{
+                    //model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_DIRECOTRY_AS_HIDDEN, redispatch, Event.SELECT));
+				}
+
 				if (!fw.isRoot)
 				{
 					if (!fw.children) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
 					
-					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
+					if (!fw.isSourceFolder)
+					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
+                    }
 					
 					// avail only for .as and .mxml files
 					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
@@ -271,44 +278,43 @@ package actionScripts.ui.renderers
 						if ((str.search("<project ")!=-1) || (str.search("<project>")!=-1))
 							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
 					}
-					
-					label2.setStyle("color", 0xe0e0e0);
+
+					setLabelRendererColor(fw);
 				}
-				
+				else
+				{
+                    if (!isTooltipListenerAdded)
+                    {
+                        addEventListener(ToolTipEvent.TOOL_TIP_CREATE, UtilsCore.createCustomToolTip, false, 0, true);
+                        addEventListener(ToolTipEvent.TOOL_TIP_SHOW, UtilsCore.positionTip, false, 0, true);
+                        isTooltipListenerAdded = true;
+                    }
+
+                    //contextMenu.addItem(new ContextMenuItem(null, true));
+                    if (ConstantsCoreVO.IS_AIR && !fw.projectReference.isTemplate)
+                    {
+                        model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? SETTINGS : PROJECT_SETUP, redispatch, Event.SELECT));
+                    }
+                    model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(CLOSE, redispatch, Event.SELECT));
+                    if (ConstantsCoreVO.IS_AIR)
+                    {
+                        if (!fw.projectReference.isTemplate)
+                        {
+                            // for some reason separatorBefore is not working through Constructor in desktop hence this separate null entry addition
+                            model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+                            model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE, redispatch, Event.SELECT));
+                        }
+                    }
+                    else
+                    {
+                        model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE_PROJECT, redispatch, Event.SELECT, true));
+                    }
+
+                    setLabelRendererColor(fw);
+				}
+
 				// avail the refresh option against folders only
 				if ((fw.isRoot || ConstantsCoreVO.IS_AIR) && fw.children != null) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
-				
-				if (fw.isRoot)
-				{
-					if (!isTooltipListenerAdded)
-					{
-						addEventListener(ToolTipEvent.TOOL_TIP_CREATE, UtilsCore.createCustomToolTip, false, 0, true);
-						addEventListener(ToolTipEvent.TOOL_TIP_SHOW, UtilsCore.positionTip, false, 0, true);
-						isTooltipListenerAdded = true;
-					}
-					
-					//contextMenu.addItem(new ContextMenuItem(null, true));
-					if (ConstantsCoreVO.IS_AIR && !fw.projectReference.isTemplate)
-					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? SETTINGS : PROJECT_SETUP, redispatch, Event.SELECT));
-					}
-					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(CLOSE, redispatch, Event.SELECT));
-					if (ConstantsCoreVO.IS_AIR)
-					{
-						if (!fw.projectReference.isTemplate)
-						{
-							// for some reason separatorBefore is not working through Constructor in desktop hence this separate null entry addition 
-							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
-							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE, redispatch, Event.SELECT));
-						}
-					}
-					else
-					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DELETE_PROJECT, redispatch, Event.SELECT, true));
-					}
-					
-					label2.setStyle("color", 0xffffcc);
-				}
 				
 				if (fw.isWorking && !loadingIcon) 
 				{
@@ -584,5 +590,21 @@ package actionScripts.ui.renderers
 	        	}
 			}
 		} // updateDisplayList
+
+		private function setLabelRendererColor(fileWrapper:FileWrapper):void
+		{
+			if (fileWrapper.isHidden)
+			{
+				label2.setStyle("color", 0xff4848);
+			}
+			else if (fileWrapper.isRoot)
+			{
+                label2.setStyle("color", 0xffffcc);
+			}
+			else
+            {
+                label2.setStyle("color", 0xe0e0e0);
+            }
+		}
 	}
 }

@@ -26,10 +26,8 @@ package actionScripts.events
 	public class TreeMenuItemEvent extends Event
 	{
 		public static const RIGHT_CLICK_ITEM_SELECTED:String = "menuItemSelectedEvent";
-		public static const EDIT_INIT:String = "editInit";
 		public static const EDIT_CANCEL:String = "editCancel";
 		public static const EDIT_END:String = "editEnd";
-		public static const ADD_NEW_FOLDER:String = "ADD_NEW_FOLDER";
 		public static const NEW_FILE_CREATED:String = "NEW_FILE_CREATED";
 		public static const FILE_DELETED:String = "FILE_DELETED";
 		public static const FILE_RENAMED:String = "FILE_RENAMED";

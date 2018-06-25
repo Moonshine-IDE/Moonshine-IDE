@@ -188,6 +188,8 @@ package actionScripts.utils
             if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
             {
 				var data:Object = cookie.data;
+                if (!data.hasOwnProperty(cookieName)) return;
+
                 for (var i:int = 0; i < data[cookieName].length; i++)
                 {
                     var itemForRemove:Object = data[cookieName][i];

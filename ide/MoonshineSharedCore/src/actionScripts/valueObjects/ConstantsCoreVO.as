@@ -46,7 +46,6 @@ package actionScripts.valueObjects
 		public static const IS_AIR: Boolean = Security.sandboxType.toString() == "application" ? true : false;
 		public static const MOONSHINE_PROD_ID: String = "com.moonshine-ide";
 		public static const REQUIRED_FLEXJS_SDK_VERION_MINIMUM:String = "0.7.0";
-		public static const REQUIRED_FLEX_SDK_VERION_MINIMUM:String = null;
 		public static const EVENT_PROBLEMS:String = "EVENT_PROBLEMS";
 		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
 		

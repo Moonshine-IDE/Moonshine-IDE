@@ -278,6 +278,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			config = new MXMLCConfigVO();
 
             projectReference.hiddenPaths = this.hiddenPaths;
+			projectReference.showHiddenPaths = this.showHiddenPaths = IDEModel.getInstance().showHiddenPaths;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>

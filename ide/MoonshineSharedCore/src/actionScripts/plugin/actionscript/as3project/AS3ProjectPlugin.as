@@ -218,12 +218,12 @@ package actionScripts.plugin.actionscript.as3project
 				if (ConstantsCoreVO.IS_AIR && event.location)
 				{
 					// Find project it belongs to
-					for each (var p:ProjectVO in model.projects)
+					for each (var project:ProjectVO in model.projects)
 					{
-						if (p is AS3ProjectVO && p.projectFolder.containsFile(event.location))
+						if (project is AS3ProjectVO && project.projectFolder.containsFile(event.location))
 						{
 							// Populate templating data
-							event.templatingData = getTemplatingData(event.location, p as AS3ProjectVO);
+							event.templatingData = getTemplatingData(event.location, project as AS3ProjectVO);
 							return;
 						}
 					}

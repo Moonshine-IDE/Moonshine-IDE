@@ -75,13 +75,14 @@ package actionScripts.locator
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
 		public var isIndividualCloseTabAlertShowing:Boolean;
-		public var saveFilesBeforeBuild:Boolean = false;
+		public var saveFilesBeforeBuild:Boolean;
 
 		public var openPreviouslyOpenedProjects:Boolean;
 		public var openPreviouslyOpenedProjectBranches:Boolean;
 		public var openPreviouslyOpenedFiles:Boolean;
 		public var confirmApplicationExit:Boolean;
-		
+		public var showHiddenPaths:Boolean;
+
 		public var version: String = "1.0.0";
 		public var build: String = "";
 		

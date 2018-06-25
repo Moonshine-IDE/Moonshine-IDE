@@ -19,35 +19,41 @@
 package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
+    import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 
-    [Bindable] dynamic public class FileWrapper
+    [Bindable]
+    public dynamic class FileWrapper
 	{
 		public var projectReference: ProjectReferenceVO;
 		
 		private var _file: FileLocation;
-		private var _children: Array = [];
+		private var _children:Array;
 		
-		protected var _isRoot: Boolean;
-		protected var _isSourceFolder: Boolean;
-		protected var _defaultName: String;
-		protected var _isWorking: Boolean;
-		protected var _isDeleting: Boolean;
-		protected var _sourceController:ISourceControlProvider;
-		protected var _shallUpdateChildren: Boolean;
-		
-		public function set shallUpdateChildren(value:Boolean):void {	_shallUpdateChildren = value;	}
-		public function get shallUpdateChildren():Boolean {	return _shallUpdateChildren;	}
-		
-		public function FileWrapper(file:FileLocation, isRoot:Boolean=false, projectRef:ProjectReferenceVO=null, shallUpdateChildren:Boolean=true)
+		private var _isRoot: Boolean;
+        private var _isSourceFolder: Boolean;
+        private var _defaultName: String;
+        private var _isWorking: Boolean;
+        private var _isDeleting: Boolean;
+        private var _sourceController:ISourceControlProvider;
+        private var _shallUpdateChildren: Boolean;
+		private var _isHidden:Boolean;
+
+		public function FileWrapper(file:FileLocation, isRoot:Boolean = false,
+									projectRef:ProjectReferenceVO=null, shallUpdateChildren:Boolean = true)
 		{
 			_file = file;
 			_isRoot = isRoot;
 			_shallUpdateChildren = shallUpdateChildren;
 			projectReference = projectRef;
-			
-			if (isRoot && projectRef && projectRef.name) name = projectRef.name;
-			else if (file) name = file.fileBridge.name;
+
+			if (isRoot && projectRef && projectRef.name)
+			{
+				name = projectRef.name;
+            }
+			else if (file)
+			{
+				name = file.fileBridge.name;
+            }
 			
 			// store filelocation reference for later
 			// search through Find Resource menu option
@@ -56,58 +62,24 @@ package actionScripts.valueObjects
 				updateChildren();
 			}
 		}
-		
-		public function sortChildren():void
-		{
-			_children.sortOn("name", Array.CASEINSENSITIVE);
-		}
-		
-		public function updateChildren():void
-		{
-			if (!ConstantsCoreVO.IS_AIR || !file.fileBridge.isDirectory) return;
-			
-			var directoryListing:Array = file.fileBridge.getDirectoryListing();
-			if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
-			{
-				_children = null;
-				return;
-			}
-			else _children = [];
-			var fw: FileWrapper;
-			var directoryListingCount:int = directoryListing.length;
-			
-			for (var i:int = 0; i < directoryListingCount; i++)
-			{
-				var currentDirectory:Object = directoryListing[i];
-				var hasHiddenPath:Boolean = projectReference.hiddenPaths.some(function(item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
-				{
-					return currentDirectory.nativePath == item.fileBridge.nativePath;
-				});
 
-				if (!currentDirectory.isHidden && !hasHiddenPath)
-				{
-					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
-					fw.sourceController = _sourceController;
-					_children.push(fw);
-				}
-			}
-		}
-		
-		public function containsFile(file:FileLocation):Boolean
-		{
-			if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
-			return false;
-		}
-		
-		public function get file():FileLocation
+        public function set shallUpdateChildren(value:Boolean):void {	_shallUpdateChildren = value;	}
+
+        public function get file():FileLocation
 		{
 			return _file;
 		}
-		public function set file(v:FileLocation):void
+
+		public function set file(value:FileLocation):void
 		{
-			_file = v;
+			_file = value;
 		}
-		
+
+		public function get isHidden():Boolean
+		{
+			return _isHidden;
+		}
+
 		public function get isRoot():Boolean
 		{
 			return _isRoot;
@@ -128,23 +100,37 @@ package actionScripts.valueObjects
 		
 		public function get name():String
 		{
-			if (isRoot && _defaultName) return _defaultName;
-			else if (file && _shallUpdateChildren) return file.fileBridge.name;
-			else if (!_defaultName && projectReference) return projectReference.name;
-			else return _defaultName;
+			if (isRoot && _defaultName)
+			{
+				return _defaultName;
+            }
+			else if (file && _shallUpdateChildren)
+			{
+				return file.fileBridge.name;
+            }
+			else if (!_defaultName && projectReference)
+			{
+				return projectReference.name;
+            }
+			else
+			{
+				return _defaultName;
+            }
 		}
+
 		public function set name(value:String):void
 		{
 			_defaultName = value;
 		}
-		
+
 		public function get defaultName():String
 		{
 			return _defaultName;
 		}
-		public function set defaultName(v:String):void
+
+		public function set defaultName(value:String):void
 		{
-			_defaultName = v;
+			_defaultName = value;
 		}
 		
 		public function get children():Array
@@ -154,6 +140,7 @@ package actionScripts.valueObjects
 				
 			return _children;
 		}
+
 		public function set children(value:Array):void
 		{
 			_children = value;
@@ -169,6 +156,7 @@ package actionScripts.valueObjects
 		{
 			_isWorking = value;
 		}
+
 		public function get isWorking():Boolean
 		{
 			return _isWorking;
@@ -188,16 +176,100 @@ package actionScripts.valueObjects
 			return _sourceController;	
 		}
 		
-		public function set sourceController(v:ISourceControlProvider):void
-		{
-			if (_sourceController == v) return;
-			_sourceController = v;
-			
-			if (!children) return;
-			for (var i:int = 0; i < children.length; i++)
-			{
-				children[i].sourceController = v;
-			}	
-		}
-	}
+		public function set sourceController(value:ISourceControlProvider):void
+        {
+            if (_sourceController == value) return;
+            _sourceController = value;
+
+            if (!children) return;
+            for (var i:int = 0; i < children.length; i++)
+            {
+                children[i].sourceController = value;
+            }
+        }
+
+        public function sortChildren():void
+        {
+            _children.sortOn("name", Array.CASEINSENSITIVE);
+        }
+
+        public function updateChildren():void
+        {
+            if (!ConstantsCoreVO.IS_AIR)
+            {
+                return;
+            }
+
+            if (projectReference)
+            {
+                if (projectReference.showHiddenPaths)
+                {
+                    _isHidden = projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
+                    {
+                        return nativePath == item.fileBridge.nativePath;
+                    });
+                }
+                else
+                {
+                    _isHidden = false;
+                }
+            }
+
+            if (!file.fileBridge.isDirectory)
+            {
+                return;
+            }
+
+            var directoryListing:Array = file.fileBridge.getDirectoryListing();
+            if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
+            {
+                _children = null;
+                return;
+            }
+            else
+            {
+                _children = [];
+            }
+
+            var fw:FileWrapper;
+            var directoryListingCount:int = directoryListing.length;
+
+            for (var i:int = 0; i < directoryListingCount; i++)
+            {
+                var currentDirectory:Object = directoryListing[i];
+
+				if (currentDirectory.isHidden)
+				{
+					continue;
+                }
+
+				if (projectReference.showHiddenPaths)
+				{
+					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+					fw.sourceController = _sourceController;
+					_children.push(fw);
+				}
+                else
+                {
+                    var currentIsHidden:Boolean = projectReference && projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
+                    {
+                        return currentDirectory.nativePath == item.fileBridge.nativePath;
+                    });
+
+					if (!currentIsHidden)
+                    {
+                        fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+                        fw.sourceController = _sourceController;
+                        _children.push(fw)
+                    }
+                }
+            }
+        }
+
+        public function containsFile(file:FileLocation):Boolean
+        {
+            if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
+            return false;
+        }
+    }
 }

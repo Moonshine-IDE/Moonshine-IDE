@@ -18,7 +18,7 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.actionscript.as3project.save
+package actionScripts.plugin.actionscript.as3project.files
 {
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
@@ -55,6 +55,7 @@ package actionScripts.plugin.actionscript.as3project.save
 		private var _openPreviouslyOpenedProjects:Boolean;
 		private var _openPreviouslyOpenedProjectBranches:Boolean;
 		private var _openPreviouslyOpenedFiles:Boolean;
+		private var _showHiddenPaths:Boolean;
 
 		public function SaveFilesPlugin()
 		{
@@ -129,6 +130,17 @@ package actionScripts.plugin.actionscript.as3project.save
 			model.confirmApplicationExit = value;
         }
 
+        public function get showHiddenPaths():Boolean
+        {
+            return model.showHiddenPaths;
+        }
+
+        public function set showHiddenPaths(value:Boolean):void
+        {
+            _showHiddenPaths = value;
+            model.showHiddenPaths = value;
+        }
+
 		override public function activate():void 
 		{
 			super.activate();
@@ -160,7 +172,8 @@ package actionScripts.plugin.actionscript.as3project.save
 			
 			return Vector.<ISetting>([
 				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
-				new BooleanSetting(this,"isSaveFiles", "Save automatically Before Build"),
+				new BooleanSetting(this, "isSaveFiles", "Save automatically before Build"),
+				new BooleanSetting(this, "showHiddenPaths", "Show hidden files/folders"),
 				new BooleanSetting(this, "confirmApplicationExit", "Confirm application exit"),
 				new BooleanSetting(this, "openPreviouslyOpenedProjects", "Open previously opened projects on startup"),
 				new BooleanSetting(this, "openPreviouslyOpenedFiles", "Open previously opened files for project"),

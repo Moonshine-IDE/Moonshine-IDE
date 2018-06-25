@@ -374,7 +374,6 @@ package actionScripts.plugin.settings
 
 		private function mergeSaveDataFromList(settingsList:Vector.<ISetting>, content:Object=null):XML
 		{
-
 			var saveData:XML = getXMLSettingsForSave(content);
 
 			var propName:String;
@@ -462,9 +461,7 @@ package actionScripts.plugin.settings
 			if (!saveData.length()) return;
 			
 			var settingsFile:FileLocation = generateSettingsPath(event.name);
-			var className:String = event.name.split("::").pop();
 			use namespace moonshine_internal;
-			//var plug:IPlugin = pluginManager.getPluginByClassName(className);
 			commitClassSettings(null, saveData, settingsFile);
 		}
 

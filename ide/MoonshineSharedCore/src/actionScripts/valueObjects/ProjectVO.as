@@ -179,8 +179,14 @@ package actionScripts.valueObjects
 			_projectFolder = parseChildrens(jsonObj);
 			loader = null;
 			
-			if (shallUpdateToTreeView) GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.TREE_DATA_UPDATES, this));
-			else dispatchEvent(new Event(PROJECTS_DATA_UPDATED));
+			if (shallUpdateToTreeView)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.TREE_DATA_UPDATES, this));
+            }
+			else
+			{
+				dispatchEvent(new Event(PROJECTS_DATA_UPDATED));
+            }
 			loader = null;
 			
 			// continue loading project configuration

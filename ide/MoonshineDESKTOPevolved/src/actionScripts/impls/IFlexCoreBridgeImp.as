@@ -44,7 +44,7 @@ package actionScripts.impls
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
-    import actionScripts.plugin.actionscript.as3project.save.SaveFilesPlugin;
+    import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsolePlugin;
     import actionScripts.plugin.core.compiler.CompilerEventBase;

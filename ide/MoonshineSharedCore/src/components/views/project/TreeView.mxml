@@ -28,47 +28,47 @@
 
 	<mx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.collections.Sort;
-			import mx.collections.SortField;
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.events.CloseEvent;
-			import mx.events.CollectionEvent;
-			import mx.events.CollectionEventKind;
-			import mx.events.ListEvent;
-			import mx.events.TreeEvent;
-			import mx.managers.PopUpManager;
-			
-			import actionScripts.events.AddFolderEvent;
-			import actionScripts.events.DeleteFileEvent;
-			import actionScripts.events.DuplicateEvent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.events.OpenFileEvent;
-			import actionScripts.events.ProjectEvent;
-			import actionScripts.events.RenameApplicationEvent;
-			import actionScripts.events.RenameEvent;
-			import actionScripts.events.RenameFileFolderEvent;
-			import actionScripts.events.RunANTScriptEvent;
-			import actionScripts.events.ShowSettingsEvent;
-			import actionScripts.events.TreeMenuItemEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.templating.TemplatingHelper;
-			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.renderers.FTETreeItemRenderer;
-			import actionScripts.ui.tabview.TabViewTab;
-			import actionScripts.utils.FileCoreUtil;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.FileWrapper;
-			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.valueObjects.URLDescriptorVO;
-			
-			import components.popup.NewFolderPopup;
-			import components.popup.RenamePopup;
+		import mx.collections.ArrayCollection;
+		import mx.collections.Sort;
+		import mx.collections.SortField;
+		import mx.controls.Alert;
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.events.CollectionEvent;
+		import mx.events.CollectionEventKind;
+		import mx.events.ListEvent;
+		import mx.events.TreeEvent;
+		import mx.managers.PopUpManager;
+
+		import actionScripts.events.AddFolderEvent;
+		import actionScripts.events.DeleteFileEvent;
+		import actionScripts.events.DuplicateEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.events.ProjectEvent;
+		import actionScripts.events.RenameApplicationEvent;
+		import actionScripts.events.RenameEvent;
+		import actionScripts.events.RenameFileFolderEvent;
+		import actionScripts.events.RunANTScriptEvent;
+		import actionScripts.events.ShowSettingsEvent;
+		import actionScripts.events.TreeMenuItemEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.plugin.templating.TemplatingHelper;
+		import actionScripts.ui.LayoutModifier;
+		import actionScripts.ui.renderers.FTETreeItemRenderer;
+		import actionScripts.ui.tabview.TabViewTab;
+		import actionScripts.utils.FileCoreUtil;
+		import actionScripts.utils.UtilsCore;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.FileWrapper;
+		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.URLDescriptorVO;
+
+		import components.popup.NewFolderPopup;
+		import components.popup.RenamePopup;
 
 		private var renameWindow:RenamePopup;
 		private var newFolderWindow:NewFolderPopup;
@@ -87,7 +87,7 @@
 		private var DataSort:Sort = new Sort();
 		private var deleteFileWrapper:FileWrapper;
 		private var fileCollection:Array;
-			private var lastActiveProjectMenuType:String;
+		private var lastActiveProjectMenuType:String;
 
 		private var _projects:ArrayCollection;
 
@@ -100,22 +100,22 @@
 			return _projects;
 		}
 
-		public function set projects(v:ArrayCollection):void
+		public function set projects(value:ArrayCollection):void
 		{
 			if (projects)
 			{
 				projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
 			}
 
-			_projects = v;
+			_projects = value;
 			_projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange);
 
 			// Scrape up all .projectFolders in here
 			var pdirs:Array = [];
-			for (var i:int = 0; i < v.length; i++)
+			for (var i:int = 0; i < value.length; i++)
 			{
-				var p:ProjectVO = v[i];
-				pdirs.push(p.projectFolder);
+				var project:ProjectVO = value[i];
+				pdirs.push(project.projectFolder);
 			}
 
 			projectFolders = new ArrayCollection(pdirs);
@@ -143,7 +143,7 @@
 			{
 				fileWrapper.sourceController.refresh(fileWrapper.file);
 			}
-			
+
 			if (fileWrapper.isRoot)
 			{
 				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as AS3ProjectVO;
@@ -152,7 +152,7 @@
 			}
 		}
 
-		public function refresh(dir:FileLocation, markAsDeletion:Boolean=false):void
+		public function refresh(dir:FileLocation, markAsDeletion:Boolean = false):void
 		{
 			for each (var fw:FileWrapper in projectFolders)
 			{
@@ -251,11 +251,13 @@
 			tree.openItems = openItems;
 			tree.invalidateList();
 
-			tree.callLater(function ():void {
+			tree.callLater(function ():void
+			{
 				tree.verticalScrollPosition = lastScrollPosition;
 			});
 
-			var timeoutValue:uint = setTimeout(function ():void {
+			var timeoutValue:uint = setTimeout(function ():void
+			{
 				if (lastSelectedItem && lastSelectedItem.isDeleting)
 				{
 					if (tree.isItemVisible(lastSelectedItem))
@@ -314,7 +316,8 @@
 					var lastSelectedItem:Object = tree.selectedItem;
 					var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
 					projectFolders.removeItemAt(tmpFWIndex);
-					timeoutValue = setTimeout(function ():void {
+					timeoutValue = setTimeout(function ():void
+					{
 						if (tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
 						else if (projectFolders.length != 0) tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
 						clearTimeout(timeoutValue);
@@ -325,12 +328,13 @@
 				case CollectionEventKind.ADD:
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
-					
+
 					var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
 					if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
-					
+
 					projectFolders.addItemAt(project.projectFolder, 0);
-					timeoutValue = setTimeout(function ():void {
+					timeoutValue = setTimeout(function ():void
+					{
 						tree.selectedItem = project.projectFolder;
 						clearTimeout(timeoutValue);
 						refreshActiveProject(tree.selectedItem as FileWrapper);
@@ -561,14 +565,14 @@
 			// @note
 			// NewFileEvent calls in case of folder creation, and
 			// it's TreeMenuItemEvent in case of file creation
-			
+
 			var fileName:String;
 			var newFileLocation:FileLocation;
 			var insideLocation:FileWrapper = (event is NewFileEvent) ? NewFileEvent(event).insideLocation : TreeMenuItemEvent(event).data;
 			if (event is NewFileEvent)
 			{
 				fileName = NewFileEvent(event).fileName;
-				
+
 				newFileLocation = insideLocation.file.fileBridge.resolvePath(fileName);
 				if (!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
 			}
@@ -580,7 +584,7 @@
 			{
 				var tmpArray:Array = TreeMenuItemEvent(event).menuLabel.split(model.fileCore.separator);
 				fileName = tmpArray[tmpArray.length - 1];
-				
+
 				newFileLocation = new FileLocation(TreeMenuItemEvent(event).menuLabel);
 			}
 
@@ -593,10 +597,11 @@
 			tree.callLater(tree.expandItem, [insideLocation, true]);
 
 			// refresh the folder section and select
-			var timeoutValue:uint = setTimeout(function ():void {
-				
+			var timeoutValue:uint = setTimeout(function ():void
+			{
+
 				insideLocation.sortChildren();
-				
+
 				// after a refresh new fileWrapper being created,
 				// so we need new instance of the wrapper so we can
 				// select and scroll-to-index
@@ -621,7 +626,8 @@
 
 					refreshByWrapperItem(as3Project.projectFolder);
 
-					var timeoutValue:uint = setTimeout(function ():void {
+					var timeoutValue:uint = setTimeout(function ():void
+					{
 						tree.selectedItem = as3Project.projectFolder;
 
 						var indexToItemRenderer:int = tree.getItemIndex(as3Project.projectFolder);
@@ -662,7 +668,8 @@
 			// if the file/folder is a project root
 			if (value.isRoot)
 			{
-				UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void {
+				UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
+				{
 					for each (var as3Project:AS3ProjectVO in projects)
 					{
 						if (as3Project.projectFolder.nativePath === value.nativePath)
@@ -678,7 +685,7 @@
 			else
 			{
 				var lastSelectedItem:Object = tree.selectedItem;
-				
+
 				// search through open projects as we don't know
 				// which project the FileWrapper is belongs to
 				for each (var fw:FileWrapper in projectFolders)
@@ -686,17 +693,17 @@
 					parentCollection = findFilePosition(fw);
 					if (parentCollection) break;
 				}
-				
+
 				parentCollection.splice(parentCollection.indexOf(value), 1);
 				fileCollection = null;
-				
+
 				if (lastSelectedItem && lastSelectedItem == value) tree.selectedItem = tree.getParentItem(value);
 				updateTreeView();
-				
+
 				// check if the wrapper is the source folder to the project
 				var tmpProject:AS3ProjectVO = getProjectFromProjectFolder(value) as AS3ProjectVO;
 				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
-				
+
 				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 			}
 
