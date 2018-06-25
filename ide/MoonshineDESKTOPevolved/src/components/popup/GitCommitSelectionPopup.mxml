@@ -69,9 +69,32 @@
 									{
 										super.data = value;
 										labelDisplay.text = data.data.path;
-										trace(data.data.status);
-										if (data.data.status == GitProcessManager.GIT_STATUS_FILE_DELETED) labelDisplay.setStyle("color", 0xff6666);
-										else labelDisplay.setStyle("color", 0xffffff);
+										switch(data.data.status)
+										{
+											case GitProcessManager.GIT_STATUS_FILE_DELETED:
+											{
+												lblStatus.text = "D";
+												labelDisplay.setStyle("color", 0xff6666);
+												lblStatus.setStyle("color", 0xff6666);
+												break;
+											}
+												
+											case GitProcessManager.GIT_STATUS_FILE_NEW:
+											{
+												lblStatus.text = "N";
+												labelDisplay.setStyle("color", 0x33cc33);
+												lblStatus.setStyle("color", 0x33cc33);
+												break;
+											}
+												
+											default:
+											{
+												lblStatus.text = "M";
+												labelDisplay.setStyle("color", 0xffffff);
+												lblStatus.setStyle("color", 0xffffff);
+												break;
+											}
+										}
 									}
 								}
 								
@@ -79,12 +102,15 @@
 						</fx:Script>
 						
 						<s:layout>
-							<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="10"/>
+							<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="2"/>
 						</s:layout>
 						
+						<s:Label id="lblStatus"
+								 width="20" textAlign="center"/>
 						<s:CheckBox id="cbSelect"
 									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
-						<s:Label id="labelDisplay"/>
+						<s:Label id="labelDisplay"
+								 paddingLeft="8"/>
 					</s:ItemRenderer>
 				</fx:Component>
 			</s:itemRenderer>

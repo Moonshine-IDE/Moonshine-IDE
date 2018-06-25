@@ -39,8 +39,10 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
 	
 	import components.popup.GitAuthenticationPopup;
+	import components.popup.GitBranchSelectionPopup;
 	import components.popup.GitCommitSelectionPopup;
 	import components.popup.GitRepositoryPermissionPopup;
 	import components.popup.GitXCodePermissionPopup;
@@ -69,6 +71,7 @@ package actionScripts.plugins.git
 		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
 		private var gitCommitWindow:GitCommitSelectionPopup;
 		private var gitAuthWindow:GitAuthenticationPopup;
+		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -130,6 +133,7 @@ package actionScripts.plugins.git
 			isGitAvailable = value;
 			if (checkoutWindow) checkoutWindow.isGitAvailable = isGitAvailable;
 			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
+			if (gitBranchSelectionWindow) gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
 		}
 		
 		private function checkOSXGitAccess():Boolean
@@ -258,7 +262,7 @@ package actionScripts.plugins.git
 		
 		private function onPullRequest(event:Event):void
 		{
-			
+			processManager.pull();
 		}
 		
 		private function onPushRequest(event:Event):void
@@ -309,7 +313,44 @@ package actionScripts.plugins.git
 		
 		private function onChangeBranchRequest(event:Event):void
 		{
+			processManager.switchBranch();
+			if (!processManager.hasEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST))
+				processManager.addEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST, onGitRemoteBranchListReceived, false, 0, true);
+		}
+		
+		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
+		{
+			processManager.removeEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST, onGitRemoteBranchListReceived);
 			
+			if (!gitBranchSelectionWindow)
+			{
+				if (!checkOSXGitAccess()) return;
+				
+				processManager.checkGitAvailability();
+				
+				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
+				gitBranchSelectionWindow.title = "Select Branch";
+				gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
+				gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
+				gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
+				PopUpManager.centerPopUp(gitBranchSelectionWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(gitBranchSelectionWindow);
+			}
+		}
+		
+		private function onGitBranchSelectionWindowClosed(event:CloseEvent):void
+		{
+			gitBranchSelectionWindow.removeEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
+			
+			var selectedBranch:GenericSelectableObject = gitBranchSelectionWindow.isSubmit ? gitBranchSelectionWindow.lstBranches.selectedItem as GenericSelectableObject : null;
+			
+			PopUpManager.removePopUp(gitBranchSelectionWindow);
+			gitBranchSelectionWindow = null;
+			
+			if (selectedBranch) processManager.changeBranchTo(selectedBranch);
 		}
 		
 		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="600" height="400" minWidth="300" minHeight="200"
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*"
+		 initialize="onInit(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			
+			import actionScripts.valueObjects.GenericSelectableObject;
+			
+			[Bindable] public var branchCollection:ArrayCollection;
+			[Bindable] public var isGitAvailable:Boolean;
+			
+			public var isSubmit:Boolean;
+			
+			protected function onInit(event:FlexEvent):void
+			{
+			}
+			
+			private function onSubmit():void
+			{
+				if (lstBranches.selectedItem.isSelected)
+				{
+					Alert.show("Selected item is already set as current branch.", "Error!");
+					return;
+				}
+				
+				isSubmit = true;
+				// for now - testing
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function getResourceName(item:Object):String
+			{
+				return ((item as GenericSelectableObject).data.path as String);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
+		<s:Label text="Select a branch to switch to:"
+				 paddingBottom="4"/>
+		<s:List id="lstBranches"
+				width="100%" height="100%" styleName="multiLineList"
+				dataProvider="{branchCollection}" labelField="data"
+				requireSelection="true">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer width="100%" height="22">
+						<fx:Script>
+							<![CDATA[
+								override public function set data(value:Object):void
+								{
+									if (value) 
+									{
+										super.data = value;
+										labelDisplay.setStyle("fontWeight", data.isSelected ? "bold" : "normal");
+										labelDisplay.setStyle("color", data.isSelected ? 0x33cc33 : 0xffffff);
+										if (data.isSelected) labelDisplay.text = "* "+ labelDisplay.text;
+									}
+								}
+								
+							]]>
+						</fx:Script>
+						
+						<s:Label id="labelDisplay" 
+								 left="4" right="6" verticalCenter="0"/>
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:List>
+		<s:Label text="You need Git installed on your system to continue."
+				 width="100%" textAlign="center" color="0xff0000"
+				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="btnCommit" label="Commit Selected"
+				  styleName="darkButton" click="onSubmit()"
+				  enabled="{lstBranches.selectedItem}"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

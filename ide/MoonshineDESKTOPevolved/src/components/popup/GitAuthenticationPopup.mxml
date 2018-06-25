@@ -47,7 +47,7 @@
 							  prompt="GitHub User Name"/>
 		<view:PromptTextInput id="txtPassword" 
 							  prompt="Password" width="100%" styleName="textInput"
-							  displayAsPassword="true"/>
+							  displayAsPassword="true" enter="onSubmit()"/>
 		<s:Label id="txtMessage" 
 				 text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center"/>

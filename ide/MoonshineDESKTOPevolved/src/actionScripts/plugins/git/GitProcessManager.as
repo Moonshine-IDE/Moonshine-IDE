@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -48,13 +50,16 @@ package actionScripts.plugins.git
 		public static const GIT_STATUS_FILE_MODIFIED:String = "gitStatusFileModified";
 		public static const GIT_STATUS_FILE_DELETED:String = "gitStatusFileDeleted";
 		public static const GIT_STATUS_FILE_NEW:String = "gitStatusFileNew";
+		public static const GIT_REMOTE_BRANCH_LIST:String = "getGitRemoteBranchList";
 		
 		private static const XCODE_PATH_DECTECTION:String = "xcodePathDectection";
 		private static const GIT_AVAIL_DECTECTION:String = "gitAvailableDectection";
 		private static const GIT_DIFF_CHECK:String = "checkGitDiff";
 		private static const GIT_PUSH:String = "gitPush";
 		private static const GIT_REMOTE_ORIGIN_URL:String = "getGitRemoteURL";
+		private static const GIT_CURRENT_BRANCH_NAME:String = "getGitCurrentBranchName";
 		private static const GIT_COMMIT:String = "gitCommit";
+		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
 		
 		private var activeGitRemoteURL:String;
 		private var customProcess:NativeProcess;
@@ -65,6 +70,7 @@ package actionScripts.plugins.git
 		private var model:IDEModel = IDEModel.getInstance();
 		private var isAndroid:Boolean;
 		private var isErrorClose:Boolean;
+		private var branchList:ArrayCollection;
 		
 		public var gitBinaryPathOSX:String;
 		public var setGitAvailable:Function;
@@ -160,8 +166,8 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff --name-status > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
-				'git&&diff&&--name-status&&>&&'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt', false, GIT_DIFF_CHECK));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff status --porcelain > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
+				'git&&status&&--porcelain&&>&&'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt', false, GIT_DIFF_CHECK));
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -219,41 +225,58 @@ package actionScripts.plugins.git
 			flush();
 		}
 		
-		private function checkDiffFileExistence():void
+		public function pull():void
 		{
-			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
-			if (tmpFile.exists)
-			{
-				var tmpString:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
-				
-				// @note
-				// for some unknown reason, searchRegExp.exec(tmpString) always
-				// failed after 4 records; initial investigation didn't shown
-				// any possible reason of breaking; Thus forEach treatment for now
-				// (but I don't like this)
-				var tmpPositions:ArrayCollection = new ArrayCollection();
-				var contentInLineBreaks:Array = tmpString.split("\n");
-				var eachLineSplit:Array;
-				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
-				{
-					if (element != "")
-					{
-						eachLineSplit = element.split("\t");
-						tmpPositions.addItem(new GenericSelectableObject(true, {path: eachLineSplit[1], status:getFileStatus(eachLineSplit[0])}));
-					}
-				});
-				
-				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
-			}
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
 			
-			/*
-			 * @local
-			 */
-			function getFileStatus(value:String):String
-			{
-				if (value == "D") return GIT_STATUS_FILE_DELETED;
-				return GIT_STATUS_FILE_MODIFIED;
-			}
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin' : 'git&&pull&&--progress&&-v&&--no-rebase&&origin', false, GitHubPlugin.PULL_REQUEST));
+			
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		public function switchBranch():void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' ls-remote --heads' : 'git&&ls-remote&&--heads', false, GIT_REMOTE_BRANCH_LIST));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --abbrev-ref HEAD' : 'git&&rev-parse&&--abbrev-ref&&HEAD', false, GIT_CURRENT_BRANCH_NAME));
+			
+			warning("Fetching branch details...");
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		public function changeBranchTo(value:GenericSelectableObject):void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			var nameOnlyBranchSplit:Array = (value.data as String).split("/");
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ nameOnlyBranchSplit[nameOnlyBranchSplit.length-1]: 'git&&checkout&&'+ nameOnlyBranchSplit[nameOnlyBranchSplit.length-1], false, GIT_CHECKOUT_BRANCH));
+			
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
 		}
 		
 		private function addToQueue(value:Object):void
@@ -470,6 +493,25 @@ package actionScripts.plugins.git
 						return;
 					}
 				}
+				case GIT_REMOTE_BRANCH_LIST:
+				{
+					if (data.indexOf("\t") != -1) parseRemoteBranchList(data);
+					return;
+				}
+				case GIT_CURRENT_BRANCH_NAME:
+				{
+					data = data.replace("\n", "");
+					for each (var i:GenericSelectableObject in branchList)
+					{
+						if (i.data.indexOf("/"+ data) != -1)
+						{
+							i.isSelected = true;
+							dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST, branchList));
+							break;
+						}
+					}
+					return;
+				}
 			}
 			
 			match = data.match(/fatal: .*/);
@@ -514,6 +556,65 @@ package actionScripts.plugins.git
 				}
 				
 			} while (tmpFile != null);
+		}
+		
+		private function checkDiffFileExistence():void
+		{
+			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
+			if (tmpFile.exists)
+			{
+				var tmpString:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
+				
+				// @note
+				// for some unknown reason, searchRegExp.exec(tmpString) always
+				// failed after 4 records; initial investigation didn't shown
+				// any possible reason of breaking; Thus forEach treatment for now
+				// (but I don't like this)
+				var tmpPositions:ArrayCollection = new ArrayCollection();
+				var contentInLineBreaks:Array = tmpString.split("\n");
+				var firstPart:String;
+				var secondPart:String;
+				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
+				{
+					if (element != "")
+					{
+						element = StringUtil.trim(element);
+						firstPart = element.substring(0, element.indexOf(" "));
+						secondPart = element.substr(element.indexOf(" ")+1, element.length);
+						
+						// in some cases the output comes surrounding with double-quote
+						// we need to remove them before a commit
+						secondPart = secondPart.replace(/\"/g, "");
+						
+						tmpPositions.addItem(new GenericSelectableObject(true, {path: secondPart, status:getFileStatus(firstPart)}));
+					}
+				});
+				
+				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+			}
+			
+			/*
+			* @local
+			*/
+			function getFileStatus(value:String):String
+			{
+				if (value == "D") return GIT_STATUS_FILE_DELETED;
+				else if (value == "??") return GIT_STATUS_FILE_NEW;
+				return GIT_STATUS_FILE_MODIFIED;
+			}
+		}
+		
+		private function parseRemoteBranchList(value:String):void
+		{
+			branchList = new ArrayCollection();
+			var contentInLineBreaks:Array = value.split("\n");
+			contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
+			{
+				if (element != "" && element.indexOf("\t") != -1)
+				{
+					branchList.addItem(new GenericSelectableObject(false, element.split("\t")[1]));
+				}
+			});
 		}
 	}
 }
