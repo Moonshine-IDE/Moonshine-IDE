@@ -328,10 +328,12 @@ package visualEditor.plugin
 
             if (_exportedProject.isExportedToExistingSource)
             {
-                webForCopy.fileBridge.copyInto(dest);
-
-                dest = destination.resolvePath("grails-app/assets/stylesheets");
-                if (dest.fileBridge.exists)
+                var grailsStylesheetDest:FileLocation = destination.resolvePath("grails-app/assets/stylesheets");
+                if (grailsStylesheetDest.fileBridge.exists)
+                {
+                    webForCopy.fileBridge.copyInto(grailsStylesheetDest);
+                }
+                else
                 {
                     webForCopy.fileBridge.copyInto(dest);
                 }
