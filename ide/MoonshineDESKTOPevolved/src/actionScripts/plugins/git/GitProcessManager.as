@@ -186,8 +186,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' diff status --porcelain > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"': 
-				'git&&status&&--porcelain&&>&&'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt', false, GIT_DIFF_CHECK));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' status --porcelain': 'git&&status&&--porcelain', false, GIT_DIFF_CHECK));
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -231,8 +230,14 @@ package actionScripts.plugins.git
 			}
 			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-			var userName:String = tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName;
-			var password:String = tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password;
+			var userName:String;
+			var password:String;
+			
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				userName = tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName;
+				password = tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password;
+			}
 			
 			customInfo = renewProcessInfo();
 			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
@@ -345,7 +350,7 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			if (pushToOrigin) 
 			{
-				pendingProcess.push(new MethodDescriptor(this, 'push', {userName:tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName, password: tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password})); // next method we need to fire when above done
+				pendingProcess.push(new MethodDescriptor(this, 'push', ConstantsCoreVO.IS_MACOS ? null : {userName:tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName, password: tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password})); // next method we need to fire when above done
 			}
 			
 			notice("Trying to switch branch...");
@@ -466,9 +471,6 @@ package actionScripts.plugins.git
 						case GitHubPlugin.CLONE_REQUEST:
 							success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
 							break;
-						case GIT_DIFF_CHECK:
-							checkDiffFileExistence();
-							break;
 						case GIT_PUSH:
 							success("...process completed");
 							break;
@@ -580,7 +582,8 @@ package actionScripts.plugins.git
 				}
 				case GIT_DIFF_CHECK:
 				{
-					return;
+					if (!isFatal) checkDiffFileExistence(data);
+					break;
 				}
 				case GIT_REMOTE_ORIGIN_URL:
 				{
@@ -595,6 +598,7 @@ package actionScripts.plugins.git
 						}
 						return;
 					}
+					break;
 				}
 				case GIT_REMOTE_BRANCH_LIST:
 				{
@@ -610,11 +614,12 @@ package actionScripts.plugins.git
 				case GIT_CHECKOUT_NEW_BRANCH:
 				{
 					if (isFatal) isErrorClose = true;
+					break;
 				}
 				case GitHubPlugin.PULL_REQUEST:
 				{
 					if (isFatal) isErrorClose = true;
-					return;
+					break;
 				}
 			}
 			
@@ -653,40 +658,29 @@ package actionScripts.plugins.git
 			} while (tmpFile != null);
 		}
 		
-		private function checkDiffFileExistence():void
+		private function checkDiffFileExistence(value:String):void
 		{
-			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
-			if (tmpFile.exists)
+			var tmpPositions:ArrayCollection = new ArrayCollection();
+			var contentInLineBreaks:Array = value.split("\n");
+			var firstPart:String;
+			var secondPart:String;
+			contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 			{
-				var tmpString:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
-				
-				// @note
-				// for some unknown reason, searchRegExp.exec(tmpString) always
-				// failed after 4 records; initial investigation didn't shown
-				// any possible reason of breaking; Thus forEach treatment for now
-				// (but I don't like this)
-				var tmpPositions:ArrayCollection = new ArrayCollection();
-				var contentInLineBreaks:Array = tmpString.split("\n");
-				var firstPart:String;
-				var secondPart:String;
-				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
+				if (element != "")
 				{
-					if (element != "")
-					{
-						element = StringUtil.trim(element);
-						firstPart = element.substring(0, element.indexOf(" "));
-						secondPart = element.substr(element.indexOf(" ")+1, element.length);
-						
-						// in some cases the output comes surrounding with double-quote
-						// we need to remove them before a commit
-						secondPart = secondPart.replace(/\"/g, "");
-						
-						tmpPositions.addItem(new GenericSelectableObject(true, {path: secondPart, status:getFileStatus(firstPart)}));
-					}
-				});
-				
-				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
-			}
+					element = StringUtil.trim(element);
+					firstPart = element.substring(0, element.indexOf(" "));
+					secondPart = element.substr(element.indexOf(" ")+1, element.length);
+					
+					// in some cases the output comes surrounding with double-quote
+					// we need to remove them before a commit
+					secondPart = secondPart.replace(/\"/g, "");
+					
+					tmpPositions.addItem(new GenericSelectableObject(true, {path: secondPart, status:getFileStatus(firstPart)}));
+				}
+			});
+			
+			dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
 			
 			/*
 			* @local
