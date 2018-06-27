@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+    import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
+
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -221,7 +223,8 @@ package actionScripts.impls
 				RenamePlugin,
 				OrganizeImportsPlugin,
 				Away3DPlugin,
-				GitHubPlugin
+				GitHubPlugin,
+				HiddenFilesPlugin
 			];
 		}
 		
@@ -229,7 +232,7 @@ package actionScripts.impls
 		{
 			return [ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin];
+					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

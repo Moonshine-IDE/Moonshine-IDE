@@ -63,7 +63,8 @@ package actionScripts.ui.renderers
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
-        public static const MARK_DIRECOTRY_AS_HIDDEN:String = "Mark Directory as Hidden";
+        public static const MARK_AS_HIDDEN:String = "Mark as Hidden";
+        public static const MARK_AS_VISIBLE:String = "Mark as Visible";
 		public static const RENAME:String = "Rename";
 		public static const SET_AS_DEFAULT_APPLICATION:String = "Set as Default Application";
 		public static const DELETE:String = "Delete";
@@ -237,10 +238,17 @@ package actionScripts.ui.renderers
 					model.contextMenuCore.addItem(contextMenu, fw.sourceController.getTreeRightClickMenu(fw.file));
 				}
 
-				if (!fw.isSourceFolder)
-				{
-                    //model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_DIRECOTRY_AS_HIDDEN, redispatch, Event.SELECT));
-				}
+				if (model.showHiddenPaths)
+                {
+                    if (fw.isHidden)
+                    {
+                        model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_AS_VISIBLE, redispatch, Event.SELECT));
+                    }
+                    else
+                    {
+                        model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_AS_HIDDEN, redispatch, Event.SELECT));
+                    }
+                }
 
 				if (!fw.isRoot)
 				{

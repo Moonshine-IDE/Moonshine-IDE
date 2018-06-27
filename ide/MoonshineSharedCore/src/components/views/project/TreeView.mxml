@@ -28,6 +28,8 @@
 
 	<mx:Script>
 		<![CDATA[
+		import actionScripts.events.HiddenFilesEvent;
+
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
 		import mx.collections.SortField;
@@ -400,7 +402,7 @@
 				case FTETreeItemRenderer.SETTINGS:
 				case FTETreeItemRenderer.PROJECT_SETUP:
 				{
-					project = getProjectFromProjectFolder(fileWrapper);
+					project = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 					dispatcher.dispatchEvent(
 							new ShowSettingsEvent(project)
 					)
@@ -476,7 +478,7 @@
 					if (event.extra != FTETreeItemRenderer.NEW_FOLDER)
 					{
 						var newFileEvent:NewFileEvent = new NewFileEvent(event.extra, creatingItemIn.file.fileBridge.nativePath, null, creatingItemIn);
-						newFileEvent.ofProject = getProjectFromProjectFolder(fileWrapper);
+						newFileEvent.ofProject = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 
 						dispatcher.dispatchEvent(newFileEvent);
 					}
@@ -488,7 +490,7 @@
 							newFolderWindow.addEventListener(CloseEvent.CLOSE, handleNewFolderPopupClose);
 							newFolderWindow.addEventListener(NewFileEvent.EVENT_NEW_FOLDER, onFileNewFolderCreationRequested);
 							newFolderWindow.wrapperOfFolderLocation = creatingItemIn;
-							newFolderWindow.wrapperBelongToProject = getProjectFromProjectFolder(fileWrapper);
+							newFolderWindow.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 
 							PopUpManager.centerPopUp(newFolderWindow);
 						}
@@ -513,6 +515,12 @@
 					FileCoreUtil.showInExplorer(fileWrapper.file);
 					break;
 				}
+				case FTETreeItemRenderer.MARK_AS_VISIBLE:
+					dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_VISIBLE, fileWrapper));
+					break;
+				case FTETreeItemRenderer.MARK_AS_HIDDEN:
+					dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_HIDDEN, fileWrapper));
+					break;
 			}
 
 			/*
@@ -523,7 +531,7 @@
 			{
 				if (!ConstantsCoreVO.IS_AIR)
 				{
-					refreshProjectFromServer(fileWrapper, getProjectFromProjectFolder(fileWrapper));
+					refreshProjectFromServer(fileWrapper, UtilsCore.getProjectFromProjectFolder(fileWrapper));
 					return;
 				}
 
@@ -538,7 +546,7 @@
 			{
 				if (!event2 || event2.detail == Alert.YES)
 				{
-					var projectAssociatedWithFile:ProjectVO = getProjectFromProjectFolder(fileWrapper);
+					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
 				}
 			}
@@ -701,7 +709,7 @@
 				updateTreeView();
 
 				// check if the wrapper is the source folder to the project
-				var tmpProject:AS3ProjectVO = getProjectFromProjectFolder(value) as AS3ProjectVO;
+				var tmpProject:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(value) as AS3ProjectVO;
 				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
 
 				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
@@ -876,17 +884,6 @@
 			item.file = newFile;
 
 			refreshByWrapperItem(item);
-		}
-
-		private function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO
-		{
-			for each (var p:ProjectVO in projects)
-			{
-				if (p.folderPath == projectFolder.projectReference.path)
-					return p;
-			}
-
-			return null;
 		}
 
 		private function fileDoubleClickedInTree(event:ListEvent):void
