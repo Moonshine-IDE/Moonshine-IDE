@@ -50,7 +50,7 @@
 		<s:List id="lstBranches"
 				width="100%" height="100%" styleName="multiLineList"
 				dataProvider="{branchCollection}" labelField="data"
-				requireSelection="true">
+				requireSelection="true" doubleClickEnabled="true" doubleClick="onSubmit()">
 			<s:itemRenderer>
 				<fx:Component>
 					<s:ItemRenderer width="100%" height="22">
@@ -82,7 +82,7 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnCommit" label="Commit Selected"
+		<s:Button id="btnCommit" label="Checkout Branch"
 				  styleName="darkButton" click="onSubmit()"
 				  enabled="{lstBranches.selectedItem}"/>
 	</resizableTitleWindow:controlBarContent>

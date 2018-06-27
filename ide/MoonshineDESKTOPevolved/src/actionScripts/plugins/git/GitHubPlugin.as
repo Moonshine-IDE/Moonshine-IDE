@@ -21,11 +21,14 @@ package actionScripts.plugins.git
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.GeneralEvent;
@@ -37,6 +40,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -44,6 +48,7 @@ package actionScripts.plugins.git
 	import components.popup.GitAuthenticationPopup;
 	import components.popup.GitBranchSelectionPopup;
 	import components.popup.GitCommitSelectionPopup;
+	import components.popup.GitNewBranchPopup;
 	import components.popup.GitRepositoryPermissionPopup;
 	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
@@ -64,6 +69,7 @@ package actionScripts.plugins.git
 		override public function get description():String	{ return "GitHub Plugin. Esc exits."; }
 		
 		public var gitBinaryPathOSX:String;
+		public var modelAgainstProject:Dictionary = new Dictionary();
 		
 		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
@@ -72,6 +78,8 @@ package actionScripts.plugins.git
 		private var gitCommitWindow:GitCommitSelectionPopup;
 		private var gitAuthWindow:GitAuthenticationPopup;
 		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
+		private var gitNewBranchWindow:GitNewBranchPopup;
+		private var latestBranchDetails:Object;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -79,6 +87,7 @@ package actionScripts.plugins.git
 			if (!_processManager) 
 			{
 				_processManager = new GitProcessManager();
+				_processManager.plugin = this;
 				_processManager.setGitAvailable = setGitAvailable;
 			}
 			
@@ -99,6 +108,8 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
+			
+			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 		}
 		
 		override public function deactivate():void 
@@ -114,6 +125,8 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
+			
+			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
 		}
 		
 		override public function resetSettings():void
@@ -134,6 +147,15 @@ package actionScripts.plugins.git
 			if (checkoutWindow) checkoutWindow.isGitAvailable = isGitAvailable;
 			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
 			if (gitBranchSelectionWindow) gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
+			if (gitNewBranchWindow) gitNewBranchWindow.isGitAvailable = isGitAvailable;
+		}
+		
+		private function onProjectsCollectionChanged(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.REMOVE && modelAgainstProject[event.items[0]] != undefined) 
+			{
+				delete modelAgainstProject[event.items[0]];
+			}
 		}
 		
 		private function checkOSXGitAccess():Boolean
@@ -267,24 +289,10 @@ package actionScripts.plugins.git
 		
 		private function onPushRequest(event:Event):void
 		{
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (!ConstantsCoreVO.IS_MACOS && !modelAgainstProject[model.activeProject].sessionUser)
 			{
-				if (!gitAuthWindow)
-				{
-					if (!checkOSXGitAccess()) return;
-					
-					processManager.checkGitAvailability();
-					
-					gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, false) as GitAuthenticationPopup;
-					gitAuthWindow.title = "Git Needs Authentication";
-					gitAuthWindow.isGitAvailable = isGitAvailable;
-					gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-					PopUpManager.centerPopUp(gitAuthWindow);
-				}
-				else
-				{
-					PopUpManager.bringToFront(gitAuthWindow);
-				}
+				openAuthentication();
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 			}
 			else
 			{
@@ -292,13 +300,22 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function onGitAuthWindowClosed(event:CloseEvent):void
+		private function onAuthSuccessToPush(event:Event):void
 		{
-			if (gitAuthWindow.userObject) processManager.push(gitAuthWindow.userObject);
-			
-			gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-			PopUpManager.removePopUp(gitAuthWindow);
-			gitAuthWindow = null;
+			gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
+			if (gitAuthWindow.userObject) 
+			{
+				if (gitAuthWindow.userObject.save) 
+				{
+					modelAgainstProject[model.activeProject].sessionUser = gitAuthWindow.userObject.userName;
+					modelAgainstProject[model.activeProject].sessionPassword = gitAuthWindow.userObject.password;
+					processManager.push(null);
+				}
+				else
+				{
+					processManager.push(gitAuthWindow.userObject);
+				}
+			}
 		}
 		
 		private function onRefreshRequest(event:Event):void
@@ -308,7 +325,64 @@ package actionScripts.plugins.git
 		
 		private function onNewBranchRequest(event:Event):void
 		{
+			if (!gitBranchSelectionWindow)
+			{
+				if (!checkOSXGitAccess()) return;
+				
+				processManager.checkGitAvailability();
+				
+				gitNewBranchWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitNewBranchPopup, false) as GitNewBranchPopup;
+				gitNewBranchWindow.title = "New Branch";
+				gitNewBranchWindow.isGitAvailable = isGitAvailable;
+				gitNewBranchWindow.addEventListener(CloseEvent.CLOSE, onGitNewBranchWindowClosed);
+				PopUpManager.centerPopUp(gitNewBranchWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(gitNewBranchWindow);
+			}
+		}
+		
+		private function onGitNewBranchWindowClosed(event:CloseEvent):void
+		{
+			var newBranchDetails:Object = gitNewBranchWindow.submitObject;
 			
+			gitNewBranchWindow.removeEventListener(CloseEvent.CLOSE, onGitNewBranchWindowClosed);
+			PopUpManager.removePopUp(gitNewBranchWindow);
+			gitNewBranchWindow = null;
+			
+			if (newBranchDetails) 
+			{
+				if (newBranchDetails.pushToRemote && !ConstantsCoreVO.IS_MACOS && !modelAgainstProject[model.activeProject].sessionUser)
+				{
+					latestBranchDetails = newBranchDetails;
+					openAuthentication();
+					gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToNewBranch);
+				}
+				else
+				{
+					processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
+				}
+			}
+		}
+		
+		private function onAuthSuccessToNewBranch(event:Event):void
+		{
+			gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToNewBranch);
+			
+			if (gitAuthWindow.userObject)
+			{
+				if (gitAuthWindow.userObject.save) 
+				{
+					modelAgainstProject[model.activeProject].sessionUser = gitAuthWindow.userObject.userName;
+					modelAgainstProject[model.activeProject].sessionPassword = gitAuthWindow.userObject.password;
+					processManager.createAndCheckoutNewBranch(latestBranchDetails.name, latestBranchDetails.pushToRemote, null);
+				}
+				else
+				{
+					processManager.createAndCheckoutNewBranch(latestBranchDetails.name, latestBranchDetails.pushToRemote, gitAuthWindow.userObject);
+				}
+			}
 		}
 		
 		private function onChangeBranchRequest(event:Event):void
@@ -384,6 +458,34 @@ package actionScripts.plugins.git
 			gitRepositoryPermissionWindow = null;
 			
 			checkOSXGitAccess();
+			processManager.getCurrentBranch(); // store the branch name
+			processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL', model.activeProject)); // store the remote URL
+		}
+		
+		private function openAuthentication():void
+		{
+			if (!gitAuthWindow)
+			{
+				if (!checkOSXGitAccess()) return;
+				
+				processManager.checkGitAvailability();
+				
+				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+				gitAuthWindow.title = "Git Needs Authentication";
+				gitAuthWindow.isGitAvailable = isGitAvailable;
+				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				PopUpManager.centerPopUp(gitAuthWindow);
+			}
+			
+			/*
+			 * @local
+			 */
+			function onGitAuthWindowClosed(event:CloseEvent):void
+			{
+				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				PopUpManager.removePopUp(gitAuthWindow);
+				gitAuthWindow = null;
+			}
 		}
 	}
 }

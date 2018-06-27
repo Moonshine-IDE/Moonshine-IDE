@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="500" minWidth="400" minHeight="100" autoLayout="true"
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:view="actionScripts.plugin.findreplace.view.*"
+		 creationComplete="txtName.setFocus()">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.validators.Validator;
+			
+			[Bindable] public var isGitAvailable:Boolean;
+			
+			public var submitObject:Object;
+			
+			private function onSubmit():void
+			{
+				var tmpArr : Array = new Array(sValidator);
+				if (Validator.validateAll(tmpArr).length == 0)
+				{
+					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="sValidator" source="{txtName}" property="text" trigger="{btnCommit}" triggerEvent="click"/>
+	</fx:Declarations>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
+		<view:PromptTextInput id="txtName"
+							  width="100%" styleName="textInput"
+							  prompt="New Branch Name" enter="onSubmit()"/>
+		<s:CheckBox id="cbPush"
+					label="Push newly created branch to remote" selected="true"/>
+		<s:Label text="You need Git installed on your system to continue."
+				 width="100%" textAlign="center" color="0xff0000"
+				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
+		<s:Label text="Note: New branch will create locally. You can later push the branch to remote."
+				 width="100%" color="0xe0e0e0" paddingBottom="4" paddingTop="4"
+				 visible="{isGitAvailable}" includeInLayout="{isGitAvailable}"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="btnCommit" label="Create Branch"
+				  styleName="darkButton" click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

@@ -21,8 +21,9 @@ package actionScripts.utils
 {
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.languageServer.ActionScriptLanguageServerForProject;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	
 	public class TypeAheadProcess
 	{
@@ -34,7 +35,9 @@ package actionScripts.utils
 		{
 			javaPath = path;
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			dispatcher.addEventListener(TypeAheadEvent.EVENT_START_AGAINST_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			dispatcher.addEventListener(TypeAheadEvent.EVENT_STOP_AGAINST_PROJECT, removeProjectHandler);
 		}
 		
 		private function removeProjectHandler(event:ProjectEvent):void

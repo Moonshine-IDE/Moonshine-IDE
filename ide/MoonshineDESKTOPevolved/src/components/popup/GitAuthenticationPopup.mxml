@@ -3,32 +3,25 @@
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 width="500" minWidth="400" minHeight="100" autoLayout="true"
 		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*"
-		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx">
+		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="txtUser.setFocus()">
 	<fx:Script>
 		<![CDATA[
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
-			public var userObject:Object;
+			public static const GIT_AUTH_COMPLETED:String = "gitAuthenticationCompleted";
 			
-			private var _isGitAvailable:Boolean;
-			[Bindable] public function get isGitAvailable():Boolean
-			{
-				return _isGitAvailable;
-			}
-			public function set isGitAvailable(value:Boolean):void
-			{
-				_isGitAvailable = value;
-				txtMessage.text = !_isGitAvailable ? "You need Git installed on your system to continue." : "You need to authenticate to GitHub to Push.";
-				txtMessage.setStyle("color", !_isGitAvailable ? 0xff0000 : 0xe0e0e0);
-			}
+			[Bindable] public var isGitAvailable:Boolean;
+			
+			public var userObject:Object;
 			
 			private function onSubmit():void
 			{
 				var tmpArr : Array = new Array(eValidator, pValidator);
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
-					userObject = {userName:txtUser.text, password:txtPassword.text};
+					userObject = {userName:txtUser.text, password:txtPassword.text, save:cbSaveAuth.selected};
+					dispatchEvent(new Event(GIT_AUTH_COMPLETED));
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
 			}
@@ -48,9 +41,11 @@
 		<view:PromptTextInput id="txtPassword" 
 							  prompt="Password" width="100%" styleName="textInput"
 							  displayAsPassword="true" enter="onSubmit()"/>
-		<s:Label id="txtMessage" 
-				 text="You need Git installed on your system to continue."
-				 width="100%" textAlign="center"/>
+		<s:CheckBox id="cbSaveAuth"
+					label="Save for this project's session"/>
+		<s:Label text="You need Git installed on your system to continue."
+				 width="100%" textAlign="center" color="0xff0000"
+				 includeInLayout="{!isGitAvailable}" visible="{!isGitAvailable}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

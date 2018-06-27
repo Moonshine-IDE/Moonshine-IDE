@@ -18,9 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import actionScripts.factory.FileLocation;
-	
 	import flash.events.Event;
+	
+	import actionScripts.factory.FileLocation;
 
 	public class TypeAheadEvent extends Event
 	{
@@ -34,6 +34,8 @@ package actionScripts.events
 		public static const EVENT_WORKSPACE_SYMBOLS:String = "newWorkspaceSymbols";
 		public static const EVENT_FIND_REFERENCES:String = "newFindReferences";
 		public static const EVENT_RENAME:String = "newRename";
+		public static const EVENT_STOP_AGAINST_PROJECT:String = "stopServerAgainstProject";
+		public static const EVENT_START_AGAINST_PROJECT:String = "startRestartServerAgainstProject";
 		
 		public var startLinePos:Number;
 		public var endLinePos:Number;
