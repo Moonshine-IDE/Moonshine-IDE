@@ -191,7 +191,7 @@ package actionScripts.plugins.git
 			flush();
 		}
 		
-		public function commit(files:ArrayCollection):void
+		public function commit(files:ArrayCollection, withMessage:String):void
 		{
 			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
@@ -208,7 +208,7 @@ package actionScripts.plugins.git
 			}
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ filesToCommit.join(' ') : 'git&&add&&'+ filesToCommit.join('&&'), false, GIT_COMMIT));
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "Test data"' : 'git&&commit&&-m&&"Test data"', false, GIT_COMMIT));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ withMessage +'"' : 'git&&commit&&-m&&"'+ withMessage +'"', false, GIT_COMMIT));
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -297,12 +297,14 @@ package actionScripts.plugins.git
 			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
 			
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+			
 			customInfo = renewProcessInfo();
 			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin' : 'git&&pull&&--progress&&-v&&--no-rebase&&origin', false, GitHubPlugin.PULL_REQUEST));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin '+ tmpModel.currentBranch : 'git&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ tmpModel.currentBranch, false, GitHubPlugin.PULL_REQUEST));
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -385,7 +387,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			// https://stackoverflow.com/questions/1519006/how-do-you-create-a-remote-git-branch
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout -b '+ name : 'git&&checkout&&-b'+ name, false, GIT_CHECKOUT_NEW_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout -b '+ name : 'git&&checkout&&-b&&'+ name, false, GIT_CHECKOUT_NEW_BRANCH));
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			if (pushToOrigin) 
 			{
@@ -410,7 +412,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ tmpModel.currentBranch +' --' : 'git&&checkout'+ tmpModel.currentBranch +'&&--', false, GIT_CHECKOUT_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ tmpModel.currentBranch +' --' : 'git&&checkout&&'+ tmpModel.currentBranch +'&&--', false, GIT_CHECKOUT_BRANCH));
 			
 			if (customProcess) startShell(false);
 			startShell(true);

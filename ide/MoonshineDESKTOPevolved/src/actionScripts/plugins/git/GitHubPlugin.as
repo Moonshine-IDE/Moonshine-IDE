@@ -269,7 +269,7 @@ package actionScripts.plugins.git
 		
 		private function onGitCommitWindowClosed(event:CloseEvent):void
 		{
-			if (gitCommitWindow.isSubmit) processManager.commit(gitCommitWindow.commitDiffCollection);
+			if (gitCommitWindow.isSubmit) processManager.commit(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
 			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
 			PopUpManager.removePopUp(gitCommitWindow);
@@ -328,7 +328,7 @@ package actionScripts.plugins.git
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Revert File(s)";
-				gitCommitWindow.buttonLabel = "Revert Selected";
+				gitCommitWindow.type = GitCommitSelectionPopup.TYPE_REVERT;
 				gitCommitWindow.isGitAvailable = isGitAvailable;
 				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitRevertWindowClosed);
 				PopUpManager.centerPopUp(gitCommitWindow);

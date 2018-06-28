@@ -2,26 +2,51 @@
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 width="600" height="400" minWidth="300" minHeight="200"
-		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*">
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
 			
 			import actionScripts.valueObjects.GenericSelectableObject;
+			
+			public static const TYPE_COMMIT:String = "typeCommit";
+			public static const TYPE_REVERT:String = "typeRevert";
 			
 			[Bindable] public var filesCount:int;
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var commitDiffCollection:ArrayCollection;
-			[Bindable] public var buttonLabel:String = "Commit Selected";
 			
+			public var type:String = TYPE_COMMIT;
 			public var isSubmit:Boolean;
+			public var commitMessage:String;
+			
+			private function onCreationCompletes(event:FlexEvent):void
+			{
+				btnCommit.label = (type == TYPE_COMMIT) ? "Commit Selected" : "Revert Selected";
+				if (type == TYPE_REVERT)
+				{
+					lstFiles.percentHeight = 100;
+					txtMessage.includeInLayout = txtMessage.visible = false;
+				}
+			}
 			
 			private function onSubmit():void
 			{
-				isSubmit = true;
+				if (type == TYPE_COMMIT)
+				{
+					var tmpArr : Array = new Array(sValidator);
+					if (Validator.validateAll(tmpArr).length != 0)
+					{
+						return;
+					}
+				}
 				
-				// for now - testing
+				isSubmit = true;
+				commitMessage = txtMessage.text;
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
@@ -32,13 +57,16 @@
 			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="sValidator" source="{txtMessage}" property="text" trigger="{btnCommit}" triggerEvent="click"/>
+	</fx:Declarations>
 	
 	<s:VGroup height="100%" width="100%" 
 			  paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
 		<s:Label text="Select file(s) to continue:"
 				 paddingBottom="4"/>
 		<s:List id="lstFiles"
-				width="100%" height="100%" styleName="multiLineList"
+				width="100%" height="70%" styleName="multiLineList"
 				dataProvider="{commitDiffCollection}"
 				requireSelection="true">
 			<s:itemRenderer>
@@ -99,10 +127,13 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
+		<s:TextArea id="txtMessage"
+					width="100%" height="30%"
+					prompt="Commit message.."/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnCommit" label="{buttonLabel}"
+		<s:Button id="btnCommit" label="Commit Selected"
 				  styleName="darkButton" click="onSubmit()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
