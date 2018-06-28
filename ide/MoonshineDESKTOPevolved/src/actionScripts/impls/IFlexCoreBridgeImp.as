@@ -362,7 +362,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','PUSH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PUSH_REQUEST),
 					new MenuItem(resourceManager.getString('resources','PULL'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PULL_REQUEST),
-					new MenuItem(resourceManager.getString('resources','REFRESH_STATUS'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.REFRESH_STATUS_REQUEST),
+					new MenuItem(resourceManager.getString('resources','REVERT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.REVERT_REQUEST),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','NEW_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.NEW_BRANCH_REQUEST),
 					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST)

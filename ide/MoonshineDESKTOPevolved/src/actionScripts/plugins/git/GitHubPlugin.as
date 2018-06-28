@@ -60,7 +60,7 @@ package actionScripts.plugins.git
 		public static const COMMIT_REQUEST:String = "gitCommitRequest";
 		public static const PULL_REQUEST:String = "gitPullRequest";
 		public static const PUSH_REQUEST: String = "gitPushRequest";
-		public static const REFRESH_STATUS_REQUEST:String = "gitRefreshStatusRequest";
+		public static const REVERT_REQUEST:String = "gitFilesRevertRequest";
 		public static const NEW_BRANCH_REQUEST:String = "gitNewBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		
@@ -104,7 +104,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(COMMIT_REQUEST, onCommitRequest, false, 0, true);
 			dispatcher.addEventListener(PULL_REQUEST, onPullRequest, false, 0, true);
 			dispatcher.addEventListener(PUSH_REQUEST, onPushRequest, false, 0, true);
-			dispatcher.addEventListener(REFRESH_STATUS_REQUEST, onRefreshRequest, false, 0, true);
+			dispatcher.addEventListener(REVERT_REQUEST, onRevertRequest, false, 0, true);
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
@@ -121,7 +121,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(COMMIT_REQUEST, onCommitRequest);
 			dispatcher.removeEventListener(PULL_REQUEST, onPullRequest);
 			dispatcher.removeEventListener(PUSH_REQUEST, onPushRequest);
-			dispatcher.removeEventListener(REFRESH_STATUS_REQUEST, onRefreshRequest);
+			dispatcher.removeEventListener(REVERT_REQUEST, onRevertRequest);
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
@@ -318,9 +318,45 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function onRefreshRequest(event:Event):void
+		private function onRevertRequest(event:Event):void
 		{
+			if (!gitCommitWindow)
+			{
+				if (!checkOSXGitAccess()) return;
+				
+				processManager.checkGitAvailability();
+				
+				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				gitCommitWindow.title = "Revert File(s)";
+				gitCommitWindow.buttonLabel = "Revert Selected";
+				gitCommitWindow.isGitAvailable = isGitAvailable;
+				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitRevertWindowClosed);
+				PopUpManager.centerPopUp(gitCommitWindow);
+				
+				// we let the popup opened completely
+				// then run the following process else
+				// there could be a hold before appearing
+				// the window until folling process is finished
+				gitCommitWindow.callLater(function():void
+				{
+					processManager.checkDiff();
+					if (!processManager.hasEventListener(GitProcessManager.GIT_DIFF_CHECKED))
+						processManager.addEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+				});
+			}
+			else
+			{
+				PopUpManager.bringToFront(gitCommitWindow);
+			}
+		}
+		
+		private function onGitRevertWindowClosed(event:CloseEvent):void
+		{
+			if (gitCommitWindow.isSubmit) processManager.revert(gitCommitWindow.commitDiffCollection);
 			
+			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
+			PopUpManager.removePopUp(gitCommitWindow);
+			gitCommitWindow = null;
 		}
 		
 		private function onNewBranchRequest(event:Event):void

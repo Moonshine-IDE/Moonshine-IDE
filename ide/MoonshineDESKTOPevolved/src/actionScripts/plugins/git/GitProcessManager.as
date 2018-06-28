@@ -215,6 +215,47 @@ package actionScripts.plugins.git
 			flush();
 		}
 		
+		public function revert(files:ArrayCollection):void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			var filesDeletedOrModified:Array = [];
+			var filesAdded:Array = [];
+			for each (var i:GenericSelectableObject in files)
+			{
+				if (i.isSelected) 
+				{
+					switch(i.data.status)
+					{
+						case GitProcessManager.GIT_STATUS_FILE_DELETED:
+						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
+							filesDeletedOrModified.push(i.data.path);
+							break;
+							
+						case GitProcessManager.GIT_STATUS_FILE_NEW:
+							filesAdded.push(i.data.path);
+							break;
+					}
+				}
+			}
+			
+			if (filesDeletedOrModified.length > 0) addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ filesDeletedOrModified.join(' ') : 'git&&checkout&&'+ filesDeletedOrModified.join('&&'), false, GIT_CHECKOUT_BRANCH));
+			for each (var j:String in filesAdded)
+			{
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset '+ j : 'git&&reset&&'+ j, false, null));
+			}
+			
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
 		public function push(userObject:Object=null):void
 		{
 			if (customProcess) startShell(false);
@@ -692,6 +733,7 @@ package actionScripts.plugins.git
 					// in some cases the output comes surrounding with double-quote
 					// we need to remove them before a commit
 					secondPart = secondPart.replace(/\"/g, "");
+					secondPart = StringUtil.trim(secondPart);
 					
 					tmpPositions.addItem(new GenericSelectableObject(true, {path: secondPart, status:getFileStatus(firstPart)}));
 				}
@@ -705,7 +747,7 @@ package actionScripts.plugins.git
 			function getFileStatus(value:String):String
 			{
 				if (value == "D") return GIT_STATUS_FILE_DELETED;
-				else if (value == "??") return GIT_STATUS_FILE_NEW;
+				else if (value == "??" || value == "A") return GIT_STATUS_FILE_NEW;
 				return GIT_STATUS_FILE_MODIFIED;
 			}
 		}
