@@ -55,14 +55,14 @@ package actionScripts.plugins.git
 
     public class GitHubPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
-		public static const CLONE_REQUEST:String = "cloneRequest";
-		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
-		public static const COMMIT_REQUEST:String = "commitRequest";
-		public static const PULL_REQUEST:String = "pullRequest";
-		public static const PUSH_REQUEST: String = "pushRequest";
-		public static const REFRESH_STATUS_REQUEST:String = "refreshStatusRequest";
-		public static const NEW_BRANCH_REQUEST:String = "newBranchRequest";
-		public static const CHANGE_BRANCH_REQUEST:String = "changeBranchRequest";
+		public static const CLONE_REQUEST:String = "gutCloneRequest";
+		public static const CHECKOUT_REQUEST:String = "gitCheckoutRequestEvent";
+		public static const COMMIT_REQUEST:String = "gitCommitRequest";
+		public static const PULL_REQUEST:String = "gitPullRequest";
+		public static const PUSH_REQUEST: String = "gitPushRequest";
+		public static const REFRESH_STATUS_REQUEST:String = "gitRefreshStatusRequest";
+		public static const NEW_BRANCH_REQUEST:String = "gitNewBranchRequest";
+		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		
 		override public function get name():String			{ return "GitHub"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
@@ -233,7 +233,7 @@ package actionScripts.plugins.git
 		
 		private function onCheckoutRequest(event:Event):void
 		{
-			
+			processManager.checkout();
 		}
 		
 		private function onCommitRequest(event:Event):void

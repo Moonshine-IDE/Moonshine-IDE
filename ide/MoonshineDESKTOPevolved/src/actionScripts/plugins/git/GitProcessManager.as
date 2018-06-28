@@ -33,8 +33,6 @@ package actionScripts.plugins.git
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.TypeAheadEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
@@ -354,6 +352,25 @@ package actionScripts.plugins.git
 			}
 			
 			notice("Trying to switch branch...");
+			if (customProcess) startShell(false);
+			startShell(true);
+			flush();
+		}
+		
+		public function checkout():void
+		{
+			if (customProcess) startShell(false);
+			if (!model.activeProject) return;
+			
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+			
+			customInfo = renewProcessInfo();
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
+			
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ tmpModel.currentBranch +' --' : 'git&&checkout'+ tmpModel.currentBranch +'&&--', false, GIT_CHECKOUT_BRANCH));
+			
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -736,12 +753,8 @@ package actionScripts.plugins.git
 		
 		private function refreshProjectTree():void
 		{
-			// stopping the language server
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(TypeAheadEvent.EVENT_STOP_AGAINST_PROJECT, model.activeProject));
 			// refreshing project tree
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
-			// restarting language server
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(TypeAheadEvent.EVENT_START_AGAINST_PROJECT, model.activeProject));
 		}
 	}
 }
