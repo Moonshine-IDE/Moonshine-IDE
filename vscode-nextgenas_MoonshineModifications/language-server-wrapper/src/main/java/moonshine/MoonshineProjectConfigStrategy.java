@@ -44,6 +44,7 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         options = new ProjectOptions();
         options.type = ProjectType.APP;
         options.config = "flex";
+        options.files = new String[0];
     }
 
     public WorkspaceFolder getWorkspaceFolder()
