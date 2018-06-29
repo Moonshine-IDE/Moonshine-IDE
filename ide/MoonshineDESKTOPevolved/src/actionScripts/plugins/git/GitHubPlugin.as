@@ -495,7 +495,7 @@ package actionScripts.plugins.git
 			
 			checkOSXGitAccess();
 			processManager.getCurrentBranch(); // store the branch name
-			processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL', model.activeProject)); // store the remote URL
+			processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL')); // store the remote URL
 		}
 		
 		private function openAuthentication():void

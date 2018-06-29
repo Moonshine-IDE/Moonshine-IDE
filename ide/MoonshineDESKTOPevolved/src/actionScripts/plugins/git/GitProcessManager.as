@@ -143,17 +143,17 @@ package actionScripts.plugins.git
 			flush();
 		}
 		
-		public function getGitRemoteURL(project:AS3ProjectVO):void
+		public function getGitRemoteURL():void
 		{
 			if (customProcess) startShell(false);
 			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
+			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config --get remote.origin.url' : 'git&&config&&--get&&remote.origin.url', false, GIT_REMOTE_ORIGIN_URL));
 			
-			gitTestProject = project;
+			gitTestProject = model.activeProject as AS3ProjectVO;
 			if (customProcess) startShell(false);
 			startShell(true);
 			flush();
@@ -612,7 +612,7 @@ package actionScripts.plugins.git
 						
 						// continuing fetch
 						pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // store the current branch
-						pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', model.activeProject)); // store the remote URL
+						pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL')); // store the remote URL
 						
 						gitTestProject = null;
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));

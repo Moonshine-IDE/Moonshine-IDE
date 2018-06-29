@@ -356,8 +356,8 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
 					new MenuItem(resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
-					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),
+					/*new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','PUSH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PUSH_REQUEST),
