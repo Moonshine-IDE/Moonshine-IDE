@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-    import actionScripts.utils.SharedObjectUtil;
-
     import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
@@ -137,7 +135,7 @@ package actionScripts.plugin.recentlyOpened
 			{
 				recentFiles = cookie.data.recentProjects;
 				recent = [];
-				
+
 				for (var j:int = 0; j < recentFiles.length; j++)
 				{
 					file = recentFiles[j];
