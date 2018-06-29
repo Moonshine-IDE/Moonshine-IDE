@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
+    import actionScripts.utils.SharedObjectUtil;
+
     import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
@@ -98,7 +100,7 @@ package actionScripts.plugin.recentlyOpened
 			var f:FileLocation;
 			var file:Object;
 			var object:Object;
-			var tmpNewRefVO: ProjectReferenceVO;
+			var projectReferenceVO:ProjectReferenceVO;
 			if (cookie.data.hasOwnProperty('recentFiles'))
 			{
 				if (!ConstantsCoreVO.IS_AIR)
@@ -108,15 +110,25 @@ package actionScripts.plugin.recentlyOpened
 				else
 				{
 					recentFiles = cookie.data.recentFiles;
-					for each (file in recentFiles)
+                    for (var i:int = 0; i < recentFiles.length; i++)
 					{
-						tmpNewRefVO = ProjectReferenceVO.getNewRemoteProjectReferenceVO(file);
-						if (tmpNewRefVO.path && tmpNewRefVO.path != "")
+						file = recentFiles[i];
+						projectReferenceVO = ProjectReferenceVO.getNewRemoteProjectReferenceVO(file);
+						if (projectReferenceVO.path && projectReferenceVO.path != "")
 						{
-							f = new FileLocation(tmpNewRefVO.path);
-							if (f.fileBridge.exists) recent.push(tmpNewRefVO);
+							f = new FileLocation(projectReferenceVO.path);
+							if (f.fileBridge.exists)
+							{
+								recent.push(projectReferenceVO);
+                            }
+							else
+							{
+								cookie.data.recentFiles.splice(i, 1);
+							}
 						}
 					}
+
+                    cookie.flush();
 					model.recentlyOpenedFiles.source = recent;
 				}
 			}
@@ -125,16 +137,29 @@ package actionScripts.plugin.recentlyOpened
 			{
 				recentFiles = cookie.data.recentProjects;
 				recent = [];
-				for each (file in recentFiles)
+				
+				for (var j:int = 0; j < recentFiles.length; j++)
 				{
-					tmpNewRefVO = ProjectReferenceVO.getNewRemoteProjectReferenceVO(file);
-					if (tmpNewRefVO.path && tmpNewRefVO.path != "")
+					file = recentFiles[j];
+					projectReferenceVO = ProjectReferenceVO.getNewRemoteProjectReferenceVO(file);
+					if (projectReferenceVO.path && projectReferenceVO.path != "")
 					{
-						f = new FileLocation(tmpNewRefVO.path);
-						if (ConstantsCoreVO.IS_AIR && f.fileBridge.exists) recent.push(tmpNewRefVO);
-						else if (!ConstantsCoreVO.IS_AIR) recent.push(tmpNewRefVO);
+						f = new FileLocation(projectReferenceVO.path);
+						if (ConstantsCoreVO.IS_AIR && f.fileBridge.exists)
+						{
+							recent.push(projectReferenceVO);
+						}
+						else if (!ConstantsCoreVO.IS_AIR)
+						{
+							recent.push(projectReferenceVO);
+						}
+						else
+						{
+							cookie.data.recentProjects.splice(j, 1);
+						}
 					}
 				}
+				cookie.flush();
 				model.recentlyOpenedProjects.source = recent;
 			}
 			
