@@ -212,11 +212,11 @@ package actionScripts.languageServer
 				config = "royale";
 			}
 
+			//the config file may not exist, or it may be out of date, so
+			//we're going to tell the project to update it immediately
+			_project.updateConfig();
 			if(_project.config.file)
 			{
-				//the config file may not exist, or it may be out of date, so
-				//we're going to tell the project to update it immediately
-				_project.updateConfig();
 				var projectPath:File = new File(project.folderLocation.fileBridge.nativePath);
 				var configPath:File = new File(_project.config.file.fileBridge.nativePath);
 				var buildArgs:String = "-load-config+=" +
