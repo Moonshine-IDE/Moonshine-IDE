@@ -118,6 +118,7 @@ package actionScripts.languageServer
 			
 			_globalDispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_globalDispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDCHANGE, didChangeCall);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_TYPEAHEAD, completionHandler);
@@ -187,6 +188,7 @@ package actionScripts.languageServer
 			}
 			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_DIDCHANGE, didChangeCall);
 			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_TYPEAHEAD, completionHandler);
@@ -974,6 +976,13 @@ package actionScripts.languageServer
 		private function applicationExitHandler(event:ApplicationEvent):void
 		{
 			this.stop();
+		}
+
+		private function saveProjectSettingsHandler(event:ProjectEvent):void
+		{
+			//this result may no longer be valid after project settings changes
+			_previousActiveFilePath = null;
+			_previousActiveResult = false;
 		}
 
 		private function didOpenCall(event:TypeAheadEvent):void
