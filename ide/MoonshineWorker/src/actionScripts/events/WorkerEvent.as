@@ -30,5 +30,11 @@ package actionScripts.events
 		public static const REPLACE_FILE_WITH_VALUE:String = "REPLACE_FILE_WITH_VALUE";
 		public static const GET_FILE_LIST:String = "GET_FILE_LIST";
 		public static const SET_FILE_LIST:String = "SET_FILE_LIST";
+		public static const SET_IS_MACOS:String = "SET_IS_MACOS"; // running standard code to determine macOS platform always returning true even in Windows
+		public static const RUN_LIST_OF_NATIVEPROCESS:String = "RUN_LIST_OF_NATIVEPROCESS";
+		public static const RUN_LIST_OF_NATIVEPROCESS_ENDED:String = "RUN_LIST_OF_NATIVEPROCESS_ENDED";
+		public static const RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:String = "RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK";
+		public static const RUN_NATIVEPROCESS_OUTPUT:String = "RUN_NATIVEPROCESS_OUTPUT";
+		public static const CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:String = "CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT";
 	}
 }

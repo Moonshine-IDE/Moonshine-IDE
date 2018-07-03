@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package
 {
+	import flash.desktop.NativeApplication;
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -32,6 +35,7 @@ package
 	import mx.utils.StringUtil;
 	
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.utils.WorkerGitNativeProcess;
 	import actionScripts.valueObjects.WorkerFileWrapper;
 	
 	public class MoonshineWorker extends Sprite
@@ -41,9 +45,11 @@ package
 		public static var FILES_COUNT:int;
 		public static var FILE_PROCESSED_COUNT:int;
 		public static var FILES_FOUND_IN_COUNT:int;
+		public static var IS_MACOS:Boolean;
 		
-		private var mainToWorker:MessageChannel;
-		private var workerToMain:MessageChannel;
+		public var mainToWorker:MessageChannel;
+		public var workerToMain:MessageChannel;
+		
 		private var projectSearchObject:Object;
 		private var projects:Array;
 		private var totalFoundCount:int;
@@ -51,6 +57,21 @@ package
 		private var isCustomFilePatterns:Boolean;
 		private var isStorePathsForProbableReplace:Boolean;
 		private var storedPathsForProbableReplace:Array;
+		
+		private var customProcess:NativeProcess;
+		private var customInfo:NativeProcessStartupInfo;
+		
+		private var _gitProcess:WorkerGitNativeProcess;
+		private function get gitProcess():WorkerGitNativeProcess
+		{
+			if (!_gitProcess)
+			{
+				_gitProcess = new WorkerGitNativeProcess();
+				_gitProcess.worker = this;
+			}
+			
+			return _gitProcess;
+		}
 		
 		public function MoonshineWorker()
 		{
@@ -67,6 +88,9 @@ package
 			var incomingObject:Object = mainToWorker.receive();
 			switch (incomingObject.event)
 			{
+				case WorkerEvent.SET_IS_MACOS:
+					IS_MACOS = incomingObject.value;
+					break;
 				case WorkerEvent.SEARCH_IN_PROJECTS:
 					projectSearchObject = incomingObject;
 					projects = projectSearchObject.value.projects;
@@ -85,6 +109,9 @@ package
 					break;
 				case WorkerEvent.SET_FILE_LIST:
 					storedPathsForProbableReplace = incomingObject.value as Array;
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS:
+					gitProcess.runProcesses(incomingObject.value);
 					break;
 			}
 		}
@@ -343,7 +370,7 @@ package
 			var line:int = str.substr(0,charIdx).split(lineDelim).length - 1;
 			var chr:int = line > 0 ? charIdx - str.lastIndexOf(lineDelim, charIdx - 1) - lineDelim.length : charIdx;
 			return new Point(line, chr);
-		} 
+		}
 	}
 }
 
