@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +13,27 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License
 // 
+// Author: Prominic.NET, Inc.
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
-// 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.git.model
+package actionScripts.valueObjects
 {
-	import flash.filesystem.File;
-	
-	import mx.collections.ArrayCollection;
-
-	public class GitProjectVO
+	public class WorkerNativeProcessResult
 	{
-		public var currentBranch:String;
-		public var remoteURL:String;
-		public var branchList:ArrayCollection;
-		public var sessionUser:String;
-		public var sessionPassword:String;
-		public var rootLocal:File;
+		public static const OUTPUT_TYPE_ERROR:String = "typeError";
+		public static const OUTPUT_TYPE_DATA:String = "typeData";
+		public static const OUTPUT_TYPE_CLOSE:String = "typeProcessClose";
 		
-		public function GitProjectVO()
+		public var output:String;
+		public var type:String;
+		public var queue:Object;
+		
+		public function WorkerNativeProcessResult(type:String, output:String, queue:Object=null /** type of NativeProcessQueueVO **/)
 		{
+			this.type = type;
+			this.output = output;
+			this.queue = queue;
 		}
 	}
 }

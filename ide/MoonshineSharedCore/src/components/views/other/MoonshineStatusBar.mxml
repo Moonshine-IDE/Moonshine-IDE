@@ -23,6 +23,7 @@
 				if (!loaderBar)
 				{
 					lblBuilding.text = event.notificationSuffix + event.projectName;
+					btnStop.includeInLayout = btnStop.visible = event.isShowStopButton;
 					
 					loaderBar = new loadingBar();
 					baseLoader.addChild(loaderBar);
@@ -69,7 +70,8 @@
 				 color="#333333"/>
 		<s:SpriteVisualElement id="baseLoader"
 							   width="32" height="12"/>
-		<s:Image source="@Embed('/elements/images/icoStop.png')"
+		<s:Image id="btnStop" 
+				 source="@Embed('/elements/images/icoStop.png')"
 				 click="onTerminateBuild(event)"/>
 	</s:HGroup>
 	

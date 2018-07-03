@@ -31,11 +31,13 @@ package actionScripts.events
 		
 		public var projectName:String;
 		public var notificationSuffix:String;
+		public var isShowStopButton:Boolean;
 		
-		public function StatusBarEvent(type:String, projectName:String=null, notificationSuffix:String=null)
+		public function StatusBarEvent(type:String, projectName:String=null, notificationSuffix:String=null, isShowStopButton:Boolean=true)
 		{
 			this.projectName = projectName;
 			this.notificationSuffix = notificationSuffix;
+			this.isShowStopButton = isShowStopButton;
 			
 			super(type, true, false);
 		}

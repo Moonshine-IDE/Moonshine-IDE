@@ -24,11 +24,15 @@ package actionScripts.vo
 		public var showInConsole:Boolean;
 		public var processType:String;
 		
-		public function NativeProcessQueueVO(com:String, showInConsole:Boolean, processType:String=null)
+		public var extraArguments:Array;
+		
+		public function NativeProcessQueueVO(com:String, showInConsole:Boolean, processType:String=null, ...args)
 		{
 			this.com = com;
 			this.showInConsole = showInConsole;
 			this.processType = processType;
+			
+			extraArguments = args;
 		}
 	}
 }

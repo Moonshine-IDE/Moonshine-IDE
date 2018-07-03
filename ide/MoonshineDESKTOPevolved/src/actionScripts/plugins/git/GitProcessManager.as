@@ -20,29 +20,26 @@ package actionScripts.plugins.git
 {
 	import com.adobe.utils.StringUtil;
 	
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.events.IOErrorEvent;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WorkerEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
-	import actionScripts.valueObjects.Settings;
+	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
 	
 	public class GitProcessManager extends ConsoleOutputter
@@ -70,17 +67,15 @@ package actionScripts.plugins.git
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
 		protected var processType:String;
-
-		private var customProcess:NativeProcess;
-		private var customInfo:NativeProcessStartupInfo;
+		
+		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
-		private var connectedDevices:Vector.<String>;
-		private var windowsAutoJavaLocation:File;
 		private var model:IDEModel = IDEModel.getInstance();
-		private var isAndroid:Boolean;
 		private var isErrorClose:Boolean;
 		private var onXCodePathDetection:Function;
 		private var gitTestProject:AS3ProjectVO;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var lastCloneURL:String;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -95,138 +90,99 @@ package actionScripts.plugins.git
 		
 		public function GitProcessManager()
 		{
+			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS);
+			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
 		}
 		
 		public function getOSXCodePath(completion:Function):void
 		{
-			if (customProcess) startShell(false);
-			onXCodePathDetection = completion;
-			customInfo = renewProcessInfo();
-			
 			queue = new Vector.<Object>();
 			
-			addToQueue({com:'xcode-select -p', showInConsole:false});
-			
-			processType = XCODE_PATH_DECTECTION;
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
 		}
 		
 		public function checkGitAvailability():void
 		{
-			if (customProcess) startShell(false);
-			customInfo = renewProcessInfo();
-			
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' --version' : 'git&&--version', false, GIT_AVAIL_DECTECTION));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
 		}
 		
 		public function checkIfGitRepository(project:AS3ProjectVO):void
 		{
-			if (customProcess) startShell(false);
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
-			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' -C "'+ customInfo.workingDirectory.nativePath +'" status' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST));
-			
 			gitTestProject = project;
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --git-dir' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function getGitRemoteURL():void
 		{
-			if (customProcess) startShell(false);
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
+			gitTestProject = model.activeProject as AS3ProjectVO;
 
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config --get remote.origin.url' : 'git&&config&&--get&&remote.origin.url', false, GIT_REMOTE_ORIGIN_URL));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+		}
+		
+		public function getCurrentBranch():void
+		{
+			if (!model.activeProject) return;
 			
-			gitTestProject = model.activeProject as AS3ProjectVO;
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' branch' : 'git&&branch', false, GIT_CURRENT_BRANCH_NAME));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function clone(url:String, target:String):void
 		{
-			if (customProcess) startShell(false);
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = new File(target);
-			
 			queue = new Vector.<Object>();
 			
+			lastCloneURL = url;
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, false, GitHubPlugin.CLONE_REQUEST));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target});
 		}
 		
 		public function checkDiff():void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' status --porcelain': 'git&&status&&--porcelain', false, GIT_DIFF_CHECK));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' status --porcelain > "'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt"' : 
+				'git&&status&&--porcelain&&>&&'+ File.applicationStorageDirectory.nativePath + File.separator +'commitDiff.txt', false, GIT_DIFF_CHECK));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function commit(files:ArrayCollection, withMessage:String):void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
+
 			queue = new Vector.<Object>();
 			
-			var filesToCommit:Array = [];
 			for each (var i:GenericSelectableObject in files)
 			{
-				if (i.isSelected) filesToCommit.push(i.data.path as String);
+				if (i.isSelected) 
+				{
+					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ i.data.path : 'git&&add&&'+ i.data.path, false, GIT_COMMIT));
+				}
 			}
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ filesToCommit.join(' ') : 'git&&add&&'+ filesToCommit.join('&&'), false, GIT_COMMIT));
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ withMessage +'"' : 'git&&commit&&-m&&"'+ withMessage +'"', false, GIT_COMMIT));
 			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function revert(files:ArrayCollection):void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 			
-			var filesDeletedOrModified:Array = [];
-			var filesAdded:Array = [];
 			for each (var i:GenericSelectableObject in files)
 			{
 				if (i.isSelected) 
@@ -235,30 +191,22 @@ package actionScripts.plugins.git
 					{
 						case GitProcessManager.GIT_STATUS_FILE_DELETED:
 						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
-							filesDeletedOrModified.push(i.data.path);
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ i.data.path : 'git&&checkout&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 							
 						case GitProcessManager.GIT_STATUS_FILE_NEW:
-							filesAdded.push(i.data.path);
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset '+ i.data.path : 'git&&reset&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 					}
 				}
 			}
 			
-			if (filesDeletedOrModified.length > 0) addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ filesDeletedOrModified.join(' ') : 'git&&checkout&&'+ filesDeletedOrModified.join('&&'), false, GIT_CHECKOUT_BRANCH));
-			for each (var j:String in filesAdded)
-			{
-				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset '+ j : 'git&&reset&&'+ j, false, null));
-			}
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "File Revert ", false));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:plugin.modelAgainstProject[model.activeProject].rootLocal.nativePath});
 		}
 		
 		public function push(userObject:Object=null):void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
 			
 			// safe-check
@@ -278,46 +226,30 @@ package actionScripts.plugins.git
 				password = tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password;
 			}
 			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
 			
 			//git push https://user:pass@github.com/user/project.git
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin '+ tmpModel.currentBranch : 'git&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ tmpModel.currentBranch, false, GIT_PUSH));
-			
+
 			warning("Git push requested...");
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Push ", false));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function pull():void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
 			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin '+ tmpModel.currentBranch : 'git&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ tmpModel.currentBranch, false, GitHubPlugin.PULL_REQUEST));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function switchBranch():void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 			
@@ -326,35 +258,12 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // next method we need to fire when above done
 			
 			warning("Fetching branch details...");
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
-		}
-		
-		public function getCurrentBranch():void
-		{
-			if (customProcess) startShell(false);
-			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
-			queue = new Vector.<Object>();
-			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' branch' : 'git&&branch', false, GIT_CURRENT_BRANCH_NAME));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function changeBranchTo(value:GenericSelectableObject):void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
 			
 			queue = new Vector.<Object>();
 			
@@ -362,14 +271,11 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			
 			notice("Trying to switch branch...");
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function createAndCheckoutNewBranch(name:String, pushToOrigin:Boolean, userObject:Object=null):void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
 			
 			// safe-check
@@ -380,10 +286,6 @@ package actionScripts.plugins.git
 			}
 			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
 			
 			// https://stackoverflow.com/questions/1519006/how-do-you-create-a-remote-git-branch
@@ -395,28 +297,50 @@ package actionScripts.plugins.git
 			}
 			
 			notice("Trying to switch branch...");
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
 		public function checkout():void
 		{
-			if (customProcess) startShell(false);
 			if (!model.activeProject) return;
 			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			
-			customInfo = renewProcessInfo();
-			customInfo.workingDirectory = model.activeProject.folderLocation.fileBridge.getFile as File;
-			
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ tmpModel.currentBranch +' --' : 'git&&checkout&&'+ tmpModel.currentBranch +'&&--', false, GIT_CHECKOUT_BRANCH));
-			
-			if (customProcess) startShell(false);
-			startShell(true);
-			flush();
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+		}
+		
+		private function onWorkerValueIncoming(event:GeneralEvent):void
+		{
+			var tmpValue:Object = event.value.value;
+			switch (event.value.event)
+			{
+				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
+					if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_DATA) shellData(tmpValue);
+					else if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE) shellExit(tmpValue);
+					else shellError(tmpValue);
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
+					if (queue.length != 0) queue.shift();
+					processType = tmpValue.processType;
+					shellTick(tmpValue);
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
+					listOfProcessEnded();
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+					// starts checking pending process here
+					if (pendingProcess.length > 0)
+					{
+						var process:MethodDescriptor = pendingProcess.shift();
+						process.callMethod();
+					}
+					break;
+				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
+					debug("%s", event.value.value);
+					break;
+			}
 		}
 		
 		private function addToQueue(value:Object):void
@@ -424,181 +348,94 @@ package actionScripts.plugins.git
 			queue.push(value);
 		}
 		
-		private function flush():void
+		private function listOfProcessEnded():void
 		{
-			if (queue.length == 0) 
+			switch (processType)
 			{
-				startShell(false);
-				
-				// starts checking pending process here
-				if (pendingProcess.length > 0)
+				case GIT_CHECKOUT_BRANCH:
+				case GIT_CHECKOUT_NEW_BRANCH:
+				case GitHubPlugin.PULL_REQUEST:
+					refreshProjectTree(); // important
+					break;
+			}
+		}
+		
+		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
+			error(value.output);
+		}
+		
+		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
+			if (!isErrorClose) 
+			{
+				var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+				switch (tmpQueue.processType)
 				{
-					var process:MethodDescriptor = pendingProcess.shift();
-					process.callMethod();
-				}
-				return;
-			}
-			
-			if (queue[0].showInConsole) debug("Sending to command: %s", queue[0].com);
-			
-			var tmpArr:Array = queue[0].com.split("&&");
-			if (Settings.os == "win") tmpArr.insertAt(0, "/c");
-			else tmpArr.insertAt(0, "-c");
-			processType = queue[0].processType;
-			customInfo.arguments = Vector.<String>(tmpArr);
-			
-			queue.shift();
-			customProcess.start(customInfo);
-		}
-		
-		private function startShell(start:Boolean):void 
-		{
-			if (start)
-			{
-				customProcess = new NativeProcess();
-				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				
-				// @note
-				// for some strange reason all the standard output turns to standard error output by git command line.
-				// to have them dictate and continue the native process (without terminating by assuming as an error)
-				// let's listen standard errors to shellData method only
-				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
-				
-				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			}
-			else
-			{
-				if (!customProcess) return;
-				if (customProcess.running) customProcess.exit();
-				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				customProcess = null;
-				processType = null;
-				isErrorClose = false;
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
-			}
-		}
-		
-		private function shellError(e:ProgressEvent):void 
-		{
-			if (customProcess)
-			{
-				var output:IDataInput = customProcess.standardError;
-				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
-				
-				var syntaxMatch:Array;
-				var generalMatch:Array;
-				var initMatch:Array;
-				var hideDebug:Boolean;
-				
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) error: (.*).*/);
-				if (syntaxMatch) {
-					var pathStr:String = syntaxMatch[1];
-					var lineNum:int = syntaxMatch[2];
-					var colNum:int = syntaxMatch[3];
-					var errorStr:String = syntaxMatch[4];
-				}
-				
-				generalMatch = data.match(/(.*?): error: (.*).*/);
-				if (!syntaxMatch && generalMatch)
-				{ 
-					pathStr = generalMatch[1];
-					errorStr  = generalMatch[2];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					error(data);
-					hideDebug = true;
-				}
-				
-				if (!hideDebug) debug("%s", data);
-				isErrorClose = true;
-				startShell(false);
-			}
-		}
-		
-		private function shellExit(e:NativeProcessExitEvent):void 
-		{
-			if (customProcess) 
-			{
-				if (!isErrorClose) 
-				{
-					switch (processType)
-					{
-						case GitHubPlugin.CLONE_REQUEST:
-							success("'"+ cloningProjectName +"'...downloaded successfully ("+ customInfo.workingDirectory.nativePath + File.separator + cloningProjectName +")");
-							break;
-						case GIT_PUSH:
-							success("...process completed");
-							break;
-						case GIT_CHECKOUT_BRANCH:
-						case GIT_CHECKOUT_NEW_BRANCH:
-						case GitHubPlugin.PULL_REQUEST:
-							refreshProjectTree(); // important
-							break;
-					}
-					
-					flush();
+					case GitHubPlugin.CLONE_REQUEST:
+						success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
+						break;
+					case GIT_PUSH:
+						success("...process completed");
+						break;
+					case GIT_DIFF_CHECK:
+						checkDiffFileExistence();
+						break;
 				}
 			}
 		}
 		
-		private function shellData(e:ProgressEvent):void 
+		private function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
 		{
-			var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
+			switch (value.processType)
+			{
+				case GIT_CHECKOUT_BRANCH:
+					if (value.extraArguments) notice(value.extraArguments[0] +" :Finished");
+					break;
+			}
+		}
+		
+		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
 			var match:Array;
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
 			
-			match = data.match(/fatal: .*/);
+			match = value.output.match(/fatal: .*/);
 			if (match) isFatal = true;
 			
-			match = data.toLowerCase().match(/(.*?)error: (.*).*/);
-			if (match)
-			{ 
-				error(data);
-				isErrorClose = true;
-				startShell(false);
-				return;
-			}
-			
-			switch(processType)
+			switch(tmpQueue.processType)
 			{
 				case XCODE_PATH_DECTECTION:
 				{
-					match = data.toLowerCase().match(/xcode.app\/contents\/developer/);
+					match = value.output.toLowerCase().match(/xcode.app\/contents\/developer/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(data);
+						onXCodePathDetection(value.output);
 						return;
 					}
 					
-					match = data.toLowerCase().match(/commandlinetools/);
+					match = value.output.toLowerCase().match(/commandlinetools/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(data);
+						onXCodePathDetection(value.output);
 						return;
 					}
 					break;
 				}
 				case GIT_AVAIL_DECTECTION:
 				{
-					match = data.toLowerCase().match(/git version/);
+					match = value.output.toLowerCase().match(/git version/);
 					if (match) 
 					{
 						setGitAvailable(true);
 						return;
 					}
 					
-					match = data.toLowerCase().match(/'git' is not recognized as an internal or external command/);
+					match = value.output.toLowerCase().match(/'git' is not recognized as an internal or external command/);
 					if (match)
 					{
 						setGitAvailable(false);
-						isErrorClose = true;
-						startShell(false);
 						return;
 					}
 					break;
@@ -608,7 +445,12 @@ package actionScripts.plugins.git
 					if (!isFatal)
 					{
 						gitTestProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
-						if (plugin.modelAgainstProject[gitTestProject] == undefined) plugin.modelAgainstProject[gitTestProject] = new GitProjectVO();
+						if (plugin.modelAgainstProject[gitTestProject] == undefined) 
+						{
+							value.output = value.output.replace("\n", "");
+							plugin.modelAgainstProject[gitTestProject] = new GitProjectVO();
+							plugin.modelAgainstProject[gitTestProject].rootLocal = (value.output == ".git") ? gitTestProject.folderLocation.fileBridge.getFile as File : (new File(value.output)).parent;
+						}
 						
 						// continuing fetch
 						pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // store the current branch
@@ -627,80 +469,52 @@ package actionScripts.plugins.git
 					}
 					return;
 				}
-				case GitHubPlugin.CLONE_REQUEST:
+				case GIT_REMOTE_ORIGIN_URL:
 				{
-					match = data.toLowerCase().match(/cloning into/);
+					match = value.output.match(/.*.$/);
 					if (match)
 					{
-						// for some weird reason git clone always
-						// turns to errordata first
-						cloningProjectName = data;
-						warning(data);
+						var tmpResult:Array = new RegExp("http.*\://", "i").exec(value.output);
+						if (tmpResult != null)
+						{
+							// extracting remote origin URL as 'github/[author]/[project]
+							if (plugin.modelAgainstProject[model.activeProject] != undefined) plugin.modelAgainstProject[model.activeProject].remoteURL = value.output.substr(tmpResult[0].length, value.output.length).replace("\n", "");
+						}
 						return;
 					}
 					break;
 				}
-				case GIT_DIFF_CHECK:
+				case GIT_CURRENT_BRANCH_NAME:
 				{
-					if (!isFatal) checkDiffFileExistence(data);
-					break;
+					parseCurrentBranch(value.output);
+					return;
 				}
-				case GIT_REMOTE_ORIGIN_URL:
+				case GitHubPlugin.CLONE_REQUEST:
 				{
-					match = data.match(/.*.$/);
+					match = value.output.toLowerCase().match(/cloning into/);
 					if (match)
 					{
-						var tmpResult:Array = new RegExp("http.*\://", "i").exec(data);
-						if (tmpResult != null)
-						{
-							// extracting remote origin URL as 'github/[author]/[project]
-							if (plugin.modelAgainstProject[model.activeProject] != undefined) plugin.modelAgainstProject[model.activeProject].remoteURL = data.substr(tmpResult[0].length, data.length).replace("\n", "");
-						}
+						// for some weird reason git clone always
+						// turns to errordata first
+						cloningProjectName = value.output;
+						warning(value.output);
 						return;
 					}
 					break;
 				}
 				case GIT_REMOTE_BRANCH_LIST:
 				{
-					if (!isFatal) parseRemoteBranchList(data);
+					if (!isFatal) parseRemoteBranchList(value.output);
 					return;
-				}
-				case GIT_CURRENT_BRANCH_NAME:
-				{
-					parseCurrentBranch(data);
-					return;
-				}
-				case GIT_CHECKOUT_BRANCH:
-				case GIT_CHECKOUT_NEW_BRANCH:
-				{
-					if (isFatal) isErrorClose = true;
-					break;
-				}
-				case GitHubPlugin.PULL_REQUEST:
-				{
-					if (isFatal) isErrorClose = true;
-					break;
 				}
 			}
 			
 			if (isFatal)
 			{
-				error(data);
+				error(value.output);
 				isErrorClose = true;
-				startShell(false);
 				return;
 			}
-
-			isErrorClose = false;
-			debug("%s", data);
-		}
-		
-		private function renewProcessInfo():NativeProcessStartupInfo
-		{
-			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
-			
-			return customInfo;
 		}
 		
 		private function initiateSandboxGitRepositoryCheckBrute(value:AS3ProjectVO):void
@@ -718,30 +532,41 @@ package actionScripts.plugins.git
 			} while (tmpFile != null);
 		}
 		
-		private function checkDiffFileExistence(value:String):void
+		private function checkDiffFileExistence():void
 		{
-			var tmpPositions:ArrayCollection = new ArrayCollection();
-			var contentInLineBreaks:Array = value.split("\n");
-			var firstPart:String;
-			var secondPart:String;
-			contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
+			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
+			if (tmpFile.exists)
 			{
-				if (element != "")
+				var value:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
+				
+				// @note
+				// for some unknown reason, searchRegExp.exec(tmpString) always
+				// failed after 4 records; initial investigation didn't shown
+				// any possible reason of breaking; Thus forEach treatment for now
+				// (but I don't like this)
+				var tmpPositions:ArrayCollection = new ArrayCollection();
+				var contentInLineBreaks:Array = value.split("\n");
+				var firstPart:String;
+				var secondPart:String;
+				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 				{
-					element = StringUtil.trim(element);
-					firstPart = element.substring(0, element.indexOf(" "));
-					secondPart = element.substr(element.indexOf(" ")+1, element.length);
-					
-					// in some cases the output comes surrounding with double-quote
-					// we need to remove them before a commit
-					secondPart = secondPart.replace(/\"/g, "");
-					secondPart = StringUtil.trim(secondPart);
-					
-					tmpPositions.addItem(new GenericSelectableObject(true, {path: secondPart, status:getFileStatus(firstPart)}));
-				}
-			});
-			
-			dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+					if (element != "")
+					{
+						element = StringUtil.trim(element);
+						firstPart = element.substring(0, element.indexOf(" "));
+						secondPart = element.substr(element.indexOf(" ")+1, element.length);
+						
+						// in some cases the output comes surrounding with double-quote
+						// we need to remove them before a commit
+						secondPart = secondPart.replace(/\"/g, "");
+						secondPart = StringUtil.trim(secondPart);
+						
+						tmpPositions.addItem(new GenericSelectableObject(false, {path: secondPart, status:getFileStatus(firstPart)}));
+					}
+				});
+				
+				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+			}
 			
 			/*
 			* @local

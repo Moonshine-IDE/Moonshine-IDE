@@ -26,7 +26,6 @@ package actionScripts.locator
 	import flash.utils.ByteArray;
 	
 	import actionScripts.events.GeneralEvent;
-	import actionScripts.events.WorkerEvent;
 	
 	public class IDEWorker extends EventDispatcher
 	{

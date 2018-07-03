@@ -18,27 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-	public class GenericSelectableObject
+	[Bindable] public class GenericSelectableObject
 	{
-		private var _data:Object;
-		public function get data():Object
-		{
-			return _data;
-		}
-		public function set data(value:Object):void
-		{
-			_data = value;
-		}
-		
-		private var _isSelected:Boolean;
-		public function get isSelected():Boolean
-		{
-			return _isSelected;
-		}
-		public function set isSelected(value:Boolean):void
-		{
-			_isSelected = value;
-		}
+		public var data:Object;
+		public var isSelected:Boolean;
 		
 		public function GenericSelectableObject(isSelcted:Boolean, data:Object)
 		{
