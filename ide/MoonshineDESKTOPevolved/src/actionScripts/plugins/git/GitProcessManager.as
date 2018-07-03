@@ -121,6 +121,8 @@ package actionScripts.plugins.git
 		
 		public function getGitRemoteURL():void
 		{
+			if (!model.activeProject) return;
+			
 			queue = new Vector.<Object>();
 			gitTestProject = model.activeProject as AS3ProjectVO;
 
@@ -160,7 +162,6 @@ package actionScripts.plugins.git
 		public function commit(files:ArrayCollection, withMessage:String):void
 		{
 			if (!model.activeProject) return;
-
 			queue = new Vector.<Object>();
 			
 			for each (var i:GenericSelectableObject in files)
@@ -180,7 +181,6 @@ package actionScripts.plugins.git
 		public function revert(files:ArrayCollection):void
 		{
 			if (!model.activeProject) return;
-			
 			queue = new Vector.<Object>();
 			
 			for each (var i:GenericSelectableObject in files)
