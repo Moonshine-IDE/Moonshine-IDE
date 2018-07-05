@@ -246,6 +246,8 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin '+ tmpModel.currentBranch : 'git&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ tmpModel.currentBranch, false, GitHubPlugin.PULL_REQUEST));
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
@@ -359,6 +361,7 @@ package actionScripts.plugins.git
 				case GIT_CHECKOUT_NEW_BRANCH:
 				case GitHubPlugin.PULL_REQUEST:
 					refreshProjectTree(); // important
+					success("...process completed");
 					break;
 			}
 		}
@@ -393,7 +396,7 @@ package actionScripts.plugins.git
 			switch (value.processType)
 			{
 				case GIT_CHECKOUT_BRANCH:
-					if (value.extraArguments) notice(value.extraArguments[0] +" :Finished");
+					if (value.extraArguments && value.extraArguments.length != 0) notice(value.extraArguments[0] +" :Finished");
 					break;
 			}
 		}
@@ -521,6 +524,9 @@ package actionScripts.plugins.git
 					if (!isFatal) parseRemoteBranchList(value.output);
 					return;
 				}
+				default:
+					notice(value.output);
+					break;
 			}
 			
 			if (isFatal)
