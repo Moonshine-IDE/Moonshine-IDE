@@ -488,14 +488,20 @@ package actionScripts.plugins.git
 		{
 			gitRepositoryPermissionWindow.removeEventListener(Event.CLOSE, onGitRepositoryPermissionClosed);
 			
-			if (gitRepositoryPermissionWindow.isAccepted) gitRepositoryPermissionWindow.project.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+			var isAccepted:Boolean = gitRepositoryPermissionWindow.isAccepted;
+			var tmpProject:AS3ProjectVO = gitRepositoryPermissionWindow.project;
 			
 			FlexGlobals.topLevelApplication.removeElement(gitRepositoryPermissionWindow);
 			gitRepositoryPermissionWindow = null;
-			
-			checkOSXGitAccess();
-			processManager.getCurrentBranch(); // store the branch name
-			processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL')); // store the remote URL
+
+			if (isAccepted) 
+			{
+				tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+				
+				checkOSXGitAccess();
+				processManager.getCurrentBranch(tmpProject); // store the branch name
+				processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL', tmpProject)); // store the remote URL
+			}
 		}
 		
 		private function openAuthentication():void

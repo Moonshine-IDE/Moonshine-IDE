@@ -30,6 +30,7 @@ package actionScripts.plugins.git.model
 		public var sessionUser:String;
 		public var sessionPassword:String;
 		public var rootLocal:File;
+		public var projectPath:String;
 		
 		public function GitProjectVO()
 		{

@@ -39,6 +39,7 @@ package actionScripts.plugins.git
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
 	
@@ -73,7 +74,6 @@ package actionScripts.plugins.git
 		private var model:IDEModel = IDEModel.getInstance();
 		private var isErrorClose:Boolean;
 		private var onXCodePathDetection:Function;
-		private var gitTestProject:AS3ProjectVO;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
 		
@@ -113,30 +113,30 @@ package actionScripts.plugins.git
 		public function checkIfGitRepository(project:AS3ProjectVO):void
 		{
 			queue = new Vector.<Object>();
-			gitTestProject = project;
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --git-dir' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --git-dir' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST, project.folderLocation.fileBridge.nativePath));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath});
 		}
 		
-		public function getGitRemoteURL():void
+		public function getGitRemoteURL(project:ProjectVO):void
 		{
-			if (!model.activeProject) return;
+			if (!project && !model.activeProject) return;
 			
 			queue = new Vector.<Object>();
-			gitTestProject = model.activeProject as AS3ProjectVO;
+			project !== model.activeProject;
 
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config --get remote.origin.url' : 'git&&config&&--get&&remote.origin.url', false, GIT_REMOTE_ORIGIN_URL));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config --get remote.origin.url' : 'git&&config&&--get&&remote.origin.url', false, GIT_REMOTE_ORIGIN_URL, project.folderLocation.fileBridge.nativePath));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
-		public function getCurrentBranch():void
+		public function getCurrentBranch(project:ProjectVO=null):void
 		{
-			if (!model.activeProject) return;
+			if (!project && !model.activeProject) return;
 			
+			project ||= model.activeProject;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' branch' : 'git&&branch', false, GIT_CURRENT_BRANCH_NAME));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' branch' : 'git&&branch', false, GIT_CURRENT_BRANCH_NAME, project.folderLocation.fileBridge.nativePath));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
@@ -146,6 +146,8 @@ package actionScripts.plugins.git
 			
 			lastCloneURL = url;
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' clone --progress -v '+ url : 'git&&clone&&--progress&&-v&&'+ url, false, GitHubPlugin.CLONE_REQUEST));
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target});
 		}
 		
@@ -258,6 +260,7 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // next method we need to fire when above done
 			
 			warning("Fetching branch details...");
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Branch Details ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
@@ -400,6 +403,7 @@ package actionScripts.plugins.git
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
+			var tmpProject:ProjectVO;
 			
 			match = value.output.match(/fatal: .*/);
 			if (match) isFatal = true;
@@ -442,30 +446,38 @@ package actionScripts.plugins.git
 				}
 				case GIT_REPOSITORY_TEST:
 				{
+					tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
 					if (!isFatal)
 					{
-						gitTestProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
-						if (plugin.modelAgainstProject[gitTestProject] == undefined) 
+						if (tmpProject)
 						{
-							value.output = value.output.replace("\n", "");
-							plugin.modelAgainstProject[gitTestProject] = new GitProjectVO();
-							plugin.modelAgainstProject[gitTestProject].rootLocal = (value.output == ".git") ? gitTestProject.folderLocation.fileBridge.getFile as File : (new File(value.output)).parent;
+							(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+							if (plugin.modelAgainstProject[tmpProject] == undefined) 
+							{
+								value.output = value.output.replace("\n", "");
+	
+								plugin.modelAgainstProject[tmpProject] = new GitProjectVO();
+								plugin.modelAgainstProject[tmpProject].rootLocal = (value.output == ".git") ? tmpProject.folderLocation.fileBridge.getFile as File : (new File(value.output)).parent;
+							}
+							
+							// continuing fetch
+							pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch', tmpProject)); // store the current branch
+							pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', tmpProject)); // store the remote URL
 						}
 						
-						// continuing fetch
-						pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // store the current branch
-						pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL')); // store the remote URL
-						
-						gitTestProject = null;
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
 					}
-					else if (ConstantsCoreVO.IS_MACOS)
+					else if (ConstantsCoreVO.IS_MACOS && tmpProject)
 					{
 						// in case of OSX sandbox if the project's parent folder
 						// consists of '.git' and do not have bookmark access
 						// the running command is tend to be fail, in that case
 						// a brute check
-						initiateSandboxGitRepositoryCheckBrute(gitTestProject);
+						initiateSandboxGitRepositoryCheckBrute(tmpProject as AS3ProjectVO);
+					}
+					else
+					{
+						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
 					}
 					return;
 				}
@@ -474,11 +486,12 @@ package actionScripts.plugins.git
 					match = value.output.match(/.*.$/);
 					if (match)
 					{
+						tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
 						var tmpResult:Array = new RegExp("http.*\://", "i").exec(value.output);
-						if (tmpResult != null)
+						if (tmpResult != null && tmpProject)
 						{
 							// extracting remote origin URL as 'github/[author]/[project]
-							if (plugin.modelAgainstProject[model.activeProject] != undefined) plugin.modelAgainstProject[model.activeProject].remoteURL = value.output.substr(tmpResult[0].length, value.output.length).replace("\n", "");
+							if (plugin.modelAgainstProject[tmpProject] != undefined) plugin.modelAgainstProject[tmpProject].remoteURL = value.output.substr(tmpResult[0].length, value.output.length).replace("\n", "");
 						}
 						return;
 					}
@@ -486,7 +499,8 @@ package actionScripts.plugins.git
 				}
 				case GIT_CURRENT_BRANCH_NAME:
 				{
-					parseCurrentBranch(value.output);
+					tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+					if (tmpProject) parseCurrentBranch(value.output, tmpProject);
 					return;
 				}
 				case GitHubPlugin.CLONE_REQUEST:
@@ -597,15 +611,15 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function parseCurrentBranch(value:String):void
+		private function parseCurrentBranch(value:String, project:ProjectVO):void
 		{
 			var starredIndex:int = value.indexOf("* ") + 2;
 			var selectedBranchName:String = value.substring(starredIndex, value.indexOf("\n", starredIndex));
 			
 			// store the project's selected branch to its model
-			if (model.activeProject && plugin.modelAgainstProject[model.activeProject] != undefined)
+			if (plugin.modelAgainstProject[project] != undefined)
 			{
-				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[project];
 				tmpModel.currentBranch = selectedBranchName;
 				
 				for each (var i:GenericSelectableObject in tmpModel.branchList)
@@ -624,6 +638,16 @@ package actionScripts.plugins.git
 		{
 			// refreshing project tree
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
+		}
+		
+		private function getProjectByPath(value:String):ProjectVO
+		{
+			for each (var i:ProjectVO in model.projects)
+			{
+				if (i.folderLocation.fileBridge.nativePath == value) return i;
+			}
+			
+			return null;
 		}
 	}
 }
