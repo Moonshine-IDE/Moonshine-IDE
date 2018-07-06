@@ -872,6 +872,8 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function terminateExecutionHandler(event:Event):void
 		{
+			if (!connected) return;
+
 			if (_debugPanel.stopButton.enabled) stopButton_clickHandler(null);
 		}
 		
