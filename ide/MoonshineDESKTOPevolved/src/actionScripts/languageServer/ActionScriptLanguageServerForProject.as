@@ -19,6 +19,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.utils.IDataInput;
+    
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
@@ -32,15 +40,7 @@ package actionScripts.languageServer
     import actionScripts.utils.findOpenPort;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.Settings;
-
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.utils.IDataInput;
-
+    
     import no.doomsday.console.ConsoleUtil;
 
 	public class ActionScriptLanguageServerForProject
@@ -306,6 +306,9 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
+			
+			// to let others know when lang-server completely shutdown against a project
+			_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, _project));
 		}
 
 		private function projectChangeCustomSDKHandler(event:Event):void

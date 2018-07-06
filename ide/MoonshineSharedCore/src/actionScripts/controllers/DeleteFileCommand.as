@@ -19,9 +19,7 @@
 package actionScripts.controllers
 {
 	import flash.display.DisplayObject;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
-    import flash.events.Event;
+	import flash.events.Event;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -29,13 +27,16 @@ package actionScripts.controllers
 	
 	import actionScripts.events.DeleteFileEvent;
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
@@ -49,6 +50,7 @@ package actionScripts.controllers
 		private var treeViewHandler: Function;
 		private var projectDeletePopup:ProjectDeletionPopup;
 		private var thisEvent:DeleteFileEvent;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		public function execute(event:Event):void
 		{
@@ -127,7 +129,7 @@ package actionScripts.controllers
 						&& ed.currentFile
 						&& ed.currentFile.fileBridge.nativePath == thisEvent.file.fileBridge.nativePath)
 					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
+						dispatcher.dispatchEvent(
 							new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
 						);
 					}
@@ -176,7 +178,7 @@ package actionScripts.controllers
 			{
 				model.recentlyOpenedProjects.removeItemAt(toRemove);
 				model.recentlyOpenedProjectOpenedOption.removeItemAt(toRemove);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
+				dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
 			}
 			
 			// removal from the recently opened files in splash screen
@@ -192,10 +194,18 @@ package actionScripts.controllers
 				}
 			}
 			
-			if (toRemove != -1) GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
+			if (toRemove != -1) dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 			
-			// finally
-			model.flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, isDeleteRoot);
+			// preparing to close the language-server against the project
+			// and listen for its complete shutdown event
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed, false, 0, true);
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+		}
+		
+		private function onProjectLanguageServerClosed(event:ProjectEvent):void
+		{
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed);
+			IDEModel.getInstance().flexCore.deleteProject(event.project.projectFolder, thisEvent.treeViewCompletionHandler, true);
 		}
 		
 		private function onProjectDeletePopupClosed(event:CloseEvent):void
@@ -214,7 +224,7 @@ package actionScripts.controllers
 					&& ed.currentFile
 					&& ed.currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
 				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(
+					dispatcher.dispatchEvent(
 						new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
 					);
 				}

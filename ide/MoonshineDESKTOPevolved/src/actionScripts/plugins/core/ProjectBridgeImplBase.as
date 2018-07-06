@@ -19,6 +19,11 @@
 package actionScripts.plugins.core
 {
     import flash.desktop.NativeApplication;
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.SecurityErrorEvent;
+    
+    import mx.controls.Alert;
     
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugins.as3project.CreateProject;
@@ -27,6 +32,10 @@ package actionScripts.plugins.core
     public class ProjectBridgeImplBase
     {
         protected var executeCreateProject:CreateProject;
+		
+		private var filesToBeDeleted:Array;
+		private var deletableProjectWrapper:FileWrapper;
+		private var projectDeleteCompletionMethod:Function;
 
         public function createProject(event:NewProjectEvent):void
         {
@@ -38,31 +47,77 @@ package actionScripts.plugins.core
 			if (isDeleteRoot)
 			{
 				projectWrapper.file.fileBridge.deleteDirectory(true);
+				finishHandler(projectWrapper);
 			}
 			else
 			{
-				// go for only one level of file/folder deletion
-				for each (var wrapper:FileWrapper in projectWrapper.children)
-				{
-					if (wrapper.file.fileBridge.isDirectory) wrapper.file.fileBridge.deleteDirectory(true);
-					else wrapper.file.fileBridge.deleteFile();
-				}
+				filesToBeDeleted = projectWrapper.children;
+				deletableProjectWrapper = projectWrapper;
+				projectDeleteCompletionMethod = finishHandler;
 				
-				// when done check if the root folder is empty
-				// if it is, go delete it irrespective of 'isDeleteRoot' value
-				if (projectWrapper.file.fileBridge.getDirectoryListing().length == 0)
-				{
-					projectWrapper.file.fileBridge.deleteDirectory(true);
-				}
+				deleteFilesAsync();
 			}
-
-            // when done call the finish handler
-            finishHandler(projectWrapper);
         }
 
         public function exitApplication():void
         {
             NativeApplication.nativeApplication.exit();
         }
+		
+		private function deleteFilesAsync():void
+		{
+			if (filesToBeDeleted && filesToBeDeleted.length != 0)
+			{
+				var tmpWrapper:FileWrapper = filesToBeDeleted[0] as FileWrapper;
+				addRemoveListeners(tmpWrapper.file.fileBridge.getFile, true);
+				
+				if (tmpWrapper.file.fileBridge.isDirectory) tmpWrapper.file.fileBridge.deleteDirectoryAsync(true);
+				else tmpWrapper.file.fileBridge.deleteFileAsync();
+			}
+			else if (deletableProjectWrapper.file.fileBridge.exists)
+			{
+				addRemoveListeners(deletableProjectWrapper.file.fileBridge.getFile, true);
+				deletableProjectWrapper.file.fileBridge.deleteDirectoryAsync(true);
+				
+				// confirm to the caller
+				projectDeleteCompletionMethod(deletableProjectWrapper);
+				
+				// remove footprint
+				filesToBeDeleted = null;
+				deletableProjectWrapper = null;
+				projectDeleteCompletionMethod = null;
+			}
+		}
+		
+		private function onFileFolderDeleted(event:Event):void
+		{
+			onFileFolderDeletionError(event, false);
+			filesToBeDeleted.shift();
+			deleteFilesAsync();
+		}
+		
+		private function onFileFolderDeletionError(event:Event, showError:Boolean=true):void
+		{
+			if (showError) Alert.show(event.toString());
+			
+			if (event) addRemoveListeners(event.target, false);
+			else addRemoveListeners(filesToBeDeleted[0].file.fileBridge.getFile, false);
+		}
+		
+		private function addRemoveListeners(file:Object, isAdd:Boolean):void
+		{
+			if (isAdd)
+			{
+				file.addEventListener(Event.COMPLETE, onFileFolderDeleted);
+				file.addEventListener(IOErrorEvent.IO_ERROR, onFileFolderDeletionError);
+				file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onFileFolderDeletionError);
+			}
+			else if (file)
+			{
+				file.removeEventListener(Event.COMPLETE, onFileFolderDeleted);
+				file.removeEventListener(IOErrorEvent.IO_ERROR, onFileFolderDeletionError);
+				file.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onFileFolderDeletionError);
+			}
+		}
     }
 }

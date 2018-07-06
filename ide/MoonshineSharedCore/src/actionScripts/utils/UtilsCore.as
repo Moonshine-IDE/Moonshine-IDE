@@ -715,7 +715,7 @@ package actionScripts.utils
 					{
 						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
 					}
-					else if (project == null && model.editors[i] != SplashScreen)
+					else if (project == null && completionHandler == null && model.editors[i] != SplashScreen)
 					{
 						editorsToClose.push(model.editors[i]);
 					}

@@ -49,6 +49,7 @@ package actionScripts.events
 		public static const ACTIVE_PROJECT_CHANGED:String = "ACTIVE_PROJECT_CHANGED";
 		
 		public static const CHECK_GIT_PROJECT:String = "checkGitRepository";
+		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
 		
 		public var project:ProjectVO;
 		public var anObject:Object;

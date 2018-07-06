@@ -684,7 +684,10 @@
 						{
 							projects.removeItem(as3Project);
 							updateTreeView();
-							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, as3Project));
+							
+							// in case of Close project we shall need to close the lang-server here
+							// in case of Delete project this handles by the command class
+							if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, as3Project));
 							break;
 						}
 					}
