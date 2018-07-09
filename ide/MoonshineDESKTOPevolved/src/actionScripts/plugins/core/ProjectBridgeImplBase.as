@@ -73,27 +73,33 @@ package actionScripts.plugins.core
 				
 				if (tmpWrapper.file.fileBridge.isDirectory) tmpWrapper.file.fileBridge.deleteDirectoryAsync(true);
 				else tmpWrapper.file.fileBridge.deleteFileAsync();
+				
+				return;
 			}
-			else if (deletableProjectWrapper.file.fileBridge.exists)
+			else if (deletableProjectWrapper.file.fileBridge.exists && deletableProjectWrapper.file.fileBridge.getDirectoryListing().length == 0)
 			{
+				// remove root only if children is 0
 				addRemoveListeners(deletableProjectWrapper.file.fileBridge.getFile, true);
 				deletableProjectWrapper.file.fileBridge.deleteDirectoryAsync(true);
-				
-				// confirm to the caller
-				projectDeleteCompletionMethod(deletableProjectWrapper);
-				
-				// remove footprint
-				filesToBeDeleted = null;
-				deletableProjectWrapper = null;
-				projectDeleteCompletionMethod = null;
 			}
+			
+			// confirm to the caller
+			projectDeleteCompletionMethod(deletableProjectWrapper);
+			
+			// remove footprint
+			filesToBeDeleted = null;
+			deletableProjectWrapper = null;
+			projectDeleteCompletionMethod = null;
 		}
 		
 		private function onFileFolderDeleted(event:Event):void
 		{
 			onFileFolderDeletionError(event, false);
-			filesToBeDeleted.shift();
-			deleteFilesAsync();
+			if (filesToBeDeleted) 
+			{
+				filesToBeDeleted.shift();
+				deleteFilesAsync();
+			}
 		}
 		
 		private function onFileFolderDeletionError(event:Event, showError:Boolean=true):void

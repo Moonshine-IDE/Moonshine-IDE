@@ -676,17 +676,24 @@ package actionScripts.utils
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */
-		public static function closeAllRelativeEditors(project:ProjectVO, isSkipSaveConfirmation:Boolean=false,
+		public static function closeAllRelativeEditors(projectOrWrapper:Object, isSkipSaveConfirmation:Boolean=false,
 													   completionHandler:Function=null, isCloseWhenDone:Boolean=true):void
 		{
-			// closes all opened file editor instances belongs to the deleted project
-			// closing is IMPORTANT
-			// if project==null, it'll close all opened editors irrespective of 
-			// any particular project (example usage in 'Close All' option in File menu)
-			var projectReferencePath:String = project ? project.folderLocation.fileBridge.nativePath : null;
+			var projectReferencePath:String;
 			var editorsCount:int = model.editors.length;
 			var hasChangesEditors:ArrayCollection = new ArrayCollection();
 			var editorsToClose:Array = [];
+			
+			// closes all opened file editor instances belongs to the deleted project
+			// closing is IMPORTANT
+			// if projectOrWrapper==null, it'll close all opened editors irrespective of 
+			// any particular project (example usage in 'Close All' option in File menu)
+			if (projectOrWrapper)
+			{
+				if (projectOrWrapper is ProjectVO) projectReferencePath = (projectOrWrapper as ProjectVO).folderLocation.fileBridge.nativePath;
+				else if (projectOrWrapper is FileWrapper && (projectOrWrapper as FileWrapper).projectReference) projectReferencePath = (projectOrWrapper as FileWrapper).projectReference.path;
+			}
+			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
 				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && (!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
@@ -715,7 +722,7 @@ package actionScripts.utils
 					{
 						hasChangesEditors.addItem({file:model.editors[i], isSelected:true});
 					}
-					else if (project == null && completionHandler == null && model.editors[i] != SplashScreen)
+					else if (projectOrWrapper == null && completionHandler == null && model.editors[i] != SplashScreen)
 					{
 						editorsToClose.push(model.editors[i]);
 					}

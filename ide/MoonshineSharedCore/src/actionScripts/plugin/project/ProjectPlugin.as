@@ -255,18 +255,6 @@ package actionScripts.plugin.project
 				model.projects.removeItemAt(idx);
 			}
 			
-			// Close all files for project
-			for (var i:int = 0; i < model.editors.length; i++)
-			{
-				var ed:BasicTextEditor = model.editors[i] as BasicTextEditor;
-				if (ed && ed.currentFile && ed.currentFile.fileBridge.nativePath.indexOf(event.project.folderLocation.fileBridge.nativePath) == 0)
-				{
-					dispatcher.dispatchEvent(
-						new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed)
-					);
-				}
-			}
-			
 			if (model.activeProject == event.project)
 			{
 				if (model.projects.length)

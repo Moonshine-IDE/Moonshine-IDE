@@ -28,8 +28,6 @@
 
 	<mx:Script>
 		<![CDATA[
-		import actionScripts.events.HiddenFilesEvent;
-
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
 		import mx.collections.SortField;
@@ -41,11 +39,12 @@
 		import mx.events.ListEvent;
 		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
-
+		
 		import actionScripts.events.AddFolderEvent;
 		import actionScripts.events.DeleteFileEvent;
 		import actionScripts.events.DuplicateEvent;
 		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.HiddenFilesEvent;
 		import actionScripts.events.NewFileEvent;
 		import actionScripts.events.OpenFileEvent;
 		import actionScripts.events.ProjectEvent;
@@ -68,7 +67,7 @@
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.URLDescriptorVO;
-
+		
 		import components.popup.NewFolderPopup;
 		import components.popup.RenamePopup;
 
@@ -673,10 +672,12 @@
 
 			var openItems:Object = tree.openItems;
 			var parentCollection:Array;
+			var tmpProject:ProjectVO;
 			// if the file/folder is a project root
 			if (value.isRoot)
 			{
-				UtilsCore.closeAllRelativeEditors(UtilsCore.getProjectFromProjectFolder(value), (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
+				tmpProject = UtilsCore.getProjectFromProjectFolder(value);
+				UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
 				{
 					for each (var as3Project:AS3ProjectVO in projects)
 					{
@@ -712,8 +713,8 @@
 				updateTreeView();
 
 				// check if the wrapper is the source folder to the project
-				var tmpProject:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(value) as AS3ProjectVO;
-				if (tmpProject.sourceFolder.fileBridge.nativePath == value.nativePath) tmpProject.sourceFolder = null;
+				tmpProject = UtilsCore.getProjectFromProjectFolder(value) as AS3ProjectVO;
+				if ((tmpProject as AS3ProjectVO).sourceFolder.fileBridge.nativePath == value.nativePath) (tmpProject as AS3ProjectVO).sourceFolder = null;
 
 				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 			}

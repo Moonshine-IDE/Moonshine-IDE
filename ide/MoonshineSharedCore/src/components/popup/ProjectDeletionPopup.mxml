@@ -35,7 +35,6 @@
 			import flash.utils.setTimeout;
 			
 			import mx.events.FlexEvent;
-			import mx.managers.IFocusManagerComponent;
 			
 			import actionScripts.events.DeleteFileEvent;
 			import actionScripts.events.GlobalEventDispatcher;

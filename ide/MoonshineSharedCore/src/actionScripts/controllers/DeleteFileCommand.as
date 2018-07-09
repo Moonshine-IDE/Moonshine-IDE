@@ -20,6 +20,7 @@ package actionScripts.controllers
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.utils.Dictionary;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -51,6 +52,7 @@ package actionScripts.controllers
 		private var projectDeletePopup:ProjectDeletionPopup;
 		private var thisEvent:DeleteFileEvent;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var pendingDeletionProjectsDict:Dictionary = new Dictionary();
 		
 		public function execute(event:Event):void
 		{
@@ -196,6 +198,10 @@ package actionScripts.controllers
 			
 			if (toRemove != -1) dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 			
+			// keep the files collection in a dictionary so we can select between multiple
+			// project deletion calls - as language server shutdown event returns after some delay
+			pendingDeletionProjectsDict[event.wrapper.projectReference] = event.wrapper;
+			
 			// preparing to close the language-server against the project
 			// and listen for its complete shutdown event
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed, false, 0, true);
@@ -204,8 +210,12 @@ package actionScripts.controllers
 		
 		private function onProjectLanguageServerClosed(event:ProjectEvent):void
 		{
-			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed);
-			IDEModel.getInstance().flexCore.deleteProject(event.project.projectFolder, thisEvent.treeViewCompletionHandler, true);
+			if (pendingDeletionProjectsDict[event.project.projectFolder.projectReference] != undefined)
+			{
+				dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed);
+				IDEModel.getInstance().flexCore.deleteProject(pendingDeletionProjectsDict[event.project.projectFolder.projectReference], thisEvent.treeViewCompletionHandler, false);
+				delete pendingDeletionProjectsDict[event.project.projectFolder.projectReference];
+			}
 		}
 		
 		private function onProjectDeletePopupClosed(event:CloseEvent):void
