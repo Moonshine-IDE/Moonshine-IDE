@@ -39,9 +39,6 @@
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
-		<s:Label text="Note: New branch will create locally. You can later push the branch to remote."
-				 width="100%" color="0xe0e0e0" paddingBottom="4" paddingTop="4"
-				 visible="{isGitAvailable}" includeInLayout="{isGitAvailable}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

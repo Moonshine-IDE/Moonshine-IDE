@@ -369,6 +369,7 @@ package actionScripts.plugins.git
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
 			error(value.output);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
 		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -531,7 +532,7 @@ package actionScripts.plugins.git
 			
 			if (isFatal)
 			{
-				error(value.output);
+				shellError(value);
 				isErrorClose = true;
 				return;
 			}

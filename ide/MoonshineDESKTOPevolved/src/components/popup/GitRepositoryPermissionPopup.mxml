@@ -34,7 +34,6 @@
 			
 			import actionScripts.factory.FileLocation;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.ui.menu.vo.ProjectMenuTypes;
 			
 			public var isAccepted:Boolean;
 			public var project:AS3ProjectVO;
@@ -70,7 +69,7 @@
 				
 				addElement(closeButtonUIC);
 				
-				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>It appears that the project "+ project.name +" is a Git repository project. Due to Apple sandbox, Moonshine do not has access to the root location of the Git repository, unfortunately.<br/><br/>You can allow permission to access to the location by clicking on <span fontWeight='bold'>Allow Access</span> button below, to avail Moonshine Git functionalities. In the opening window click on \"Open\".<br/><br/><span fontWeight='bold'>"+ gitRootLocation.nativePath +"</span></p>");
+				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>Moonshine has detected that the project "+ project.name +" is part of a Git repository. However, the Apple Sandbox has blocked access to the root directory of this project, so Moonshine will not be able to erform any Git actions.<br/><br/>To enable the Git menu actions for this project, click <span fontWeight='bold'>Allow Access</span> below. Browse to the directory listed below and click \"Open\".<br/><br/><span fontWeight='bold'>"+ gitRootLocation.nativePath +"</span></p>");
 			}
 			
 			private function closeButtonClickedRequest(event:MouseEvent):void
@@ -142,7 +141,7 @@
 					<s:Button id="btnAllowAccess" 
 							  label="Allow Access" styleName="darkButton"
 							  click="onAllowAccess(event)"/>
-					<s:Button label="I Don't Want Git Feature" styleName="darkButton"
+					<s:Button label="Skip" styleName="darkButton"
 							  click="closeButtonClicked(event, true)"/>
 				</mx:HBox>
 			</mx:HBox>

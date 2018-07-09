@@ -40,7 +40,6 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -327,7 +326,7 @@ package actionScripts.plugins.git
 				processManager.checkGitAvailability();
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
-				gitCommitWindow.title = "Revert File(s)";
+				gitCommitWindow.title = "Modified File(s)";
 				gitCommitWindow.type = GitCommitSelectionPopup.TYPE_REVERT;
 				gitCommitWindow.isGitAvailable = isGitAvailable;
 				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitRevertWindowClosed);
@@ -499,8 +498,7 @@ package actionScripts.plugins.git
 				tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
 				
 				checkOSXGitAccess();
-				processManager.getCurrentBranch(tmpProject); // store the branch name
-				processManager.pendingProcess.push(new MethodDescriptor(processManager, 'getGitRemoteURL', tmpProject)); // store the remote URL
+				processManager.checkIfGitRepository(tmpProject);
 			}
 		}
 		
