@@ -299,6 +299,15 @@ package actionScripts.languageServer
 		private function languageClient_initHandler(event:Event):void
 		{
 			sendProjectConfiguration();
+			
+			// @note
+			// @ rat-moonshine
+			// I don't know how to detect if language server is running
+			// against a project or if the server is present at all 
+			// I need to determine because at the time of project deletion
+			// process depends on event call back from language server when
+			// fully shutdown - if server is not running the event never return
+			_model.isLanguageServerPresent = true;
 		}
 
 		private function languageClient_closeHandler(event:Event):void

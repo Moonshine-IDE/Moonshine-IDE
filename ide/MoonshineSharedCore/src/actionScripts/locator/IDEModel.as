@@ -67,6 +67,7 @@ package actionScripts.locator
 		public var antScriptFile:FileLocation; 
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
+		public var isLanguageServerPresent:Boolean;
 		
 		public var recentlyOpenedFiles:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();

@@ -198,14 +198,23 @@ package actionScripts.controllers
 			
 			if (toRemove != -1) dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 			
-			// keep the files collection in a dictionary so we can select between multiple
-			// project deletion calls - as language server shutdown event returns after some delay
-			pendingDeletionProjectsDict[event.wrapper.projectReference] = event.wrapper;
-			
 			// preparing to close the language-server against the project
 			// and listen for its complete shutdown event
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed, false, 0, true);
-			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+			if (model.isLanguageServerPresent)
+			{
+				// keep the files collection in a dictionary so we can select between multiple
+				// project deletion calls - as language server shutdown event returns after some delay
+				pendingDeletionProjectsDict[event.wrapper.projectReference] = event.wrapper;
+				
+				dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed, false, 0, true);
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+			}
+			else
+			{
+				// when no language server present or not setup
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+				IDEModel.getInstance().flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, false);
+			}
 		}
 		
 		private function onProjectLanguageServerClosed(event:ProjectEvent):void
