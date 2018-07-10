@@ -41,6 +41,7 @@ package actionScripts.controllers
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.ProjectDeletionPopup;
 
@@ -159,6 +160,7 @@ package actionScripts.controllers
 		private function onProjectDeletionConfirmed(event:DeleteFileEvent, isDeleteRoot:Boolean=false):void
 		{
 			var model: IDEModel = IDEModel.getInstance();
+			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(event.wrapper);
 			// sends delete call to factory classes
 			
 			var projectRef:ProjectReferenceVO = event.wrapper.projectReference;
@@ -200,19 +202,21 @@ package actionScripts.controllers
 			
 			// preparing to close the language-server against the project
 			// and listen for its complete shutdown event
-			if (model.isLanguageServerPresent)
+			// @note 
+			// visual editor project do not use language server
+			if (model.isLanguageServerPresent && !(project as AS3ProjectVO).isVisualEditorProject)
 			{
 				// keep the files collection in a dictionary so we can select between multiple
 				// project deletion calls - as language server shutdown event returns after some delay
 				pendingDeletionProjectsDict[event.wrapper.projectReference] = event.wrapper;
 				
 				dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed, false, 0, true);
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 			}
 			else
 			{
 				// when no language server present or not setup
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, UtilsCore.getProjectFromProjectFolder(event.wrapper)));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 				IDEModel.getInstance().flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, false);
 			}
 		}

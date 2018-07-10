@@ -101,6 +101,8 @@
 					project.libraries, project.includeLibraries, project.externalLibraries, project.nativeExtensions, project.runtimeSharedLibraries, project.hiddenPaths, project.resourcePaths, 
 					project.classpaths, project.config.file, project.projectFile]; // either FileLocation or Vector.<FileLocation>
 				
+				if (project.isVisualEditorProject) filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"));
+				
 				for (var i:int; i < filesList.length; i++)
 				{
 					if (filesList[i] is FileLocation) checkFileLists(null, filesList[i]);
@@ -138,11 +140,22 @@
 					function checkByFile(file:FileLocation):void
 					{
 						// make sure not to add same location multiple times
-						if ((acceptableLocation = isProjectRelativePath(file)) && (tmpPathsAdded[acceptableLocation.fileBridge.nativePath] == undefined))
+						if ((acceptableLocation = isProjectRelativePath(file)) && (tmpPathsAdded[acceptableLocation.fileBridge.nativePath] == undefined) && !checkIfRedundantRelativePath(acceptableLocation))
 						{
 							filesBelongsToProject.children.push(new FileWrapper(acceptableLocation, false, project.projectFolder.projectReference));
 							tmpPathsAdded[acceptableLocation.fileBridge.nativePath] = true;
 						}
+					}
+					
+					function checkIfRedundantRelativePath(file:FileLocation):Boolean
+					{
+						// this is particularly useful in case of Visual Editor type of project
+						for each (var wrapper:FileWrapper in filesBelongsToProject.children)
+						{
+							if (file.fileBridge.nativePath.indexOf(wrapper.file.fileBridge.nativePath + file.fileBridge.separator) != -1) return true;
+						}
+						
+						return false;
 					}
 				}
 			}
