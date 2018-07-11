@@ -193,11 +193,11 @@ package actionScripts.plugins.git
 					{
 						case GitProcessManager.GIT_STATUS_FILE_DELETED:
 						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ i.data.path : 'git&&checkout&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout "'+ i.data.path +'"' : 'git&&checkout&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 							
 						case GitProcessManager.GIT_STATUS_FILE_NEW:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset '+ i.data.path : 'git&&reset&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset "'+ i.data.path +'"' : 'git&&reset&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 					}
 				}
