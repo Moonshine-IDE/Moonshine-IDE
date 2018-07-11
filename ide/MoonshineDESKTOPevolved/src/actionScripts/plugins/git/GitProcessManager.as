@@ -72,7 +72,6 @@ package actionScripts.plugins.git
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
-		private var isErrorClose:Boolean;
 		private var onXCodePathDetection:Function;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
@@ -97,6 +96,7 @@ package actionScripts.plugins.git
 		public function getOSXCodePath(completion:Function):void
 		{
 			queue = new Vector.<Object>();
+			onXCodePathDetection = completion;
 			
 			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
@@ -170,7 +170,7 @@ package actionScripts.plugins.git
 			{
 				if (i.isSelected) 
 				{
-					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add '+ i.data.path : 'git&&add&&'+ i.data.path, false, GIT_COMMIT));
+					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add "'+ i.data.path +'"' : 'git&&add&&'+ i.data.path, false, GIT_COMMIT));
 				}
 			}
 			
@@ -211,27 +211,30 @@ package actionScripts.plugins.git
 		{
 			if (!model.activeProject) return;
 			
-			// safe-check
-			if (!ConstantsCoreVO.IS_MACOS && !userObject && !plugin.modelAgainstProject[model.activeProject].sessionUser)
-			{
-				error("Git requires to authenticate to Push");
-				return;
-			}
-			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			var userName:String;
 			var password:String;
 			
-			if (!ConstantsCoreVO.IS_MACOS)
-			{
-				userName = tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName;
-				password = tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password;
-			}
+			userName = tmpModel.sessionUser ? tmpModel.sessionUser : (userObject ? userObject.userName : null);
+			password = tmpModel.sessionPassword ? tmpModel.sessionPassword : (userObject ? userObject.password : null);
 			
 			queue = new Vector.<Object>();
 			
-			//git push https://user:pass@github.com/user/project.git
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin '+ tmpModel.currentBranch : 'git&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ tmpModel.currentBranch, false, GIT_PUSH));
+			// we'll not hold from executing push command if we do not have
+			// any immediate credential available but will execute with
+			// following options -
+			// 1. credential could be saved to the user's system (i.e. keychain) so we might not need to inject that separately
+			// 2. executing the command may ask for credential - we shall detect and ask user to enter the same
+			
+			if (!userName && !password)
+			{
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin '+ tmpModel.currentBranch : 'git&&push&&-v&&origin&&'+ tmpModel.currentBranch, false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+			}
+			else
+			{
+				//git push https://user:pass@github.com/user/project.git
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git '+ tmpModel.currentBranch : 'git&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ tmpModel.currentBranch, false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+			}
 
 			warning("Git push requested...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Push ", false));
@@ -279,16 +282,9 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
-		public function createAndCheckoutNewBranch(name:String, pushToOrigin:Boolean, userObject:Object=null):void
+		public function createAndCheckoutNewBranch(name:String, pushToOrigin:Boolean):void
 		{
 			if (!model.activeProject) return;
-			
-			// safe-check
-			if (!ConstantsCoreVO.IS_MACOS && !userObject && !plugin.modelAgainstProject[model.activeProject].sessionUser)
-			{
-				error("Git requires to authenticate to Push");
-				return;
-			}
 			
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
@@ -298,7 +294,7 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			if (pushToOrigin) 
 			{
-				pendingProcess.push(new MethodDescriptor(this, 'push', ConstantsCoreVO.IS_MACOS ? null : {userName:tmpModel.sessionUser ? tmpModel.sessionUser : userObject.userName, password: tmpModel.sessionPassword ? tmpModel.sessionPassword : userObject.password})); // next method we need to fire when above done
+				pendingProcess.push(new MethodDescriptor(this, 'push')); // next method we need to fire when above done
 			}
 			
 			notice("Trying to switch branch...");
@@ -374,21 +370,18 @@ package actionScripts.plugins.git
 		
 		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
-			if (!isErrorClose) 
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			switch (tmpQueue.processType)
 			{
-				var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-				switch (tmpQueue.processType)
-				{
-					case GitHubPlugin.CLONE_REQUEST:
-						success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
-						break;
-					case GIT_PUSH:
-						success("...process completed");
-						break;
-					case GIT_DIFF_CHECK:
-						checkDiffFileExistence();
-						break;
-				}
+				case GitHubPlugin.CLONE_REQUEST:
+					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
+					break;
+				case GIT_PUSH:
+					success("...process completed");
+					break;
+				case GIT_DIFF_CHECK:
+					checkDiffFileExistence();
+					break;
 			}
 		}
 		
@@ -525,15 +518,35 @@ package actionScripts.plugins.git
 					if (!isFatal) parseRemoteBranchList(value.output);
 					return;
 				}
+				case GIT_PUSH:
+				{
+					match = value.output.toLowerCase().match(/fatal.*username/);
+					if (match)
+					{
+						// we'll need user to authenticate
+						plugin.requestToAuthenticate();
+						return;
+					}
+					
+					match = value.output.toLowerCase().match(/invalid username/);
+					if (match)
+					{
+						// reset model information if saved by the user
+						tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+						plugin.modelAgainstProject[tmpProject].sessionUser = null; 
+						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
+					}
+				}
 				default:
+				{
 					notice(value.output);
 					break;
+				}
 			}
 			
 			if (isFatal)
 			{
 				shellError(value);
-				isErrorClose = true;
 				return;
 			}
 		}

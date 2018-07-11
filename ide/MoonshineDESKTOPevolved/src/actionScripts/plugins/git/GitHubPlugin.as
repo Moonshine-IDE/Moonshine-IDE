@@ -78,7 +78,6 @@ package actionScripts.plugins.git
 		private var gitAuthWindow:GitAuthenticationPopup;
 		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
 		private var gitNewBranchWindow:GitNewBranchPopup;
-		private var latestBranchDetails:Object;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -138,6 +137,15 @@ package actionScripts.plugins.git
 			return Vector.<ISetting>([
 				new PathSetting(this,'gitBinaryPathOSX', 'macOS Git Path', true, gitBinaryPathOSX, true)
 			]);
+		}
+		
+		public function requestToAuthenticate():void
+		{
+			if (!modelAgainstProject[model.activeProject].sessionUser)
+			{
+				openAuthentication();
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
+			}
 		}
 		
 		protected function setGitAvailable(value:Boolean):void
@@ -288,15 +296,7 @@ package actionScripts.plugins.git
 		
 		private function onPushRequest(event:Event):void
 		{
-			if (!ConstantsCoreVO.IS_MACOS && !modelAgainstProject[model.activeProject].sessionUser)
-			{
-				openAuthentication();
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
-			}
-			else
-			{
-				processManager.push();
-			}
+			processManager.push();
 		}
 		
 		private function onAuthSuccessToPush(event:Event):void
@@ -386,37 +386,9 @@ package actionScripts.plugins.git
 			PopUpManager.removePopUp(gitNewBranchWindow);
 			gitNewBranchWindow = null;
 			
-			if (newBranchDetails) 
+			if (newBranchDetails)
 			{
-				if (newBranchDetails.pushToRemote && !ConstantsCoreVO.IS_MACOS && !modelAgainstProject[model.activeProject].sessionUser)
-				{
-					latestBranchDetails = newBranchDetails;
-					openAuthentication();
-					gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToNewBranch);
-				}
-				else
-				{
-					processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
-				}
-			}
-		}
-		
-		private function onAuthSuccessToNewBranch(event:Event):void
-		{
-			gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToNewBranch);
-			
-			if (gitAuthWindow.userObject)
-			{
-				if (gitAuthWindow.userObject.save) 
-				{
-					modelAgainstProject[model.activeProject].sessionUser = gitAuthWindow.userObject.userName;
-					modelAgainstProject[model.activeProject].sessionPassword = gitAuthWindow.userObject.password;
-					processManager.createAndCheckoutNewBranch(latestBranchDetails.name, latestBranchDetails.pushToRemote, null);
-				}
-				else
-				{
-					processManager.createAndCheckoutNewBranch(latestBranchDetails.name, latestBranchDetails.pushToRemote, gitAuthWindow.userObject);
-				}
+				processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
 			}
 		}
 		
