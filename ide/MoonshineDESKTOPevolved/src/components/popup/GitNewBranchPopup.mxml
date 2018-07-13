@@ -6,20 +6,73 @@
 		 creationComplete="txtName.setFocus()">
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
+			
+			import actionScripts.events.GeneralEvent;
+			
+			public static const VALIDATE_NAME:String = "validateName";
 			
 			[Bindable] public var isGitAvailable:Boolean;
 			
 			public var submitObject:Object;
 			
+			public function onNameValidatedByGit(value:String):void
+			{
+				value = value.replace("\n", "");
+				var match:Array = value.match(/fatal: .*/);
+				if (match) 
+				{
+					showError(value);
+					return;
+				}
+				match = value.toLowerCase().match(/was unexpected at this time/);
+				if (match) 
+				{
+					showError(value);
+					return;
+				}
+				
+				lblMess.includeInLayout = lblMess.visible = false;
+				Alert.show("Branch name validated successfully:\n\""+ value +"\"\nDo you want to continue?", "Validation", Alert.YES|Alert.NO, this, onContinue);
+				
+				/*
+				 * @local
+				 */
+				function showError():void
+				{
+					lblMess.text = value;
+					lblMess.setStyle("color", 0xff0000);
+					lblMess.includeInLayout = lblMess.visible = true;
+				}
+				
+				/*
+				 * @local
+				 */
+				function onContinue(event:CloseEvent):void
+				{
+					if (event.detail == Alert.YES)
+					{
+						submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
+						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					}
+				}
+			}
+			
 			private function onSubmit():void
 			{
+				// was unexpected at this time
+				// fatal:
+				
 				var tmpArr : Array = new Array(sValidator);
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
-					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					lblMess.text = "Validating..";
+					lblMess.setStyle("color", 0xFFBF0F);
+					lblMess.includeInLayout = lblMess.visible = true;
+					
+					dispatchEvent(new GeneralEvent(VALIDATE_NAME, txtName.text));
 				}
 			}
 			
@@ -33,12 +86,16 @@
 			  paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
 		<view:PromptTextInput id="txtName"
 							  width="100%" styleName="textInput"
-							  prompt="New Branch Name" enter="onSubmit()"/>
+							  prompt="New Branch Name" enter="onSubmit()"
+							  restrict="a-zA-Z0-9`!@#$%()_+={}';.\-\/\&amp;"/>
 		<s:CheckBox id="cbPush"
 					label="Push newly created branch to remote" selected="true"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
+		<s:Label id="lblMess"
+				 width="100%" maxDisplayedLines="3"
+				 includeInLayout="false" visible="false"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

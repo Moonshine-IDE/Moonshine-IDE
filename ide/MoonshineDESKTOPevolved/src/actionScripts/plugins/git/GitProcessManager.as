@@ -61,6 +61,7 @@ package actionScripts.plugins.git
 		private static const GIT_COMMIT:String = "gitCommit";
 		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
 		private static const GIT_CHECKOUT_NEW_BRANCH:String = "gitCheckoutNewBranch";
+		private static const GIT_BRANCH_NAME_VALIDATION:String = "gitValidateProposedBranchName";
 		
 		public var gitBinaryPathOSX:String;
 		public var setGitAvailable:Function;
@@ -73,6 +74,7 @@ package actionScripts.plugins.git
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
+		private var onBranchNameValidation:Function;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
 		
@@ -114,7 +116,7 @@ package actionScripts.plugins.git
 		{
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --git-dir' : 'git&&rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST, project.folderLocation.fileBridge.nativePath));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' rev-parse --git-dir' : 'git rev-parse&&--git-dir', false, GIT_REPOSITORY_TEST, project.folderLocation.fileBridge.nativePath));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath});
 		}
 		
@@ -313,6 +315,15 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
+		public function checkBranchNameValidity(name:String, completion:Function):void
+		{
+			onBranchNameValidation = completion;
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' check-ref-format --branch "'+ name +'"' : 'git&&check-ref-format&&--branch&&'+ name, false, GIT_BRANCH_NAME_VALIDATION));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+		}
+		
 		private function onWorkerValueIncoming(event:GeneralEvent):void
 		{
 			var tmpValue:Object = event.value.value;
@@ -413,6 +424,7 @@ package actionScripts.plugins.git
 					if (match && (onXCodePathDetection != null))
 					{
 						onXCodePathDetection(value.output);
+						onXCodePathDetection = null;
 						return;
 					}
 					
@@ -420,6 +432,7 @@ package actionScripts.plugins.git
 					if (match && (onXCodePathDetection != null))
 					{
 						onXCodePathDetection(value.output);
+						onXCodePathDetection = null;
 						return;
 					}
 					break;
@@ -537,10 +550,14 @@ package actionScripts.plugins.git
 						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
 					}
 				}
-				default:
+				case GIT_BRANCH_NAME_VALIDATION:
 				{
-					notice(value.output);
-					break;
+					if (onBranchNameValidation != null)
+					{
+						onBranchNameValidation(value.output);
+						onBranchNameValidation = null;
+						return;
+					}
 				}
 			}
 			
@@ -548,6 +565,10 @@ package actionScripts.plugins.git
 			{
 				shellError(value);
 				return;
+			}
+			else
+			{
+				notice(value.output);
 			}
 		}
 		
@@ -647,10 +668,12 @@ package actionScripts.plugins.git
 					if (i.data == selectedBranchName)
 					{
 						i.isSelected = true;
-						dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST, tmpModel.branchList));
 						break;
 					}
 				}
+				
+				// let open the selection popup
+				dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST, tmpModel.branchList));
 			}
 		}
 		

@@ -370,6 +370,7 @@ package actionScripts.plugins.git
 				gitNewBranchWindow.title = "New Branch";
 				gitNewBranchWindow.isGitAvailable = isGitAvailable;
 				gitNewBranchWindow.addEventListener(CloseEvent.CLOSE, onGitNewBranchWindowClosed);
+				gitNewBranchWindow.addEventListener(GitNewBranchPopup.VALIDATE_NAME, onNameValidationRequest);
 				PopUpManager.centerPopUp(gitNewBranchWindow);
 			}
 			else
@@ -383,6 +384,7 @@ package actionScripts.plugins.git
 			var newBranchDetails:Object = gitNewBranchWindow.submitObject;
 			
 			gitNewBranchWindow.removeEventListener(CloseEvent.CLOSE, onGitNewBranchWindowClosed);
+			gitNewBranchWindow.removeEventListener(GitNewBranchPopup.VALIDATE_NAME, onNameValidationRequest);
 			PopUpManager.removePopUp(gitNewBranchWindow);
 			gitNewBranchWindow = null;
 			
@@ -390,6 +392,16 @@ package actionScripts.plugins.git
 			{
 				processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
 			}
+		}
+		
+		private function onNameValidationRequest(event:GeneralEvent):void
+		{
+			processManager.checkBranchNameValidity(event.value as String, onNameValidatedByGit);
+		}
+		
+		private function onNameValidatedByGit(value:String):void
+		{
+			gitNewBranchWindow.onNameValidatedByGit(value);
 		}
 		
 		private function onChangeBranchRequest(event:Event):void
