@@ -904,9 +904,11 @@ package actionScripts.utils
 			var tmpValue:String = "";
 			if (ConstantsCoreVO.IS_MACOS || forceOSXEncode)
 			{
-				// @important
-				// assuming the content will be double-quoted by the caller function
+				// @note
+				// in case of /bash one should send the value surrounded by $''
+				// i.e. $' +encodedValue+ '
 				tmpValue = value.replace(/(")/g, '\\"');
+				tmpValue = value.replace(/(')/g, "\\'");
 			}
 			else if (!ConstantsCoreVO.IS_MACOS || forceWindowsEncode)
 			{
