@@ -899,16 +899,16 @@ package actionScripts.utils
 		/**
 		 * Returns encoded string to run on Windows' shell
 		 */
-		public static function getEncodedForShell(value:String):String
+		public static function getEncodedForShell(value:String, forceOSXEncode:Boolean=false, forceWindowsEncode:Boolean=false):String
 		{
 			var tmpValue:String = "";
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_MACOS || forceOSXEncode)
 			{
 				// @important
 				// assuming the content will be double-quoted by the caller function
 				tmpValue = value.replace(/(")/g, '\\"');
 			}
-			else
+			else if (!ConstantsCoreVO.IS_MACOS || forceWindowsEncode)
 			{
 				for (var i:int; i < value.length; i++)
 				{

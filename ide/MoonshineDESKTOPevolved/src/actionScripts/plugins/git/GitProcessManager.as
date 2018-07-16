@@ -177,7 +177,7 @@ package actionScripts.plugins.git
 				}
 			}
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ UtilsCore.getEncodedForShell(withMessage) +'"' : 'git&&commit&&-m&&'+ UtilsCore.getEncodedForShell(withMessage), false, GIT_COMMIT));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ UtilsCore.getEncodedForShell(withMessage) +'"' : 'git&&commit&&-m&&"'+ UtilsCore.getEncodedForShell(withMessage, true) +'"', false, GIT_COMMIT));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
