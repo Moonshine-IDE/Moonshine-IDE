@@ -37,6 +37,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
@@ -172,11 +173,11 @@ package actionScripts.plugins.git
 			{
 				if (i.isSelected) 
 				{
-					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add "'+ i.data.path +'"' : 'git&&add&&'+ i.data.path, false, GIT_COMMIT));
+					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' add "'+ UtilsCore.getEncodedForShell(i.data.path) +'"' : 'git&&add&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_COMMIT));
 				}
 			}
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ withMessage +'"' : 'git&&commit&&-m&&"'+ withMessage +'"', false, GIT_COMMIT));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' commit -m "'+ UtilsCore.getEncodedForShell(withMessage) +'"' : 'git&&commit&&-m&&'+ UtilsCore.getEncodedForShell(withMessage), false, GIT_COMMIT));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
@@ -195,11 +196,11 @@ package actionScripts.plugins.git
 					{
 						case GitProcessManager.GIT_STATUS_FILE_DELETED:
 						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout "'+ i.data.path +'"' : 'git&&checkout&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout "'+ UtilsCore.getEncodedForShell(i.data.path) +'"' : 'git&&checkout&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 							
 						case GitProcessManager.GIT_STATUS_FILE_NEW:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset "'+ i.data.path +'"' : 'git&&reset&&'+ i.data.path, false, GIT_CHECKOUT_BRANCH, i.data.path));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' reset "'+ UtilsCore.getEncodedForShell(i.data.path) +'"' : 'git&&reset&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 					}
 				}
@@ -230,12 +231,12 @@ package actionScripts.plugins.git
 			
 			if (!userName && !password)
 			{
-				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin '+ tmpModel.currentBranch : 'git&&push&&-v&&origin&&'+ tmpModel.currentBranch, false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push -v origin "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"' : 'git&&push&&-v&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
 			}
 			else
 			{
 				//git push https://user:pass@github.com/user/project.git
-				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git '+ tmpModel.currentBranch : 'git&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ tmpModel.currentBranch, false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' push https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"' : 'git&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
 			}
 
 			warning("Git push requested...");
@@ -250,7 +251,7 @@ package actionScripts.plugins.git
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin '+ tmpModel.currentBranch : 'git&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ tmpModel.currentBranch, false, GitHubPlugin.PULL_REQUEST));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' pull --progress -v --no-rebase origin "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"' : 'git&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GitHubPlugin.PULL_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
@@ -277,7 +278,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ (value.data as String): 'git&&checkout&&'+ (value.data as String), false, GIT_CHECKOUT_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout "'+ (value.data as String) +'"': 'git&&checkout&&'+ UtilsCore.getEncodedForShell(value.data as String), false, GIT_CHECKOUT_BRANCH));
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			
 			notice("Trying to switch branch...");
@@ -292,7 +293,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			// https://stackoverflow.com/questions/1519006/how-do-you-create-a-remote-git-branch
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout -b '+ name : 'git&&checkout&&-b&&'+ name, false, GIT_CHECKOUT_NEW_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout -b "'+ UtilsCore.getEncodedForShell(name) +'"' : 'git&&checkout&&-b&&'+ UtilsCore.getEncodedForShell(name), false, GIT_CHECKOUT_NEW_BRANCH));
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			if (pushToOrigin) 
 			{
@@ -311,7 +312,7 @@ package actionScripts.plugins.git
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout '+ tmpModel.currentBranch +' --' : 'git&&checkout&&'+ tmpModel.currentBranch +'&&--', false, GIT_CHECKOUT_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' checkout "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'" --' : 'git&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'&&--', false, GIT_CHECKOUT_BRANCH));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
@@ -320,7 +321,7 @@ package actionScripts.plugins.git
 			onBranchNameValidation = completion;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' check-ref-format --branch "'+ name +'"' : 'git&&check-ref-format&&--branch&&'+ name, false, GIT_BRANCH_NAME_VALIDATION));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' check-ref-format --branch "'+ UtilsCore.getEncodedForShell(name) +'"' : 'git&&check-ref-format&&--branch&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		

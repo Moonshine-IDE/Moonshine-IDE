@@ -25,7 +25,6 @@ package actionScripts.utils
 	import mx.collections.ArrayCollection;
 	import mx.collections.ICollectionView;
 	import mx.collections.IList;
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -895,6 +894,29 @@ package actionScripts.utils
 			
 			// git check
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
+		}
+		
+		/**
+		 * Returns encoded string to run on Windows' shell
+		 */
+		public static function getEncodedForShell(value:String):String
+		{
+			var tmpValue:String = "";
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				// @important
+				// assuming the content will be double-quoted by the caller function
+				tmpValue = value.replace(/(")/g, '\\"');
+			}
+			else
+			{
+				for (var i:int; i < value.length; i++)
+				{
+					tmpValue += "^"+ value.charAt(i);
+				}
+			}
+			
+			return tmpValue;
 		}
 	}
 }
