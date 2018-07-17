@@ -140,7 +140,7 @@
 		</s:List>
 		<s:TextArea id="txtMessage"
 					width="100%" height="30%"
-					prompt="Commit message.." restrict="a-zA-Z0-9`!@#$%()_ +={}';.\-\/\&amp;"/>
+					prompt="Commit message.." restrict="a-zA-Z0-9`!@#$%()_ +={}';,.?\-\/\\\?\&quot;"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

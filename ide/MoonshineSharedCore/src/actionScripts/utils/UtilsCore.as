@@ -907,6 +907,7 @@ package actionScripts.utils
 				// @note
 				// in case of /bash one should send the value surrounded by $''
 				// i.e. $' +encodedValue+ '
+				tmpValue = value.replace(/(\\)/g, '\\\\"');
 				tmpValue = value.replace(/(")/g, '\\"');
 				tmpValue = value.replace(/(')/g, "\\'");
 			}
