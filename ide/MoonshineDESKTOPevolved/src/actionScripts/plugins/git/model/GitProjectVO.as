@@ -27,6 +27,8 @@ package actionScripts.plugins.git.model
 		public var currentBranch:String;
 		public var remoteURL:String;
 		public var branchList:ArrayCollection;
+		public var sessionUserName:String; // sys git configuration
+		public var sessionUserEmail:String; // sys git configuration
 		public var sessionUser:String;
 		public var sessionPassword:String;
 		public var rootLocal:File;

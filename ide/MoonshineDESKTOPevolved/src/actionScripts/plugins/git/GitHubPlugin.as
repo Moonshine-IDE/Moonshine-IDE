@@ -40,6 +40,8 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -274,6 +276,11 @@ package actionScripts.plugins.git
 			}
 		}
 		
+		private function onGitAuthorDetection(value:GitProjectVO):void
+		{
+			if (gitCommitWindow && value) gitCommitWindow.onGitAuthorDetection(value);
+		}
+		
 		private function onGitCommitWindowClosed(event:CloseEvent):void
 		{
 			if (gitCommitWindow.isSubmit) processManager.commit(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
@@ -287,6 +294,8 @@ package actionScripts.plugins.git
 		{
 			processManager.removeEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked);
 			if (gitCommitWindow) gitCommitWindow.commitDiffCollection = event.value as ArrayCollection;
+			
+			processManager.getGitAuthor(onGitAuthorDetection);
 		}
 		
 		private function onPullRequest(event:Event):void

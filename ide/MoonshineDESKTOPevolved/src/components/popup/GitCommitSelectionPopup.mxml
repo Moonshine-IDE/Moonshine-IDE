@@ -3,18 +3,22 @@
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 width="600" height="400" minWidth="300" minHeight="200"
 		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
-		 creationComplete="onCreationCompletes(event)">
+		 creationComplete="onCreationCompletes(event)" xmlns:ns="library://ns.adobe.com/flashx/textLayout">
 	<fx:Script>
 		<![CDATA[
+			import flash.net.navigateToURL;
+			
 			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
+			import actionScripts.plugins.git.model.GitProjectVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
 			
 			public static const TYPE_COMMIT:String = "typeCommit";
 			public static const TYPE_REVERT:String = "typeRevert";
+			public static const GET_AUTHOR:String = "getGitAuthor";
 			
 			[Bindable] public var filesCount:int;
 			[Bindable] public var isGitAvailable:Boolean;
@@ -24,6 +28,11 @@
 			public var isSubmit:Boolean;
 			public var commitMessage:String;
 			
+			public function onGitAuthorDetection(value:GitProjectVO):void
+			{
+				lblAuthor.text = "Author: "+ (value.sessionUserName ? value.sessionUserName : "<Default>") +" ("+ (value.sessionUserEmail ? value.sessionUserEmail : "<Default>") +")";
+			}
+			
 			private function onCreationCompletes(event:FlexEvent):void
 			{
 				btnCommit.label = (type == TYPE_COMMIT) ? "Commit Selected" : "Revert Selected";
@@ -32,6 +41,7 @@
 					lstFiles.percentHeight = 100;
 					txtMessage.includeInLayout = txtMessage.visible = false;
 					lblMessage.includeInLayout = lblMessage.visible = false;
+					hgAuthor.includeInLayout = hgAuthor.visible = false;
 				}
 			}
 			
@@ -63,6 +73,16 @@
 				{
 					i.isSelected = isSelected;
 				}
+			}
+			
+			protected function onAuthorSetMessage(value:Boolean):void
+			{
+				bodyInstruction.includeInLayout = bodyInstruction.visible = value;
+			}
+			
+			private function openSetAuthorInsLink():void
+			{
+				navigateToURL(new URLRequest("https://gizmodo.com/elon-musk-should-tweet-more-1827696251"), "blank");
 			}
 			
 		]]>
@@ -138,10 +158,71 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
+		<s:HGroup id="hgAuthor" 
+				  width="100%"
+				  verticalAlign="middle" paddingTop="4"
+				  clipAndEnableScrolling="false">
+			<s:Label id="lblAuthor"/>
+			<s:Label text="How can I change this?"
+					 creationComplete="event.target.setStyle('textDecoration', 'underline')" buttonMode="true"
+					 color="0x811b38" click="onAuthorSetMessage(true)"/>
+		</s:HGroup>
 		<s:TextArea id="txtMessage"
 					width="100%" height="30%"
 					prompt="Commit message.." restrict="a-zA-Z0-9`!@#$%()_ +={}';,.?\-\/\\\?\&quot;"/>
 	</s:VGroup>
+	
+	<s:BorderContainer id="bodyInstruction" 
+					   width="500" height="200" autoLayout="true"
+					   cornerRadius="6" borderColor="0x2d2d2d"
+					   horizontalCenter="0" verticalCenter="0"
+					   includeInLayout="false" visible="false">
+		<s:backgroundFill>
+			<s:SolidColor color="0xa0a0a0"/>
+		</s:backgroundFill>
+		<s:Group width="100%" height="100%">
+			<s:RichEditableText id="retManualNotif" 
+								editable="false" focusEnabled="false"
+								width="90%" fontSize="13"
+								horizontalCenter="0" verticalCenter="-20">
+				<s:textFlow>
+					<s:TextFlow>
+						<s:p>See (<s:a click='openSetAuthorInsLink()'>https://gizmodo.com/elon-musk-should-tweet-more-1827696251</s:a>) for instructions on changing the user name and email for your commit.<s:br/><s:br/>NOTE: The macOS version of Moonshine does not have access to the global configuration file for <ns:span fontStyle="italic">git</ns:span>. You will need to define your name and email for each project.</s:p>
+					</s:TextFlow>
+				</s:textFlow>
+			</s:RichEditableText>
+			<!-- Button bar -->
+			<mx:HRule id="buttonBarLine"
+					  width="100%"
+					  bottom="41"
+					  strokeWidth="1"
+					  strokeColor="0x303030" />
+			<mx:HBox id="buttonBar"
+					 width="100%"
+					 height="41"
+					 bottom="0"
+					 backgroundColor="0x444444"
+					 paddingRight="10"
+					 paddingTop="0"
+					 horizontalAlign="center"
+					 verticalAlign="middle"
+					 ><mx:filters>
+						  <mx:DropShadowFilter 
+							  alpha=".5" 
+							  angle="90" 
+							  blurX="0" 
+							  blurY="7" 
+							  strength="1"
+							  distance="1"
+							  inner="true" />
+					  </mx:filters>
+				<mx:HBox autoLayout="true">
+					<s:Button label="OK" styleName="darkButton"
+							  click="onAuthorSetMessage(false)"/>
+				</mx:HBox>
+			</mx:HBox>
+		</s:Group>
+	</s:BorderContainer>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:CheckBox label="Select/Deselect All"

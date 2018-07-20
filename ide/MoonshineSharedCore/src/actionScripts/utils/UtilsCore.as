@@ -306,6 +306,19 @@ package actionScripts.utils
 		}
 		
 		/**
+		 * Returns project based on its folderLocation
+		 */
+		public static function getProjectByPath(value:String):ProjectVO
+		{
+			for each (var i:ProjectVO in model.projects)
+			{
+				if (i.folderLocation.fileBridge.nativePath == value) return i;
+			}
+			
+			return null;
+		}
+		
+		/**
 		 * Returns projectVO against fileWrapper
 		 */
 		public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO

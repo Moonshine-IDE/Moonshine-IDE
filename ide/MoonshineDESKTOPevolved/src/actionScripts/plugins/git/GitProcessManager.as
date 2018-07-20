@@ -21,6 +21,7 @@ package actionScripts.plugins.git
 	import com.adobe.utils.StringUtil;
 	
 	import flash.filesystem.File;
+	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -60,6 +61,8 @@ package actionScripts.plugins.git
 		private static const GIT_REMOTE_ORIGIN_URL:String = "getGitRemoteURL";
 		private static const GIT_CURRENT_BRANCH_NAME:String = "getGitCurrentBranchName";
 		private static const GIT_COMMIT:String = "gitCommit";
+		private static const GIT_QUERY_USER_NAME:String = "gitQueryUserName";
+		private static const GIT_QUERY_USER_EMAIL:String = "gitQueryUserEmail";
 		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
 		private static const GIT_CHECKOUT_NEW_BRANCH:String = "gitCheckoutNewBranch";
 		private static const GIT_BRANCH_NAME_VALIDATION:String = "gitValidateProposedBranchName";
@@ -75,9 +78,10 @@ package actionScripts.plugins.git
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
-		private var onBranchNameValidation:Function;
+		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
+		private var gitUserName:String;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -164,9 +168,22 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
+		public function getGitAuthor(completion:Function):void
+		{
+			if (!model.activeProject) return;
+			
+			completionFunctionsDic["getGitAuthor"] = completion;
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config user.name' : 'git&&config&&user.name', false, GIT_QUERY_USER_NAME, model.activeProject.folderLocation.fileBridge.nativePath));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config user.email' : 'git&&config&&user.email', false, GIT_QUERY_USER_EMAIL, model.activeProject.folderLocation.fileBridge.nativePath));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+		}
+		
 		public function commit(files:ArrayCollection, withMessage:String):void
 		{
 			if (!model.activeProject) return;
+			
 			queue = new Vector.<Object>();
 			
 			for each (var i:GenericSelectableObject in files)
@@ -318,7 +335,7 @@ package actionScripts.plugins.git
 		
 		public function checkBranchNameValidity(name:String, completion:Function):void
 		{
-			onBranchNameValidation = completion;
+			completionFunctionsDic["checkBranchNameValidity"] = completion;
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" check-ref-format --branch $'"+ UtilsCore.getEncodedForShell(name) +"'" : 'git&&check-ref-format&&--branch&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
@@ -370,6 +387,10 @@ package actionScripts.plugins.git
 				case GitHubPlugin.PULL_REQUEST:
 					refreshProjectTree(); // important
 					success("...process completed");
+					break;
+				case GIT_QUERY_USER_EMAIL:
+					completionFunctionsDic["getGitAuthor"](model.activeProject ? plugin.modelAgainstProject[model.activeProject] : null);
+					delete completionFunctionsDic["getGitAuthor"];
 					break;
 			}
 		}
@@ -457,7 +478,7 @@ package actionScripts.plugins.git
 				}
 				case GIT_REPOSITORY_TEST:
 				{
-					tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					if (!isFatal)
 					{
 						if (tmpProject)
@@ -497,7 +518,7 @@ package actionScripts.plugins.git
 					match = value.output.match(/.*.$/);
 					if (match)
 					{
-						tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+						tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 						var tmpResult:Array = new RegExp("http.*\://", "i").exec(value.output);
 						if (tmpResult != null && tmpProject)
 						{
@@ -510,7 +531,7 @@ package actionScripts.plugins.git
 				}
 				case GIT_CURRENT_BRANCH_NAME:
 				{
-					tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					if (tmpProject) parseCurrentBranch(value.output, tmpProject);
 					return;
 				}
@@ -546,19 +567,35 @@ package actionScripts.plugins.git
 					if (match)
 					{
 						// reset model information if saved by the user
-						tmpProject = getProjectByPath(tmpQueue.extraArguments[0]);
+						tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 						plugin.modelAgainstProject[tmpProject].sessionUser = null; 
 						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
 					}
+					
+					break;
 				}
 				case GIT_BRANCH_NAME_VALIDATION:
 				{
-					if (onBranchNameValidation != null)
+					if (completionFunctionsDic["checkBranchNameValidity"] != undefined)
 					{
-						onBranchNameValidation(value.output);
-						onBranchNameValidation = null;
+						completionFunctionsDic["checkBranchNameValidity"](value.output);
+						delete completionFunctionsDic["checkBranchNameValidity"];
 						return;
 					}
+					
+					break;
+				}
+				case GIT_QUERY_USER_NAME:
+				{
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
+					plugin.modelAgainstProject[tmpProject].sessionUserName = value.output.replace("\n", "");
+					return;
+				}
+				case GIT_QUERY_USER_EMAIL:
+				{
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
+					plugin.modelAgainstProject[tmpProject].sessionUserEmail = value.output.replace("\n", "");
+					return;
 				}
 			}
 			
@@ -682,16 +719,6 @@ package actionScripts.plugins.git
 		{
 			// refreshing project tree
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
-		}
-		
-		private function getProjectByPath(value:String):ProjectVO
-		{
-			for each (var i:ProjectVO in model.projects)
-			{
-				if (i.folderLocation.fileBridge.nativePath == value) return i;
-			}
-			
-			return null;
 		}
 	}
 }
