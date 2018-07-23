@@ -504,7 +504,8 @@ package actionScripts.plugins.git
 						
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
 					}
-					else if (ConstantsCoreVO.IS_MACOS && tmpProject)
+					else if (ConstantsCoreVO.IS_MACOS && tmpProject && 
+						(plugin.projectsNotAcceptedByUserToPermitAsGitOnMacOS[tmpProject.folderLocation.fileBridge.nativePath] == undefined))
 					{
 						// in case of OSX sandbox if the project's parent folder
 						// consists of '.git' and do not have bookmark access
@@ -516,6 +517,9 @@ package actionScripts.plugins.git
 					{
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
 					}
+					
+					// following will enable/disable Moonshine top menus based on project
+					if (tmpProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
 					return;
 				}
 				case GIT_REMOTE_ORIGIN_URL:

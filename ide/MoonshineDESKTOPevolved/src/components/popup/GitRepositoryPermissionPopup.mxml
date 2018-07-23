@@ -74,10 +74,10 @@
 			
 			private function closeButtonClickedRequest(event:MouseEvent):void
 			{
-				closeButtonClicked(event, true);
+				closeButtonClicked(event);
 			}
 			
-			private function closeButtonClicked(event:MouseEvent, isDiscarded:Boolean = false):void
+			private function closeButtonClicked(event:MouseEvent):void
 			{
 				if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
 				dispatchEvent(new Event(Event.CLOSE));
@@ -142,7 +142,7 @@
 							  label="Allow Access" styleName="darkButton"
 							  click="onAllowAccess(event)"/>
 					<s:Button label="Skip" styleName="darkButton"
-							  click="closeButtonClicked(event, true)"/>
+							  click="closeButtonClicked(event)"/>
 				</mx:HBox>
 			</mx:HBox>
 		</s:VGroup>

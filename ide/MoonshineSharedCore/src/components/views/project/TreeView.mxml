@@ -88,7 +88,6 @@
 		private var DataSort:Sort = new Sort();
 		private var deleteFileWrapper:FileWrapper;
 		private var fileCollection:Array;
-		private var lastActiveProjectMenuType:String;
 
 		private var _projects:ArrayCollection;
 
@@ -304,7 +303,6 @@
 		{
 			var project:ProjectVO = null;
 			var timeoutValue:uint;
-			lastActiveProjectMenuType = null;
 			switch (event.kind)
 			{
 				case CollectionEventKind.REMOVE:
@@ -929,11 +927,7 @@
 			if (activeProject)
 			{
 				model.activeProject = activeProject;
-				if (lastActiveProjectMenuType != (activeProject as AS3ProjectVO).menuType)
-				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
-					lastActiveProjectMenuType = (activeProject as AS3ProjectVO).menuType;
-				}
+				UtilsCore.setProjectMenuType(activeProject as AS3ProjectVO);
 			}
 		}
 

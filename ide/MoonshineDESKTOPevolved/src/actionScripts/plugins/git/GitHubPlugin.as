@@ -44,6 +44,7 @@ package actionScripts.plugins.git
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.GitAuthenticationPopup;
 	import components.popup.GitBranchSelectionPopup;
@@ -70,6 +71,7 @@ package actionScripts.plugins.git
 		
 		public var gitBinaryPathOSX:String;
 		public var modelAgainstProject:Dictionary = new Dictionary();
+		public var projectsNotAcceptedByUserToPermitAsGitOnMacOS:Dictionary = new Dictionary();
 		
 		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
@@ -162,6 +164,8 @@ package actionScripts.plugins.git
 		{
 			if (event.kind == CollectionEventKind.REMOVE && modelAgainstProject[event.items[0]] != undefined) 
 			{
+				var deletedProjectPath:String = (event.items[0] as ProjectVO).folderLocation.fileBridge.nativePath;
+				if (projectsNotAcceptedByUserToPermitAsGitOnMacOS[deletedProjectPath] != undefined) delete projectsNotAcceptedByUserToPermitAsGitOnMacOS[deletedProjectPath];
 				delete modelAgainstProject[event.items[0]];
 			}
 		}
@@ -491,6 +495,10 @@ package actionScripts.plugins.git
 				
 				checkOSXGitAccess();
 				processManager.checkIfGitRepository(tmpProject);
+			}
+			else
+			{
+				projectsNotAcceptedByUserToPermitAsGitOnMacOS[tmpProject.folderLocation.fileBridge.nativePath] = true;
 			}
 		}
 		
