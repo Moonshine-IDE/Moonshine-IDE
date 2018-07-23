@@ -41,7 +41,6 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -265,9 +264,9 @@ package actionScripts.plugins.git
 				// the window until folling process is finished
 				gitCommitWindow.callLater(function():void
 				{
-					processManager.checkDiff();
 					if (!processManager.hasEventListener(GitProcessManager.GIT_DIFF_CHECKED))
 						processManager.addEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+					processManager.checkDiff();
 				});
 			}
 			else
@@ -457,9 +456,9 @@ package actionScripts.plugins.git
 		
 		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void
 		{
-			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
 			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
 				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
+			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
 		}
 		
 		private function onGitRepositoryTested(event:GeneralEvent):void

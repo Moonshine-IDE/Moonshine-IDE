@@ -18,6 +18,7 @@ package actionScripts.utils
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var queue:Vector.<Object> = new Vector.<Object>();
+		private var pendingQueue:Array = [];
 		private var isErrorClose:Boolean;
 		private var presentRunningQueue:Object;
 		
@@ -27,6 +28,12 @@ package actionScripts.utils
 		
 		public function runProcesses(processDescriptor:Object):void
 		{
+			if (customProcess && customProcess.running)
+			{
+				pendingQueue.push(processDescriptor);
+				return;
+			}
+			
 			if (customProcess) startShell(false);
 			customInfo = renewProcessInfo();
 			
@@ -51,10 +58,16 @@ package actionScripts.utils
 			{
 				startShell(false);
 				worker.workerToMain.send({event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, value:null});
+				
+				if (pendingQueue.length != 0)
+				{
+					runProcesses(pendingQueue.shift());
+				}
 				return;
 			}
 			
-			if (queue[0].showInConsole) worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:"Sending to command: "+ queue[0].com});
+			if (queue[0].showInConsole) 
+				worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:"Sending to command: "+ queue[0].com});
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			

@@ -181,13 +181,12 @@
 			<s:SolidColor color="0xa0a0a0"/>
 		</s:backgroundFill>
 		<s:Group width="100%" height="100%">
-			<s:RichEditableText id="retManualNotif" 
-								editable="false" focusEnabled="false"
+			<s:RichEditableText editable="false" focusEnabled="false"
 								width="90%" fontSize="13"
 								horizontalCenter="0" verticalCenter="-20">
 				<s:textFlow>
 					<s:TextFlow>
-						<s:p>See (<s:a click='openSetAuthorInsLink()'>https://help.github.com/articles/setting-your-commit-email-address-in-git</s:a>) for instructions on changing the user name and email for your commit.<s:br/><s:br/>NOTE: The macOS version of Moonshine does not have access to the global configuration file for <ns:span fontStyle="italic">git</ns:span>. You will need to define your name and email for each project.</s:p>
+						<s:p>See <s:a click='openSetAuthorInsLink()'>this page</s:a> for instructions on changing the user name and email for your commit.<s:br/><s:br/>NOTE: The macOS version of Moonshine does not have access to the global configuration file for <ns:span fontStyle="italic">git</ns:span>. You will need to define your name and email for each project.</s:p>
 					</s:TextFlow>
 				</s:textFlow>
 			</s:RichEditableText>

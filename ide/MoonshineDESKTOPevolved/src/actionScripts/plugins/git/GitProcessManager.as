@@ -81,7 +81,8 @@ package actionScripts.plugins.git
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
-		private var gitUserName:String;
+		private var isGitUserName:Boolean;
+		private var isGitUserEmail:Boolean;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -173,6 +174,7 @@ package actionScripts.plugins.git
 			if (!model.activeProject) return;
 			
 			completionFunctionsDic["getGitAuthor"] = completion;
+			isGitUserEmail = isGitUserName = false;
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +' config user.name' : 'git&&config&&user.name', false, GIT_QUERY_USER_NAME, model.activeProject.folderLocation.fileBridge.nativePath));
@@ -389,8 +391,14 @@ package actionScripts.plugins.git
 					success("...process completed");
 					break;
 				case GIT_QUERY_USER_EMAIL:
-					completionFunctionsDic["getGitAuthor"](model.activeProject ? plugin.modelAgainstProject[model.activeProject] : null);
+					var tmpVO:GitProjectVO = model.activeProject ? plugin.modelAgainstProject[model.activeProject] : null;
+					if (tmpVO && !isGitUserEmail) tmpVO.sessionUserEmail = null;
+					if (tmpVO && !isGitUserName) tmpVO.sessionUserName = null;
+					completionFunctionsDic["getGitAuthor"](tmpVO);
 					delete completionFunctionsDic["getGitAuthor"];
+					break;
+				case GIT_DIFF_CHECK:
+					checkDiffFileExistence();
 					break;
 			}
 		}
@@ -411,9 +419,6 @@ package actionScripts.plugins.git
 					break;
 				case GIT_PUSH:
 					success("...process completed");
-					break;
-				case GIT_DIFF_CHECK:
-					checkDiffFileExistence();
 					break;
 			}
 		}
@@ -589,12 +594,14 @@ package actionScripts.plugins.git
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					plugin.modelAgainstProject[tmpProject].sessionUserName = value.output.replace("\n", "");
+					isGitUserName = true;
 					return;
 				}
 				case GIT_QUERY_USER_EMAIL:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					plugin.modelAgainstProject[tmpProject].sessionUserEmail = value.output.replace("\n", "");
+					isGitUserEmail = true;
 					return;
 				}
 			}

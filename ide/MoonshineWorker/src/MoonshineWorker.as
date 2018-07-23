@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package
 {
-	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.Sprite;
