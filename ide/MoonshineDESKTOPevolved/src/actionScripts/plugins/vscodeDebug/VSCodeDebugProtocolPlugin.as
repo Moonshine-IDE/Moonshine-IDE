@@ -862,11 +862,15 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function stepOverExecutionHandler(event:Event):void
 		{
+            if (!connected) return;
+			
 			if (_debugPanel.stepOverButton.enabled) stepOverButton_clickHandler(null);
 		}
 		
 		private function continueExecutionHandler(event:Event):void
 		{
+            if (!connected) return;
+
 			if (_debugPanel.playButton.enabled) playButton_clickHandler(null);
 		}
 		
