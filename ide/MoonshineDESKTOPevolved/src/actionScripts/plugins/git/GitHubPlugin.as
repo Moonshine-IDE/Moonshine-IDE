@@ -460,6 +460,16 @@ package actionScripts.plugins.git
 		
 		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void
 		{
+			// don't go for a check if already decided as a git project
+			// or a project is not permitted to access as a git repository on sandbox macos
+			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1 ||
+				projectsNotAcceptedByUserToPermitAsGitOnMacOS[event.project.folderLocation.fileBridge.nativePath] != undefined) 
+			{
+				// following will enable/disable Moonshine top menus based on project
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
+				return;
+			}
+			
 			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
 				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
 			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
