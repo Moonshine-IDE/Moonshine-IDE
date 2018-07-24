@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.14.0]
+
+### Added
+* Basic Git Support
+** Clone
+** Commit
+** Push/Pull
+** View/Revert modifications
+** Create/Switch branches
+* Option to mark files or folders as hidden in the project tree.  Use the "Show hidden files/folders" setting in the General settings to determine whether or not these files should be displayed (NOTE:  the changes for this setting will not be applied until the project is closed and reopened, or Moonshine is restarted).
+* Visual Editor:  Added duplicate action (CTRL-R or CMD-R).  This is currently only available by shortcut.
+
+### Changed
+* Improvement to PrimeFaces Grids in Visual Editor
+* Visual Editor:  Added "Command Button" option for Button control.
+
+### Fixed
+* Fixed error triggered with "Set as Default Application" action in file context menu
+* Fixed #1009 startup error after Revoking All Access from Access Manager interface.
+* Fixed errors on project deletion
+
 ## Moonshine IDE [1.13.0]
 
 ### Added
