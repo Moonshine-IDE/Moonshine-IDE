@@ -6,23 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.14.0]
 
 ### Added
-* Basic Git Support
-** Clone
-** Commit
-** Push/Pull
-** View/Revert modifications
-** Create/Switch branches
+* Basic Git Support **Clone**, **Commit**, **Push/Pull**, **View/Revert** modifications, **Create/Switch** branches
 * Option to mark files or folders as hidden in the project tree.  Use the "Show hidden files/folders" setting in the General settings to determine whether or not these files should be displayed (NOTE:  the changes for this setting will not be applied until the project is closed and reopened, or Moonshine is restarted).
-* Visual Editor:  Added duplicate action (CTRL-R or CMD-R).  This is currently only available by shortcut.
+* Visual Editor:  Added duplicate (CTRL-U or CMD-U) and copy/paste (CTRL-C/CMD-C and CTR-V/CMD-V) actions.  This is currently only available by shortcut.
 
 ### Changed
-* Improvement to PrimeFaces Grids in Visual Editor
-* Visual Editor:  Added "Command Button" option for Button control.
+* Improvement to PrimeFaces Grids in Visual Editor.
+* Visual Editor: Added "Command Button" option for Button control.
+* Visual Editor: Added reverse command for Tab in property panel using SHIFT + Tab shortcut.
 
 ### Fixed
-* Fixed error triggered with "Set as Default Application" action in file context menu
+* Fixed error triggered with "Set as Default Application" action in file context menu.
 * Fixed #1009 startup error after Revoking All Access from Access Manager interface.
-* Fixed errors on project deletion
+* Fixed errors on project deletion.
+* Fixed issue where drop down list **Parent Directory** show only first directory in the list instead the most recent one.
+* Fixed issue *Failed to get compile settings for +configname=flex* during library build.
+* Visual Editor: Fixed issue where PrimeFaces InputNumber doesn not accept numbers greater than 999999999999999.
+* Visual Editor: Fixed issue where PrimeFaces Include component causes runtime error in exported project.
+* Visual Editor: Fixed issue where repositioning elements was not possible.
+* Visual Editor: Fixed issue where editor report error in case of created files with the same name in, a different directory.
 
 ## Moonshine IDE [1.13.0]
 
