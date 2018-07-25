@@ -11,9 +11,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor:  Added duplicate (CTRL-U or CMD-U) and copy/paste (CTRL-C/CMD-C and CTR-V/CMD-V) actions.  This is currently only available by shortcut.
 
 ### Changed
-* Improvement to PrimeFaces Grids in Visual Editor.
-* Visual Editor: Added "Command Button" option for Button control.
-* Visual Editor: Added reverse command for Tab in property panel using SHIFT + Tab shortcut.
+* Visual Editor:  Improvement to PrimeFaces Grids.
+* Visual Editor:  Added "Command Button" option for Button control.
+* Visual Editor:  Added reverse command for Tab in property panel using SHIFT + Tab shortcut.
 
 ### Fixed
 * Fixed error triggered with "Set as Default Application" action in file context menu.
@@ -21,10 +21,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed errors on project deletion.
 * Fixed issue where drop down list **Parent Directory** show only first directory in the list instead the most recent one.
 * Fixed issue *Failed to get compile settings for +configname=flex* during library build.
-* Visual Editor: Fixed issue where PrimeFaces InputNumber doesn not accept numbers greater than 999999999999999.
+* Visual Editor: Fixed issue where PrimeFaces InputNumber does not accept numbers greater than 999999999999999.
 * Visual Editor: Fixed issue where PrimeFaces Include component causes runtime error in exported project.
-* Visual Editor: Fixed issue where repositioning elements was not possible.
-* Visual Editor: Fixed issue where editor report error in case of created files with the same name in, a different directory.
+* Visual Editor: Fixed issue where repositioning elements was not possible.  The reordering functionality is still very limited (see #255).
+* Visual Editor: Fixed issue where editor reports error for files with the same name in different directories.
 
 ## Moonshine IDE [1.13.0]
 
