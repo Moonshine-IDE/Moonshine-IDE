@@ -427,9 +427,9 @@ package actionScripts.ui.editor.text
 		private function handlePaste(event:Event):void
 		{
 			// Get data from clipboard, and insert
-			var clipboardData:String = Clipboard.generalClipboard.getData(ClipboardFormats.TEXT_FORMAT).toString();
+			var clipboardData:Object = Clipboard.generalClipboard.getData(ClipboardFormats.TEXT_FORMAT);
 			
-			if (clipboardData) insert(clipboardData);
+			if (clipboardData) insert(String(clipboardData));
 		}
 		
 		private function handleCopy(event:Event):void
