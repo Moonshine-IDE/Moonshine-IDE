@@ -246,6 +246,7 @@
 		{
 			var lastScrollPosition:Number = tree.verticalScrollPosition;
 			var lastSelectedItem:Object = tree.selectedItem;
+			var lastSelectedIndex:int = tree.selectedIndex;
 			var openItems:Object = tree.openItems;
 			fw.updateChildren();
 			tree.openItems = openItems;
@@ -273,6 +274,9 @@
 				{
 					tree.selectedItem = lastSelectedItem;
 				}
+				
+				// if still there has no selection to the tree
+				if (!tree.selectedItem && lastSelectedIndex != -1) tree.selectedIndex = lastSelectedIndex;
 				clearTimeout(timeoutValue);
 			}, 100);
 		}

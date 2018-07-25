@@ -19,6 +19,7 @@
 package actionScripts.plugin.templating
 {
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -165,6 +166,7 @@ package actionScripts.plugin.templating
 		{
 			if (!fw.file.fileBridge.checkFileExistenceAndReport()) return;
 			
+			var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
 			
 			var nameOnlyPreviousSourceFileArray:Array = project.targets[0].fileBridge.name.split(".");
@@ -183,12 +185,19 @@ package actionScripts.plugin.templating
 				tmpAppDescData = tmpAppDescData.replace(/<name>(.*?)<\/name>/, "<name>"+ nameOnlyRequestedSourceFile +"<\/name>");
 				
 				var newDescriptorFile:FileLocation = fw.file.fileBridge.parent.resolvePath(nameOnlyRequestedSourceFileArray.join(".") +"-app.xml");
-				newDescriptorFile.fileBridge.save(tmpAppDescData);
-				
-				// refresh to project tree UI
-				var tmpTreeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, newDescriptorFile.fileBridge.nativePath, parent);
-				tmpTreeEvent.extra = newDescriptorFile;
-				GlobalEventDispatcher.getInstance().dispatchEvent(tmpTreeEvent);
+				if (!newDescriptorFile.fileBridge.exists)
+				{
+					newDescriptorFile.fileBridge.save(tmpAppDescData);
+					
+					// refresh to project tree UI
+					var tmpTreeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, newDescriptorFile.fileBridge.nativePath, parent);
+					tmpTreeEvent.extra = newDescriptorFile;
+					dispatcher.dispatchEvent(tmpTreeEvent);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, parent));
+				}
 			}
 			else
 			{
@@ -206,9 +215,7 @@ package actionScripts.plugin.templating
 						
 						// refresh bin-debug folder
 						var binDebugWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, htmlFile.fileBridge.parent);
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, binDebugWrapper.file.fileBridge.nativePath, binDebugWrapper)
-						);
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, binDebugWrapper));
 					}
 				}
 			}
