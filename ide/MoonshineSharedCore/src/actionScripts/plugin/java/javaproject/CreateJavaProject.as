@@ -210,6 +210,8 @@ package actionScripts.plugin.java.javaproject
 			if (!project) return;
 
             targetFolder = targetFolder.resolvePath(project.projectName);
+
+			project.folderLocation = targetFolder;
 			
 			// Close settings view
 			createClose(event);
