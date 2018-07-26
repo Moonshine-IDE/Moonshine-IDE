@@ -146,8 +146,13 @@
 
 			if (fileWrapper.isRoot)
 			{
-				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as AS3ProjectVO;
-				var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as ProjectVO;
+				var sourceWrapper:FileWrapper = null;
+				if(project is AS3ProjectVO)
+				{
+					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+					sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+				}
 				if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 			}
 		}

@@ -273,7 +273,9 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-            return pvo;
+			pvo.folderLocation = targetFolder;
+
+			return pvo;
 		}
 	}
 }

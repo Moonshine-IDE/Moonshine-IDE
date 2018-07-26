@@ -347,7 +347,7 @@
 					buildSettings(first.getSettingsList());
 				}
 				//Moon-105 update handled here
-				if (currentSelectedItem.name == "Templating Plugin")
+				if (currentSelectedItem && currentSelectedItem.name == "Templating Plugin")
 				{
 					updateButtons(true, false, false);
 				}
