@@ -46,10 +46,11 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.settings.vo.ISetting;
 			import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";
@@ -66,7 +67,7 @@
 			public var defaultCloseLabel:String = "Close";
 			public var currentRequestedSelectedItem:IHasSettings;
 			public var isSaved:Boolean;
-			public var exportProject:AS3ProjectVO;
+			public var exportProject:ProjectVO;
 	
 			private var currentSelectedItem:IHasSettings;
 			private var _label:String = "Settings";
@@ -138,8 +139,14 @@
 				//
 				// Since in either Flash Builder or Moonshine project type, Moonshine always saves
 				// it's saved data to .as3proj file only, we should check the .as3proj file existence first
-				var project:AS3ProjectVO = associatedData as AS3ProjectVO;
-				var projectFile:FileLocation = new FileLocation(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name + (project.isVisualEditorProject ? ".veditorproj" : ".as3proj"));
+				var project:ProjectVO = associatedData as ProjectVO;
+				var projectPath:String = project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + project.name;
+				if(project is AS3ProjectVO)
+				{
+					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+					projectPath += as3Project.isVisualEditorProject ? ".veditorproj" : ".as3proj";
+				}
+				var projectFile:FileLocation = new FileLocation(projectPath);
 				if (projectFile.fileBridge.exists)
 				{
 					goSave();

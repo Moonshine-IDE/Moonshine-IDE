@@ -70,7 +70,6 @@ package actionScripts.impls
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
     import actionScripts.plugin.syntax.JSSyntaxPlugin;
-    import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
     import actionScripts.plugin.syntax.XMLSyntaxPlugin;
     import actionScripts.plugin.templating.TemplatingPlugin;
@@ -102,7 +101,7 @@ package actionScripts.impls
     import actionScripts.utils.SHClassTest;
     import actionScripts.utils.SWFTrustPolicyModifier;
     import actionScripts.utils.SoftwareVersionChecker;
-    import actionScripts.utils.TypeAheadProcess;
+    import actionScripts.utils.LanguageServerProjectWatcher;
     import actionScripts.utils.Untar;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
@@ -206,7 +205,6 @@ package actionScripts.impls
 				AS3SyntaxPlugin,
 				CSSSyntaxPlugin,
 				GroovySyntaxPlugin,
-				JavaSyntaxPlugin,
 				JSSyntaxPlugin,
 				HTMLSyntaxPlugin,
 				MXMLSyntaxPlugin,
@@ -436,9 +434,9 @@ package actionScripts.impls
 			versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function startTypeAheadWithJavaPath(path:String):void
+		public function startLanguageServerProjectWatcherWithJavaPath(path:String):void
 		{
-			new TypeAheadProcess(path);
+			new LanguageServerProjectWatcher(path);
 		}
 		
 		public function reAdjustApplicationSize(width:Number, height:Number):void

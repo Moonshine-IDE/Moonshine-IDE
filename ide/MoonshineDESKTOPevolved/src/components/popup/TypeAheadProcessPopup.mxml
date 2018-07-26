@@ -5,11 +5,11 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.factory.FileLocation;
-			import actionScripts.utils.TypeAheadProcess;
+			import actionScripts.utils.LanguageServerProjectWatcher;
 			
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
-			private var typeAheadProcee:TypeAheadProcess;
+			private var typeAheadProcee:LanguageServerProjectWatcher;
 			private var file:FileLocation;
 			
 			protected function onBrowserPath(event:MouseEvent):void
@@ -27,7 +27,7 @@
 			}
 			protected function onCreate(event:MouseEvent):void
 			{
-				typeAheadProcee = new TypeAheadProcess(file.fileBridge.nativePath);	
+				typeAheadProcee = new LanguageServerProjectWatcher(file.fileBridge.nativePath);	
 				onCloseWindow(null);
 			}
 			private function openFileCancelled():void

@@ -236,7 +236,7 @@ package actionScripts.plugin.project
 				model.projects.addItemAt(event.project, 0);
 				model.activeProject = event.project;
 				
-				if (lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
+				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
 				{
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
 					lastActiveProjectMenuType = (event.project as AS3ProjectVO).menuType;

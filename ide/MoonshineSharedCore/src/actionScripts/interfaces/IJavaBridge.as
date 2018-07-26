@@ -16,13 +16,9 @@
 //  limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.project
+package actionScripts.interfaces
 {
-    public class ProjectType
+    public interface IJavaBridge extends IProject
     {
-        public static const AS3PROJ_AS_AIR:uint = 1;
-        public static const AS3PROJ_AS_WEB:uint = 2;
-        public static const VISUAL_EDITOR:uint = 3;
-        public static const JAVA:uint = 4;
     }
 }

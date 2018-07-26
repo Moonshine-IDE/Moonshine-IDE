@@ -264,7 +264,7 @@ package actionScripts.ui.renderers
 					{
 						// make this option available for the files Only inside the source folder location
 						var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
-						if (!project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
+						if (project && !project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
 						{
 							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
 								model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
@@ -383,7 +383,7 @@ package actionScripts.ui.renderers
 				
 				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 				{
-					return as3ProjectVO.menuType.indexOf(item) != -1;
+					return as3ProjectVO && as3ProjectVO.menuType.indexOf(item) != -1;
 				});
 				
 				model.contextMenuCore.subMenu(e.target, item);

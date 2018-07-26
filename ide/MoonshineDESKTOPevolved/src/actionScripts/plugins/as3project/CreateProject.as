@@ -552,12 +552,12 @@ package actionScripts.plugins.as3project
 				cookie.flush();
 			}
 
-            project = createFileSystemBeforeSave(project, view.exportProject);
+            project = createFileSystemBeforeSave(project, view.exportProject as AS3ProjectVO);
 			if (!project) return;
 
             if (view.exportProject)
             {
-                exportVisualEditorProject(project, view.exportProject);
+                exportVisualEditorProject(project, view.exportProject as AS3ProjectVO);
             }
 
             if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);

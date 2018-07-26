@@ -28,6 +28,7 @@ package actionScripts.factory
 	import actionScripts.interfaces.IContextMenuBridge;
 	import actionScripts.interfaces.IFileBridge;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.interfaces.IJavaBridge;
 	
 	/**
 	 * BridgeFactory
@@ -97,6 +98,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IAboutBridgeImp");
 			var gb: IAboutBridge = new clsToCreate();
+			return gb;
+		}
+
+		public static function getJavaInstance(): IJavaBridge 
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IJavaBridgeImpl");
+			var gb: IJavaBridge = new clsToCreate();
 			return gb;
 		}
 		

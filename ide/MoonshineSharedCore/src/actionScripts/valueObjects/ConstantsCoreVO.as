@@ -91,6 +91,7 @@ package actionScripts.valueObjects
 		public static var HAXESWF_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
         public static var ROYALE_PROJECT:FileLocation;
+		public static var JAVA_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
@@ -352,6 +353,11 @@ package actionScripts.valueObjects
             VISUALEDITOR_FLEX_PROJECT.fileBridge.isDirectory = true;
             VISUALEDITOR_FLEX_PROJECT.fileBridge.data = "Create a Flex project using visual editor.";
 
+			JAVA_PROJECT = new FileLocation(resourceManager.getString('resources', 'JAVA_PROJECT'));
+			JAVA_PROJECT.fileBridge.name = resourceManager.getString('resources', 'JAVA_PROJECT');
+            JAVA_PROJECT.fileBridge.isDirectory = true;
+            JAVA_PROJECT.fileBridge.data = "Create a Java project.";
+
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
 			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/Royale Project...";
@@ -361,7 +367,7 @@ package actionScripts.valueObjects
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT,JAVA_PROJECT]);
 			
 			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = ["PrimeFaces Project"];
 			

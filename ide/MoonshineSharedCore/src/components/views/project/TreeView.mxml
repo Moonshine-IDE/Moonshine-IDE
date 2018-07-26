@@ -332,7 +332,11 @@
 				{
 					project = projects.getItemAt(event.location) as ProjectVO;
 
-					var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
+					var sourceWrapper:FileWrapper = null;
+					if(project is AS3ProjectVO)
+					{
+						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
+					}
 					if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
 					projectFolders.addItemAt(project.projectFolder, 0);
@@ -681,16 +685,16 @@
 				tmpProject = UtilsCore.getProjectFromProjectFolder(value);
 				UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
 				{
-					for each (var as3Project:AS3ProjectVO in projects)
+					for each (var project:ProjectVO in projects)
 					{
-						if (as3Project.projectFolder.nativePath === value.nativePath)
+						if (project.projectFolder.nativePath === value.nativePath)
 						{
-							projects.removeItem(as3Project);
+							projects.removeItem(project);
 							updateTreeView();
 							
 							// in case of Close project we shall need to close the lang-server here
 							// in case of Delete project this handles by the command class
-							if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, as3Project));
+							if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 							break;
 						}
 					}
@@ -931,7 +935,10 @@
 			if (activeProject)
 			{
 				model.activeProject = activeProject;
-				UtilsCore.setProjectMenuType(activeProject as AS3ProjectVO);
+				if(activeProject is AS3ProjectVO)
+				{
+					UtilsCore.setProjectMenuType(activeProject as AS3ProjectVO);
+				}
 			}
 		}
 

@@ -54,6 +54,7 @@
 		import components.MainEntryPoint;
 		
 		import no.doomsday.console.ConsoleUtil;
+		import actionScripts.impls.IJavaBridgeImpl;
 
 		//--------------------------------------------------------------------------
 		//
@@ -68,6 +69,8 @@
 		private static const NEEDED_FOR_COMPILATION5:IAboutBridgeImp = null;
         private static const NEEDED_FOR_COMPILATION6: IVisualEditorProjectBridgeImpl = null;
         private static const NEEDED_FOR_COMPILATION7: IClipboardBridgeImp = null;
+        private static const NEEDED_FOR_COMPILATION8: IJavaBridgeImpl = null;
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC API
