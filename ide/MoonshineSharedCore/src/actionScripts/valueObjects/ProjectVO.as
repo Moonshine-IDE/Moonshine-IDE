@@ -41,19 +41,7 @@ package actionScripts.valueObjects
 		
 		[Bindable] public var folderNamesOnly:Vector.<String> = new Vector.<String>();
 		
-		protected var _folderLocation: FileLocation;
-
-		public function get folderLocation(): FileLocation
-		{
-			return _folderLocation;
-		}
-
-		public function set folderLocation(value: FileLocation):void
-		{
-			_folderLocation = value;
-			projectReference.path = value.fileBridge.nativePath;
-		}
-
+		public var folderLocation: FileLocation;
 
 		public var projectFile: FileLocation;
 		public var projectRemotePath:String;
@@ -78,12 +66,15 @@ package actionScripts.valueObjects
 		{
 			//if (ConstantsCoreVO.IS_AIR && !folderLocation) folder = folder.getDirectoryListing();
 			classFilesInProject = new ArrayCollection();
+
+			folderLocation = folder;
 			
 			// we need to keep a reference of owner project to every
 			// filewrapper reference for later use, i.e. to determine
 			// a filewrapper belongs to which project
 			projectReference = new ProjectReferenceVO();
 			projectReference.name = projectName;
+			projectReference.path = folder.fileBridge.nativePath;
 			
 			folderLocation = folder;
 

@@ -18,7 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+
     public interface IJavaBridge extends IProject
     {
+		function testMaven(file:Object):FileLocation;
+		function parseMaven(file:FileLocation):JavaProjectVO;
     }
 }

@@ -24,6 +24,7 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.valueObjects.TemplateVO;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import flash.filesystem.File;
+	import actionScripts.plugin.java.javaproject.importer.MavenImporter;
 
 	public class CreateJavaProject
 	{
@@ -114,25 +115,10 @@ package actionScripts.plugin.java.javaproject
 				newProjectPathSetting,
 			]));
 		}
-
-		public static function testFile(file:File):FileLocation
-		{
-			if (!file.exists) return null;
-			
-			var listing:Array = file.getDirectoryListing();
-			for each (var i:File in listing)
-			{
-				if (i.name == ".project") {
-					return (new FileLocation(i.nativePath));
-				}
-			}
-			
-			return null;
-		}
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = testFile(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = MavenImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 
@@ -210,8 +196,6 @@ package actionScripts.plugin.java.javaproject
 			if (!project) return;
 
             targetFolder = targetFolder.resolvePath(project.projectName);
-
-			project.folderLocation = targetFolder;
 			
 			// Close settings view
 			createClose(event);
@@ -273,9 +257,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			pvo.folderLocation = targetFolder;
-
-			return pvo;
+			return MavenImporter.parse(targetFolder, projectName);
 		}
 	}
 }

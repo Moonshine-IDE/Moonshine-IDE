@@ -34,6 +34,9 @@ package actionScripts.impls
     import actionScripts.ui.tabview.CloseTabEvent;
     import flash.display.DisplayObject;
     import actionScripts.plugin.java.javaproject.CreateJavaProject;
+    import actionScripts.factory.FileLocation;
+    import flash.filesystem.File;
+    import actionScripts.plugin.java.javaproject.importer.MavenImporter;
 
     public class IJavaBridgeImpl extends ProjectBridgeImplBase implements IJavaBridge
     {
@@ -77,6 +80,16 @@ package actionScripts.impls
 		override public function createProject(event:NewProjectEvent):void
         {
 			executeCreateJavaProject = new CreateJavaProject(event);
+		}
+		
+		public function testMaven(file:Object):FileLocation
+		{
+			return  MavenImporter.test(file as File);
+		}
+
+		public function parseMaven(file:FileLocation):JavaProjectVO
+		{
+			return  MavenImporter.parse(file);
 		}
     }
 }

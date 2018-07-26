@@ -70,6 +70,7 @@
 			import flashx.textLayout.events.FlowElementMouseEvent;
 			
 			import no.doomsday.console.core.events.ConsoleEvent;
+			import actionScripts.valueObjects.ProjectVO;
 			
 			[Embed("/elements/images/icoThumbUp.png")]
 			private const ICON_THUMB_UP:Class;
@@ -129,7 +130,7 @@
 					
 					if (recentOpenedProjectObject.fileBridge.isDirectory)
 					{
-						var project:AS3ProjectVO;
+						var project:ProjectVO;
 						var lastOpenedOption:String;
 						
 						// check if any last opend option is associated with the project
@@ -151,7 +152,11 @@
 						}
 						
 						// save old sdk details to the project
-						project.buildOptions.oldDefaultSDKPath = refVO.sdk;
+						if(project is AS3ProjectVO)
+						{
+							var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+							as3Project.buildOptions.oldDefaultSDKPath = refVO.sdk;
+						}
 						
 						// trigger the project to open
 						GlobalEventDispatcher.getInstance().dispatchEvent(
@@ -287,7 +292,7 @@
 				openRecentItem(refVO);
 			}
 
-			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):AS3ProjectVO
+			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):ProjectVO
 			{
 				var projectFile:Object = recentOpenedProjectObject.fileBridge.getFile;
 				var projectFileLocation:FileLocation;
@@ -306,6 +311,12 @@
 					if (projectFileLocation)
 					{
 						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+					}
+
+					projectFileLocation = model.javaCore.testMaven(projectFile);
+					if (projectFileLocation)
+					{
+						return model.javaCore.parseMaven(recentOpenedProjectObject as FileLocation);
 					}
 				}
 
