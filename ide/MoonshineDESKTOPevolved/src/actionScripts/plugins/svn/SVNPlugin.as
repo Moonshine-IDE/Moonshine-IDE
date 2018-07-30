@@ -24,6 +24,7 @@ package actionScripts.plugins.svn
 	import flash.filesystem.File;
 	
 	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	
@@ -31,22 +32,31 @@ package actionScripts.plugins.svn
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SubversionProvider;
-	import actionScripts.plugins.svn.view.CheckoutDialog;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	
+	import components.popup.SourceControlCheckout;
 
 	public class SVNPlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
+		public static const COMMIT_REQUEST:String = "svnCommitRequest";
+		public static const UPDATE_REQUEST:String = "svnUpdateRequest";
+		public static const SVN_TEST_COMPLETED:String = "svnTestCompleted";
 		
 		override public function get name():String			{ return "Subversion"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		
 		public var svnBinaryPath:String;
+		
+		private var checkoutWindow:SourceControlCheckout;
+		private var isSVNCheckCompleted:Boolean = true;
 		
 		override public function activate():void
 		{
@@ -55,6 +65,9 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, handleFileSave);
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
 			dispatcher.addEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);
+			dispatcher.addEventListener(COMMIT_REQUEST, handleCommitRequest);
+			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
+			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 		}
 		
 		override public function deactivate():void
@@ -64,6 +77,9 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, handleFileSave);
 			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
 			dispatcher.removeEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);
+			dispatcher.removeEventListener(COMMIT_REQUEST, handleCommitRequest);
+			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
+			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 		}
 		
 		override public function resetSettings():void
@@ -73,8 +89,11 @@ package actionScripts.plugins.svn
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
+			var binaryPath:PathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false);
+			binaryPath.setMessage("SVN binary needs to be command-line compliant", PathSetting.MESSAGE_IMPORTANT);
+			
 			return Vector.<ISetting>([
-				new PathSetting(this,'svnBinaryPath', 'SVN Binary', false)
+				binaryPath
 			]);
 		}
 		
@@ -105,12 +124,26 @@ package actionScripts.plugins.svn
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
 			provider.root = event.project.folderLocation.fileBridge.getFile as File;
-			
-			// Set it to tree data so project view can render it
-			event.project.projectFolder.sourceController = provider;
-			
-			// Load initial data
-			provider.refresh(event.project.folderLocation);
+		}
+		
+		protected function handleCheckSVNRepository(event:ProjectEvent):void
+		{
+			// don't go for a check if already decided as svn project
+			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1 && isSVNCheckCompleted) 
+			{
+				isSVNCheckCompleted = false;
+				dispatcher.addEventListener(SVN_TEST_COMPLETED, onSVNTestCompleted, false, 0, true);
+				
+				var provider:SubversionProvider = new SubversionProvider();
+				provider.executable = new File(svnBinaryPath);
+				provider.testProject(event);
+			}
+		}
+		
+		private function onSVNTestCompleted(event:Event):void
+		{
+			isSVNCheckCompleted = true;
+			dispatcher.removeEventListener(SVN_TEST_COMPLETED, onSVNTestCompleted);
 		}
 		
 		protected function handleCheckoutRequest(event:Event):void
@@ -125,30 +158,50 @@ package actionScripts.plugins.svn
 				return;
 			}
 			
-			var checkoutDialog:CheckoutDialog = new CheckoutDialog();
-			checkoutDialog.addEventListener('close', handleCheckoutDialogClose);
-			checkoutDialog.addEventListener(SVNEvent.EVENT_CHECKOUT, handleCheckout);
-			
-			PopUpManager.addPopUp(checkoutDialog, FlexGlobals.topLevelApplication as DisplayObject, true);
-			PopUpManager.centerPopUp(checkoutDialog);
-			checkoutDialog.y -= 20;
+			if (!checkoutWindow)
+			{
+				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
+				checkoutWindow.title = "Checkout Repository";
+				checkoutWindow.type = SourceControlCheckout.TYPE_SVN;
+				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
+				PopUpManager.centerPopUp(checkoutWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(checkoutWindow);
+			}
 		}
 		
-		protected function handleCheckout(event:SVNEvent):void
+		protected function onCheckoutWindowClosed(event:CloseEvent):void
 		{
+			var submitObject:Object = checkoutWindow.submitObject;
+			
+			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
+			PopUpManager.removePopUp(checkoutWindow);
+			checkoutWindow = null;
+			
+			if (submitObject)
+			{
+				//git: submitObject.url, submitObject.target
+				//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
+				var provider:SubversionProvider = new SubversionProvider();
+				provider.executable = new File(svnBinaryPath);
+				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null));
+			}
+		}
+		
+		protected function handleCommitRequest(event:Event):void
+		{
+			if (!model.activeProject) return;
+			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.checkout(event);
-			
-			handleCheckoutDialogClose(event);
+			provider.commit(model.activeProject.folderLocation);
 		}
 		
-		protected function handleCheckoutDialogClose(event:Event):void
+		protected function handleUpdateRequest(event:Event):void
 		{
-			var pop:CheckoutDialog = CheckoutDialog(event.target);
-			PopUpManager.removePopUp(pop);
-			pop.addEventListener('close', handleCheckoutDialogClose);
-			pop.addEventListener(SVNEvent.EVENT_CHECKOUT, handleCheckout);
+			
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean

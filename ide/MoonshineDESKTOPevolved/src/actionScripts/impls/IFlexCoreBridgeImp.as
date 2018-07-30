@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -46,6 +44,7 @@ package actionScripts.impls
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
+    import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsolePlugin;
@@ -352,7 +351,10 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST)
+					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
+					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
 					new MenuItem(resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),

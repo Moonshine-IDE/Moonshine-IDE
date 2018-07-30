@@ -37,6 +37,7 @@ package actionScripts.events
 		
 		public static const SAVE_PROJECT_SETTINGS:String = "SAVE_PROJECT_SETTINGS";
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
+		public static const EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG:String = "importProjectDirect";
 		
 		public static const LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 		public static const LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
@@ -49,6 +50,7 @@ package actionScripts.events
 		public static const ACTIVE_PROJECT_CHANGED:String = "ACTIVE_PROJECT_CHANGED";
 		
 		public static const CHECK_GIT_PROJECT:String = "checkGitRepository";
+		public static const CHECK_SVN_PROJECT:String = "checkSVNRepository";
 		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
 		
 		public var project:ProjectVO;

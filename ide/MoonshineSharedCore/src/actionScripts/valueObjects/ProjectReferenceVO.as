@@ -31,7 +31,7 @@ package actionScripts.valueObjects
 		public var sdk:String;
 		public var isAway3D:Boolean;
 		public var isTemplate:Boolean;
-		public var hiddenPaths:Vector.<FileLocation>;
+		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean;
 
 		public function ProjectReferenceVO()

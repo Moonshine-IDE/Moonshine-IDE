@@ -26,6 +26,7 @@ package actionScripts.plugins.svn.commands
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.core.ExternalCommandBase;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
 	

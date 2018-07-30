@@ -20,29 +20,38 @@ package actionScripts.plugins.svn.commands
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	
+	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
 	import __AS3__.vec.Vector;
 	
-	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.plugins.svn.provider.SVNStatus;
-	import actionScripts.plugins.svn.view.CommitMessageEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.valueObjects.GenericSelectableObject;
+	
+	import components.popup.GitCommitSelectionPopup;
 
 	public class CommitCommand extends SVNCommandBase
 	{
 		protected var message:String;
 		// Files we need to add before commiting
 		protected var toAdd:Array;
-		protected var affectedFiles:Vector.<SVNFileWrapper> = new Vector.<SVNFileWrapper>();
+		protected var affectedFiles:ArrayCollection;
 		
 		public var status:Object;
+		
+		private var svnCommitWindow:GitCommitSelectionPopup;
 		
 		public function CommitCommand(executable:File, root:File, status:Object)
 		{
@@ -50,7 +59,7 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function commit(file:File, message:String=null):void
+		public function commit(file:FileLocation, message:String=null):void
 		{	
 			if (runningForFile)
 			{
@@ -58,14 +67,14 @@ package actionScripts.plugins.svn.commands
 				return;
 			}
 			
-			runningForFile = file;
+			runningForFile = file.fileBridge.getFile as File;
 			this.message = message;
 			
 			// Update status, in case files were added
 			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
 			statusCommand.addEventListener(Event.COMPLETE, handleCommitStatusUpdateComplete);
 			statusCommand.addEventListener(Event.CANCEL, handleCommitStatusUpdateCancel);
-			statusCommand.update(file);
+			statusCommand.update(file.fileBridge.getFile as File);
 			
 			print("Updating status before commit");
 		}
@@ -75,6 +84,7 @@ package actionScripts.plugins.svn.commands
 			// Ok, now we know the status is fresh.
 			var topPath:String = runningForFile.nativePath;
 			var topPathLength:int = topPath.length;
+			affectedFiles = new ArrayCollection();
 			for (var p:String in status)
 			{
 				// Is file below our target file?
@@ -84,14 +94,25 @@ package actionScripts.plugins.svn.commands
 					
 					if (st.canBeCommited)
 					{	
-						var relativePath:String = p.substr(topPathLength);
-						var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
-						affectedFiles.push(w);
+						var relativePath:String = p.substr(topPathLength+1);
+						affectedFiles.addItem(new GenericSelectableObject(false, {path: relativePath, status:getFileStatus(st)}));
+						//var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
+						//affectedFiles.push(w);
 					}
 				}
 			}
 			
 			promptForCommitMessage();
+			
+			/*
+			* @local
+			*/
+			function getFileStatus(value:SVNStatus):String
+			{
+				if (value.status == "deleted") return GitProcessManager.GIT_STATUS_FILE_DELETED;
+				else if (value.status == "unversioned") return GitProcessManager.GIT_STATUS_FILE_NEW;
+				return GitProcessManager.GIT_STATUS_FILE_MODIFIED;
+			}
 		}
 		
 		protected function handleCommitStatusUpdateCancel(event:Event):void
@@ -101,45 +122,55 @@ package actionScripts.plugins.svn.commands
 		
 		protected function promptForCommitMessage():void
 		{
-			var editor:CommitMessageEditor = new CommitMessageEditor();
-			editor.files = affectedFiles;
+			if (!svnCommitWindow)
+			{
+				svnCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				svnCommitWindow.title = "Commit";
+				svnCommitWindow.commitDiffCollection = affectedFiles;
+				svnCommitWindow.windowType = GitCommitSelectionPopup.TYPE_SVN;
+				svnCommitWindow.addEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
+				PopUpManager.centerPopUp(svnCommitWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(svnCommitWindow);
+			}
+			
+			/*var editor:CommitMessageEditor = new CommitMessageEditor();
+			//editor.files = affectedFiles;
 			dispatcher.dispatchEvent(
 				new AddTabEvent(editor)
-			);
+			);*/
 			
-			editor.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleCommitEditorClose);
+			//editor.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleCommitEditorClose);
 		}
 		
-		
-		protected function handleCommitEditorClose(event:Event):void
+		private function onSVNCommitWindowClosed(event:CloseEvent):void
 		{
-			if (event is CloseTabEvent)
+			if (svnCommitWindow.isSubmit) 
 			{
-				var editor:CommitMessageEditor = CloseTabEvent(event).tab as CommitMessageEditor;
-				if (editor.isSaved)
-				{
-					message = editor.text;
-				}
-				else
-				{
-					error("No commit message given, aborting.");
-					return;
-				}
-				
-				// We'll need to add some files
-				toAdd = [];
-				for each (var wrap:SVNFileWrapper in affectedFiles)
-				{
-					if (wrap.ignore) continue;
-					
-					if (wrap.status.status == "unversioned")
-					{
-						toAdd.push(wrap.file);	
-					}
-				}
-				
-				addFiles();
+				this.message = svnCommitWindow.commitMessage;
+				initiateProcess();
 			}
+			
+			svnCommitWindow.removeEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
+			PopUpManager.removePopUp(svnCommitWindow);
+			svnCommitWindow = null;
+		}
+		
+		protected function initiateProcess():void
+		{
+			// We'll need to add some files
+			toAdd = [];
+			for each (var wrap:GenericSelectableObject in affectedFiles)
+			{
+				if (wrap.isSelected && wrap.data.status == GitProcessManager.GIT_STATUS_FILE_NEW)
+				{
+					toAdd.push(wrap.data.path);	
+				}
+			}
+			
+			addFiles();
 		}
 		
 		// Start adding files
@@ -147,12 +178,12 @@ package actionScripts.plugins.svn.commands
 		{
 			if (toAdd.length == 0)
 			{
-				doCommit(runningForFile, message);
+				doCommit();
 			}
 			else
 			{
-				var file:File = toAdd.pop();
-				var addCommand:AddCommand = new AddCommand(executable, root);
+				var file:String = toAdd.pop();
+				var addCommand:AddCommand = new AddCommand(executable, runningForFile);
 				addCommand.addEventListener(Event.COMPLETE, addFiles);
 				addCommand.addEventListener(Event.CANCEL, addFilesCancel);
 				addCommand.add(file);
@@ -165,7 +196,7 @@ package actionScripts.plugins.svn.commands
 			toAdd = null;
 		}
 		
-		protected function doCommit(file:File, message:String):void
+		protected function doCommit():void
 		{	
 			// TODO: Check for empty commits, since svn commit will recurse-commit everything
 			customInfo = new NativeProcessStartupInfo();
@@ -175,14 +206,11 @@ package actionScripts.plugins.svn.commands
 			
 			args.push("commit");
 			var argFiles:Vector.<String> = new Vector.<String>();
-			for each (var wrap:SVNFileWrapper in affectedFiles)
+			for each (var wrap:GenericSelectableObject in affectedFiles)
 			{
-				if (!wrap.ignore)
+				if (wrap.isSelected)
 				{
-					var relPath:String = root.getRelativePath(wrap.file, false);
-					// TODO: Handle this properly
-					if (!relPath) continue;
-					argFiles.push(relPath);
+					argFiles.push(wrap.data.path);
 				}
 			}
 			
@@ -194,11 +222,11 @@ package actionScripts.plugins.svn.commands
 			
 			args = args.concat(argFiles);
 			args.push("--message");
-			args.push(message);
+			args.push(this.message);
 			
 			customInfo.arguments = args;
 			
-			customInfo.workingDirectory = root;
+			customInfo.workingDirectory = runningForFile;
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -236,8 +264,8 @@ package actionScripts.plugins.svn.commands
 			}
 			
 			// Update status (don't care if it fails or not, just try it)
-			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
-			statusCommand.update(root);
+			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, runningForFile, status);
+			statusCommand.update(runningForFile);
 			
 			// Show changes in project view
 			dispatcher.dispatchEvent(

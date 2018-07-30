@@ -18,32 +18,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.filesystem.File;
+    import flash.utils.setTimeout;
+    
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    
+    import actionScripts.events.MenuEvent;
+    import actionScripts.events.NewProjectEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
-
-    import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.utils.setTimeout;
-	
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-	
-	import actionScripts.events.MenuEvent;
-	import actionScripts.events.NewProjectEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugin.templating.event.TemplateEvent;
-	import actionScripts.utils.FileCoreUtil;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
-	
-	import components.popup.NativeExtensionMessagePopup;
-	import components.popup.OpenFlexProject;
+    import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.plugin.templating.event.TemplateEvent;
+    import actionScripts.utils.FileCoreUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
+    
+    import components.popup.NativeExtensionMessagePopup;
+    import components.popup.OpenFlexProject;
 	
 	public class AS3ProjectPlugin extends PluginBase
 	{
@@ -77,6 +77,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.addEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.addEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
 			
@@ -87,6 +88,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
+			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.removeEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.removeEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
 			
@@ -137,6 +139,13 @@ package actionScripts.plugin.actionscript.as3project
 				PopUpManager.addPopUp(importProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(importProjectPopup);
 			}
+		}
+		
+		private function importProjectWithoutDialog(event:ProjectEvent):void
+		{
+			if (!event.anObject) return;
+			
+			openFile(event.anObject as File);
 		}
 		
 		private function onFileSelectionCancelled():void

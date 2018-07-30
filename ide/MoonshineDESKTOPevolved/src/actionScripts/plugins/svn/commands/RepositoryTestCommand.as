@@ -24,35 +24,42 @@ package actionScripts.plugins.svn.commands
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-
-	public class AddCommand extends SVNCommandBase
+	
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugins.svn.SVNPlugin;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ProjectVO;
+	
+	public class RepositoryTestCommand extends SVNCommandBase
 	{
-		public function AddCommand(executable:File, root:File)
+		private var cmdFile:File;
+		private var projectPath:String;
+		
+		public function RepositoryTestCommand(executable:File, root:File, projectPath:String)
 		{
 			super(executable, root);
+			this.projectPath = projectPath;
 		}
-
-		public function add(file:String):void
+		
+		public function test():void
 		{
-			if (runningForFile)
+			if (customProcess && customProcess.running)
 			{
-				error("Currently running, try again later.");
 				return;
 			}
-			
-			//runningForFile = file;
 			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
 			var args:Vector.<String> = new Vector.<String>();
-			 
-			args.push("add");
-			args.push(file);
+			args.push("ls");
+			args.push(projectPath);
 			
 			customInfo.arguments = args;
-			// We give the file as target, so go one directory up
-			customInfo.workingDirectory = root;
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -63,37 +70,37 @@ package actionScripts.plugins.svn.commands
 		
 		protected function svnError(event:ProgressEvent):void
 		{
-			
-		} 
+			/*var output:IDataInput = customProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);*/
+	
+			//error("%s", data);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+		}
+		
 		protected function svnOutput(event:ProgressEvent):void
-		{
+		{ 
+			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
+			notice("%s", data);*/
 		}
 		
 		protected function svnExit(event:NativeProcessExitEvent):void
 		{
 			if (event.exitCode == 0)
 			{
-				// Update succeded (but no need to tell anyone, useful for debugging maybe)
-				//var str:String = customProcess.standardOutput.readUTFBytes(customProcess.standardOutput.bytesAvailable);
-				//notice(str);
-				
-				// Tell caller we're done
-				dispatchEvent( new Event(Event.COMPLETE) );
+				var tmpProject:ProjectVO = UtilsCore.getProjectByPath(projectPath);
+				(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
 			}
 			else
 			{
-				// Add failed
-				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				error(err);
-				
-				// Tell caller we failed
-				dispatchEvent( new Event(Event.CANCEL) );
+				// Checkout failed
 			}
 			
 			runningForFile = null;
 			customProcess = null;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.dispatchEvent(new Event(SVNPlugin.SVN_TEST_COMPLETED));
 		}
-		
 	}
 }

@@ -56,11 +56,11 @@ package actionScripts.plugins.svn.commands
 			
 			var args:Vector.<String> = new Vector.<String>();
 			
-			var target:String = file.getRelativePath(root, false);
+			/*var target:String = file.getRelativePath(root, false);
 			// If we're refreshing the root we give roots name
-			if (!target) target = file.name; 
+			if (!target) target = file.name; */
 			args.push("status");
-			args.push(target);
+			args.push(file.name);
 			args.push("--xml");
 			
 			customInfo.arguments = args;

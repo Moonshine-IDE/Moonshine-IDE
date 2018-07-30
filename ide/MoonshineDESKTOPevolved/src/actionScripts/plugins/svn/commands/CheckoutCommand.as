@@ -27,6 +27,7 @@ package actionScripts.plugins.svn.commands
 	import flash.utils.IDataInput;
 	
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.valueObjects.ProjectVO;
@@ -71,6 +72,8 @@ package actionScripts.plugins.svn.commands
 			customInfo.arguments = args;
 			customInfo.workingDirectory = event.file;
 			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
+			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
 			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
@@ -92,6 +95,7 @@ package actionScripts.plugins.svn.commands
 			if (serverCertificatePrompt(data)) return;
 	
 			error("%s", data);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
@@ -106,10 +110,11 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(runningForFile.nativePath)));
+				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
-				);
+				);*/
 			}
 			else
 			{
@@ -118,6 +123,7 @@ package actionScripts.plugins.svn.commands
 			
 			runningForFile = null;
 			customProcess = null;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
 	}
