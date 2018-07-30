@@ -128,6 +128,9 @@ package actionScripts.plugins.svn
 		
 		protected function handleCheckSVNRepository(event:ProjectEvent):void
 		{
+			// Check if we have a SVN binary
+			if (!svnBinaryPath || svnBinaryPath == "") return;
+			
 			// don't go for a check if already decided as svn project
 			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1 && isSVNCheckCompleted) 
 			{
