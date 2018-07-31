@@ -405,7 +405,13 @@ package actionScripts.plugins.git
 		
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
-			error(value.output);
+			var match:Array = value.output.toLowerCase().match(/'git' is not recognized as an internal or external command/);
+			if (match)
+			{
+				setGitAvailable(false);
+			}
+			
+			if (!match) error(value.output);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
