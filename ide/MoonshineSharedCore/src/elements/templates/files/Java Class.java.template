@@ -1,0 +1,9 @@
+package $packageName;
+
+$imports
+$modifierA class $fileName $extends $implements
+{
+	public $fileName()
+	{
+	}
+}
