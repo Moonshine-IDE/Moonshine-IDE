@@ -37,6 +37,7 @@
 			
 			public var xCodePath:String;
 			public var isDiscarded:Boolean;
+			public var isXCodePath:Boolean;
 			
 			private var model:IDEModel = IDEModel.getInstance();
 			

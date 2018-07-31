@@ -184,11 +184,12 @@ package actionScripts.plugins.git
 			return true;
 		}
 		
-		private function onXCodePathDetection(path:String):void
+		private function onXCodePathDetection(path:String, isXCodePath:Boolean):void
 		{
 			if (path && !xCodePermissionWindow)
 			{
 				xCodePermissionWindow = new GitXCodePermissionPopup;
+				xCodePermissionWindow.isXCodePath = isXCodePath;
 				xCodePermissionWindow.xCodePath = path;
 				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
 				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
@@ -203,7 +204,7 @@ package actionScripts.plugins.git
 			if (!isDiscarded) 
 			{
 				isGranted = true;
-				gitBinaryPathOSX = xCodePermissionWindow.xCodePath +"/Contents/Developer/usr/bin/git";
+				gitBinaryPathOSX = xCodePermissionWindow.xCodePath + (xCodePermissionWindow.isXCodePath ? "/Contents/Developer/usr/bin/git" : "/usr/bin/git");
 				Alert.show("Git permission accepted. You can now use Moonshine Git functionalities.", "Success!");
 				
 				var thisSettings: Vector.<ISetting> = getSettingsList();

@@ -456,7 +456,7 @@ package actionScripts.plugins.git
 					match = value.output.toLowerCase().match(/xcode.app\/contents\/developer/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output);
+						onXCodePathDetection(value.output, true);
 						onXCodePathDetection = null;
 						return;
 					}
@@ -464,7 +464,7 @@ package actionScripts.plugins.git
 					match = value.output.toLowerCase().match(/commandlinetools/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output);
+						onXCodePathDetection(value.output, false);
 						onXCodePathDetection = null;
 						return;
 					}
