@@ -223,7 +223,6 @@ package actionScripts.ui.menu
 
 		private function dispatchMenuEvent(menuItem:ICustomMenuItem):void
 		{
-
 			if (menuItem.data && menuItem.data.hasOwnProperty("event") && menuItem.data.event)
 			{
 				var data:Object = menuItem.data;
@@ -235,8 +234,6 @@ package actionScripts.ui.menu
 			{
 				dispatcher.dispatchEvent(new Event(menuItem.shortcut.event));
 			}
-
-
 		}
 
 		private function positionMenu(menuItems:Vector.<ICustomMenuItem>, base:DisplayObjectContainer, position:Point):MenuRenderer
