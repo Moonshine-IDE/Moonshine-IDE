@@ -47,6 +47,9 @@ package actionScripts.languageServer
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "elements/jdt-language-server/config_mac";
 		private static const LANGUAGE_ID_JAVA:String = "java";
 
+		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
+		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
+
 		private var _project:JavaProjectVO;
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
@@ -143,9 +146,9 @@ package actionScripts.languageServer
 
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, _dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
-			_languageClient.debugMode = true;
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
@@ -201,12 +204,18 @@ package actionScripts.languageServer
 
 		private function languageClient_closeHandler(event:Event):void
 		{
+			_languageClient.removeEventListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
 			
 			// to let others know when lang-server completely shutdown against a project
 			_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, _project));
+		}
+
+		private function language__status(message:Object):void
+		{
+			trace(message.params.type + ":", message.params.message);
 		}
 	}
 }
