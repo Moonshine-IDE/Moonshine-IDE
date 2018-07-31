@@ -89,6 +89,7 @@ package actionScripts.languageServer
 		private static const METHOD_CANCEL_REQUEST:String = "$/cancelRequest";
 		private static const METHOD_TEXT_DOCUMENT__DID_CHANGE:String = "textDocument/didChange";
 		private static const METHOD_TEXT_DOCUMENT__DID_OPEN:String = "textDocument/didOpen";
+		private static const METHOD_TEXT_DOCUMENT__DID_CLOSE:String = "textDocument/didClose";
 		private static const METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:String = "textDocument/publishDiagnostics";
 		private static const METHOD_TEXT_DOCUMENT__COMPLETION:String = "textDocument/completion";
 		private static const METHOD_TEXT_DOCUMENT__SIGNATURE_HELP:String = "textDocument/signatureHelp";
@@ -124,6 +125,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDCHANGE, didChangeCall);
+			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDCLOSE, didCloseCall);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_TYPEAHEAD, completionHandler);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
 			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_HOVER, hoverHandler);
@@ -541,7 +543,7 @@ package actionScripts.languageServer
 					if(isEditorInProject(lspEditor))
 					{
 						var uri:String = lspEditor.currentFile.fileBridge.url;
-						sendDidOpenRequest(uri, lspEditor.text);
+						sendDidOpenNotification(uri, lspEditor.text);
 					}
 				}
 			}
@@ -555,7 +557,7 @@ package actionScripts.languageServer
 			dispatchEvent(new Event(Event.CLOSE));
 		}
 
-		private function sendDidOpenRequest(uri:String, text:String):void
+		private function sendDidOpenNotification(uri:String, text:String):void
 		{
 			if(!_initialized)
 			{
@@ -573,6 +575,22 @@ package actionScripts.languageServer
 			params.textDocument = textDocument;
 
 			sendNotification(METHOD_TEXT_DOCUMENT__DID_OPEN, params);
+		}
+
+		private function sendDidCloseNotification(uri:String):void
+		{
+			if(!_initialized)
+			{
+				return;
+			}
+
+			var textDocument:Object = new Object();
+			textDocument.uri = uri;
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+
+			sendNotification(METHOD_TEXT_DOCUMENT__DID_CLOSE, params);
 		}
 
 		private function parseMessageBuffer():void
@@ -1135,7 +1153,22 @@ package actionScripts.languageServer
 			}
 			event.preventDefault();
 
-			sendDidOpenRequest(event.uri, event.newText);
+			sendDidOpenNotification(event.uri, event.newText);
+		}
+
+		private function didCloseCall(event:TypeAheadEvent):void
+		{
+			if(!_initialized)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+
+			sendDidCloseNotification(event.uri);
 		}
 
 		private function didChangeCall(event:TypeAheadEvent):void

@@ -23,6 +23,7 @@ package actionScripts.events
 	public class TypeAheadEvent extends Event
 	{
 		public static const EVENT_DIDOPEN:String = "newDidOpenEvent";
+		public static const EVENT_DIDCLOSE:String = "newDidCloseEvent";
 		public static const EVENT_DIDCHANGE:String = "newDidChangeEvent";
 		public static const EVENT_TYPEAHEAD:String = "newTypeAheadEvent";
 		public static const EVENT_SIGNATURE_HELP:String = "newSignatureHelpEvent";

@@ -12,6 +12,7 @@ package actionScripts.ui.editor
 	import actionScripts.events.ChangeEvent;
 	import flash.events.MouseEvent;
 	import actionScripts.valueObjects.Location;
+	import actionScripts.ui.tabview.CloseTabEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -39,11 +40,13 @@ package actionScripts.ui.editor
 		protected function addGlobalListeners():void
 		{
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 		}
 
 		protected function removeGlobalListeners():void
 		{
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
+			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 		}
 
 		protected function dispatchCompletionEvent():void
@@ -199,6 +202,18 @@ package actionScripts.ui.editor
 				return;
 			}
 			editor.showDiagnostics(event.diagnostics);
+		}
+
+		protected function closeTabHandler(event:CloseTabEvent):void
+		{
+			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
+			if(!closedTab || closedTab != this)
+			{
+				return;
+			}
+			
+			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDCLOSE,
+				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 		}
 
 		private function addedToStageHandler(event:Event):void
