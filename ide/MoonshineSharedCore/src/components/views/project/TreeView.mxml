@@ -724,8 +724,15 @@
 				updateTreeView();
 
 				// check if the wrapper is the source folder to the project
-				tmpProject = UtilsCore.getProjectFromProjectFolder(value) as AS3ProjectVO;
-				if ((tmpProject as AS3ProjectVO).sourceFolder.fileBridge.nativePath == value.nativePath) (tmpProject as AS3ProjectVO).sourceFolder = null;
+				tmpProject = UtilsCore.getProjectFromProjectFolder(value);
+				if (tmpProject is AS3ProjectVO)
+				{
+					var tmpAS3Project:AS3ProjectVO = AS3ProjectVO(tmpProject);
+					if (tmpAS3Project.sourceFolder.fileBridge.nativePath == value.nativePath)
+					{
+						tmpAS3Project.sourceFolder = null;
+					}
+				}
 
 				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 			}
