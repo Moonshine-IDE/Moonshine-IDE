@@ -214,6 +214,10 @@ package actionScripts.plugin.templating
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_TEXT = files;
 			
+			files = templatesDir.resolvePath("files/Java Class.java.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_JAVACLASS = files;
+			
 			// Just to generate a divider in relevant UI
 			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			

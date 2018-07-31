@@ -50,6 +50,7 @@ package actionScripts.ui.renderers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
 	use namespace mx_internal;
 	
@@ -357,7 +358,6 @@ package actionScripts.ui.renderers
 			model.contextMenuCore.removeAll(e.target);
 
 			var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
-			var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
 			if (activeProject)
 			{
 				model.activeProject = activeProject;
@@ -377,14 +377,22 @@ package actionScripts.ui.renderers
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
 				
-				visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(label);
-				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
-				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
-				
-				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+				if(activeProject is JavaProjectVO)
 				{
-					return as3ProjectVO && as3ProjectVO.menuType.indexOf(item) != -1;
-				});
+					//TODO: make a better set of menu types for Java
+					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_JAVACLASS);
+				}
+				else if(activeProject is AS3ProjectVO)
+				{
+					var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
+					visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(label);
+					if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
+					else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+					{
+						return as3ProjectVO.menuType.indexOf(item) != -1;
+					});
+				}
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}

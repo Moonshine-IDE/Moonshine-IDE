@@ -70,6 +70,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_MXML: FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
+		public static var TEMPLATE_JAVACLASS: FileLocation;
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
@@ -308,6 +309,16 @@ package actionScripts.valueObjects
 																					</h:body>
 																				</html>]]></root>;
 
+			TEMPLATE_JAVACLASS = new FileLocation("TEMPLATE");
+			TEMPLATE_JAVACLASS.fileBridge.name = "Java Class.java";
+			TEMPLATE_JAVACLASS.fileBridge.isDirectory = false;
+			TEMPLATE_JAVACLASS.fileBridge.extension = "java";
+			TEMPLATE_JAVACLASS.fileBridge.data = <root><![CDATA[package $packageName;
+
+public class $fileName
+{
+}]]></root>;
+
 			ACTIONSCRIPT_PROJECT = new FileLocation("ActionScript Project (SWF, Desktop)");
 			ACTIONSCRIPT_PROJECT.fileBridge.name = "ActionScript Project (SWF, Desktop)";
 			ACTIONSCRIPT_PROJECT.fileBridge.isDirectory = true;
@@ -366,7 +377,7 @@ package actionScripts.valueObjects
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT,JAVA_PROJECT]);
 			
 			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = ["PrimeFaces Project"];
