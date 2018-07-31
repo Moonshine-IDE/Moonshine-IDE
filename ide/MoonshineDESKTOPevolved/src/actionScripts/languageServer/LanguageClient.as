@@ -281,6 +281,41 @@ package actionScripts.languageServer
 			return id;
 		}
 
+		protected var _notificationListeners:Object = {};
+
+		public function addNotificationListener(method:String, listener:Function):void
+		{
+			if(!(method in this._notificationListeners))
+			{
+				this._notificationListeners[method] = new <Function>[];
+			}
+			var listeners:Vector.<Function> = this._notificationListeners[method] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index != -1)
+			{
+				//already added
+				return;
+			}
+			listeners.push(listener);
+		}
+
+		public function removeNotificationListener(method:String, listener:Function):void
+		{
+			if(!(method in this._notificationListeners))
+			{
+				//nothing to remove
+				return;
+			}
+			var listeners:Vector.<Function> = this._notificationListeners[method] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index == -1)
+			{
+				//nothing to remove
+				return;
+			}
+			listeners.removeAt(index);
+		}
+
 		private function sendResponse(id:Object, result:Object = null, error:Object = null):void
 		{
 			if(!_initialized)
@@ -670,6 +705,7 @@ package actionScripts.languageServer
 		{
 			if(FIELD_METHOD in object)
 			{
+				var found:Boolean = true;
 				var method:String = object.method;
 				switch(method)
 				{
@@ -703,9 +739,17 @@ package actionScripts.languageServer
 					}
 					default:
 					{
-						trace("Unknown language server method:", method);
+						found = false;
 						break;
 					}
+				}
+				if(!found)
+				{
+					found = this.handleNotification(object);
+				}
+				if(!found)
+				{
+					trace("Unknown language server method:", method);
 				}
 			}
 			else if(FIELD_ID in object)
@@ -845,6 +889,27 @@ package actionScripts.languageServer
 					}
 				}
 			}
+		}
+
+		private function handleNotification(object:Object):Boolean
+		{
+			var method:String = object.method;
+			if(!(method in this._notificationListeners))
+			{
+				return false;
+			}
+			var listeners:Vector.<Function> = this._notificationListeners[method] as Vector.<Function>;
+			var listenerCount:int = listeners.length;
+			if(listenerCount == 0)
+			{
+				return false;
+			}
+			for(var i:int = 0; i < listenerCount; i++)
+			{
+				var listener:Function = listeners[i];
+				listener(object);
+			}
+			return true;
 		}
 
 		private function parseSymbolInformation(original:Object):SymbolInformation
