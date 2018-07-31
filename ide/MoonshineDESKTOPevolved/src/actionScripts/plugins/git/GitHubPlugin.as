@@ -41,6 +41,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -112,7 +113,7 @@ package actionScripts.plugins.git
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 			
-			if (!ConstantsCoreVO.IS_MACOS) processManager.checkGitAvailability();
+			if (checkOSXGitAccess()) processManager.checkGitAvailability();
 		}
 		
 		override public function deactivate():void 
@@ -198,14 +199,26 @@ package actionScripts.plugins.git
 		private function onXCodePermissionClosed(event:Event):void
 		{
 			var isDiscarded:Boolean = xCodePermissionWindow.isDiscarded;
+			var isGranted:Boolean;
 			if (!isDiscarded) 
 			{
+				isGranted = true;
 				gitBinaryPathOSX = xCodePermissionWindow.xCodePath +"/Contents/Developer/usr/bin/git";
 				Alert.show("Git permission accepted. You can now use Moonshine Git functionalities.", "Success!");
 				
 				var thisSettings: Vector.<ISetting> = getSettingsList();
 				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+			}
+			else
+			{
+				isGranted = false;
+			}
+			
+			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
+			{
+				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
 			}
 			
 			xCodePermissionWindow.removeEventListener(Event.CLOSE, onXCodePermissionClosed);

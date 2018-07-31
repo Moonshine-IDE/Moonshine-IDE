@@ -468,6 +468,8 @@ package actionScripts.plugins.git
 						onXCodePathDetection = null;
 						return;
 					}
+					
+					onXCodePathDetection = null;
 					break;
 				}
 				case GIT_AVAIL_DECTECTION:
