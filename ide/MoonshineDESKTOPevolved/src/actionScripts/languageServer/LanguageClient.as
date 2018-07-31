@@ -1,48 +1,49 @@
 package actionScripts.languageServer
 {
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.valueObjects.Diagnostic;
-	import flash.filesystem.File;
-	import actionScripts.events.HoverEvent;
-	import flash.utils.ByteArray;
-	import flash.utils.IDataOutput2;
-	import flash.utils.IDataInput2;
-	import flash.errors.IllegalOperationError;
-	import flash.events.IEventDispatcher;
-	import actionScripts.valueObjects.SignatureHelp;
-	import actionScripts.valueObjects.SignatureInformation;
-	import actionScripts.events.CompletionItemsEvent;
-	import actionScripts.valueObjects.TextEdit;
-	import actionScripts.valueObjects.ParameterInformation;
-	import actionScripts.valueObjects.CompletionItem;
-	import actionScripts.valueObjects.Command;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.SymbolInformation;
-	import actionScripts.events.SymbolsEvent;
-	import actionScripts.events.ReferencesEvent;
-	import flash.utils.Dictionary;
-	import actionScripts.events.RenameEvent;
-	import actionScripts.events.GotoDefinitionEvent;
-	import actionScripts.utils.applyTextEditsToFile;
-	import actionScripts.events.SignatureHelpEvent;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.events.TypeAheadEvent;
-	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.CompletionItemsEvent;
+	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GotoDefinitionEvent;
+	import actionScripts.events.HoverEvent;
 	import actionScripts.events.ProjectEvent;
-	import mx.collections.ArrayCollection;
+	import actionScripts.events.ReferencesEvent;
+	import actionScripts.events.RenameEvent;
+	import actionScripts.events.SignatureHelpEvent;
+	import actionScripts.events.SymbolsEvent;
+	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.utils.applyTextEditsToFile;
+	import actionScripts.valueObjects.Command;
+	import actionScripts.valueObjects.CompletionItem;
+	import actionScripts.valueObjects.Diagnostic;
+	import actionScripts.valueObjects.Location;
+	import actionScripts.valueObjects.ParameterInformation;
+	import actionScripts.valueObjects.Position;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Range;
+	import actionScripts.valueObjects.SignatureHelp;
+	import actionScripts.valueObjects.SignatureInformation;
+	import actionScripts.valueObjects.SymbolInformation;
+	import actionScripts.valueObjects.TextEdit;
+
+	import flash.errors.IllegalOperationError;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
+	import flash.filesystem.File;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -100,6 +101,8 @@ package actionScripts.languageServer
 		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
+		private static const METHOD_WINDOW__LOG_MESSAGE:String = "window/logMessage";
+		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 
 		public function LanguageClient(languageID:String, project: ProjectVO, globalDispatcher:IEventDispatcher,
@@ -169,6 +172,8 @@ package actionScripts.languageServer
 			return this._shutdownID != -1;
 		}
 
+		public var debugMode:Boolean = false;
+
 		private var _initializeID:int = -1;
 		private var _shutdownID:int = -1;
 		private var _requestID:int = 0;
@@ -227,7 +232,10 @@ package actionScripts.languageServer
 			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
 			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
 			
-			//trace(">>> (NOTIFICATION)", contentJSON);
+			if(debugMode)
+			{
+				trace(">>> (NOTIFICATION)", contentJSON);
+			}
 			
 			_output.writeUTFBytes(message);
 			if(_outputFlushCallback != null)
@@ -259,7 +267,10 @@ package actionScripts.languageServer
 			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
 			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
 			
-			//trace(">>> (REQUEST)", contentJSON);
+			if(debugMode)
+			{
+				trace(">>> (REQUEST)", contentJSON);
+			}
 			
 			_output.writeUTFBytes(message);
 			if(_outputFlushCallback != null)
@@ -298,7 +309,10 @@ package actionScripts.languageServer
 			var headerPart:String = PROTOCOL_HEADER_FIELD_CONTENT_LENGTH + contentLength + PROTOCOL_HEADER_DELIMITER;
 			var message:String = headerPart + PROTOCOL_HEADER_DELIMITER + contentJSON;
 			
-			//trace(">>> (RESPONSE)", contentJSON);
+			if(debugMode)
+			{
+				trace(">>> (RESPONSE)", contentJSON);
+			}
 			
 			_output.writeUTFBytes(message);
 			if(_outputFlushCallback != null)
@@ -571,7 +585,10 @@ package actionScripts.languageServer
 				HELPER_BYTES.clear();
 				_contentLength = -1;
 				_socketBuffer = _socketBuffer.substr(message.length);
-				//trace("<<<", message);
+				if(debugMode)
+				{
+					trace("<<<", message);
+				}
 				object = JSON.parse(message);
 			}
 			catch(error:Error)
@@ -666,6 +683,16 @@ package actionScripts.languageServer
 					{
 						workspace__applyEdit(object);
 						sendResponse(object.id, { applied: true });
+						break;
+					}
+					case METHOD_WINDOW__LOG_MESSAGE:
+					{
+						window__logMessage(object);
+						break;
+					}
+					case METHOD_WINDOW__SHOW_MESSAGE:
+					{
+						window__showMessage(object);
 						break;
 					}
 					case METHOD_CLIENT__REGISTER_CAPABILITY:
@@ -962,6 +989,52 @@ package actionScripts.languageServer
 				}
 				applyTextEditsToFile(file, textEdits);
 			}
+		}
+
+		private function window__logMessage(jsonObject:Object):void
+		{
+			var logMessageParams:Object = jsonObject.params;
+			var message:String = logMessageParams.message;
+			var type:int = logMessageParams.type;
+			var eventType:String = null;
+			switch(jsonObject.type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			_globalDispatcher.dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, eventType)
+			);
+			trace(message);
+		}
+
+		private function window__showMessage(jsonObject:Object):void
+		{
+			var showMessageParams:Object = jsonObject.params;
+			var message:String = showMessageParams.message;
+			var type:int = showMessageParams.type;
+			var eventType:String = null;
+			switch(jsonObject.type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			
+			Alert.show(message);
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
