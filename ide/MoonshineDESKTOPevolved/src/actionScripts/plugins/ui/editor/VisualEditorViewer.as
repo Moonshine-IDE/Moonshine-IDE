@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-	import flash.events.Event;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
+
+    import flash.events.Event;
 	import mx.events.FlexEvent;
 	
 	import actionScripts.events.AddTabEvent;
@@ -97,8 +99,9 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
+			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
 		}
-		
+
 		private function onVisualEditorCreationComplete(event:FlexEvent):void
 		{
 			visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
@@ -114,8 +117,13 @@ package actionScripts.plugins.ui.editor
 			
 			updateChangeStatus()
 		}
-		
-		override protected function createChildren():void
+
+        private function onDuplicateSelectedElement(event:Event):void
+        {
+			visualEditorView.visualEditor.duplicateSelectedElement();
+        }
+
+        override protected function createChildren():void
 		{
 			addElement(visualEditorView);
 			
