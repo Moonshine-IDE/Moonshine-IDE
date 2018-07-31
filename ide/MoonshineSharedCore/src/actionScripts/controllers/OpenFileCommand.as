@@ -42,6 +42,7 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.URLDescriptorVO;
+    import actionScripts.ui.editor.JavaTextEditor;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -254,6 +255,10 @@ package actionScripts.controllers
                     if (extension === "as" || extension === "mxml")
                     {
                         editor = new ActionScriptTextEditor();
+                    }
+                    if (extension === "java")
+                    {
+                        editor = new JavaTextEditor();
                     }
                     else
                     {

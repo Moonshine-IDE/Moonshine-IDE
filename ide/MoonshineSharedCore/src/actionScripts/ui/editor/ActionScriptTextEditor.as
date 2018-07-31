@@ -18,129 +18,42 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-	import flash.events.Event;
+	import actionScripts.events.ChangeEvent;
+	import actionScripts.ui.editor.text.change.TextChangeInsert;
+	import actionScripts.ui.editor.text.change.TextChangeMulti;
+
 	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
 	import flash.events.TextEvent;
-	import flash.geom.Point;
 	import flash.ui.Keyboard;
 
 	import mx.utils.StringUtil;
-
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.CompletionItemsEvent;
-	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.GotoDefinitionEvent;
-	import actionScripts.events.HoverEvent;
-	import actionScripts.events.SignatureHelpEvent;
-	import actionScripts.events.TypeAheadEvent;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.change.TextChangeMulti;
-	import actionScripts.valueObjects.Location;
 
 	public class ActionScriptTextEditor extends LanguageServerTextEditor
 	{
 		public static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
 
-		private var dispatchTypeAheadPending:Boolean;
+		private var dispatchCompletionPending:Boolean;
 		private var dispatchSignatureHelpPending:Boolean;
-		private var mouseOverForHover:Boolean = false;
 
 		public function ActionScriptTextEditor()
 		{
 			super(LANGUAGE_ID_ACTIONSCRIPT);
-			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
-			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS,showDiagnosticsHandler);
-		}
-
-		private function dispatchTypeAheadEvent():void
-		{
-			var document:String = getTextDocument();
-			
-			var len:Number = editor.model.caretIndex - editor.startPos;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.startPos;
-			var endLine:int = editor.model.selectedLineIndex;
-			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_TYPEAHEAD,
-				startChar, startLine, endChar,endLine,
-				document, len, 1));
-			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
-		}
-
-		private function dispatchSignatureHelpEvent():void
-		{
-			var document:String = getTextDocument();
-			
-			var len:Number = editor.model.caretIndex - editor.startPos;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.startPos;
-			var endLine:int = editor.model.selectedLineIndex;
-			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_SIGNATURE_HELP,
-				startChar, startLine, endChar,endLine,
-				document, len, 1));
-			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
-		}
-
-		private function dispatchHoverEvent(charAndLine:Point):void
-		{
-			var document:String = getTextDocument();
-			
-			var line:int = charAndLine.y;
-			var char:int = charAndLine.x;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_HOVER,
-				char, line, char, line,
-				document, 0, 1));
-			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
-		}
-
-		private function dispatchGotoDefinitionEvent(charAndLine:Point):void
-		{
-			var document:String = getTextDocument();
-
-			var line:int = charAndLine.y;
-			var char:int = charAndLine.x;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_GOTO_DEFINITION,
-				char, line, char, line,
-				document, 0, 1));
-			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 		}
 
 		private function onTextInput(event:TextEvent):void
 		{
-			if(dispatchTypeAheadPending)
+			if(dispatchCompletionPending)
 			{
-				dispatchTypeAheadPending = false;
-				dispatchTypeAheadEvent();
+				dispatchCompletionPending = false;
+				dispatchCompletionEvent();
 			}
 			if(dispatchSignatureHelpPending)
 			{
 				dispatchSignatureHelpPending = false;
 				dispatchSignatureHelpEvent();
 			}
-		}
-
-		override protected function openHandler(event:Event):void
-		{
-			super.openHandler(event);
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDOPEN,
-				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
-		}
-
-		private function onTextChange(event:ChangeEvent):void
-		{
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
 
 		private function onKeyDown(event:KeyboardEvent):void
@@ -157,13 +70,13 @@ package actionScripts.ui.editor
 				if(!ctrlSpace)
 				{
 					//wait for the character to be input
-					dispatchTypeAheadPending = true;
+					dispatchCompletionPending = true;
 					return;
 				}
 				//don't type the space when user presses Ctrl+Space
 				event.preventDefault();
-				dispatchTypeAheadPending = false;
-				dispatchTypeAheadEvent();
+				dispatchCompletionPending = false;
+				dispatchCompletionEvent();
 			}
 
 			var parenOpen:Boolean = fromCharCode == "(";
@@ -286,93 +199,6 @@ package actionScripts.ui.editor
 					editor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, quotesChange));
 				}
 			}
-		}
-		
-		private function onMouseMove(event:MouseEvent):void
-		{
-			mouseOverForHover = true;
-			var globalXY:Point = new Point(event.stageX, event.stageY);
-			var charAndLine:Point = editor.getCharAndLineForXY(globalXY, true);
-			if(charAndLine !== null)
-			{
-				if(event.ctrlKey)
-				{
-					dispatchGotoDefinitionEvent(charAndLine);
-				}
-				else
-				{
-					editor.showDefinitionLink(new <Location>[], null);
-					dispatchHoverEvent(charAndLine);
-				}
-			}
-			else
-			{
-				editor.showDefinitionLink(new <Location>[], null);
-				editor.showHover(new <String>[]);
-			}
-		}
-		
-		private function onRollOut(event:MouseEvent):void
-		{
-			mouseOverForHover = false;
-		}
-
-		private function showCompletionListHandler(event:CompletionItemsEvent):void
-		{
-            dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
-			if (event.items.length == 0) return;
-
-			editor.showCompletionList(event.items);
-		}
-
-		private function showSignatureHelpHandler(event:SignatureHelpEvent):void
-		{
-			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
-			editor.showSignatureHelp(event.signatureHelp);
-		}
-
-		private function showHoverHandler(event:HoverEvent):void
-		{
-			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
-			if(!mouseOverForHover)
-			{
-				//ignore because the mouse is no longer over the editor
-				return;
-			}
-			editor.showHover(event.contents);
-		}
-
-		private function showDefinitionLinkHandler(event:GotoDefinitionEvent):void
-		{
-			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
-			editor.showDefinitionLink(event.locations, event.position);
-		}
-
-		private function showDiagnosticsHandler(event:DiagnosticsEvent):void
-		{
-			if(event.path !== currentFile.fileBridge.nativePath)
-			{
-				return;
-			}
-			editor.showDiagnostics(event.diagnostics);
-		}
-
-		private function getTextDocument():String
-		{
-			var document:String;
-            var lines:Vector.<TextLineModel> = editor.model.lines;
-			var textLinesCount:int = lines.length;
-            if (textLinesCount > 1)
-            {
-				textLinesCount -= 1;
-                for (var i:int = 0; i < textLinesCount; i++)
-                {
-                    var textLine:TextLineModel = lines[i];
-                    document += textLine.text + "\n";
-                }
-            }
-
-			return document;
 		}
 	}
 }
