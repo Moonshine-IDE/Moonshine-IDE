@@ -35,6 +35,7 @@ package actionScripts.plugins.svn.commands
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.plugins.svn.provider.SVNStatus;
@@ -227,6 +228,7 @@ package actionScripts.plugins.svn.commands
 			customInfo.arguments = args;
 			
 			customInfo.workingDirectory = runningForFile;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -239,7 +241,10 @@ package actionScripts.plugins.svn.commands
 		
 		protected function svnError(event:ProgressEvent):void
 		{
+			var str:String = customProcess.standardOutput.readUTFBytes(customProcess.standardOutput.bytesAvailable);
+			error(str);
 			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		} 
 		protected function svnOutput(event:ProgressEvent):void
 		{
@@ -274,6 +279,8 @@ package actionScripts.plugins.svn.commands
 			
 			runningForFile = null;
 			customProcess = null;
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
 	}

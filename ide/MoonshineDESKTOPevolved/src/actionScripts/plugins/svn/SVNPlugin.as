@@ -204,7 +204,11 @@ package actionScripts.plugins.svn
 		
 		protected function handleUpdateRequest(event:Event):void
 		{
+			if (!model.activeProject) return;
 			
+			var provider:SubversionProvider = new SubversionProvider();
+			provider.executable = new File(svnBinaryPath);
+			provider.update(model.activeProject.folderLocation);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean

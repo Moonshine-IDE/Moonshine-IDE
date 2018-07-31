@@ -54,11 +54,10 @@ package actionScripts.plugins.svn.provider
 		
 		protected function handleUpdate(event:Event):void
 		{
-			var f:File = FileLocation(event.target.data).fileBridge.getFile as File;
-			update(f);
+			update(FileLocation(event.target.data));
 		}
 		
-		public function update(file:File):void
+		public function update(file:FileLocation):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
 			updateCommand.update(file);
