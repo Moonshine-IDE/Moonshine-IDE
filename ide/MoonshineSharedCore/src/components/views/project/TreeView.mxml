@@ -341,6 +341,7 @@
 						tree.selectedItem = project.projectFolder;
 						clearTimeout(timeoutValue);
 						refreshActiveProject(tree.selectedItem as FileWrapper);
+						if (ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 					}, 1000);
 					break;
 				}

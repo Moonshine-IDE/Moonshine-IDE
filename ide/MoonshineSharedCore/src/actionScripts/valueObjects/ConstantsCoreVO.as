@@ -95,7 +95,8 @@ package actionScripts.valueObjects
 		public static var READABLE_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var EXCLUDE_PROJECT_TEMPLATES_IN_MENU:Array;
-		public static var IS_GIT_OSX_AVAILABLE:Boolean = true;
+		public static var IS_GIT_OSX_AVAILABLE:Boolean;
+		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
 		  <!-- Output SWF options -->

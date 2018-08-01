@@ -82,6 +82,7 @@ package actionScripts.plugins.git
 		private var gitAuthWindow:GitAuthenticationPopup;
 		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
 		private var gitNewBranchWindow:GitNewBranchPopup;
+		private var isStartupTest:Boolean;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -113,6 +114,7 @@ package actionScripts.plugins.git
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 			
+			isStartupTest = true;
 			if (checkOSXGitAccess()) processManager.checkGitAvailability();
 		}
 		
@@ -186,7 +188,9 @@ package actionScripts.plugins.git
 		
 		private function onXCodePathDetection(path:String, isXCodePath:Boolean):void
 		{
-			if (path && !xCodePermissionWindow)
+			// if calls during startup 
+			// do not open the prompt
+			if (!isStartupTest && path && !xCodePermissionWindow)
 			{
 				xCodePermissionWindow = new GitXCodePermissionPopup;
 				xCodePermissionWindow.isXCodePath = isXCodePath;
@@ -195,6 +199,8 @@ package actionScripts.plugins.git
 				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
 				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
 			}
+			
+			isStartupTest = false;
 		}
 		
 		private function onXCodePermissionClosed(event:Event):void
@@ -210,6 +216,9 @@ package actionScripts.plugins.git
 				var thisSettings: Vector.<ISetting> = getSettingsList();
 				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+				
+				// if an opened project lets test it if Git repository
+				if (model.activeProject) processManager.checkIfGitRepository(model.activeProject as AS3ProjectVO);
 			}
 			else
 			{

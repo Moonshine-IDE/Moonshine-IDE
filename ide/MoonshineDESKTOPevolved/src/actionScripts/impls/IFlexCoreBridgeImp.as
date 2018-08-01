@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.plugins.help.view.events.VisualEditorEvent;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -87,6 +85,7 @@ package actionScripts.impls
     import actionScripts.plugins.core.ProjectBridgeImplBase;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
@@ -362,7 +361,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
-					new MenuItem(resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
+					new MenuItem(ConstantsCoreVO.IS_MACOS ? "Grant Permission" : resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
 					/*new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),
