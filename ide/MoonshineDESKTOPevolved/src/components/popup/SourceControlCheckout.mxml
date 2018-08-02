@@ -31,7 +31,6 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import com.adobe.utils.StringUtil;
 			
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
@@ -91,11 +90,13 @@
 			
 			private function updatePossiblePath():void
 			{
+				var searchRegExp:RegExp;
+				var results:Array;
 				if (type == TYPE_GIT)
 				{
 					// expected format is https://github.com/{organization/author}/{project}
-					var searchRegExp:RegExp = new RegExp("http.*\://github.com/.*/.*.$", "i");
-					var results:Array = searchRegExp.exec(txtSource.text);
+					searchRegExp = new RegExp("http.*\://github.com/.*/.*.$", "i");
+					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
 						isValidURL = true;
@@ -115,8 +116,30 @@
 				}
 				else
 				{
-					isGitAvailable = isValidURL = (StringUtil.trim(txtSource.text).length > 5);
-					if (isPathMapped) txtTarget.text = mappedPath;
+					searchRegExp = new RegExp(".*://.*/.*.$", "i");
+					results = searchRegExp.exec(txtSource.text);
+					if (results != null)
+					{
+						isGitAvailable = isValidURL = true;
+						if (isPathMapped)
+						{
+							txtTarget.text = mappedPath + model.fileCore.separator + txtSource.text.split("/").pop();
+						}
+						else
+						{
+							txtTarget.text = "..." + model.fileCore.separator + txtSource.text.split("/").pop();
+						}
+					}
+					else if (isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = mappedPath + model.fileCore.separator + "...";
+					}
+					else if (!isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = "...";
+					}
 				}
 			}
 			
