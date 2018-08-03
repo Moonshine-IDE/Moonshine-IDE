@@ -99,6 +99,9 @@ package actionScripts.plugins.svn
 			{
 				(i as AS3ProjectVO).menuType = (i as AS3ProjectVO).menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
 			}
+			
+			// following will enable/disable Moonshine top menus based on project
+			if (model.activeProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

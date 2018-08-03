@@ -24,8 +24,8 @@ package actionScripts.plugins.svn.commands
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.utils.IDataInput;
 	
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugins.svn.SVNPlugin;
@@ -92,6 +92,8 @@ package actionScripts.plugins.svn.commands
 			{
 				var tmpProject:ProjectVO = UtilsCore.getProjectByPath(projectPath);
 				(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
+				// following will enable/disable Moonshine top menus based on project
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
 			}
 			else
 			{

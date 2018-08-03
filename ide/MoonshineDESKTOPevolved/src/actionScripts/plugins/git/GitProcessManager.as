@@ -511,6 +511,9 @@ package actionScripts.plugins.git
 							// continuing fetch
 							pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch', tmpProject)); // store the current branch
 							pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', tmpProject)); // store the remote URL
+							
+							// following will enable/disable Moonshine top menus based on project
+							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
 						}
 						
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
