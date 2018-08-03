@@ -28,11 +28,13 @@ package actionScripts.plugin.startup
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
     
     import components.popup.JavaPathSetupPopup;
     import components.popup.SDKUnzipConfirmPopup;
@@ -127,7 +129,7 @@ package actionScripts.plugin.startup
 				}
 			}
 
-			if (sequenceIndex == sequences.length && !didShowPreviouslyOpenedTabs)
+			if (!didShowPreviouslyOpenedTabs)
 			{
                 didShowPreviouslyOpenedTabs = true;
 				var timeoutValue:uint = setTimeout(function():void
@@ -213,6 +215,17 @@ package actionScripts.plugin.startup
 				// starting server
 				model.flexCore.startTypeAheadWithJavaPath(model.javaPathForTypeAhead.fileBridge.nativePath);
 				dispatcher.addEventListener(EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
+				
+				// check if any projects already opened 
+				// so we can start servers against them as well
+				for each (var i:ProjectVO in model.projects)
+				{
+					// we don't run server on visual editor projects
+					if (!(i as AS3ProjectVO).isVisualEditorProject)
+					{
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, i));
+					}
+				}
 			}
 		}
 		

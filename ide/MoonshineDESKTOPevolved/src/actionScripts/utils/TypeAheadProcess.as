@@ -35,6 +35,7 @@ package actionScripts.utils
 			javaPath = path;
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			dispatcher.addEventListener(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, addProjectHandler, false, 0, true);
 		}
 		
 		private function removeProjectHandler(event:ProjectEvent):void
@@ -83,5 +84,4 @@ package actionScripts.utils
 			return false;
 		}
 	}
-	
 }
