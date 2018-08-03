@@ -355,13 +355,13 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
-					new MenuItem(ConstantsCoreVO.IS_MACOS ? "Grant Permission" : resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
 					/*new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),

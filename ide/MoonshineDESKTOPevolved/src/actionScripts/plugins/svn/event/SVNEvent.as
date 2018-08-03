@@ -26,6 +26,7 @@ package actionScripts.plugins.svn.event
 	public class SVNEvent extends Event
 	{
 		public static const EVENT_CHECKOUT:String = "checkoutEvent";
+		public static const OSX_XCODE_PERMISSION_GIVEN:String = "onXCodePermissionGivenOnOSX";
 		
 		public var file:File;
 		public var url:String;

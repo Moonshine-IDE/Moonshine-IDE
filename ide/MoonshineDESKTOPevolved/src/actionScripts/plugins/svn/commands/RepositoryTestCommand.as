@@ -24,6 +24,7 @@ package actionScripts.plugins.svn.commands
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.utils.IDataInput;
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -59,7 +60,7 @@ package actionScripts.plugins.svn.commands
 			
 			customInfo.arguments = args;
 			
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "SVN Repository", "Testing ", false));
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -71,15 +72,15 @@ package actionScripts.plugins.svn.commands
 		protected function svnError(event:ProgressEvent):void
 		{
 			/*var output:IDataInput = customProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);*/
+			var data:String = output.readUTFBytes(output.bytesAvailable);
 	
-			//error("%s", data);
+			error("%s", data);*/
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
 		{ 
-			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
+			/*var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
 			notice("%s", data);*/

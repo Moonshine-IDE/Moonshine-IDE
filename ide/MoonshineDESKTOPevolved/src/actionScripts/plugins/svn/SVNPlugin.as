@@ -34,11 +34,16 @@ package actionScripts.plugins.svn
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SubversionProvider;
+	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.SourceControlCheckout;
 
@@ -68,6 +73,7 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
+			dispatcher.addEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 		}
 		
 		override public function deactivate():void
@@ -80,11 +86,19 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
+			dispatcher.removeEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 		}
 		
 		override public function resetSettings():void
 		{
 			svnBinaryPath = null;
+			ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = false;
+			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
+			
+			for each (var i:ProjectVO in model.projects)
+			{
+				(i as AS3ProjectVO).menuType = (i as AS3ProjectVO).menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
+			}
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -110,6 +124,19 @@ package actionScripts.plugins.svn
 		protected function handleFileSave(event:SaveFileEvent):void
 		{
 			
+		}
+		
+		protected function onOSXodePermission(event:SVNEvent):void
+		{
+			svnBinaryPath = event.url;
+			
+			// save the settings
+			var thisSettings: Vector.<ISetting> = getSettingsList();
+			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.svn::SVNPlugin", thisSettings));
+			
+			// if an opened project lets test it if Git repository
+			if (model.activeProject) handleProjectOpen(new ProjectEvent(ProjectEvent.ADD_PROJECT, model.activeProject));
 		}
 		
 		protected function handleProjectOpen(event:ProjectEvent):void
@@ -157,7 +184,7 @@ package actionScripts.plugins.svn
 			// Need to check OSX svn existence someway
 			if (!svnBinaryPath || svnBinaryPath == "")
 			{
-				error("No SVN binary set, please check the settings.");
+				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
 				return;
 			}
 			

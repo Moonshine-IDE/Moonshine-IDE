@@ -78,6 +78,7 @@ package actionScripts.plugins.git
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
+		private var xCodePathDetectionType:String;
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
@@ -101,10 +102,11 @@ package actionScripts.plugins.git
 			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
 		}
 		
-		public function getOSXCodePath(completion:Function):void
+		public function getOSXCodePath(completion:Function, against:String):void
 		{
 			queue = new Vector.<Object>();
 			onXCodePathDetection = completion;
+			xCodePathDetectionType = against;
 			
 			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
@@ -453,10 +455,11 @@ package actionScripts.plugins.git
 			{
 				case XCODE_PATH_DECTECTION:
 				{
+					value.output = value.output.replace("\n", "");
 					match = value.output.toLowerCase().match(/xcode.app\/contents\/developer/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output, true);
+						onXCodePathDetection(value.output, true, xCodePathDetectionType);
 						onXCodePathDetection = null;
 						return;
 					}
@@ -464,7 +467,7 @@ package actionScripts.plugins.git
 					match = value.output.toLowerCase().match(/commandlinetools/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output, false);
+						onXCodePathDetection(value.output, false, xCodePathDetectionType);
 						onXCodePathDetection = null;
 						return;
 					}
