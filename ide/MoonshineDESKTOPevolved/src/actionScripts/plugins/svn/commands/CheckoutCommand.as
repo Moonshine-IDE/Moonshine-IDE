@@ -32,6 +32,8 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.valueObjects.ProjectVO;
 	
+	import flashx.textLayout.tlf_internal;
+	
 	public class CheckoutCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
@@ -74,10 +76,7 @@ package actionScripts.plugins.svn.commands
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
 			
 			var tmpSplit: Array = event.url.split("/");
@@ -87,15 +86,43 @@ package actionScripts.plugins.svn.commands
 			runningForFile = new File(newFilePath);
 		}
 		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+				runningForFile = null;
+			}
+		}
+		
 		protected function svnError(event:ProgressEvent):void
 		{
 			var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-	
-			if (serverCertificatePrompt(data)) return;
+			
+			var match:Array = data.toLowerCase().match(/Error validating server certificate for/);
+			if (match) 
+			{
+				serverCertificatePrompt(data);
+				return;
+			}
 	
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			startShell(false);
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
@@ -121,10 +148,10 @@ package actionScripts.plugins.svn.commands
 				// Checkout failed
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			/*runningForFile = null;
+			customProcess = null;*/
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			startShell(false);
 		}
-		
 	}
 }

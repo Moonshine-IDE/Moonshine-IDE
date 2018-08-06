@@ -24,6 +24,7 @@ package actionScripts.plugins.svn.commands
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
+	import flash.utils.IDataInput;
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
@@ -62,11 +63,29 @@ package actionScripts.plugins.svn.commands
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "SVN Repository", "Testing ", false));
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
+		}
+		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
 		}
 		
 		protected function svnError(event:ProgressEvent):void
@@ -76,11 +95,13 @@ package actionScripts.plugins.svn.commands
 	
 			error("%s", data);*/
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			startShell(false);
+			dispatcher.dispatchEvent(new Event(SVNPlugin.SVN_TEST_COMPLETED));
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
 		{ 
-			/*var output:IDataInput = customProcess.standardError;
+			/*var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
 			notice("%s", data);*/
@@ -100,8 +121,9 @@ package actionScripts.plugins.svn.commands
 				// Checkout failed
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			/*runningForFile = null;
+			customProcess = null;*/
+			startShell(false);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new Event(SVNPlugin.SVN_TEST_COMPLETED));
 		}
