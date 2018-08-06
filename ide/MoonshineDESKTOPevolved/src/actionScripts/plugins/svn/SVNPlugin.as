@@ -30,6 +30,7 @@ package actionScripts.plugins.svn
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
+	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -187,7 +188,8 @@ package actionScripts.plugins.svn
 			// Need to check OSX svn existence someway
 			if (!svnBinaryPath || svnBinaryPath == "")
 			{
-				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				if (ConstantsCoreVO.IS_MACOS) dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				else dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
 				return;
 			}
 			
