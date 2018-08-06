@@ -166,6 +166,7 @@ package actionScripts.languageServer
 
 			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, _dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
+			//_languageClient.debugMode = true;
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 		}

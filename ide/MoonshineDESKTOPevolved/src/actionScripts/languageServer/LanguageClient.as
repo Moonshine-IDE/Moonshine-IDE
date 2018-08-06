@@ -11,7 +11,7 @@ package actionScripts.languageServer
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.SymbolsEvent;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -123,18 +123,18 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
 			_globalDispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDOPEN, didOpenCall);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDCHANGE, didChangeCall);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DIDCLOSE, didCloseCall);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_TYPEAHEAD, completionHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_HOVER, hoverHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCLOSE, didCloseCall);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
-			_globalDispatcher.addEventListener(TypeAheadEvent.EVENT_RENAME, renameHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_RENAME, renameHandler);
 			//when adding new listeners, don't forget to remove them in stop()
 
 			sendInitialize();
@@ -196,15 +196,15 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
 			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_DIDOPEN, didOpenCall);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_DIDCHANGE, didChangeCall);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_TYPEAHEAD, completionHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_HOVER, hoverHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.removeEventListener(TypeAheadEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_shutdownID = sendRequest(METHOD_SHUTDOWN, null);
 		}
@@ -1141,7 +1141,7 @@ package actionScripts.languageServer
 			_previousActiveResult = false;
 		}
 
-		private function didOpenCall(event:TypeAheadEvent):void
+		private function didOpenCall(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1156,7 +1156,7 @@ package actionScripts.languageServer
 			sendDidOpenNotification(event.uri, event.newText);
 		}
 
-		private function didCloseCall(event:TypeAheadEvent):void
+		private function didCloseCall(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1171,7 +1171,7 @@ package actionScripts.languageServer
 			sendDidCloseNotification(event.uri);
 		}
 
-		private function didChangeCall(event:TypeAheadEvent):void
+		private function didChangeCall(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1218,7 +1218,7 @@ package actionScripts.languageServer
 			this.parseMessageBuffer();
 		}
 
-		private function completionHandler(event:TypeAheadEvent):void
+		private function completionHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1244,7 +1244,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
 		}
 
-		private function signatureHelpHandler(event:TypeAheadEvent):void
+		private function signatureHelpHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1270,7 +1270,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_TEXT_DOCUMENT__SIGNATURE_HELP, params);
 		}
 
-		private function hoverHandler(event:TypeAheadEvent):void
+		private function hoverHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1296,7 +1296,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
 		}
 
-		private function gotoDefinitionHandler(event:TypeAheadEvent):void
+		private function gotoDefinitionHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1323,7 +1323,7 @@ package actionScripts.languageServer
 			_gotoDefinitionLookup[id] = new Position(event.endLineNumber, event.endLinePos);
 		}
 
-		private function workspaceSymbolsHandler(event:TypeAheadEvent):void
+		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1343,7 +1343,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_WORKSPACE__SYMBOL, params);
 		}
 
-		private function documentSymbolsHandler(event:TypeAheadEvent):void
+		private function documentSymbolsHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1364,7 +1364,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
 		}
 
-		private function findReferencesHandler(event:TypeAheadEvent):void
+		private function findReferencesHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{
@@ -1394,7 +1394,7 @@ package actionScripts.languageServer
 			_findReferencesLookup[id] = true;
 		}
 
-		private function renameHandler(event:TypeAheadEvent):void
+		private function renameHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized)
 			{

@@ -25,7 +25,7 @@ package actionScripts.ui.editor.text
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ShowDropDownForTypeAhead;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.text.TextEditor;
@@ -131,7 +131,7 @@ package actionScripts.ui.editor.text
 				/*position = scriptAreaComponent.model.caretIndex;
 				selectedIndex = scriptAreaComponent.model.selectedLineIndex;
 				selectedText = scriptAreaComponent.model.lines[scriptAreaComponent.model.selectedLineIndex].text;*/
-				GlobalEventDispatcher.getInstance().dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_TYPEAHEAD,scriptAreaComponent.startPos,scriptAreaComponent.model.selectedLineIndex,scriptAreaComponent.model.caretIndex,scriptAreaComponent.model.selectedLineIndex,documnet,len,1));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_COMPLETION,scriptAreaComponent.startPos,scriptAreaComponent.model.selectedLineIndex,scriptAreaComponent.model.caretIndex,scriptAreaComponent.model.selectedLineIndex,documnet,len,1));
 				GlobalEventDispatcher.getInstance().addEventListener(ShowDropDownForTypeAhead.EVENT_SHOWDROPDOWN,showDropDownhander);
 			}
 		}

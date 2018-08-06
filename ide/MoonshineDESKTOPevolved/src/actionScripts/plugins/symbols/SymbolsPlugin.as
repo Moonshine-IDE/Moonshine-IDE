@@ -19,8 +19,7 @@
 package actionScripts.plugins.symbols
 {
 	import actionScripts.events.SymbolsEvent;
-	import actionScripts.events.TypeAheadEvent;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.symbols.view.SymbolsView;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
@@ -84,7 +83,7 @@ package actionScripts.plugins.symbols
 					this.symbolsView.symbols.removeAll();
 					return;
 				}
-				var languageServerEvent:TypeAheadEvent = new TypeAheadEvent(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS);
+				var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
 				//using newText instead of a dedicated field is kind of hacky...
 				languageServerEvent.newText = query;
 				dispatcher.dispatchEvent(languageServerEvent);
@@ -111,7 +110,7 @@ package actionScripts.plugins.symbols
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
 			PopUpManager.addPopUp(symbolsView, DisplayObject(parentApp), true);
 			PopUpManager.centerPopUp(symbolsView);
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DOCUMENT_SYMBOLS));
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS));
 			symbolsView.focusManager.setFocus(symbolsView.txt_query);
 		}
 

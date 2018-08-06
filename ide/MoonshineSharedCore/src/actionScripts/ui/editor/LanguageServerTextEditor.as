@@ -1,7 +1,7 @@
 package actionScripts.ui.editor
 {
 	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.HoverEvent;
@@ -58,8 +58,8 @@ package actionScripts.ui.editor
 			var startChar:int = editor.startPos;
 			var endLine:int = editor.model.selectedLineIndex;
 			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_TYPEAHEAD,
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_COMPLETION,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
 			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
@@ -74,8 +74,8 @@ package actionScripts.ui.editor
 			var startChar:int = editor.startPos;
 			var endLine:int = editor.model.selectedLineIndex;
 			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_SIGNATURE_HELP,
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_SIGNATURE_HELP,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
 			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
@@ -87,8 +87,8 @@ package actionScripts.ui.editor
 			
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_HOVER,
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_HOVER,
 				char, line, char, line,
 				document, 0, 1));
 			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
@@ -100,8 +100,8 @@ package actionScripts.ui.editor
 
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_GOTO_DEFINITION,
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_GOTO_DEFINITION,
 				char, line, char, line,
 				document, 0, 1));
 			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
@@ -128,7 +128,7 @@ package actionScripts.ui.editor
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDOPEN,
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
 				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
 		
@@ -162,8 +162,8 @@ package actionScripts.ui.editor
 
 		private function onTextChange(event:ChangeEvent):void
 		{
-			dispatcher.dispatchEvent(new TypeAheadEvent(
-				TypeAheadEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
 
 		protected function showCompletionListHandler(event:CompletionItemsEvent):void
@@ -212,7 +212,7 @@ package actionScripts.ui.editor
 				return;
 			}
 			
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_DIDCLOSE,
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
 				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 		}
 

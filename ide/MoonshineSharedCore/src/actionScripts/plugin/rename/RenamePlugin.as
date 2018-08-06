@@ -35,7 +35,7 @@ package actionScripts.plugin.rename
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.events.TreeMenuItemEvent;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -115,7 +115,7 @@ package actionScripts.plugin.rename
 				return;
 			}
 			
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_RENAME,
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
 				this._startChar, this._line, this._endChar, this._line, renameView.newName));
 		}
 		

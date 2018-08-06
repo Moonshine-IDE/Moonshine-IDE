@@ -20,7 +20,7 @@ package actionScripts.ui.editor.text
 {
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.SymbolsEvent;
-    import actionScripts.events.TypeAheadEvent;
+    import actionScripts.events.LanguageServerEvent;
     import actionScripts.ui.codeCompletionList.CodeCompletionList;
     import actionScripts.valueObjects.CompletionItem;
     import actionScripts.valueObjects.CompletionItemKind;
@@ -213,7 +213,7 @@ package actionScripts.ui.editor.text
 
         private function internalShowCompletionList(text:String, position:Point):void
         {
-            var languageServerEvent:TypeAheadEvent = new TypeAheadEvent(TypeAheadEvent.EVENT_WORKSPACE_SYMBOLS);
+            var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
             languageServerEvent.newText = text;
             dispatcher.dispatchEvent(languageServerEvent);
 

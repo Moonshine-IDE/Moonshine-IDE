@@ -19,7 +19,7 @@
 package actionScripts.plugins.references
 {
 	import actionScripts.events.ReferencesEvent;
-	import actionScripts.events.TypeAheadEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.references.view.ReferencesView;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
@@ -74,7 +74,7 @@ package actionScripts.plugins.references
 			var startChar:int = editor.editor.startPos;
 			var endLine:int = editor.editor.model.selectedLineIndex;
 			var endChar:int = editor.editor.model.caretIndex;
-			dispatcher.dispatchEvent(new TypeAheadEvent(TypeAheadEvent.EVENT_FIND_REFERENCES,
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_FIND_REFERENCES,
 				startChar, startLine, endChar, endLine));
 		}
 

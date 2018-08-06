@@ -23,7 +23,6 @@ package actionScripts.plugin.organizeImports
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.OrganizeImportsEvent;
 	import actionScripts.events.RenameEvent;
-	import actionScripts.events.TypeAheadEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;

@@ -256,7 +256,7 @@ package actionScripts.controllers
                     {
                         editor = new ActionScriptTextEditor();
                     }
-                    if (extension === "java")
+                    else if (extension === "java")
                     {
                         editor = new JavaTextEditor();
                     }
