@@ -38,6 +38,11 @@ package actionScripts.utils
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 		}
+
+		public function get connectedProjectCount():int
+		{
+			return managers.length;
+		}
 		
 		private function removeProjectHandler(event:ProjectEvent):void
 		{

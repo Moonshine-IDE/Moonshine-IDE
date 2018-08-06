@@ -33,6 +33,7 @@ package actionScripts.locator
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.ILanguageServerBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -51,6 +52,7 @@ package actionScripts.locator
 		public var clipboardCore: IClipboardBridge;
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;
+		public var languageServerCore:ILanguageServerBridge;
 		
 		// Currently active editor
 		public var activeEditor:IContentWindow;

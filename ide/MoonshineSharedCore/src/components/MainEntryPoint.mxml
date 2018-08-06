@@ -59,6 +59,7 @@
 
 				ideModel.fileCore = BridgeFactory.getFileInstance();
 				ideModel.contextMenuCore = BridgeFactory.getContextMenuInstance();
+				ideModel.languageServerCore = BridgeFactory.getLanguageServerCoreInstance();
 				ideModel.flexCore = BridgeFactory.getFlexCoreInstance();
 				ideModel.aboutCore = BridgeFactory.getAboutInstance();
 				ideModel.visualEditorCore = BridgeFactory.getVisualEditorInstance();

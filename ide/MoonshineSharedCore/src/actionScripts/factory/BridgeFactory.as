@@ -29,6 +29,7 @@ package actionScripts.factory
 	import actionScripts.interfaces.IFileBridge;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.interfaces.IJavaBridge;
+	import actionScripts.interfaces.ILanguageServerBridge;
 	
 	/**
 	 * BridgeFactory
@@ -105,6 +106,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IJavaBridgeImpl");
 			var gb: IJavaBridge = new clsToCreate();
+			return gb;
+		}
+
+		public static function getLanguageServerCoreInstance(): ILanguageServerBridge
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.ILanguageServerBridgeImp");
+			var gb: ILanguageServerBridge = new clsToCreate();
 			return gb;
 		}
 		

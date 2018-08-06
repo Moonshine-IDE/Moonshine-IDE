@@ -434,11 +434,6 @@ package actionScripts.impls
 			versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function startLanguageServerProjectWatcherWithJavaPath():void
-		{
-			new LanguageServerProjectWatcher();
-		}
-		
 		public function reAdjustApplicationSize(width:Number, height:Number):void
 		{
 			var tmpStage:Stage = FlexGlobals.topLevelApplication.stage as Stage;
