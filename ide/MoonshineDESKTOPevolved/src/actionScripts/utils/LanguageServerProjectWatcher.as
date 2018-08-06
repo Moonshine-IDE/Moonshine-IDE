@@ -30,13 +30,11 @@ package actionScripts.utils
 	
 	public class LanguageServerProjectWatcher
 	{
-		private var javaPath:String;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 		
-		public function LanguageServerProjectWatcher(path:String)
+		public function LanguageServerProjectWatcher()
 		{
-			javaPath = path;
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 		}
@@ -72,13 +70,13 @@ package actionScripts.utils
 					//projects that have already been added
 					return;
 				}
-				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project, javaPath);
+				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project);
 				managers.push(as3Manager);
 			}
 			if(project is JavaProjectVO)
 			{
 				var javaProject:JavaProjectVO = JavaProjectVO(project);
-				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject, javaPath);
+				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
 				managers.push(javaManager);
 			}
 		}

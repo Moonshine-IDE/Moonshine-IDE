@@ -71,7 +71,7 @@ package actionScripts.interfaces
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
-		function startLanguageServerProjectWatcherWithJavaPath(path:String):void;
+		function startLanguageServerProjectWatcherWithJavaPath():void;
 		function reAdjustApplicationSize(width:Number, height:Number):void;
         function createProject(event:NewProjectEvent):void;
 

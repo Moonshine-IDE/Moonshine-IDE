@@ -61,9 +61,9 @@ package actionScripts.languageServer
 		private var _cmdFile:File;
 		private var _javaPath:File;
 
-		public function ActionScriptLanguageServerManager(project:AS3ProjectVO, javaPath:String)
+		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
 		{
-			_javaPath = new File(javaPath);
+			_javaPath = IDEModel.getInstance().javaPathForTypeAhead.fileBridge.getFile as File;
 
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
 			_cmdFile = _javaPath.resolvePath(javaFileName);

@@ -434,9 +434,9 @@ package actionScripts.impls
 			versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function startLanguageServerProjectWatcherWithJavaPath(path:String):void
+		public function startLanguageServerProjectWatcherWithJavaPath():void
 		{
-			new LanguageServerProjectWatcher(path);
+			new LanguageServerProjectWatcher();
 		}
 		
 		public function reAdjustApplicationSize(width:Number, height:Number):void
