@@ -208,7 +208,7 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				project = new AS3ProjectVO(event.templateDir, null, false);
+				project = new AS3ProjectVO(event.templateDir, null, true);
 			}
 			else
 			{
@@ -223,7 +223,7 @@ package actionScripts.plugins.as3project
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
 				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 			}
-			else
+			else if (!isOpenProjectCall)
 			{
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
