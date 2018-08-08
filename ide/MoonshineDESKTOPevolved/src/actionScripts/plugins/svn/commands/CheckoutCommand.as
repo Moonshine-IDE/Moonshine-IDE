@@ -70,6 +70,8 @@ package actionScripts.plugins.svn.commands
 				args.push(event.authObject.password);
 			}
 			args.push(event.url);
+			args.push("--non-interactive");
+			args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			customInfo.workingDirectory = event.file;
