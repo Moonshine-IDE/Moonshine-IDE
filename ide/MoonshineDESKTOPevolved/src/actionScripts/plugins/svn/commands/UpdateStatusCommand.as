@@ -60,14 +60,14 @@ package actionScripts.plugins.svn.commands
 			// If we're refreshing the root we give roots name
 			if (!target) target = file.name; */
 			args.push("status");
-			args.push(file.name);
+			/*args.push(file.name);*/
 			args.push("--xml");
 			args.push("--non-interactive");
 			args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up
-			customInfo.workingDirectory = file.parent;
+			customInfo.workingDirectory = file;
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -159,9 +159,8 @@ package actionScripts.plugins.svn.commands
 				st.author = entry..author;
 				st.treeConflict = UtilsCore.deserializeBoolean(entry.child('wc.status').attribute('tree-conflicted'));
 				//st.date = DateUtil.parseBlaDate(entry..date);
-				status[folderPath + path] = st;
+				status[path] = st;
 			}
 		}
-		
 	}
 }

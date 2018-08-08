@@ -34,7 +34,6 @@ package actionScripts.plugins.svn.commands
 	
 	import __AS3__.vec.Vector;
 	
-	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.git.GitProcessManager;
@@ -95,18 +94,14 @@ package actionScripts.plugins.svn.commands
 			affectedFiles = new ArrayCollection();
 			for (var p:String in status)
 			{
-				// Is file below our target file?
-				if (p.length >= topPathLength && p.substr(0, topPathLength) == topPath)
-				{
-					var st:SVNStatus = status[p];
-					
-					if (st.canBeCommited)
-					{	
-						var relativePath:String = p.substr(topPathLength+1);
-						affectedFiles.addItem(new GenericSelectableObject(false, {path: relativePath, status:getFileStatus(st)}));
-						//var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
-						//affectedFiles.push(w);
-					}
+				var st:SVNStatus = status[p];
+				
+				if (st.canBeCommited)
+				{	
+					var relativePath:String = p.substr(topPathLength+1);
+					affectedFiles.addItem(new GenericSelectableObject(false, {path: p, status:getFileStatus(st)}));
+					//var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
+					//affectedFiles.push(w);
 				}
 			}
 			
