@@ -21,15 +21,11 @@ package actionScripts.plugins.svn.provider
 	import flash.events.Event;
 	import flash.filesystem.File;
 	
-	import mx.collections.ArrayCollection;
-	
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.svn.commands.CheckoutCommand;
 	import actionScripts.plugins.svn.commands.CommitCommand;
-	import actionScripts.plugins.svn.commands.RepositoryTestCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	
@@ -69,12 +65,6 @@ package actionScripts.plugins.svn.provider
 		{
 			var checkoutCommand:CheckoutCommand = new CheckoutCommand(executable, root);
 			checkoutCommand.checkout(event);
-		}
-		
-		public function testProject(event:ProjectEvent):void
-		{
-			var testCommand:RepositoryTestCommand = new RepositoryTestCommand(executable, root, event.project.folderLocation.fileBridge.nativePath);
-			testCommand.test();
 		}
 	}
 }
