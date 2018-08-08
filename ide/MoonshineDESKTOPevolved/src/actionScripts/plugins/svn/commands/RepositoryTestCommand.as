@@ -57,6 +57,14 @@ package actionScripts.plugins.svn.commands
 			
 			var args:Vector.<String> = new Vector.<String>();
 			args.push("ls");
+			/*args.push("--username");
+			args.push("santanu");
+			args.push("--password");
+			args.push("qas78mkp");*/
+			args.push("--non-interactive");
+			args.push("--trust-server-cert");
+			/*args.push("--trust-server-cert-failures");
+			args.push("unknown-ca,cn-mismatch,expired,not-yet-valid,other");*/
 			args.push(projectPath);
 			
 			customInfo.arguments = args;
@@ -90,10 +98,10 @@ package actionScripts.plugins.svn.commands
 		
 		protected function svnError(event:ProgressEvent):void
 		{
-			/*var output:IDataInput = customProcess.standardError;
+			var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 	
-			error("%s", data);*/
+			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			startShell(false);
 			dispatcher.dispatchEvent(new Event(SVNPlugin.SVN_TEST_COMPLETED));
@@ -101,10 +109,10 @@ package actionScripts.plugins.svn.commands
 		
 		protected function svnOutput(event:ProgressEvent):void
 		{ 
-			/*var output:IDataInput = customProcess.standardOutput;
+			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
-			notice("%s", data);*/
+			notice("%s", data);
 		}
 		
 		protected function svnExit(event:NativeProcessExitEvent):void

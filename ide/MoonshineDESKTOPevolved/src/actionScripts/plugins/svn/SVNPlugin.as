@@ -46,6 +46,7 @@ package actionScripts.plugins.svn
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
+	import components.popup.GitAuthenticationPopup;
 	import components.popup.SourceControlCheckout;
 
 	public class SVNPlugin extends PluginBase implements ISettingsProvider
@@ -62,7 +63,8 @@ package actionScripts.plugins.svn
 		public var svnBinaryPath:String;
 		
 		private var checkoutWindow:SourceControlCheckout;
-		private var isSVNCheckCompleted:Boolean = true;
+		private var gitAuthWindow:GitAuthenticationPopup;
+		private var failedMethodObjectBeforeAuth:Array;
 		
 		override public function activate():void
 		{
@@ -75,6 +77,7 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.addEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.addEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
 		}
 		
 		override public function deactivate():void
@@ -88,6 +91,7 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.removeEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.removeEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
 		}
 		
 		override public function resetSettings():void
@@ -163,21 +167,13 @@ package actionScripts.plugins.svn
 			if (!svnBinaryPath || svnBinaryPath == "") return;
 			
 			// don't go for a check if already decided as svn project
-			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1 && isSVNCheckCompleted) 
+			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1) 
 			{
-				isSVNCheckCompleted = false;
-				dispatcher.addEventListener(SVN_TEST_COMPLETED, onSVNTestCompleted, false, 0, true);
-				
-				var provider:SubversionProvider = new SubversionProvider();
-				provider.executable = new File(svnBinaryPath);
-				provider.testProject(event);
+				if (event.project.folderLocation.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists)
+				{
+					(event.project as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
+				}
 			}
-		}
-		
-		private function onSVNTestCompleted(event:Event):void
-		{
-			isSVNCheckCompleted = true;
-			dispatcher.removeEventListener(SVN_TEST_COMPLETED, onSVNTestCompleted);
 		}
 		
 		protected function handleCheckoutRequest(event:Event):void
@@ -225,22 +221,22 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		protected function handleCommitRequest(event:Event):void
+		protected function handleCommitRequest(event:Event, user:String=null, password:String=null, commitInfo:Object=null):void
 		{
 			if (!model.activeProject) return;
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.commit(model.activeProject.folderLocation);
+			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo);
 		}
 		
-		protected function handleUpdateRequest(event:Event):void
+		protected function handleUpdateRequest(event:Event, user:String=null, password:String=null):void
 		{
 			if (!model.activeProject) return;
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.update(model.activeProject.folderLocation);
+			provider.update(model.activeProject.folderLocation, user, password);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean
@@ -254,6 +250,52 @@ package actionScripts.plugins.svn
 					return true;
 			}
 			return false;
+		}
+		
+		private function onSVNAuthRequires(event:SVNEvent):void
+		{
+			failedMethodObjectBeforeAuth = event.extras;
+			openAuthentication();
+		}
+		
+		private function openAuthentication():void
+		{
+			if (!gitAuthWindow)
+			{
+				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+				gitAuthWindow.title = "SVN Needs Authentication";
+				gitAuthWindow.type = GitAuthenticationPopup.TYPE_SVN;
+				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				PopUpManager.centerPopUp(gitAuthWindow);
+			}
+			
+			/*
+			* @local
+			*/
+			function onGitAuthWindowClosed(event:CloseEvent):void
+			{
+				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				PopUpManager.removePopUp(gitAuthWindow);
+				gitAuthWindow = null;
+			}
+		}
+		
+		private function onAuthSuccessToSVN(event:Event):void
+		{
+			if (gitAuthWindow.userObject && failedMethodObjectBeforeAuth) 
+			{
+				switch (failedMethodObjectBeforeAuth[0])
+				{
+					case "update":
+						handleUpdateRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password);
+						break;
+					case "commit":
+						handleCommitRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password, {files:failedMethodObjectBeforeAuth[1], message:failedMethodObjectBeforeAuth[2], runningForFile:failedMethodObjectBeforeAuth[3]});
+						break;
+				}
+			}
 		}
 	}
 }

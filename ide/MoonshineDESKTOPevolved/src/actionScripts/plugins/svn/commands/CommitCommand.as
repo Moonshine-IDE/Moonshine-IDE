@@ -38,6 +38,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.git.GitProcessManager;
+	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SVNStatus;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	
@@ -60,8 +61,14 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function commit(file:FileLocation, message:String=null):void
-		{	
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null):void
+		{
+			if (user && password)
+			{
+				doCommit(user, password, commitInfo);
+				return;
+			}
+			
 			if (runningForFile)
 			{
 				error("Currently running, try again later.");
@@ -197,9 +204,16 @@ package actionScripts.plugins.svn.commands
 			toAdd = null;
 		}
 		
-		protected function doCommit():void
+		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null):void
 		{	
 			// TODO: Check for empty commits, since svn commit will recurse-commit everything
+			if (commitInfo)
+			{
+				affectedFiles ||= commitInfo.files;
+				this.message ||= commitInfo.message;
+				runningForFile ||= commitInfo.runningForFile;
+			}
+			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
@@ -224,26 +238,54 @@ package actionScripts.plugins.svn.commands
 			args = args.concat(argFiles);
 			args.push("--message");
 			args.push(this.message);
+			if (user && password)
+			{
+				args.push("--username");
+				args.push(user);
+				args.push("--password");
+				args.push(password);
+			}
+			args.push("--non-interactive");
+			args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			
 			customInfo.workingDirectory = runningForFile;
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
 			
 			print("Starting commit");
 		}
 		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
+		}
+		
 		protected function svnError(event:ProgressEvent):void
 		{
-			var str:String = customProcess.standardOutput.readUTFBytes(customProcess.standardOutput.bytesAvailable);
+			var str:String = customProcess.standardError.readUTFBytes(customProcess.standardOutput.bytesAvailable);
 			error(str);
 			
+			//startShell(false);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		} 
 		protected function svnOutput(event:ProgressEvent):void
@@ -265,23 +307,25 @@ package actionScripts.plugins.svn.commands
 			{
 				// Commit failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				error(err);
+				var match:Array = err.match(/Authentication failed/);
+				if (match)
+				{
+					dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_AUTH_REQUIRED, runningForFile, null, null, null, "commit", affectedFiles, this.message, runningForFile));
+				}
+				else error(err);
 			}
 			
 			// Update status (don't care if it fails or not, just try it)
-			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, runningForFile, status);
+			/*var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, runningForFile, status);
 			statusCommand.update(runningForFile);
 			
 			// Show changes in project view
 			dispatcher.dispatchEvent(
 				new RefreshTreeEvent(new FileLocation(runningForFile.nativePath))
-			);
+			);*/
 			
-			runningForFile = null;
-			customProcess = null;
-			
+			startShell(false);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
-		
 	}
 }

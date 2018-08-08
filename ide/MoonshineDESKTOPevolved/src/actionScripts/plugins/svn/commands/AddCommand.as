@@ -54,17 +54,36 @@ package actionScripts.plugins.svn.commands
 			// We give the file as target, so go one directory up
 			customInfo.workingDirectory = root;
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
+		}
+		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
 		}
 		
 		protected function svnError(event:ProgressEvent):void
 		{
-			
+			startShell(false);
 		} 
+		
 		protected function svnOutput(event:ProgressEvent):void
 		{
 			
@@ -91,9 +110,7 @@ package actionScripts.plugins.svn.commands
 				dispatchEvent( new Event(Event.CANCEL) );
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			startShell(false);
 		}
-		
 	}
 }

@@ -9,9 +9,12 @@
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
+			public static const TYPE_SVN:String = "typeSVN";
+			public static const TYPE_GIT:String = "typeGit";
 			public static const GIT_AUTH_COMPLETED:String = "gitAuthenticationCompleted";
 			
 			[Bindable] public var isGitAvailable:Boolean;
+			[Bindable] public var type:String;
 			
 			public var userObject:Object;
 			
@@ -20,7 +23,9 @@
 				var tmpArr : Array = new Array(eValidator, pValidator);
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
-					userObject = {userName:txtUser.text, password:txtPassword.text, save:cbSaveAuth.selected};
+					userObject = {userName:txtUser.text, password:txtPassword.text};
+					if (type == TYPE_GIT) userObject.save = cbSaveAuth.selected;
+					
 					dispatchEvent(new Event(GIT_AUTH_COMPLETED));
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
@@ -37,20 +42,21 @@
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
 		<view:PromptTextInput id="txtUser"
 							  width="100%" styleName="textInput"
-							  prompt="GitHub User Name"/>
+							  prompt="User Name"/>
 		<view:PromptTextInput id="txtPassword" 
 							  prompt="Password" width="100%" styleName="textInput"
 							  displayAsPassword="true" enter="onSubmit()"/>
 		<s:CheckBox id="cbSaveAuth"
-					label="Save for this project's session"/>
+					label="Save for this project's session"
+					includeInLayout="{type==TYPE_GIT}" visible="{type==TYPE_GIT}"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
-				 includeInLayout="{!isGitAvailable}" visible="{!isGitAvailable}"/>
+				 includeInLayout="{type==TYPE_GIT &amp;&amp; !isGitAvailable}" visible="{type==TYPE_GIT &amp;&amp; !isGitAvailable}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCommit" label="Submit"
 				  styleName="darkButton" click="onSubmit()"
-				  enabled="{isGitAvailable}"/>
+				  enabled="{isGitAvailable || type==TYPE_SVN}"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

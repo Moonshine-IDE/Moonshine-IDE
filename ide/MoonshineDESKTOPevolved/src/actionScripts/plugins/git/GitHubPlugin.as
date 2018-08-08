@@ -168,7 +168,6 @@ package actionScripts.plugins.git
 			if (!modelAgainstProject[model.activeProject].sessionUser)
 			{
 				openAuthentication();
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 			}
 		}
 		
@@ -372,7 +371,6 @@ package actionScripts.plugins.git
 		
 		private function onAuthSuccessToPush(event:Event):void
 		{
-			gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 			if (gitAuthWindow.userObject) 
 			{
 				if (gitAuthWindow.userObject.save) 
@@ -583,7 +581,9 @@ package actionScripts.plugins.git
 				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
+				gitAuthWindow.type = GitAuthenticationPopup.TYPE_GIT;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			
@@ -593,6 +593,7 @@ package actionScripts.plugins.git
 			function onGitAuthWindowClosed(event:CloseEvent):void
 			{
 				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 				PopUpManager.removePopUp(gitAuthWindow);
 				gitAuthWindow = null;
 			}

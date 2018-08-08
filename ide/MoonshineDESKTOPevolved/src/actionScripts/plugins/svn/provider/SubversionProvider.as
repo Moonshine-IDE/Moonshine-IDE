@@ -21,6 +21,8 @@ package actionScripts.plugins.svn.provider
 	import flash.events.Event;
 	import flash.filesystem.File;
 	
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
@@ -46,10 +48,10 @@ package actionScripts.plugins.svn.provider
 			commit(FileLocation(event.target.data));
 		}
 		
-		public function commit(file:FileLocation, message:String=null):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null):void
 		{
 			var commitCommand:CommitCommand = new CommitCommand(executable, root, status);
-			commitCommand.commit(file, message);
+			commitCommand.commit(file, message, user, password, commitInfo);
 		}
 		
 		protected function handleUpdate(event:Event):void
@@ -57,10 +59,10 @@ package actionScripts.plugins.svn.provider
 			update(FileLocation(event.target.data));
 		}
 		
-		public function update(file:FileLocation):void
+		public function update(file:FileLocation, user:String=null, password:String=null):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
-			updateCommand.update(file);
+			updateCommand.update(file, user, password);
 		}
 		
 		public function checkout(event:SVNEvent):void

@@ -62,6 +62,8 @@ package actionScripts.plugins.svn.commands
 			args.push("status");
 			args.push(file.name);
 			args.push("--xml");
+			args.push("--non-interactive");
+			args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up
