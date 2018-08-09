@@ -365,10 +365,11 @@ package actionScripts.ui.editor.text
 			if (!readOnly)
 			{
 				undoManager = new UndoManager(this, model);
-				searchManager = new SearchManager(this, model);
 				completionManager = new CompletionManager(this, model);
 				signatureHelpManager = new SignatureHelpManager(this, model);
 			}
+			
+			searchManager = new SearchManager(this, model);
 			hoverManager = new HoverManager(this, model);
 			gotoDefinitionManager = new GotoDefinitionManager(this, model);
 			diagnosticsManager = new DiagnosticsManager(this, model);
