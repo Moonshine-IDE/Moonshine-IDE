@@ -151,15 +151,6 @@ package actionScripts.controllers
 				//if something goes wrong shutting down the language servers,
 				//this timeout allows us to quit anyway
 				languageServerTimeoutID = setTimeout(onLanguageServerCloseTimeout, 10000);
-				var projects:Array = model.projects.source.slice();
-				var projectCount:int = projects.length;
-				for(var i:int = 0; i < projectCount; i++)
-				{
-					//remove all remaining projects so that the language servers
-					//get properly shutdown
-					var project:ProjectVO = ProjectVO(projects[i]);
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-				}
 				return;
 			}
 

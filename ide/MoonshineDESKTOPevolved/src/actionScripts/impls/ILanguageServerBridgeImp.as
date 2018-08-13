@@ -74,7 +74,6 @@ package actionScripts.impls
 				{
 					managers.splice(i, 1);
 					managersWaitingForClose.push(manager);
-					manager.addEventListener(Event.CLOSE, manager_closeHandler);
 					break;
 				}
 			}
@@ -83,35 +82,51 @@ package actionScripts.impls
 		private function addProjectHandler(event:ProjectEvent):void
 		{
 			var project:ProjectVO = event.project;
-			if(!project || project.projectFolder.projectReference.isTemplate || hasLanguageServerForProject(project))
+			if(!project || project.projectFolder.projectReference.isTemplate)
 			{
 				return;
 			}
+			if(hasLanguageServerForProject(project))
+			{
+				//Moonshine sometimes dispatches ProjectEvent.ADD_PROJECT for
+				//projects that have already been added
+				return;
+			}
+			var manager:ILanguageServerManager = null;
 			if(project is AS3ProjectVO)
 			{
 				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 				if(as3Project.isVisualEditorProject)
 				{
-					//Moonshine sometimes dispatches ProjectEvent.ADD_PROJECT for
-					//projects that have already been added
+					//visual editor projects don't have a language server
 					return;
 				}
 				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project);
-				managers.push(as3Manager);
+				manager = as3Manager;
 			}
 			if(project is JavaProjectVO)
 			{
 				var javaProject:JavaProjectVO = JavaProjectVO(project);
 				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
-				managers.push(javaManager);
+				manager = javaManager;
 			}
+			manager.addEventListener(Event.CLOSE, manager_closeHandler);
+			managers.push(manager);
 		}
 
 		private function manager_closeHandler(event:Event):void
 		{
 			var manager:ILanguageServerManager = ILanguageServerManager(event.currentTarget);
-			var index:int = managersWaitingForClose.indexOf(manager);
-			managersWaitingForClose.splice(index, 1);
+			var index:int = managers.indexOf(manager);
+			if(index != -1)
+			{
+				managers.splice(index, 1);
+			}
+			else
+			{
+				index = managersWaitingForClose.indexOf(manager);
+				managersWaitingForClose.splice(index, 1);
+			}
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, manager.project));
 		}
 	}
