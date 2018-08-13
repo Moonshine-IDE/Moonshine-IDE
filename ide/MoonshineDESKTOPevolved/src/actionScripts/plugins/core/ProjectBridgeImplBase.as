@@ -58,11 +58,6 @@ package actionScripts.plugins.core
 				deleteFilesAsync();
 			}
         }
-
-        public function exitApplication():void
-        {
-            NativeApplication.nativeApplication.exit();
-        }
 		
 		private function deleteFilesAsync():void
 		{

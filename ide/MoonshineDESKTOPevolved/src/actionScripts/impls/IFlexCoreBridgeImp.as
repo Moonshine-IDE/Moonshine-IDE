@@ -101,7 +101,6 @@ package actionScripts.impls
     import actionScripts.utils.SHClassTest;
     import actionScripts.utils.SWFTrustPolicyModifier;
     import actionScripts.utils.SoftwareVersionChecker;
-    import actionScripts.utils.LanguageServerProjectWatcher;
     import actionScripts.utils.Untar;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;

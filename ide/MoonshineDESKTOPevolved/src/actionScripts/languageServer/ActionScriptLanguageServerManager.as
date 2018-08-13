@@ -43,8 +43,11 @@ package actionScripts.languageServer
     
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.valueObjects.ProjectVO;
+    import flash.events.EventDispatcher;
 
-	public class ActionScriptLanguageServerManager implements ILanguageServerManager
+	[Event(name="close",type="flash.events.Event")]
+
+	public class ActionScriptLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
@@ -73,31 +76,33 @@ package actionScripts.languageServer
 			}
 
 			_project = project;
+
 			_project.addEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 			//when adding new listeners, don't forget to also remove them in
-			//removeProjectHandler()
+			//dispose()
 
 			startNativeProcess();
-		}
-
-		private function removeProjectHandler(event:ProjectEvent):void
-		{
-			if(event.project != _project)
-			{
-				return;
-			}
-			_project.removeEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
-			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
-			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 		}
 
 		public function get project():ProjectVO
 		{
 			return _project;
+		}
+
+		protected function dispose():void
+		{
+			if(_languageClient)
+			{
+				_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
+				_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+				_languageClient = null;
+			}
+			
+			_project.removeEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
+			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
+			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
 		}
 
 		private function startNativeProcess():void
@@ -281,7 +286,7 @@ package actionScripts.languageServer
 		{
 			if(_languageClient)
 			{
-				shutdownHandler(null);
+				_languageClient.stop();
 			}
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
@@ -289,37 +294,16 @@ package actionScripts.languageServer
 			_nativeProcess = null;
 		}
 
-		public function shutdownHandler(event:Event):void
-		{
-			if(!_languageClient)
-			{
-				return;
-			}
-			_languageClient.stop();
-		}
-
 		private function languageClient_initHandler(event:Event):void
 		{
 			sendProjectConfiguration();
-			
-			// @note
-			// @ rat-moonshine
-			// I don't know how to detect if language server is running
-			// against a project or if the server is present at all 
-			// I need to determine because at the time of project deletion
-			// process depends on event call back from language server when
-			// fully shutdown - if server is not running the event never return
-			_model.isLanguageServerPresent = true;
 		}
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
-			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
-			_languageClient = null;
-			
-			// to let others know when lang-server completely shutdown against a project
-			_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, _project));
+			this.dispose();
+
+			this.dispatchEvent(new Event(Event.CLOSE));
 		}
 
 		private function projectChangeCustomSDKHandler(event:Event):void

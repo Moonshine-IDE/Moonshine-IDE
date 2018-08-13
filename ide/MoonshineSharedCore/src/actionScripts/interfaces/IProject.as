@@ -35,7 +35,6 @@ package actionScripts.interfaces
         function getCorePlugins():Array;
         function getDefaultPlugins():Array;
         function getPluginsNotToShowInSettings():Array;
-        function exitApplication():void;
 
         function get runtimeVersion():String;
         function get version():String;

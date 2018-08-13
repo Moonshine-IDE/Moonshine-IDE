@@ -47,6 +47,11 @@ package actionScripts.controllers
 	
 	import components.popup.StandardPopup;
 	import components.views.splashscreen.SplashScreen;
+	import actionScripts.events.LanguageServerEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.valueObjects.ProjectVO;
+	import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
 
 	public class QuitCommand implements ICommand
 	{
@@ -54,6 +59,8 @@ package actionScripts.controllers
 		private var model:IDEModel = IDEModel.getInstance();
 		private static var pop:StandardPopup;
 		private var quitPopup:QuitPopup;
+		private var timedOutClosingLanguageServers:Boolean = false;
+		private var languageServerTimeoutID:uint = uint.MAX_VALUE;
 
 		private var commandEvent:Event;
 		
@@ -137,6 +144,30 @@ package actionScripts.controllers
 		 */
 		protected function onApplicationClosing():void
 		{
+			if(!timedOutClosingLanguageServers && model.languageServerCore.connectedProjectCount > 0)
+			{
+				timedOutClosingLanguageServers = false;
+				dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onLanguageServerClosed);
+				//if something goes wrong shutting down the language servers,
+				//this timeout allows us to quit anyway
+				languageServerTimeoutID = setTimeout(onLanguageServerCloseTimeout, 10000);
+				var projects:Array = model.projects.source.slice();
+				var projectCount:int = projects.length;
+				for(var i:int = 0; i < projectCount; i++)
+				{
+					//remove all remaining projects so that the language servers
+					//get properly shutdown
+					var project:ProjectVO = ProjectVO(projects[i]);
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
+				}
+				return;
+			}
+
+			if(languageServerTimeoutID != uint.MAX_VALUE)
+			{
+				clearTimeout(languageServerTimeoutID);
+			}
+
 			LayoutModifier.saveLastSidebarState();
 			
 			// we also needs to close any scope bookmarked opened
@@ -210,6 +241,25 @@ package actionScripts.controllers
 			// disable file menus in OSX
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_NO_MENU_STATE));
 		}
+
+		private function onLanguageServerClosed(event:ProjectEvent):void
+		{
+			if(model.languageServerCore.connectedProjectCount > 0)
+			{
+				//keep waiting for the rest of them to close
+				return;
+			}
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onLanguageServerClosed);
+			this.onApplicationClosing();
+		}
+
+		private function onLanguageServerCloseTimeout():void
+		{
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onLanguageServerClosed);
+			languageServerTimeoutID = uint.MAX_VALUE;
+			timedOutClosingLanguageServers = true;
+			this.onApplicationClosing();
+		}
 		
 		private function onApplicationResized(event:ResizeEvent):void
 		{
@@ -253,13 +303,13 @@ package actionScripts.controllers
 			
 			if (!saveAs)
 			{
-                model.flexCore.exitApplication();
+				onApplicationClosing();
 			}
 		}
 		
 		private function closeFiles(event:Event):void
 		{
-            model.flexCore.exitApplication();
+			onApplicationClosing();
 		}
 		
 		private function cancelQuit(event:Event):void

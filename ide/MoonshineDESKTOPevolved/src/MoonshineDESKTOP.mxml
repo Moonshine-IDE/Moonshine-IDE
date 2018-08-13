@@ -55,6 +55,7 @@
 		
 		import no.doomsday.console.ConsoleUtil;
 		import actionScripts.impls.IJavaBridgeImpl;
+		import actionScripts.impls.ILanguageServerBridgeImp;
 
 		//--------------------------------------------------------------------------
 		//
@@ -70,6 +71,7 @@
         private static const NEEDED_FOR_COMPILATION6: IVisualEditorProjectBridgeImpl = null;
         private static const NEEDED_FOR_COMPILATION7: IClipboardBridgeImp = null;
         private static const NEEDED_FOR_COMPILATION8: IJavaBridgeImpl = null;
+        private static const NEEDED_FOR_COMPILATION9: ILanguageServerBridgeImp = null;
 
 		//--------------------------------------------------------------------------
 		//

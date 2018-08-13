@@ -211,7 +211,7 @@ package actionScripts.plugin.startup
 			else if (model.defaultSDK && model.javaPathForTypeAhead)
 			{
 				// starting server
-				model.languageServerCore.startProjectWatcher();
+				model.languageServerCore.start();
 				dispatcher.addEventListener(EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
 			}
 		}
@@ -336,7 +336,7 @@ package actionScripts.plugin.startup
 				model.userSavedSDKs.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onSDKListUpdated);
 				
 				// starting server
-				model.languageServerCore.startProjectWatcher();
+				model.languageServerCore.start();
 			}
 			else if (path && !model.javaPathForTypeAhead)
 			{

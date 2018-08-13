@@ -39,8 +39,11 @@ package actionScripts.languageServer
     import flash.utils.IDataInput;
 
     import no.doomsday.console.ConsoleUtil;
+    import flash.events.EventDispatcher;
 
-	public class JavaLanguageServerManager implements ILanguageServerManager
+	[Event(name="close",type="flash.events.Event")]
+
+	public class JavaLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/jdt-language-server/plugins/org.eclipse.equinox.launcher_1.5.100.v20180611-1436.jar";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "elements/jdt-language-server/config_win";
@@ -71,9 +74,9 @@ package actionScripts.languageServer
 			}
 
 			_project = project;
-			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+
 			//when adding new listeners, don't forget to also remove them in
-			//removeProjectHandler()
+			//dispose()
 
 			startNativeProcess();
 		}
@@ -81,6 +84,17 @@ package actionScripts.languageServer
 		public function get project():ProjectVO
 		{
 			return _project;
+		}
+
+		protected function dispose():void
+		{
+			if(_languageClient)
+			{
+				_languageClient.removeEventListener(METHOD_LANGUAGE__STATUS, language__status);
+				_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
+				_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+				_languageClient = null;
+			}
 		}
 
 		private function startNativeProcess():void
@@ -152,15 +166,6 @@ package actionScripts.languageServer
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 		}
 
-		private function removeProjectHandler(event:ProjectEvent):void
-		{
-			if(event.project != _project)
-			{
-				return;
-			}
-			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
-		}
-
 		private function shellError(e:ProgressEvent):void
 		{
 			var output:IDataInput = _nativeProcess.standardError;
@@ -174,7 +179,7 @@ package actionScripts.languageServer
 		{
 			if(_languageClient)
 			{
-				shutdownHandler(null);
+				_languageClient.stop();
 			}
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
@@ -182,36 +187,15 @@ package actionScripts.languageServer
 			_nativeProcess = null;
 		}
 
-		public function shutdownHandler(event:Event):void
-		{
-			if(!_languageClient)
-			{
-				return;
-			}
-			_languageClient.stop();
-		}
-
 		private function languageClient_initHandler(event:Event):void
-		{	
-			// @note
-			// @ rat-moonshine
-			// I don't know how to detect if language server is running
-			// against a project or if the server is present at all 
-			// I need to determine because at the time of project deletion
-			// process depends on event call back from language server when
-			// fully shutdown - if server is not running the event never return
-			_model.isLanguageServerPresent = true;
+		{
 		}
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			_languageClient.removeEventListener(METHOD_LANGUAGE__STATUS, language__status);
-			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
-			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
-			_languageClient = null;
+			this.dispose();
 			
-			// to let others know when lang-server completely shutdown against a project
-			_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, _project));
+			this.dispatchEvent(new Event(Event.CLOSE));
 		}
 
 		private function language__status(message:Object):void
