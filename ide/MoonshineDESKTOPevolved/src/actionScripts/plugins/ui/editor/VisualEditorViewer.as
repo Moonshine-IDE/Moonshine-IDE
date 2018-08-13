@@ -18,27 +18,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-    import actionScripts.plugins.help.view.events.VisualEditorEvent;
-
     import flash.events.Event;
-	import mx.events.FlexEvent;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
-	import actionScripts.interfaces.IVisualEditorViewer;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugins.help.view.VisualEditorView;
-	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-	import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.ui.tabview.TabEvent;
-
+    
+    import mx.events.FlexEvent;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
+    import actionScripts.interfaces.IVisualEditorViewer;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugins.help.view.VisualEditorView;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.TextEditor;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
+    
     import utils.VisualEditorType;
-	
-	import view.suportClasses.events.PropertyEditorChangeEvent;
+    
+    import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -222,6 +222,7 @@ package actionScripts.plugins.ui.editor
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();
+			var selectedItemCode:XML = visualEditorView.visualEditor.editingSurface.selectedItem ? visualEditorView.visualEditor.editingSurface.selectedItem.toCode() : null;
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
 			return markAsXml + mxmlCode.toXMLString();

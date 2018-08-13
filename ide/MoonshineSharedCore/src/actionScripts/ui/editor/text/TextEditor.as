@@ -31,6 +31,7 @@ package actionScripts.ui.editor.text
     import mx.events.ResizeEvent;
     import mx.events.ScrollEvent;
     import mx.managers.IFocusManagerComponent;
+    import mx.utils.StringUtil;
     
     import __AS3__.vec.Vector;
     
@@ -146,11 +147,21 @@ package actionScripts.ui.editor.text
 			// Populate lines into model
 			model.lines = new Vector.<TextLineModel>(count);
 			
+			var tagSelectionLineBeginIndex:int = -1;
+			var tagSelectionLineEndIndex:int = -1;
 			for (var i:int = 0; i < count; i++)
 			{
+				if (lines[i].indexOf("_moonshineSelected_") != -1)
+				{
+					if (tagSelectionLineBeginIndex == -1) tagSelectionLineBeginIndex = i;
+					else tagSelectionLineEndIndex = i;
+					lines[i] = lines[i].replace("_moonshineSelected_", "");
+				}
+				
 				model.lines[i] = new TextLineModel(lines[i]);
 			}
 			
+			if (tagSelectionLineBeginIndex != -1 && tagSelectionLineEndIndex == -1) tagSelectionLineEndIndex = tagSelectionLineBeginIndex;
 			colorManager.reset();
 			
 			// Clear undo history (readOnly doesn't have it)
@@ -181,6 +192,13 @@ package actionScripts.ui.editor.text
 					scrollTo(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE, OpenFileEvent.TRACE_LINE);
 					selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
 				});
+			}
+			
+			if (tagSelectionLineBeginIndex != -1)
+			{
+				model.setSelection(tagSelectionLineBeginIndex, model.lines[tagSelectionLineBeginIndex].text.indexOf("<"), tagSelectionLineEndIndex, model.lines[tagSelectionLineEndIndex].text.length);			
+				scrollViewIfNeeded();
+				invalidateLines();
 			}
 		}
 		

@@ -61,7 +61,7 @@
         {
             if (event.newIndex == 1)
             {
-                visualEditor.editingSurface.selectedItem = null;
+                //visualEditor.editingSurface.selectedItem = null;
                 dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
             }
         }
