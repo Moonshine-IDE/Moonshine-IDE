@@ -31,7 +31,6 @@ package actionScripts.ui.editor.text
     import mx.events.ResizeEvent;
     import mx.events.ScrollEvent;
     import mx.managers.IFocusManagerComponent;
-    import mx.utils.StringUtil;
     
     import __AS3__.vec.Vector;
     
@@ -102,7 +101,7 @@ package actionScripts.ui.editor.text
 		private var _backgroundAlpha:uint = 			1;
 		private var lineNumberBackgroundColor:uint = 	0xf9f9f9;
 		private var _selectionColor:uint =				0xd1e3f9;
-		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xff7cff;
+		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xffb2ff;
 		private var _selectedLineColor:uint =  			0xedfbfb;
 		private var _selectedLineColorAlpha:Number =	1;
 		private var _tracingLineColor:uint=				0xc6dbae;	
@@ -196,9 +195,11 @@ package actionScripts.ui.editor.text
 			
 			if (tagSelectionLineBeginIndex != -1)
 			{
-				model.setSelection(tagSelectionLineBeginIndex, model.lines[tagSelectionLineBeginIndex].text.indexOf("<"), tagSelectionLineEndIndex, model.lines[tagSelectionLineEndIndex].text.length);			
-				scrollViewIfNeeded();
-				invalidateLines();
+				searchManager.highlightTagSelection(tagSelectionLineBeginIndex, tagSelectionLineEndIndex);
+			}
+			else if (!isNeedToBeTracedAfterOpening && model.allInstancesOfASearchStringDict)
+			{
+				searchManager.unHighlightTagSelection();
 			}
 		}
 		

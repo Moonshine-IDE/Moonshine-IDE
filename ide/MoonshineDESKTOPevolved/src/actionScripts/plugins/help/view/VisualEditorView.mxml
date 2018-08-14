@@ -62,8 +62,13 @@
             if (event.newIndex == 1)
             {
                 //visualEditor.editingSurface.selectedItem = null;
+				visualEditor.editingSurface.setResizerVisible(false);
                 dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
             }
+			else
+			{
+				visualEditor.editingSurface.setResizerVisible(true);
+			}
         }
 		
 		protected function onVisualEditorCreationComplete(event:FlexEvent):void

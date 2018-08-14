@@ -269,6 +269,63 @@ package actionScripts.ui.editor.text
 			return res; 
 		}
 		
+		public function highlightTagSelection(tagSelectionLineBeginIndex:int, tagSelectionLineEndIndex:int):void
+		{
+			var res:SearchResult;
+			var tmpDict:Dictionary = new Dictionary();
+			
+			// for multiple lines
+			if (tagSelectionLineEndIndex > tagSelectionLineBeginIndex)
+			{
+				var linesCount:int = tagSelectionLineEndIndex - tagSelectionLineBeginIndex + 1;
+				for (var i:int; i < linesCount; i++)
+				{
+					res = new SearchResult();
+					if (i == 0)
+					{
+						res.startLineIndex = tagSelectionLineBeginIndex;
+						res.endLineIndex = tagSelectionLineBeginIndex;
+						res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
+						res.endCharIndex = model.lines[tagSelectionLineBeginIndex].text.length;
+					}
+					else
+					{
+						res.startLineIndex = ++tagSelectionLineBeginIndex;
+						res.endLineIndex = tagSelectionLineBeginIndex;
+						res.startCharIndex = 0;
+						res.endCharIndex = model.lines[tagSelectionLineBeginIndex].text.length;
+					}
+					
+					tmpDict[tagSelectionLineBeginIndex] = [res];
+				}
+			}
+			else
+			{
+				// for single line
+				res = new SearchResult();
+				res.startLineIndex = tagSelectionLineBeginIndex;
+				res.endLineIndex = tagSelectionLineEndIndex;
+				res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
+				res.endCharIndex = model.lines[tagSelectionLineEndIndex].text.length;
+				tmpDict[tagSelectionLineBeginIndex] = [res];
+			}
+			
+			model.allInstancesOfASearchStringDict = tmpDict;
+			editor.scrollViewIfNeeded();
+			editor.invalidateLines();
+		}
+		
+		public function unHighlightTagSelection():void
+		{
+			model.allInstancesOfASearchStringDict = new Dictionary();
+			editor.scrollViewIfNeeded();
+			editor.invalidateLines();
+			editor.callLater(function():void
+			{
+				model.allInstancesOfASearchStringDict = null;
+			});
+		}
+		
 		private function replace(str:String, search:*, replace:String, results:Array, all:Boolean):SearchResult
 		{
 			var regexp:Boolean = search is RegExp;
