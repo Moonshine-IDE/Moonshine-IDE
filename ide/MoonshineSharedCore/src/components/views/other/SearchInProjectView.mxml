@@ -45,6 +45,7 @@
 			import actionScripts.utils.TextUtil;
 			
 			import components.popup.ReplaceProjectSearchPopup;
+			import actionScripts.valueObjects.ProjectVO;
 			
 			[Embed("/elements/images/icoTreeFolder_open.png")]
 			private var iconFolderOpen:Class;
@@ -56,7 +57,7 @@
 			[Bindable] public var valueToSearch:String;
 			[Bindable] public var isShowReplaceWhenDone:Boolean;
 			
-			public var selectedProjectToSearch:AS3ProjectVO;
+			public var selectedProjectToSearch:ProjectVO;
 			public var patterns:String;
 			public var scope:String;
 			public var isEnclosingProjects:Boolean;
@@ -148,11 +149,15 @@
 						tmpArr.push(selectedProjectToSearch.folderLocation.fileBridge.nativePath);
 						if (isEnclosingProjects)
 						{
-							for each (var j:FileLocation in selectedProjectToSearch.classpaths)
+							if(selectedProjectToSearch is AS3ProjectVO)
 							{
-								if (selectedProjectToSearch.sourceFolder.fileBridge.nativePath != j.fileBridge.nativePath && j.fileBridge.nativePath.indexOf("{locale}") == -1)
+								var as3Project:AS3ProjectVO = AS3ProjectVO(selectedProjectToSearch);
+								for each (var j:FileLocation in as3Project.classpaths)
 								{
-									tmpArr.push(j.fileBridge.nativePath);
+									if (as3Project.sourceFolder.fileBridge.nativePath != j.fileBridge.nativePath && j.fileBridge.nativePath.indexOf("{locale}") == -1)
+									{
+										tmpArr.push(j.fileBridge.nativePath);
+									}
 								}
 							}
 						}

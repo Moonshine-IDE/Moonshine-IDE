@@ -37,6 +37,7 @@ package actionScripts.plugin.search
     
     import components.popup.SearchInProjectPopup;
     import components.views.other.SearchInProjectView;
+    import actionScripts.valueObjects.ProjectVO;
 
     public class SearchPlugin extends PluginBase
     {
@@ -51,7 +52,7 @@ package actionScripts.plugin.search
 		public static var LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS:Boolean;
 		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
 		public static var LAST_SEARCH:String;
-		public static var LAST_SELECTED_PROJECT:AS3ProjectVO;
+		public static var LAST_SELECTED_PROJECT:ProjectVO;
 		
 		private var searchPopup:SearchInProjectPopup;
 		private var searchResultView:SearchInProjectView;
@@ -124,7 +125,7 @@ package actionScripts.plugin.search
 			LAST_SEARCH = searchPopup.txtSearch.text;
 			IS_REPLACE_APPLIED = false;
 			LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS = searchPopup.cbEnclosingProjects.selected;
-			LAST_SELECTED_PROJECT = searchPopup.ddlProjects.selectedItem ? searchPopup.ddlProjects.selectedItem as AS3ProjectVO : null;
+			LAST_SELECTED_PROJECT = searchPopup.ddlProjects.selectedItem ? searchPopup.ddlProjects.selectedItem as ProjectVO : null;
 			
 			if (!searchResultView)
 			{
