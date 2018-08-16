@@ -104,7 +104,11 @@ package actionScripts.languageServer
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
 			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
-			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product"); 
+			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
+			processArgs.push("-noverify");
+			processArgs.push("-Xmx1G");
+			processArgs.push("-XX:+UseG1GC");
+			processArgs.push("-XX:+UseStringDeduplication");
 			processArgs.push("-jar");
 			processArgs.push(jarFile.nativePath);
 			processArgs.push("-configuration");
@@ -158,9 +162,21 @@ package actionScripts.languageServer
 
 			trace("Language server workspace root: " + project.folderPath);
 
-			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, _dispatcher,
-				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
-			//_languageClient.debugMode = true;
+			var initOptions:Object = 
+			{
+				bundles: [],
+				workspaceFolders: [_project.projectFolder.file.fileBridge.url],
+				settings: { /*java: getJavaConfiguration()*/ },
+				extendedClientCapabilities:
+				{
+					progressReportProvider: false,//getJavaConfiguration().get('progressReports.enabled'),
+					classFileContentsSupport: false
+				}
+			};
+
+			var debugMode:Boolean = true;
+			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
+				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);

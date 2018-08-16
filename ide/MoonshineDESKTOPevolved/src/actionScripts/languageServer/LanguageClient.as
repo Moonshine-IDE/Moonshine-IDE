@@ -106,11 +106,15 @@ package actionScripts.languageServer
 		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 
-		public function LanguageClient(languageID:String, project: ProjectVO, globalDispatcher:IEventDispatcher,
-			input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String, output:IDataOutput, outputFlushCallback:Function = null)
+		public function LanguageClient(languageID:String, project:ProjectVO,
+			debugMode:Boolean, initializationOptions:Object,
+			globalDispatcher:IEventDispatcher, input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String,
+			output:IDataOutput, outputFlushCallback:Function = null)
 		{
 			_languageID = languageID;
 			_project = project;
+			this.debugMode = debugMode;
+			_initializationOptions = initializationOptions;
 			_globalDispatcher = globalDispatcher;
 			_input = input;
 			_inputDispatcher = inputDispatcher;
@@ -142,6 +146,7 @@ package actionScripts.languageServer
 
 		private var _languageID:String;
 		private var _project:ProjectVO;
+		private var _initializationOptions:Object;
 		private var _input:IDataInput;
 		private var _output:IDataOutput;
 		private var _inputDispatcher:IEventDispatcher;
@@ -512,6 +517,7 @@ package actionScripts.languageServer
 			[
 				{ name: _project.name, uri: _project.folderLocation.fileBridge.url },
 			];
+			params.initializationOptions = _initializationOptions;
 			_initializeID = sendRequest(METHOD_INITIALIZE, params);
 		}
 

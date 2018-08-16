@@ -169,9 +169,9 @@ package actionScripts.languageServer
 			trace("Language server workspace root: " + project.folderPath);
 			trace("Language Server framework SDK: " + sdkPath);
 
-			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, _dispatcher,
-				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
-			//_languageClient.debugMode = true;
+			var debugMode:Boolean = true;
+			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
+				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 		}
