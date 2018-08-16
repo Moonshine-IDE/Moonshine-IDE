@@ -1143,7 +1143,7 @@ package actionScripts.languageServer
 
 		private function didOpenCall(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1158,7 +1158,7 @@ package actionScripts.languageServer
 
 		private function didCloseCall(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1173,7 +1173,7 @@ package actionScripts.languageServer
 
 		private function didChangeCall(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1220,7 +1220,7 @@ package actionScripts.languageServer
 
 		private function completionHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1246,7 +1246,7 @@ package actionScripts.languageServer
 
 		private function signatureHelpHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1272,7 +1272,7 @@ package actionScripts.languageServer
 
 		private function hoverHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1298,7 +1298,7 @@ package actionScripts.languageServer
 
 		private function gotoDefinitionHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1325,7 +1325,7 @@ package actionScripts.languageServer
 
 		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1345,7 +1345,7 @@ package actionScripts.languageServer
 
 		private function documentSymbolsHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1366,7 +1366,7 @@ package actionScripts.languageServer
 
 		private function findReferencesHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1396,7 +1396,7 @@ package actionScripts.languageServer
 
 		private function renameHandler(event:LanguageServerEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
@@ -1423,7 +1423,7 @@ package actionScripts.languageServer
 		
 		private function executeCommandHandler(event:ExecuteLanguageServerCommandEvent):void
 		{
-			if(!_initialized)
+			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
