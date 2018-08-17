@@ -710,16 +710,20 @@ package actionScripts.languageServer
 				_previousActiveResult = true;
 				return _previousActiveResult;
 			}
-			var sourcePaths:Vector.<FileLocation> = (_project as AS3ProjectVO).classpaths;
-			var sourcePathCount:int = sourcePaths.length;
-			for(var i:int = 0; i < sourcePathCount; i++)
+			if(_project is AS3ProjectVO)
 			{
-				var sourcePath:FileLocation = sourcePaths[i];
-				var sourcePathFile:File = new File(sourcePath.fileBridge.nativePath);
-				if(sourcePathFile.getRelativePath(activeFile, false) !== null)
+				var as3Project:AS3ProjectVO = AS3ProjectVO(_project);
+				var sourcePaths:Vector.<FileLocation> = as3Project.classpaths;
+				var sourcePathCount:int = sourcePaths.length;
+				for(var i:int = 0; i < sourcePathCount; i++)
 				{
-					_previousActiveResult = true;
-					return _previousActiveResult;
+					var sourcePath:FileLocation = sourcePaths[i];
+					var sourcePathFile:File = new File(sourcePath.fileBridge.nativePath);
+					if(sourcePathFile.getRelativePath(activeFile, false) !== null)
+					{
+						_previousActiveResult = true;
+						return _previousActiveResult;
+					}
 				}
 			}
 			return _previousActiveResult;

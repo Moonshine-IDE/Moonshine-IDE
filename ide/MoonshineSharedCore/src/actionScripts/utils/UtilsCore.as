@@ -110,7 +110,7 @@ package actionScripts.utils
 		 */
 		public static function checkProjectIfAlreadyOpened(value:String):Boolean
 		{
-			for each (var file:AS3ProjectVO in model.projects)
+			for each (var file:ProjectVO in model.projects)
 			{
 				if (file.folderLocation.fileBridge.nativePath == value)
 				{

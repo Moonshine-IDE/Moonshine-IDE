@@ -266,10 +266,17 @@ package actionScripts.plugin.project
 					model.activeProject = null;
                 }
 				
-				if (!model.activeProject || (lastActiveProjectMenuType != (model.activeProject as AS3ProjectVO).menuType))
+				if (!model.activeProject || (model.activeProject is AS3ProjectVO && lastActiveProjectMenuType != AS3ProjectVO(model.activeProject).menuType))
 				{
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
-					lastActiveProjectMenuType = model.activeProject ? (model.activeProject as AS3ProjectVO).menuType : null;
+					if(model.activeProject is AS3ProjectVO)
+					{
+						lastActiveProjectMenuType = model.activeProject ? (model.activeProject as AS3ProjectVO).menuType : null;
+					}
+					else
+					{
+						lastActiveProjectMenuType = null;
+					}
 				}
 			}
 
