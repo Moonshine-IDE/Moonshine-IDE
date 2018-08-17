@@ -40,6 +40,8 @@ package actionScripts.languageServer
 
     import no.doomsday.console.ConsoleUtil;
     import flash.events.EventDispatcher;
+    import mx.utils.SHA256;
+    import flash.utils.ByteArray;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -49,6 +51,7 @@ package actionScripts.languageServer
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "elements/jdt-language-server/config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "elements/jdt-language-server/config_mac";
 		private static const LANGUAGE_ID_JAVA:String = "java";
+		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
 
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
@@ -123,11 +126,29 @@ package actionScripts.languageServer
 			}
 			processArgs.push(configFile.nativePath);
 			processArgs.push("-data");
-			processArgs.push(_project.folderLocation.fileBridge.nativePath);
+			//this is a file outside of the project folder due to limitations
+			//of the language server, which is based on Eclipse
+			processArgs.push(getWorkspaceNativePath());
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = _cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 			initShell();
+		}
+
+		private function getWorkspaceNativePath():String
+		{
+			//we need to store the language server's data files somewhere, but
+			//it CANNOT be inside the project directory. let's put them in the
+			//app storage directory instead.
+			var projectPath:String = _project.folderLocation.fileBridge.nativePath;
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUTFBytes(projectPath);
+			//we need to differentiate between different projects that have
+			//the same name, so let's use a hash of the full path
+			var digest:String = SHA256.computeDigest(bytes);
+			bytes.clear();
+			var workspaceLocation:File = File.applicationStorageDirectory.resolvePath(PATH_WORKSPACE_STORAGE).resolvePath(digest);
+			return workspaceLocation.nativePath;
 		}
 
 		private function initShell():void
@@ -174,7 +195,7 @@ package actionScripts.languageServer
 				}
 			};
 
-			var debugMode:Boolean = true;
+			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
