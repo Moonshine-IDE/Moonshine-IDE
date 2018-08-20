@@ -24,13 +24,15 @@
                                      cornerRadius="1" closeButtonVisible="false"
                                      change="onTabBarChange(event)"/>
     <fx:Script><![CDATA[
-        import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-        import actionScripts.ui.editor.text.TextEditor;
+		import mx.events.FlexEvent;
+		
+		import spark.events.IndexChangeEvent;
+		
 		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
-        import mx.events.FlexEvent;
-
-        import spark.events.IndexChangeEvent;
+		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+		import actionScripts.ui.editor.text.TextEditor;
+		import actionScripts.events.GlobalEventDispatcher;
+		
 		import view.interfaces.IVisualEditorLibraryBridge;
 
         private var _codeEditor:TextEditor;
@@ -38,6 +40,7 @@
 		[Bindable] public var visualEditorProject:AS3ProjectVO;
 		
 		public var visualEditorLibraryBridgeImp:IVisualEditorLibraryBridge;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
         [Bindable]
         private var _visualEditorType:String;

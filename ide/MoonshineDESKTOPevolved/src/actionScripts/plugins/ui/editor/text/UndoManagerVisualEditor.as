@@ -22,7 +22,10 @@ package actionScripts.plugins.ui.editor.text
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugins.help.view.VisualEditorView;
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
+	import actionScripts.ui.tabview.TabEvent;
 	
 	import view.suportClasses.PropertyChangeReference;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
@@ -36,6 +39,7 @@ package actionScripts.plugins.ui.editor.text
 		
 		private var savedAt:int = 0;
 		private var pendingEvent:String;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		public function get hasChanged():Boolean
 		{
@@ -49,6 +53,7 @@ package actionScripts.plugins.ui.editor.text
 			
 			editor.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			editor.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 		}
 		
 		public function save():void
@@ -85,10 +90,24 @@ package actionScripts.plugins.ui.editor.text
 			savedAt = 0;
 		}
 		
+		private function onTabChanges(event:TabEvent):void
+		{
+			if (event.child is VisualEditorViewer)
+			{
+				if ((event.child as VisualEditorViewer).editorView != editor) editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				else 
+				{
+					editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+					editor.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				}
+			}
+		}
+		
 		private function onRemovedFromStage(event:Event):void
 		{
 			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			editor.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 			
 			if (editor.stage)
 			{

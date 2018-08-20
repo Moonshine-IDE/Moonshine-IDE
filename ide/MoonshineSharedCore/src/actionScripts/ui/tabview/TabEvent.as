@@ -25,6 +25,8 @@ package actionScripts.ui.tabview
 	{
 		public static const EVENT_TAB_CLOSE:String = "tabCloseEvent";
 		public static const EVENT_TAB_SELECT:String = "tabSelectEvent";
+		public static const EVENT_TAB_INACTIVE:String = "tabInactive";
+		public static const EVENT_TAB_ACTIVE:String = "tabActive";
 		
 		public var child:DisplayObject;
 		
