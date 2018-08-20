@@ -109,6 +109,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.editingSurface.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
+			
+			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 		}
 		
 		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -216,6 +218,7 @@ package actionScripts.plugins.ui.editor
 			else
 			{
 				visualEditorView.setFocus();
+				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 			}
 		}
 		

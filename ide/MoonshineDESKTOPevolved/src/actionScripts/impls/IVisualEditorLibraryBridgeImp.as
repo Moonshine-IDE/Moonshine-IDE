@@ -45,6 +45,7 @@ package actionScripts.impls
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var updateHandler:Function;
+		private var tabChangeEventHandler:Function;
 		
 		public function getXhtmlFileUpdates(updateHandler:Function=null):void
 		{
