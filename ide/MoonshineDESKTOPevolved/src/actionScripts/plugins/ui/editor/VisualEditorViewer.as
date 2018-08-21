@@ -20,6 +20,8 @@ package actionScripts.plugins.ui.editor
 {
     import flash.events.Event;
     
+    import mx.events.CollectionEvent;
+    import mx.events.CollectionEventKind;
     import mx.events.FlexEvent;
     
     import actionScripts.events.AddTabEvent;
@@ -100,6 +102,17 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
+			
+			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+		}
+		
+		protected function handleEditorCollectionChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
+			{
+				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+				undoManager.dispose();
+			}
 		}
 
 		private function onVisualEditorCreationComplete(event:FlexEvent):void

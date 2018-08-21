@@ -52,7 +52,6 @@ package actionScripts.plugins.ui.editor.text
 			this.editor = editor;
 			
 			editor.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			editor.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 		}
 		
@@ -90,23 +89,9 @@ package actionScripts.plugins.ui.editor.text
 			savedAt = 0;
 		}
 		
-		private function onTabChanges(event:TabEvent):void
-		{
-			if (event.child is VisualEditorViewer)
-			{
-				if ((event.child as VisualEditorViewer).editorView != editor) editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-				else 
-				{
-					editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-					editor.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-				}
-			}
-		}
-		
-		private function onRemovedFromStage(event:Event):void
+		public function dispose():void
 		{
 			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			editor.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 			
 			if (editor.stage)
@@ -121,6 +106,19 @@ package actionScripts.plugins.ui.editor.text
 			}
 			
 			editor = null;
+		}
+		
+		private function onTabChanges(event:TabEvent):void
+		{
+			if ((event.child is VisualEditorViewer) && editor.stage)
+			{
+				if ((event.child as VisualEditorViewer).editorView != editor) editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				else 
+				{
+					editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+					editor.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				}
+			}
 		}
 		
 		private function addedToStageHandler(event:Event):void
