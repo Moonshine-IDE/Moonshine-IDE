@@ -232,6 +232,7 @@ package actionScripts.plugins.ui.editor
 			{
 				visualEditorView.setFocus();
 				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			}
 		}
 		
