@@ -6,8 +6,7 @@
     <containers:Navigator id="viewStack" width="100%" height="100%" creationPolicy="all">
         <s:NavigatorContent label="Visual">
            <s:Scroller width="100%" height="100%">
-                <view:VisualEditor id="visualEditor" right="0" left="0" visualEditorType="{_visualEditorType}"
-                                   creationComplete="onVisualEditorCreationComplete(event)"/>
+                <view:VisualEditor id="visualEditor" right="0" left="0" visualEditorType="{_visualEditorType}"/>
            </s:Scroller>
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
@@ -33,13 +32,10 @@
 		import actionScripts.ui.editor.text.TextEditor;
 		import actionScripts.events.GlobalEventDispatcher;
 		
-		import view.interfaces.IVisualEditorLibraryBridge;
-
         private var _codeEditor:TextEditor;
 
 		[Bindable] public var visualEditorProject:AS3ProjectVO;
 		
-		public var visualEditorLibraryBridgeImp:IVisualEditorLibraryBridge;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
         [Bindable]
@@ -73,11 +69,6 @@
 				visualEditor.editingSurface.setResizerVisible(true);
 			}
         }
-		
-		protected function onVisualEditorCreationComplete(event:FlexEvent):void
-		{
-			visualEditor.moonshineBridge = visualEditorLibraryBridgeImp;
-		}
 		
 	]]></fx:Script>
     <fx:Metadata>

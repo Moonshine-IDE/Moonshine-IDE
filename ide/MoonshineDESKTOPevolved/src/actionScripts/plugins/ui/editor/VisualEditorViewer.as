@@ -81,7 +81,6 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
 				visualEditorView.visualEditorType = VisualEditorType.FLEX;
 			visualEditorView.visualEditorProject = visualEditorProject;
-			visualEditorView.visualEditorLibraryBridgeImp = visualEditoryLibraryCore;
 			
 			visualEditorView.percentWidth = 100;
 			visualEditorView.percentHeight = 100;
@@ -110,6 +109,22 @@ package actionScripts.plugins.ui.editor
 		{
 			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
 			{
+				visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
+				visualEditorView.removeEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
+				
+				if (visualEditorView.visualEditor)
+				{
+					visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+					visualEditorView.visualEditor.editingSurface.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
+					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
+				}
+				
+				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
+				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
+				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
+				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
+				
 				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 				undoManager.dispose();
 			}
@@ -118,11 +133,13 @@ package actionScripts.plugins.ui.editor
 		private function onVisualEditorCreationComplete(event:FlexEvent):void
 		{
 			visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
+			
 			visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
 			visualEditorView.visualEditor.editingSurface.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
 			
+			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 		}
 		
