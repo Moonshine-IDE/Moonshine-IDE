@@ -90,6 +90,8 @@ package actionScripts.languageServer
 		private static const METHOD_TEXT_DOCUMENT__DID_CHANGE:String = "textDocument/didChange";
 		private static const METHOD_TEXT_DOCUMENT__DID_OPEN:String = "textDocument/didOpen";
 		private static const METHOD_TEXT_DOCUMENT__DID_CLOSE:String = "textDocument/didClose";
+		private static const METHOD_TEXT_DOCUMENT__WILL_SAVE:String = "textDocument/willSave";
+		private static const METHOD_TEXT_DOCUMENT__DID_SAVE:String = "textDocument/didSave";
 		private static const METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:String = "textDocument/publishDiagnostics";
 		private static const METHOD_TEXT_DOCUMENT__COMPLETION:String = "textDocument/completion";
 		private static const METHOD_TEXT_DOCUMENT__SIGNATURE_HELP:String = "textDocument/signatureHelp";
@@ -130,6 +132,8 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCLOSE, didCloseCall);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WILLSAVE, willSaveCall);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDSAVE, didSaveCall);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
@@ -407,9 +411,9 @@ package actionScripts.languageServer
 					synchronization:
 					{
 						dynamicRegistration: false,
-						willSave: false,
+						willSave: true,
 						willSaveWaitUntil: false,
-						didSave: false
+						didSave: true
 					},
 					completion:
 					{
@@ -791,6 +795,7 @@ package actionScripts.languageServer
 					{
 						trace("Error in language server. Initialize failed.");
 					}
+					handleInitializeResponse(result);
 					sendInitialized();
 				}
 				else if(_shutdownID != -1 && _shutdownID == requestID)
@@ -837,6 +842,11 @@ package actionScripts.languageServer
 					}
 				}
 			}
+		}
+
+		private function handleInitializeResponse(result:Object):void
+		{
+
 		}
 
 		private function handleCompletionResponse(result:Object):void
@@ -1256,6 +1266,54 @@ package actionScripts.languageServer
 			params.contentChanges = contentChanges;
 
 			sendNotification(METHOD_TEXT_DOCUMENT__DID_CHANGE, params);
+		}
+
+		private function willSaveCall(event:LanguageServerEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+
+			var uri:String = event.uri;
+
+			var textDocument:Object = new Object();
+			textDocument.uri = uri;
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+			params.reason = 1;
+
+			sendNotification(METHOD_TEXT_DOCUMENT__WILL_SAVE, params);
+		}
+
+		private function didSaveCall(event:LanguageServerEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+
+			var uri:String = event.uri;
+
+			var textDocument:Object = new Object();
+			textDocument.uri = uri;
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+			//TODO: include text, if registered for that
+
+			sendNotification(METHOD_TEXT_DOCUMENT__DID_SAVE, params);
 		}
 
 		private function input_onData(event:Event):void

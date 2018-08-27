@@ -25,6 +25,8 @@ package actionScripts.events
 		public static const EVENT_DIDOPEN:String = "newDidOpenEvent";
 		public static const EVENT_DIDCLOSE:String = "newDidCloseEvent";
 		public static const EVENT_DIDCHANGE:String = "newDidChangeEvent";
+		public static const EVENT_WILLSAVE:String = "newWillSaveEvent";
+		public static const EVENT_DIDSAVE:String = "newDidSaveEvent";
 		public static const EVENT_COMPLETION:String = "newCompletionEvent";
 		public static const EVENT_SIGNATURE_HELP:String = "newSignatureHelpEvent";
 		public static const EVENT_HOVER:String = "newHover";

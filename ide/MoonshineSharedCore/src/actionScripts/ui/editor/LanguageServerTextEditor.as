@@ -13,6 +13,7 @@ package actionScripts.ui.editor
 	import flash.events.MouseEvent;
 	import actionScripts.valueObjects.Location;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.events.SaveFileEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -41,12 +42,14 @@ package actionScripts.ui.editor
 		{
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 		}
 
 		protected function removeGlobalListeners():void
 		{
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 		}
 
 		protected function dispatchCompletionEvent():void
@@ -213,6 +216,21 @@ package actionScripts.ui.editor
 			}
 			
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
+				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
+		}
+
+		protected function fileSavedHandler(event:SaveFileEvent):void
+		{
+			var savedTab:LanguageServerTextEditor = event.editor as LanguageServerTextEditor;
+			if(!savedTab || savedTab != this)
+			{
+				return;
+			}
+			
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_WILLSAVE,
+				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
+			
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDSAVE,
 				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 		}
 
