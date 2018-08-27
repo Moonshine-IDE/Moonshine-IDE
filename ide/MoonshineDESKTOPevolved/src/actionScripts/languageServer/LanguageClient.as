@@ -804,75 +804,19 @@ package actionScripts.languageServer
 				}
 				else if(result && FIELD_ITEMS in result) //completion
 				{
-					var resultCompletionItems:Array = result.items as Array;
-					if(resultCompletionItems)
-					{
-						var eventCompletionItems:Array = new Array();
-						var completionItemCount:int = resultCompletionItems.length;
-						for(var i:int = 0; i < completionItemCount; i++)
-						{
-							var resultItem:Object = resultCompletionItems[i];
-							eventCompletionItems[i] = parseCompletionItem(resultItem);
-						}
-						_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
-					}
+					handleCompletionResponse(result);
 				}
 				else if(result && FIELD_SIGNATURES in result) //signature help
 				{
-					var resultSignatures:Array = result.signatures as Array;
-					if(resultSignatures && resultSignatures.length > 0)
-					{
-						var eventSignatures:Vector.<SignatureInformation> = new <SignatureInformation>[];
-						var resultSignaturesCount:int = resultSignatures.length;
-						for(i = 0; i < resultSignaturesCount; i++)
-						{
-							var resultSignature:Object = resultSignatures[i];
-							eventSignatures[i] = parseSignatureInformation(resultSignature);
-						}
-						var signatureHelp:SignatureHelp = new SignatureHelp();
-						signatureHelp.signatures = eventSignatures;
-						signatureHelp.activeSignature = result.activeSignature;
-						signatureHelp.activeParameter = result.activeParameter;
-						_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
-					}
+					handleSignatureHelpResponse(result);
 				}
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
-					var resultContents:Object = result.contents;
-					var eventContents:Vector.<String> = new <String>[];
-					if(resultContents is Array)
-					{
-						var resultContentsArray:Array = resultContents as Array;
-						var resultContentsCount:int = resultContentsArray.length;
-						for(i = 0; i < resultContentsCount; i++)
-						{
-							var resultContentItem:Object = resultContentsArray[i];
-							eventContents[i] = parseHover(resultContentItem);
-						}
-					}
-					else
-					{
-						eventContents[0] = parseHover(resultContents);
-					}
-					_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
+					handleHoverResponse(result);
 				}
 				else if(result && FIELD_CHANGES in result) //rename
 				{
-					var resultChanges:Object = result.changes;
-					var eventChanges:Object = {};
-					for(var key:String in resultChanges)
-					{
-						var resultChangesList:Array = resultChanges[key] as Array;
-						var eventChangesList:Vector.<TextEdit> = new <TextEdit>[];
-						var resultChangesCount:int = resultChangesList.length;
-						for(i = 0; i < resultChangesCount; i++)
-						{
-							var resultChange:Object = resultChangesList[i];
-							eventChangesList[i] = parseTextEdit(resultChange);
-						}
-						eventChanges[key] = eventChangesList;
-					}
-					_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
+					handleRenameResponse(result);
 				}
 				else if(result && result is Array) //definitions
 				{
@@ -880,43 +824,135 @@ package actionScripts.languageServer
 					{
 						var position:Position = _gotoDefinitionLookup[requestID] as Position;
 						delete _gotoDefinitionLookup[requestID];
-						var resultLocations:Array = result as Array;
-						var eventLocations:Vector.<Location> = new <Location>[];
-						var resultLocationsCount:int = resultLocations.length;
-						for(i = 0; i < resultLocationsCount; i++)
-						{
-							var resultLocation:Object = resultLocations[i];
-							eventLocations[i] = parseLocation(resultLocation);
-						}
-						_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
+						handleGotoDefinitionResponse(result, position);
 					}
 					else if(requestID in _findReferencesLookup)
 					{
 						delete _findReferencesLookup[requestID];
-						var resultReferences:Array = result as Array;
-						var eventReferences:Vector.<Location> = new <Location>[];
-						var resultReferencesCount:int = resultReferences.length;
-						for(i = 0; i < resultReferencesCount; i++)
-						{
-							var resultReference:Object = resultReferences[i];
-							eventReferences[i] = parseLocation(resultReference);
-						}
-						_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, eventReferences));
+						handleReferencesResponse(result);
 					}
 					else //document or workspace symbols
 					{
-						var resultSymbolInfos:Array = result as Array;
-						var eventSymbolInfos:Vector.<SymbolInformation> = new <SymbolInformation>[];
-						var resultSymbolInfosCount:int = resultSymbolInfos.length;
-						for(i = 0; i < resultSymbolInfosCount; i++)
-						{
-							var resultSymbolInfo:Object = resultSymbolInfos[i];
-							eventSymbolInfos[i] = parseSymbolInformation(resultSymbolInfo);
-						}
-						_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, eventSymbolInfos));
+						handleSymbolsResponse(result);
 					}
 				}
 			}
+		}
+
+		private function handleCompletionResponse(result:Object):void
+		{
+			var resultCompletionItems:Array = result.items as Array;
+			if(!resultCompletionItems)
+			{
+				return;
+			}
+			var eventCompletionItems:Array = new Array();
+			var completionItemCount:int = resultCompletionItems.length;
+			for(var i:int = 0; i < completionItemCount; i++)
+			{
+				var resultItem:Object = resultCompletionItems[i];
+				eventCompletionItems[i] = parseCompletionItem(resultItem);
+			}
+			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
+		}
+
+		private function handleSignatureHelpResponse(result:Object):void
+		{
+			var resultSignatures:Array = result.signatures as Array;
+			if(resultSignatures && resultSignatures.length > 0)
+			{
+				var eventSignatures:Vector.<SignatureInformation> = new <SignatureInformation>[];
+				var resultSignaturesCount:int = resultSignatures.length;
+				for(var i:int = 0; i < resultSignaturesCount; i++)
+				{
+					var resultSignature:Object = resultSignatures[i];
+					eventSignatures[i] = parseSignatureInformation(resultSignature);
+				}
+				var signatureHelp:SignatureHelp = new SignatureHelp();
+				signatureHelp.signatures = eventSignatures;
+				signatureHelp.activeSignature = result.activeSignature;
+				signatureHelp.activeParameter = result.activeParameter;
+				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
+			}
+		}
+
+		private function handleHoverResponse(result:Object):void
+		{
+			var resultContents:Object = result.contents;
+			var eventContents:Vector.<String> = new <String>[];
+			if(resultContents is Array)
+			{
+				var resultContentsArray:Array = resultContents as Array;
+				var resultContentsCount:int = resultContentsArray.length;
+				for(var i:int = 0; i < resultContentsCount; i++)
+				{
+					var resultContentItem:Object = resultContentsArray[i];
+					eventContents[i] = parseHover(resultContentItem);
+				}
+			}
+			else
+			{
+				eventContents[0] = parseHover(resultContents);
+			}
+			_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
+		}
+
+		private function handleRenameResponse(result:Object):void
+		{
+			var resultChanges:Object = result.changes;
+			var eventChanges:Object = {};
+			for(var key:String in resultChanges)
+			{
+				var resultChangesList:Array = resultChanges[key] as Array;
+				var eventChangesList:Vector.<TextEdit> = new <TextEdit>[];
+				var resultChangesCount:int = resultChangesList.length;
+				for(var i:int = 0; i < resultChangesCount; i++)
+				{
+					var resultChange:Object = resultChangesList[i];
+					eventChangesList[i] = parseTextEdit(resultChange);
+				}
+				eventChanges[key] = eventChangesList;
+			}
+			_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
+		}
+
+		private function handleGotoDefinitionResponse(result:Object, position:Position):void
+		{
+			var resultLocations:Array = result as Array;
+			var eventLocations:Vector.<Location> = new <Location>[];
+			var resultLocationsCount:int = resultLocations.length;
+			for(var i:int = 0; i < resultLocationsCount; i++)
+			{
+				var resultLocation:Object = resultLocations[i];
+				eventLocations[i] = parseLocation(resultLocation);
+			}
+			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
+		}
+
+		private function handleReferencesResponse(result:Object):void
+		{
+			var resultReferences:Array = result as Array;
+			var eventReferences:Vector.<Location> = new <Location>[];
+			var resultReferencesCount:int = resultReferences.length;
+			for(var i:int = 0; i < resultReferencesCount; i++)
+			{
+				var resultReference:Object = resultReferences[i];
+				eventReferences[i] = parseLocation(resultReference);
+			}
+			_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, eventReferences));
+		}
+
+		private function handleSymbolsResponse(result:Object):void
+		{
+			var resultSymbolInfos:Array = result as Array;
+			var eventSymbolInfos:Vector.<SymbolInformation> = new <SymbolInformation>[];
+			var resultSymbolInfosCount:int = resultSymbolInfos.length;
+			for(var i:int = 0; i < resultSymbolInfosCount; i++)
+			{
+				var resultSymbolInfo:Object = resultSymbolInfos[i];
+				eventSymbolInfos[i] = parseSymbolInformation(resultSymbolInfo);
+			}
+			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, eventSymbolInfos));
 		}
 
 		private function handleNotification(object:Object):Boolean
