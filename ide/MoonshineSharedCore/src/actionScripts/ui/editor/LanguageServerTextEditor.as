@@ -51,8 +51,9 @@ package actionScripts.ui.editor
 
 		protected function dispatchCompletionEvent():void
 		{
+			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
+
 			var document:String = getTextDocument();
-			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -62,13 +63,13 @@ package actionScripts.ui.editor
 				LanguageServerEvent.EVENT_COMPLETION,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
-			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
 		}
 
 		protected function dispatchSignatureHelpEvent():void
 		{
-			var document:String = getTextDocument();
-			
+			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+
+			var document:String = getTextDocument();			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -78,33 +79,32 @@ package actionScripts.ui.editor
 				LanguageServerEvent.EVENT_SIGNATURE_HELP,
 				startChar, startLine, endChar,endLine,
 				document, len, 1));
-			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 		}
 
 		protected function dispatchHoverEvent(charAndLine:Point):void
 		{
+			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+
 			var document:String = getTextDocument();
-			
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_HOVER,
 				char, line, char, line,
 				document, 0, 1));
-			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 		}
 
 		protected function dispatchGotoDefinitionEvent(charAndLine:Point):void
 		{
-			var document:String = getTextDocument();
+			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 
+			var document:String = getTextDocument();
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_GOTO_DEFINITION,
 				char, line, char, line,
 				document, 0, 1));
-			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 		}
 
 		protected function getTextDocument():String
