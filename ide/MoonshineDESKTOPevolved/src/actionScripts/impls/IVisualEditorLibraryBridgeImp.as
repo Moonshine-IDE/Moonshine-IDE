@@ -45,7 +45,6 @@ package actionScripts.impls
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var updateHandler:Function;
-		private var tabChangeEventHandler:Function;
 		
 		public function getXhtmlFileUpdates(updateHandler:Function=null):void
 		{
@@ -92,7 +91,15 @@ package actionScripts.impls
 		{
 			return UtilsCore.positionTip;
 		}
-		
+
+        public function getRelativeFilePath():String
+        {
+            var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+            if (!editor) return "";
+
+            return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.folderLocation, true);
+        }
+
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{
 			// add resource only relative to the project
