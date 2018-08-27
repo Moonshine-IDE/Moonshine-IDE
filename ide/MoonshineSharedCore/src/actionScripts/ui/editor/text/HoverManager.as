@@ -46,7 +46,7 @@ package actionScripts.ui.editor.text
 			{
 				if(i > 0)
 				{
-					hoverText += "<br>";
+					hoverText += "\n";
 				}
 				var content:String = contents[i];
 				hoverText += content;
