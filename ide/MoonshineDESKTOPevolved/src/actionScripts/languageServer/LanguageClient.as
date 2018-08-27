@@ -196,6 +196,16 @@ package actionScripts.languageServer
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 
+		private var supportsCompletion:Boolean = false;
+		private var supportsHover:Boolean = false;
+		private var supportsSignatureHelp:Boolean = false;
+		private var supportsGotoDefinition:Boolean = false;
+		private var supportsReferences:Boolean = false;
+		private var supportsDocumentSymbols:Boolean = false;
+		private var supportsWorkspaceSymbols:Boolean = false;
+		private var supportsExecuteCommand:Boolean = false;
+		private var supportsRename:Boolean = false;
+
 		public function stop():void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
@@ -846,7 +856,16 @@ package actionScripts.languageServer
 
 		private function handleInitializeResponse(result:Object):void
 		{
-
+			var capabilities:Object = result.capabilities;
+			this.supportsCompletion = capabilities && (capabilities.completionProvider !== undefined);
+			this.supportsHover = capabilities && (capabilities.hoverProvider as Boolean);
+			this.supportsSignatureHelp = capabilities && (capabilities.signatureHelpProvider !== undefined);
+			this.supportsGotoDefinition = capabilities && (capabilities.definitionProvider as Boolean);
+			this.supportsReferences = capabilities && (capabilities.referencesProvider as Boolean);
+			this.supportsDocumentSymbols = capabilities && (capabilities.documentSymbolProvider as Boolean);
+			this.supportsWorkspaceSymbols = capabilities && (capabilities.workspaceSymbolProvider as Boolean);
+			this.supportsRename = capabilities && (capabilities.renameProvider === true || capabilities.renameProvider !== undefined);
+			this.supportsExecuteCommand = capabilities && (capabilities.executeCommandProvider !== undefined);
 		}
 
 		private function handleCompletionResponse(result:Object):void
@@ -1333,6 +1352,11 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsCompletion)
+			{
+				_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, []));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1359,6 +1383,13 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsSignatureHelp)
+			{
+				var signatureHelp:SignatureHelp = new SignatureHelp();
+				signatureHelp.signatures = new <SignatureInformation>[];
+				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1385,6 +1416,11 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsHover)
+			{
+				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[]));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1411,6 +1447,12 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
+			if(!supportsGotoDefinition)
+			{
+				_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, new <Location>[], positionVO));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1424,7 +1466,7 @@ package actionScripts.languageServer
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
-			_gotoDefinitionLookup[id] = new Position(event.endLineNumber, event.endLinePos);
+			_gotoDefinitionLookup[id] = positionVO;
 		}
 
 		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
@@ -1438,6 +1480,11 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsWorkspaceSymbols)
+			{
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, new <SymbolInformation>[]));
+				return;
+			}
 
 			var query:String = event.newText;
 
@@ -1458,6 +1505,11 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsDocumentSymbols)
+			{
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, new <SymbolInformation>[]));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1479,6 +1531,12 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsReferences)
+			{
+				_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, new <Location>[]));
+				return;
+			}
+
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
 
@@ -1509,6 +1567,11 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsRename)
+			{
+				_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, {}));
+				return;
+			}
 
 			var textDocument:Object = new Object();
 			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
@@ -1536,6 +1599,10 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			if(!supportsExecuteCommand)
+			{
+				return;
+			}
 
 			var params:Object = new Object();
 			params.command = event.command;
