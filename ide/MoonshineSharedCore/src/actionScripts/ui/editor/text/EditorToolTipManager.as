@@ -34,6 +34,7 @@ package actionScripts.ui.editor.text
 			tooltip.focusEnabled = false;
 			tooltip.mouseEnabled = false;
 			tooltip.mouseChildren = false;
+			tooltip.maxWidth = 450;
 		}
 
 		public function setTooltip(id:String, value:String):void
@@ -77,6 +78,7 @@ package actionScripts.ui.editor.text
 				else
 				{
 					richText = new RichText();
+					richText.percentWidth = 100;
 					tooltip.addElement(richText);
 					idToRichText[id] = richText;
 				}
