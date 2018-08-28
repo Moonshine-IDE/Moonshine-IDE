@@ -42,6 +42,16 @@ package actionScripts.languageServer
     import flash.events.EventDispatcher;
     import mx.utils.SHA256;
     import flash.utils.ByteArray;
+    import components.popup.StandardPopup;
+    import spark.components.Button;
+    import flash.events.MouseEvent;
+    import mx.managers.PopUpManager;
+    import mx.core.FlexGlobals;
+    import flash.display.DisplayObject;
+    import actionScripts.events.ExecuteLanguageServerCommandEvent;
+    import flash.net.navigateToURL;
+    import flash.net.URLRequest;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -55,6 +65,9 @@ package actionScripts.languageServer
 
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
+
+		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
+		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 
 		private var _project:JavaProjectVO;
 		private var _languageClient:LanguageClient;
@@ -80,6 +93,7 @@ package actionScripts.languageServer
 
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 
 			startNativeProcess();
 		}
@@ -91,9 +105,11 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
+			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 			if(_languageClient)
 			{
-				_languageClient.removeEventListener(METHOD_LANGUAGE__STATUS, language__status);
+				_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
+				_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 				_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 				_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 				_languageClient = null;
@@ -195,12 +211,29 @@ package actionScripts.languageServer
 				}
 			};
 
-			var debugMode:Boolean = false;
+			var debugMode:Boolean = true;//false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
+			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+		}
+
+		private function createCommandListener(command:String, args:Array, popup:StandardPopup):Function
+		{
+			return function(event:Event):void
+			{
+				trace("executing command:", command);
+				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
+					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+					command, args ? args : []));
+				if(popup)
+				{
+					PopUpManager.removePopUp(popup);
+					popup.data = null;
+				}
+			};
 		}
 
 		private function shellError(e:ProgressEvent):void
@@ -224,6 +257,30 @@ package actionScripts.languageServer
 			_nativeProcess = null;
 		}
 
+		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
+		{
+			if(event.isDefaultPrevented())
+			{
+				//already handled somewhere else
+				return;
+			}
+			switch(event.command)
+			{
+				case COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:
+				{
+					event.preventDefault();
+					trace("TODO: update the java.errors.incompleteClasspath.severity setting");
+					break;
+				}
+				case COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:
+				{
+					event.preventDefault();
+					navigateToURL(new URLRequest("https://github.com/redhat-developer/vscode-java/wiki/%22Classpath-is-incomplete%22-warning"), "_blank");
+					break;
+				}
+			}
+		}
+
 		private function languageClient_initHandler(event:Event):void
 		{
 		}
@@ -238,6 +295,49 @@ package actionScripts.languageServer
 		private function language__status(message:Object):void
 		{
 			trace(message.params.type + ":", message.params.message);
+		}
+
+		private function language__actionableNotification(notification:Object):void
+		{
+			var params:Object = notification.params;
+			var severity:int = notification.severity as int;
+			var message:String = params.message;
+			var commands:Array = params.commands as Array;
+
+			if(severity == 4) //log
+			{
+				_dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, ConsoleOutputEvent.TYPE_INFO)
+				);
+				trace(message);
+				return;
+			}
+
+			var popup:StandardPopup = new StandardPopup();
+			popup.data = this; // Keep the command from getting GC'd
+			popup.text = message;
+
+			var buttons:Array = [];
+			var commandCount:int = commands.length;
+			for(var i:int = 0; i < commandCount; i++)
+			{
+				var command:Object = commands[i];
+				var title:String = command.title as String;
+				var commandName:String = command.command;
+				var args:Array = command.arguments as Array;
+
+				var button:Button = new Button();
+				button.styleName = "lightButton";
+				button.label = title;
+				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup), false, 0, false);
+				buttons.push(button);
+			}
+			
+			popup.buttons = buttons;
+			
+			PopUpManager.addPopUp(popup, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popup.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popup.x = (FlexGlobals.topLevelApplication.width-popup.width)/2;
 		}
 	}
 }
