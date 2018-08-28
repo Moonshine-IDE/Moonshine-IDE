@@ -24,7 +24,8 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.valueObjects.TemplateVO;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import flash.filesystem.File;
-	import actionScripts.plugin.java.javaproject.importer.MavenImporter;
+	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
+	import actionScripts.plugin.settings.vo.ListSetting;
 
 	public class CreateJavaProject
 	{
@@ -44,6 +45,17 @@ package actionScripts.plugin.java.javaproject
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 		private var _currentCauseToBeInvalid:String;
+		
+		private var _projectTemplateType:String;
+		
+		public function set projectTemplateType(value:String):void
+		{
+			_projectTemplateType = value;
+		}
+		public function get projectTemplateType():String
+		{
+			return _projectTemplateType;
+		}
 
 		private function createJavaProject(event:NewProjectEvent):void
 		{
@@ -79,6 +91,8 @@ package actionScripts.plugin.java.javaproject
 			settingsView.addCategory("");
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
+			settings.getSettingsList().push(
+				new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA, "title"));
 
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
 			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
@@ -118,7 +132,7 @@ package actionScripts.plugin.java.javaproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = MavenImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = JavaImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 
@@ -257,7 +271,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return MavenImporter.parse(targetFolder, projectName);
+			return JavaImporter.parse(targetFolder, projectName);
 		}
 	}
 }

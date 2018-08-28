@@ -23,7 +23,7 @@ package actionScripts.interfaces
 
     public interface IJavaBridge extends IProject
     {
-		function testMaven(file:Object):FileLocation;
-		function parseMaven(file:FileLocation):JavaProjectVO;
+		function testJava(file:Object):FileLocation;
+		function parseJava(file:FileLocation):JavaProjectVO;
     }
 }

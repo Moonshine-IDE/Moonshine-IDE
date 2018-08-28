@@ -284,6 +284,7 @@ package actionScripts.plugin.templating
             var projectTemplateCollection:ArrayCollection = new ArrayCollection();
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
+			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 
             for each (var file:FileLocation in projectTemplates)
             {
@@ -325,6 +326,11 @@ package actionScripts.plugin.templating
 
 						royaleProjectTemplates.addItem(template);
 					}
+
+					if (template.title.indexOf("Java") != -1)
+					{
+                        javaProjectTemplates.addItem(template);
+					}
                 }
             }
 
@@ -332,6 +338,7 @@ package actionScripts.plugin.templating
             ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
 			royaleProjectTemplates.source = royaleProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

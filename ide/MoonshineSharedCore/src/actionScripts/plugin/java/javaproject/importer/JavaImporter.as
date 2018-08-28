@@ -4,7 +4,7 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
 
-	public class MavenImporter
+	public class JavaImporter
 	{
 		public static function test(file:File):FileLocation
 		{
@@ -14,6 +14,9 @@ package actionScripts.plugin.java.javaproject.importer
 			for each (var i:File in listing)
 			{
 				if (i.name == "pom.xml") {
+					return (new FileLocation(i.nativePath));
+				}
+				if (i.name == "build.gradle") {
 					return (new FileLocation(i.nativePath));
 				}
 			}

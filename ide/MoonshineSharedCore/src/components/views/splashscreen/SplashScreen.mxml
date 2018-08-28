@@ -313,10 +313,10 @@
 						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
 					}
 
-					projectFileLocation = model.javaCore.testMaven(projectFile);
+					projectFileLocation = model.javaCore.testJava(projectFile);
 					if (projectFileLocation)
 					{
-						return model.javaCore.parseMaven(recentOpenedProjectObject as FileLocation);
+						return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
 					}
 				}
 

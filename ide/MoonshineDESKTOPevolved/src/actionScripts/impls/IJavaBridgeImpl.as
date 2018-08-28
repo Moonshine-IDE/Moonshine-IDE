@@ -36,7 +36,7 @@ package actionScripts.impls
     import actionScripts.plugin.java.javaproject.CreateJavaProject;
     import actionScripts.factory.FileLocation;
     import flash.filesystem.File;
-    import actionScripts.plugin.java.javaproject.importer.MavenImporter;
+    import actionScripts.plugin.java.javaproject.importer.JavaImporter;
 
     public class IJavaBridgeImpl extends ProjectBridgeImplBase implements IJavaBridge
     {
@@ -82,14 +82,14 @@ package actionScripts.impls
 			executeCreateJavaProject = new CreateJavaProject(event);
 		}
 		
-		public function testMaven(file:Object):FileLocation
+		public function testJava(file:Object):FileLocation
 		{
-			return  MavenImporter.test(file as File);
+			return JavaImporter.test(file as File);
 		}
 
-		public function parseMaven(file:FileLocation):JavaProjectVO
+		public function parseJava(file:FileLocation):JavaProjectVO
 		{
-			return  MavenImporter.parse(file);
+			return JavaImporter.parse(file);
 		}
     }
 }
