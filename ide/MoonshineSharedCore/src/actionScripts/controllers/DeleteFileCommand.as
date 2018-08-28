@@ -204,7 +204,7 @@ package actionScripts.controllers
 			// and listen for its complete shutdown event
 			// @note 
 			// visual editor project do not use language server
-			if (model.languageServerCore.hasLanguageServerForProject(project) && !(project as AS3ProjectVO).isVisualEditorProject)
+			if (model.languageServerCore.hasLanguageServerForProject(project) && (!(project is AS3ProjectVO) || !(project as AS3ProjectVO).isVisualEditorProject))
 			{
 				// keep the files collection in a dictionary so we can select between multiple
 				// project deletion calls - as language server shutdown event returns after some delay
