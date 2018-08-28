@@ -69,8 +69,7 @@ package actionScripts.plugins.as3project.exporter
 			if (p.assetLibrary && p.assetLibrary.children().length() == 0)
 			{
 				var libXML:XMLList = p.assetLibrary;
-				tmpXML = <!-- <empty/> -->
-				libXML.child[0] = tmpXML;
+				libXML.child[0] = new XML(<!-- <empty/> -->);
 				project.appendChild(libXML);
 			}
 			else if (p.assetLibrary)
@@ -170,8 +169,7 @@ package actionScripts.plugins.as3project.exporter
 			}
 			else if (v.length == 0)
 			{
-				var tmpXML:XML = <!-- <empty/> -->
-				container.appendChild(tmpXML);
+				container.appendChild(<!-- <empty/> -->);
 			}
 			
 			return container;
