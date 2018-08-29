@@ -199,6 +199,7 @@ package actionScripts.languageServer
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
+		private var _schemes:Vector.<String> = new <String>[];
 
 		private var supportsCompletion:Boolean = false;
 		private var supportsHover:Boolean = false;
@@ -231,6 +232,11 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_shutdownID = sendRequest(METHOD_SHUTDOWN, null);
+		}
+
+		public function registerScheme(scheme:String):void
+		{
+			this._schemes.push(scheme);
 		}
 
 		public function sendNotification(method:String, params:Object):void
@@ -973,7 +979,20 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultLocationsCount; i++)
 			{
 				var resultLocation:Object = resultLocations[i];
-				eventLocations[i] = parseLocation(resultLocation);
+				var eventLocation:Location = parseLocation(resultLocation);
+				var uri:String = eventLocation.uri;
+				var schemeEndIndex:int = uri.indexOf(":");
+				var scheme:String = null;
+				if(schemeEndIndex != -1)
+				{
+					scheme = uri.substr(0, schemeEndIndex);
+				}
+				if(scheme != "file" && this._schemes.indexOf(scheme) == -1)
+				{
+					//we don't know how to handle this URI scheme
+					continue;
+				}
+				eventLocations.push(eventLocation);
 			}
 			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
 		}
