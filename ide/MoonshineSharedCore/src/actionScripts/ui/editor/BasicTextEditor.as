@@ -64,6 +64,13 @@ package actionScripts.ui.editor
 		protected var tempSaveAs: FileLocation;
 		protected var loader: DataAgent;
 
+		private var _readOnly:Boolean = false;
+
+		public function get readOnly():Boolean
+		{
+			return this._readOnly;
+		}
+
 		private var pop:FileSavePopup;
 		protected var model:IDEModel = IDEModel.getInstance();
 
@@ -154,9 +161,10 @@ package actionScripts.ui.editor
 			return editor;
 		}
 
-		public function BasicTextEditor()
+		public function BasicTextEditor(readOnly:Boolean = false)
 		{
 			super();
+			_readOnly = readOnly;
 			
 			percentHeight = 100;
 			percentWidth = 100;
@@ -166,7 +174,7 @@ package actionScripts.ui.editor
 		
 		protected function initializeChildrens():void
 		{
-			editor = new TextEditor();
+			editor = new TextEditor(_readOnly);
 			editor.percentHeight = 100;
 			editor.percentWidth = 100;
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);

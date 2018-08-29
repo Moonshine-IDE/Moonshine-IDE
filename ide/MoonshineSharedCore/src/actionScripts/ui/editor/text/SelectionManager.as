@@ -190,8 +190,11 @@ package actionScripts.ui.editor.text
 		private function handleMouseUp(event:MouseEvent):void
 		{
 			stopDragScroll();
-			editor.stage.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
-			editor.stage.removeEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+			if(editor.stage)
+			{
+				editor.stage.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
+				editor.stage.removeEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+			}
 			editor.removeEventListener(LayoutEvent.LAYOUT, handleEditorLayout);
 			dispatcher.removeEventListener(OpenFileEvent.OPEN_FILE, handleOpenFile);
 			

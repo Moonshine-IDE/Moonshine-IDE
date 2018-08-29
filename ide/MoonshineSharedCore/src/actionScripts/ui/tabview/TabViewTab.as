@@ -337,10 +337,13 @@ package actionScripts.ui.tabview
             {
                 var editor:BasicTextEditor = data as BasicTextEditor;
 
-                SharedObjectUtil.removeLocationOfClosingProjectFile(
-						editor.currentFile.name,
-                        editor.currentFile.fileBridge.nativePath,
-                        editor.projectPath);
+				if(editor.currentFile)
+				{
+					SharedObjectUtil.removeLocationOfClosingProjectFile(
+							editor.currentFile.name,
+							editor.currentFile.fileBridge.nativePath,
+							editor.projectPath);
+				}
             }
 		}
     }

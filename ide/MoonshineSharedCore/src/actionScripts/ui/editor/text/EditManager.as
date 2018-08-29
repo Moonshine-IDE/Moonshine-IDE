@@ -47,11 +47,13 @@ package actionScripts.ui.editor.text
 		private var toCopy:String="";
 		private var deleteItem:ContextMenuItem;
 		private var saveItem:ContextMenuItem;
+		private var readOnly:Boolean;
 		
 		public function EditManager(editor:TextEditor, model:TextEditorModel, readOnly:Boolean)
 		{
 			this.editor = editor;
 			this.model = model;
+			this.readOnly = readOnly;
 			
 			if (readOnly)
 			{
@@ -426,6 +428,10 @@ package actionScripts.ui.editor.text
 		
 		private function handlePaste(event:Event):void
 		{
+			if(readOnly)
+			{
+				return;
+			}
 			// Get data from clipboard, and insert
 			var clipboardData:Object = Clipboard.generalClipboard.getData(ClipboardFormats.TEXT_FORMAT);
 			
@@ -442,6 +448,10 @@ package actionScripts.ui.editor.text
 		
 		private function handleCut(event:Event):void
 		{
+			if(readOnly)
+			{
+				return;
+			}
 			if (model.hasSelection)
 			{
 				handleCopy(event);

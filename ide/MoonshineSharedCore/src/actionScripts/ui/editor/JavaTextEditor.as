@@ -36,9 +36,9 @@ package actionScripts.ui.editor
 		private var dispatchSignatureHelpPending:Boolean;
 		private var mouseOverForHover:Boolean = false;
 
-		public function JavaTextEditor()
+		public function JavaTextEditor(readOnly:Boolean = false)
 		{
-			super(LANGUAGE_ID_JAVA);
+			super(LANGUAGE_ID_JAVA, readOnly);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		}

@@ -35,9 +35,9 @@ package actionScripts.ui.editor
 		private var dispatchCompletionPending:Boolean;
 		private var dispatchSignatureHelpPending:Boolean;
 
-		public function ActionScriptTextEditor()
+		public function ActionScriptTextEditor(readOnly:Boolean = false)
 		{
-			super(LANGUAGE_ID_ACTIONSCRIPT);
+			super(LANGUAGE_ID_ACTIONSCRIPT, readOnly);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		}

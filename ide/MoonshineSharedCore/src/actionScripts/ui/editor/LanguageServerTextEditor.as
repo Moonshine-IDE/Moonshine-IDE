@@ -14,12 +14,13 @@ package actionScripts.ui.editor
 	import actionScripts.valueObjects.Location;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.events.SaveFileEvent;
+	import actionScripts.ui.editor.text.TextEditor;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
-		public function LanguageServerTextEditor(languageID:String)
+		public function LanguageServerTextEditor(languageID:String, readOnly:Boolean = false)
 		{
-			super();
+			super(readOnly);
 
 			this._languageID = languageID;
 
@@ -128,9 +129,24 @@ package actionScripts.ui.editor
 			return document;
 		}
 
+		override protected function openFileAsStringHandler(data:String):void
+		{
+			super.openFileAsStringHandler(data);
+			if(!currentFile)
+			{
+				return;
+			}
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
+				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+		}
+
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
 				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
@@ -214,7 +230,10 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
 				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 		}

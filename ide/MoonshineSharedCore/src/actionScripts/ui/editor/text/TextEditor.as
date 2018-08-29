@@ -285,7 +285,7 @@ package actionScripts.ui.editor.text
 
 		public function get signatureHelpActive():Boolean
 		{
-			return signatureHelpManager.isActive;
+			return signatureHelpManager && signatureHelpManager.isActive;
 		}
 		
 		// Hook in syntax parser & it's styles
