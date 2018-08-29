@@ -203,7 +203,7 @@ package actionScripts.languageServer
 		private var supportsReferences:Boolean = false;
 		private var supportsDocumentSymbols:Boolean = false;
 		private var supportsWorkspaceSymbols:Boolean = false;
-		private var supportsExecuteCommand:Boolean = false;
+		private var supportedCommands:Vector.<String> = new <String>[];
 		private var supportsRename:Boolean = false;
 
 		public function stop():void
@@ -865,7 +865,10 @@ package actionScripts.languageServer
 			this.supportsDocumentSymbols = capabilities && (capabilities.documentSymbolProvider as Boolean);
 			this.supportsWorkspaceSymbols = capabilities && (capabilities.workspaceSymbolProvider as Boolean);
 			this.supportsRename = capabilities && (capabilities.renameProvider === true || capabilities.renameProvider !== undefined);
-			this.supportsExecuteCommand = capabilities && (capabilities.executeCommandProvider !== undefined);
+			if(capabilities && capabilities.executeCommandProvider !== undefined)
+			{
+				this.supportedCommands = Vector.<String>(capabilities.executeCommandProvider.commands);
+			}
 		}
 
 		private function handleCompletionResponse(result:Object):void
@@ -1598,14 +1601,15 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			event.preventDefault();
-			if(!supportsExecuteCommand)
+			var command:String = event.command;
+			if(supportedCommands.indexOf(command) == -1)
 			{
 				return;
 			}
+			event.preventDefault();
 
 			var params:Object = new Object();
-			params.command = event.command;
+			params.command = command;
 			params.arguments = event.arguments;
 			
 			this.sendRequest(METHOD_WORKSPACE__EXECUTE_COMMAND, params);
