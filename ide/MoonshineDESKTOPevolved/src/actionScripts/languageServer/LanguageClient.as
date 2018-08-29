@@ -107,6 +107,7 @@ package actionScripts.languageServer
 		private static const METHOD_WINDOW__LOG_MESSAGE:String = "window/logMessage";
 		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
+		private static const METHOD_TELEMETRY__EVENT:String = "telemetry/event";
 
 		public function LanguageClient(languageID:String, project:ProjectVO,
 			debugMode:Boolean, initializationOptions:Object,
@@ -777,6 +778,11 @@ package actionScripts.languageServer
 					{
 						//TODO: implement this
 						sendResponse(object.id, {});
+						break;
+					}
+					case METHOD_TELEMETRY__EVENT:
+					{
+						//just ignore this one
 						break;
 					}
 					default:
