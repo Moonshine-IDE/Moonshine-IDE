@@ -34,7 +34,7 @@ package actionScripts.ui.editor.text
 		public function showHover(contents:Vector.<String>):void
 		{
 			var contentsCount:int = contents.length;
-			if(contentsCount === 0)
+			if(contentsCount == 0)
 			{
 				this.closeHover();
 				return;
@@ -50,6 +50,12 @@ package actionScripts.ui.editor.text
 				}
 				var content:String = contents[i];
 				hoverText += content;
+			}
+			if(hoverText.length == 0)
+			{
+				//nothing to display
+				this.closeHover();
+				return;
 			}
 			editor.setTooltip(TOOL_TIP_ID, hoverText);
 		}

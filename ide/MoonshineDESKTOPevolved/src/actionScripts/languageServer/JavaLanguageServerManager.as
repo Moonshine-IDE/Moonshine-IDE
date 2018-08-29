@@ -211,7 +211,7 @@ package actionScripts.languageServer
 				}
 			};
 
-			var debugMode:Boolean = true;//false;
+			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
