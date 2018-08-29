@@ -224,7 +224,6 @@ package actionScripts.languageServer
 		{
 			return function(event:Event):void
 			{
-				trace("executing command:", command);
 				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
 					command, args ? args : []));
