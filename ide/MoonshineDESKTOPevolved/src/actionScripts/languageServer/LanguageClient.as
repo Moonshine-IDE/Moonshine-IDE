@@ -44,6 +44,7 @@ package actionScripts.languageServer
 
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
+	import actionScripts.events.OpenFileEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -97,6 +98,7 @@ package actionScripts.languageServer
 		private static const METHOD_TEXT_DOCUMENT__SIGNATURE_HELP:String = "textDocument/signatureHelp";
 		private static const METHOD_TEXT_DOCUMENT__HOVER:String = "textDocument/hover";
 		private static const METHOD_TEXT_DOCUMENT__DEFINITION:String = "textDocument/definition";
+		private static const METHOD_TEXT_DOCUMENT__TYPE_DEFINITION:String = "textDocument/typeDefinition";
 		private static const METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL:String = "textDocument/documentSymbol";
 		private static const METHOD_TEXT_DOCUMENT__REFERENCES:String = "textDocument/references";
 		private static const METHOD_TEXT_DOCUMENT__RENAME:String = "textDocument/rename";
@@ -194,6 +196,7 @@ package actionScripts.languageServer
 		private var _socketBuffer:String = "";
 		private var _gotoDefinitionLookup:Dictionary = new Dictionary();
 		private var _findReferencesLookup:Dictionary = new Dictionary();
+		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 
@@ -201,6 +204,7 @@ package actionScripts.languageServer
 		private var supportsHover:Boolean = false;
 		private var supportsSignatureHelp:Boolean = false;
 		private var supportsGotoDefinition:Boolean = false;
+		private var supportsGotoTypeDefinition:Boolean = false;
 		private var supportsReferences:Boolean = false;
 		private var supportsDocumentSymbols:Boolean = false;
 		private var supportsWorkspaceSymbols:Boolean = false;
@@ -847,6 +851,12 @@ package actionScripts.languageServer
 						delete _gotoDefinitionLookup[requestID];
 						handleGotoDefinitionResponse(result, position);
 					}
+					else if(requestID in _gotoTypeDefinitionLookup)
+					{
+						position = _gotoTypeDefinitionLookup[requestID] as Position;
+						delete _gotoTypeDefinitionLookup[requestID];
+						handleGotoTypeDefinitionResponse(result, position);
+					}
 					else if(requestID in _findReferencesLookup)
 					{
 						delete _findReferencesLookup[requestID];
@@ -867,10 +877,11 @@ package actionScripts.languageServer
 			this.supportsHover = capabilities && (capabilities.hoverProvider as Boolean);
 			this.supportsSignatureHelp = capabilities && (capabilities.signatureHelpProvider !== undefined);
 			this.supportsGotoDefinition = capabilities && (capabilities.definitionProvider as Boolean);
+			this.supportsGotoTypeDefinition = capabilities && capabilities.typeDefinitionProvider !== false && capabilities.typeDefinitionProvider !== undefined;
 			this.supportsReferences = capabilities && (capabilities.referencesProvider as Boolean);
 			this.supportsDocumentSymbols = capabilities && (capabilities.documentSymbolProvider as Boolean);
 			this.supportsWorkspaceSymbols = capabilities && (capabilities.workspaceSymbolProvider as Boolean);
-			this.supportsRename = capabilities && (capabilities.renameProvider === true || capabilities.renameProvider !== undefined);
+			this.supportsRename = capabilities && capabilities.renameProvider !== false && capabilities.renameProvider !== undefined;
 			if(capabilities && capabilities.executeCommandProvider !== undefined)
 			{
 				this.supportedCommands = Vector.<String>(capabilities.executeCommandProvider.commands);
@@ -965,6 +976,26 @@ package actionScripts.languageServer
 				eventLocations[i] = parseLocation(resultLocation);
 			}
 			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
+		}
+
+		private function handleGotoTypeDefinitionResponse(result:Object, position:Position):void
+		{
+			var resultLocations:Array = result as Array;
+			var eventLocations:Vector.<Location> = new <Location>[];
+			var resultLocationsCount:int = resultLocations.length;
+			for(var i:int = 0; i < resultLocationsCount; i++)
+			{
+				var resultLocation:Object = resultLocations[i];
+				eventLocations[i] = parseLocation(resultLocation);
+			}
+			if(eventLocations.length > 0)
+			{
+				var location:Location = eventLocations[0];
+				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
+					new FileLocation(location.uri, true), location.range.start.line);
+				openEvent.atChar = location.range.start.character;
+				_globalDispatcher.dispatchEvent(openEvent);
+			}
 		}
 
 		private function handleReferencesResponse(result:Object):void
@@ -1476,6 +1507,38 @@ package actionScripts.languageServer
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
 			_gotoDefinitionLookup[id] = positionVO;
+		}
+
+		private function gotoTypeDefinitionHandler(event:LanguageServerEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
+			if(!supportsGotoTypeDefinition)
+			{
+				return;
+			}
+
+			var textDocument:Object = new Object();
+			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+
+			var position:Object = new Object();
+			position.line = event.endLineNumber;
+			position.character = event.endLinePos;
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+			params.position = position;
+			
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__TYPE_DEFINITION, params);
+			_gotoTypeDefinitionLookup[id] = positionVO;
 		}
 
 		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
