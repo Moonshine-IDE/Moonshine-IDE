@@ -31,6 +31,7 @@ package actionScripts.events
 		public static const EVENT_SIGNATURE_HELP:String = "newSignatureHelpEvent";
 		public static const EVENT_HOVER:String = "newHover";
 		public static const EVENT_GOTO_DEFINITION:String = "newGotoDefinition";
+		public static const EVENT_GOTO_TYPE_DEFINITION:String = "newGotoTypeDefinition";
 		public static const EVENT_DOCUMENT_SYMBOLS:String = "newDocumentSymbols";
 		public static const EVENT_WORKSPACE_SYMBOLS:String = "newWorkspaceSymbols";
 		public static const EVENT_FIND_REFERENCES:String = "newFindReferences";
