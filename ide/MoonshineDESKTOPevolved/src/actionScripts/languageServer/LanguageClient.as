@@ -717,6 +717,10 @@ package actionScripts.languageServer
 
 		private function isEditorInProject(editor:LanguageServerTextEditor):Boolean
 		{
+			if(!editor.currentFile)
+			{
+				return false;
+			}
 			var nativePath:String = editor.currentFile.fileBridge.nativePath;
 			if(_previousActiveFilePath === nativePath)
 			{

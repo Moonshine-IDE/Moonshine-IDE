@@ -44,6 +44,9 @@ package actionScripts.languageServer
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.valueObjects.ProjectVO;
     import flash.events.EventDispatcher;
+    import actionScripts.ui.editor.ActionScriptTextEditor;
+    import actionScripts.ui.editor.LanguageServerTextEditor;
+    import actionScripts.ui.editor.BasicTextEditor;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -53,6 +56,9 @@ package actionScripts.languageServer
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
+
+		private static const URI_SCHEMES:Vector.<String> = new <String>["swc"];
+		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["as", "mxml"];
 
 		private var _project:AS3ProjectVO;
 		private var _port:int;
@@ -89,6 +95,21 @@ package actionScripts.languageServer
 		public function get project():ProjectVO
 		{
 			return _project;
+		}
+
+		public function get uriSchemes():Vector.<String>
+		{
+			return URI_SCHEMES;
+		}
+
+		public function get fileExtensions():Vector.<String>
+		{
+			return FILE_EXTENSIONS;
+		}
+
+		public function createTextEditor(readOnly:Boolean = false):BasicTextEditor
+		{
+			return new ActionScriptTextEditor(readOnly);
 		}
 
 		protected function dispose():void
@@ -172,6 +193,7 @@ package actionScripts.languageServer
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
+			_languageClient.registerScheme("swc");
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 		}

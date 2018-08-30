@@ -43,6 +43,7 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.URLDescriptorVO;
     import actionScripts.ui.editor.JavaTextEditor;
+    import actionScripts.valueObjects.ProjectVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -238,7 +239,7 @@ package actionScripts.controllers
 			}
 			else
 			{
-				var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper) as AS3ProjectVO;
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
                 var extension:String = file.fileBridge.extension;
 
 				if (!project)
@@ -246,24 +247,19 @@ package actionScripts.controllers
 					project = model.activeProject as AS3ProjectVO;
                 }
 
-				if (project && project.isVisualEditorProject && (extension == "mxml" || extension == "xhtml"))
+				if (project is AS3ProjectVO &&
+					(project as AS3ProjectVO).isVisualEditorProject &&
+					(extension == "mxml" || extension == "xhtml"))
 				{
-					 editor = model.visualEditorCore.getVisualEditor(project);
+					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
+				}
+				else if(model.languageServerCore.hasCustomTextEditorForFileExtension(extension, project))
+				{
+					editor = model.languageServerCore.getCustomTextEditorForFileExtension(extension, project);
 				}
 				else
                 {
-                    if (extension === "as" || extension === "mxml")
-                    {
-                        editor = new ActionScriptTextEditor();
-                    }
-                    else if (extension === "java")
-                    {
-                        editor = new JavaTextEditor();
-                    }
-                    else
-                    {
-                        editor = new BasicTextEditor();
-                    }
+					editor = new BasicTextEditor();
                 }
 
                 // requires in case of project deletion and closing all the opened

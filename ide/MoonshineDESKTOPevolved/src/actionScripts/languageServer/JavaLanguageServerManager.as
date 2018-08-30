@@ -52,6 +52,8 @@ package actionScripts.languageServer
     import flash.net.navigateToURL;
     import flash.net.URLRequest;
     import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.ui.editor.JavaTextEditor;
+    import actionScripts.ui.editor.BasicTextEditor;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -68,6 +70,9 @@ package actionScripts.languageServer
 
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
+		
+		private static const URI_SCHEMES:Vector.<String> = new <String>[];
+		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["java"];
 
 		private var _project:JavaProjectVO;
 		private var _languageClient:LanguageClient;
@@ -101,6 +106,21 @@ package actionScripts.languageServer
 		public function get project():ProjectVO
 		{
 			return _project;
+		}
+
+		public function get uriSchemes():Vector.<String>
+		{
+			return URI_SCHEMES;
+		}
+
+		public function get fileExtensions():Vector.<String>
+		{
+			return FILE_EXTENSIONS;
+		}
+
+		public function createTextEditor(readOnly:Boolean = false):BasicTextEditor
+		{
+			return new JavaTextEditor(readOnly);
 		}
 
 		protected function dispose():void

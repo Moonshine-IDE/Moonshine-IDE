@@ -11,6 +11,7 @@ package actionScripts.impls
 	import actionScripts.languageServer.ActionScriptLanguageServerManager;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.languageServer.JavaLanguageServerManager;
+	import actionScripts.ui.editor.BasicTextEditor;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
@@ -61,6 +62,82 @@ package actionScripts.impls
 				}
 			}
 			return false;
+		}
+		
+		public function hasCustomTextEditorForFileExtension(extension:String, project:ProjectVO):Boolean
+		{
+			var managerCount:int = managers.length;
+			for(var i:int = 0; i < managerCount; i++)
+			{
+				var manager:ILanguageServerManager = managers[i];
+				if(manager.project != project)
+				{
+					continue;
+				}
+				var index:int = manager.fileExtensions.indexOf(extension);
+				if(index != -1)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public function getCustomTextEditorForFileExtension(extension:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor
+		{
+			var managerCount:int = managers.length;
+			for(var i:int = 0; i < managerCount; i++)
+			{
+				var manager:ILanguageServerManager = managers[i];
+				if(manager.project != project)
+				{
+					continue;
+				}
+				var index:int = manager.fileExtensions.indexOf(extension);
+				if(index != -1)
+				{
+					return manager.createTextEditor(readOnly);
+				}
+			}
+			return null;
+		}
+
+		public function hasCustomTextEditorForUriScheme(scheme:String, project:ProjectVO):Boolean
+		{
+			var managerCount:int = managers.length;
+			for(var i:int = 0; i < managerCount; i++)
+			{
+				var manager:ILanguageServerManager = managers[i];
+				if(manager.project != project)
+				{
+					continue;
+				}
+				var index:int = manager.uriSchemes.indexOf(scheme);
+				if(index != -1)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public function getCustomTextEditorForUriScheme(scheme:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor
+		{
+			var managerCount:int = managers.length;
+			for(var i:int = 0; i < managerCount; i++)
+			{
+				var manager:ILanguageServerManager = managers[i];
+				if(manager.project != project)
+				{
+					continue;
+				}
+				var index:int = manager.uriSchemes.indexOf(scheme);
+				if(index != -1)
+				{
+					return manager.createTextEditor(readOnly);
+				}
+			}
+			return null;
 		}
 		
 		private function removeProjectHandler(event:ProjectEvent):void
