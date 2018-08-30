@@ -277,6 +277,7 @@ package actionScripts.ui.editor.text
 			// for multiple lines
 			if (tagSelectionLineEndIndex > tagSelectionLineBeginIndex)
 			{
+				var tmpHighlightResult:SearchResult = new SearchResult();
 				var linesCount:int = tagSelectionLineEndIndex - tagSelectionLineBeginIndex + 1;
 				for (var i:int; i < linesCount; i++)
 				{
@@ -287,6 +288,9 @@ package actionScripts.ui.editor.text
 						res.endLineIndex = tagSelectionLineBeginIndex;
 						res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
 						res.endCharIndex = model.lines[tagSelectionLineBeginIndex].text.length;
+						
+						tmpHighlightResult.startLineIndex = res.startLineIndex;
+						tmpHighlightResult.startCharIndex = res.startCharIndex;
 					}
 					else
 					{
@@ -298,6 +302,11 @@ package actionScripts.ui.editor.text
 					
 					tmpDict[tagSelectionLineBeginIndex] = [res];
 				}
+				
+				tmpHighlightResult.endLineIndex = res.endLineIndex;
+				tmpHighlightResult.endCharIndex = res.endCharIndex;
+				
+				applySearch(tmpHighlightResult);
 			}
 			else
 			{
@@ -308,11 +317,11 @@ package actionScripts.ui.editor.text
 				res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
 				res.endCharIndex = model.lines[tagSelectionLineEndIndex].text.length;
 				tmpDict[tagSelectionLineBeginIndex] = [res];
+				
+				applySearch(res);
 			}
 			
 			model.allInstancesOfASearchStringDict = tmpDict;
-			editor.scrollViewIfNeeded();
-			editor.invalidateLines();
 		}
 		
 		public function unHighlightTagSelection():void

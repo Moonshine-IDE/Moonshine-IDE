@@ -195,7 +195,10 @@ package actionScripts.ui.editor.text
 			
 			if (tagSelectionLineBeginIndex != -1)
 			{
-				searchManager.highlightTagSelection(tagSelectionLineBeginIndex, tagSelectionLineEndIndex);
+				callLater(function():void
+				{
+					searchManager.highlightTagSelection(tagSelectionLineBeginIndex, tagSelectionLineEndIndex);
+				});
 			}
 			else if (!isNeedToBeTracedAfterOpening && model.allInstancesOfASearchStringDict)
 			{
