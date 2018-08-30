@@ -57,7 +57,7 @@ package actionScripts.languageServer
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
 
-		private static const URI_SCHEMES:Vector.<String> = new <String>["swc"];
+		private static const URI_SCHEMES:Vector.<String> = new <String>[/*"swc"*/];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["as", "mxml"];
 
 		private var _project:AS3ProjectVO;
