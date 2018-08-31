@@ -327,7 +327,7 @@ package actionScripts.ui.editor.text
 		public function unHighlightTagSelection():void
 		{
 			model.allInstancesOfASearchStringDict = new Dictionary();
-			editor.scrollViewIfNeeded();
+			//editor.scrollViewIfNeeded();
 			editor.invalidateLines();
 			editor.callLater(function():void
 			{

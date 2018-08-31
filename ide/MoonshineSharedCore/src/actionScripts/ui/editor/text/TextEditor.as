@@ -195,6 +195,7 @@ package actionScripts.ui.editor.text
 			
 			if (tagSelectionLineBeginIndex != -1)
 			{
+				searchManager.unHighlightTagSelection();
 				callLater(function():void
 				{
 					searchManager.highlightTagSelection(tagSelectionLineBeginIndex, tagSelectionLineEndIndex);
