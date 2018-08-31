@@ -97,7 +97,7 @@ package actionScripts.impls
             var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
             if (!editor) return "";
 
-            return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.folderLocation, true);
+            return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.sourceFolder, true);
         }
 
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
