@@ -23,10 +23,13 @@ package actionScripts.plugin.templating
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
+	
+	import components.popup.newFile.NewFilePopup;
 
 	public class TemplatingHelper
 	{
@@ -138,6 +141,27 @@ package actionScripts.plugin.templating
 			}
 			
 			return name;
+		}
+		
+		public static function getTemplateMenuType(file:String):Array
+		{
+			switch (file)
+			{
+				case "MXML File":
+					return [ProjectMenuTypes.FLEX_AS];
+				case "AS3 Class":
+				case "AS3 Interface":
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS];
+				case "CSS File":
+				case "XML File":
+				case "File":
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+				case "Visual Editor Flex File":
+				case "Visual Editor PrimeFaces File":
+					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+			}
+			
+			return [];
 		}
 		
 		public static function stripTemplate(from:String):String

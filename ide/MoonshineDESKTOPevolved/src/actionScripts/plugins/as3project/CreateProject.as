@@ -935,6 +935,10 @@ package actionScripts.plugins.as3project
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
 			}
+			if (pvo.isActionScriptOnly)
+			{
+				return ProjectMenuTypes.PURE_AS;
+			}
 			if (isVisualEditorProject)
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_FLEX;

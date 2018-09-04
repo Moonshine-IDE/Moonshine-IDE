@@ -113,7 +113,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isExportedToExistingSource:Boolean;
 		public var visualEditorExportPath:String;
 
-		public var menuType:String = ProjectMenuTypes.FLEX_AS;
+		public var menuType:String = "";
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;

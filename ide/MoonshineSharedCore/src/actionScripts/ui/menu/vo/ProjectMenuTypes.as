@@ -24,6 +24,7 @@ package actionScripts.ui.menu.vo
 	public class ProjectMenuTypes
 	{
 		public static const FLEX_AS:String = "flexASproject";
+		public static const PURE_AS:String = "pureASProject";
 		public static const JS_ROYALE:String = "flexJSroyale";
 		public static const VISUAL_EDITOR_FLEX:String = "visualEditorFlex";
 		public static const VISUAL_EDITOR_PRIMEFACES:String = "visualEditorPrimefaces";

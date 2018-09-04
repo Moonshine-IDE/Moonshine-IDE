@@ -391,9 +391,7 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewTemplateFile);
 				
-				visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(lbl);
-				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
-				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+				enableTypes = TemplatingHelper.getTemplateMenuType(lbl);
 				
 				var menuItem:MenuItem = new MenuItem(lbl, null, enableTypes, eventType);
 				menuItem.data = fileTemplate; 
