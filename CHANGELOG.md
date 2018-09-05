@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Added PanelGrid component.
 
 ### Changed
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.12.1-SNAPSHOT.
 * Visual Editor: Ignore unknow tags in visual editor XML.
 * Visual Editor: Enabled in context menu new **File** to give a chance create other type of files. 
 * Visual Editor: Enabled scrollbars in surface area.
