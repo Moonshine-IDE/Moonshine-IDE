@@ -3,6 +3,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.15.0]
+
+### Added
+* Visual Editor: Added name of the component to property panel.
+* Visual Editor: Highlight code for selected element on surface.
+* Visual Editor: Introduce Copy/Paste components.
+* Visual Editor PrimeFaces: Added PanelGrid component.
+
+### Changed
+* Visual Editor: Ignore unknow tags in visual editor XML.
+* Visual Editor: Enabled in context menu new **File** to give a chance create other type of files. 
+* Visual Editor: Enabled scrollbars in surface area.
+* Visual Editor PrimeFaces: Improvement to generated code for Grid component.
+* Visual Editor PrimeFaces: Added additional container to TabView which allows positioning children in each tab.
+* Visual Editor PrimeFaces: Added dynamic heights for some components.
+
+### Fixed
+* Fixed issue where project do not auto open after restart if language server is not set.
+* Fixed issue where project with existing source code do not list sub folders under Main source folder.
+* Git: Fixed issue where IDE propmpts user to install XCode during command line usage.
+* Visual Editor: Fixed issue where changing components order was not possible.
+* Visual Editor: Fixed issue where Undo/Redo does not work properly when there are opened couple of tabs.
+* Visual Editor: Fixed issue where **Search** does not work properly in **Code** tab.
+* Visual Editor PrimeFaces: Fixed issue where Include component do not displays properly list of files.
+* Visual Editor PrimeFaces: Fixed issue where corresponding tab selected in surface area should be selected in properties panel.
+
 ## Moonshine IDE [1.14.0]
 
 ### Added
