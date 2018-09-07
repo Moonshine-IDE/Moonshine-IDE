@@ -212,7 +212,7 @@ package actionScripts.plugins.as3project
 			}
 			else
 			{
-				project = FlashDevelopImporter.parse(event.settingsFile, null, null, false);
+				project = FlashDevelopImporter.parse(event.settingsFile, null, null, true);
 			}
 			
 			project.isVisualEditorProject = isVisualEditorProject;
