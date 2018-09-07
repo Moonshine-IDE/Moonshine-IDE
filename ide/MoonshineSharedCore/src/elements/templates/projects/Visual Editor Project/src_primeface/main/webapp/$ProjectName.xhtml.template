@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
         <link rel="stylesheet" type="text/css" href="../resources/moonshine-layout-styles.css"></link>
-        <link rel="stylesheet" type="text/css" href="../assets/moonshine-layout-styles.css"></link>
+        <link rel="stylesheet" type="text/css" href="../assets/stylesheets/moonshine-layout-styles.css"></link>
         <title>$ProjectName</title>
     </h:head>
     <h:body>
