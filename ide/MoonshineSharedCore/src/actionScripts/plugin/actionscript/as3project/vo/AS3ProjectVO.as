@@ -111,6 +111,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
 		public var isExportedToExistingSource:Boolean;
+		public var isTrustServerCertificateSVN:Boolean;
 		public var visualEditorExportPath:String;
 
 		public var menuType:String = "";
@@ -156,6 +157,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set AntBuildPath(value:String):void
 		{
 			buildOptions.antBuildPath = value;
+		}
+		
+		public function get isSVN():Boolean
+		{
+			if (menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) != -1) return true;
+			return false;
 		}
 		
 		override public function get name():String
@@ -314,7 +321,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				settings = getSettingsForOtherTypeOfProjects();
 			}
-
+			
+			generateSettingsForSVNProject(settings);
 			settings.sort(order);
 			return settings;
 			
@@ -519,6 +527,18 @@ package actionScripts.plugin.actionscript.as3project.vo
 							])
 					)
 				]);
+		}
+		
+		private function generateSettingsForSVNProject(value:Vector.<SettingsWrapper>):void
+		{
+			if (isSVN)
+			{
+				value.insertAt(value.length - 2, new SettingsWrapper("Subversion",
+					Vector.<ISetting>([
+						new BooleanSetting(this, "isTrustServerCertificateSVN", "Trust server certificate")
+					])
+				));
+			}
 		}
 
 		private function getExtensionsSettings():PathListSetting

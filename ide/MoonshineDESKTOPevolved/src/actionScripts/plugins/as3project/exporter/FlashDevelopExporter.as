@@ -85,14 +85,18 @@ package actionScripts.plugins.as3project.exporter
 			project.appendChild(exportPaths(p.targets, <compileTargets />, <compile />, p));
 			project.appendChild(exportPaths(p.hiddenPaths, <hiddenPaths />, <hidden />, p));
 			
-			var prebuildXML:XML = <preBuildCommand />;
-			prebuildXML.appendChild(p.prebuildCommands);
-			project.appendChild(prebuildXML);
+			tmpXML = <preBuildCommand />;
+			tmpXML.appendChild(p.prebuildCommands);
+			project.appendChild(tmpXML);
 			
-			var postbuildXML:XML = <postBuildCommand />;
-			postbuildXML.appendChild(p.postbuildCommands);
-			postbuildXML.@alwaysRun = UtilsCore.serializeBoolean(p.postbuildAlways);
-			project.appendChild(postbuildXML);
+			tmpXML = <postBuildCommand />;
+			tmpXML.appendChild(p.postbuildCommands);
+			tmpXML.@alwaysRun = UtilsCore.serializeBoolean(p.postbuildAlways);
+			project.appendChild(tmpXML);
+			
+			tmpXML = <trustSVNCertificate />;
+			tmpXML.appendChild(p.isTrustServerCertificateSVN ? 'True' : 'False');
+			project.appendChild(tmpXML);
 			
 			var options:XML = <options />;
 			var optionPairs:Object = {
