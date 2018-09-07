@@ -26,6 +26,7 @@ package actionScripts.utils
 	import actionScripts.events.MenuEvent;
 	import actionScripts.events.ShortcutEvent;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
 
 	public class KeyboardShortcutManager
@@ -34,8 +35,10 @@ package actionScripts.utils
 		
 		private var stage:DisplayObject;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var model:IDEModel = IDEModel.getInstance();
 		private var pendingEvent:String;
 		private var lookup:Object = {};
+		private var lookupMenuType:Object = {};
 
 		public function KeyboardShortcutManager(block:KeyboardShortcutManagerBlocker)
 		{
@@ -103,7 +106,7 @@ package actionScripts.utils
 				return; // omit all modifier only requests
 
 			var event:String = lookup[getKeyConfigFromEvent(e)];
-			if (event)
+			if (event && isValidToDispatchAgainstActiveProject(event))
 			{
 				e.stopImmediatePropagation();
 				e.preventDefault();
@@ -121,7 +124,6 @@ package actionScripts.utils
 		public function has(shortcut:KeyboardShortcut):Boolean
 		{
 			return lookup[getKeyConfigFromShortcut(shortcut)] ? true : false;
-
 		}
 
 		private function getKeyConfigFromShortcut(shortcut:KeyboardShortcut):String
@@ -150,15 +152,29 @@ package actionScripts.utils
 				config.push("S");
 			config.push(e.keyCode);
 			return config.join(" ");
-
+		}
+		
+		private function isValidToDispatchAgainstActiveProject(event:String):Boolean
+		{
+			if (!model.activeProject) return true;
+			if (lookupMenuType[event] == null) return true;
+			
+			var tmpProjectsType:Array = (model.activeProject as AS3ProjectVO).menuType.split(",");
+			for (var i:int; i < tmpProjectsType.length; i++)
+			{
+				if (tmpProjectsType[i] == "") continue;
+				if ((lookupMenuType[event] as Array).indexOf(tmpProjectsType[i]) != -1) return true;
+			}
+			
+			return false;
 		}
 
-		public function activate(shortcut:KeyboardShortcut):Boolean
+		public function activate(shortcut:KeyboardShortcut, enableTypes:Array=null):Boolean
 		{
 			if (!has(shortcut))
 			{
-
 				lookup[getKeyConfigFromShortcut(shortcut)] = shortcut.event;
+				lookupMenuType[shortcut.event] = enableTypes;
 				return true;
 			}
 			return false;

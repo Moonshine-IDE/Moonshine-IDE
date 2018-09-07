@@ -699,7 +699,7 @@ import actionScripts.valueObjects.Settings;
 				
 			}
 			if (shortcut)
-				registerShortcut(shortcut);
+				registerShortcut(shortcut, item.enableTypes);
 			
 			return buildingNativeMenu ? nativeMenuItem : menuItem;
 			
@@ -722,9 +722,9 @@ import actionScripts.valueObjects.Settings;
 			return null;
 		}
 		
-		private function registerShortcut(shortcut:KeyboardShortcut):void
+		private function registerShortcut(shortcut:KeyboardShortcut, enableTypes:Array):void
 		{
-			shortcutManager.activate(shortcut);
+			shortcutManager.activate(shortcut, enableTypes);
 		}
 		
 		// Loop through menu structure and add menus through handler
