@@ -208,11 +208,11 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				project = new AS3ProjectVO(event.templateDir, null, true);
+				project = new AS3ProjectVO(event.templateDir, null, false);
 			}
 			else
 			{
-				project = FlashDevelopImporter.parse(event.settingsFile, null, null, true);
+				project = FlashDevelopImporter.parse(event.settingsFile, null, null, false);
 			}
 			
 			project.isVisualEditorProject = isVisualEditorProject;
