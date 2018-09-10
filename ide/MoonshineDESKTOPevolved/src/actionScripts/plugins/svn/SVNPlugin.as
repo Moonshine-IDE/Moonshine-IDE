@@ -36,6 +36,7 @@ package actionScripts.plugins.svn
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
@@ -61,6 +62,7 @@ package actionScripts.plugins.svn
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		
 		public var svnBinaryPath:String;
+		public var isTrustServerCertificateSVN:Boolean;
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var gitAuthWindow:GitAuthenticationPopup;
@@ -115,7 +117,8 @@ package actionScripts.plugins.svn
 			binaryPath.setMessage("SVN binary needs to be command-line compliant", PathSetting.MESSAGE_IMPORTANT);
 			
 			return Vector.<ISetting>([
-				binaryPath
+				binaryPath,
+				new BooleanSetting(this, "isTrustServerCertificateSVN", "Trust server certificate when Checkout")
 			]);
 		}
 		
@@ -217,7 +220,7 @@ package actionScripts.plugins.svn
 				//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
 				var provider:SubversionProvider = new SubversionProvider();
 				provider.executable = new File(svnBinaryPath);
-				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null));
+				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null), isTrustServerCertificateSVN);
 			}
 		}
 		
@@ -227,7 +230,7 @@ package actionScripts.plugins.svn
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo);
+			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
 		}
 		
 		protected function handleUpdateRequest(event:Event, user:String=null, password:String=null):void
@@ -236,7 +239,7 @@ package actionScripts.plugins.svn
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.update(model.activeProject.folderLocation, user, password);
+			provider.update(model.activeProject.folderLocation, user, password, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean

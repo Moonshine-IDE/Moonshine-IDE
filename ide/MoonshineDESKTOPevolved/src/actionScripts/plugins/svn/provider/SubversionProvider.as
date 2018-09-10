@@ -44,10 +44,10 @@ package actionScripts.plugins.svn.provider
 			commit(FileLocation(event.target.data));
 		}
 		
-		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			var commitCommand:CommitCommand = new CommitCommand(executable, root, status);
-			commitCommand.commit(file, message, user, password, commitInfo);
+			commitCommand.commit(file, message, user, password, commitInfo, isTrustServerCertificateSVN);
 		}
 		
 		protected function handleUpdate(event:Event):void
@@ -55,16 +55,16 @@ package actionScripts.plugins.svn.provider
 			update(FileLocation(event.target.data));
 		}
 		
-		public function update(file:FileLocation, user:String=null, password:String=null):void
+		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
-			updateCommand.update(file, user, password);
+			updateCommand.update(file, user, password, isTrustServerCertificateSVN);
 		}
 		
-		public function checkout(event:SVNEvent):void
+		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
 		{
 			var checkoutCommand:CheckoutCommand = new CheckoutCommand(executable, root);
-			checkoutCommand.checkout(event);
+			checkoutCommand.checkout(event, isTrustServerCertificateSVN);
 		}
 	}
 }

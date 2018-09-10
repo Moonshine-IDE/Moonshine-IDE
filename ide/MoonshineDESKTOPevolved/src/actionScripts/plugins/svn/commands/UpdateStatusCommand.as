@@ -41,7 +41,7 @@ package actionScripts.plugins.svn.commands
 		}
 		
 		// Modifies status object. obj[nativePath] = SVNStatus
-		public function update(file:File):void
+		public function update(file:File, isTrustServerCertificateSVN:Boolean):void
 		{
 			if (runningForFile)
 			{
@@ -63,7 +63,7 @@ package actionScripts.plugins.svn.commands
 			/*args.push(file.name);*/
 			args.push("--xml");
 			args.push("--non-interactive");
-			args.push("--trust-server-cert");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up

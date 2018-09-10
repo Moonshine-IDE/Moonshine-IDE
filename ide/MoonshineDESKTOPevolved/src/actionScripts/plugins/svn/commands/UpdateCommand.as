@@ -36,7 +36,7 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function update(file:FileLocation, user:String=null, password:String=null):void
+		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			if (customProcess && customProcess.running)
 			{
@@ -59,7 +59,7 @@ package actionScripts.plugins.svn.commands
 				args.push(password);
 			}
 			args.push("--non-interactive");
-			args.push("--trust-server-cert");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up

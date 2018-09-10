@@ -45,7 +45,7 @@ package actionScripts.plugins.svn.commands
 			
 		}
 		
-		public function checkout(event:SVNEvent):void
+		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
 		{
 			if (runningForFile)
 			{
@@ -71,7 +71,7 @@ package actionScripts.plugins.svn.commands
 			}
 			args.push(event.url);
 			args.push("--non-interactive");
-			args.push("--trust-server-cert");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			customInfo.workingDirectory = event.file;

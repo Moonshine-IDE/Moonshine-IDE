@@ -49,6 +49,7 @@ package actionScripts.plugins.svn.commands
 		// Files we need to add before commiting
 		protected var toAdd:Array;
 		protected var affectedFiles:ArrayCollection;
+		protected var isTrustServerCertificateSVN:Boolean;
 		
 		public var status:Object;
 		
@@ -60,8 +61,9 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
+			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
 			if (user && password)
 			{
 				doCommit(user, password, commitInfo);
@@ -81,7 +83,7 @@ package actionScripts.plugins.svn.commands
 			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
 			statusCommand.addEventListener(Event.COMPLETE, handleCommitStatusUpdateComplete);
 			statusCommand.addEventListener(Event.CANCEL, handleCommitStatusUpdateCancel);
-			statusCommand.update(file.fileBridge.getFile as File);
+			statusCommand.update(file.fileBridge.getFile as File, this.isTrustServerCertificateSVN);
 			
 			print("Updating status before commit");
 		}
@@ -241,7 +243,7 @@ package actionScripts.plugins.svn.commands
 				args.push(password);
 			}
 			args.push("--non-interactive");
-			args.push("--trust-server-cert");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			
