@@ -37,6 +37,7 @@ package actionScripts.plugins.svn.commands
 	public class CheckoutCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
+		private var isEventReported:Boolean;
 		
 		public function CheckoutCommand(executable:File, root:File)
 		{
@@ -55,6 +56,7 @@ package actionScripts.plugins.svn.commands
 			
 			notice("Trying to check out %s. May take a while.", event.url);
 			
+			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			//customInfo.executable = cmdFile; 
@@ -124,11 +126,18 @@ package actionScripts.plugins.svn.commands
 	
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
 			startShell(false);
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
-		{ 
+		{
+			if (!isEventReported)
+			{
+				dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_RESULT, null));
+				isEventReported = true;
+			}
+			
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			

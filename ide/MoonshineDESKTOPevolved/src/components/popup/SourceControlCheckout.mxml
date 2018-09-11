@@ -31,12 +31,13 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			
+			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.svn.event.SVNEvent;
 			
 			public static const TYPE_SVN:String = "typeSVN";
 			public static const TYPE_GIT:String = "typeGit";
@@ -45,12 +46,19 @@
 			[Bindable] public var type:String;
 			
 			public var submitObject:Object;
+			public var isTrustServerCertificate:Boolean;
 			
 			[Bindable] private var isValidURL:Boolean;
 			[Bindable] private var isPathMapped:Boolean;
 			
 			private var mappedPath:String
 			private var model:IDEModel = IDEModel.getInstance();
+			
+			public function notifySVNCheckoutError():void
+			{
+				Alert.show("Oops! There is something wrong!\nPlease check console for details.", "Error!");
+				btnSubmit.enabled = true;
+			}
 			
 			private function onCheckoutRequest():void
 			{
@@ -63,8 +71,15 @@
 					}
 				}
 				
-				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text};
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text, trustCertificate:isTrustServerCertificate};
+				
+				// do not close if SVN
+				if (type != TYPE_SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				else 
+				{
+					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
+					btnSubmit.enabled = false;
+				}
 			}
 			
 			private function browse():void
@@ -177,9 +192,13 @@
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable &amp;&amp; type == TYPE_GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == TYPE_GIT}"/>
-		<s:CheckBox id="cbLogin"
-					label="Need Authentication" selected="false"
-					includeInLayout="{type == TYPE_SVN}" visible="{type == TYPE_SVN}"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeInLayout="{type == TYPE_SVN}" visible="{type == TYPE_SVN}">
+			<s:CheckBox id="cbLogin"
+						label="Need Authentication" selected="false"/>
+			<s:CheckBox label="Trust Server Certificate"
+						change="isTrustServerCertificate=event.target.selected"/>
+		</s:HGroup>
 		<s:VGroup width="100%"
 				  visible="{cbLogin.selected &amp;&amp; type == TYPE_SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == TYPE_SVN}">
 			<view:PromptTextInput

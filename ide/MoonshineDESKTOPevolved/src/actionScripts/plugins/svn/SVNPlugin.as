@@ -36,7 +36,6 @@ package actionScripts.plugins.svn
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
@@ -62,7 +61,6 @@ package actionScripts.plugins.svn
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		
 		public var svnBinaryPath:String;
-		public var isTrustServerCertificateSVN:Boolean;
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var gitAuthWindow:GitAuthenticationPopup;
@@ -117,8 +115,7 @@ package actionScripts.plugins.svn
 			binaryPath.setMessage("SVN binary needs to be command-line compliant", PathSetting.MESSAGE_IMPORTANT);
 			
 			return Vector.<ISetting>([
-				binaryPath,
-				new BooleanSetting(this, "isTrustServerCertificateSVN", "Trust server certificate when Checkout")
+				binaryPath
 			]);
 		}
 		
@@ -198,6 +195,11 @@ package actionScripts.plugins.svn
 				checkoutWindow.title = "Checkout Repository";
 				checkoutWindow.type = SourceControlCheckout.TYPE_SVN;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
+				checkoutWindow.addEventListener(SVNEvent.EVENT_CHECKOUT, onCheckoutWindowSubmitted);
+				
+				dispatcher.addEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
+				dispatcher.addEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
+				
 				PopUpManager.centerPopUp(checkoutWindow);
 			}
 			else
@@ -206,22 +208,34 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		protected function onCheckoutWindowClosed(event:CloseEvent):void
+		protected function onCheckoutWindowSubmitted(event:SVNEvent):void
 		{
 			var submitObject:Object = checkoutWindow.submitObject;
-			
-			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
-			PopUpManager.removePopUp(checkoutWindow);
-			checkoutWindow = null;
-			
 			if (submitObject)
 			{
 				//git: submitObject.url, submitObject.target
 				//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
 				var provider:SubversionProvider = new SubversionProvider();
 				provider.executable = new File(svnBinaryPath);
-				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null), isTrustServerCertificateSVN);
+				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null), submitObject.trustCertificate);
 			}
+		}
+		
+		protected function onCheckoutWindowClosed(event:CloseEvent):void
+		{
+			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
+			checkoutWindow.removeEventListener(SVNEvent.EVENT_CHECKOUT, onCheckoutWindowSubmitted);
+			dispatcher.removeEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
+			dispatcher.removeEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
+			
+			PopUpManager.removePopUp(checkoutWindow);
+			checkoutWindow = null;
+		}
+		
+		protected function onCheckoutOutputEvent(event:SVNEvent):void
+		{
+			if (event.type == SVNEvent.SVN_ERROR) checkoutWindow.notifySVNCheckoutError();
+			else checkoutWindow.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 		}
 		
 		protected function handleCommitRequest(event:Event, user:String=null, password:String=null, commitInfo:Object=null):void
