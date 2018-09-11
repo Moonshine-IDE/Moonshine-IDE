@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces:  Improvement to generated code for Grid component.
 * Visual Editor PrimeFaces:  Added additional container to TabView which allows positioning children in each tab.
 * Visual Editor PrimeFaces:  Added dynamic heights for some components.
+* Subversion:  Added option to force SVN to trust certificate errors.
 
 ### Fixed
 * Fixed issue where projects did not automatically open on restart if language server was not set.
@@ -26,7 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Git:  Fixed issue where IDE prompted user to install XCode during command line usage.
 * Visual Editor:  Fixed issue where reordering order was not possible.  Further improvements to component reordering are pending.
 * Visual Editor:  Fixed issue where Undo/Redo did not work properly when there were multiple open Visual Editor tabs.
-* Visual Editor:  Fixed issue where **Edit > Find** did not work properly in **Code** tab.
+* Visual Editor:  Disabled **Edit > Find** (and the corresponding shortcuts) for the Visual Editor tab.
 * Visual Editor:  Fixed issue where Include component did not properly display the list of files.
 * Visual Editor:  Fixed issue where the tab selected in the mockup area was not properly selected in the Properties panel
 
