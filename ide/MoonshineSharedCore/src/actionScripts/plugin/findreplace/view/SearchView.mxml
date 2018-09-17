@@ -39,14 +39,8 @@
 			
 			private function find():void
 			{
-				if (rbDirection.selectedIndex == 0)
-				{
-					dispatchEvent(new Event(FindReplacePlugin.EVENT_FIND_NEXT));
-				}
-				else
-				{
-					dispatchEvent(new Event(FindReplacePlugin.EVENT_FIND_PREV));
-				}
+				if (rbDirection.selectedIndex == 0) dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_NEXT) );
+				//else dispatchEvent( new Event(FindReplacePlugin.EVENT_FIND_PREV) );
 			}
 			
 			private function replaceOne(isFindNext:Boolean=false):void
