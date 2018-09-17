@@ -41,7 +41,7 @@ package actionScripts.plugins.svn.commands
 		}
 		
 		// Modifies status object. obj[nativePath] = SVNStatus
-		public function update(file:File):void
+		public function update(file:File, isTrustServerCertificateSVN:Boolean):void
 		{
 			if (runningForFile)
 			{
@@ -56,16 +56,18 @@ package actionScripts.plugins.svn.commands
 			
 			var args:Vector.<String> = new Vector.<String>();
 			
-			var target:String = file.getRelativePath(root, false);
+			/*var target:String = file.getRelativePath(root, false);
 			// If we're refreshing the root we give roots name
-			if (!target) target = file.name; 
+			if (!target) target = file.name; */
 			args.push("status");
-			args.push(target);
+			/*args.push(file.name);*/
 			args.push("--xml");
+			args.push("--non-interactive");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up
-			customInfo.workingDirectory = file.parent;
+			customInfo.workingDirectory = file;
 			
 			customProcess = new NativeProcess();
 			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
@@ -157,9 +159,8 @@ package actionScripts.plugins.svn.commands
 				st.author = entry..author;
 				st.treeConflict = UtilsCore.deserializeBoolean(entry.child('wc.status').attribute('tree-conflicted'));
 				//st.date = DateUtil.parseBlaDate(entry..date);
-				status[folderPath + path] = st;
+				status[path] = st;
 			}
 		}
-		
 	}
 }

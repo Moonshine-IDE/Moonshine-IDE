@@ -25,35 +25,61 @@
 										   backgroundColor="0xf5f5f5"
 										   width="500" minWidth="400" minHeight="100" autoLayout="true"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()">
+										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
 	<fx:Metadata>
 		[Event(name="name", type="flash.events.Event")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
+			import mx.validators.Validator;
 			
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.svn.event.SVNEvent;
 			
 			public static const TYPE_SVN:String = "typeSVN";
 			public static const TYPE_GIT:String = "typeGit";
 			
 			[Bindable] public var isGitAvailable:Boolean;
+			[Bindable] public var type:String;
 			
-			public var type:String;
 			public var submitObject:Object;
+			public var isTrustServerCertificate:Boolean;
 			
-			[Bindable] private var isGitURL:Boolean;
+			[Bindable] private var isValidURL:Boolean;
 			[Bindable] private var isPathMapped:Boolean;
 			
 			private var mappedPath:String
 			private var model:IDEModel = IDEModel.getInstance();
 			
+			public function notifySVNCheckoutError():void
+			{
+				Alert.show("Oops! There is something wrong!\nPlease check console for details.", "Error!");
+				btnSubmit.enabled = true;
+			}
+			
 			private function onCheckoutRequest():void
 			{
-				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : null;
-				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				if (type == TYPE_SVN && cbLogin.selected)
+				{
+					var tmpArr : Array = new Array(eValidator, pValidator);
+					if (Validator.validateAll(tmpArr).length != 0)
+					{
+						return;
+					}
+				}
+				
+				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text, trustCertificate:isTrustServerCertificate};
+				
+				// do not close if SVN
+				if (type != TYPE_SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				else 
+				{
+					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
+					btnSubmit.enabled = false;
+				}
 			}
 			
 			private function browse():void
@@ -79,24 +105,56 @@
 			
 			private function updatePossiblePath():void
 			{
-				// expected format is https://github.com/{organization/author}/{project}
-				var searchRegExp:RegExp = new RegExp("http.*\://github.com/.*/.*.$", "i");
-				var results:Array = searchRegExp.exec(txtSource.text);
-				if (results != null)
+				var searchRegExp:RegExp;
+				var results:Array;
+				if (type == TYPE_GIT)
 				{
-					isGitURL = true;
-					txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
-						"..." + model.fileCore.separator + results[0].split("/").pop();
+					// expected format is https://github.com/{organization/author}/{project}
+					searchRegExp = new RegExp("http.*\://github.com/.*/.*.$", "i");
+					results = searchRegExp.exec(txtSource.text);
+					if (results != null)
+					{
+						isValidURL = true;
+						txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
+							"..." + model.fileCore.separator + results[0].split("/").pop();
+					}
+					else if (isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = mappedPath + model.fileCore.separator + "...";
+					}
+					else if (!isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = "...";
+					}
 				}
-				else if (isPathMapped)
+				else
 				{
-					isGitURL = false;
-					txtTarget.text = mappedPath + model.fileCore.separator + "...";
-				}
-				else if (!isPathMapped)
-				{
-					isGitURL = false;
-					txtTarget.text = "...";
+					searchRegExp = new RegExp(".*://.*/.*.$", "i");
+					results = searchRegExp.exec(txtSource.text);
+					if (results != null)
+					{
+						isGitAvailable = isValidURL = true;
+						if (isPathMapped)
+						{
+							txtTarget.text = mappedPath + model.fileCore.separator + txtSource.text.split("/").pop();
+						}
+						else
+						{
+							txtTarget.text = "..." + model.fileCore.separator + txtSource.text.split("/").pop();
+						}
+					}
+					else if (isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = mappedPath + model.fileCore.separator + "...";
+					}
+					else if (!isPathMapped)
+					{
+						isValidURL = false;
+						txtTarget.text = "...";
+					}
 				}
 			}
 			
@@ -108,13 +166,15 @@
 			
 			protected function onCreationCompletes():void
 			{
-				btnSubmit.label = (type == TYPE_GIT) ? "Pull" : "Checkout";
-				
 				txtSource.setFocus();
 			}
 			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
+		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
+	</fx:Declarations>
 	
 	<s:VGroup height="100%" width="100%" 
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
@@ -131,13 +191,33 @@
 		</s:HGroup>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
+				 visible="{!isGitAvailable &amp;&amp; type == TYPE_GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == TYPE_GIT}"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeInLayout="{type == TYPE_SVN}" visible="{type == TYPE_SVN}">
+			<s:CheckBox id="cbLogin"
+						label="Need Authentication" selected="false"/>
+			<s:CheckBox label="Trust Server Certificate"
+						change="isTrustServerCertificate=event.target.selected"/>
+		</s:HGroup>
+		<s:VGroup width="100%"
+				  visible="{cbLogin.selected &amp;&amp; type == TYPE_SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == TYPE_SVN}">
+			<view:PromptTextInput
+				id="txtLogin" 
+				prompt="User Name"
+				width="100%"
+				styleName="textInput"/>
+			<view:PromptTextInput
+				id="txtPassword" 
+				prompt="Password" change="txtPassword.displayAsPassword=true"
+				width="100%"
+				styleName="textInput"/>
+		</s:VGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
-				  label="Checkout" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isGitURL &amp;&amp; isPathMapped}"
+				  label="{(type == TYPE_GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
 				  click="onCheckoutRequest()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

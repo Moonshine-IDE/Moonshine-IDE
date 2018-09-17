@@ -24,11 +24,13 @@ package actionScripts.ui.menu.vo
 	public class ProjectMenuTypes
 	{
 		public static const FLEX_AS:String = "flexASproject";
+		public static const PURE_AS:String = "pureASProject";
 		public static const JS_ROYALE:String = "flexJSroyale";
 		public static const VISUAL_EDITOR_FLEX:String = "visualEditorFlex";
 		public static const VISUAL_EDITOR_PRIMEFACES:String = "visualEditorPrimefaces";
 		public static const LIBRARY_FLEX_AS:String = "libraryFlexAS";
 		public static const GIT_PROJECT:String = "gitProject";
+		public static const SVN_PROJECT:String = "svnProject";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE:Array;

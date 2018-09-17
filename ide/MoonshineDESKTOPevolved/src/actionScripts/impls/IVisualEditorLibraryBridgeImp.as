@@ -91,7 +91,15 @@ package actionScripts.impls
 		{
 			return UtilsCore.positionTip;
 		}
-		
+
+        public function getRelativeFilePath():String
+        {
+            var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+            if (!editor) return "";
+
+            return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.sourceFolder, true);
+        }
+
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{
 			// add resource only relative to the project

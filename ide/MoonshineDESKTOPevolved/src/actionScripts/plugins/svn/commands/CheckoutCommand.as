@@ -27,13 +27,17 @@ package actionScripts.plugins.svn.commands
 	import flash.utils.IDataInput;
 	
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.valueObjects.ProjectVO;
 	
+	import flashx.textLayout.tlf_internal;
+	
 	public class CheckoutCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
+		private var isEventReported:Boolean;
 		
 		public function CheckoutCommand(executable:File, root:File)
 		{
@@ -42,7 +46,7 @@ package actionScripts.plugins.svn.commands
 			
 		}
 		
-		public function checkout(event:SVNEvent):void
+		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
 		{
 			if (runningForFile)
 			{
@@ -52,6 +56,7 @@ package actionScripts.plugins.svn.commands
 			
 			notice("Trying to check out %s. May take a while.", event.url);
 			
+			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			//customInfo.executable = cmdFile; 
@@ -67,14 +72,15 @@ package actionScripts.plugins.svn.commands
 				args.push(event.authObject.password);
 			}
 			args.push(event.url);
+			args.push("--non-interactive");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			customInfo.workingDirectory = event.file;
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
+			
+			startShell(true);
 			customProcess.start(customInfo);
 			
 			var tmpSplit: Array = event.url.split("/");
@@ -84,18 +90,54 @@ package actionScripts.plugins.svn.commands
 			runningForFile = new File(newFilePath);
 		}
 		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+				runningForFile = null;
+			}
+		}
+		
 		protected function svnError(event:ProgressEvent):void
 		{
 			var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-	
-			if (serverCertificatePrompt(data)) return;
+			
+			var match:Array = data.toLowerCase().match(/Error validating server certificate for/);
+			if (match) 
+			{
+				serverCertificatePrompt(data);
+				return;
+			}
 	
 			error("%s", data);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
+			startShell(false);
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
-		{ 
+		{
+			if (!isEventReported)
+			{
+				dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_RESULT, null));
+				isEventReported = true;
+			}
+			
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
@@ -106,19 +148,21 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(runningForFile.nativePath)));
+				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
-				);
+				);*/
 			}
 			else
 			{
 				// Checkout failed
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			/*runningForFile = null;
+			customProcess = null;*/
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			startShell(false);
 		}
-		
 	}
 }

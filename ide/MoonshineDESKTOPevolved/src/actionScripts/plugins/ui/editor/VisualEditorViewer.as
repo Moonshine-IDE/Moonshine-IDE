@@ -18,25 +18,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-	import flash.events.Event;
-	import mx.events.FlexEvent;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
-	import actionScripts.interfaces.IVisualEditorViewer;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugins.help.view.VisualEditorView;
-	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-	import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.ui.tabview.TabEvent;
-
+    import flash.events.Event;
+    
+    import mx.events.CollectionEvent;
+    import mx.events.CollectionEventKind;
+    import mx.events.FlexEvent;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
+    import actionScripts.interfaces.IVisualEditorViewer;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugins.help.view.VisualEditorView;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.TextEditor;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
+    
     import utils.VisualEditorType;
-	
-	import view.suportClasses.events.PropertyEditorChangeEvent;
+    
+    import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -77,7 +81,6 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
 				visualEditorView.visualEditorType = VisualEditorType.FLEX;
 			visualEditorView.visualEditorProject = visualEditorProject;
-			visualEditorView.visualEditorLibraryBridgeImp = visualEditoryLibraryCore;
 			
 			visualEditorView.percentWidth = 100;
 			visualEditorView.percentHeight = 100;
@@ -97,15 +100,47 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
+			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
+			
+			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 		}
 		
+		protected function handleEditorCollectionChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
+			{
+				visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
+				visualEditorView.removeEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onVisualEditorViewCodeChange);
+				
+				if (visualEditorView.visualEditor)
+				{
+					visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+					visualEditorView.visualEditor.editingSurface.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
+					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
+				}
+				
+				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
+				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
+				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
+				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
+				
+				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+				undoManager.dispose();
+			}
+		}
+
 		private function onVisualEditorCreationComplete(event:FlexEvent):void
 		{
 			visualEditorView.removeEventListener(FlexEvent.CREATION_COMPLETE, onVisualEditorCreationComplete);
+			
 			visualEditorView.visualEditor.editingSurface.addEventListener(Event.CHANGE, onEditingSurfaceChange);
 			visualEditorView.visualEditor.editingSurface.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_ADDING, onEditingSurfaceItemAdded);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
+			
+			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
+			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 		}
 		
 		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
@@ -114,8 +149,13 @@ package actionScripts.plugins.ui.editor
 			
 			updateChangeStatus()
 		}
-		
-		override protected function createChildren():void
+
+        private function onDuplicateSelectedElement(event:Event):void
+        {
+			visualEditorView.visualEditor.duplicateSelectedElement();
+        }
+
+        override protected function createChildren():void
 		{
 			addElement(visualEditorView);
 			
@@ -208,6 +248,8 @@ package actionScripts.plugins.ui.editor
 			else
 			{
 				visualEditorView.setFocus();
+				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			}
 		}
 		

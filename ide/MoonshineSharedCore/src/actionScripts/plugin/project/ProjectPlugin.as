@@ -40,6 +40,7 @@ package actionScripts.plugin.project
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
@@ -364,6 +365,7 @@ package actionScripts.plugin.project
             if (projectsForOpen && projectsForOpen.length > 0)
             {
                 var projectLocationInfo:Array = [];
+				ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT = projectsForOpen.length;
                 for (var i:int = 0; i < projectsForOpen.length; i++)
                 {
                     var project:ProjectVO;

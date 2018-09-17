@@ -16,6 +16,8 @@
 			import actionScripts.plugins.git.model.GitProjectVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
 			
+			public static const TYPE_SVN:String = "typeSVN";
+			public static const TYPE_GIT:String = "typeGit";
 			public static const TYPE_COMMIT:String = "typeCommit";
 			public static const TYPE_REVERT:String = "typeRevert";
 			public static const GET_AUTHOR:String = "getGitAuthor";
@@ -23,6 +25,7 @@
 			[Bindable] public var filesCount:int;
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var commitDiffCollection:ArrayCollection;
+			[Bindable] public var windowType:String = TYPE_GIT;
 			
 			public var type:String = TYPE_COMMIT;
 			public var isSubmit:Boolean;
@@ -161,7 +164,8 @@
 		<s:HGroup id="hgAuthor" 
 				  width="100%"
 				  verticalAlign="middle" paddingTop="4"
-				  clipAndEnableScrolling="false">
+				  clipAndEnableScrolling="false"
+				  includeInLayout="{windowType == TYPE_GIT}" visible="{windowType == TYPE_GIT}">
 			<s:Label id="lblAuthor"/>
 			<s:Label text="How can I change this?"
 					 creationComplete="event.target.setStyle('textDecoration', 'underline')" buttonMode="true"

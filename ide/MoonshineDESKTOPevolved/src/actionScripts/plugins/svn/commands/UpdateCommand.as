@@ -25,7 +25,9 @@ package actionScripts.plugins.svn.commands
 	import flash.filesystem.File;
 	
 	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.svn.event.SVNEvent;
 
 	public class UpdateCommand extends SVNCommandBase
 	{
@@ -34,42 +36,71 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function update(file:File):void
+		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
-			if (runningForFile)
+			if (customProcess && customProcess.running)
 			{
-				error("Currently running, try again later.");
 				return;
 			}
 			
-			runningForFile = file;
+			runningForFile = file.fileBridge.getFile as File;
 			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
 			var args:Vector.<String> = new Vector.<String>();
 			
-			var target:String = file.getRelativePath(root, false);
-			// If we're refreshing the root we give roots name
-			if (!target) target = file.name; 
 			args.push("update");
-			args.push(target);
+			if (user && password)
+			{
+				args.push("--username");
+				args.push(user);
+				args.push("--password");
+				args.push(password);
+			}
+			args.push("--non-interactive");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up
-			customInfo.workingDirectory = file.parent;
+			customInfo.workingDirectory = runningForFile;
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
+			
+			startShell(true);
 			customProcess.start(customInfo);
+		}
+		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
 		}
 		
 		protected function svnError(event:ProgressEvent):void
 		{
+			var str:String = customProcess.standardError.readUTFBytes(customProcess.standardOutput.bytesAvailable);
+			error(str);
 			
-		} 
+			//startShell(false);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+		}
+		
 		protected function svnOutput(event:ProgressEvent):void
 		{
 			
@@ -93,12 +124,16 @@ package actionScripts.plugins.svn.commands
 			{
 				// Refresh failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				error(err);
+				var match:Array = err.match(/Authentication failed/);
+				if (match)
+				{
+					dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_AUTH_REQUIRED, runningForFile, null, null, null, "update"));
+				}
+				else error(err);
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			startShell(false);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
-		
 	}
 }

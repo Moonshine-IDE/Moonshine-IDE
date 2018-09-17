@@ -5,10 +5,8 @@
           xmlns:tabnavigator="actionScripts.ui.tabNavigator.*">
     <containers:Navigator id="viewStack" width="100%" height="100%" creationPolicy="all">
         <s:NavigatorContent label="Visual">
-           <s:Scroller width="100%" height="100%">
-                <view:VisualEditor id="visualEditor" right="0" left="0" visualEditorType="{_visualEditorType}"
-                                   creationComplete="onVisualEditorCreationComplete(event)"/>
-           </s:Scroller>
+            <view:VisualEditor id="visualEditor" percentWidth="100" percentHeight="100" right="0" left="0"
+                               visualEditorType="{_visualEditorType}"/>
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
             <s:Scroller width="100%" height="100%">
@@ -24,20 +22,20 @@
                                      cornerRadius="1" closeButtonVisible="false"
                                      change="onTabBarChange(event)"/>
     <fx:Script><![CDATA[
-        import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-        import actionScripts.ui.editor.text.TextEditor;
+		import mx.events.FlexEvent;
+		
+		import spark.events.IndexChangeEvent;
+		
 		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
-        import mx.events.FlexEvent;
-
-        import spark.events.IndexChangeEvent;
-		import view.interfaces.IVisualEditorLibraryBridge;
-
+		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+		import actionScripts.ui.editor.text.TextEditor;
+		import actionScripts.events.GlobalEventDispatcher;
+		
         private var _codeEditor:TextEditor;
 
 		[Bindable] public var visualEditorProject:AS3ProjectVO;
 		
-		public var visualEditorLibraryBridgeImp:IVisualEditorLibraryBridge;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
         [Bindable]
         private var _visualEditorType:String;
@@ -61,15 +59,15 @@
         {
             if (event.newIndex == 1)
             {
-                visualEditor.editingSurface.selectedItem = null;
+                //visualEditor.editingSurface.selectedItem = null;
+				visualEditor.editingSurface.setResizerVisible(false);
                 dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
             }
+			else
+			{
+				visualEditor.editingSurface.setResizerVisible(true);
+			}
         }
-		
-		protected function onVisualEditorCreationComplete(event:FlexEvent):void
-		{
-			visualEditor.moonshineBridge = visualEditorLibraryBridgeImp;
-		}
 		
 	]]></fx:Script>
     <fx:Metadata>

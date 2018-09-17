@@ -63,6 +63,8 @@ import actionScripts.valueObjects.Settings;
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
 		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
+		public static const CHANGE_GIT_CLONE_PERMISSION_LABEL:String = "CHANGE_GIT_CLONE_PERMISSION_LABEL";
+		public static const CHANGE_SVN_CHECKOUT_PERMISSION_LABEL:String = "CHANGE_SVN_CHECKOUT_PERMISSION_LABEL";
 		
 		private const BUILD_NATIVE_MENU:uint = 1;
 		private const BUILD_CUSTOM_MENU:uint = 2;
@@ -201,6 +203,8 @@ import actionScripts.valueObjects.Settings;
 				dispatcher.addEventListener(CHANGE_MENU_MAC_DISABLE_STATE, onMacDisableStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_NO_MENU_STATE, onMacNoMenuStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_ENABLE_STATE, onMacEnableStateChange);
+				dispatcher.addEventListener(CHANGE_GIT_CLONE_PERMISSION_LABEL, onGitClonePermissionChange);
+				dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onMenusDisableStateChange);
@@ -591,6 +595,20 @@ import actionScripts.valueObjects.Settings;
 			updateMenuOptionsBasedOnActiveProject(lastSelectedProjectBeforeMacDisableStateChange);
 		}
 		
+		private function onGitClonePermissionChange(event:Event):void
+		{
+			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[8].submenu.items[0];
+			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE ? "Clone" : "Grant Permission";
+		}
+		
+		private function onSVNCheckoutPermissionChange(event:Event):void
+		{
+			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
+			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
+		}
+		
 		private function onSDKStateChange(event:Event):void
 		{
 			var isEnable:Boolean = model.defaultSDK ? true : false;
@@ -681,7 +699,7 @@ import actionScripts.valueObjects.Settings;
 				
 			}
 			if (shortcut)
-				registerShortcut(shortcut);
+				registerShortcut(shortcut, item.enableTypes);
 			
 			return buildingNativeMenu ? nativeMenuItem : menuItem;
 			
@@ -704,9 +722,9 @@ import actionScripts.valueObjects.Settings;
 			return null;
 		}
 		
-		private function registerShortcut(shortcut:KeyboardShortcut):void
+		private function registerShortcut(shortcut:KeyboardShortcut, enableTypes:Array):void
 		{
-			shortcutManager.activate(shortcut);
+			shortcutManager.activate(shortcut, enableTypes);
 		}
 		
 		// Loop through menu structure and add menus through handler

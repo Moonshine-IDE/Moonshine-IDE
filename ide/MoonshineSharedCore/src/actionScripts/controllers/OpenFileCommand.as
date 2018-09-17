@@ -274,7 +274,7 @@ package actionScripts.controllers
 			editorEvent.fileExtension = file.fileBridge.extension;
 			ged.dispatchEvent(editorEvent);
 			
-			editor.lastOpenType = lastOpenEvent.type;
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
 			if (!ConstantsCoreVO.IS_AIR)
 			{
 				var rawData:String = String(value);

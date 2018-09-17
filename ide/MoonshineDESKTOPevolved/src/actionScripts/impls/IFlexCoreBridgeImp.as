@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -46,6 +44,7 @@ package actionScripts.impls
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
+    import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsolePlugin;
@@ -85,6 +84,7 @@ package actionScripts.impls
     import actionScripts.plugins.core.ProjectBridgeImplBase;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
@@ -279,7 +279,7 @@ package actionScripts.impls
 					])
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
-					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_FIND_NEXT,
+					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
@@ -289,24 +289,27 @@ package actionScripts.impls
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','GO_TO_LINE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_GO_TO_LINE,
+					new MenuItem(resourceManager.getString('resources','GO_TO_LINE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_GO_TO_LINE,
 						'l', [Keyboard.COMMAND],
 						'l', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
-					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS,
+					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
+					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS,
 						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'DUPLICATE'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX], VisualEditorEvent.DUPLICATE_ELEMENT,
+						'u', [Keyboard.COMMAND], 'u', [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, null, ProjectEvent.SHOW_PROJECT_VIEW),
 					new MenuItem(resourceManager.getString('resources','FULLSCREEN'), null, null, FullscreenPlugin.EVENT_FULLSCREEN),
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, null, ProblemsPlugin.EVENT_PROBLEMS),
-					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], VSCodeDebugProtocolPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
+					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], VSCodeDebugProtocolPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
-					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
-					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
-					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW, "f7",[Keyboard.COMMAND], "f7", [Keyboard.ALTERNATE])
+					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
+					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW, "f7",[Keyboard.COMMAND], "f7", [Keyboard.ALTERNATE])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
@@ -316,32 +319,32 @@ package actionScripts.impls
 						new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES)
 					]),
                     new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD,
+					new MenuItem(resourceManager.getString('resources','BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN,
 						"\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','BUILD_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AS_JAVASCRIPT,
 						'j', [Keyboard.COMMAND],
 						'j', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
-					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_RELEASE),
-					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem("Build with Apache Ant®", null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_RELEASE),
+					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CLEAN_PROJECT),
+					new MenuItem("Build with Apache Ant®", null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.DEBUG_STEPOVER,
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.DEBUG_STEPOVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CONTINUE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CONTINUE_EXECUTION,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.TERMINATE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.TERMINATE_EXECUTION,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),
@@ -349,10 +352,13 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST)
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
+					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
-					new MenuItem(resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
 					/*new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),

@@ -3,6 +3,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.15.0]
+
+### Added
+* Visual Editor:  Added the name of the component as a header on the property panel.
+* Visual Editor:  Highlight code for selected element when switching to the Code tab
+* Visual Editor:  Duplicate controls with CTRL-U (Windows) or CMD-U (macOS)
+* Visual Editor:  Added PanelGrid component.
+
+### Changed
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.12.1-SNAPSHOT.
+* Visual Editor:  Ignore unknown tags in visual editor XML.
+* Visual Editor:  Allowed text files to be created in visual editor projects
+* Visual Editor:  Enabled scrollbars in mockup area.
+* Visual Editor PrimeFaces:  Improvement to generated code for Grid component.
+* Visual Editor PrimeFaces:  Added additional container to TabView which allows positioning children in each tab.
+* Visual Editor PrimeFaces:  Added dynamic heights for some components.
+* Subversion:  Added option to force SVN to trust certificate errors.
+
+### Fixed
+* Fixed issue where projects did not automatically open on restart if language server was not set.
+* Fixed issue where projects with existing source code did not list sub folders under the main source folder.
+* Git:  Fixed issue where IDE prompted user to install XCode during command line usage.
+* Visual Editor:  Fixed issue where reordering order was not possible.  Further improvements to component reordering are pending.
+* Visual Editor:  Fixed issue where Undo/Redo did not work properly when there were multiple open Visual Editor tabs.
+* Visual Editor:  Disabled **Edit > Find** (and the corresponding shortcuts) for the Visual Editor tab.
+* Visual Editor:  Fixed issue where Include component did not properly display the list of files.
+* Visual Editor:  Fixed issue where the tab selected in the mockup area was not properly selected in the Properties panel
+
+
 ## Moonshine IDE [1.14.0]
 
 ### Added

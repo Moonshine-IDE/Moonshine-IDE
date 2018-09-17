@@ -298,7 +298,7 @@ package actionScripts.ui.renderers
 				var g:Graphics = lineHighligter.graphics;
 				g.clear();
 				g.lineStyle(1, 0xcccccc);
-				g.beginFill(0xff7cff, 0);
+				g.beginFill(0xffb2ff, 0);
 				
 				for each(var i:Object in data.lineNumbersWithRange)
 				{

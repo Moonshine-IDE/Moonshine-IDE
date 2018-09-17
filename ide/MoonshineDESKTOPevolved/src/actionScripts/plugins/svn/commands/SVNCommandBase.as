@@ -26,6 +26,7 @@ package actionScripts.plugins.svn.commands
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.core.ExternalCommandBase;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
 	
@@ -44,27 +45,19 @@ package actionScripts.plugins.svn.commands
 		/*
 			Handle SVN asking about Server Certificate approval/rejection 
 		*/
-		protected function serverCertificatePrompt(data:String):Boolean
+		protected function serverCertificatePrompt(data:String):void
 		{
-			// Server certification needs to be accepted to continue
-			if (data.indexOf("Error validating server certificate for") > -1)
-			{
-				// Strip stuff we don't want
-				data = data.replace("(R)eject, accept (t)emporarily or accept (p)ermanently?", "");
-				
-				var d:ServerCertificateDialog = new ServerCertificateDialog();
-				d.prompt = data;
-				d.addEventListener(ServerCertificateDialog.EVENT_ACCEPT_PERM, acceptPerm);
-				d.addEventListener(ServerCertificateDialog.EVENT_ACCEPT_TEMP, acceptTemp);
-				d.addEventListener(ServerCertificateDialog.EVENT_CANCEL, dontAccept);
-				
-				PopUpManager.addPopUp(d, FlexGlobals.topLevelApplication as DisplayObject);
-				PopUpManager.centerPopUp(d);
-				
-				return true;	
-			}
+			// Strip stuff we don't want
+			data = data.replace("(R)eject, accept (t)emporarily or accept (p)ermanently?", "");
 			
-			return false;
+			var d:ServerCertificateDialog = new ServerCertificateDialog();
+			d.prompt = data;
+			d.addEventListener(ServerCertificateDialog.EVENT_ACCEPT_PERM, acceptPerm);
+			d.addEventListener(ServerCertificateDialog.EVENT_ACCEPT_TEMP, acceptTemp);
+			d.addEventListener(ServerCertificateDialog.EVENT_CANCEL, dontAccept);
+			
+			PopUpManager.addPopUp(d, FlexGlobals.topLevelApplication as DisplayObject);
+			PopUpManager.centerPopUp(d);
 		}
 		
 		// (R)eject, accept (t)emporarily or accept (p)ermanently?

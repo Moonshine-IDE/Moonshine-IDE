@@ -18,11 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor.text
 {
+	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugins.help.view.VisualEditorView;
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
+	import actionScripts.ui.tabview.TabEvent;
 	
 	import view.suportClasses.PropertyChangeReference;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
@@ -36,6 +40,8 @@ package actionScripts.plugins.ui.editor.text
 		
 		private var savedAt:int = 0;
 		private var pendingEvent:String;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var stage:Stage;
 		
 		public function get hasChanged():Boolean
 		{
@@ -48,7 +54,7 @@ package actionScripts.plugins.ui.editor.text
 			this.editor = editor;
 			
 			editor.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			editor.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 		}
 		
 		public function save():void
@@ -85,29 +91,37 @@ package actionScripts.plugins.ui.editor.text
 			savedAt = 0;
 		}
 		
-		private function onRemovedFromStage(event:Event):void
+		public function dispose():void
 		{
 			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			editor.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabChanges);
 			
-			if (editor.stage)
-			{
-				editor.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-				editor.stage.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-				editor.stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
-			}
-			else
-			{
-				editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			}
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+			stage.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
 			
 			editor = null;
 		}
 		
+		private function onTabChanges(event:TabEvent):void
+		{
+			if (event.child is VisualEditorViewer)
+			{
+				if ((event.child as VisualEditorViewer).editorView != editor) stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				else 
+				{
+					stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+					stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+				}
+			}
+		}
+		
 		private function addedToStageHandler(event:Event):void
 		{
+			stage = editor.stage;
+			
 			editor.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			editor.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 		}
 		
 		private function handleKeyDown(event:KeyboardEvent):void
@@ -135,13 +149,13 @@ package actionScripts.plugins.ui.editor.text
 			// shortcuts we will use this pendingEvent system to delay the event
 			// one frame
 			pendingEvent = event;
-			editor.stage.addEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
+			stage.addEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
 		}
 		
 		private function dispatchPendingEvent(e:Event):void
 		{
 			var lastEvent:String = pendingEvent;
-			editor.stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
+			stage.removeEventListener(Event.ENTER_FRAME, dispatchPendingEvent);
 			pendingEvent = null;
 			
 			switch (lastEvent)

@@ -402,9 +402,7 @@ package actionScripts.plugin.templating
 				
 				dispatcher.addEventListener(eventType, handleNewTemplateFile);
 				
-				visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(lbl);
-				if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
-				else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+				enableTypes = TemplatingHelper.getTemplateMenuType(lbl);
 				
 				var menuItem:MenuItem = new MenuItem(lbl, null, enableTypes, eventType);
 				menuItem.data = fileTemplate; 
@@ -1178,12 +1176,40 @@ package actionScripts.plugin.templating
 				var project:AS3ProjectVO = event.ofProject as AS3ProjectVO;
 				if (project && project.isPrimeFacesVisualEditorProject)
 				{
-					extension = ".xhtml";
+                    extension = ".xhtml";
+                    var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + extension);
+
+                    var primeFacesXML:XML = new XML(content);
+					var hNamespace:Namespace = primeFacesXML.namespace("h");
+					var head:XMLList = primeFacesXML..hNamespace::["head"];
+					if (head.length() > 0)
+					{
+						var headXML:XML = head[0];
+                        var cssStyleSheetXml:XML = new XML("<link></link>");
+                        cssStyleSheetXml.@rel = "stylesheet";
+                        cssStyleSheetXml.@type = "text/css";
+                        cssStyleSheetXml.@href = "resources/moonshine-layout-styles.css";
+
+                        headXML.appendChild(cssStyleSheetXml);
+
+                        var relativeFilePath:String = fileToSave.fileBridge.getRelativePath(project.folderLocation, true);
+                        cssStyleSheetXml = new XML("<link></link>");
+                        cssStyleSheetXml.@rel = "stylesheet";
+                        cssStyleSheetXml.@type = "text/css";
+                        cssStyleSheetXml.@href = relativeFilePath + "/assets/moonshine-layout-styles.css";
+
+                        headXML.appendChild(cssStyleSheetXml);
+                        var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+
+						content = markAsXml + primeFacesXML.toXMLString();
+					}
+				}
+				else
+				{
+                    fileToSave = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + extension);
 				}
 
-                var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + extension);
                 fileToSave.fileBridge.save(content);
-
                 notifyNewFileCreated(event.insideLocation, fileToSave);
             }
         }

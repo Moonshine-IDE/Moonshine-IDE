@@ -93,6 +93,7 @@ package actionScripts.plugins.as3project.importer
             project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
             project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
             project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			project.isTrustServerCertificateSVN = UtilsCore.deserializeBoolean(data.trustSVNCertificate);
 
             project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
             project.isPrimeFacesVisualEditorProject = UtilsCore.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);

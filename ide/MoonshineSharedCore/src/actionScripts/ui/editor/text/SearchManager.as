@@ -269,6 +269,72 @@ package actionScripts.ui.editor.text
 			return res; 
 		}
 		
+		public function highlightTagSelection(tagSelectionLineBeginIndex:int, tagSelectionLineEndIndex:int):void
+		{
+			var res:SearchResult;
+			var tmpDict:Dictionary = new Dictionary();
+			
+			// for multiple lines
+			if (tagSelectionLineEndIndex > tagSelectionLineBeginIndex)
+			{
+				var tmpHighlightResult:SearchResult = new SearchResult();
+				var linesCount:int = tagSelectionLineEndIndex - tagSelectionLineBeginIndex + 1;
+				for (var i:int; i < linesCount; i++)
+				{
+					res = new SearchResult();
+					if (i == 0)
+					{
+						res.startLineIndex = tagSelectionLineBeginIndex;
+						res.endLineIndex = tagSelectionLineBeginIndex;
+						res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
+						res.endCharIndex = model.lines[tagSelectionLineBeginIndex].text.length;
+						
+						tmpHighlightResult.startLineIndex = res.startLineIndex;
+						tmpHighlightResult.startCharIndex = res.startCharIndex;
+					}
+					else
+					{
+						res.startLineIndex = ++tagSelectionLineBeginIndex;
+						res.endLineIndex = tagSelectionLineBeginIndex;
+						res.startCharIndex = 0;
+						res.endCharIndex = model.lines[tagSelectionLineBeginIndex].text.length;
+					}
+					
+					tmpDict[tagSelectionLineBeginIndex] = [res];
+				}
+				
+				tmpHighlightResult.endLineIndex = res.endLineIndex;
+				tmpHighlightResult.endCharIndex = res.endCharIndex;
+				
+				applySearch(tmpHighlightResult);
+			}
+			else
+			{
+				// for single line
+				res = new SearchResult();
+				res.startLineIndex = tagSelectionLineBeginIndex;
+				res.endLineIndex = tagSelectionLineEndIndex;
+				res.startCharIndex = model.lines[tagSelectionLineBeginIndex].text.indexOf("<");
+				res.endCharIndex = model.lines[tagSelectionLineEndIndex].text.length;
+				tmpDict[tagSelectionLineBeginIndex] = [res];
+				
+				applySearch(res);
+			}
+			
+			model.allInstancesOfASearchStringDict = tmpDict;
+		}
+		
+		public function unHighlightTagSelection():void
+		{
+			model.allInstancesOfASearchStringDict = new Dictionary();
+			//editor.scrollViewIfNeeded();
+			editor.invalidateLines();
+			editor.callLater(function():void
+			{
+				model.allInstancesOfASearchStringDict = null;
+			});
+		}
+		
 		private function replace(str:String, search:*, replace:String, results:Array, all:Boolean):SearchResult
 		{
 			var regexp:Boolean = search is RegExp;

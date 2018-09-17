@@ -32,7 +32,7 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 
-		public function add(file:File):void
+		public function add(file:String):void
 		{
 			if (runningForFile)
 			{
@@ -40,35 +40,50 @@ package actionScripts.plugins.svn.commands
 				return;
 			}
 			
-			runningForFile = file;
+			//runningForFile = file;
 			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
 			var args:Vector.<String> = new Vector.<String>();
-			
-			var target:String = file.getRelativePath(root, false);
-			// If we're refreshing the root we give roots name
-			if (!target) target = file.name;
 			 
 			args.push("add");
-			args.push(target);
+			args.push(file);
 			
 			customInfo.arguments = args;
 			// We give the file as target, so go one directory up
-			customInfo.workingDirectory = file.parent;
+			customInfo.workingDirectory = root;
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
+		}
+		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
 		}
 		
 		protected function svnError(event:ProgressEvent):void
 		{
-			
+			startShell(false);
 		} 
+		
 		protected function svnOutput(event:ProgressEvent):void
 		{
 			
@@ -95,9 +110,7 @@ package actionScripts.plugins.svn.commands
 				dispatchEvent( new Event(Event.CANCEL) );
 			}
 			
-			runningForFile = null;
-			customProcess = null;
+			startShell(false);
 		}
-		
 	}
 }

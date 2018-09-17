@@ -41,6 +41,9 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -53,7 +56,7 @@ package actionScripts.plugins.git
 	import components.popup.GitRepositoryPermissionPopup;
 	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
-
+	
     public class GitHubPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		public static const CLONE_REQUEST:String = "gutCloneRequest";
@@ -64,6 +67,7 @@ package actionScripts.plugins.git
 		public static const REVERT_REQUEST:String = "gitFilesRevertRequest";
 		public static const NEW_BRANCH_REQUEST:String = "gitNewBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
+		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
 		override public function get name():String			{ return "GitHub"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
@@ -81,6 +85,7 @@ package actionScripts.plugins.git
 		private var gitAuthWindow:GitAuthenticationPopup;
 		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
 		private var gitNewBranchWindow:GitNewBranchPopup;
+		private var isStartupTest:Boolean;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -109,8 +114,12 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
+			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
+			
+			isStartupTest = true;
+			if (checkOSXGitAccess()) processManager.checkGitAvailability();
 		}
 		
 		override public function deactivate():void 
@@ -126,6 +135,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
+			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
 			
 			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
 		}
@@ -133,6 +143,17 @@ package actionScripts.plugins.git
 		override public function resetSettings():void
 		{
 			gitBinaryPathOSX = null;
+			ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = false;
+			setGitAvailable(false);
+			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+			
+			for each (var i:ProjectVO in model.projects)
+			{
+				(i as AS3ProjectVO).menuType = (i as AS3ProjectVO).menuType.replace(","+ ProjectMenuTypes.GIT_PROJECT, "");
+			}
+			
+			// following will enable/disable Moonshine top menus based on project
+			if (model.activeProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -147,7 +168,6 @@ package actionScripts.plugins.git
 			if (!modelAgainstProject[model.activeProject].sessionUser)
 			{
 				openAuthentication();
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 			}
 		}
 		
@@ -170,40 +190,78 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function checkOSXGitAccess():Boolean
+		private function onXCodeAccessRequestBySVN(event:Event):void
+		{
+			checkOSXGitAccess(ProjectMenuTypes.SVN_PROJECT);
+		}
+		
+		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
-				processManager.getOSXCodePath(onXCodePathDetection);
+				processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
+			}
+			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+			{
+				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
 			
 			return true;
 		}
 		
-		private function onXCodePathDetection(path:String):void
+		private function onXCodePathDetection(path:String, isXCodePath:Boolean, against:String):void
 		{
-			if (path && !xCodePermissionWindow)
+			// if calls during startup 
+			// do not open the prompt
+			if (!isStartupTest && path && !xCodePermissionWindow)
 			{
 				xCodePermissionWindow = new GitXCodePermissionPopup;
+				xCodePermissionWindow.isXCodePath = isXCodePath;
 				xCodePermissionWindow.xCodePath = path;
+				xCodePermissionWindow.xCodePathAgainst = against;
 				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
 				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
 				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
 			}
+			
+			isStartupTest = false;
 		}
 		
 		private function onXCodePermissionClosed(event:Event):void
 		{
 			var isDiscarded:Boolean = xCodePermissionWindow.isDiscarded;
+			var isGranted:Boolean;
 			if (!isDiscarded) 
 			{
-				gitBinaryPathOSX = xCodePermissionWindow.xCodePath +"/Contents/Developer/usr/bin/git";
-				Alert.show("Git permission accepted. You can now use Moonshine Git functionalities.", "Success!");
+				isGranted = true;
+				
+				var against:String = xCodePermissionWindow.xCodePathAgainst == ProjectMenuTypes.GIT_PROJECT ? "Git" : "SVN";
+				var svnBinaryPathOSX:String = xCodePermissionWindow.xCodePath + "/usr/bin/svn";
+				
+				gitBinaryPathOSX = xCodePermissionWindow.xCodePath + "/usr/bin/git";
+				Alert.show(against +" permission accepted. You can now use Moonshine "+ against +" functionalities.", "Success!");
 				
 				var thisSettings: Vector.<ISetting> = getSettingsList();
 				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+				dispatcher.dispatchEvent(new SVNEvent(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, null, svnBinaryPathOSX));
+				
+				// re-test
+				processManager.checkGitAvailability();
+				// if an opened project lets test it if Git repository
+				if (model.activeProject) processManager.pendingProcess.push(new MethodDescriptor(processManager, 'checkIfGitRepository', model.activeProject as AS3ProjectVO));
+			}
+			else
+			{
+				isGranted = false;
+			}
+			
+			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
+			{
+				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 			}
 			
 			xCodePermissionWindow.removeEventListener(Event.CLOSE, onXCodePermissionClosed);
@@ -313,7 +371,6 @@ package actionScripts.plugins.git
 		
 		private function onAuthSuccessToPush(event:Event):void
 		{
-			gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 			if (gitAuthWindow.userObject) 
 			{
 				if (gitAuthWindow.userObject.save) 
@@ -463,7 +520,8 @@ package actionScripts.plugins.git
 			// don't go for a check if already decided as a git project
 			// or a project is not permitted to access as a git repository on sandbox macos
 			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1 ||
-				projectsNotAcceptedByUserToPermitAsGitOnMacOS[event.project.folderLocation.fileBridge.nativePath] != undefined) 
+				projectsNotAcceptedByUserToPermitAsGitOnMacOS[event.project.folderLocation.fileBridge.nativePath] != undefined ||
+				!isGitAvailable) 
 			{
 				// following will enable/disable Moonshine top menus based on project
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
@@ -523,7 +581,9 @@ package actionScripts.plugins.git
 				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
+				gitAuthWindow.type = GitAuthenticationPopup.TYPE_GIT;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			
@@ -533,6 +593,7 @@ package actionScripts.plugins.git
 			function onGitAuthWindowClosed(event:CloseEvent):void
 			{
 				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 				PopUpManager.removePopUp(gitAuthWindow);
 				gitAuthWindow = null;
 			}

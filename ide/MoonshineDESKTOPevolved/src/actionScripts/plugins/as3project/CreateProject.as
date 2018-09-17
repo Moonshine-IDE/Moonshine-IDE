@@ -223,7 +223,7 @@ package actionScripts.plugins.as3project
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
 				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 			}
-			else
+			else if (!isOpenProjectCall)
 			{
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
@@ -934,6 +934,10 @@ package actionScripts.plugins.as3project
 			if (pvo.isPrimeFacesVisualEditorProject)
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+			}
+			if (pvo.isActionScriptOnly)
+			{
+				return ProjectMenuTypes.PURE_AS;
 			}
 			if (isVisualEditorProject)
 			{

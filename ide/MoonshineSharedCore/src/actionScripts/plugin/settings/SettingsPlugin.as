@@ -170,7 +170,9 @@ package actionScripts.plugin.settings
 				plug.resetSettings();
 			}
 
-            SharedObjectUtil.resetMoonshineIdeProjectSO();
+			// @devsena
+			// do not remove opened projects' history
+            //SharedObjectUtil.resetMoonshineIdeProjectSO();
 
             var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
             delete cookie.data["javaPathForTypeahead"];

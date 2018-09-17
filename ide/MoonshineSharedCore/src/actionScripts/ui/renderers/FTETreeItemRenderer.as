@@ -365,6 +365,7 @@ package actionScripts.ui.renderers
 			
 			var visualEditorFileIndex:int;
 			var enableTypes:Array;
+			var isVisualEditorProject:Boolean = (as3ProjectVO.menuType.indexOf(ProjectMenuTypes.VISUAL_EDITOR_FLEX) != -1) || (as3ProjectVO.menuType.indexOf(ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES) != -1);
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
@@ -386,8 +387,7 @@ package actionScripts.ui.renderers
 				{
 					var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
 					visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(label);
-					if (visualEditorFileIndex != -1) enableTypes = [ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE[visualEditorFileIndex]];
-					else enableTypes = [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
+					enableTypes = TemplatingHelper.getTemplateMenuType(label);
 					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 					{
 						return as3ProjectVO.menuType.indexOf(item) != -1;

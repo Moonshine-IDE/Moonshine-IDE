@@ -41,7 +41,7 @@ package actionScripts.plugins.svn.provider
 		
 		public function get canBeCommited():Boolean
 		{
-			if (["modified", "added", "unversioned"].indexOf(status) > -1)
+			if (["modified", "added", "unversioned", "deleted"].indexOf(status) > -1)
 				return true;
 			else
 				return false;

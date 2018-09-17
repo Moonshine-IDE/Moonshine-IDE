@@ -101,7 +101,7 @@ package actionScripts.ui.editor.text
 		private var _backgroundAlpha:uint = 			1;
 		private var lineNumberBackgroundColor:uint = 	0xf9f9f9;
 		private var _selectionColor:uint =				0xd1e3f9;
-		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xff7cff;
+		private var _selectedAllInstancesOfASearchStringColorAlpha:uint = 0xffb2ff;
 		private var _selectedLineColor:uint =  			0xedfbfb;
 		private var _selectedLineColorAlpha:Number =	1;
 		private var _tracingLineColor:uint=				0xc6dbae;	
@@ -146,11 +146,21 @@ package actionScripts.ui.editor.text
 			// Populate lines into model
 			model.lines = new Vector.<TextLineModel>(count);
 			
+			var tagSelectionLineBeginIndex:int = -1;
+			var tagSelectionLineEndIndex:int = -1;
 			for (var i:int = 0; i < count; i++)
 			{
+				if (lines[i].indexOf("_moonshineSelected_") != -1)
+				{
+					if (tagSelectionLineBeginIndex == -1) tagSelectionLineBeginIndex = i;
+					else tagSelectionLineEndIndex = i;
+					lines[i] = lines[i].replace("_moonshineSelected_", "");
+				}
+				
 				model.lines[i] = new TextLineModel(lines[i]);
 			}
 			
+			if (tagSelectionLineBeginIndex != -1 && tagSelectionLineEndIndex == -1) tagSelectionLineEndIndex = tagSelectionLineBeginIndex;
 			colorManager.reset();
 			
 			// Clear undo history (readOnly doesn't have it)
@@ -181,6 +191,19 @@ package actionScripts.ui.editor.text
 					scrollTo(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE, OpenFileEvent.TRACE_LINE);
 					selectTraceLine(DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE);
 				});
+			}
+			
+			if (tagSelectionLineBeginIndex != -1)
+			{
+				searchManager.unHighlightTagSelection();
+				callLater(function():void
+				{
+					searchManager.highlightTagSelection(tagSelectionLineBeginIndex, tagSelectionLineEndIndex);
+				});
+			}
+			else if (!isNeedToBeTracedAfterOpening && model.allInstancesOfASearchStringDict)
+			{
+				searchManager.unHighlightTagSelection();
 			}
 		}
 		
@@ -365,10 +388,11 @@ package actionScripts.ui.editor.text
 			if (!readOnly)
 			{
 				undoManager = new UndoManager(this, model);
-				searchManager = new SearchManager(this, model);
 				completionManager = new CompletionManager(this, model);
 				signatureHelpManager = new SignatureHelpManager(this, model);
 			}
+			
+			searchManager = new SearchManager(this, model);
 			hoverManager = new HoverManager(this, model);
 			gotoDefinitionManager = new GotoDefinitionManager(this, model);
 			diagnosticsManager = new DiagnosticsManager(this, model);

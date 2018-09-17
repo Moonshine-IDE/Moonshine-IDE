@@ -18,23 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.provider
 {
-	import flash.display.NativeMenu;
-	import flash.display.NativeMenuItem;
 	import flash.events.Event;
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 	import actionScripts.plugins.svn.commands.CheckoutCommand;
 	import actionScripts.plugins.svn.commands.CommitCommand;
-	import actionScripts.plugins.svn.commands.DeleteCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
-	import actionScripts.plugins.svn.commands.UpdateStatusCommand;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	
-	public class SubversionProvider extends ConsoleOutputter implements ISourceControlProvider
+	public class SubversionProvider extends ConsoleOutputter
 	{
 		protected var status:Object = {};
 		
@@ -43,83 +38,33 @@ package actionScripts.plugins.svn.provider
 		public var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		override public function get name():String { return "Subversion plugin"; }
-		
-		public function get systemNameShort():String { return "SVN"; }
-		
-		public function getTreeRightClickMenu(file:FileLocation):Object
-		{
-			var menu:NativeMenuItem = new NativeMenuItem("Subversion");
-			menu.submenu = new NativeMenu();
-			
-			var commit:NativeMenuItem = new NativeMenuItem("Commit");
-			commit.data = file;
-			commit.addEventListener(Event.SELECT, handleCommit);
-			menu.submenu.addItem(commit);
-			
-			var update:NativeMenuItem = new NativeMenuItem("Update");
-			update.addEventListener(Event.SELECT, handleUpdate);
-			update.data = file;
-			menu.submenu.addItem(update);
-			
-			return menu;
-		}
-		
-		public function getStatus(filePath:String):String
-		{
-			var st:SVNStatus = status[filePath];
-			if (st)
-			{
-				return st.shortStatus;
-			}
-			
-			return null;
-		}
 
 		protected function handleCommit(event:Event):void
 		{
-			var file:File = FileLocation(event.target.data).fileBridge.getFile as File;
-			
-			commit(file);
+			commit(FileLocation(event.target.data));
 		}
 		
-		public function commit(file:File, message:String=null):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			var commitCommand:CommitCommand = new CommitCommand(executable, root, status);
-			commitCommand.commit(file, message);
+			commitCommand.commit(file, message, user, password, commitInfo, isTrustServerCertificateSVN);
 		}
 		
 		protected function handleUpdate(event:Event):void
 		{
-			var f:File = FileLocation(event.target.data).fileBridge.getFile as File;
-			update(f);
+			update(FileLocation(event.target.data));
 		}
 		
-		public function update(file:File):void
+		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
-			updateCommand.update(file);
+			updateCommand.update(file, user, password, isTrustServerCertificateSVN);
 		}
 		
-		public function refresh(file:FileLocation):void
-		{
-			// Status will be updated
-			var refreshCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
-			refreshCommand.update(file.fileBridge.getFile as File);
-		}
-		
-		public function remove(file:FileLocation):void
-		{
-			var deleteCommand:DeleteCommand = new DeleteCommand(executable, root);
-			deleteCommand.remove(file.fileBridge.getFile as File);
-		}
-		
-		public function checkout(event:SVNEvent):void
+		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
 		{
 			var checkoutCommand:CheckoutCommand = new CheckoutCommand(executable, root);
-			checkoutCommand.checkout(event);
+			checkoutCommand.checkout(event, isTrustServerCertificateSVN);
 		}
-
-		
 	}
-
 }

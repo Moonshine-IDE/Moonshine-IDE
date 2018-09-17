@@ -20,29 +20,40 @@ package actionScripts.plugins.svn.commands
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	
+	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
 	import __AS3__.vec.Vector;
 	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.git.GitProcessManager;
+	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SVNStatus;
-	import actionScripts.plugins.svn.view.CommitMessageEditor;
-	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.valueObjects.GenericSelectableObject;
+	
+	import components.popup.GitCommitSelectionPopup;
 
 	public class CommitCommand extends SVNCommandBase
 	{
 		protected var message:String;
 		// Files we need to add before commiting
 		protected var toAdd:Array;
-		protected var affectedFiles:Vector.<SVNFileWrapper> = new Vector.<SVNFileWrapper>();
+		protected var affectedFiles:ArrayCollection;
+		protected var isTrustServerCertificateSVN:Boolean;
 		
 		public var status:Object;
+		
+		private var svnCommitWindow:GitCommitSelectionPopup;
 		
 		public function CommitCommand(executable:File, root:File, status:Object)
 		{
@@ -50,22 +61,29 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function commit(file:File, message:String=null):void
-		{	
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
+		{
+			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
+			if (user && password)
+			{
+				doCommit(user, password, commitInfo);
+				return;
+			}
+			
 			if (runningForFile)
 			{
 				error("Currently running, try again later.");
 				return;
 			}
 			
-			runningForFile = file;
+			runningForFile = file.fileBridge.getFile as File;
 			this.message = message;
 			
 			// Update status, in case files were added
 			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
 			statusCommand.addEventListener(Event.COMPLETE, handleCommitStatusUpdateComplete);
 			statusCommand.addEventListener(Event.CANCEL, handleCommitStatusUpdateCancel);
-			statusCommand.update(file);
+			statusCommand.update(file.fileBridge.getFile as File, this.isTrustServerCertificateSVN);
 			
 			print("Updating status before commit");
 		}
@@ -75,23 +93,31 @@ package actionScripts.plugins.svn.commands
 			// Ok, now we know the status is fresh.
 			var topPath:String = runningForFile.nativePath;
 			var topPathLength:int = topPath.length;
+			affectedFiles = new ArrayCollection();
 			for (var p:String in status)
 			{
-				// Is file below our target file?
-				if (p.length >= topPathLength && p.substr(0, topPathLength) == topPath)
-				{
-					var st:SVNStatus = status[p];
-					
-					if (st.canBeCommited)
-					{	
-						var relativePath:String = p.substr(topPathLength);
-						var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
-						affectedFiles.push(w);
-					}
+				var st:SVNStatus = status[p];
+				
+				if (st.canBeCommited)
+				{	
+					var relativePath:String = p.substr(topPathLength+1);
+					affectedFiles.addItem(new GenericSelectableObject(false, {path: p, status:getFileStatus(st)}));
+					//var w:SVNFileWrapper = new SVNFileWrapper(new File(p), st, relativePath);
+					//affectedFiles.push(w);
 				}
 			}
 			
 			promptForCommitMessage();
+			
+			/*
+			* @local
+			*/
+			function getFileStatus(value:SVNStatus):String
+			{
+				if (value.status == "deleted") return GitProcessManager.GIT_STATUS_FILE_DELETED;
+				else if (value.status == "unversioned") return GitProcessManager.GIT_STATUS_FILE_NEW;
+				return GitProcessManager.GIT_STATUS_FILE_MODIFIED;
+			}
 		}
 		
 		protected function handleCommitStatusUpdateCancel(event:Event):void
@@ -101,45 +127,55 @@ package actionScripts.plugins.svn.commands
 		
 		protected function promptForCommitMessage():void
 		{
-			var editor:CommitMessageEditor = new CommitMessageEditor();
-			editor.files = affectedFiles;
+			if (!svnCommitWindow)
+			{
+				svnCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				svnCommitWindow.title = "Commit";
+				svnCommitWindow.commitDiffCollection = affectedFiles;
+				svnCommitWindow.windowType = GitCommitSelectionPopup.TYPE_SVN;
+				svnCommitWindow.addEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
+				PopUpManager.centerPopUp(svnCommitWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(svnCommitWindow);
+			}
+			
+			/*var editor:CommitMessageEditor = new CommitMessageEditor();
+			//editor.files = affectedFiles;
 			dispatcher.dispatchEvent(
 				new AddTabEvent(editor)
-			);
+			);*/
 			
-			editor.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleCommitEditorClose);
+			//editor.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleCommitEditorClose);
 		}
 		
-		
-		protected function handleCommitEditorClose(event:Event):void
+		private function onSVNCommitWindowClosed(event:CloseEvent):void
 		{
-			if (event is CloseTabEvent)
+			if (svnCommitWindow.isSubmit) 
 			{
-				var editor:CommitMessageEditor = CloseTabEvent(event).tab as CommitMessageEditor;
-				if (editor.isSaved)
-				{
-					message = editor.text;
-				}
-				else
-				{
-					error("No commit message given, aborting.");
-					return;
-				}
-				
-				// We'll need to add some files
-				toAdd = [];
-				for each (var wrap:SVNFileWrapper in affectedFiles)
-				{
-					if (wrap.ignore) continue;
-					
-					if (wrap.status.status == "unversioned")
-					{
-						toAdd.push(wrap.file);	
-					}
-				}
-				
-				addFiles();
+				this.message = svnCommitWindow.commitMessage;
+				initiateProcess();
 			}
+			
+			svnCommitWindow.removeEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
+			PopUpManager.removePopUp(svnCommitWindow);
+			svnCommitWindow = null;
+		}
+		
+		protected function initiateProcess():void
+		{
+			// We'll need to add some files
+			toAdd = [];
+			for each (var wrap:GenericSelectableObject in affectedFiles)
+			{
+				if (wrap.isSelected && wrap.data.status == GitProcessManager.GIT_STATUS_FILE_NEW)
+				{
+					toAdd.push(wrap.data.path);	
+				}
+			}
+			
+			addFiles();
 		}
 		
 		// Start adding files
@@ -147,12 +183,12 @@ package actionScripts.plugins.svn.commands
 		{
 			if (toAdd.length == 0)
 			{
-				doCommit(runningForFile, message);
+				doCommit();
 			}
 			else
 			{
-				var file:File = toAdd.pop();
-				var addCommand:AddCommand = new AddCommand(executable, root);
+				var file:String = toAdd.pop();
+				var addCommand:AddCommand = new AddCommand(executable, runningForFile);
 				addCommand.addEventListener(Event.COMPLETE, addFiles);
 				addCommand.addEventListener(Event.CANCEL, addFilesCancel);
 				addCommand.add(file);
@@ -165,9 +201,16 @@ package actionScripts.plugins.svn.commands
 			toAdd = null;
 		}
 		
-		protected function doCommit(file:File, message:String):void
+		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null):void
 		{	
 			// TODO: Check for empty commits, since svn commit will recurse-commit everything
+			if (commitInfo)
+			{
+				affectedFiles ||= commitInfo.files;
+				this.message ||= commitInfo.message;
+				runningForFile ||= commitInfo.runningForFile;
+			}
+			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
@@ -175,14 +218,11 @@ package actionScripts.plugins.svn.commands
 			
 			args.push("commit");
 			var argFiles:Vector.<String> = new Vector.<String>();
-			for each (var wrap:SVNFileWrapper in affectedFiles)
+			for each (var wrap:GenericSelectableObject in affectedFiles)
 			{
-				if (!wrap.ignore)
+				if (wrap.isSelected)
 				{
-					var relPath:String = root.getRelativePath(wrap.file, false);
-					// TODO: Handle this properly
-					if (!relPath) continue;
-					argFiles.push(relPath);
+					argFiles.push(wrap.data.path);
 				}
 			}
 			
@@ -194,24 +234,56 @@ package actionScripts.plugins.svn.commands
 			
 			args = args.concat(argFiles);
 			args.push("--message");
-			args.push(message);
+			args.push(this.message);
+			if (user && password)
+			{
+				args.push("--username");
+				args.push(user);
+				args.push("--password");
+				args.push(password);
+			}
+			args.push("--non-interactive");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			
-			customInfo.workingDirectory = root;
+			customInfo.workingDirectory = runningForFile;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
-			customProcess = new NativeProcess();
-			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
-			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
-			customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			startShell(true);
 			customProcess.start(customInfo);
 			
 			print("Starting commit");
 		}
 		
+		private function startShell(start:Boolean):void
+		{
+			if (start)
+			{
+				customProcess = new NativeProcess();
+				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.addEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			}
+			else
+			{
+				if (!customProcess) return;
+				if (customProcess.running) customProcess.exit();
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+				customProcess = null;
+				customInfo = null;
+			}
+		}
+		
 		protected function svnError(event:ProgressEvent):void
 		{
+			var str:String = customProcess.standardError.readUTFBytes(customProcess.standardOutput.bytesAvailable);
+			error(str);
 			
+			//startShell(false);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		} 
 		protected function svnOutput(event:ProgressEvent):void
 		{
@@ -232,21 +304,25 @@ package actionScripts.plugins.svn.commands
 			{
 				// Commit failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				error(err);
+				var match:Array = err.match(/Authentication failed/);
+				if (match)
+				{
+					dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_AUTH_REQUIRED, runningForFile, null, null, null, "commit", affectedFiles, this.message, runningForFile));
+				}
+				else error(err);
 			}
 			
 			// Update status (don't care if it fails or not, just try it)
-			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
-			statusCommand.update(root);
+			/*var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, runningForFile, status);
+			statusCommand.update(runningForFile);
 			
 			// Show changes in project view
 			dispatcher.dispatchEvent(
 				new RefreshTreeEvent(new FileLocation(runningForFile.nativePath))
-			);
+			);*/
 			
-			runningForFile = null;
-			customProcess = null;
+			startShell(false);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
-		
 	}
 }

@@ -78,6 +78,7 @@ package actionScripts.plugins.git
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
+		private var xCodePathDetectionType:String;
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
@@ -101,10 +102,11 @@ package actionScripts.plugins.git
 			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
 		}
 		
-		public function getOSXCodePath(completion:Function):void
+		public function getOSXCodePath(completion:Function, against:String):void
 		{
 			queue = new Vector.<Object>();
 			onXCodePathDetection = completion;
+			xCodePathDetectionType = against;
 			
 			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
@@ -405,7 +407,13 @@ package actionScripts.plugins.git
 		
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
-			error(value.output);
+			var match:Array = value.output.toLowerCase().match(/'git' is not recognized as an internal or external command/);
+			if (match)
+			{
+				setGitAvailable(false);
+			}
+			
+			if (!match) error(value.output);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 		
@@ -447,10 +455,11 @@ package actionScripts.plugins.git
 			{
 				case XCODE_PATH_DECTECTION:
 				{
+					value.output = value.output.replace("\n", "");
 					match = value.output.toLowerCase().match(/xcode.app\/contents\/developer/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output);
+						onXCodePathDetection(value.output, true, xCodePathDetectionType);
 						onXCodePathDetection = null;
 						return;
 					}
@@ -458,10 +467,12 @@ package actionScripts.plugins.git
 					match = value.output.toLowerCase().match(/commandlinetools/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output);
+						onXCodePathDetection(value.output, false, xCodePathDetectionType);
 						onXCodePathDetection = null;
 						return;
 					}
+					
+					onXCodePathDetection = null;
 					break;
 				}
 				case GIT_AVAIL_DECTECTION:
@@ -500,6 +511,9 @@ package actionScripts.plugins.git
 							// continuing fetch
 							pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch', tmpProject)); // store the current branch
 							pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', tmpProject)); // store the remote URL
+							
+							// following will enable/disable Moonshine top menus based on project
+							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
 						}
 						
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));

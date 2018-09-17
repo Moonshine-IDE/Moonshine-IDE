@@ -899,14 +899,21 @@ package actionScripts.utils
 		 */
 		public static function setProjectMenuType(value:AS3ProjectVO):void
 		{
-			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS) value.menuType = ProjectMenuTypes.JS_ROYALE;
-			else if (value.isLibraryProject) value.menuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
-			else if (value.isPrimeFacesVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
-			else if (value.isVisualEditorProject) value.menuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
-			else value.menuType = ProjectMenuTypes.FLEX_AS;
+			var currentMenuType:String;
+			
+			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS) currentMenuType = ProjectMenuTypes.JS_ROYALE;
+			else if (value.isLibraryProject) currentMenuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
+			else if (value.isPrimeFacesVisualEditorProject) currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+			else if (value.isVisualEditorProject) currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
+			else if (value.isActionScriptOnly) currentMenuType = ProjectMenuTypes.PURE_AS;
+			else currentMenuType = ProjectMenuTypes.FLEX_AS;
+			
+			if (value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
 			
 			// git check
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
+			// svn check
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, value));
 		}
 		
 		/**

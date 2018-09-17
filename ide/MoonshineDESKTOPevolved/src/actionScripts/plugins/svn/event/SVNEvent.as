@@ -26,18 +26,24 @@ package actionScripts.plugins.svn.event
 	public class SVNEvent extends Event
 	{
 		public static const EVENT_CHECKOUT:String = "checkoutEvent";
+		public static const OSX_XCODE_PERMISSION_GIVEN:String = "onXCodePermissionGivenOnOSX";
+		public static const SVN_AUTH_REQUIRED:String = "svnAuthRequired";
+		public static const SVN_ERROR:String = "svnError";
+		public static const SVN_RESULT:String = "svnResult";
 		
 		public var file:File;
 		public var url:String;
 		public var project:ProjectVO;
 		public var authObject: Object; // [username, password]
+		public var extras:Array;
 		 
-		public function SVNEvent(type:String, file:File, url:String=null, project:ProjectVO=null, authObject:Object=null)
+		public function SVNEvent(type:String, file:File, url:String=null, project:ProjectVO=null, authObject:Object=null, ...param)
 		{
 			this.file = file;
 			this.url = url;
 			this.authObject = authObject;
 			this.project = project;
+			this.extras = param;
 			super(type, false, true);
 		}
 		
