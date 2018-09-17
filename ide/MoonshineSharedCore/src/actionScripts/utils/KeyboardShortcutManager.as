@@ -28,6 +28,7 @@ package actionScripts.utils
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public class KeyboardShortcutManager
 	{
@@ -159,11 +160,16 @@ package actionScripts.utils
 			if (!model.activeProject) return true;
 			if (lookupMenuType[event] == null) return true;
 			
-			var tmpProjectsType:Array = (model.activeProject as AS3ProjectVO).menuType.split(",");
-			for (var i:int; i < tmpProjectsType.length; i++)
+			var project:ProjectVO = model.activeProject;
+			if(project is AS3ProjectVO)
 			{
-				if (tmpProjectsType[i] == "") continue;
-				if ((lookupMenuType[event] as Array).indexOf(tmpProjectsType[i]) != -1) return true;
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				var tmpProjectsType:Array = as3Project.menuType.split(",");
+				for (var i:int; i < tmpProjectsType.length; i++)
+				{
+					if (tmpProjectsType[i] == "") continue;
+					if ((lookupMenuType[event] as Array).indexOf(tmpProjectsType[i]) != -1) return true;
+				}
 			}
 			
 			return false;
