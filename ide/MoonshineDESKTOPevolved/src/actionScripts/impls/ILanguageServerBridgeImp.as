@@ -15,6 +15,8 @@ package actionScripts.impls
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
+		private static const URI_SCHEME_FILE:String = "file";
+
 		public function ILanguageServerBridgeImp()
 		{
 			
@@ -63,9 +65,28 @@ package actionScripts.impls
 			}
 			return false;
 		}
-		
-		public function hasCustomTextEditorForFileExtension(extension:String, project:ProjectVO):Boolean
+
+		public function hasCustomTextEditorForUri(uri:String, project:ProjectVO):Boolean
 		{
+			var colonIndex:int = uri.indexOf(":");
+			if(colonIndex == -1)
+			{
+				throw new URIError("Invalid URI: " + uri);
+			}
+			var scheme:String = uri.substr(0, colonIndex);
+			var uriWithoutParams:String = uri;
+			var paramsIndex:int = uriWithoutParams.lastIndexOf("?");
+			if(paramsIndex != -1)
+			{
+				uriWithoutParams = uri.substr(0, paramsIndex);
+			}
+			var extension:String = "";
+			var dotIndex:int = uriWithoutParams.lastIndexOf(".");
+			if(dotIndex != -1)
+			{
+				extension = uriWithoutParams.substr(dotIndex + 1);
+			}
+
 			var managerCount:int = managers.length;
 			for(var i:int = 0; i < managerCount; i++)
 			{
@@ -74,55 +95,47 @@ package actionScripts.impls
 				{
 					continue;
 				}
-				var index:int = manager.fileExtensions.indexOf(extension);
-				if(index != -1)
+				if(scheme == URI_SCHEME_FILE)
 				{
-					return true;
+					var extensionIndex:int = manager.fileExtensions.indexOf(extension);
+					if(extensionIndex != -1)
+					{
+						return true;
+					}
+				}
+				else
+				{
+					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
+					if(schemeIndex != -1)
+					{
+						return true;
+					}
 				}
 			}
 			return false;
 		}
 
-		public function getCustomTextEditorForFileExtension(extension:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor
+		public function getCustomTextEditorForUri(uri:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor
 		{
-			var managerCount:int = managers.length;
-			for(var i:int = 0; i < managerCount; i++)
+			var colonIndex:int = uri.indexOf(":");
+			if(colonIndex == -1)
 			{
-				var manager:ILanguageServerManager = managers[i];
-				if(manager.project != project)
-				{
-					continue;
-				}
-				var index:int = manager.fileExtensions.indexOf(extension);
-				if(index != -1)
-				{
-					return manager.createTextEditor(readOnly);
-				}
+				throw new URIError("Invalid URI: " + uri);
 			}
-			return null;
-		}
-
-		public function hasCustomTextEditorForUriScheme(scheme:String, project:ProjectVO):Boolean
-		{
-			var managerCount:int = managers.length;
-			for(var i:int = 0; i < managerCount; i++)
+			var scheme:String = uri.substr(0, colonIndex);
+			var uriWithoutParams:String = uri;
+			var paramsIndex:int = uriWithoutParams.lastIndexOf("?");
+			if(paramsIndex != -1)
 			{
-				var manager:ILanguageServerManager = managers[i];
-				if(manager.project != project)
-				{
-					continue;
-				}
-				var index:int = manager.uriSchemes.indexOf(scheme);
-				if(index != -1)
-				{
-					return true;
-				}
+				uriWithoutParams = uri.substr(0, paramsIndex);
 			}
-			return false;
-		}
+			var extension:String = "";
+			var dotIndex:int = uriWithoutParams.lastIndexOf(".");
+			if(dotIndex != -1)
+			{
+				extension = uriWithoutParams.substr(dotIndex + 1);
+			}
 
-		public function getCustomTextEditorForUriScheme(scheme:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor
-		{
 			var managerCount:int = managers.length;
 			for(var i:int = 0; i < managerCount; i++)
 			{
@@ -131,10 +144,21 @@ package actionScripts.impls
 				{
 					continue;
 				}
-				var index:int = manager.uriSchemes.indexOf(scheme);
-				if(index != -1)
+				if(scheme == URI_SCHEME_FILE)
 				{
-					return manager.createTextEditor(readOnly);
+					var extensionIndex:int = manager.fileExtensions.indexOf(extension);
+					if(extensionIndex != -1)
+					{
+						return manager.createTextEditorForUri(uri, readOnly);
+					}
+				}
+				else
+				{
+					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
+					if(schemeIndex != -1)
+					{
+						return manager.createTextEditorForUri(uri, readOnly);
+					}
 				}
 			}
 			return null;

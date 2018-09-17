@@ -47,6 +47,7 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.ActionScriptTextEditor;
     import actionScripts.ui.editor.LanguageServerTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.events.EditorPluginEvent;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -57,7 +58,10 @@ package actionScripts.languageServer
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
 
-		private static const URI_SCHEMES:Vector.<String> = new <String>[/*"swc"*/];
+		private static const URI_SCHEME_FILE:String = "file";
+		private static const URI_SCHEME_SWC:String = "swc";
+
+		private static const URI_SCHEMES:Vector.<String> = new <String>[URI_SCHEME_SWC];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["as", "mxml"];
 
 		private var _project:AS3ProjectVO;
@@ -107,9 +111,64 @@ package actionScripts.languageServer
 			return FILE_EXTENSIONS;
 		}
 
-		public function createTextEditor(readOnly:Boolean = false):BasicTextEditor
+		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
 		{
-			return new ActionScriptTextEditor(readOnly);
+			var colonIndex:int = uri.indexOf(":");
+			if(colonIndex == -1)
+			{
+				throw new URIError("Invalid URI: " + uri);
+			}
+			var scheme:String = uri.substr(0, colonIndex);
+
+			var editor:ActionScriptTextEditor = new ActionScriptTextEditor(readOnly);
+			if(scheme == URI_SCHEME_FILE)
+			{
+				//the regular OpenFileEvent should be used to open this one
+				return editor;
+			}
+			switch(scheme)
+			{
+				case URI_SCHEME_SWC:
+				{
+					var label:String = uri;
+					var args:String = null;
+					var argsIndex:int = uri.indexOf("?");
+					if(argsIndex != -1)
+					{
+						label = uri.substr(0, argsIndex);
+						args = uri.substr(argsIndex + 1);
+					}
+					var lastSlashIndex:int = label.lastIndexOf("/");
+					if(lastSlashIndex != -1)
+					{
+						label = label.substr(lastSlashIndex + 1);
+					}
+					args = decodeURIComponent(args);
+
+					var extension:String = "";
+					var dotIndex:int = label.lastIndexOf(".");
+					if(dotIndex != -1)
+					{
+						extension = label.substr(dotIndex + 1);
+					}
+					editor.defaultLabel = label;
+
+					var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+					editorEvent.editor = editor.getEditorComponent();
+					editorEvent.fileExtension = extension;
+					GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
+
+					//editor.open() must be called after EditorPluginEvent.EVENT_EDITOR_OPEN
+					//is dispatched or the syntax highlighting will not work
+					editor.open(null, args);
+					break;
+				}
+				default:
+				{
+					throw new URIError("Unknown URI scheme for ActionScript and MXML: " + scheme);
+				}
+			}
+			return editor;
 		}
 
 		protected function dispose():void

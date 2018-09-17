@@ -11,6 +11,6 @@ package actionScripts.languageServer
 		function get project():ProjectVO;
 		function get uriSchemes():Vector.<String>;
 		function get fileExtensions():Vector.<String>;
-		function createTextEditor(readOnly:Boolean = false):BasicTextEditor;
+		function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor;
 	}
 }

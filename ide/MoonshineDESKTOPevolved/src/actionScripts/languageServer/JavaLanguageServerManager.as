@@ -71,6 +71,8 @@ package actionScripts.languageServer
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 		
+		private static const URI_SCHEME_FILE:String = "file";
+
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["java"];
 
@@ -118,9 +120,29 @@ package actionScripts.languageServer
 			return FILE_EXTENSIONS;
 		}
 
-		public function createTextEditor(readOnly:Boolean = false):BasicTextEditor
+		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
 		{
-			return new JavaTextEditor(readOnly);
+			var colonIndex:int = uri.indexOf(":");
+			if(colonIndex == -1)
+			{
+				throw new URIError("Invalid URI: " + uri);
+			}
+			var scheme:String = uri.substr(0, colonIndex);
+
+			var editor:JavaTextEditor = new JavaTextEditor(readOnly);
+			if(scheme == URI_SCHEME_FILE)
+			{
+				//the regular OpenFileEvent should be used to open this one
+				return editor;
+			}
+			switch(scheme)
+			{
+				default:
+				{
+					throw new URIError("Unknown URI scheme for Java: " + scheme);
+				}
+			}
+			return editor;
 		}
 
 		protected function dispose():void

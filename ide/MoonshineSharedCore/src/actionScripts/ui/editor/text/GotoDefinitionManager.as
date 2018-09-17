@@ -32,6 +32,12 @@ package actionScripts.ui.editor.text
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.valueObjects.Location;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.interfaces.ILanguageServerBridge;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public class GotoDefinitionManager
 	{
@@ -74,6 +80,16 @@ package actionScripts.ui.editor.text
 				return;
 			}
 			savedLocation = locations[0];
+			var uri:String = savedLocation.uri;
+			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
+			var project:ProjectVO = IDEModel.getInstance().activeProject;
+			if(!lsc.hasCustomTextEditorForUri(uri, project))
+			{
+				savedLocation = null;
+				this.closeDefinitionLink();
+				return;
+			}
+
 			var lineIndex:int = position.line;
 			var charIndex:int = position.character;
 			var line:TextLineModel = model.lines[lineIndex];
@@ -150,10 +166,36 @@ package actionScripts.ui.editor.text
 		private function editor_onMouseDown(event:MouseEvent):void
 		{
 			closeDefinitionLink();
-			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-				new FileLocation(savedLocation.uri, true), savedLocation.range.start.line);
-			openEvent.atChar = savedLocation.range.start.character;
-			GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
+			if(!savedLocation)
+			{
+				//we should never get here, but this will save us if we do
+				return;
+			}
+			var uri:String = savedLocation.uri;
+			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
+			var project:ProjectVO = IDEModel.getInstance().activeProject;
+			if(!lsc.hasCustomTextEditorForUri(uri, project))
+			{
+				//we should never get here, but this will save us if we do
+				return;
+			}
+			
+			var colonIndex:int = uri.indexOf(":");
+			var scheme:String = uri.substr(0, colonIndex);
+			if(scheme == "file")
+			{
+				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
+					new FileLocation(savedLocation.uri, true), savedLocation.range.start.line);
+				openEvent.atChar = savedLocation.range.start.character;
+				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
+			}
+			else
+			{
+				var editor:BasicTextEditor = lsc.getCustomTextEditorForUri(uri, project, true);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(editor)
+				);
+			}
 		}
 	}
 }

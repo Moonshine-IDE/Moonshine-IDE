@@ -253,9 +253,9 @@ package actionScripts.controllers
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
 				}
-				else if(model.languageServerCore.hasCustomTextEditorForFileExtension(extension, project))
+				else if(model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
 				{
-					editor = model.languageServerCore.getCustomTextEditorForFileExtension(extension, project);
+					editor = model.languageServerCore.getCustomTextEditorForUri(file.fileBridge.url, project);
 				}
 				else
                 {

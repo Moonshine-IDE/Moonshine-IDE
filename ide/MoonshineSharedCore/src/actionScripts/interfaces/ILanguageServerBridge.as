@@ -10,10 +10,7 @@ package actionScripts.interfaces
 		function start():void;
 		function hasLanguageServerForProject(project:ProjectVO):Boolean;
 
-		function hasCustomTextEditorForFileExtension(extension:String, project:ProjectVO):Boolean;
-		function getCustomTextEditorForFileExtension(extension:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor;
-
-		function hasCustomTextEditorForUriScheme(scheme:String, project:ProjectVO):Boolean;
-		function getCustomTextEditorForUriScheme(scheme:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor;
+		function hasCustomTextEditorForUri(uri:String, project:ProjectVO):Boolean;
+		function getCustomTextEditorForUri(scheme:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor;
 	}
 }
