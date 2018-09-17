@@ -363,9 +363,7 @@ package actionScripts.ui.renderers
 				model.activeProject = activeProject;
 			}
 			
-			var visualEditorFileIndex:int;
 			var enableTypes:Array;
-			var isVisualEditorProject:Boolean = (as3ProjectVO.menuType.indexOf(ProjectMenuTypes.VISUAL_EDITOR_FLEX) != -1) || (as3ProjectVO.menuType.indexOf(ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES) != -1);
 			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
@@ -386,7 +384,6 @@ package actionScripts.ui.renderers
 				else if(activeProject is AS3ProjectVO)
 				{
 					var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
-					visualEditorFileIndex = ProjectMenuTypes.VISUAL_EDITOR_FILE_TEMPLATE_ITEMS.indexOf(label);
 					enableTypes = TemplatingHelper.getTemplateMenuType(label);
 					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 					{
