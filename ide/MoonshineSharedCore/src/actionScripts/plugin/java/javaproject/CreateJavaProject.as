@@ -26,6 +26,7 @@ package actionScripts.plugin.java.javaproject
 	import flash.filesystem.File;
 	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
 	import actionScripts.plugin.settings.vo.ListSetting;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
 
 	public class CreateJavaProject
 	{
