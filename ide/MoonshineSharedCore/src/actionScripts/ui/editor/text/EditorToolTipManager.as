@@ -11,12 +11,15 @@ package actionScripts.ui.editor.text
 	import mx.managers.PopUpManager;
 
 	import spark.components.RichText;
+	import spark.components.Group;
+	import spark.layouts.VerticalLayout;
 
 	public class EditorToolTipManager
 	{
 		private static const DELAY_MS:int = 350;
 
 		private var tooltip:VBox;
+		private var tooltipGroup:Group;
 		private var idToRichText:Object = {};
 		private var idToValue:Object = {};
 		private var tooltipTimeoutHandle:int = -1;
@@ -35,6 +38,14 @@ package actionScripts.ui.editor.text
 			tooltip.mouseEnabled = false;
 			tooltip.mouseChildren = false;
 			tooltip.maxWidth = 450;
+
+			//RichText won't wrap correctly if added to the VBox above, for some
+			//reason, so we're going to add it to this internal Group instead
+			tooltipGroup = new Group();
+			tooltipGroup.percentWidth = 100;
+			tooltipGroup.maxWidth = 450;
+			tooltipGroup.layout = new VerticalLayout();
+			tooltip.addElement(tooltipGroup);
 		}
 
 		public function setTooltip(id:String, value:String):void
@@ -47,7 +58,7 @@ package actionScripts.ui.editor.text
 					return;
 				}
 				var richText:RichText = idToRichText[id];
-				tooltip.removeElement(richText);
+				tooltipGroup.removeElement(richText);
 				delete idToRichText[id];
 				delete idToValue[id];
 				var stillHasData:Boolean = false;
@@ -79,7 +90,7 @@ package actionScripts.ui.editor.text
 				{
 					richText = new RichText();
 					richText.percentWidth = 100;
-					tooltip.addElement(richText);
+					tooltipGroup.addElement(richText);
 					idToRichText[id] = richText;
 				}
 				richText.textFlow = TextConverter.importToFlow(value, TextConverter.PLAIN_TEXT_FORMAT);
@@ -141,7 +152,7 @@ package actionScripts.ui.editor.text
 				delete idToValue[id];
 
 				var text:RichText = idToRichText[id];
-				tooltip.removeElement(text);
+				tooltipGroup.removeElement(text);
 				delete idToRichText[id];
 			}
 			//previously, these listeners were only removed if the tooltip was a
