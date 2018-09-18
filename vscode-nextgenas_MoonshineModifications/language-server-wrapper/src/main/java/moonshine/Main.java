@@ -4,24 +4,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
-import com.nextgenactionscript.vscode.project.IProjectConfigStrategyFactory;
-import com.nextgenactionscript.vscode.services.ActionScriptLanguageClient;
+import com.as3mxml.vscode.project.IProjectConfigStrategy;
+import com.as3mxml.vscode.project.IProjectConfigStrategyFactory;
+import com.as3mxml.vscode.services.ActionScriptLanguageClient;
 
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.xsocket.connection.IServer;
 
 public class Main
 {
     private static final String SYSTEM_PROPERTY_PORT = "moonshine.port";
     private static final String SYSTEM_PROPERTY_FRAMEWORK_LIB = "royalelib";
-    private static final int ERROR_CODE_PORT = 1000;
     private static final int ERROR_CODE_FRAMEWORK_LIB = 1001;
     private static final int ERROR_CODE_CONNECT = 1002;
     private static final String SOCKET_HOST = "localhost";
-    
-    protected static IServer srv = null;
 
     public static void main(String[] args)
     {

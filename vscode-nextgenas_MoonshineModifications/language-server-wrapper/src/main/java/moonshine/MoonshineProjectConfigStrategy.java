@@ -21,12 +21,12 @@ import java.util.ArrayList;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.nextgenactionscript.asconfigc.TopLevelFields;
-import com.nextgenactionscript.asconfigc.compiler.CompilerOptions;
-import com.nextgenactionscript.asconfigc.compiler.ProjectType;
-import com.nextgenactionscript.vscode.project.IProjectConfigStrategy;
-import com.nextgenactionscript.vscode.project.ProjectOptions;
-import com.nextgenactionscript.vscode.utils.LanguageServerCompilerUtils;
+import com.as3mxml.asconfigc.TopLevelFields;
+import com.as3mxml.asconfigc.compiler.CompilerOptions;
+import com.as3mxml.asconfigc.compiler.ProjectType;
+import com.as3mxml.vscode.project.IProjectConfigStrategy;
+import com.as3mxml.vscode.project.ProjectOptions;
+import com.as3mxml.vscode.utils.LanguageServerCompilerUtils;
 
 import org.eclipse.lsp4j.WorkspaceFolder;
 
@@ -89,7 +89,6 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         }
 
         ArrayList<String> targets = new ArrayList<>();;
-        ArrayList<Path> sourcePaths = new ArrayList<>();
         ArrayList<String> compilerOptions = new ArrayList<>();
 
         JsonObject jsonOptions = params.getAsJsonObject(TopLevelFields.COMPILER_OPTIONS);
@@ -103,16 +102,6 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
                 targets.add(targetString);
             }
         }
-
-        if(jsonOptions.has(CompilerOptions.SOURCE_PATH))
-        {
-            JsonArray jsonSourcePath = jsonOptions.getAsJsonArray(CompilerOptions.SOURCE_PATH);
-            for (int i = 0, count = jsonSourcePath.size(); i < count; i++)
-            {
-                String pathString = jsonSourcePath.get(i).getAsString();
-                sourcePaths.add(Paths.get(pathString));
-            }
-        }
         
         String additionalOptions = null;
         if(params.has(TopLevelFields.ADDITIONAL_OPTIONS))
@@ -124,10 +113,8 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
         options.config = config;
         options.files = files;
         options.targets = targets;
-        options.sourcePaths = sourcePaths;
         options.compilerOptions = compilerOptions;
         options.additionalOptions = additionalOptions;
-        options.warnings = true;
     }
 
     public ProjectOptions getOptions()
