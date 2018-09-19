@@ -18,6 +18,11 @@
 		import actionScripts.valueObjects.SymbolInformation;
 
 		import spark.components.Alert;
+		import actionScripts.ui.editor.BasicTextEditor;
+		import actionScripts.events.AddTabEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.interfaces.ILanguageServerBridge;
+		import actionScripts.valueObjects.ProjectVO;
 
 		public static const EVENT_QUERY_CHANGE:String = "queryChange";
 
@@ -57,10 +62,31 @@
 			}
 
 			var tmpObject:SymbolInformation = lstSymbols.selectedItem as SymbolInformation;
-			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-				new FileLocation(tmpObject.location.uri, true), tmpObject.location.range.start.line);
-			openEvent.atChar = tmpObject.location.range.start.character;
-			GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
+			var uri:String = tmpObject.location.uri;
+			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
+			var project:ProjectVO = IDEModel.getInstance().activeProject;
+			if(!lsc.hasCustomTextEditorForUri(uri, project))
+			{
+				//we should never get here, but this will save us if we do
+				return;
+			}
+			
+			var colonIndex:int = uri.indexOf(":");
+			var scheme:String = uri.substr(0, colonIndex);
+			if(scheme == "file")
+			{
+				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
+					new FileLocation(tmpObject.location.uri, true), tmpObject.location.range.start.line);
+				openEvent.atChar = tmpObject.location.range.start.character;
+				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
+			}
+			else
+			{
+				var editor:BasicTextEditor = lsc.getCustomTextEditorForUri(uri, project, true);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(editor)
+				);
+			}
 
 			super.closeThis();
 		}
