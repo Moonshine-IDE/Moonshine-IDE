@@ -66,7 +66,7 @@ package actionScripts.ui.parser
 					'const', 'catch', 'class', 'return', 'switch', 'static', 
 					'import', 'private', 'public', 'extends', 'override', 'inherits', 
 					'internal', 'implements', 'package', 'protected', 'namespace',
-					'final', 'native']
+					'final', 'native', 'dynamic']
 				],
 				[AS_VAR_KEYWORD, ['var']],
 				[AS_FUNCTION_KEYWORD, ['function']],
