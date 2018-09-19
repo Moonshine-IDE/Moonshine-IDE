@@ -195,6 +195,18 @@ package actionScripts.ui.editor.text
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new AddTabEvent(editor)
 				);
+				var start:Position = savedLocation.range.start;
+				if (start.line > -1)
+				{
+					var editorComponent:TextEditor = editor.getEditorComponent();
+					var textEditorModel:TextEditorModel = editorComponent.model;
+					textEditorModel.selectedLineIndex = start.line;
+					if(start.character > -1)
+					{
+						textEditorModel.caretIndex = start.character;
+					}
+					editorComponent.scrollTo(start.line);
+				}
 			}
 		}
 	}

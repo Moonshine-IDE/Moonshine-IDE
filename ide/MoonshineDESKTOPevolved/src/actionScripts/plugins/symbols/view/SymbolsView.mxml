@@ -23,6 +23,9 @@
 		import actionScripts.locator.IDEModel;
 		import actionScripts.interfaces.ILanguageServerBridge;
 		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.Position;
+		import actionScripts.ui.editor.text.TextEditorModel;
+		import actionScripts.ui.editor.text.TextEditor;
 
 		public static const EVENT_QUERY_CHANGE:String = "queryChange";
 
@@ -86,6 +89,18 @@
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new AddTabEvent(editor)
 				);
+				var start:Position = tmpObject.location.range.start;
+				if (start.line > -1)
+				{
+					var editorComponent:TextEditor = editor.getEditorComponent();
+					var textEditorModel:TextEditorModel = editorComponent.model;
+					textEditorModel.selectedLineIndex = start.line;
+					if(start.character > -1)
+					{
+						textEditorModel.caretIndex = start.character;
+					}
+					editorComponent.scrollTo(start.line);
+				}
 			}
 
 			super.closeThis();
