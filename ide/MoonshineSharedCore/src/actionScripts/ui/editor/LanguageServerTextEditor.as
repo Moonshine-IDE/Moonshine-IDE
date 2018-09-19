@@ -181,6 +181,10 @@ package actionScripts.ui.editor
 
 		private function onTextChange(event:ChangeEvent):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
@@ -216,7 +220,7 @@ package actionScripts.ui.editor
 
 		protected function showDiagnosticsHandler(event:DiagnosticsEvent):void
 		{
-			if(event.path !== currentFile.fileBridge.nativePath)
+			if(!currentFile || event.path !== currentFile.fileBridge.nativePath)
 			{
 				return;
 			}
@@ -245,7 +249,10 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_WILLSAVE,
 				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 			
