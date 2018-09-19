@@ -18,15 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import flash.events.Event;
-
-	public class OrganizeImportsEvent extends Event
+	public class LanguageServerMenuEvent
 	{
-		public static const EVENT_ORGANIZE_IMPORTS:String = "organizeImports";
-
-		public function OrganizeImportsEvent(type:String)
-		{
-			super(type, false, false);
-		}
+		public static const EVENT_MENU_GO_TO_DEFINITION:String = "menuGoToDefinitionEvent";
+		public static const EVENT_MENU_GO_TO_TYPE_DEFINITION:String = "menuGoToTypeDefinitionEvent";
+		public static const EVENT_MENU_ORGANIZE_IMPORTS:String = "menuOrganizeImportsEvent";
 	}
 }

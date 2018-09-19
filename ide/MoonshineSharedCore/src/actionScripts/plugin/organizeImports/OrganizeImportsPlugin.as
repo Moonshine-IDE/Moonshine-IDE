@@ -21,7 +21,6 @@ package actionScripts.plugin.organizeImports
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.OrganizeImportsEvent;
 	import actionScripts.events.RenameEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -49,6 +48,7 @@ package actionScripts.plugin.organizeImports
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
+	import actionScripts.events.LanguageServerMenuEvent;
 
 	public class OrganizeImportsPlugin extends PluginBase
 	{
@@ -63,13 +63,13 @@ package actionScripts.plugin.organizeImports
 		override public function activate():void
 		{
 			super.activate();
-			dispatcher.addEventListener(OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS, handleOrganizeImports);
+			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS, handleOrganizeImports);
 		}
 
 		override public function deactivate():void
 		{
 			super.deactivate();
-			dispatcher.removeEventListener(OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS, handleOrganizeImports);
+			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS, handleOrganizeImports);
 		}
 
 		private function handleOrganizeImports(event:Event):void

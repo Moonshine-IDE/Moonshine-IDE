@@ -36,7 +36,6 @@ package actionScripts.impls
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.OrganizeImportsEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
@@ -111,6 +110,8 @@ package actionScripts.impls
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
+    import actionScripts.events.LanguageServerEvent;
+    import actionScripts.events.LanguageServerMenuEvent;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -292,8 +293,11 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','GO_TO_LINE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_GO_TO_LINE,
 						'l', [Keyboard.COMMAND],
 						'l', [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources','GO_TO_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION),
+					new MenuItem(resourceManager.getString('resources','GO_TO_TYPE_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION),
+					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
-					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], OrganizeImportsEvent.EVENT_ORGANIZE_IMPORTS,
+					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS,
 						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),

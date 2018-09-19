@@ -46,6 +46,8 @@ package actionScripts.languageServer
 	import mx.controls.Alert;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.events.LanguageServerMenuEvent;
+	import actionScripts.events.MenuEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -145,6 +147,8 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
 			_globalDispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_RENAME, renameHandler);
 			//when adding new listeners, don't forget to remove them in stop()
@@ -1547,7 +1551,7 @@ package actionScripts.languageServer
 			_definitionLinkLookup[id] = positionVO;
 		}
 
-		private function gotoDefinitionHandler(event:LanguageServerEvent):void
+		private function gotoDefinitionHandler(event:MenuEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1557,30 +1561,39 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			if(!_model.activeEditor || !_model.activeEditor is LanguageServerTextEditor)
+			{
+				//no valid editor is open
+				return;
+			}
 			event.preventDefault();
-			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
 				//nothing that we can do
 				return;
 			}
 
+			var activeEditor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor)
+			var uri:String = activeEditor.currentFile.fileBridge.url;
+			var line:int = activeEditor.editor.model.selectedLineIndex;
+			var char:int = activeEditor.editor.model.caretIndex;
+
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = event.endLineNumber;
-			position.character = event.endLinePos;
+			position.line = line;
+			position.character = char;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
-			_gotoDefinitionLookup[id] = positionVO;
+			_gotoDefinitionLookup[id] = new Position(line, char);
 		}
 
-		private function gotoTypeDefinitionHandler(event:LanguageServerEvent):void
+		private function gotoTypeDefinitionHandler(event:MenuEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1590,27 +1603,36 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			if(!_model.activeEditor || !_model.activeEditor is LanguageServerTextEditor)
+			{
+				//no valid editor is open
+				return;
+			}
 			event.preventDefault();
-			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoTypeDefinition)
 			{
 				//nothing that we can do
 				return;
 			}
 
+			var activeEditor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor)
+			var uri:String = activeEditor.currentFile.fileBridge.url;
+			var line:int = activeEditor.editor.model.selectedLineIndex;
+			var char:int = activeEditor.editor.model.caretIndex;
+
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = event.endLineNumber;
-			position.character = event.endLinePos;
+			position.line = line;
+			position.character = char;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__TYPE_DEFINITION, params);
-			_gotoTypeDefinitionLookup[id] = positionVO;
+			_gotoTypeDefinitionLookup[id] = new Position(line, char);
 		}
 
 		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
