@@ -45,6 +45,7 @@ package actionScripts.languageServer
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.OpenLocationEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -140,7 +141,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
-			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
@@ -195,6 +196,7 @@ package actionScripts.languageServer
 		private var _contentLength:int = -1;
 		private var _socketBuffer:String = "";
 		private var _gotoDefinitionLookup:Dictionary = new Dictionary();
+		private var _definitionLinkLookup:Dictionary = new Dictionary();
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
@@ -226,7 +228,7 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GOTO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
@@ -855,9 +857,15 @@ package actionScripts.languageServer
 				}
 				else if(result && result is Array) //definitions
 				{
-					if(requestID in _gotoDefinitionLookup)
+					if(requestID in _definitionLinkLookup)
 					{
-						var position:Position = _gotoDefinitionLookup[requestID] as Position;
+						var position:Position = _definitionLinkLookup[requestID] as Position;
+						delete _definitionLinkLookup[requestID];
+						handleDefinitionLinkResponse(result, position);
+					}
+					else if(requestID in _gotoDefinitionLookup)
+					{
+						position = _gotoDefinitionLookup[requestID] as Position;
 						delete _gotoDefinitionLookup[requestID];
 						handleGotoDefinitionResponse(result, position);
 					}
@@ -975,14 +983,13 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
 		}
 
-		private function handleGotoDefinitionResponse(result:Object, position:Position):void
+		private function handleLocationsResponse(result:Array):Vector.<Location>
 		{
-			var resultLocations:Array = result as Array;
 			var eventLocations:Vector.<Location> = new <Location>[];
-			var resultLocationsCount:int = resultLocations.length;
+			var resultLocationsCount:int = result.length;
 			for(var i:int = 0; i < resultLocationsCount; i++)
 			{
-				var resultLocation:Object = resultLocations[i];
+				var resultLocation:Object = result[i];
 				var eventLocation:Location = parseLocation(resultLocation);
 				var uri:String = eventLocation.uri;
 				var schemeEndIndex:int = uri.indexOf(":");
@@ -998,26 +1005,34 @@ package actionScripts.languageServer
 				}
 				eventLocations.push(eventLocation);
 			}
+			return eventLocations;
+		}
+
+		private function handleDefinitionLinkResponse(result:Object, position:Position):void
+		{
+			var eventLocations:Vector.<Location> = handleLocationsResponse(result as Array);
 			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
+		}
+
+		private function handleGotoDefinitionResponse(result:Object, position:Position):void
+		{
+			var eventLocations:Vector.<Location> = handleLocationsResponse(result as Array);
+			if(eventLocations.length > 0)
+			{
+				var location:Location = eventLocations[0];
+				_globalDispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
+			}
 		}
 
 		private function handleGotoTypeDefinitionResponse(result:Object, position:Position):void
 		{
-			var resultLocations:Array = result as Array;
-			var eventLocations:Vector.<Location> = new <Location>[];
-			var resultLocationsCount:int = resultLocations.length;
-			for(var i:int = 0; i < resultLocationsCount; i++)
-			{
-				var resultLocation:Object = resultLocations[i];
-				eventLocations[i] = parseLocation(resultLocation);
-			}
+			var eventLocations:Vector.<Location> = handleLocationsResponse(result as Array);
 			if(eventLocations.length > 0)
 			{
 				var location:Location = eventLocations[0];
-				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-					new FileLocation(location.uri, true), location.range.start.line);
-				openEvent.atChar = location.range.start.character;
-				_globalDispatcher.dispatchEvent(openEvent);
+				_globalDispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
 			}
 		}
 
@@ -1499,7 +1514,7 @@ package actionScripts.languageServer
 			this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
 		}
 
-		private function gotoDefinitionHandler(event:LanguageServerEvent):void
+		private function definitionLinkHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1514,6 +1529,39 @@ package actionScripts.languageServer
 			if(!supportsGotoDefinition)
 			{
 				_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, new <Location>[], positionVO));
+				return;
+			}
+
+			var textDocument:Object = new Object();
+			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+
+			var position:Object = new Object();
+			position.line = event.endLineNumber;
+			position.character = event.endLinePos;
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+			params.position = position;
+			
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
+			_definitionLinkLookup[id] = positionVO;
+		}
+
+		private function gotoDefinitionHandler(event:LanguageServerEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
+			if(!supportsGotoDefinition)
+			{
+				//nothing that we can do
 				return;
 			}
 
@@ -1546,6 +1594,7 @@ package actionScripts.languageServer
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoTypeDefinition)
 			{
+				//nothing that we can do
 				return;
 			}
 

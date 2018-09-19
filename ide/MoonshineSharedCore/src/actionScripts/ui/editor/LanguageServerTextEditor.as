@@ -106,7 +106,7 @@ package actionScripts.ui.editor
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_GOTO_DEFINITION,
+				LanguageServerEvent.EVENT_DEFINITION_LINK,
 				char, line, char, line,
 				document, 0, 1));
 		}

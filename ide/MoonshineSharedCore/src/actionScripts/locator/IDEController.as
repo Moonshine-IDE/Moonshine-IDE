@@ -36,6 +36,8 @@ package actionScripts.locator
 	import actionScripts.events.RenameFileFolderEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.controllers.OpenLocationCommand;
 	
 	public class IDEController
 	{
@@ -60,6 +62,7 @@ package actionScripts.locator
 			commands[OpenFileEvent.TRACE_LINE] = OpenFileCommand;
 			commands[OpenFileEvent.JUMP_TO_SEARCH_LINE] = OpenFileCommand;
 			commands[AddTabEvent.EVENT_ADD_TAB] = AddTabCommand;
+			commands[OpenLocationEvent.OPEN_LOCATION] = OpenLocationCommand;
 			
 			commands[MenuPlugin.MENU_SAVE_AS_EVENT] = SaveAsCommand;
 			commands[MenuPlugin.MENU_SAVE_EVENT] = SaveFileCommand; 

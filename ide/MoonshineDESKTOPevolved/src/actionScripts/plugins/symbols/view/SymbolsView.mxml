@@ -26,6 +26,7 @@
 		import actionScripts.valueObjects.Position;
 		import actionScripts.ui.editor.text.TextEditorModel;
 		import actionScripts.ui.editor.text.TextEditor;
+		import actionScripts.events.OpenLocationEvent;
 
 		public static const EVENT_QUERY_CHANGE:String = "queryChange";
 
@@ -65,43 +66,8 @@
 			}
 
 			var tmpObject:SymbolInformation = lstSymbols.selectedItem as SymbolInformation;
-			var uri:String = tmpObject.location.uri;
-			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
-			var project:ProjectVO = IDEModel.getInstance().activeProject;
-			if(!lsc.hasCustomTextEditorForUri(uri, project))
-			{
-				//we should never get here, but this will save us if we do
-				return;
-			}
-			
-			var colonIndex:int = uri.indexOf(":");
-			var scheme:String = uri.substr(0, colonIndex);
-			if(scheme == "file")
-			{
-				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-					new FileLocation(tmpObject.location.uri, true), tmpObject.location.range.start.line);
-				openEvent.atChar = tmpObject.location.range.start.character;
-				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
-			}
-			else
-			{
-				var editor:BasicTextEditor = lsc.getCustomTextEditorForUri(uri, project, true);
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new AddTabEvent(editor)
-				);
-				var start:Position = tmpObject.location.range.start;
-				if (start.line > -1)
-				{
-					var editorComponent:TextEditor = editor.getEditorComponent();
-					var textEditorModel:TextEditorModel = editorComponent.model;
-					textEditorModel.selectedLineIndex = start.line;
-					if(start.character > -1)
-					{
-						textEditorModel.caretIndex = start.character;
-					}
-					editorComponent.scrollTo(start.line);
-				}
-			}
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, tmpObject.location));
 
 			super.closeThis();
 		}

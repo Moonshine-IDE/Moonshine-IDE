@@ -30,6 +30,7 @@ package actionScripts.events
 		public static const EVENT_COMPLETION:String = "newCompletionEvent";
 		public static const EVENT_SIGNATURE_HELP:String = "newSignatureHelpEvent";
 		public static const EVENT_HOVER:String = "newHover";
+		public static const EVENT_DEFINITION_LINK:String = "newDefinitionLink";
 		public static const EVENT_GOTO_DEFINITION:String = "newGotoDefinition";
 		public static const EVENT_GOTO_TYPE_DEFINITION:String = "newGotoTypeDefinition";
 		public static const EVENT_DOCUMENT_SYMBOLS:String = "newDocumentSymbols";
