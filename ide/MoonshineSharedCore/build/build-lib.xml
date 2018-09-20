@@ -21,7 +21,15 @@
 	<property name="keepDebugFiles" value="${APP_PROPERTIES.keepDebugFiles}" />
 	<property name="deploy_dir" value="DEPLOY"/>
 	<property name="debug_dir" value="bin-debug"/>
-	
+
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+
+	<condition property="isUnix">
+		<os family="unix" />
+	</condition>
+
 	<!-- Determining the run at local system or cloud -->
 	<property name="localOrCloud" value="${svn.revision}"/>
 	<if>
@@ -96,7 +104,7 @@
 			<propertycopy property="FLEX_HOME" from="APP_PROPERTIES.unixSDKPath" silent="true" />
 		</else>
 	</if>
-	
+
 	<condition property="Is.FLEX_HOME.Not.Exists" else="false">
 		<or>
 			<and>
@@ -473,6 +481,7 @@
 			<arg value="-c"/>
 			<arg value='rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
 		</exec>
+
 		<!--exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
@@ -575,9 +584,8 @@
 		<copy todir="${basedir}/appScripts" overwrite="true">
 			<fileset dir="${applicationSourceDirectory}/appScripts"/>
 		</copy>
-		<copy todir="${basedir}/elements" overwrite="true">
-			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
-		</copy>
+		<antcall target="copyElementsWindows"/>
+		<antcall target="copyElementsUnix"/>
 
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
@@ -626,7 +634,26 @@
 		<!-- More robust replacing technique than above one (commented) -->
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>
-	
+
+	<target name="copyElementsWindows" if="isWindows">
+		<echo message="Copy elements for Windows"/>
+		<copy todir="${basedir}/elements" overwrite="true">
+			<fileset dir="${LibraryMoonshineCore}/src/elements">
+				<exclude name="**/config_linux/**"/>
+				<exclude name="**/config_mac/**"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copyElementsUnix" if="isUnix">
+		<echo message="Copy elements for Mac"/>
+		<copy todir="${basedir}/elements" overwrite="true">
+			<fileset dir="${LibraryMoonshineCore}/src/elements">
+				<exclude name="**/config_win/**"/>
+			</fileset>
+		</copy>
+	</target>
+
 	<!-- Compile SWF to build directory for desktop packaging -->
 	<target name="CompileSWFWindows" depends="compileLibrary" unless="${isOSX}">
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
@@ -720,7 +747,7 @@
 			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
 		</mxmlc>
 	</target>
-	
+
 	<target name="copyRSLs">
 		<copy todir="${debug_dir}" overwrite="true">
 			<fileset dir="${FLEX_HOME}/frameworks/rsls"></fileset>
