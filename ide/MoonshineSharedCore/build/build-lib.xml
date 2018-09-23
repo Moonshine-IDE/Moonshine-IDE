@@ -207,13 +207,15 @@
 					<os family="windows"/>
 					<then>
 						<property name="isOSX" value="false"/>
-						<antcall target="disposeTempWindows"></antcall>
+						<antcall target="cleanUpBuildFolder" />
+						<antcall target="disposeTempWindows" />
 					</then>
 					<elseif>
 						<os family="unix"/>
 						<then>
 							<property name="isOSX" value="true"/>
-							<antcall target="disposeTempUNIX"></antcall>
+							<antcall target="cleanUpBuildFolder" />
+							<antcall target="disposeTempUNIX" />
 						</then>
 					</elseif>
 				</if>
@@ -221,7 +223,8 @@
 			<!-- consider a web build -->
 			<else>
 				<property name="isOSX" value="false"/>
-				<antcall target="disposeTempWindowsWeb"></antcall>
+				<antcall target="cleanUpBuildFolder" />
+				<antcall target="disposeTempWindowsWeb" />
 			</else>
 		</if>
 	</target>
@@ -840,6 +843,20 @@
 				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
+			</then>
+		</if>
+	</target>
+	<target name="cleanUpBuildFolder">
+		<if>
+			<equals arg1="${keepDebugFiles}" arg2="false"/>
+			<then>
+				<echo message="Preparing build folder for new build"/>
+				<delete dir="${debug_dir}" />
+				<delete dir="assets" />
+				<delete dir="elements" />
+				<delete dir="tourDeFlex" />
+				<delete dir="defaultSDKs"/>
+				<delete dir="installer" />
 			</then>
 		</if>
 	</target>
