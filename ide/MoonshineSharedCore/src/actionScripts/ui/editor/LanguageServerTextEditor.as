@@ -15,6 +15,8 @@ package actionScripts.ui.editor
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.ui.editor.text.TextEditor;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -30,6 +32,7 @@ package actionScripts.ui.editor
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
 			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
+			editor.model.addEventListener(Event.CHANGE, editorModel_onChange);
 		}
 
 		private var _languageID:String;
@@ -38,6 +41,8 @@ package actionScripts.ui.editor
 		{
 			return this._languageID;
 		}
+
+		private var _codeActionTimeoutID:int = -1;
 
 		protected function addGlobalListeners():void
 		{
@@ -187,6 +192,31 @@ package actionScripts.ui.editor
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+		}
+
+		private function editorModel_onChange(event:Event):void
+		{
+			if(_codeActionTimeoutID != -1)
+			{
+				//we want to "debounce" this event, so reset the timer
+				clearTimeout(_codeActionTimeoutID);
+				_codeActionTimeoutID = -1;
+			}
+			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
+		}
+
+		private function dispatchCodeActionEvent():void
+		{
+			_codeActionTimeoutID = -1;
+			var document:String = getTextDocument();
+			var len:Number = editor.model.caretIndex - editor.startPos;
+			var startLine:int = editor.model.selectedLineIndex;
+			var startChar:int = editor.startPos;
+			var endLine:int = editor.model.selectedLineIndex;
+			var endChar:int = editor.model.caretIndex;
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_CODE_ACTION,
+				startChar, startLine, endChar,endLine));
 		}
 
 		protected function showCompletionListHandler(event:CompletionItemsEvent):void

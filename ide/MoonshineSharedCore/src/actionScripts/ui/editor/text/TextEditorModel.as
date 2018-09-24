@@ -23,6 +23,12 @@ package actionScripts.ui.editor.text
 	
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.Settings;
+	import flash.events.Event;
+
+	/**
+	 * Dispatched when the selection or caret index changes.
+	 */
+	[Event(name="change",type="flash.events.Event")]
 	
 	public class TextEditorModel extends EventDispatcher
 	{
@@ -51,8 +57,18 @@ package actionScripts.ui.editor.text
 		
 		public function set selectedLineIndex(idx:int):void
 		{
+			if(_selectedLineIndex == idx)
+			{
+				return;
+			}
 			_selectedLineIndex = idx;
 			validateSelection();
+			if(_selectedLineIndex == idx)
+			{
+				//don't dispatch an event unless it is still changed after
+				//validation
+				dispatchEvent(new Event(Event.CHANGE));
+			}
 		}
 		public function get selectedLineIndex():int
 		{
@@ -71,13 +87,25 @@ package actionScripts.ui.editor.text
 		
 		public function set caretIndex(idx:int):void
 		{
+			if(_selectedLineIndex == idx)
+			{
+				return;
+			}
+
 			// Get current line indentation
 			var indent:int = selectedLine ? TextUtil.indentAmount(selectedLine.text) : 0;
 			
 			// Store the index with tabs expanded
-			_caretIndex = idx + Math.min(indent, idx) * (Settings.font.tabWidth - 1);
+			var expandedIdx:int = idx + Math.min(indent, idx) * (Settings.font.tabWidth - 1);
+			_caretIndex = expandedIdx;
 			
 			validateSelection();
+			if(_caretIndex == expandedIdx)
+			{
+				//don't dispatch an event unless it is still changed after
+				//validation
+				dispatchEvent(new Event(Event.CHANGE));
+			}
 		}
 		public function get caretIndex():int
 		{

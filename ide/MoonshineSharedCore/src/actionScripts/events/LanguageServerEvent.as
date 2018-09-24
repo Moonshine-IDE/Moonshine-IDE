@@ -35,6 +35,7 @@ package actionScripts.events
 		public static const EVENT_WORKSPACE_SYMBOLS:String = "newWorkspaceSymbols";
 		public static const EVENT_FIND_REFERENCES:String = "newFindReferences";
 		public static const EVENT_RENAME:String = "newRename";
+		public static const EVENT_CODE_ACTION:String = "newCodeAction";
 		
 		public var startLinePos:Number;
 		public var endLinePos:Number;

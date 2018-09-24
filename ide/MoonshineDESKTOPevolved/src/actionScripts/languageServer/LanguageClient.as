@@ -48,6 +48,7 @@ package actionScripts.languageServer
 	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
+	import actionScripts.events.CodeActionsEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -105,6 +106,7 @@ package actionScripts.languageServer
 		private static const METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL:String = "textDocument/documentSymbol";
 		private static const METHOD_TEXT_DOCUMENT__REFERENCES:String = "textDocument/references";
 		private static const METHOD_TEXT_DOCUMENT__RENAME:String = "textDocument/rename";
+		private static const METHOD_TEXT_DOCUMENT__CODE_ACTION:String = "textDocument/codeAction";
 		private static const METHOD_WORKSPACE__APPLY_EDIT:String = "workspace/applyEdit";
 		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
@@ -147,6 +149,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
 			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, gotoDefinitionHandler);
 			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
 			_globalDispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
@@ -203,9 +206,11 @@ package actionScripts.languageServer
 		private var _definitionLinkLookup:Dictionary = new Dictionary();
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
+		private var _codeActionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
-		private var _schemes:Vector.<String> = new <String>[];
+		private var _schemes:Vector.<String> = new <String>[]
+		private var _savedDiagnostics:Object = {};
 
 		private var supportsCompletion:Boolean = false;
 		private var supportsHover:Boolean = false;
@@ -217,6 +222,7 @@ package actionScripts.languageServer
 		private var supportsWorkspaceSymbols:Boolean = false;
 		private var supportedCommands:Vector.<String> = new <String>[];
 		private var supportsRename:Boolean = false;
+		private var supportsCodeAction:Boolean = false;
 
 		public function stop():void
 		{
@@ -884,6 +890,11 @@ package actionScripts.languageServer
 						delete _findReferencesLookup[requestID];
 						handleReferencesResponse(result);
 					}
+					else if(requestID in _codeActionLookup)
+					{
+						delete _codeActionLookup[requestID];
+						handleCodeActionResponse(result);
+					}
 					else //document or workspace symbols
 					{
 						handleSymbolsResponse(result);
@@ -904,6 +915,7 @@ package actionScripts.languageServer
 			this.supportsDocumentSymbols = capabilities && (capabilities.documentSymbolProvider as Boolean);
 			this.supportsWorkspaceSymbols = capabilities && (capabilities.workspaceSymbolProvider as Boolean);
 			this.supportsRename = capabilities && capabilities.renameProvider !== false && capabilities.renameProvider !== undefined;
+			this.supportsCodeAction = capabilities && capabilities.codeActionProvider !== false && capabilities.codeActionProvider !== undefined;
 			if(capabilities && capabilities.executeCommandProvider !== undefined)
 			{
 				this.supportedCommands = Vector.<String>(capabilities.executeCommandProvider.commands);
@@ -1053,6 +1065,19 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, eventReferences));
 		}
 
+		private function handleCodeActionResponse(result:Object):void
+		{
+			var resultCodeActions:Array = result as Array;
+			var eventCodeActions:Vector.<Command> = new <Command>[];
+			var resultCodeActionsCount:int = resultCodeActions.length;
+			for(var i:int = 0; i < resultCodeActionsCount; i++)
+			{
+				var resultCodeAction:Object = resultCodeActions[i];
+				eventCodeActions[i] = parseCommand(resultCodeAction);
+			}
+			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, eventCodeActions));
+		}
+
 		private function handleSymbolsResponse(result:Object):void
 		{
 			var resultSymbolInfos:Array = result as Array;
@@ -1199,6 +1224,7 @@ package actionScripts.languageServer
 			var uri:String = diagnosticsParams.uri;
 			var path:String = (new File(uri)).nativePath;
 			var resultDiagnostics:Array = diagnosticsParams.diagnostics;
+			this._savedDiagnostics[uri] = resultDiagnostics;
 			var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
 			var diagnosticsCount:int = resultDiagnostics.length;
 			for(var i:int = 0; i < diagnosticsCount; i++)
@@ -1720,6 +1746,58 @@ package actionScripts.languageServer
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__REFERENCES, params);
 			_findReferencesLookup[id] = true;
+		}
+
+		private function codeActionHandler(event:LanguageServerEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+			if(!supportsCodeAction)
+			{
+				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, new <Command>[]));
+				return;
+			}
+
+			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+
+			var textDocument:Object = new Object();
+			textDocument.uri = uri;
+
+			var range:Object = new Object();
+			var startposition:Object = new Object();
+			startposition.line = event.startLineNumber;
+			startposition.character = event.startLinePos;
+			range.start = startposition;
+
+			var endposition:Object = new Object();
+			endposition.line = event.endLineNumber;
+			endposition.character = event.endLinePos;
+			range.end = endposition;
+
+			var context:Object = new Object();
+			if(uri in this._savedDiagnostics)
+			{
+				context.diagnostics = this._savedDiagnostics[uri];
+			}
+			else
+			{
+				context.diagnostics = [];
+			}
+
+			var params:Object = new Object();
+			params.textDocument = textDocument;
+			params.range = range;
+			params.context = context;
+			
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__CODE_ACTION, params);
+			_codeActionLookup[id] = true;
 		}
 
 		private function renameHandler(event:LanguageServerEvent):void
