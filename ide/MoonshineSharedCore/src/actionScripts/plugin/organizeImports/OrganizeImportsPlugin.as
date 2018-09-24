@@ -52,7 +52,7 @@ package actionScripts.plugin.organizeImports
 
 	public class OrganizeImportsPlugin extends PluginBase
 	{
-		private static const COMMAND_ORGANIZE_IMPORTS_IN_URI:String = "nextgenas.organizeImportsInUri";
+		private static const COMMAND_ORGANIZE_IMPORTS_IN_URI:String = "as3mxml.organizeImportsInUri";
 
 		public function OrganizeImportsPlugin() {	}
 
@@ -79,6 +79,7 @@ package actionScripts.plugin.organizeImports
 			{
 				return;
 			}
+			trace(uri, COMMAND_ORGANIZE_IMPORTS_IN_URI);
 			var uri:String = editor.currentFile.fileBridge.url;
 			dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 				ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,

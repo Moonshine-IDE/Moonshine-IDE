@@ -54,6 +54,7 @@ import org.apache.royale.compiler.common.ASModifier;
 import org.apache.royale.compiler.common.ISourceLocation;
 import org.apache.royale.compiler.common.PrefixMap;
 import org.apache.royale.compiler.common.XMLName;
+import org.apache.royale.compiler.config.Configuration;
 import org.apache.royale.compiler.config.ICompilerProblemSettings;
 import org.apache.royale.compiler.constants.IASKeywordConstants;
 import org.apache.royale.compiler.constants.IASLanguageConstants;
@@ -72,6 +73,7 @@ import org.apache.royale.compiler.definitions.ISetterDefinition;
 import org.apache.royale.compiler.definitions.IStyleDefinition;
 import org.apache.royale.compiler.definitions.ITypeDefinition;
 import org.apache.royale.compiler.definitions.IVariableDefinition;
+import org.apache.royale.compiler.definitions.metadata.IDeprecationInfo;
 import org.apache.royale.compiler.definitions.metadata.IMetaTag;
 import org.apache.royale.compiler.filespecs.IFileSpecification;
 import org.apache.royale.compiler.internal.mxml.MXMLData;
@@ -96,7 +98,6 @@ import org.apache.royale.compiler.mxml.IMXMLDataManager;
 import org.apache.royale.compiler.mxml.IMXMLLanguageConstants;
 import org.apache.royale.compiler.mxml.IMXMLTagAttributeData;
 import org.apache.royale.compiler.mxml.IMXMLTagData;
-import org.apache.royale.compiler.mxml.IMXMLTextData;
 import org.apache.royale.compiler.mxml.IMXMLUnitData;
 import org.apache.royale.compiler.problems.ICompilerProblem;
 import org.apache.royale.compiler.problems.InternalCompilerProblem;
@@ -123,6 +124,7 @@ import org.apache.royale.compiler.tree.as.IScopedDefinitionNode;
 import org.apache.royale.compiler.tree.as.IScopedNode;
 import org.apache.royale.compiler.tree.as.ITypeNode;
 import org.apache.royale.compiler.tree.as.IVariableNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLClassDefinitionNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLClassReferenceNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLConcatenatedDataBindingNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLEventSpecifierNode;
@@ -172,14 +174,16 @@ import com.as3mxml.vscode.utils.MXMLDataUtils;
 import com.as3mxml.vscode.utils.MXMLNamespace;
 import com.as3mxml.vscode.utils.MXMLNamespaceUtils;
 import com.as3mxml.vscode.utils.ProblemTracker;
-import com.as3mxml.vscode.utils.RealTimeProblemAnalyzer;
 import com.as3mxml.vscode.utils.ScopeUtils;
 import com.as3mxml.vscode.utils.SourcePathUtils;
+import com.as3mxml.vscode.utils.WaitForBuildFinishRunner;
+import com.as3mxml.vscode.utils.XmlnsRange;
 import com.as3mxml.vscode.utils.CodeActionsUtils.CommandAndRange;
 import com.as3mxml.vscode.utils.DefinitionTextUtils.DefinitionAsText;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -201,6 +205,7 @@ import org.eclipse.lsp4j.DocumentFormattingParams;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
 import org.eclipse.lsp4j.DocumentRangeFormattingParams;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
@@ -230,6 +235,7 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -257,29 +263,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private String oldFrameworkSDKPath;
     private Map<Path, String> sourceByPath = new HashMap<>();
     private List<String> completionTypes = new ArrayList<>();
-    private Collection<ICompilationUnit> compilationUnits;
-    private ICompilationUnit currentUnit;
-    private RoyaleProject currentProject;
-    private IProjectConfigStrategy currentConfig;
     private Workspace compilerWorkspace;
     private List<WorkspaceFolder> workspaceFolders = new ArrayList<>();
     private Map<WorkspaceFolder, WorkspaceFolderData> workspaceFolderToData = new HashMap<>();
-    private ProjectOptions currentProjectOptions;
-    private int currentOffset = -1;
-    private ImportRange importRange = new ImportRange();
-    private int namespaceStartIndex = -1;
-    private int namespaceEndIndex = -1;
-    private String namespaceUri;
     private LanguageServerFileSpecGetter fileSpecGetter;
     private WatchService sourcePathWatcher;
     private Thread sourcePathWatcherThread;
     private ClientCapabilities clientCapabilities;
     private boolean completionSupportsSnippets = false;
     private CompilerShell compilerShell;
-    private Thread realTimeProblemAnalyzerThread;
-    private RealTimeProblemAnalyzer realTimeProblemAnalyzer = new RealTimeProblemAnalyzer();
     private CompilerProblemFilter compilerProblemFilter = new CompilerProblemFilter();
     private boolean initialized = false;
+    private WaitForBuildFinishRunner waitForBuildFinishRunner;
 
     public ActionScriptTextDocumentService()
     {
@@ -380,58 +375,94 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params)
     {
-        //this shouldn't be necessary, but if we ever forget to do this
-        //somewhere, completion results might be missing items.
-        completionTypes.clear();
-        String textDocumentUri = params.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            CompletionList result = new CompletionList();
-            result.setIsIncomplete(false);
-            result.setItems(new ArrayList<>());
-            return CompletableFuture.completedFuture(Either.forRight(result));
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        IMXMLTagData offsetTag = getOffsetMXMLTag(params);
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params);
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                CompletionList result = actionScriptCompletionWithNode(params, embeddedNode);
+                //this shouldn't be necessary, but if we ever forget to do this
+                //somewhere, completion results might be missing items.
                 completionTypes.clear();
-                return CompletableFuture.completedFuture(Either.forRight(result));
+        
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    CompletionList result = new CompletionList();
+                    result.setIsIncomplete(false);
+                    result.setItems(new ArrayList<>());
+                    cancelToken.checkCanceled();
+                    return Either.forRight(result);
+                }
+                Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
+                if(path == null)
+                {
+                    CompletionList result = new CompletionList();
+                    result.setIsIncomplete(false);
+                    result.setItems(new ArrayList<>());
+                    cancelToken.checkCanceled();
+                    return Either.forRight(result);
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    CompletionList result = new CompletionList();
+                    result.setIsIncomplete(false);
+                    result.setItems(new ArrayList<>());
+                    cancelToken.checkCanceled();
+                    return Either.forRight(result);
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params, project);
+                    if (embeddedNode != null)
+                    {
+                        CompletionList result = actionScriptCompletionWithNode(params, project, embeddedNode, currentOffset);
+                        cancelToken.checkCanceled();
+                        return Either.forRight(result);
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript completion,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        ICompilationUnit offsetUnit = findCompilationUnit(path);
+                        CompletionList result = mxmlCompletion(params, project, offsetUnit, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return Either.forRight(result);
+                    }
+                }
+                if (offsetTag == null && params.getTextDocument().getUri().endsWith(MXML_EXTENSION))
+                {
+                    //it's possible for the offset tag to be null in an MXML file, but
+                    //we don't want to trigger ActionScript completion.
+                    //for some reason, the offset tag will be null if completion is
+                    //triggered at the asterisk:
+                    //<fx:Declarations>*
+                    CompletionList result = new CompletionList();
+                    result.setIsIncomplete(false);
+                    result.setItems(new ArrayList<>());
+                    cancelToken.checkCanceled();
+                    return Either.forRight(result);
+                }
+                CompletionList result = actionScriptCompletion(params, project, currentOffset);
+                cancelToken.checkCanceled();
+                return Either.forRight(result);
             }
-            //if we're inside an <fx:Script> tag, we want ActionScript completion,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+            finally
             {
-                CompletionList result = mxmlCompletion(params, offsetTag);
                 completionTypes.clear();
-                return CompletableFuture.completedFuture(Either.forRight(result));
+                compilerWorkspace.doneBuilding();
             }
-        }
-        if (offsetTag == null && params.getTextDocument().getUri().endsWith(MXML_EXTENSION))
-        {
-            //it's possible for the offset tag to be null in an MXML file, but
-            //we don't want to trigger ActionScript completion.
-            //for some reason, the offset tag will be null if completion is
-            //triggered at the asterisk:
-            //<fx:Declarations>*
-            CompletionList result = new CompletionList();
-            result.setIsIncomplete(false);
-            result.setItems(new ArrayList<>());
-            return CompletableFuture.completedFuture(Either.forRight(result));
-        }
-        CompletionList result = actionScriptCompletion(params);
-        completionTypes.clear();
-        return CompletableFuture.completedFuture(Either.forRight(result));
+        });
     }
 
     /**
@@ -449,36 +480,62 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      * something in a text document.
      */
     @Override
-    public CompletableFuture<Hover> hover(TextDocumentPositionParams position)
+    public CompletableFuture<Hover> hover(TextDocumentPositionParams params)
     {
-        String textDocumentUri = position.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(new Hover(Collections.emptyList(), null));
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        IMXMLTagData offsetTag = getOffsetMXMLTag(position);
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, position);
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                return actionScriptHoverWithNode(position, embeddedNode);
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return new Hover(Collections.emptyList(), null);
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return new Hover(Collections.emptyList(), null);
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params, project);
+                    if (embeddedNode != null)
+                    {
+                        Hover result = actionScriptHoverWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript hover,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        Hover result = mxmlHover(params, project, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                Hover result = actionScriptHover(params, project);
+                cancelToken.checkCanceled();
+                return result;
             }
-            //if we're inside an <fx:Script> tag, we want ActionScript hover,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+            finally
             {
-                return mxmlHover(position, offsetTag);
+                compilerWorkspace.doneBuilding();
             }
-        }
-        return actionScriptHover(position);
+        });
     }
 
     /**
@@ -488,151 +545,173 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      * current position.
      */
     @Override
-    public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams position)
+    public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams params)
     {
-        String textDocumentUri = position.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(new SignatureHelp(Collections.emptyList(), -1, -1));
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
-        
-        IASNode offsetNode = null;
-        IMXMLTagData offsetTag = getOffsetMXMLTag(position);
-        if (offsetTag != null)
-        {
-            IMXMLTagAttributeData attributeData = MXMLDataUtils.getMXMLTagAttributeWithValueAtOffset(offsetTag, currentOffset);
-            if (attributeData != null)
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
+
+            compilerWorkspace.startBuilding();
+            try
             {
-                //some attributes can have ActionScript completion, such as
-                //events and properties with data binding
-                IClassDefinition tagDefinition = (IClassDefinition) currentProject.resolveXMLNameToDefinition(offsetTag.getXMLName(), offsetTag.getMXMLDialect());
-                IDefinition attributeDefinition = currentProject.resolveSpecifier(tagDefinition, attributeData.getShortName());
-                if (attributeDefinition instanceof IEventDefinition)
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
                 {
-                    IMXMLClassReferenceNode mxmlNode = (IMXMLClassReferenceNode) getOffsetNode(position);
-                    IMXMLEventSpecifierNode eventNode = mxmlNode.getEventSpecifierNode(attributeData.getShortName());
-                    for (IASNode asNode : eventNode.getASNodes())
+                    cancelToken.checkCanceled();
+                    return new SignatureHelp(Collections.emptyList(), -1, -1);
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return new SignatureHelp(Collections.emptyList(), -1, -1);
+                }
+
+                IASNode offsetNode = null;
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IMXMLTagAttributeData attributeData = MXMLDataUtils.getMXMLTagAttributeWithValueAtOffset(offsetTag, currentOffset);
+                    if (attributeData != null)
                     {
-                        IASNode containingNode = ASTUtils.getContainingNodeIncludingStart(asNode, currentOffset);
-                        if (containingNode != null)
+                        //some attributes can have ActionScript completion, such as
+                        //events and properties with data binding
+                        IClassDefinition tagDefinition = (IClassDefinition) project.resolveXMLNameToDefinition(offsetTag.getXMLName(), offsetTag.getMXMLDialect());
+                        IDefinition attributeDefinition = project.resolveSpecifier(tagDefinition, attributeData.getShortName());
+                        if (attributeDefinition instanceof IEventDefinition)
                         {
-                            offsetNode = containingNode;
+                            IMXMLClassReferenceNode mxmlNode = (IMXMLClassReferenceNode) getOffsetNode(params);
+                            IMXMLEventSpecifierNode eventNode = mxmlNode.getEventSpecifierNode(attributeData.getShortName());
+                            for (IASNode asNode : eventNode.getASNodes())
+                            {
+                                IASNode containingNode = ASTUtils.getContainingNodeIncludingStart(asNode, currentOffset);
+                                if (containingNode != null)
+                                {
+                                    offsetNode = containingNode;
+                                }
+                            }
+                            if (offsetNode == null)
+                            {
+                                offsetNode = eventNode;
+                            }
                         }
                     }
-                    if (offsetNode == null)
-                    {
-                        offsetNode = eventNode;
-                    }
                 }
-            }
-        }
-        if (offsetNode == null)
-        {
-            offsetNode = getOffsetNode(position);
-        }
-        if (offsetNode == null)
-        {
-            //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(new SignatureHelp(Collections.emptyList(), -1, -1));
-        }
-
-        IFunctionCallNode functionCallNode = getAncestorFunctionCallNode(offsetNode);
-        IFunctionDefinition functionDefinition = null;
-        if (functionCallNode != null)
-        {
-            IExpressionNode nameNode = functionCallNode.getNameNode();
-            IDefinition definition = nameNode.resolve(currentUnit.getProject());
-            if (definition instanceof IFunctionDefinition)
-            {
-                functionDefinition = (IFunctionDefinition) definition;
-            }
-            else if (definition instanceof IClassDefinition)
-            {
-                IClassDefinition classDefinition = (IClassDefinition) definition;
-                functionDefinition = classDefinition.getConstructor();
-            }
-            else if (nameNode instanceof IIdentifierNode)
-            {
-                //special case for super()
-                IIdentifierNode identifierNode = (IIdentifierNode) nameNode;
-                if (identifierNode.getName().equals(IASKeywordConstants.SUPER))
+                if (offsetNode == null)
                 {
-                    ITypeDefinition typeDefinition = nameNode.resolveType(currentProject);
-                    if (typeDefinition instanceof IClassDefinition)
+                    offsetNode = getOffsetNode(params);
+                }
+                if (offsetNode == null)
+                {
+                    cancelToken.checkCanceled();
+                    //we couldn't find a node at the specified location
+                    return new SignatureHelp(Collections.emptyList(), -1, -1);
+                }
+
+                IFunctionCallNode functionCallNode = getAncestorFunctionCallNode(offsetNode);
+                IFunctionDefinition functionDefinition = null;
+                if (functionCallNode != null)
+                {
+                    IExpressionNode nameNode = functionCallNode.getNameNode();
+                    IDefinition definition = nameNode.resolve(project);
+                    if (definition instanceof IFunctionDefinition)
                     {
-                        IClassDefinition classDefinition = (IClassDefinition) typeDefinition;
+                        functionDefinition = (IFunctionDefinition) definition;
+                    }
+                    else if (definition instanceof IClassDefinition)
+                    {
+                        IClassDefinition classDefinition = (IClassDefinition) definition;
                         functionDefinition = classDefinition.getConstructor();
                     }
-                }
-            }
-        }
-        if (functionDefinition != null)
-        {
-            SignatureHelp result = new SignatureHelp();
-            List<SignatureInformation> signatures = new ArrayList<>();
-
-            SignatureInformation signatureInfo = new SignatureInformation();
-            signatureInfo.setLabel(DefinitionTextUtils.functionDefinitionToSignature(functionDefinition, currentProject));
-            String docs = DefinitionDocumentationUtils.getDocumentationForDefinition(functionDefinition, true);
-            if (docs != null)
-            {
-                signatureInfo.setDocumentation(docs);
-            }
-
-            List<ParameterInformation> parameters = new ArrayList<>();
-            for (IParameterDefinition param : functionDefinition.getParameters())
-            {
-                ParameterInformation paramInfo = new ParameterInformation();
-                paramInfo.setLabel(param.getBaseName());
-                String paramDocs = DefinitionDocumentationUtils.getDocumentationForParameter(param, true);
-                if (paramDocs != null)
-                {
-                    paramInfo.setDocumentation(paramDocs);
-                }
-                parameters.add(paramInfo);
-            }
-            signatureInfo.setParameters(parameters);
-            signatures.add(signatureInfo);
-            result.setSignatures(signatures);
-            result.setActiveSignature(0);
-
-            int index = getFunctionCallNodeArgumentIndex(functionCallNode, offsetNode);
-            IParameterDefinition[] params = functionDefinition.getParameters();
-            int paramCount = params.length;
-            if (paramCount > 0 && index >= paramCount)
-            {
-                if (index >= paramCount)
-                {
-                    IParameterDefinition lastParam = params[paramCount - 1];
-                    if (lastParam.isRest())
+                    else if (nameNode instanceof IIdentifierNode)
                     {
-                        //functions with rest parameters may accept any
-                        //number of arguments, so continue to make the rest
-                        //parameter active
-                        index = paramCount - 1;
-                    }
-                    else
-                    {
-                        //if there's no rest parameter, and we're beyond the
-                        //final parameter, none should be active
-                        index = -1;
+                        //special case for super()
+                        IIdentifierNode identifierNode = (IIdentifierNode) nameNode;
+                        if (identifierNode.getName().equals(IASKeywordConstants.SUPER))
+                        {
+                            ITypeDefinition typeDefinition = nameNode.resolveType(project);
+                            if (typeDefinition instanceof IClassDefinition)
+                            {
+                                IClassDefinition classDefinition = (IClassDefinition) typeDefinition;
+                                functionDefinition = classDefinition.getConstructor();
+                            }
+                        }
                     }
                 }
+                if (functionDefinition != null)
+                {
+                    SignatureHelp result = new SignatureHelp();
+                    List<SignatureInformation> signatures = new ArrayList<>();
+
+                    SignatureInformation signatureInfo = new SignatureInformation();
+                    signatureInfo.setLabel(DefinitionTextUtils.functionDefinitionToSignature(functionDefinition, project));
+                    String docs = DefinitionDocumentationUtils.getDocumentationForDefinition(functionDefinition, true);
+                    if (docs != null)
+                    {
+                        signatureInfo.setDocumentation(docs);
+                    }
+
+                    List<ParameterInformation> parameters = new ArrayList<>();
+                    for (IParameterDefinition param : functionDefinition.getParameters())
+                    {
+                        ParameterInformation paramInfo = new ParameterInformation();
+                        paramInfo.setLabel(param.getBaseName());
+                        String paramDocs = DefinitionDocumentationUtils.getDocumentationForParameter(param, true);
+                        if (paramDocs != null)
+                        {
+                            paramInfo.setDocumentation(paramDocs);
+                        }
+                        parameters.add(paramInfo);
+                    }
+                    signatureInfo.setParameters(parameters);
+                    signatures.add(signatureInfo);
+                    result.setSignatures(signatures);
+                    result.setActiveSignature(0);
+
+                    int index = getFunctionCallNodeArgumentIndex(functionCallNode, offsetNode);
+                    IParameterDefinition[] parameterDefs = functionDefinition.getParameters();
+                    int paramCount = parameterDefs.length;
+                    if (paramCount > 0 && index >= paramCount)
+                    {
+                        if (index >= paramCount)
+                        {
+                            IParameterDefinition lastParam = parameterDefs[paramCount - 1];
+                            if (lastParam.isRest())
+                            {
+                                //functions with rest parameters may accept any
+                                //number of arguments, so continue to make the rest
+                                //parameter active
+                                index = paramCount - 1;
+                            }
+                            else
+                            {
+                                //if there's no rest parameter, and we're beyond the
+                                //final parameter, none should be active
+                                index = -1;
+                            }
+                        }
+                    }
+                    if (index != -1)
+                    {
+                        result.setActiveParameter(index);
+                    }
+                    cancelToken.checkCanceled();
+                    return result;
+                }
+                cancelToken.checkCanceled();
+                return new SignatureHelp(Collections.emptyList(), -1, -1);
             }
-            if (index != -1)
+            finally
             {
-                result.setActiveParameter(index);
+                compilerWorkspace.doneBuilding();
             }
-            return CompletableFuture.completedFuture(result);
-        }
-        return CompletableFuture.completedFuture(new SignatureHelp(Collections.emptyList(), -1, -1));
+        });
     }
 
     /**
@@ -640,101 +719,210 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      * document is defined.
      */
     @Override
-    public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position)
+    public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams params)
     {
-        String textDocumentUri = position.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            cancelToken.checkCanceled();
+
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
+
+            compilerWorkspace.startBuilding();
+            try
+            {
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params, project);
+                    if (embeddedNode != null)
+                    {
+                        List<? extends Location> result = actionScriptDefinitionWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript lookup,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        List<? extends Location> result = mxmlDefinition(params, project, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                List<? extends Location> result = actionScriptDefinition(params, project);
+                cancelToken.checkCanceled();
+                return result;
+            }
+            finally
+            {
+                compilerWorkspace.doneBuilding();
+            }
+        });
+    }
+
+    protected RoyaleProject textDocumentPositionParamsToProject(TextDocumentPositionParams params)
+    {
+        return textDocumentIdentifierToProject(params.getTextDocument());
+    }
+
+    protected RoyaleProject textDocumentIdentifierToProject(TextDocumentIdentifier textDocument)
+    {
+        return textDocumentUriToProject(textDocument.getUri());
+    }
+
+    protected RoyaleProject textDocumentUriToProject(String uri)
+    {
+        if (!uri.endsWith(AS_EXTENSION)
+                && !uri.endsWith(MXML_EXTENSION))
+        {
+            return null;
         }
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
-
-        IMXMLTagData offsetTag = getOffsetMXMLTag(position);
-        if (offsetTag != null)
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+        if(path == null)
         {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, position);
-            if (embeddedNode != null)
-            {
-                return actionScriptDefinitionWithNode(position, embeddedNode);
-            }
-            //if we're inside an <fx:Script> tag, we want ActionScript lookup,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
-            {
-                return mxmlDefinition(position, offsetTag);
-            }
+            return null;
         }
-        return actionScriptDefinition(position);
+
+        WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
+        if(folderData == null)
+        {
+            return null;
+        }
+
+        return getProject(folderData);
     }
 
     /**
      * Finds where the type of the definition referenced at the current position
      * in a text document is defined.
      */
-    public CompletableFuture<List<? extends Location>> typeDefinition(TextDocumentPositionParams position)
+    public CompletableFuture<List<? extends Location>> typeDefinition(TextDocumentPositionParams params)
     {
-        String textDocumentUri = position.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        IMXMLTagData offsetTag = getOffsetMXMLTag(position);
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, position);
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                return actionScriptTypeDefinitionWithNode(position, embeddedNode);
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params, project);
+                    if (embeddedNode != null)
+                    {
+                        List<? extends Location> result = actionScriptTypeDefinitionWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript lookup,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        List<? extends Location> result = mxmlTypeDefinition(params, project, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                List<? extends Location> result = actionScriptTypeDefinition(params, project);
+                cancelToken.checkCanceled();
+                return result;
             }
-            //if we're inside an <fx:Script> tag, we want ActionScript lookup,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+            finally
             {
-                return mxmlTypeDefinition(position, offsetTag);
+                compilerWorkspace.doneBuilding();
             }
-        }
-        return actionScriptTypeDefinition(position);
+        });
     }
 
     /**
      * Finds all implemenations of an interface.
      */
-    public CompletableFuture<List<? extends Location>> implementation(TextDocumentPositionParams position)
+    public CompletableFuture<List<? extends Location>> implementation(TextDocumentPositionParams params)
     {
-        String textDocumentUri = position.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        IMXMLTagData offsetTag = getOffsetMXMLTag(position);
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, position);
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                return actionScriptImplementationWithNode(position, embeddedNode);
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params, project);
+                    if (embeddedNode != null)
+                    {
+                        List<? extends Location> result = actionScriptImplementationWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                List<? extends Location> result = actionScriptImplementation(params, project);
+                cancelToken.checkCanceled();
+                return result;
             }
-        }
-        return actionScriptImplementation(position);
+            finally
+            {
+                compilerWorkspace.doneBuilding();
+            }
+        });
     }
 
     /**
@@ -745,41 +933,67 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     @Override
     public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
     {
-        String textDocumentUri = params.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        IMXMLTagData offsetTag = getOffsetMXMLTag(params);
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params.getTextDocument(), params.getPosition());
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                return actionScriptReferencesWithNode(params, embeddedNode);
+                RoyaleProject project = textDocumentPositionParamsToProject(params);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                int currentOffset = getOffset(params);
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params);
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params.getTextDocument(), params.getPosition(), project);
+                    if (embeddedNode != null)
+                    {
+                        List<? extends Location> result = actionScriptReferencesWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript lookup,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        List<? extends Location> result = mxmlReferences(params, project, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                List<? extends Location> result = actionScriptReferences(params, project);
+                cancelToken.checkCanceled();
+                return result;
             }
-            //if we're inside an <fx:Script> tag, we want ActionScript lookup,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+            finally
             {
-                return mxmlReferences(params, offsetTag);
+                compilerWorkspace.doneBuilding();
             }
-        }
-        return actionScriptReferences(params);
+        });
     }
 
     /**
      * This feature is not implemented at this time.
      */
     @Override
-    public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position)
+    public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams params)
     {
         return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -789,99 +1003,113 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      */
     public CompletableFuture<List<? extends SymbolInformation>> workspaceSymbol(WorkspaceSymbolParams params)
     {
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
+        {
+            cancelToken.checkCanceled();
 
-        Set<String> qualifiedNames = new HashSet<>();
-        List<SymbolInformation> result = new ArrayList<>();
-        String query = params.getQuery();
-        StringBuilder currentQuery = new StringBuilder();
-        List<String> queries = new ArrayList<>();
-        for(int i = 0, length = query.length(); i < length; i++)
-        {
-            String charAtI = query.substring(i, i + 1);
-            if(i > 0 && charAtI.toUpperCase().equals(charAtI))
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
+
+            compilerWorkspace.startBuilding();
+            try
             {
-                queries.add(currentQuery.toString().toLowerCase());
-                currentQuery = new StringBuilder();
-            }
-            currentQuery.append(charAtI);
-        }
-        if(currentQuery.length() > 0)
-        {
-            queries.add(currentQuery.toString().toLowerCase());
-        }
-        for (WorkspaceFolderData folderData : workspaceFolderToData.values())
-        {
-            RoyaleProject project = folderData.project;
-            if (project == null)
-            {
-                continue;
-            }
-            for (ICompilationUnit unit : project.getCompilationUnits())
-            {
-                if (unit == null || unit instanceof ResourceBundleCompilationUnit)
+                Set<String> qualifiedNames = new HashSet<>();
+                List<SymbolInformation> result = new ArrayList<>();
+                String query = params.getQuery();
+                StringBuilder currentQuery = new StringBuilder();
+                List<String> queries = new ArrayList<>();
+                for(int i = 0, length = query.length(); i < length; i++)
                 {
-                    continue;
-                }
-                if (unit instanceof SWCCompilationUnit)
-                {
-                    List<IDefinition> definitions = unit.getDefinitionPromises();
-                    for (IDefinition definition : definitions)
+                    String charAtI = query.substring(i, i + 1);
+                    if(i > 0 && charAtI.toUpperCase().equals(charAtI))
                     {
-                        if (definition instanceof DefinitionPromise)
-                        {
-                            //we won't be able to detect what type of definition
-                            //this is without getting the actual definition from the
-                            //promise.
-                            DefinitionPromise promise = (DefinitionPromise) definition;
-                            definition = promise.getActualDefinition();
-                        }
-                        if (definition.isImplicit())
+                        queries.add(currentQuery.toString().toLowerCase());
+                        currentQuery = new StringBuilder();
+                    }
+                    currentQuery.append(charAtI);
+                }
+                if(currentQuery.length() > 0)
+                {
+                    queries.add(currentQuery.toString().toLowerCase());
+                }
+                for (WorkspaceFolderData folderData : workspaceFolderToData.values())
+                {
+                    RoyaleProject project = folderData.project;
+                    if (project == null)
+                    {
+                        continue;
+                    }
+                    for (ICompilationUnit unit : project.getCompilationUnits())
+                    {
+                        if (unit == null || unit instanceof ResourceBundleCompilationUnit)
                         {
                             continue;
                         }
-                        if (!matchesQueries(queries, definition.getQualifiedName()))
+                        if (unit instanceof SWCCompilationUnit)
                         {
-                            continue;
+                            List<IDefinition> definitions = unit.getDefinitionPromises();
+                            for (IDefinition definition : definitions)
+                            {
+                                if (definition instanceof DefinitionPromise)
+                                {
+                                    //we won't be able to detect what type of definition
+                                    //this is without getting the actual definition from the
+                                    //promise.
+                                    DefinitionPromise promise = (DefinitionPromise) definition;
+                                    definition = promise.getActualDefinition();
+                                }
+                                if (definition.isImplicit())
+                                {
+                                    continue;
+                                }
+                                if (!matchesQueries(queries, definition.getQualifiedName()))
+                                {
+                                    continue;
+                                }
+                                String qualifiedName = definition.getQualifiedName();
+                                if (qualifiedNames.contains(qualifiedName))
+                                {
+                                    //we've already added this symbol
+                                    //this can happen when there are multiple root
+                                    //folders in the workspace
+                                    continue;
+                                }
+                                SymbolInformation symbol = definitionToSymbolInformation(definition, project);
+                                if (symbol != null)
+                                {
+                                    qualifiedNames.add(qualifiedName);
+                                    result.add(symbol);
+                                }
+                            }
                         }
-                        String qualifiedName = definition.getQualifiedName();
-                        if (qualifiedNames.contains(qualifiedName))
+                        else
                         {
-                            //we've already added this symbol
-                            //this can happen when there are multiple root
-                            //folders in the workspace
-                            continue;
-                        }
-                        SymbolInformation symbol = definitionToSymbol(definition);
-                        if (symbol != null)
-                        {
-                            qualifiedNames.add(qualifiedName);
-                            result.add(symbol);
+                            IASScope[] scopes;
+                            try
+                            {
+                                scopes = unit.getFileScopeRequest().get().getScopes();
+                            }
+                            catch (Exception e)
+                            {
+                                return Collections.emptyList();
+                            }
+                            for (IASScope scope : scopes)
+                            {
+                                querySymbolsInScope(queries, scope, qualifiedNames, project, result);
+                            }
                         }
                     }
                 }
-                else
-                {
-                    IASScope[] scopes;
-                    try
-                    {
-                        scopes = unit.getFileScopeRequest().get().getScopes();
-                    }
-                    catch (Exception e)
-                    {
-                        return CompletableFuture.completedFuture(Collections.emptyList());
-                    }
-                    for (IASScope scope : scopes)
-                    {
-                        querySymbolsInScope(queries, scope, qualifiedNames, result);
-                    }
-                }
+                cancelToken.checkCanceled();
+                return result;
             }
-        }
-        return CompletableFuture.completedFuture(result);
+            finally
+            {
+                compilerWorkspace.doneBuilding();
+            }
+        });
     }
 
     /**
@@ -889,176 +1117,237 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      * workspace)
      */
     @Override
-    public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params)
+    public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
     {
-        TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
-        if (path == null)
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        ICompilationUnit unit = getCompilationUnit(path);
-        if (unit == null)
-        {
-            //we couldn't find a compilation unit with the specified path
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            compilerWorkspace.startBuilding();
+            try
+            {
+                TextDocumentIdentifier textDocument = params.getTextDocument();
+                RoyaleProject project = textDocumentIdentifierToProject(textDocument);
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+                Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+                if (path == null)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
 
-        IASScope[] scopes;
-        try
-        {
-            scopes = unit.getFileScopeRequest().get().getScopes();
-        }
-        catch (Exception e)
-        {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-        List<SymbolInformation> result = new ArrayList<>();
-        for (IASScope scope : scopes)
-        {
-            scopeToSymbols(scope, result);
-        }
-        return CompletableFuture.completedFuture(result);
+                ICompilationUnit unit = getCompilationUnit(path);
+                if (unit == null)
+                {
+                    cancelToken.checkCanceled();
+                    //we couldn't find a compilation unit with the specified path
+                    return Collections.emptyList();
+                }
+
+                IASScope[] scopes;
+                try
+                {
+                    scopes = unit.getFileScopeRequest().get().getScopes();
+                }
+                catch (Exception e)
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+                List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
+                if (clientCapabilities.getTextDocument().getDocumentSymbol().getHierarchicalDocumentSymbolSupport())
+                {
+                    List<DocumentSymbol> symbols = new ArrayList<>();
+                    for (IASScope scope : scopes)
+                    {
+                        scopeToDocumentSymbols(scope, project, symbols);
+                    }
+                    for (DocumentSymbol symbol : symbols)
+                    {
+                        result.add(Either.forRight(symbol));
+                    }
+                }
+                else //fallback to non-hierarchical
+                {
+                    List<SymbolInformation> symbols = new ArrayList<>();
+                    for (IASScope scope : scopes)
+                    {
+                        scopeToSymbolInformation(scope, project, symbols);
+                    }
+                    for (SymbolInformation symbol : symbols)
+                    {
+                        result.add(Either.forLeft(symbol));
+                    }
+                }
+                cancelToken.checkCanceled();
+                return result;
+            }
+            finally
+            {
+                compilerWorkspace.doneBuilding();
+            }
+        });
     }
 
     /**
      * Can be used to "quick fix" an error or warning.
      */
     @Override
-    public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params)
+    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
     {
-        List<? extends Diagnostic> diagnostics = params.getContext().getDiagnostics();
-        TextDocumentIdentifier textDocument = params.getTextDocument();
-        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
-        if (path == null)
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-        if (!sourceByPath.containsKey(path))
-        {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-        WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
-        if (folderData == null)
-        {
-            //the path must be in the workspace or source-path
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
+            cancelToken.checkCanceled();
 
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        currentProject = getProject(folderData);
-        if (currentProject == null || !SourcePathUtils.isInProjectSourcePath(path, currentProject))
-        {
-            //the path must be in the workspace or source-path
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-        ArrayList<Command> commands = new ArrayList<>();
-        for (Diagnostic diagnostic : diagnostics)
-        {
-            //I don't know why this can be null
-            String code = diagnostic.getCode();
-            if (code == null)
-            {
-                continue;
-            }
-            switch (code)
-            {
-                case "1120": //AccessUndefinedPropertyProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    createCodeActionForMissingLocalVariable(textDocument, diagnostic, commands);
-                    createCodeActionForMissingField(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1046": //UnknownTypeProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1017": //UnknownSuperclassProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1045": //UnknownInterfaceProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1061": //StrictUndefinedMethodProblem
-                {
-                    createCodeActionForMissingMethod(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1119": //AccessUndefinedMemberProblem
-                {
-                    createCodeActionForMissingField(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1178": //InaccessiblePropertyReferenceProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    break;
-                }
-                case "1180": //CallUndefinedMethodProblem
-                {
-                    //see if there's anything we can import
-                    createCodeActionsForImport(textDocument, diagnostic, commands);
-                    createCodeActionForMissingMethod(textDocument, diagnostic, commands);
-                    break;
-                }
-            }
-        }
-        ICompilationUnit unit = getCompilationUnit(path);
-        if (unit != null)
-        {
-            IASNode ast = null;
+            compilerWorkspace.startBuilding();
             try
             {
-                ast = unit.getSyntaxTreeRequest().get().getAST();
-            }
-            catch(Exception e)
-            {
-
-            }
-            if (ast != null)
-            {
-                List<CommandAndRange> codeActions = new ArrayList<>();
-                String fileText = sourceByPath.get(path);
-                CodeActionsUtils.findCodeActions(ast, currentProject, path, fileText, codeActions);
-                if (codeActions != null)
+                List<? extends Diagnostic> diagnostics = params.getContext().getDiagnostics();
+                TextDocumentIdentifier textDocument = params.getTextDocument();
+                Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+                if (path == null)
                 {
-                    for (CommandAndRange codeAction : codeActions)
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+                if (!sourceByPath.containsKey(path))
+                {
+                    cancelToken.checkCanceled();
+                    return Collections.emptyList();
+                }
+                WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
+                if (folderData == null)
+                {
+                    cancelToken.checkCanceled();
+                    //the path must be in the workspace or source-path
+                    return Collections.emptyList();
+                }
+
+                RoyaleProject currentProject = getProject(folderData);
+                if (currentProject == null || !SourcePathUtils.isInProjectSourcePath(path, currentProject, folderData.configurator))
+                {
+                    cancelToken.checkCanceled();
+                    //the path must be in the workspace or source-path
+                    return Collections.emptyList();
+                }
+                List<Either<Command, CodeAction>> commands = new ArrayList<>();
+                for (Diagnostic diagnostic : diagnostics)
+                {
+                    //I don't know why this can be null
+                    String code = diagnostic.getCode();
+                    if (code == null)
                     {
-                        Range savedRange = codeAction.range;
-                        Range paramRange = params.getRange();
-                        if (LSPUtils.rangesIntersect(savedRange, paramRange))
+                        continue;
+                    }
+                    switch (code)
+                    {
+                        case "1120": //AccessUndefinedPropertyProblem
                         {
-                            commands.add(codeAction.command);
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            createCodeActionForMissingLocalVariable(textDocument, diagnostic, commands);
+                            createCodeActionForMissingField(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1046": //UnknownTypeProblem
+                        {
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1017": //UnknownSuperclassProblem
+                        {
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1045": //UnknownInterfaceProblem
+                        {
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1061": //StrictUndefinedMethodProblem
+                        {
+                            createCodeActionForMissingMethod(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1119": //AccessUndefinedMemberProblem
+                        {
+                            createCodeActionForMissingField(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1178": //InaccessiblePropertyReferenceProblem
+                        {
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            break;
+                        }
+                        case "1180": //CallUndefinedMethodProblem
+                        {
+                            //see if there's anything we can import
+                            createCodeActionsForImport(textDocument, diagnostic, commands);
+                            createCodeActionForMissingMethod(textDocument, diagnostic, commands);
+                            break;
                         }
                     }
                 }
+                ICompilationUnit unit = getCompilationUnit(path);
+                if (unit != null)
+                {
+                    IASNode ast = null;
+                    try
+                    {
+                        ast = unit.getSyntaxTreeRequest().get().getAST();
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
+                    if (ast != null)
+                    {
+                        List<CommandAndRange> codeActions = new ArrayList<>();
+                        String fileText = sourceByPath.get(path);
+                        CodeActionsUtils.findCodeActions(ast, currentProject, path, fileText, codeActions);
+                        if (codeActions != null)
+                        {
+                            for (CommandAndRange codeAction : codeActions)
+                            {
+                                Range savedRange = codeAction.range;
+                                Range paramRange = params.getRange();
+                                if (LSPUtils.rangesIntersect(savedRange, paramRange))
+                                {
+                                    commands.add(Either.forLeft(codeAction.command));
+                                }
+                            }
+                        }
+                    }
+                }
+                cancelToken.checkCanceled();
+                return commands;
             }
-        }
-        return CompletableFuture.completedFuture(commands);
+            finally
+            {
+                compilerWorkspace.doneBuilding();
+            }
+        });
     }
 
-    private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
     {
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
         IIdentifierNode identifierNode = null;
@@ -1100,10 +1389,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             diagnostic.getRange().getEnd().getCharacter(),
             identifierName
         ));
-        commands.add(generateVariableCommand);
+        commands.add(Either.forLeft(generateVariableCommand));
     }
     
-    private void createCodeActionForMissingLocalVariable(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    private void createCodeActionForMissingLocalVariable(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
     {
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
         IIdentifierNode identifierNode = null;
@@ -1128,11 +1417,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             diagnostic.getRange().getEnd().getCharacter(),
             identifierName
         ));
-        commands.add(generateVariableCommand);
+        commands.add(Either.forLeft(generateVariableCommand));
     }
 
-    private void createCodeActionForMissingMethod(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    private void createCodeActionForMissingMethod(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
     {
+        RoyaleProject project = textDocumentIdentifierToProject(textDocument);
+        if(project == null)
+        {
+            return;
+        }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
         IASNode parentNode = offsetNode.getParent();
         IFunctionCallNode functionCallNode = null;
@@ -1173,7 +1467,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         ArrayList<String> argTypes = new ArrayList<>();
         for (IExpressionNode arg : functionCallNode.getArgumentNodes())
         {
-            ITypeDefinition typeDefinition = arg.resolveType(currentProject);
+            ITypeDefinition typeDefinition = arg.resolveType(project);
             if (typeDefinition != null)
             {
                 argTypes.add(typeDefinition.getQualifiedName());
@@ -1196,26 +1490,33 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             functionName,
             argTypes.toArray()
         ));
-        commands.add(generateMethodCommand);
+        commands.add(Either.forLeft(generateMethodCommand));
     }
 
-    private void createCodeActionsForImport(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Command> commands)
+    private void createCodeActionsForImport(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
     {
+        RoyaleProject project = textDocumentIdentifierToProject(textDocument);
+        if(project == null)
+        {
+            return;
+        }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
         if (offsetNode == null || !(offsetNode instanceof IIdentifierNode))
         {
             return;
         }
+        ImportRange importRange = ImportRange.fromOffsetNode(offsetNode);
+
         IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
         String typeString = identifierNode.getName();
 
-        List<IDefinition> types = ASTUtils.findTypesThatMatchName(typeString, compilationUnits);
+        List<IDefinition> types = ASTUtils.findTypesThatMatchName(typeString, project.getCompilationUnits());
         for (IDefinition definitionToImport : types)
         {
-            Command command = createImportCommand(definitionToImport);
+            Command command = createImportCommand(definitionToImport, importRange);
             if (command != null)
             {
-                commands.add(command);
+                commands.add(Either.forLeft(command));
             }
         }
     }
@@ -1271,51 +1572,60 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     @Override
     public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
     {
-        String textDocumentUri = params.getTextDocument().getUri();
-        if (!textDocumentUri.endsWith(AS_EXTENSION)
-                && !textDocumentUri.endsWith(MXML_EXTENSION))
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
-        }
+            cancelToken.checkCanceled();
 
-        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocumentUri);
-        if (path == null)
-        {
-            return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
-        }
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
 
-        WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
-        if (folderData == null)
-        {
-            languageClient.showMessage(new MessageParams(MessageType.Error, "Rename Symbol failed. File is not in source path."));
-            return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
-        }
-
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        if (realTimeProblemAnalyzer.getCompilationUnit() != null)
-        {
-            System.err.println("rename: needs complete pending requests");
-        }
-        //realTimeProblemAnalyzer.completePendingRequests();
-
-        IMXMLTagData offsetTag = getOffsetMXMLTag(params.getTextDocument(), params.getPosition());
-        if (offsetTag != null)
-        {
-            IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params.getTextDocument(), params.getPosition());
-            if (embeddedNode != null)
+            compilerWorkspace.startBuilding();
+            try
             {
-                return actionScriptRenameWithNode(params, embeddedNode);
+                RoyaleProject project = textDocumentIdentifierToProject(params.getTextDocument());
+                if(project == null)
+                {
+                    cancelToken.checkCanceled();
+                    return new WorkspaceEdit(new HashMap<>());
+                }
+
+                int currentOffset = getOffset(params.getTextDocument(), params.getPosition());
+                if (currentOffset == -1)
+                {
+                    cancelToken.checkCanceled();
+                    return new WorkspaceEdit(new HashMap<>());
+                }
+
+                IMXMLTagData offsetTag = getOffsetMXMLTag(params.getTextDocument(), params.getPosition());
+                if (offsetTag != null)
+                {
+                    IASNode embeddedNode = getEmbeddedActionScriptNodeInMXMLTag(offsetTag, currentOffset, params.getTextDocument(), params.getPosition(), project);
+                    if (embeddedNode != null)
+                    {
+                        WorkspaceEdit result = actionScriptRenameWithNode(params, project, embeddedNode);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                    //if we're inside an <fx:Script> tag, we want ActionScript rename,
+                    //so that's why we call isMXMLTagValidForCompletion()
+                    if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+                    {
+                        WorkspaceEdit result = mxmlRename(params, project, offsetTag, currentOffset);
+                        cancelToken.checkCanceled();
+                        return result;
+                    }
+                }
+                WorkspaceEdit result = actionScriptRename(params, project);
+                cancelToken.checkCanceled();
+                return result;
             }
-            //if we're inside an <fx:Script> tag, we want ActionScript rename,
-            //so that's why we call isMXMLTagValidForCompletion()
-            if (MXMLDataUtils.isMXMLTagValidForCompletion(offsetTag))
+            finally
             {
-                return mxmlRename(params, offsetTag);
+                compilerWorkspace.doneBuilding();
             }
-        }
-        return actionScriptRename(params);
+        });
     }
 
     /**
@@ -1324,63 +1634,90 @@ public class ActionScriptTextDocumentService implements TextDocumentService
      */
     public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
     {
-        //we need the compilation unit to be fully built or the result will be
-        //inaccurate. additionally, there could be null reference exceptions
-        //caused by old scopes being referenced
-        realTimeProblemAnalyzer.completePendingRequests();
-
-        switch(params.getCommand())
+        return CompletableFutures.computeAsync(compilerWorkspace.getExecutorService(), cancelToken ->
         {
-            case ICommandConstants.ADD_IMPORT:
+            cancelToken.checkCanceled();
+
+            //don't start the build until all other builds are done
+            compilerWorkspace.startIdleState();
+            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            cancelToken.checkCanceled();
+
+            compilerWorkspace.startBuilding();
+            try
             {
-                return executeAddImportCommand(params);
+                Object result = null;
+                switch(params.getCommand())
+                {
+                    case ICommandConstants.ADD_IMPORT:
+                    {
+                        result = executeAddImportCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.ADD_MXML_NAMESPACE:
+                    {
+                        result = executeAddMXMLNamespaceCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.ORGANIZE_IMPORTS_IN_URI:
+                    {
+                        result = executeOrganizeImportsInUriCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.ORGANIZE_IMPORTS_IN_DIRECTORY:
+                    {
+                        result = executeOrganizeImportsInDirectoryCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_GETTER_AND_SETTER:
+                    {
+                        result = executeGenerateGetterAndSetterCommand(params, true, true);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_GETTER:
+                    {
+                        result = executeGenerateGetterAndSetterCommand(params, true, false);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_SETTER:
+                    {
+                        result = executeGenerateGetterAndSetterCommand(params, false, true);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_LOCAL_VARIABLE:
+                    {
+                        result = executeGenerateLocalVariableCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_FIELD_VARIABLE:
+                    {
+                        result = executeGenerateFieldVariableCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.GENERATE_METHOD:
+                    {
+                        result = executeGenerateMethodCommand(params);
+                        break;
+                    }
+                    case ICommandConstants.QUICK_COMPILE:
+                    {
+                        result = executeQuickCompileCommand(params);
+                        break;
+                    }
+                    default:
+                    {
+                        System.err.println("Unknown command: " + params.getCommand());
+                        result = new Object();
+                    }
+                }
+                cancelToken.checkCanceled();
+                return result;
             }
-            case ICommandConstants.ADD_MXML_NAMESPACE:
+            finally
             {
-                return executeAddMXMLNamespaceCommand(params);
+                compilerWorkspace.doneBuilding();
             }
-            case ICommandConstants.ORGANIZE_IMPORTS_IN_URI:
-            {
-                return executeOrganizeImportsInUriCommand(params);
-            }
-            case ICommandConstants.ORGANIZE_IMPORTS_IN_DIRECTORY:
-            {
-                return executeOrganizeImportsInDirectoryCommand(params);
-            }
-            case ICommandConstants.GENERATE_GETTER_AND_SETTER:
-            {
-                return executeGenerateGetterAndSetterCommand(params, true, true);
-            }
-            case ICommandConstants.GENERATE_GETTER:
-            {
-                return executeGenerateGetterAndSetterCommand(params, true, false);
-            }
-            case ICommandConstants.GENERATE_SETTER:
-            {
-                return executeGenerateGetterAndSetterCommand(params, false, true);
-            }
-            case ICommandConstants.GENERATE_LOCAL_VARIABLE:
-            {
-                return executeGenerateLocalVariableCommand(params);
-            }
-            case ICommandConstants.GENERATE_FIELD_VARIABLE:
-            {
-                return executeGenerateFieldVariableCommand(params);
-            }
-            case ICommandConstants.GENERATE_METHOD:
-            {
-                return executeGenerateMethodCommand(params);
-            }
-            case ICommandConstants.QUICK_COMPILE:
-            {
-                return executeQuickCompileCommand(params);
-            }
-            default:
-            {
-                System.err.println("Unknown command: " + params.getCommand());
-                return CompletableFuture.completedFuture(new Object());
-            }
-        }
+        });
     }
 
     /**
@@ -1448,9 +1785,37 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     result.add(folderData);
                 }
             }
-            else if(SourcePathUtils.isInProjectSourcePath(path, project))
+            else if (SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
             {
                 result.add(folderData);
+            }
+        }
+        return result;
+    }
+
+    private List<WorkspaceFolderData> getAllWorkspaceFolderDataForSWCFile(Path path)
+    {
+        List<WorkspaceFolderData> result = new ArrayList<>();
+        for (WorkspaceFolder folder : workspaceFolderToData.keySet())
+        {
+            WorkspaceFolderData folderData = workspaceFolderToData.get(folder);
+            RoyaleProject project = folderData.project;
+            if (project == null)
+            {
+                String folderUri = folder.getUri();
+                Path workspacePath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(folderUri);
+                if (path.startsWith(workspacePath))
+                {
+                    result.add(folderData);
+                }
+            }
+            else
+            {
+                Configuration configuration = folderData.configurator.getConfiguration();
+                if (SourcePathUtils.isInProjectLibraryPathOrExternalLibraryPath(path, project, configuration))
+                {
+                    result.add(folderData);
+                }
             }
         }
         return result;
@@ -1469,7 +1834,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             String uri = folderData.folder.getUri();
             Path workspacePath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
-            if (workspacePath != null && SourcePathUtils.isInProjectSourcePath(path, project))
+            if (workspacePath != null && SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
             {
                 if(path.startsWith(workspacePath))
                 {
@@ -1556,46 +1921,37 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             publishDiagnosticForFileOutsideSourcePath(path);
             return;
         }
-        if (currentProject == null)
-        {
-            //we don't have a current project, so we'll fall back to simple
-            //syntax checking for now
-            checkFilePathForProblems(path, folderData, true);
-            return;
-        }
-        //we do a quick check of the current file on change for better
-        //performance while typing. we'll do a full check when we save the
-        //file later
-        currentProject = getProject(folderData);
-        if (currentProject != null && !SourcePathUtils.isInProjectSourcePath(path, currentProject))
-        {
-            realTimeProblemAnalyzer.setCompilationUnit(null);
-            realTimeProblemAnalyzer.setFileSpecification(null);
-            publishDiagnosticForFileOutsideSourcePath(path);
-            return;
-        }
+
+        String normalizedChangedPathAsString = path.toString();
         ICompilationUnit unit = getCompilationUnit(path);
-        IFileSpecification fileSpec = fileSpecGetter.getFileSpecification(unit.getAbsoluteFilename());
-        if(realTimeProblemAnalyzer.getCompilationUnit() != null)
+        if(unit != null)
         {
-            //if the compilation unit is already being analyzed for
-            //problems, set a flag to indicate that it has changed so
-            //that the analyzer can update after the current pass.
-            realTimeProblemAnalyzer.setFileChangedPending(true);
+            //windows drive letter may not match, even after normalization,
+            //so it's better to use the unit's path, if available.
+            normalizedChangedPathAsString = unit.getAbsoluteFilename();
+        }
+        IFileSpecification fileSpec = fileSpecGetter.getFileSpecification(normalizedChangedPathAsString);
+        compilerWorkspace.fileChanged(fileSpec);
+        if(unit == null)
+        {
+            //this file doesn't have a compilation unit yet, so we'll fall back
+            //to simple syntax checking for now
+            checkFilePathForProblems(path, folderData, true);
         }
         else
         {
-            compilerWorkspace.fileChanged(fileSpec);
-        }
-        realTimeProblemAnalyzer.languageClient = languageClient;
-        realTimeProblemAnalyzer.compilerProblemFilter = compilerProblemFilter;
-        realTimeProblemAnalyzer.setWorkspaceFolderData(folderData);
-        realTimeProblemAnalyzer.setCompilationUnit(unit);
-        realTimeProblemAnalyzer.setFileSpecification(fileSpec);
-        if (realTimeProblemAnalyzerThread == null || !realTimeProblemAnalyzerThread.isAlive())
-        {
-            realTimeProblemAnalyzerThread = new Thread(realTimeProblemAnalyzer);
-            realTimeProblemAnalyzerThread.start();
+            //try to keep using the existing instance, if possible
+            if(waitForBuildFinishRunner == null
+                    || !waitForBuildFinishRunner.isRunning()
+                    || !unit.equals(waitForBuildFinishRunner.getCompilationUnit()))
+            {
+                waitForBuildFinishRunner = new WaitForBuildFinishRunner(unit, folderData, languageClient, compilerProblemFilter);
+                compilerWorkspace.getExecutorService().submit(waitForBuildFinishRunner);
+            }
+            else
+            {
+                waitForBuildFinishRunner.setChanged();
+            }
         }
     }
 
@@ -1634,14 +1990,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         else
         {
-            currentProject = getProject(folderData);
-            if(currentProject == null)
+            RoyaleProject project = getProject(folderData);
+            if(project == null)
             {
                 //if the current project isn't properly configured, we want to
                 //display problems only while a file is open
                 clearProblems = true;
             }
-            else if(!SourcePathUtils.isInProjectSourcePath(path, currentProject))
+            else if(!SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
             {
                 //if the file is outside of the project's source path, we want
                 //to display problems only while it is open
@@ -1713,12 +2069,74 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 }
             }
 
-            //then, check if source files have changed
+            //then, check if source or library files have changed
             FileChangeType changeType = event.getType();
             String normalizedChangedPathAsString = FilenameNormalization.normalize(changedPath.toString());
-            if (normalizedChangedPathAsString.endsWith(AS_EXTENSION) || normalizedChangedPathAsString.endsWith(MXML_EXTENSION))
+            if (normalizedChangedPathAsString.endsWith(SWC_EXTENSION))
             {
-                ICompilationUnit changedUnit = findCompilationUnit(normalizedChangedPathAsString, currentProject);
+                List<WorkspaceFolderData> allFolderData = getAllWorkspaceFolderDataForSWCFile(Paths.get(normalizedChangedPathAsString));
+                if (allFolderData.size() > 0)
+                {
+                    compilerWorkspace.startIdleState();
+                    ICompilationUnit changedUnit = null;
+                    try
+                    {
+                        changedUnit = findCompilationUnit(normalizedChangedPathAsString);
+                    }
+                    finally
+                    {
+                        compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+                    }
+                    if (changedUnit != null)
+                    {
+                        //windows drive letter may not match, even after normalization,
+                        //so it's better to use the unit's path, if available.
+                        normalizedChangedPathAsString = changedUnit.getAbsoluteFilename();
+                    }
+
+                    boolean swcConfigChanged = false;
+                    IFileSpecification swcFileSpec = fileSpecGetter.getFileSpecification(normalizedChangedPathAsString);
+                    if (changeType.equals(FileChangeType.Deleted))
+                    {
+                        swcConfigChanged = true;
+                        compilerWorkspace.fileRemoved(swcFileSpec);
+                    }
+                    else if (changeType.equals(FileChangeType.Created))
+                    {
+                        swcConfigChanged = true;
+                        compilerWorkspace.fileAdded(swcFileSpec);
+                    }
+                    else if (changeType.equals(FileChangeType.Changed))
+                    {
+                        compilerWorkspace.fileChanged(swcFileSpec);
+                    }
+                    if(swcConfigChanged)
+                    {
+                        //for some reason, simply calling fileAdded() or
+                        //fileRemoved() is not enough for SWC files.
+                        //changing the project configuration will force the
+                        //change to be detected, so let's do that manually.
+                        for (WorkspaceFolderData folderData : allFolderData)
+                        {
+                            folderData.config.forceChanged();
+                        }
+                    }
+                    foldersToCheck.addAll(allFolderData);
+                }
+            }
+            else if (normalizedChangedPathAsString.endsWith(AS_EXTENSION) || normalizedChangedPathAsString.endsWith(MXML_EXTENSION))
+            {
+                compilerWorkspace.startIdleState();
+                ICompilationUnit changedUnit = null;
+                try
+                {
+                    changedUnit = findCompilationUnit(normalizedChangedPathAsString);
+                }
+                finally
+                {
+                    compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+                }
+
                 if (changedUnit != null)
                 {
                     //windows drive letter may not match, even after normalization,
@@ -1795,34 +2213,42 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     {
                         continue;
                     }
-                    compilerWorkspace.startIdleState();
-                    try
+                    for (ICompilationUnit unit : project.getCompilationUnits())
                     {
-                        for (ICompilationUnit unit : project.getCompilationUnits())
+                        String unitFileName = unit.getAbsoluteFilename();
+                        if (unitFileName.startsWith(deletedFilePath)
+                                && (unitFileName.endsWith(AS_EXTENSION)
+                                        || unitFileName.endsWith(MXML_EXTENSION)
+                                        || unitFileName.endsWith(SWC_EXTENSION)))
                         {
-                            String unitFileName = unit.getAbsoluteFilename();
-                            if (unitFileName.startsWith(deletedFilePath)
-                                    && (unitFileName.endsWith(AS_EXTENSION) || unitFileName.endsWith(MXML_EXTENSION)))
-                            {
-                                //if we call fileRemoved() here, it will change the
-                                //compilationUnits collection and throw an exception
-                                //so just save the paths to be removed after this loop.
-                                filesToRemove.add(unitFileName);
+                            //if we call fileRemoved() here, it will change the
+                            //compilationUnits collection and throw an exception
+                            //so just save the paths to be removed after this loop.
+                            filesToRemove.add(unitFileName);
 
-                                //deleting a file may change errors in other existing files,
-                                //so we need to do a full check
-                                foldersToCheck.add(folderData);
+                            //deleting a file may change errors in other existing files,
+                            //so we need to do a full check
+                            foldersToCheck.add(folderData);
+
+                            if (unitFileName.endsWith(SWC_EXTENSION))
+                            {
+                                folderData.config.forceChanged();
                             }
                         }
+                    }
+                }
+                for (String fileToRemove : filesToRemove)
+                {
+                    compilerWorkspace.startIdleState();
+                    ICompilationUnit unit = null;
+                    try
+                    {
+                        unit = findCompilationUnit(fileToRemove);
                     }
                     finally
                     {
                         compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
                     }
-                }
-                for (String fileToRemove : filesToRemove)
-                {
-                    ICompilationUnit unit = findCompilationUnit(fileToRemove, currentProject);
                     if (unit != null)
                     {
                         fileToRemove = unit.getAbsoluteFilename();
@@ -1886,32 +2312,32 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         compilerProblemFilter.royaleProblems = sdkPath.toFile().exists();
     }
 
-    private void watchNewSourcePath(Path sourcePath, WorkspaceFolderData folderData)
+    private void watchNewSourceOrLibraryPath(Path sourceOrLibraryPath, WorkspaceFolderData folderData)
     {
         try
         {
-            java.nio.file.Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>()
+            java.nio.file.Files.walkFileTree(sourceOrLibraryPath, new SimpleFileVisitor<Path>()
             {
                 @Override
                 public FileVisitResult preVisitDirectory(Path subPath, BasicFileAttributes attrs) throws IOException
                 {
                     WatchKey watchKey = subPath.register(sourcePathWatcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
-                    folderData.sourcePathWatchKeys.put(watchKey, subPath);
+                    folderData.sourceOrLibraryPathWatchKeys.put(watchKey, subPath);
                     return FileVisitResult.CONTINUE;
                 }
             });
         }
         catch (IOException e)
         {
-            System.err.println("Failed to watch source path: " + sourcePath.toString());
+            System.err.println("Failed to watch source or library path: " + sourceOrLibraryPath.toString());
             e.printStackTrace(System.err);
         }
     }
 
     private void prepareNewProject(WorkspaceFolderData folderData)
     {
-        currentProject = getProject(folderData);
-        if (currentProject == null)
+        RoyaleProject project = getProject(folderData);
+        if (project == null)
         {
             return;
         }
@@ -1926,7 +2352,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return;
         }
         boolean dynamicDidChangeWatchedFiles = clientCapabilities.getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration();
-        for (File sourcePathFile : currentProject.getSourcePath())
+        for (File sourcePathFile : project.getSourcePath())
         {
             Path sourcePath = sourcePathFile.toPath();
             try
@@ -1936,6 +2362,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             catch (IOException e)
             {
             }
+            boolean shouldWatch = true;
             if (dynamicDidChangeWatchedFiles)
             {
                 //we need to check if the source path is inside any of the
@@ -1952,11 +2379,89 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         //slightly different capitalization because the language
                         //server protocol and Java file watchers don't
                         //necessarily match
-                        return;
+                        shouldWatch = false;
+                        break;
                     }
                 }
             }
-            watchNewSourcePath(sourcePath, folderData);
+            if (shouldWatch)
+            {
+                watchNewSourceOrLibraryPath(sourcePath, folderData);
+            }
+        }
+        for (String libraryPathString : project.getCompilerLibraryPath(folderData.configurator.getConfiguration()))
+        {
+            Path libraryPath = Paths.get(libraryPathString);
+            try
+            {
+                libraryPath = libraryPath.toRealPath();
+            }
+            catch (IOException e)
+            {
+            }
+            boolean shouldWatch = true;
+            if (dynamicDidChangeWatchedFiles)
+            {
+                //we need to check if the source path is inside any of the
+                //workspace folders. not just the current one.
+                for (WorkspaceFolder workspaceFolder : workspaceFolders)
+                {
+                    String uri = workspaceFolder.getUri();
+                    Path folderPath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+                    if (libraryPath.startsWith(folderPath))
+                    {
+                        //if we're already watching for changes in the
+                        //workspace, and we need to avoid so that the compiler
+                        //doesn't get confused by duplicates that might have
+                        //slightly different capitalization because the language
+                        //server protocol and Java file watchers don't
+                        //necessarily match
+                        shouldWatch = false;
+                        break;
+                    }
+                }
+            }
+            if (shouldWatch)
+            {
+                watchNewSourceOrLibraryPath(libraryPath, folderData);
+            }
+        }
+        for (String externalLibraryPathString : project.getCompilerExternalLibraryPath(folderData.configurator.getConfiguration()))
+        {
+            Path externalLibraryPath = Paths.get(externalLibraryPathString);
+            try
+            {
+                externalLibraryPath = externalLibraryPath.toRealPath();
+            }
+            catch (IOException e)
+            {
+            }
+            boolean shouldWatch = true;
+            if (dynamicDidChangeWatchedFiles)
+            {
+                //we need to check if the source path is inside any of the
+                //workspace folders. not just the current one.
+                for (WorkspaceFolder workspaceFolder : workspaceFolders)
+                {
+                    String uri = workspaceFolder.getUri();
+                    Path folderPath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+                    if (externalLibraryPath.startsWith(folderPath))
+                    {
+                        //if we're already watching for changes in the
+                        //workspace, and we need to avoid so that the compiler
+                        //doesn't get confused by duplicates that might have
+                        //slightly different capitalization because the language
+                        //server protocol and Java file watchers don't
+                        //necessarily match
+                        shouldWatch = false;
+                        break;
+                    }
+                }
+            }
+            if (shouldWatch)
+            {
+                watchNewSourceOrLibraryPath(externalLibraryPath, folderData);
+            }
         }
     }
 
@@ -1993,13 +2498,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     {
                         for (WorkspaceFolderData folderData : workspaceFolderToData.values())
                         {
-                            if(!folderData.sourcePathWatchKeys.containsKey(watchKey))
+                            if(!folderData.sourceOrLibraryPathWatchKeys.containsKey(watchKey))
                             {
                                 continue;
                             }
                             foldersToCheckForProblems.add(folderData);
                             List<FileEvent> changes = new ArrayList<>();
-                            Path path = folderData.sourcePathWatchKeys.get(watchKey);
+                            Path path = folderData.sourceOrLibraryPathWatchKeys.get(watchKey);
                             for (WatchEvent<?> event : watchKey.pollEvents())
                             {
                                 WatchEvent.Kind<?> kind = event.kind();
@@ -2012,7 +2517,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                         //if a new directory has been created under
                                         //an existing that we're already watching,
                                         //then start watching the new one too.
-                                        watchNewSourcePath(childPath, folderData);
+                                        watchNewSourceOrLibraryPath(childPath, folderData);
                                     }
                                 }
                                 FileChangeType changeType = FileChangeType.Changed;
@@ -2029,7 +2534,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             boolean valid = watchKey.reset();
                             if (!valid)
                             {
-                                folderData.sourcePathWatchKeys.remove(watchKey);
+                                folderData.sourceOrLibraryPathWatchKeys.remove(watchKey);
                             }
                             //convert to DidChangeWatchedFilesParams and pass
                             //to didChangeWatchedFiles, as if a notification
@@ -2056,12 +2561,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void cleanupProject(WorkspaceFolderData folderData)
     {
-        RoyaleProject project = folderData.project;
-        if (currentProject != null && currentProject.equals(project))
-        {
-            compilationUnits = null;
-            currentProject = null;
-        }
         cleanupInvisibleUnits(folderData);
         folderData.cleanup();
     }
@@ -2075,14 +2574,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         List<IInvisibleCompilationUnit> invisibleUnits = folderData.invisibleUnits;
         for (IInvisibleCompilationUnit unit : invisibleUnits)
         {
-            ICompilationUnit editingUnit = realTimeProblemAnalyzer.getCompilationUnit();
-            if(editingUnit != null && editingUnit.equals(unit))
-            {
-                //if the real-time problem analyzer is currently checking for
-                //problems on an invisible unit, stop it immediately
-                realTimeProblemAnalyzer.setCompilationUnit(null);
-                realTimeProblemAnalyzer.setFileSpecification(null);
-            }
             unit.remove();
         }
         invisibleUnits.clear();
@@ -2090,30 +2581,30 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void refreshProjectOptions(WorkspaceFolderData folderData)
     {
-        currentConfig = folderData.config;
-        currentProjectOptions = folderData.options;
-        if (!currentConfig.getChanged() && currentProjectOptions != null)
+        IProjectConfigStrategy currentConfig = folderData.config;
+        ProjectOptions projectOptions = folderData.options;
+        if (!currentConfig.getChanged() && projectOptions != null)
         {
             //the options are fully up-to-date
             return;
         }
         //if the configuration changed, start fresh with a whole new workspace
         cleanupProject(folderData);
-        currentProjectOptions = folderData.options = currentConfig.getOptions();
-        if (currentProjectOptions == null)
+        projectOptions = folderData.options = currentConfig.getOptions();
+        if (projectOptions == null)
         {
             return;
         }
         prepareNewProject(folderData);
     }
 
-    private CompletionList actionScriptCompletion(CompletionParams params)
+    private CompletionList actionScriptCompletion(CompletionParams params, RoyaleProject project, int currentOffset)
     {
         IASNode offsetNode = getOffsetNode(params);
-        return actionScriptCompletionWithNode(params, offsetNode);
+        return actionScriptCompletionWithNode(params, project, offsetNode, currentOffset);
     }
 
-    private CompletionList actionScriptCompletionWithNode(CompletionParams params, IASNode offsetNode)
+    private CompletionList actionScriptCompletionWithNode(CompletionParams params, RoyaleProject project, IASNode offsetNode, int currentOffset)
     {
         CompletionList result = new CompletionList();
         result.setIsIncomplete(false);
@@ -2130,12 +2621,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             nodeAtPreviousOffset = parentNode.getContainingNode(currentOffset - 1);
         }
 
-        if (!isActionScriptCompletionAllowedInNode(params, offsetNode))
+        if (!isActionScriptCompletionAllowedInNode(params, offsetNode, currentOffset))
         {
             //if we're inside a node that shouldn't have completion!
             return new CompletionList();
         }
 
+        ImportRange importRange = ImportRange.fromOffsetNode(offsetNode);
         String containingPackageName = ASTUtils.nodeToContainingPackageName(offsetNode);
 
         //variable types
@@ -2152,7 +2644,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         || (line == nameExpression.getEndLine() && column > nameExpression.getEndColumn())
                         || (line == typeNode.getLine() && column <= typeNode.getColumn()))
                 {
-                    autoCompleteTypes(offsetNode, containingPackageName, result);
+                    autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
                 }
                 return result;
             }
@@ -2163,7 +2655,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IVariableNode variableNode = (IVariableNode) parentNode;
             if (offsetNode == variableNode.getVariableTypeNode())
             {
-                autoCompleteTypes(parentNode, containingPackageName, result);
+                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
                 return result;
             }
         }
@@ -2182,7 +2674,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         && line <= typeNode.getLine()
                         && column <= typeNode.getColumn())
                 {
-                    autoCompleteTypes(offsetNode, containingPackageName, result);
+                    autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
                     return result;
                 }
             }
@@ -2193,7 +2685,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IFunctionNode functionNode = (IFunctionNode) parentNode;
             if (offsetNode == functionNode.getReturnTypeNode())
             {
-                autoCompleteTypes(parentNode, containingPackageName, result);
+                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
                 return result;
             }
         }
@@ -2205,7 +2697,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (functionCallNode.getNameNode() == offsetNode
                     && functionCallNode.isNewExpression())
             {
-                autoCompleteTypes(parentNode, containingPackageName, result);
+                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
                 return result;
             }
         }
@@ -2213,7 +2705,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordNewID)
         {
-            autoCompleteTypes(nodeAtPreviousOffset, containingPackageName, result);
+            autoCompleteTypes(nodeAtPreviousOffset, importRange, containingPackageName, project, result);
             return result;
         }
         //as and is keyword types
@@ -2225,7 +2717,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IBinaryOperatorNode binaryOperatorNode = (IBinaryOperatorNode) parentNode;
             if (binaryOperatorNode.getRightOperandNode() == offsetNode)
             {
-                autoCompleteTypes(parentNode, containingPackageName, result);
+                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
                 return result;
             }
         }
@@ -2234,7 +2726,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && (nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_AsID
                 || nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_IsID))
         {
-            autoCompleteTypes(nodeAtPreviousOffset, containingPackageName, result);
+            autoCompleteTypes(nodeAtPreviousOffset, importRange, containingPackageName, project, result);
             return result;
         }
         //class extends keyword
@@ -2243,7 +2735,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, containingPackageName, result);
+            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
             return result;
         }
         //class implements keyword
@@ -2252,7 +2744,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordImplementsID)
         {
-            autoCompleteTypes(offsetNode, containingPackageName, result);
+            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
             return result;
         }
         //interface extends keyword
@@ -2261,7 +2753,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, containingPackageName, result);
+            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
             return result;
         }
 
@@ -2272,7 +2764,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (fileNode.getChildCount() == 0 && fileNode.getAbsoluteEnd() == 0)
             {
                 //the file is completely empty
-                autoCompletePackageBlock(result);
+                autoCompletePackageBlock(fileNode.getFileSpecification(), project, result);
                 return result;
             }
         }
@@ -2287,7 +2779,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 if (IASKeywordConstants.PACKAGE.startsWith(identifier))
                 {
                     //the file contains only a substring of the package keyword
-                    autoCompletePackageBlock(result);
+                    autoCompletePackageBlock(offsetNode.getFileSpecification(), project, result);
                     return result;
                 }
             }
@@ -2295,7 +2787,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (offsetNode instanceof IPackageNode)
         {
             IPackageNode packageNode = (IPackageNode) offsetNode;
-            autoCompletePackageName(packageNode.getPackageName(), result);
+            autoCompletePackageName(packageNode.getPackageName(), offsetNode.getFileSpecification(), project, result);
             return result;
         }
         if (parentNode != null
@@ -2305,7 +2797,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (gpNode != null && gpNode instanceof IPackageNode)
             {
                 IPackageNode packageNode = (IPackageNode) gpNode;
-                autoCompletePackageName(packageNode.getPackageName(), result);
+                autoCompletePackageName(packageNode.getPackageName(), offsetNode.getFileSpecification(), project, result);
             }
         }
         if (parentNode != null
@@ -2318,11 +2810,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 if (currentOffset == IASKeywordConstants.PACKAGE.length())
                 {
-                    autoCompletePackageBlock(result);
+                    autoCompletePackageBlock(offsetNode.getFileSpecification(), project, result);
                 }
                 else
                 {
-                    autoCompletePackageName(packageNode.getPackageName(), result);
+                    autoCompletePackageName(packageNode.getPackageName(), offsetNode.getFileSpecification(), project, result);
                 }
                 return result;
             }
@@ -2338,7 +2830,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 String importName = importNode.getImportName();
                 importName = importName.substring(0, params.getPosition().getCharacter() - nameNode.getColumn());
-                autoCompleteImport(importName, result);
+                autoCompleteImport(importName, project, result);
                 return result;
             }
         }
@@ -2354,7 +2846,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     String importName = importNode.getImportName();
                     importName = importName.substring(0, params.getPosition().getCharacter() - nameNode.getColumn());
-                    autoCompleteImport(importName, result);
+                    autoCompleteImport(importName, project, result);
                     return result;
                 }
             }
@@ -2362,7 +2854,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (nodeAtPreviousOffset != null
                 && nodeAtPreviousOffset instanceof IImportNode)
         {
-            autoCompleteImport("", result);
+            autoCompleteImport("", project, result);
             return result;
         }
 
@@ -2380,7 +2872,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         || (line == leftOperand.getEndLine() && column > leftOperand.getEndColumn())
                         || (line == rightOperand.getLine() && column <= rightOperand.getColumn()))
                 {
-                    autoCompleteMemberAccess(memberAccessNode, result);
+                    autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
                     return result;
                 }
             }
@@ -2403,7 +2895,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (offsetNode == memberAccessNode.getRightOperandNode()
                     || isValidLeft)
             {
-                autoCompleteMemberAccess(memberAccessNode, result);
+                autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
                 return result;
             }
         }
@@ -2420,7 +2912,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IIdentifierNode identifierNode = (IIdentifierNode) rightOperandNode;
                 if (identifierNode.getName().equals(""))
                 {
-                    autoCompleteMemberAccess(memberAccessNode, result);
+                    autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
                     return result;
                 }
             }
@@ -2438,7 +2930,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     && functionNode.getParametersContainerNode().getAbsoluteStart() == -1
                     && functionNode.getReturnTypeNode() == null)
                 {
-                    autoCompleteFunctionOverrides(functionNode, result);
+                    autoCompleteFunctionOverrides(functionNode, project, result);
                     return result;
                 }
             }
@@ -2457,7 +2949,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         && functionNode.getParametersContainerNode().getAbsoluteStart() == -1
                         && functionNode.getReturnTypeNode() == null)
                 {
-                    autoCompleteFunctionOverrides(functionNode, result);
+                    autoCompleteFunctionOverrides(functionNode, project, result);
                     return result;
                 }
             }
@@ -2474,12 +2966,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IScopedNode scopedNode = (IScopedNode) currentNodeForScope;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, false, containingPackageName, result);
+                autoCompleteScope(scopedNode, false, importRange, containingPackageName, project, result);
 
                 //include all public definitions
                 IASScope scope = scopedNode.getScope();
                 IDefinition definitionToSkip = scope.getDefinition();
-                autoCompleteDefinitionsForActionScript(result, false, null, definitionToSkip, containingPackageName, false, null);
+                autoCompleteDefinitionsForActionScript(result, project, false, null, definitionToSkip, containingPackageName, false, null, importRange);
                 autoCompleteKeywords(scopedNode, result);
                 return result;
             }
@@ -2490,16 +2982,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return result;
     }
 
-    private CompletionList mxmlCompletion(CompletionParams params, IMXMLTagData offsetTag)
+    private CompletionList mxmlCompletion(CompletionParams params, RoyaleProject project, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, int currentOffset)
     {
         CompletionList result = new CompletionList();
         result.setIsIncomplete(false);
         result.setItems(new ArrayList<>());
-        if (isInXMLComment(params))
+        if (isInXMLComment(params, currentOffset))
         {
             //if we're inside a comment, no completion!
             return result;
         }
+
+        ImportRange importRange = ImportRange.fromOffsetTag(offsetTag, currentOffset);
+        XmlnsRange xmlnsRange = XmlnsRange.fromOffsetTag(offsetTag, currentOffset);
 
         boolean tagsNeedOpenBracket = false;
         if(currentOffset > 0)
@@ -2580,18 +3075,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             if (!isAttribute)
             {
-                autoCompleteDefinitionsForMXML(result, true, tagsNeedOpenBracket, null);
+                autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, null, importRange, xmlnsRange);
             }
             return result;
         }
 
-        IDefinition offsetDefinition = MXMLDataUtils.getDefinitionForMXMLTag(offsetTag, currentProject);
+        IDefinition offsetDefinition = MXMLDataUtils.getDefinitionForMXMLTag(offsetTag, project);
         if (offsetDefinition == null || isTagName)
         {
             IDefinition parentDefinition = null;
             if (parentTag != null)
             {
-                parentDefinition = MXMLDataUtils.getDefinitionForMXMLTag(parentTag, currentProject);
+                parentDefinition = MXMLDataUtils.getDefinitionForMXMLTag(parentTag, project);
             }
             if (parentDefinition != null)
             {
@@ -2604,11 +3099,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         //only add members if the prefix is the same as the
                         //parent tag. members can't have different prefixes.
                         //also allow members when we don't have a prefix.
-                        addMembersForMXMLTypeToAutoComplete(classDefinition, parentTag, false, offsetPrefix.length() == 0, false, result);
+                        addMembersForMXMLTypeToAutoComplete(classDefinition, parentTag, false, offsetPrefix.length() == 0, false, importRange, xmlnsRange, project, result);
                     }
                     if (!isAttribute)
                     {
-                        MXMLNamespace fxNS = MXMLNamespaceUtils.getMXMLLanguageNamespace(currentUnit, fileSpecGetter, compilerWorkspace);
+                        IFileSpecification fileSpec = fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename());
+                        MXMLNamespace fxNS = MXMLNamespaceUtils.getMXMLLanguageNamespace(fileSpec, compilerWorkspace);
                         IMXMLData mxmlParent = offsetTag.getParent();
                         if (mxmlParent != null && parentTag.equals(mxmlParent.getRootTag()))
                         {
@@ -2633,12 +3129,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             //this tag has a prefix
                             addMXMLLanguageTagToAutoComplete(IMXMLLanguageConstants.COMPONENT, fxNS.prefix, false, false, result);
                         }
-                        String defaultPropertyName = classDefinition.getDefaultPropertyName(currentProject);
+                        String defaultPropertyName = classDefinition.getDefaultPropertyName(project);
                         if (defaultPropertyName != null)
                         {
                             //only add types if the class defines [DefaultProperty]
                             //metadata
-                            autoCompleteTypesForMXMLFromExistingTag(result, offsetTag);
+                            autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
                         }
                     }
                 }
@@ -2646,13 +3142,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     //the parent is something like a property, so matching the
                     //prefix is not required
-                    autoCompleteTypesForMXMLFromExistingTag(result, offsetTag);
+                    autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
                 }
                 return result;
             }
             else if (MXMLDataUtils.isDeclarationsTag(parentTag))
             {
-                autoCompleteTypesForMXMLFromExistingTag(result, offsetTag);
+                autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
                 return result;
             }
             return result;
@@ -2662,44 +3158,45 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IMXMLTagAttributeData attribute = MXMLDataUtils.getMXMLTagAttributeWithValueAtOffset(offsetTag, currentOffset);
             if (attribute != null)
             {
-                return mxmlAttributeCompletion(offsetTag, result);
+                return mxmlAttributeCompletion(offsetTag, currentOffset, project, result);
             }
             attribute = MXMLDataUtils.getMXMLTagAttributeWithNameAtOffset(offsetTag, currentOffset, true);
             if (attribute != null
                     && currentOffset > (attribute.getAbsoluteStart() + attribute.getXMLName().toString().length()))
             {
-                return mxmlStatesCompletion(currentUnit, result);
+                return mxmlStatesCompletion(offsetUnit, result);
             }
 
             IClassDefinition classDefinition = (IClassDefinition) offsetDefinition;
-            addMembersForMXMLTypeToAutoComplete(classDefinition, offsetTag, isAttribute, !isAttribute, tagsNeedOpenBracket, result);
+            addMembersForMXMLTypeToAutoComplete(classDefinition, offsetTag, isAttribute, !isAttribute, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
 
             if (!isAttribute)
             {
                 IMXMLData mxmlParent = offsetTag.getParent();
-                MXMLNamespace fxNS = MXMLNamespaceUtils.getMXMLLanguageNamespace(currentUnit, fileSpecGetter, compilerWorkspace);
+                IFileSpecification fileSpec = fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename());
+                MXMLNamespace fxNS = MXMLNamespaceUtils.getMXMLLanguageNamespace(fileSpec, compilerWorkspace);
                 if (mxmlParent != null && offsetTag.equals(mxmlParent.getRootTag()))
                 {
                     addRootMXMLLanguageTagsToAutoComplete(offsetTag, fxNS.prefix, true, tagsNeedOpenBracket, result);
                 }
                 addMXMLLanguageTagToAutoComplete(IMXMLLanguageConstants.COMPONENT, fxNS.prefix, true, tagsNeedOpenBracket, result);
-                String defaultPropertyName = classDefinition.getDefaultPropertyName(currentProject);
+                String defaultPropertyName = classDefinition.getDefaultPropertyName(project);
                 if (defaultPropertyName != null)
                 {
                     String typeFilter = null;
                     TypeScope typeScope = (TypeScope) classDefinition.getContainedScope();
-                    Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, typeScope, currentProject);
-                    List<IDefinition> propertiesByName = typeScope.getPropertiesByNameForMemberAccess(currentProject, defaultPropertyName, namespaceSet);
+                    Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, typeScope, project);
+                    List<IDefinition> propertiesByName = typeScope.getPropertiesByNameForMemberAccess(project, defaultPropertyName, namespaceSet);
                     if (propertiesByName.size() > 0)
                     {
                         IDefinition propertyDefinition = propertiesByName.get(0);
-                        typeFilter = DefinitionUtils.getMXMLChildElementTypeForDefinition(propertyDefinition, currentProject);
+                        typeFilter = DefinitionUtils.getMXMLChildElementTypeForDefinition(propertyDefinition, project);
                     }
 
                     //if [DefaultProperty] is set, then we can instantiate
                     //types as child elements
                     //but we don't want to do that when in an attribute
-                    autoCompleteDefinitionsForMXML(result, true, tagsNeedOpenBracket, typeFilter);
+                    autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, typeFilter, importRange, xmlnsRange);
                 }
             }
             return result;
@@ -2710,8 +3207,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             if (!isAttribute)
             {
-                String typeFilter = DefinitionUtils.getMXMLChildElementTypeForDefinition(offsetDefinition, currentProject);
-                autoCompleteDefinitionsForMXML(result, true, tagsNeedOpenBracket, typeFilter);
+                String typeFilter = DefinitionUtils.getMXMLChildElementTypeForDefinition(offsetDefinition, project);
+                autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, typeFilter, importRange, xmlnsRange);
             }
             return result;
         }
@@ -2751,15 +3248,28 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 stateItem.setLabel(stateName);
                 items.add(stateItem);
             }
+            ITypeNode typeNode = classDefinition.getNode();
+            if(typeNode != null && typeNode instanceof IMXMLClassDefinitionNode)
+            {
+                IMXMLClassDefinitionNode mxmlClassNode = (IMXMLClassDefinitionNode) typeNode;
+                Set<String> stateGroupNames = mxmlClassNode.getStateGroupNames();
+                for (String stateGroupName : stateGroupNames)
+                {
+                    CompletionItem stateItem = new CompletionItem();
+                    stateItem.setKind(CompletionItemKind.Field);
+                    stateItem.setLabel(stateGroupName);
+                    items.add(stateItem);
+                }
+            }
             return result;
         }
         return result;
     }
 
-    private CompletionList mxmlAttributeCompletion(IMXMLTagData offsetTag, CompletionList result)
+    private CompletionList mxmlAttributeCompletion(IMXMLTagData offsetTag, int currentOffset, RoyaleProject project, CompletionList result)
     {
         List<CompletionItem> items = result.getItems();
-        IDefinition attributeDefinition = MXMLDataUtils.getDefinitionForMXMLTagAttribute(offsetTag, currentOffset, true, currentProject);
+        IDefinition attributeDefinition = MXMLDataUtils.getDefinitionForMXMLTagAttribute(offsetTag, currentOffset, true, project);
         if (attributeDefinition instanceof IVariableDefinition)
         {
             IVariableDefinition variableDefinition = (IVariableDefinition) attributeDefinition;
@@ -2779,19 +3289,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return result;
     }
 
-    private CompletableFuture<Hover> actionScriptHover(TextDocumentPositionParams position)
+    private Hover actionScriptHover(TextDocumentPositionParams params, RoyaleProject project)
     {
-        IASNode offsetNode = getOffsetNode(position);
-        return actionScriptHoverWithNode(position, offsetNode);
+        IASNode offsetNode = getOffsetNode(params);
+        return actionScriptHoverWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<Hover> actionScriptHoverWithNode(TextDocumentPositionParams position, IASNode offsetNode)
+    private Hover actionScriptHoverWithNode(TextDocumentPositionParams params, RoyaleProject project, IASNode offsetNode)
     {
         IDefinition definition = null;
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(new Hover(Collections.emptyList(), null));
+            return new Hover(Collections.emptyList(), null);
         }
 
         //INamespaceDecorationNode extends IIdentifierNode, but we don't want
@@ -2801,16 +3311,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && !(offsetNode instanceof INamespaceDecorationNode))
         {
             IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
-            definition = identifierNode.resolve(currentUnit.getProject());
+            definition = identifierNode.resolve(project);
         }
 
         if (definition == null)
         {
-            return CompletableFuture.completedFuture(new Hover(Collections.emptyList(), null));
+            return new Hover(Collections.emptyList(), null);
         }
 
         Hover result = new Hover();
-        String detail = DefinitionTextUtils.definitionToDetail(definition, currentProject);
+        String detail = DefinitionTextUtils.definitionToDetail(definition, project);
         MarkedString markedDetail = new MarkedString(MARKED_STRING_LANGUAGE_ACTIONSCRIPT, detail);
         List<Either<String,MarkedString>> contents = new ArrayList<>();
         contents.add(Either.forRight(markedDetail));
@@ -2820,15 +3330,15 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             contents.add(Either.forLeft(docs));
         }
         result.setContents(contents);
-        return CompletableFuture.completedFuture(result);
+        return result;
     }
 
-    private CompletableFuture<Hover> mxmlHover(TextDocumentPositionParams position, IMXMLTagData offsetTag)
+    private Hover mxmlHover(TextDocumentPositionParams params, RoyaleProject project, IMXMLTagData offsetTag, int currentOffset)
     {
-        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, currentProject);
+        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, project);
         if (definition == null)
         {
-            return CompletableFuture.completedFuture(new Hover(Collections.emptyList(), null));
+            return new Hover(Collections.emptyList(), null);
         }
 
         if (MXMLDataUtils.isInsideTagPrefix(offsetTag, currentOffset))
@@ -2849,30 +3359,30 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             MarkedString markedDetail = new MarkedString(MARKED_STRING_LANGUAGE_MXML, detailBuilder.toString());
             contents.add(Either.forRight(markedDetail));
             result.setContents(contents);
-            return CompletableFuture.completedFuture(result);
+            return result;
         }
 
         Hover result = new Hover();
-        String detail = DefinitionTextUtils.definitionToDetail(definition, currentProject);
+        String detail = DefinitionTextUtils.definitionToDetail(definition, project);
         MarkedString markedDetail = new MarkedString(MARKED_STRING_LANGUAGE_ACTIONSCRIPT, detail);
         List<Either<String,MarkedString>> contents = new ArrayList<>();
         contents.add(Either.forRight(markedDetail));
         result.setContents(contents);
-        return CompletableFuture.completedFuture(result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptDefinition(TextDocumentPositionParams position)
+    private List<? extends Location> actionScriptDefinition(TextDocumentPositionParams params, RoyaleProject project)
     {
-        IASNode offsetNode = getOffsetNode(position);
-        return actionScriptDefinitionWithNode(position, offsetNode);
+        IASNode offsetNode = getOffsetNode(params);
+        return actionScriptDefinitionWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptDefinitionWithNode(TextDocumentPositionParams position, IASNode offsetNode)
+    private List<? extends Location> actionScriptDefinitionWithNode(TextDocumentPositionParams params, RoyaleProject project, IASNode offsetNode)
     {
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         IDefinition definition = null;
@@ -2880,13 +3390,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (offsetNode instanceof IIdentifierNode)
         {
             IIdentifierNode expressionNode = (IIdentifierNode) offsetNode;
-            definition = expressionNode.resolve(currentProject);
+            definition = expressionNode.resolve(project);
 
             if (definition == null)
             {
                 if (expressionNode.getName().equals(IASKeywordConstants.SUPER))
                 {
-                    ITypeDefinition typeDefinition = expressionNode.resolveType(currentProject);
+                    ITypeDefinition typeDefinition = expressionNode.resolveType(project);
                     if (typeDefinition instanceof IClassDefinition)
                     {
                         IClassDefinition classDefinition = (IClassDefinition) typeDefinition;
@@ -2900,46 +3410,46 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //VSCode may call definition() when there isn't necessarily a
             //definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         List<Location> result = new ArrayList<>();
-        resolveDefinition(definition, result);
-        return CompletableFuture.completedFuture(result);
+        resolveDefinition(definition, project, result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> mxmlDefinition(TextDocumentPositionParams position, IMXMLTagData offsetTag)
+    private List<? extends Location> mxmlDefinition(TextDocumentPositionParams params, RoyaleProject project, IMXMLTagData offsetTag, int currentOffset)
     {
-        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, currentProject);
+        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, project);
         if (definition == null)
         {
             //VSCode may call definition() when there isn't necessarily a
             //definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         if (MXMLDataUtils.isInsideTagPrefix(offsetTag, currentOffset))
         {
             //ignore the tag's prefix
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         List<Location> result = new ArrayList<>();
-        resolveDefinition(definition, result);
-        return CompletableFuture.completedFuture(result);
+        resolveDefinition(definition, project, result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptTypeDefinition(TextDocumentPositionParams position)
+    private List<? extends Location> actionScriptTypeDefinition(TextDocumentPositionParams params, RoyaleProject project)
     {
-        IASNode offsetNode = getOffsetNode(position);
-        return actionScriptTypeDefinitionWithNode(position, offsetNode);
+        IASNode offsetNode = getOffsetNode(params);
+        return actionScriptTypeDefinitionWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptTypeDefinitionWithNode(TextDocumentPositionParams position, IASNode offsetNode)
+    private List<? extends Location> actionScriptTypeDefinitionWithNode(TextDocumentPositionParams params, RoyaleProject project, IASNode offsetNode)
     {
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         IDefinition definition = null;
@@ -2947,53 +3457,53 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (offsetNode instanceof IIdentifierNode)
         {
             IIdentifierNode expressionNode = (IIdentifierNode) offsetNode;
-            definition = expressionNode.resolveType(currentProject);
+            definition = expressionNode.resolveType(project);
         }
 
         if (definition == null)
         {
             //VSCode may call typeDefinition() when there isn't necessarily a
             //type definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         List<Location> result = new ArrayList<>();
-        resolveDefinition(definition, result);
-        return CompletableFuture.completedFuture(result);
+        resolveDefinition(definition, project, result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> mxmlTypeDefinition(TextDocumentPositionParams position, IMXMLTagData offsetTag)
+    private List<? extends Location> mxmlTypeDefinition(TextDocumentPositionParams params, RoyaleProject project, IMXMLTagData offsetTag, int currentOffset)
     {
-        IDefinition definition = MXMLDataUtils.getTypeDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, currentProject);
+        IDefinition definition = MXMLDataUtils.getTypeDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, project);
         if (definition == null)
         {
             //VSCode may call definition() when there isn't necessarily a
             //definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         if (MXMLDataUtils.isInsideTagPrefix(offsetTag, currentOffset))
         {
             //ignore the tag's prefix
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         List<Location> result = new ArrayList<>();
-        resolveDefinition(definition, result);
-        return CompletableFuture.completedFuture(result);
+        resolveDefinition(definition, project, result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptImplementation(TextDocumentPositionParams position)
+    private List<? extends Location> actionScriptImplementation(TextDocumentPositionParams params, RoyaleProject project)
     {
-        IASNode offsetNode = getOffsetNode(position);
-        return actionScriptImplementationWithNode(position, offsetNode);
+        IASNode offsetNode = getOffsetNode(params);
+        return actionScriptImplementationWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptImplementationWithNode(TextDocumentPositionParams position, IASNode offsetNode)
+    private List<? extends Location> actionScriptImplementationWithNode(TextDocumentPositionParams params, RoyaleProject project, IASNode offsetNode)
     {
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         IInterfaceDefinition interfaceDefinition = null;
@@ -3001,7 +3511,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (offsetNode instanceof IIdentifierNode)
         {
             IIdentifierNode expressionNode = (IIdentifierNode) offsetNode;
-            IDefinition resolvedDefinition = expressionNode.resolve(currentProject);
+            IDefinition resolvedDefinition = expressionNode.resolve(project);
             if (resolvedDefinition instanceof IInterfaceDefinition)
             {
                 interfaceDefinition = (IInterfaceDefinition) resolvedDefinition;
@@ -3012,11 +3522,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //VSCode may call typeDefinition() when there isn't necessarily a
             //type definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         
         List<Location> result = new ArrayList<>();
-        for (ICompilationUnit unit : compilationUnits)
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
             if (unit == null
                     || unit instanceof SWCCompilationUnit
@@ -3042,9 +3552,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     continue;
                 }
                 IClassDefinition classDefinition = (IClassDefinition) definition;
-                if (DefinitionUtils.isImplementationOfInterface(classDefinition, interfaceDefinition, currentProject))
+                if (DefinitionUtils.isImplementationOfInterface(classDefinition, interfaceDefinition, project))
                 {
-                    Location location = definitionToLocation(classDefinition);
+                    Location location = definitionToLocation(classDefinition, project);
                     if (location != null)
                     {
                         result.add(location);
@@ -3052,55 +3562,54 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 }
             }
         }
-
-        return CompletableFuture.completedFuture(result);
+        return result;
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptReferences(ReferenceParams params)
+    private List<? extends Location> actionScriptReferences(ReferenceParams params, RoyaleProject project)
     {
         IASNode offsetNode = getOffsetNode(params);
-        return actionScriptReferencesWithNode(params, offsetNode);
+        return actionScriptReferencesWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<List<? extends Location>> actionScriptReferencesWithNode(ReferenceParams params, IASNode offsetNode)
+    private List<? extends Location> actionScriptReferencesWithNode(ReferenceParams params, RoyaleProject project, IASNode offsetNode)
     {
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         if (offsetNode instanceof IIdentifierNode)
         {
             IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
-            IDefinition resolved = identifierNode.resolve(currentProject);
+            IDefinition resolved = identifierNode.resolve(project);
             if (resolved == null)
             {
-                return CompletableFuture.completedFuture(Collections.emptyList());
+                return Collections.emptyList();
             }
             List<Location> result = new ArrayList<>();
-            referencesForDefinition(resolved, result);
-            return CompletableFuture.completedFuture(result);
+            referencesForDefinition(resolved, project, result);
+            return result;
         }
 
         //VSCode may call definition() when there isn't necessarily a
         //definition referenced at the current position.
-        return CompletableFuture.completedFuture(Collections.emptyList());
+        return Collections.emptyList();
     }
 
-    private CompletableFuture<List<? extends Location>> mxmlReferences(ReferenceParams params, IMXMLTagData offsetTag)
+    private List<? extends Location> mxmlReferences(ReferenceParams params, RoyaleProject project, IMXMLTagData offsetTag, int currentOffset)
     {
-        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, currentProject);
+        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, project);
         if (definition != null)
         {
             if (MXMLDataUtils.isInsideTagPrefix(offsetTag, currentOffset))
             {
                 //ignore the tag's prefix
-                return CompletableFuture.completedFuture(Collections.emptyList());
+                return Collections.emptyList();
             }
             ArrayList<Location> result = new ArrayList<>();
-            referencesForDefinition(definition, result);
-            return CompletableFuture.completedFuture(result);
+            referencesForDefinition(definition, project, result);
+            return result;
         }
 
         //finally, check if we're looking for references to a tag's id
@@ -3109,13 +3618,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //VSCode may call definition() when there isn't necessarily a
             //definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
         if (path == null)
         {
             //this probably shouldn't happen, but check just to be safe
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         ICompilationUnit unit = getCompilationUnit(path);
         Collection<IDefinition> definitions = null;
@@ -3129,7 +3638,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         if (definitions == null || definitions.size() == 0)
         {
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         IClassDefinition classDefinition = null;
         for (IDefinition currentDefinition : definitions)
@@ -3143,7 +3652,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (classDefinition == null)
         {
             //this probably shouldn't happen, but check just to be safe
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         IASScope scope = classDefinition.getContainedScope();
         for (IDefinition currentDefinition : scope.getAllLocalDefinitions())
@@ -3158,25 +3667,25 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //VSCode may call definition() when there isn't necessarily a
             //definition referenced at the current position.
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return Collections.emptyList();
         }
         ArrayList<Location> result = new ArrayList<>();
-        referencesForDefinition(definition, result);
-        return CompletableFuture.completedFuture(result);
+        referencesForDefinition(definition, project, result);
+        return result;
     }
 
-    private CompletableFuture<WorkspaceEdit> actionScriptRename(RenameParams params)
+    private WorkspaceEdit actionScriptRename(RenameParams params, RoyaleProject project)
     {
         IASNode offsetNode = getOffsetNode(params.getTextDocument(), params.getPosition());
-        return actionScriptRenameWithNode(params, offsetNode);
+        return actionScriptRenameWithNode(params, project, offsetNode);
     }
 
-    private CompletableFuture<WorkspaceEdit> actionScriptRenameWithNode(RenameParams params, IASNode offsetNode)
+    private WorkspaceEdit actionScriptRenameWithNode(RenameParams params, RoyaleProject project, IASNode offsetNode)
     {
         if (offsetNode == null)
         {
             //we couldn't find a node at the specified location
-            return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
+            return new WorkspaceEdit(new HashMap<>());
         }
 
         IDefinition definition = null;
@@ -3185,12 +3694,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             IDefinitionNode definitionNode = (IDefinitionNode) offsetNode;
             IExpressionNode expressionNode = definitionNode.getNameExpressionNode();
-            definition = expressionNode.resolve(currentProject);
+            definition = expressionNode.resolve(project);
         }
         else if (offsetNode instanceof IIdentifierNode)
         {
             IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
-            definition = identifierNode.resolve(currentProject);
+            definition = identifierNode.resolve(project);
         }
 
         if (definition == null)
@@ -3202,25 +3711,25 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 message.setMessage("You cannot rename this element.");
                 languageClient.showMessage(message);
             }
-            return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
+            return new WorkspaceEdit(new HashMap<>());
         }
 
-        WorkspaceEdit result = renameDefinition(definition, params.getNewName());
-        return CompletableFuture.completedFuture(result);
+        WorkspaceEdit result = renameDefinition(definition, params.getNewName(), project);
+        return result;
     }
 
-    private CompletableFuture<WorkspaceEdit> mxmlRename(RenameParams params, IMXMLTagData offsetTag)
+    private WorkspaceEdit mxmlRename(RenameParams params, RoyaleProject project, IMXMLTagData offsetTag, int currentOffset)
     {
-        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, currentProject);
+        IDefinition definition = MXMLDataUtils.getDefinitionForMXMLNameAtOffset(offsetTag, currentOffset, project);
         if (definition != null)
         {
             if (MXMLDataUtils.isInsideTagPrefix(offsetTag, currentOffset))
             {
                 //ignore the tag's prefix
-                return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
+                return new WorkspaceEdit(new HashMap<>());
             }
-            WorkspaceEdit result = renameDefinition(definition, params.getNewName());
-            return CompletableFuture.completedFuture(result);
+            WorkspaceEdit result = renameDefinition(definition, params.getNewName(), project);
+            return result;
         }
 
         if (languageClient != null)
@@ -3230,10 +3739,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             message.setMessage("You cannot rename this element.");
             languageClient.showMessage(message);
         }
-        return CompletableFuture.completedFuture(new WorkspaceEdit(new HashMap<>()));
+        return new WorkspaceEdit(new HashMap<>());
     }
     
-    private void referencesForDefinitionInCompilationUnit(IDefinition definition, ICompilationUnit compilationUnit, List<Location> result)
+    private void referencesForDefinitionInCompilationUnit(IDefinition definition, ICompilationUnit compilationUnit, RoyaleProject project, List<Location> result)
     {
         if (compilationUnit.getAbsoluteFilename().endsWith(MXML_EXTENSION))
         {
@@ -3243,7 +3752,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (rootTag != null)
             {
                 ArrayList<ISourceLocation> units = new ArrayList<>();
-                findMXMLUnits(mxmlData.getRootTag(), definition, units);
+                findMXMLUnits(mxmlData.getRootTag(), definition, project, units);
                 for (ISourceLocation otherUnit : units)
                 {
                     Location location = LanguageServerCompilerUtils.getLocationFromSourceLocation(otherUnit);
@@ -3265,7 +3774,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return;
         }
         ArrayList<IIdentifierNode> identifiers = new ArrayList<>();
-        findIdentifiers(ast, definition, identifiers);
+        ASTUtils.findIdentifiersForDefinition(ast, definition, project, identifiers);
         for (IIdentifierNode otherNode : identifiers)
         {
             Location location = LanguageServerCompilerUtils.getLocationFromSourceLocation(otherNode);
@@ -3277,9 +3786,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void referencesForDefinition(IDefinition definition, List<Location> result)
+    private void referencesForDefinition(IDefinition definition, RoyaleProject project, List<Location> result)
     {
-        for (ICompilationUnit compilationUnit : compilationUnits)
+        for (ICompilationUnit compilationUnit : project.getCompilationUnits())
         {
             if (compilationUnit == null
                     || compilationUnit instanceof SWCCompilationUnit
@@ -3287,7 +3796,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 continue;
             }
-            referencesForDefinitionInCompilationUnit(definition, compilationUnit, result);
+            referencesForDefinitionInCompilationUnit(definition, compilationUnit, project, result);
         }
     }
     
@@ -3307,7 +3816,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         result.getItems().add(item);
     }
 
-    private void autoCompleteTypes(IASNode withNode, String containingPackageName, CompletionList result)
+    private void autoCompleteTypes(IASNode withNode, ImportRange importRange, String containingPackageName, RoyaleProject project, CompletionList result)
     {
         //start by getting the types in scope
         IASNode node = withNode;
@@ -3320,23 +3829,23 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IScopedNode scopedNode = (IScopedNode) node;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, true, containingPackageName, result);
+                autoCompleteScope(scopedNode, true, importRange, containingPackageName, project, result);
                 break;
             }
             node = node.getParent();
         }
         while (node != null);
-        autoCompleteDefinitionsForActionScript(result, true, null, null, containingPackageName, false, null);
+        autoCompleteDefinitionsForActionScript(result, project, true, null, null, containingPackageName, false, null, importRange);
     }
 
     /**
      * Using an existing tag, that may already have a prefix or short name,
      * populate the completion list.
      */
-    private void autoCompleteTypesForMXMLFromExistingTag(CompletionList result, IMXMLTagData offsetTag)
+    private void autoCompleteTypesForMXMLFromExistingTag(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, XmlnsRange xmlnsRange)
     {
         IMXMLDataManager mxmlDataManager = compilerWorkspace.getMXMLDataManager();
-        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(currentUnit.getAbsoluteFilename()));
+        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename()));
         String tagStartShortNameForComparison = offsetTag.getShortName().toLowerCase();
         String tagPrefix = offsetTag.getPrefix();
         PrefixMap prefixMap = mxmlData.getRootTagPrefixMap();
@@ -3354,7 +3863,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         }
 
-        for (ICompilationUnit unit : compilationUnits)
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
             if (unit == null)
             {
@@ -3388,7 +3897,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     //in a namespace with that prefix
                     if (tagPrefix.length() > 0)
                     {
-                        Collection<XMLName> tagNames = currentProject.getTagNamesForClass(typeDefinition.getQualifiedName());
+                        Collection<XMLName> tagNames = project.getTagNamesForClass(typeDefinition.getQualifiedName());
                         for (XMLName tagName : tagNames)
                         {
                             String tagNameNamespace = tagName.getXMLNamespace();
@@ -3404,30 +3913,30 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             {
                                 if (tagPrefix.equals(otherPrefix))
                                 {
-                                    addDefinitionAutoCompleteMXML(typeDefinition, false, null, null, false, result);
+                                    addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, null, null, false, project, result);
                                 }
                             }
                         }
                         if (tagNamespacePackage != null
                                 && tagNamespacePackage.equals(typeDefinition.getPackageName()))
                         {
-                            addDefinitionAutoCompleteMXML(typeDefinition, false, null, null, false, result);
+                            addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, null, null, false, project, result);
                         }
                     }
                     else
                     {
                         //no prefix yet, so complete the definition with a prefix
-                        MXMLNamespace ns = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(typeDefinition, mxmlData, currentProject);
-                        addDefinitionAutoCompleteMXML(typeDefinition, false, ns.prefix, ns.uri, false, result);
+                        MXMLNamespace ns = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(typeDefinition, mxmlData, project);
+                        addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, ns.prefix, ns.uri, false, project, result);
                     }
                 }
             }
         }
     }
 
-    private void autoCompleteDefinitionsForMXML(CompletionList result, boolean typesOnly, boolean tagsNeedOpenBracket, String typeFilter)
+    private void autoCompleteDefinitionsForMXML(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, boolean typesOnly, boolean tagsNeedOpenBracket, String typeFilter, ImportRange importRange, XmlnsRange xmlnsRange)
     {
-        for (ICompilationUnit unit : compilationUnits)
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
             if (unit == null)
             {
@@ -3460,32 +3969,33 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     if (isType)
                     {
                         ITypeDefinition typeDefinition = (ITypeDefinition) definition;
-                        if (typeFilter != null && !DefinitionUtils.extendsOrImplements(currentProject, typeDefinition, typeFilter))
+                        if (typeFilter != null && !DefinitionUtils.extendsOrImplements(project, typeDefinition, typeFilter))
                         {
                             continue;
                         }
 
-                        addMXMLTypeDefinitionAutoComplete(typeDefinition, tagsNeedOpenBracket, result);
+                        addMXMLTypeDefinitionAutoComplete(typeDefinition, xmlnsRange, offsetUnit, tagsNeedOpenBracket, project, result);
                     }
                     else
                     {
-                        addDefinitionAutoCompleteActionScript(definition, null, result);
+                        addDefinitionAutoCompleteActionScript(definition, null, importRange, project, result);
                     }
                 }
             }
         }
     }
 
-    private void autoCompleteDefinitionsForActionScript(CompletionList result, boolean typesOnly, String requiredPackageName,
-                                        IDefinition definitionToSkip, String containingPackageName,
-                                        boolean tagsNeedOpenBracket, String typeFilter)
+    private void autoCompleteDefinitionsForActionScript(CompletionList result,
+            RoyaleProject project, boolean typesOnly, String requiredPackageName,
+            IDefinition definitionToSkip, String containingPackageName,
+            boolean tagsNeedOpenBracket, String typeFilter, ImportRange importRange)
     {
         String skipQualifiedName = null;
         if (definitionToSkip != null)
         {
             skipQualifiedName = definitionToSkip.getQualifiedName();
         }
-        for (ICompilationUnit unit : compilationUnits)
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
             if (unit == null)
             {
@@ -3522,7 +4032,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                 continue;
                             }
                         }
-                        addDefinitionAutoCompleteActionScript(definition, containingPackageName, result);
+                        addDefinitionAutoCompleteActionScript(definition, containingPackageName, importRange, project, result);
                     }
                 }
             }
@@ -3536,7 +4046,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void autoCompleteScope(IScopedNode node, boolean typesOnly, String containingPackageName, CompletionList result)
+    private void autoCompleteScope(IScopedNode node, boolean typesOnly, ImportRange importRange, String containingPackageName, RoyaleProject project, CompletionList result)
     {
         IScopedNode currentNode = node;
         ASScope scope = (ASScope) node.getScope();
@@ -3548,10 +4058,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (currentScope instanceof TypeScope && !typesOnly)
             {
                 TypeScope typeScope = (TypeScope) currentScope;
-                addDefinitionsInTypeScopeToAutoComplete(typeScope, scope, true, true, false, false, null, false, result);
+                addDefinitionsInTypeScopeToAutoComplete(typeScope, scope, true, true, false, false, null, false, importRange, null, project, result);
                 if (!staticOnly)
                 {
-                    addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, result);
+                    addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, importRange, project, result);
                 }
             }
             else
@@ -3571,7 +4081,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         if (localDefinition instanceof ISetterDefinition)
                         {
                             ISetterDefinition setter = (ISetterDefinition) localDefinition;
-                            IGetterDefinition getter = setter.resolveGetter(currentProject);
+                            IGetterDefinition getter = setter.resolveGetter(project);
                             if (getter != null)
                             {
                                 //skip the setter if there's also a getter because
@@ -3579,7 +4089,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                 continue;
                             }
                         }
-                        addDefinitionAutoCompleteActionScript(localDefinition, containingPackageName, result);
+                        addDefinitionAutoCompleteActionScript(localDefinition, containingPackageName, importRange, project, result);
                     }
                 }
             }
@@ -3743,7 +4253,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         autoCompleteValue(IASKeywordConstants.NULL, result);
     }
 
-    private void autoCompleteFunctionOverrides(IFunctionNode node, CompletionList result)
+    private void autoCompleteFunctionOverrides(IFunctionNode node, RoyaleProject project, CompletionList result)
     {
         String namespace = node.getNamespace();
         boolean isGetter = node.isGetter();
@@ -3753,17 +4263,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
         ArrayList<IDefinition> propertyDefinitions = new ArrayList<>();
         TypeScope typeScope = (TypeScope) classDefinition.getContainedScope();
-        Set<INamespaceDefinition> namespaceSet = typeScope.getNamespaceSet(currentProject);
+        Set<INamespaceDefinition> namespaceSet = typeScope.getNamespaceSet(project);
         do
         {
-            classDefinition = classDefinition.resolveBaseClass(currentProject);
+            classDefinition = classDefinition.resolveBaseClass(project);
             if (classDefinition == null)
             {
                 break;
             }
             typeScope = (TypeScope) classDefinition.getContainedScope();
             INamespaceDefinition protectedNamespace = classDefinition.getProtectedNamespaceReference();
-            typeScope.getAllLocalProperties(currentProject, propertyDefinitions, namespaceSet, protectedNamespace);
+            typeScope.getAllLocalProperties(project, propertyDefinitions, namespaceSet, protectedNamespace);
         }
         while (classDefinition instanceof IClassDefinition);
 
@@ -3824,7 +4334,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 if (param.hasDefaultValue())
                 {
                     insertText.append(" = ");
-                    Object defaultValue = param.resolveDefaultValue(currentProject);
+                    Object defaultValue = param.resolveDefaultValue(project);
                     if (defaultValue instanceof String)
                     {
                         insertText.append("\"" + defaultValue + "\"");
@@ -3851,29 +4361,29 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 insertText.append(returnType);
             }
 
-            CompletionItem item = CompletionItemUtils.createDefinitionItem(functionDefinition, currentProject);
+            CompletionItem item = CompletionItemUtils.createDefinitionItem(functionDefinition, project);
 		    item.setInsertText(insertText.toString());
             resultItems.add(item);
         }
     }
 
-    private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, CompletionList result)
+    private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, ImportRange importRange, RoyaleProject project, CompletionList result)
     {
         ASScope scope = (ASScope) node.getContainingScope().getScope();
         IExpressionNode leftOperand = node.getLeftOperandNode();
-        IDefinition leftDefinition = leftOperand.resolve(currentProject);
+        IDefinition leftDefinition = leftOperand.resolve(project);
         if (leftDefinition != null && leftDefinition instanceof ITypeDefinition)
         {
             ITypeDefinition typeDefinition = (ITypeDefinition) leftDefinition;
             TypeScope typeScope = (TypeScope) typeDefinition.getContainedScope();
-            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, true, result);
+            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, true, importRange, project, result);
             return;
         }
-        ITypeDefinition leftType = leftOperand.resolveType(currentProject);
+        ITypeDefinition leftType = leftOperand.resolveType(project);
         if (leftType != null)
         {
             TypeScope typeScope = (TypeScope) leftType.getContainedScope();
-            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, result);
+            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, importRange, project, result);
             return;
         }
 
@@ -3883,7 +4393,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             String packageName = memberAccessToPackageName(memberAccess);
             if (packageName != null)
             {
-                autoCompleteDefinitionsForActionScript(result, false, packageName, null, null, false, null);
+                autoCompleteDefinitionsForActionScript(result, project, false, packageName, null, null, false, null, importRange);
                 return;
             }
         }
@@ -3915,21 +4425,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return result + "." + identifierNode.getName();
     }
 
-    private void autoCompletePackageBlock(CompletionList result)
+    private void autoCompletePackageBlock(IFileSpecification fileSpec, RoyaleProject project, CompletionList result)
     {
         //we'll guess the package name based on path of the parent directory
-        File unitFile = new File(currentUnit.getAbsoluteFilename());
+        File unitFile = new File(fileSpec.getPath());
         unitFile = unitFile.getParentFile();
-        String expectedPackage = SourcePathUtils.getPackageForDirectoryPath(unitFile.toPath(), currentProject);
+        String expectedPackage = SourcePathUtils.getPackageForDirectoryPath(unitFile.toPath(), project);
         CompletionItem packageItem = CompletionItemUtils.createPackageBlockItem(expectedPackage, completionSupportsSnippets);
         result.getItems().add(packageItem);
     }
 
-    private void autoCompletePackageName(String partialPackageName, CompletionList result)
+    private void autoCompletePackageName(String partialPackageName, IFileSpecification fileSpec, RoyaleProject project, CompletionList result)
     {
-        File unitFile = new File(currentUnit.getAbsoluteFilename());
+        File unitFile = new File(fileSpec.getPath());
         unitFile = unitFile.getParentFile();
-        String expectedPackage = SourcePathUtils.getPackageForDirectoryPath(unitFile.toPath(), currentProject);
+        String expectedPackage = SourcePathUtils.getPackageForDirectoryPath(unitFile.toPath(), project);
         if (expectedPackage.length() == 0)
         {
             //it's the top level package
@@ -3952,10 +4462,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         result.getItems().add(item);
     }
 
-    private void autoCompleteImport(String importName, CompletionList result)
+    private void autoCompleteImport(String importName, RoyaleProject project, CompletionList result)
     {
         List<CompletionItem> items = result.getItems();
-        for (ICompilationUnit unit : compilationUnits)
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
             if (unit == null)
             {
@@ -4119,8 +4629,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         addMXMLLanguageTagToAutoComplete(IMXMLLanguageConstants.STYLE, prefix, includeOpenTagPrefix, tagsNeedOpenBracket, result);
     }
 
-    private void addMembersForMXMLTypeToAutoComplete(IClassDefinition definition, IMXMLTagData offsetTag,
-            boolean isAttribute, boolean includePrefix, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addMembersForMXMLTypeToAutoComplete(IClassDefinition definition,
+            IMXMLTagData offsetTag, boolean isAttribute, boolean includePrefix, boolean tagsNeedOpenBracket,
+            ImportRange importRange, XmlnsRange xmlnsRange, RoyaleProject project, CompletionList result)
     {
         ICompilationUnit unit = getCompilationUnit(Paths.get(offsetTag.getSourcePath()));
         if (unit == null)
@@ -4149,17 +4660,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             TypeScope typeScope = (TypeScope) definition.getContainedScope();
             ASScope scope = (ASScope) scopes[0];
-            addDefinitionsInTypeScopeToAutoCompleteMXML(typeScope, scope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, result);
-            addStyleMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, result);
-            addEventMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, result);
+            addDefinitionsInTypeScopeToAutoCompleteMXML(typeScope, scope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
+            addStyleMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, project, result);
+            addEventMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, project, result);
             if(isAttribute)
             {
-                addLanguageAttributesToAutoCompleteMXML(typeScope, scope, result);
+                addLanguageAttributesToAutoCompleteMXML(typeScope, scope, project, result);
             }
         }
     }
 
-    private void addLanguageAttributesToAutoCompleteMXML(TypeScope typeScope, ASScope otherScope, CompletionList result)
+    private void addLanguageAttributesToAutoCompleteMXML(TypeScope typeScope, ASScope otherScope, RoyaleProject project, CompletionList result)
     {
         List<CompletionItem> items = result.getItems();
 
@@ -4183,8 +4694,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         items.add(excludeFromItem);
 
-        Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, otherScope, currentProject);
-        IDefinition propertyDefinition = typeScope.getPropertyByNameForMemberAccess(currentProject, IMXMLLanguageConstants.ATTRIBUTE_ID, namespaceSet);
+        Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, otherScope, project);
+        IDefinition propertyDefinition = typeScope.getPropertyByNameForMemberAccess(project, IMXMLLanguageConstants.ATTRIBUTE_ID, namespaceSet);
         if (propertyDefinition == null)
         {
             CompletionItem idItem = new CompletionItem();
@@ -4199,23 +4710,32 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void addDefinitionsInTypeScopeToAutoCompleteActionScript(TypeScope typeScope, ASScope otherScope, boolean isStatic, CompletionList result)
+    private void addDefinitionsInTypeScopeToAutoCompleteActionScript(TypeScope typeScope, ASScope otherScope,
+        boolean isStatic, ImportRange importRange,
+        RoyaleProject project, CompletionList result)
     {
-        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, isStatic, false, false, false, null, false, result);
+        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, isStatic, false, false, false, null, false, importRange, null, project, result);
     }
 
-    private void addDefinitionsInTypeScopeToAutoCompleteMXML(TypeScope typeScope, ASScope otherScope, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addDefinitionsInTypeScopeToAutoCompleteMXML(TypeScope typeScope, ASScope otherScope,
+        boolean isAttribute, String prefix, boolean tagsNeedOpenBracket,
+        ImportRange importRange, XmlnsRange xmlnsRange,
+        RoyaleProject project, CompletionList result)
     {
-        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, false, false, true, isAttribute, prefix, tagsNeedOpenBracket, result);
+        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, false, false, true, isAttribute, prefix, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
     }
 
-    private void addDefinitionsInTypeScopeToAutoComplete(TypeScope typeScope, ASScope otherScope, boolean isStatic, boolean includeSuperStatics, boolean forMXML, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addDefinitionsInTypeScopeToAutoComplete(TypeScope typeScope, ASScope otherScope,
+        boolean isStatic, boolean includeSuperStatics,
+        boolean forMXML, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket,
+        ImportRange importRange, XmlnsRange xmlnsRange,
+        RoyaleProject project, CompletionList result)
     {
         IMetaTag[] excludeMetaTags = typeScope.getDefinition().getMetaTagsByName(IMetaAttributeConstants.ATTRIBUTE_EXCLUDE);
         ArrayList<IDefinition> memberAccessDefinitions = new ArrayList<>();
-        Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, otherScope, currentProject);
+        Set<INamespaceDefinition> namespaceSet = ScopeUtils.getNamespaceSetForScopes(typeScope, otherScope, project);
         
-        typeScope.getAllPropertiesForMemberAccess(currentProject, memberAccessDefinitions, namespaceSet);
+        typeScope.getAllPropertiesForMemberAccess(project, memberAccessDefinitions, namespaceSet);
         for (IDefinition localDefinition : memberAccessDefinitions)
         {
             if (localDefinition.isOverride())
@@ -4260,7 +4780,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 if (localDefinition instanceof ISetterDefinition)
                 {
                     ISetterDefinition setter = (ISetterDefinition) localDefinition;
-                    IGetterDefinition getter = setter.resolveGetter(currentProject);
+                    IGetterDefinition getter = setter.resolveGetter(project);
                     if (getter != null)
                     {
                         //skip the setter if there's also a getter because it
@@ -4292,16 +4812,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             if (forMXML)
             {
-                addDefinitionAutoCompleteMXML(localDefinition, isAttribute, prefix, null, tagsNeedOpenBracket, result);
+                addDefinitionAutoCompleteMXML(localDefinition, xmlnsRange, isAttribute, prefix, null, tagsNeedOpenBracket, project, result);
             }
             else //actionscript
             {
-                addDefinitionAutoCompleteActionScript(localDefinition, null, result);
+                addDefinitionAutoCompleteActionScript(localDefinition, null, importRange, project, result);
             }
         }
     }
 
-    private void addEventMetadataToAutoCompleteMXML(TypeScope typeScope, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addEventMetadataToAutoCompleteMXML(TypeScope typeScope, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
     {
         ArrayList<String> eventNames = new ArrayList<>();
         IDefinition definition = typeScope.getDefinition();
@@ -4323,12 +4843,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     continue;
                 }
                 eventNames.add(eventName);
-                IDefinition eventDefinition = currentProject.resolveSpecifier(classDefinition, eventName);
+                IDefinition eventDefinition = project.resolveSpecifier(classDefinition, eventName);
                 if (eventDefinition == null)
                 {
                     continue;
                 }
-                CompletionItem item = CompletionItemUtils.createDefinitionItem(eventDefinition, currentProject);
+                CompletionItem item = CompletionItemUtils.createDefinitionItem(eventDefinition, project);
                 if (isAttribute && completionSupportsSnippets)
                 {
                     item.setInsertTextFormat(InsertTextFormat.Snippet);
@@ -4365,11 +4885,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 }
                 result.getItems().add(item);
             }
-            definition = classDefinition.resolveBaseClass(currentProject);
+            definition = classDefinition.resolveBaseClass(project);
         }
     }
 
-    private void addStyleMetadataToAutoCompleteMXML(TypeScope typeScope, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addStyleMetadataToAutoCompleteMXML(TypeScope typeScope, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
     {
         ArrayList<String> styleNames = new ArrayList<>();
         IDefinition definition = typeScope.getDefinition();
@@ -4392,7 +4912,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     continue;
                 }
                 styleNames.add(styleName);
-                IDefinition styleDefinition = currentProject.resolveSpecifier(classDefinition, styleName);
+                IDefinition styleDefinition = project.resolveSpecifier(classDefinition, styleName);
                 if (styleDefinition == null)
                 {
                     continue;
@@ -4414,7 +4934,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     break;
                 }
-                CompletionItem item = CompletionItemUtils.createDefinitionItem(styleDefinition, currentProject);
+                CompletionItem item = CompletionItemUtils.createDefinitionItem(styleDefinition, project);
                 if (isAttribute && completionSupportsSnippets)
                 {
                     item.setInsertTextFormat(InsertTextFormat.Snippet);
@@ -4451,16 +4971,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 }
                 items.add(item);
             }
-            definition = classDefinition.resolveBaseClass(currentProject);
+            definition = classDefinition.resolveBaseClass(project);
         }
     }
 
-    private void addMXMLTypeDefinitionAutoComplete(ITypeDefinition definition, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addMXMLTypeDefinitionAutoComplete(ITypeDefinition definition, XmlnsRange xmlnsRange, ICompilationUnit offsetUnit, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
     {
         IMXMLDataManager mxmlDataManager = compilerWorkspace.getMXMLDataManager();
-        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(currentUnit.getAbsoluteFilename()));
-        MXMLNamespace discoveredNS = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(definition, mxmlData, currentProject);
-        addDefinitionAutoCompleteMXML(definition, false, discoveredNS.prefix, discoveredNS.uri, tagsNeedOpenBracket, result);
+        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename()));
+        MXMLNamespace discoveredNS = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(definition, mxmlData, project);
+        addDefinitionAutoCompleteMXML(definition, xmlnsRange, false, discoveredNS.prefix, discoveredNS.uri, tagsNeedOpenBracket, project, result);
     }
 
     private boolean isDuplicateTypeDefinition(IDefinition definition)
@@ -4473,7 +4993,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return false;
     }
 
-    private void addDefinitionAutoCompleteActionScript(IDefinition definition, String containingPackageName, CompletionList result)
+    private void addDefinitionAutoCompleteActionScript(IDefinition definition, String containingPackageName, ImportRange importRange, RoyaleProject project, CompletionList result)
     {
         String definitionBaseName = definition.getBaseName();
         if (definitionBaseName.length() == 0)
@@ -4494,7 +5014,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             String qualifiedName = definition.getQualifiedName();
             completionTypes.add(qualifiedName);
         }
-        CompletionItem item = CompletionItemUtils.createDefinitionItem(definition, currentProject);
+        CompletionItem item = CompletionItemUtils.createDefinitionItem(definition, project);
         /*if (definition instanceof IFunctionDefinition
                 && !(definition instanceof IAccessorDefinition)
                 && completionSupportsSnippets)
@@ -4514,16 +5034,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         boolean isInPackage = !definition.getQualifiedName().equals(definition.getBaseName());
         if (isInPackage && (containingPackageName == null || !definition.getPackageName().equals(containingPackageName)))
         {
-            Command command = createImportCommand(definition);
+            Command command = createImportCommand(definition, importRange);
             if (command != null)
             {
                 item.setCommand(command);
             }
         }
+        IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
+        if (deprecationInfo != null)
+        {
+            item.setDeprecated(true);
+        }
         result.getItems().add(item);
     }
 
-    private void addDefinitionAutoCompleteMXML(IDefinition definition, boolean isAttribute, String prefix, String uri, boolean tagsNeedOpenBracket, CompletionList result)
+    private void addDefinitionAutoCompleteMXML(IDefinition definition, XmlnsRange xmlnsRange, boolean isAttribute, String prefix, String uri, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
     {
         if (definition.getBaseName().startsWith(VECTOR_HIDDEN_PREFIX))
         {
@@ -4544,7 +5069,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //vscode expects all items to have a name
             return;
         }
-        CompletionItem item = CompletionItemUtils.createDefinitionItem(definition, currentProject);
+        CompletionItem item = CompletionItemUtils.createDefinitionItem(definition, project);
         if (isAttribute && completionSupportsSnippets)
         {
             item.setInsertTextFormat(InsertTextFormat.Snippet);
@@ -4590,13 +5115,18 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             item.setInsertText(insertTextBuilder.toString());
             if (definition instanceof ITypeDefinition && prefix != null && uri != null)
             {
-                item.setCommand(createMXMLNamespaceCommand(definition, prefix, uri));
+                item.setCommand(createMXMLNamespaceCommand(definition, xmlnsRange, prefix, uri));
             }
+        }
+        IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
+        if (deprecationInfo != null)
+        {
+            item.setDeprecated(true);
         }
         result.getItems().add(item);
     }
 
-    private Command createImportCommand(IDefinition definition)
+    private Command createImportCommand(IDefinition definition, ImportRange importRange)
     {
         String packageName = definition.getPackageName();
         if (packageName == null
@@ -4619,7 +5149,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return importCommand;
     }
 
-    private Command createMXMLNamespaceCommand(IDefinition definition, String prefix, String uri)
+    private Command createMXMLNamespaceCommand(IDefinition definition, XmlnsRange xmlnsRange, String prefix, String uri)
     {
         Command xmlnsCommand = new Command();
         xmlnsCommand.setTitle("Add Namespace " + uri);
@@ -4627,14 +5157,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         xmlnsCommand.setArguments(Arrays.asList(
             prefix,
             uri,
-            namespaceUri,
-            namespaceStartIndex,
-            namespaceEndIndex
+            xmlnsRange.uri,
+            xmlnsRange.startIndex,
+            xmlnsRange.endIndex
         ));
         return xmlnsCommand;
     }
 
-    private void resolveDefinition(IDefinition definition, List<Location> result)
+    private void resolveDefinition(IDefinition definition, RoyaleProject project, List<Location> result)
     {
         String definitionPath = definition.getSourcePath();
         if (definitionPath == null)
@@ -4655,7 +5185,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 //if it's a framework SWC, we're going to attempt to resolve
                 //the source file 
-                String debugPath = DefinitionUtils.getDefinitionDebugSourceFilePath(definition, currentProject);
+                String debugPath = DefinitionUtils.getDefinitionDebugSourceFilePath(definition, project);
                 if (debugPath != null)
                 {
                     definitionPath = debugPath;
@@ -4663,7 +5193,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             if (definitionPath.endsWith(SWC_EXTENSION))
             {
-                DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, currentProject);
+                DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, project);
                 //may be null if definitionToTextDocument() doesn't know how
                 //to parse that type of definition
                 if (definitionText != null)
@@ -4773,7 +5303,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return null;
     }
 
-    private WorkspaceEdit renameDefinition(IDefinition definition, String newName)
+    private WorkspaceEdit renameDefinition(IDefinition definition, String newName, RoyaleProject project)
     {
         if (definition == null)
         {
@@ -4813,7 +5343,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
         Path originalDefinitionFilePath = null;
         Path newDefinitionFilePath = null;
-        for (ICompilationUnit compilationUnit : compilationUnits)
+        for (ICompilationUnit compilationUnit : project.getCompilationUnits())
         {
             if (compilationUnit == null
                     || compilationUnit instanceof SWCCompilationUnit
@@ -4830,7 +5360,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 if (rootTag != null)
                 {
                     ArrayList<ISourceLocation> units = new ArrayList<>();
-                    findMXMLUnits(mxmlData.getRootTag(), definition, units);
+                    findMXMLUnits(mxmlData.getRootTag(), definition, project, units);
                     for (ISourceLocation otherUnit : units)
                     {
                         TextEdit textEdit = new TextEdit();
@@ -4859,7 +5389,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (ast != null)
             {
                 ArrayList<IIdentifierNode> identifiers = new ArrayList<>();
-                findIdentifiers(ast, definition, identifiers);
+                ASTUtils.findIdentifiersForDefinition(ast, definition, project, identifiers);
                 for (IIdentifierNode identifierNode : identifiers)
                 {
                     TextEdit textEdit = new TextEdit();
@@ -4947,77 +5477,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return false;
     }
 
-    private void findIdentifiers(IASNode node, IDefinition definition, List<IIdentifierNode> result)
+    private void findMXMLUnits(IMXMLTagData tagData, IDefinition definition, RoyaleProject project, List<ISourceLocation> result)
     {
-        if (node.isTerminal())
-        {
-            if (node instanceof IIdentifierNode)
-            {
-                IIdentifierNode identifierNode = (IIdentifierNode) node;
-                IDefinition resolvedDefinition = identifierNode.resolve(currentProject);
-                if (resolvedDefinition == definition)
-                {
-                    result.add(identifierNode);
-                }
-                else if (resolvedDefinition instanceof IClassDefinition
-                    && definition instanceof IFunctionDefinition
-                    && ((IFunctionDefinition) definition).isConstructor())
-                {
-                    //if renaming the constructor, also rename the class
-                    IClassDefinition classDefinition = (IClassDefinition) resolvedDefinition;
-                    IFunctionDefinition constructorDefinition = classDefinition.getConstructor();
-                    if (constructorDefinition != null && definition == constructorDefinition)
-                    {
-                        result.add(identifierNode);
-                    }
-                }
-                else if (resolvedDefinition instanceof IFunctionDefinition
-                    && ((IFunctionDefinition) resolvedDefinition).isConstructor()
-                    && definition instanceof IClassDefinition)
-                {
-                    //if renaming the class, also rename the constructor
-                    IClassDefinition classDefinition = (IClassDefinition) definition;
-                    IFunctionDefinition constructorDefinition = classDefinition.getConstructor();
-                    if (constructorDefinition != null && resolvedDefinition == constructorDefinition)
-                    {
-                        result.add(identifierNode);
-                    }
-                }
-                else if (resolvedDefinition instanceof ISetterDefinition
-                        && definition instanceof IGetterDefinition)
-                {
-                    //if renaming the getter, also rename the setter
-                    IGetterDefinition getterDefinition = (IGetterDefinition) definition;
-                    ISetterDefinition setterDefinition = getterDefinition.resolveSetter(currentProject);
-                    if (setterDefinition != null && resolvedDefinition == setterDefinition)
-                    {
-                        result.add(identifierNode);
-                    }
-                }
-                else if (resolvedDefinition instanceof IGetterDefinition
-                        && definition instanceof ISetterDefinition)
-                {
-                    //if renaming the setter, also rename the getter
-                    ISetterDefinition setterDefinition = (ISetterDefinition) definition;
-                    IGetterDefinition getterDefinition = setterDefinition.resolveGetter(currentProject);
-                    if (getterDefinition != null && resolvedDefinition == getterDefinition)
-                    {
-                        result.add(identifierNode);
-                    }
-                }
-            }
-            return;
-        }
-        for (int i = 0, count = node.getChildCount(); i < count; i++)
-        {
-            IASNode childNode = node.getChild(i);
-            findIdentifiers(childNode, definition, result);
-        }
-    }
-
-    private void findMXMLUnits(IMXMLTagData tagData, IDefinition definition, List<ISourceLocation> result)
-    {
-        IDefinition tagDefinition = currentProject.resolveXMLNameToDefinition(tagData.getXMLName(), tagData.getMXMLDialect());
+        IDefinition tagDefinition = project.resolveXMLNameToDefinition(tagData.getXMLName(), tagData.getMXMLDialect());
         if (tagDefinition != null && definition == tagDefinition)
         {
             result.add(tagData);
@@ -5028,7 +5490,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IMXMLTagAttributeData[] attributes = tagData.getAttributeDatas();
             for (IMXMLTagAttributeData attributeData : attributes)
             {
-                IDefinition attributeDefinition = currentProject.resolveSpecifier(classDefinition, attributeData.getShortName());
+                IDefinition attributeDefinition = project.resolveSpecifier(classDefinition, attributeData.getShortName());
                 if (attributeDefinition != null && definition == attributeDefinition)
                 {
                     result.add(attributeData);
@@ -5043,7 +5505,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 //only open tags matter
                 continue;
             }
-            findMXMLUnits(childTag, definition, result);
+            findMXMLUnits(childTag, definition, project, result);
             childTag = childTag.getNextSibling(true);
         }
     }
@@ -5068,7 +5530,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         diagnostics.add(diagnostic);
     }
 
-    private void checkFilePathForSyntaxProblems(Path path, ProblemQuery problemQuery)
+    private void checkFilePathForSyntaxProblems(Path path, WorkspaceFolderData folderData, ProblemQuery problemQuery)
     {
         ASParser parser = null;
         Reader reader = getReaderForPath(path);
@@ -5103,13 +5565,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         }
 
+        ProjectOptions projectOptions = folderData.options;
         SyntaxFallbackProblem syntaxProblem = null;
         if (reader == null)
         {
             //the file does not exist
             syntaxProblem = new SyntaxFallbackProblem(path.toString(), "File not found: " + path.toAbsolutePath().toString() + ". Error checking has been disabled.");
         }
-        else if (parser == null && currentProjectOptions == null)
+        else if (parser == null && projectOptions == null)
         {
             //we couldn't load the project configuration and we couldn't parse
             //the file. we can't provide any information here.
@@ -5120,7 +5583,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //something terrible happened, and this is the best we can do
             syntaxProblem = new SyntaxFallbackProblem(path.toString(), "A fatal error occurred while checking for simple syntax problems.");
         }
-        else if (currentProjectOptions == null)
+        else if (projectOptions == null)
         {
             //something went wrong while attempting to load and parse the
             //project configuration, but we could successfully parse the syntax
@@ -5152,31 +5615,20 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return null;
         }
-        //make sure that the compilation units collection isn't modified while
-        //we're looping over it, or we'll get concurrent modification exceptions
-        compilerWorkspace.startIdleState();
-        try
+        for (ICompilationUnit unit : project.getCompilationUnits())
         {
-            for (ICompilationUnit unit : project.getCompilationUnits())
+            //it's possible for the collection of compilation units to contain
+            //null values, so be sure to check for null values before checking
+            //the file name
+            if (unit == null)
             {
-                //it's possible for the collection of compilation units to contain
-                //null values, so be sure to check for null values before checking
-                //the file name
-                if (unit == null)
-                {
-                    continue;
-                }
-                Path unitPath = Paths.get(unit.getAbsoluteFilename());
-                if(unitPath.equals(pathToFind))
-                {
-                    compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
-                    return unit;
-                }
+                continue;
             }
-        }
-        finally
-        {
-            compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
+            Path unitPath = Paths.get(unit.getAbsoluteFilename());
+            if(unitPath.equals(pathToFind))
+            {
+                return unit;
+            }
         }
         return null;
     }
@@ -5187,14 +5639,39 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return findCompilationUnit(pathToFind, project);
     }
 
+    private ICompilationUnit findCompilationUnit(Path pathToFind)
+    {
+        for (WorkspaceFolderData folderData : workspaceFolderToData.values())
+        {
+            RoyaleProject project = folderData.project;
+            if (project == null)
+            {
+                continue;
+            }
+            ICompilationUnit result = findCompilationUnit(pathToFind, project);
+            if(result != null)
+            {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private ICompilationUnit findCompilationUnit(String absoluteFileName)
+    {
+        Path pathToFind = Paths.get(absoluteFileName);
+        return findCompilationUnit(pathToFind);
+    }
+
     private Path getMainCompilationUnitPath(WorkspaceFolderData folderData)
     {
         refreshProjectOptions(folderData);
-        if (currentProjectOptions == null)
+        ProjectOptions projectOptions = folderData.options;
+        if (projectOptions == null)
         {
             return null;
         }
-        String[] files = currentProjectOptions.files;
+        String[] files = projectOptions.files;
         if (files == null || files.length == 0)
         {
             return null;
@@ -5235,19 +5712,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     {
         WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
         String absolutePath = path.toAbsolutePath().toString();
-        currentUnit = null;
-        currentProject = null;
         if (folderData == null)
         {
             return null;
         }
-        currentProject = getProject(folderData);
-        if (currentProject == null)
+        RoyaleProject project = getProject(folderData);
+        if (project == null)
         {
             return null;
         }
+        ICompilationUnit foundUnit = null;
+        ProjectOptions projectOptions = folderData.options;
         //we're going to start with the files passed into the compiler
-        String[] files = currentProjectOptions.files;
+        String[] files = projectOptions.files;
         if (files != null)
         {
             for (int i = files.length - 1; i >= 0; i--)
@@ -5255,16 +5732,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 String file = files[i];
                 //a previous file may have created a compilation unit for the
                 //current file, so use that, if available
-                ICompilationUnit existingUnit = findCompilationUnit(file, currentProject);
+                ICompilationUnit existingUnit = findCompilationUnit(file, project);
                 if (existingUnit != null)
                 {
                     if (file.equals(absolutePath))
                     {
-                        currentUnit = existingUnit;
+                        foundUnit = existingUnit;
                     }
                     continue;
                 }
-                if (currentProject.getSourcePath().size() == 0
+                if (project.getSourcePath().size() == 0
                         && i == (files.length - 1))
                 {
                     //if the main file didn't exist at first, it's possible
@@ -5274,9 +5751,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     File mainFile = new File(file);
                     ArrayList<File> sourcePaths = new ArrayList<>();
                     sourcePaths.add(mainFile.getParentFile());
-                    currentProject.setSourcePath(sourcePaths);
+                    project.setSourcePath(sourcePaths);
                 }
-                IInvisibleCompilationUnit unit = currentProject.createInvisibleCompilationUnit(file, fileSpecGetter);
+                IInvisibleCompilationUnit unit = project.createInvisibleCompilationUnit(file, fileSpecGetter);
                 if (unit == null)
                 {
                     if (sourceByPath.containsKey(path) || (new File(absolutePath)).exists())
@@ -5289,26 +5766,24 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 folderData.invisibleUnits.add(unit);
                 if (file.equals(absolutePath))
                 {
-                    currentUnit = unit;
+                    foundUnit = unit;
                 }
             }
         }
 
-        compilationUnits = currentProject.getCompilationUnits();
-
         //if we didn't find the unit already, search the complete set of units
-        if (currentUnit == null)
+        if (foundUnit == null)
         {
             //first, search the existing compilation units for the file because it
             //might already be created
-            currentUnit = findCompilationUnit(absolutePath, currentProject);
+            foundUnit = findCompilationUnit(absolutePath, project);
         }
 
         //if we still haven't found it, create it manually
-        if (currentUnit == null)
+        if (foundUnit == null)
         {
             //if all else fails, create the compilation unit manually
-            IInvisibleCompilationUnit unit = currentProject.createInvisibleCompilationUnit(absolutePath, fileSpecGetter);
+            IInvisibleCompilationUnit unit = project.createInvisibleCompilationUnit(absolutePath, fileSpecGetter);
             if (unit == null)
             {
                 if (sourceByPath.containsKey(path) || (new File(absolutePath)).exists())
@@ -5320,7 +5795,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 return null;
             }
             folderData.invisibleUnits.add(unit);
-            currentUnit = unit;
+            foundUnit = unit;
         }
 
         //for some reason, function nodes may not always be populated, but we
@@ -5328,7 +5803,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         IASNode ast = null;
         try
         {
-            ast = currentUnit.getSyntaxTreeRequest().get().getAST();
+            ast = foundUnit.getSyntaxTreeRequest().get().getAST();
         }
         catch (InterruptedException e)
         {
@@ -5346,7 +5821,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //necessarily know that it exists, this fallback is almost as good
             fileNode.populateFunctionNodes();
         }
-        return currentUnit;
+        return foundUnit;
     }
 
     private RoyaleProject getProject(WorkspaceFolderData folderData)
@@ -5356,19 +5831,21 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             System.err.println("Cannot find workspace for project.");
             return null;
         }
-        currentProject = folderData.project;
+        RoyaleProject project = folderData.project;
         cleanupInvisibleUnits(folderData);
         refreshProjectOptions(folderData);
-        if (currentProjectOptions == null)
+        ProjectOptions projectOptions = folderData.options;
+        IProjectConfigStrategy config = folderData.config;
+        if (projectOptions == null)
         {
             cleanupProject(folderData);
             return null;
         }
-        if (currentProject != null)
+        if (project != null)
         {   
             //clear all old problems because they won't be cleared automatically
-            currentProject.getProblems().clear();
-            return currentProject;
+            project.getProblems().clear();
+            return project;
         }
 
         URI rootURI = URI.create(folderData.folder.getUri());
@@ -5377,10 +5854,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         String oldUserDir = System.getProperty("user.dir");
         System.setProperty("user.dir", rootPath.toString());
 
-        RoyaleProject project = CompilerProjectUtils.createProject(currentProjectOptions, compilerWorkspace);
+        project = CompilerProjectUtils.createProject(projectOptions, compilerWorkspace);
 
         List<ICompilerProblem> configProblems = new ArrayList<>();
-        RoyaleProjectConfigurator configurator = CompilerProjectUtils.configureProject(project, currentProjectOptions, configProblems);
+        RoyaleProjectConfigurator configurator = CompilerProjectUtils.configureProject(project, projectOptions, configProblems);
         if (configurator == null)
         {
             project.delete();
@@ -5405,7 +5882,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         //since we're processing configuration problems, the best
                         //default location to send the user is probably to the
                         //asconfig.json file.
-                        problemSourcePath = currentConfig.getDefaultConfigurationProblemPath();
+                        problemSourcePath = config.getDefaultConfigurationProblemPath();
                     }
                     URI uri = Paths.get(problemSourcePath).toUri();
                     configProblemTracker.trackFileWithProblems(uri);
@@ -5439,7 +5916,8 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private synchronized void checkProjectForProblems(WorkspaceFolderData folderData)
     {
         refreshProjectOptions(folderData);
-        if (currentProjectOptions == null || currentProjectOptions.type.equals(ProjectType.LIB))
+        ProjectOptions projectOptions = folderData.options;
+        if (projectOptions == null || projectOptions.type.equals(ProjectType.LIB))
         {
             ProblemQuery problemQuery = workspaceFolderDataToProblemQuery(folderData);
             for(Path filePath : sourceByPath.keySet())
@@ -5526,18 +6004,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void checkFilePathForProblems(Path path, ProblemQuery problemQuery, WorkspaceFolderData folderData, boolean quick)
     {
-        currentUnit = null;
-
         //if we haven't accessed a compilation unit yet, the project may be null
-        currentProject = getProject(folderData);
-        if (currentProject != null && !SourcePathUtils.isInProjectSourcePath(path, currentProject))
+        RoyaleProject project = getProject(folderData);
+        if (project != null && !SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
         {
             publishDiagnosticForFileOutsideSourcePath(path);
             return;
         }
-        if (currentProjectOptions == null || !checkFilePathForAllProblems(path, problemQuery, false))
+        ProjectOptions projectOptions = folderData.options;
+        if (projectOptions == null || !checkFilePathForAllProblems(path, problemQuery, false))
         {
-            checkFilePathForSyntaxProblems(path, problemQuery);
+            checkFilePathForSyntaxProblems(path, folderData, problemQuery);
         }
     }
 
@@ -5568,6 +6045,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //fall back to the syntax check instead
             return false;
         }
+        if (waitForBuildFinishRunner != null
+            && mainUnit.equals(waitForBuildFinishRunner.getCompilationUnit())
+            && waitForBuildFinishRunner.isRunning())
+        {
+            //take precedence over the real time problem checker
+            waitForBuildFinishRunner.setCancelled();
+        }
         CompilerProject project = (CompilerProject) mainUnit.getProject();
         Collection<ICompilerProblem> fatalProblems = project.getFatalProblems();
         if (fatalProblems == null || fatalProblems.size() == 0)
@@ -5592,7 +6076,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 try
                 {
-                    for (ICompilationUnit unit : compilationUnits)
+                    for (ICompilationUnit unit : project.getCompilationUnits())
                     {
                         if (unit == null
                                 || unit instanceof SWCCompilationUnit
@@ -5685,25 +6169,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return reader;
     }
 
-    private IMXMLTagData getOffsetMXMLTag(TextDocumentPositionParams position)
+    private IMXMLTagData getOffsetMXMLTag(TextDocumentPositionParams params)
     {
-        return getOffsetMXMLTag(position.getTextDocument(), position.getPosition());
+        return getOffsetMXMLTag(params.getTextDocument(), params.getPosition());
     }
 
     private IMXMLTagData getOffsetMXMLTag(TextDocumentIdentifier textDocument, Position position)
     {
-        namespaceStartIndex = -1;
-        namespaceEndIndex = -1;
         String uri = textDocument.getUri();
         if (!uri.endsWith(MXML_EXTENSION))
         {
             // don't try to parse ActionScript files as MXML
             return null;
         }
-        currentOffset = -1;
-        importRange.uri = null;
-        importRange.startIndex = -1;
-        importRange.endIndex = -1;
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
         if (path == null)
         {
@@ -5714,21 +6192,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return null;
         }
-        currentProject = getProject(folderData);
-        if (!SourcePathUtils.isInProjectSourcePath(path, currentProject))
+        RoyaleProject project = getProject(folderData);
+        if (!SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
         {
             //the path must be in the workspace or source-path
-            return null;
-        }
-        String code;
-        if (sourceByPath.containsKey(path))
-        {
-            code = sourceByPath.get(path);
-        }
-        else
-        {
-            Path workspacePath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(folderData.folder.getUri());
-            System.err.println("Could not find source " + path.toAbsolutePath().toString() + " for workspace folder " + workspacePath.toString() + ".");
             return null;
         }
 
@@ -5750,44 +6217,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        currentOffset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(code), position);
-        if (currentOffset == -1)
-        {
-            System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
-            return null;
-        }
-
-        //calculate the location for automatically generated xmlns tags
-        IMXMLTagData rootTag = mxmlData.getRootTag();
-        if (rootTag == null)
-        {
-            return null;
-        }
-        IMXMLTagAttributeData[] attributeDatas = rootTag.getAttributeDatas();
-        for (IMXMLTagAttributeData attributeData : attributeDatas)
-        {
-            if (!attributeData.getName().startsWith("xmlns"))
-            {
-                if (namespaceStartIndex == -1)
-                {
-                    namespaceStartIndex = attributeData.getStart();
-                    namespaceEndIndex = namespaceStartIndex;
-                }
-                break;
-            }
-            int start = attributeData.getAbsoluteStart();
-            int end = attributeData.getValueEnd() + 1;
-            if (namespaceStartIndex == -1 || namespaceStartIndex > start)
-            {
-                namespaceStartIndex = start;
-            }
-            if (namespaceEndIndex == -1 || namespaceEndIndex < end)
-            {
-                namespaceEndIndex = end;
-            }
-        }
-        namespaceUri = textDocument.getUri();
-
+        int currentOffset = getOffset(textDocument, position);
         IMXMLUnitData unitData = mxmlData.findContainmentReferenceUnit(currentOffset);
         IMXMLUnitData currentUnitData = unitData;
         while (currentUnitData != null)
@@ -5795,17 +6225,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (currentUnitData instanceof IMXMLTagData)
             {
                 IMXMLTagData tagData = (IMXMLTagData) currentUnitData;
-                if (tagData.getXMLName().equals(tagData.getMXMLDialect().resolveScript()) &&
-                        unitData instanceof IMXMLTextData)
-                {
-                    IMXMLTextData textUnitData = (IMXMLTextData) unitData;
-                    if (textUnitData.getTextType() == IMXMLTextData.TextType.CDATA)
-                    {
-                        importRange.uri = Paths.get(textUnitData.getSourcePath()).toUri().toString();
-                        importRange.startIndex = textUnitData.getCompilableTextStart();
-                        importRange.endIndex = textUnitData.getCompilableTextEnd();
-                    }
-                }
                 return tagData;
             }
             currentUnitData = currentUnitData.getParentUnitData();
@@ -5813,47 +6232,54 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return null;
     }
 
-    private IASNode getOffsetNode(TextDocumentPositionParams position)
+    private IASNode getOffsetNode(TextDocumentPositionParams params)
     {
-        return getOffsetNode(position.getTextDocument(), position.getPosition());
+        return getOffsetNode(params.getTextDocument(), params.getPosition());
+    }
+
+    private int getOffset(TextDocumentPositionParams params)
+    {
+        return getOffset(params.getTextDocument(), params.getPosition());
+    }
+
+    private int getOffset(TextDocumentIdentifier textDocument, Position position)
+    {
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        if (path == null)
+        {
+            return -1;
+        }
+        Reader reader = getReaderForPath(path);
+        return LanguageServerCompilerUtils.getOffsetFromPosition(reader, position);
     }
 
     private IASNode getOffsetNode(TextDocumentIdentifier textDocument, Position position)
     {
-        currentOffset = -1;
-        if (!textDocument.getUri().endsWith(MXML_EXTENSION))
-        {
-            //if we're in an <fx:Script> element, these will have been
-            //previously calculated, so don't clear them
-            importRange.uri = null;
-            importRange.startIndex = -1;
-            importRange.endIndex = -1;
-        }
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null)
         {
             return null;
         }
+        int currentOffset = getOffset(textDocument, position);
+        if (currentOffset == -1)
+        {
+            System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
+            return null;
+        }
+        return getOffsetNode(path, currentOffset);
+    }
+
+    private IASNode getOffsetNode(Path path, int currentOffset)
+    {
         WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
         if (folderData == null)
         {
             return null;
         }
-        currentProject = getProject(folderData);
-        if (!SourcePathUtils.isInProjectSourcePath(path, currentProject))
+        RoyaleProject project = getProject(folderData);
+        if (!SourcePathUtils.isInProjectSourcePath(path, project, folderData.configurator))
         {
             //the path must be in the workspace or source-path
-            return null;
-        }
-        String code;
-        if (sourceByPath.containsKey(path))
-        {
-            code = sourceByPath.get(path);
-        }
-        else
-        {
-            Path workspacePath = LanguageServerCompilerUtils.getPathFromLanguageServerURI(folderData.folder.getUri());
-            System.err.println("Could not find source " + path.toAbsolutePath().toString() + " for workspace folder " + workspacePath.toString() + ".");
             return null;
         }
 
@@ -5863,21 +6289,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        currentOffset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(code), position);
-        if (currentOffset == -1)
-        {
-            System.err.println("Could not find code at position " + position.getLine() + ":" + position.getCharacter() + " in file " + path.toAbsolutePath().toString());
-            return null;
-        }
-        IASNode offsetNode = ASTUtils.getContainingNodeIncludingStart(ast, currentOffset);
-        if (!textDocument.getUri().endsWith(MXML_EXTENSION))
-        {
-            importRange = ImportRange.fromOffsetNode(offsetNode);
-        }
-        return offsetNode;
+        return ASTUtils.getContainingNodeIncludingStart(ast, currentOffset);
     }
 
-    private IASNode getEmbeddedActionScriptNodeInMXMLTag(IMXMLTagData tag, int offset, TextDocumentPositionParams position)
+    private IASNode getEmbeddedActionScriptNodeInMXMLTag(IMXMLTagData tag, int currentOffset, TextDocumentPositionParams params, RoyaleProject project)
     {
         IMXMLTagAttributeData attributeData = MXMLDataUtils.getMXMLTagAttributeWithValueAtOffset(tag, currentOffset);
         if (attributeData != null)
@@ -5885,7 +6300,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //some attributes can have ActionScript completion, such as
             //events and properties with data binding
 
-            IDefinition resolvedDefinition = currentProject.resolveXMLNameToDefinition(tag.getXMLName(), tag.getMXMLDialect());
+            IDefinition resolvedDefinition = project.resolveXMLNameToDefinition(tag.getXMLName(), tag.getMXMLDialect());
             //prominic/Moonshine-IDE#/203: don't allow interface definitions because
             //we cannot resolve specifiers. <fx:Component> resolves to an interface
             //definition, and it can have an id attribute.
@@ -5896,10 +6311,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 return null;
             }
             IClassDefinition tagDefinition = (IClassDefinition) resolvedDefinition;
-            IDefinition attributeDefinition = currentProject.resolveSpecifier(tagDefinition, attributeData.getShortName());
+            IDefinition attributeDefinition = project.resolveSpecifier(tagDefinition, attributeData.getShortName());
             if (attributeDefinition instanceof IEventDefinition)
             {
-                IMXMLClassReferenceNode mxmlNode = (IMXMLClassReferenceNode) getOffsetNode(position);
+                IMXMLClassReferenceNode mxmlNode = (IMXMLClassReferenceNode) getOffsetNode(params);
                 IMXMLEventSpecifierNode eventNode = mxmlNode.getEventSpecifierNode(attributeData.getShortName());
                 //the event node might be null if the MXML document isn't in a
                 //fully valid state (unclosed tags, for instance)
@@ -5918,7 +6333,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             else
             {
-                IASNode offsetNode = getOffsetNode(position);
+                IASNode offsetNode = getOffsetNode(params);
                 if (offsetNode instanceof IMXMLClassReferenceNode)
                 {
                     IMXMLClassReferenceNode mxmlNode = (IMXMLClassReferenceNode) offsetNode;
@@ -5963,15 +6378,15 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return null;
     }
 
-    private IASNode getEmbeddedActionScriptNodeInMXMLTag(IMXMLTagData tag, int offset, TextDocumentIdentifier textDocument, Position position)
+    private IASNode getEmbeddedActionScriptNodeInMXMLTag(IMXMLTagData tag, int currentOffset, TextDocumentIdentifier textDocument, Position position, RoyaleProject project)
     {
         TextDocumentPositionParams textDocumentPosition = new TextDocumentPositionParams();
         textDocumentPosition.setTextDocument(textDocument);
         textDocumentPosition.setPosition(position);
-        return getEmbeddedActionScriptNodeInMXMLTag(tag, offset, textDocumentPosition);
+        return getEmbeddedActionScriptNodeInMXMLTag(tag, currentOffset, textDocumentPosition, project);
     }
 
-    private boolean isActionScriptCompletionAllowedInNode(TextDocumentPositionParams params, IASNode offsetNode)
+    private boolean isActionScriptCompletionAllowedInNode(TextDocumentPositionParams params, IASNode offsetNode, int currentOffset)
     {
         if (offsetNode != null)
         {
@@ -5992,12 +6407,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             //that appear in earlier MXML nodes
             minCommentStartIndex = mxmlNode.getAbsoluteStart();
         }
-        return !isInActionScriptComment(params, minCommentStartIndex);
+        return !isInActionScriptComment(params.getTextDocument(), currentOffset, minCommentStartIndex);
     }
 
-    private boolean isInActionScriptComment(TextDocumentPositionParams params, int minCommentStartIndex)
+    private boolean isInActionScriptComment(TextDocumentIdentifier textDocument, int currentOffset, int minCommentStartIndex)
     {
-        TextDocumentIdentifier textDocument = params.getTextDocument();
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
         if (path == null || !sourceByPath.containsKey(path))
         {
@@ -6037,7 +6451,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return false;
     }
 
-    private boolean isInXMLComment(TextDocumentPositionParams params)
+    private boolean isInXMLComment(TextDocumentPositionParams params, int currentOffset)
     {
         TextDocumentIdentifier textDocument = params.getTextDocument();
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
@@ -6055,7 +6469,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return endComment > currentOffset;
     }
 
-    private void querySymbolsInScope(List<String> queries, IASScope scope, Set<String> foundTypes, Collection<SymbolInformation> result)
+    private void querySymbolsInScope(List<String> queries, IASScope scope, Set<String> foundTypes, RoyaleProject project, Collection<SymbolInformation> result)
     {
         Collection<IDefinition> definitions = scope.getAllLocalDefinitions();
         for (IDefinition definition : definitions)
@@ -6064,7 +6478,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 IPackageDefinition packageDefinition = (IPackageDefinition) definition;
                 IASScope packageScope = packageDefinition.getContainedScope();
-                querySymbolsInScope(queries, packageScope, foundTypes, result);
+                querySymbolsInScope(queries, packageScope, foundTypes, project, result);
             }
             else if (definition instanceof ITypeDefinition)
             {
@@ -6079,14 +6493,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 ITypeDefinition typeDefinition = (ITypeDefinition) definition;
                 if (!definition.isImplicit() && matchesQueries(queries, qualifiedName))
                 {
-                    SymbolInformation symbol = definitionToSymbol(typeDefinition);
+                    SymbolInformation symbol = definitionToSymbolInformation(typeDefinition, project);
                     if (symbol != null)
                     {
                         result.add(symbol);
                     }
                 }
                 IASScope typeScope = typeDefinition.getContainedScope();
-                querySymbolsInScope(queries, typeScope, foundTypes, result);
+                querySymbolsInScope(queries, typeScope, foundTypes, project, result);
             }
             else if (definition instanceof IFunctionDefinition)
             {
@@ -6099,7 +6513,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     continue;
                 }
                 IFunctionDefinition functionDefinition = (IFunctionDefinition) definition;
-                SymbolInformation symbol = definitionToSymbol(functionDefinition);
+                SymbolInformation symbol = definitionToSymbolInformation(functionDefinition, project);
                 if (symbol != null)
                 {
                     result.add(symbol);
@@ -6116,7 +6530,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     continue;
                 }
                 IVariableDefinition variableDefinition = (IVariableDefinition) definition;
-                SymbolInformation symbol = definitionToSymbol(variableDefinition);
+                SymbolInformation symbol = definitionToSymbolInformation(variableDefinition, project);
                 if (symbol != null)
                 {
                     result.add(symbol);
@@ -6141,7 +6555,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return true;
     }
 
-    private void scopeToSymbols(IASScope scope, List<SymbolInformation> result)
+    private void scopeToSymbolInformation(IASScope scope, RoyaleProject project, List<SymbolInformation> result)
     {
         Collection<IDefinition> definitions = scope.getAllLocalDefinitions();
         for (IDefinition definition : definitions)
@@ -6150,21 +6564,19 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             {
                 IPackageDefinition packageDefinition = (IPackageDefinition) definition;
                 IASScope packageScope = packageDefinition.getContainedScope();
-                scopeToSymbols(packageScope, result);
+                scopeToSymbolInformation(packageScope, project, result);
             }
             else if (definition instanceof ITypeDefinition)
             {
                 ITypeDefinition typeDefinition = (ITypeDefinition) definition;
+                IASScope typeScope = typeDefinition.getContainedScope();
                 if (!definition.isImplicit())
                 {
-                    SymbolInformation typeSymbol = definitionToSymbol(typeDefinition);
-                    if (typeSymbol != null)
-                    {
-                        result.add(typeSymbol);
-                    }
+                    SymbolInformation typeSymbol = definitionToSymbolInformation(typeDefinition, project);
+                    result.add(typeSymbol);
                 }
-                IASScope typeScope = typeDefinition.getContainedScope();
-                scopeToSymbols(typeScope, result);
+                scopeToSymbolInformation(typeScope, project, result);
+                
             }
             else if (definition instanceof IFunctionDefinition
                     || definition instanceof IVariableDefinition)
@@ -6173,7 +6585,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     continue;
                 }
-                SymbolInformation localSymbol = definitionToSymbol(definition);
+                SymbolInformation localSymbol = definitionToSymbolInformation(definition, project);
                 if (localSymbol != null)
                 {
                     result.add(localSymbol);
@@ -6182,7 +6594,60 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private SymbolInformation definitionToSymbol(IDefinition definition)
+    private void scopeToDocumentSymbols(IASScope scope, RoyaleProject project, List<DocumentSymbol> result)
+    {
+        Collection<IDefinition> definitions = scope.getAllLocalDefinitions();
+        for (IDefinition definition : definitions)
+        {
+            if (definition instanceof IPackageDefinition)
+            {
+                IPackageDefinition packageDefinition = (IPackageDefinition) definition;
+                IASScope packageScope = packageDefinition.getContainedScope();
+                scopeToDocumentSymbols(packageScope, project, result);
+            }
+            else if (definition instanceof ITypeDefinition)
+            {
+                ITypeDefinition typeDefinition = (ITypeDefinition) definition;
+                IASScope typeScope = typeDefinition.getContainedScope();
+                List<DocumentSymbol> childSymbols = new ArrayList<>();
+                scopeToDocumentSymbols(typeScope, project, childSymbols);
+
+                if (definition.isImplicit())
+                {
+                    result.addAll(childSymbols);
+                }
+                else
+                {
+                    DocumentSymbol typeSymbol = definitionToDocumentSymbol(typeDefinition, project);
+                    if (typeSymbol == null)
+                    {
+                        result.addAll(childSymbols);
+                    }
+                    else
+                    {
+                        typeSymbol.setChildren(childSymbols);
+                        result.add(typeSymbol);
+                    }
+                }
+                
+            }
+            else if (definition instanceof IFunctionDefinition
+                    || definition instanceof IVariableDefinition)
+            {
+                if (definition.isImplicit())
+                {
+                    continue;
+                }
+                DocumentSymbol localSymbol = definitionToDocumentSymbol(definition, project);
+                if (localSymbol != null)
+                {
+                    result.add(localSymbol);
+                }
+            }
+        }
+    }
+
+    private SymbolInformation definitionToSymbolInformation(IDefinition definition, RoyaleProject project)
     {
         String definitionBaseName = definition.getBaseName();
         if (definitionBaseName.length() == 0)
@@ -6191,7 +6656,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return null;
         }
 
-        Location location = definitionToLocation(definition);
+        Location location = definitionToLocation(definition, project);
         if (location == null)
         {
             //we can't find where the source code for this symbol is located
@@ -6219,10 +6684,52 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         symbol.setName(definitionBaseName);
 
         symbol.setLocation(location);
+
+        IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
+        if (deprecationInfo != null)
+        {
+            symbol.setDeprecated(true);
+        }
+
         return symbol;
     }
 
-    private String definitionToSourcePath(IDefinition definition)
+    private DocumentSymbol definitionToDocumentSymbol(IDefinition definition, RoyaleProject project)
+    {
+        String definitionBaseName = definition.getBaseName();
+        if (definition instanceof IPackageDefinition)
+        {
+            definitionBaseName = "package " + definitionBaseName;
+        }
+        if (definitionBaseName.length() == 0)
+        {
+            //vscode expects all items to have a name
+            return null;
+        }
+
+        Range range = definitionToRange(definition, project);
+        if (range == null)
+        {
+            //we can't find where the source code for this symbol is located
+            return null;
+        }
+
+        DocumentSymbol symbol = new DocumentSymbol();
+        symbol.setKind(LanguageServerCompilerUtils.getSymbolKindFromDefinition(definition));
+        symbol.setName(definitionBaseName);
+        symbol.setRange(range);
+        symbol.setSelectionRange(range);
+
+        IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
+        if (deprecationInfo != null)
+        {
+            symbol.setDeprecated(true);
+        }
+
+        return symbol;
+    }
+
+    private String definitionToSourcePath(IDefinition definition, RoyaleProject project)
     {
         String sourcePath = definition.getSourcePath();
         if (sourcePath == null)
@@ -6242,7 +6749,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //if it's a framework SWC, we're going to attempt to resolve
             //the real source file 
-            String debugPath = DefinitionUtils.getDefinitionDebugSourceFilePath(definition, currentProject);
+            String debugPath = DefinitionUtils.getDefinitionDebugSourceFilePath(definition, project);
             if (debugPath != null)
             {
                 //if we can't find the debug source file, keep the SWC extension
@@ -6252,9 +6759,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return sourcePath;
     }
 
-    private Location definitionToLocation(IDefinition definition)
+    private Location definitionToLocation(IDefinition definition, RoyaleProject project)
     {
-        String sourcePath = definitionToSourcePath(definition);
+        String sourcePath = definitionToSourcePath(definition, project);
         if (sourcePath == null)
         {
             //we can't find where the source code for this symbol is located
@@ -6263,7 +6770,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         Location location = null;
         if (sourcePath.endsWith(SWC_EXTENSION))
         {
-            DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, currentProject);
+            DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, project);
             //may be null if definitionToTextDocument() doesn't know how
             //to parse that type of definition
             if (definitionText != null)
@@ -6279,6 +6786,41 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             location = new Location();
             Path definitionPath = Paths.get(sourcePath);
             location.setUri(definitionPath.toUri().toString());
+            Range range = definitionToRange(definition, project);
+            if (range == null)
+            {
+                return null;
+            }
+            location.setRange(range);
+        }
+        return location;
+    }
+
+    private Range definitionToRange(IDefinition definition, RoyaleProject project)
+    {
+        String sourcePath = definitionToSourcePath(definition, project);
+        if (sourcePath == null)
+        {
+            //we can't find where the source code for this symbol is located
+            return null;
+        }
+        Range range = null;
+        if (sourcePath.endsWith(SWC_EXTENSION))
+        {
+            DefinitionAsText definitionText = DefinitionTextUtils.definitionToTextDocument(definition, project);
+            //may be null if definitionToTextDocument() doesn't know how
+            //to parse that type of definition
+            if (definitionText != null)
+            {
+                //if we get here, we couldn't find a framework source file and
+                //the definition path still ends with .swc
+                //we're going to try our best to display "decompiled" content
+                range = definitionText.toRange();
+            }
+        }
+        if (range == null)
+        {
+            Path definitionPath = Paths.get(sourcePath);
             Position start = new Position();
             Position end = new Position();
             //getLine() and getColumn() may include things like metadata, so it
@@ -6316,12 +6858,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 end.setLine(line);
                 end.setCharacter(column);
             }
-            Range range = new Range();
+            range = new Range();
             range.setStart(start);
             range.setEnd(end);
-            location.setRange(range);
         }
-        return location;
+        return range;
     }
 
     private CompletableFuture<Object> executeOrganizeImportsInDirectoryCommand(ExecuteCommandParams params)
@@ -6368,6 +6909,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void organizeImportsInUri(String uri)
     {
+        RoyaleProject project = textDocumentUriToProject(uri);
+        if(project == null)
+        {
+            return;   
+        }
         Path pathForImport = Paths.get(URI.create(uri));
         String text = null;
         boolean isOpen = sourceByPath.containsKey(pathForImport);
@@ -6422,15 +6968,16 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         IASNode ast = getAST(pathForImport);
         if (ast != null)
         {
-            missingNames = ASTUtils.findUnresolvedIdentifiersToImport(ast, currentProject);
-            importsToRemove = ASTUtils.findImportNodesToRemove(ast, currentProject);
+            missingNames = ASTUtils.findUnresolvedIdentifiersToImport(ast, project);
+            importsToRemove = ASTUtils.findImportNodesToRemove(ast, project);
         }
         if (missingNames != null)
         {
             importsToAdd = new HashSet<>();
+            Collection<ICompilationUnit> units = project.getCompilationUnits();
             for (String missingName : missingNames)
             {
-                List<IDefinition> types = ASTUtils.findTypesThatMatchName(missingName, compilationUnits);
+                List<IDefinition> types = ASTUtils.findTypesThatMatchName(missingName, units);
                 if (types.size() == 1)
                 {
                     //add an import only if exactly one type is found

@@ -99,12 +99,12 @@
             <zipfileset excludes="META-INF/*.SF" src="${lib}/jsr305-3.0.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/junit-4.10.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/lzma-sdk-4j-9.22.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.4.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.4.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.4.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.14.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.14.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.14.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.15.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.15.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.15.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${lib}/stringtemplate-3.2.1.jar"/>
         </jar>
     </target>

@@ -24,15 +24,14 @@ import java.util.regex.Pattern;
 
 import com.as3mxml.vscode.mxml.IMXMLLibraryConstants;
 
-import org.apache.royale.compiler.common.IFileSpecificationGetter;
 import org.apache.royale.compiler.common.PrefixMap;
 import org.apache.royale.compiler.common.XMLName;
 import org.apache.royale.compiler.definitions.ITypeDefinition;
+import org.apache.royale.compiler.filespecs.IFileSpecification;
 import org.apache.royale.compiler.internal.mxml.MXMLData;
 import org.apache.royale.compiler.mxml.IMXMLDataManager;
 import org.apache.royale.compiler.mxml.IMXMLLanguageConstants;
 import org.apache.royale.compiler.projects.IRoyaleProject;
-import org.apache.royale.compiler.units.ICompilationUnit;
 import org.apache.royale.compiler.workspaces.IWorkspace;
 
 public class MXMLNamespaceUtils
@@ -84,10 +83,10 @@ public class MXMLNamespaceUtils
     private static final String DOT_STAR = ".*";
     private static final String UNDERSCORE_UNDERSCORE_AS3_PACKAGE = "__AS3__.";
 
-	public static MXMLNamespace getMXMLLanguageNamespace(ICompilationUnit unit, IFileSpecificationGetter fileSpecGetter, IWorkspace workspace)
+	public static MXMLNamespace getMXMLLanguageNamespace(IFileSpecification fileSpec, IWorkspace workspace)
     {
         IMXMLDataManager mxmlDataManager = workspace.getMXMLDataManager();
-        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(unit.getAbsoluteFilename()));
+        MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpec);
         PrefixMap prefixMap = mxmlData.getRootTagPrefixMap();
         String fxURI = mxmlData.getRootTag().getMXMLDialect().getLanguageNamespace();
         MXMLNamespace fxNS = getNamespaceFromURI(fxURI, prefixMap);

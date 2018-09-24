@@ -264,7 +264,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var frameworkSDK:String = getProjectSDKPath(_project, _model);
-			var settings:Object = { nextgenas: { sdk: { framework: frameworkSDK } } };
+			var settings:Object = { as3mxml: { sdk: { framework: frameworkSDK } } };
 			
 			var params:Object = new Object();
 			params.settings = settings;

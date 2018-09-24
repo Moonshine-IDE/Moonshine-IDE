@@ -17,8 +17,13 @@ package com.as3mxml.vscode.utils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
+import org.apache.royale.compiler.config.Configuration;
+import org.apache.royale.compiler.internal.projects.RoyaleProjectConfigurator;
 import org.apache.royale.compiler.projects.IASProject;
+import org.apache.royale.compiler.projects.IRoyaleProject;
 
 public class SourcePathUtils
 {
@@ -53,7 +58,7 @@ public class SourcePathUtils
         return expectedPackage;
     }
 
-    public static boolean isInProjectSourcePath(Path path, IASProject project)
+    public static boolean isInProjectSourcePath(Path path, IASProject project, RoyaleProjectConfigurator configurator)
     {
 		if (project == null)
 		{
@@ -62,6 +67,42 @@ public class SourcePathUtils
         for (File sourcePath : project.getSourcePath())
         {
 			if (path.startsWith(sourcePath.toPath()))
+			{
+				return true;
+			}
+        }
+        if (configurator != null)
+        {
+            Configuration configuration = configurator.getConfiguration();
+            for (String includedSource : configuration.getIncludeSources())
+            {
+                if (path.startsWith(Paths.get(includedSource)))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isInProjectLibraryPathOrExternalLibraryPath(Path path, IRoyaleProject project, Configuration configuration)
+    {
+		if (project == null || configuration == null)
+		{
+			return false;
+        }
+        List<String> libraryPaths = project.getCompilerLibraryPath(configuration);
+        for (String libraryPath : libraryPaths)
+        {
+			if (path.startsWith(Paths.get(libraryPath)))
+			{
+				return true;
+			}
+        }
+        List<String> externalLibraryPaths = project.getCompilerExternalLibraryPath(configuration);
+        for (String externalLibraryPath : externalLibraryPaths)
+        {
+			if (path.startsWith(Paths.get(externalLibraryPath)))
 			{
 				return true;
 			}
