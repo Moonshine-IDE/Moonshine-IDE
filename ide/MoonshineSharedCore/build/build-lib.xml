@@ -587,8 +587,8 @@
 		<copy todir="${basedir}/appScripts" overwrite="true">
 			<fileset dir="${applicationSourceDirectory}/appScripts"/>
 		</copy>
-		<antcall target="copyElementsWindows"/>
-		<antcall target="copyElementsUnix"/>
+		
+		<antcall target="copyElementsFolder"/>
 
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
@@ -638,23 +638,27 @@
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>
 
-	<target name="copyElementsWindows" if="isWindows">
-		<echo message="Copy elements for Windows"/>
-		<copy todir="${basedir}/elements" overwrite="true">
-			<fileset dir="${LibraryMoonshineCore}/src/elements">
-				<exclude name="**/config_linux/**"/>
-				<exclude name="**/config_mac/**"/>
-			</fileset>
-		</copy>
-	</target>
-
-	<target name="copyElementsUnix" if="isUnix">
-		<echo message="Copy elements for Mac"/>
-		<copy todir="${basedir}/elements" overwrite="true">
-			<fileset dir="${LibraryMoonshineCore}/src/elements">
-				<exclude name="**/config_win/**"/>
-			</fileset>
-		</copy>
+	<target name="copyElementsFolder">
+		<if>
+			<os family="windows"/>
+			<then>
+				<echo message="Copy elements for Windows"/>
+				<copy todir="${basedir}/elements" overwrite="true">
+					<fileset dir="${LibraryMoonshineCore}/src/elements">
+						<exclude name="**/config_linux/**"/>
+						<exclude name="**/config_mac/**"/>
+					</fileset>
+				</copy>
+			</then>
+			<else>
+				<echo message="Copy elements for Mac"/>
+				<copy todir="${basedir}/elements" overwrite="true">
+					<fileset dir="${LibraryMoonshineCore}/src/elements">
+						<exclude name="**/config_win/**"/>
+					</fileset>
+				</copy>
+			</else>
+		</if>
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
