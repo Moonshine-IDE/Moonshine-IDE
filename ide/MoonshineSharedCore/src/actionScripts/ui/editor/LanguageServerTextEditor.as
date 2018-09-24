@@ -17,6 +17,7 @@ package actionScripts.ui.editor
 	import actionScripts.ui.editor.text.TextEditor;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	import actionScripts.events.CodeActionsEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -47,6 +48,7 @@ package actionScripts.ui.editor
 		protected function addGlobalListeners():void
 		{
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
+			dispatcher.addEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 		}
@@ -54,6 +56,7 @@ package actionScripts.ui.editor
 		protected function removeGlobalListeners():void
 		{
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
+			dispatcher.removeEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 		}
@@ -255,6 +258,15 @@ package actionScripts.ui.editor
 				return;
 			}
 			editor.showDiagnostics(event.diagnostics);
+		}
+
+		protected function showCodeActionsHandler(event:CodeActionsEvent):void
+		{
+			if(!currentFile || event.path !== currentFile.fileBridge.nativePath)
+			{
+				return;
+			}
+			editor.showCodeActions(event.codeActions);
 		}
 
 		protected function closeTabHandler(event:CloseTabEvent):void

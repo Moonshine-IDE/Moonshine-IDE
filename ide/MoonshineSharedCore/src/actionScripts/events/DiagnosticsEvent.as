@@ -11,10 +11,10 @@ package actionScripts.events
 		public var path:String;
 		public var diagnostics:Vector.<Diagnostic>;
 
-		public function DiagnosticsEvent(type:String, uri:String, diagnostics:Vector.<Diagnostic>)
+		public function DiagnosticsEvent(type:String, path:String, diagnostics:Vector.<Diagnostic>)
 		{
 			super(type, false, false);
-			this.path = uri;
+			this.path = path;
 			this.diagnostics = diagnostics;
 		}
 	}

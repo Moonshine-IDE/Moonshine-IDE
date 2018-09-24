@@ -1075,7 +1075,9 @@ package actionScripts.languageServer
 				var resultCodeAction:Object = resultCodeActions[i];
 				eventCodeActions[i] = parseCommand(resultCodeAction);
 			}
-			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, eventCodeActions));
+			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
+			var path:String = editor.currentFile.fileBridge.nativePath;
+			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, eventCodeActions));
 		}
 
 		private function handleSymbolsResponse(result:Object):void
@@ -1759,13 +1761,15 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
 			if(!supportsCodeAction)
 			{
-				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, new <Command>[]));
+				var path:String = editor.currentFile.fileBridge.nativePath;
+				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, new <Command>[]));
 				return;
 			}
 
-			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			var uri:String = editor.currentFile.fileBridge.url;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;

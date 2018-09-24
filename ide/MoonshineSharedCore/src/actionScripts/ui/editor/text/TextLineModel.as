@@ -19,6 +19,7 @@
 package actionScripts.ui.editor.text
 {
 	import actionScripts.valueObjects.Diagnostic;
+	import actionScripts.valueObjects.Command;
 
 	public class TextLineModel
 	{
@@ -28,6 +29,7 @@ package actionScripts.ui.editor.text
 		protected var _width:Number = -1;
 		protected var _traceLine:Boolean;
 		protected var _diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+		protected var _codeActions:Vector.<Command> = new <Command>[];
 		protected var _isQuoteTextOpen:Boolean;
 		protected var _lastQuoteText:String;
 		protected var _debuggerLineSelection:Boolean;
@@ -83,6 +85,15 @@ package actionScripts.ui.editor.text
 		public function get diagnostics():Vector.<Diagnostic>
 		{
 			return _diagnostics;
+		}
+
+		public function set codeActions(value:Vector.<Command>):void
+		{
+			_codeActions = value;
+		}
+		public function get codeActions():Vector.<Command>
+		{
+			return _codeActions;
 		}
 		
 		public function set width(value:Number):void

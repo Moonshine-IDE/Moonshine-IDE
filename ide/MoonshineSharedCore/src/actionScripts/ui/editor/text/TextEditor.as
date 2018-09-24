@@ -45,6 +45,7 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.Location;
     import actionScripts.valueObjects.Position;
     import actionScripts.valueObjects.SignatureHelp;
+    import actionScripts.valueObjects.Command;
 
     /**
      *	Line-based text editor. Text rendering with Flash Text Engine.
@@ -89,6 +90,7 @@ package actionScripts.ui.editor.text
 		protected var hoverManager:HoverManager;
 		protected var gotoDefinitionManager:GotoDefinitionManager;
 		protected var diagnosticsManager:DiagnosticsManager;
+		protected var codeActionsManager:CodeActionsManager;
 		protected var editorToolTipManager:EditorToolTipManager;
 		
 		public var model:TextEditorModel;
@@ -396,6 +398,7 @@ package actionScripts.ui.editor.text
 			hoverManager = new HoverManager(this, model);
 			gotoDefinitionManager = new GotoDefinitionManager(this, model);
 			diagnosticsManager = new DiagnosticsManager(this, model);
+			codeActionsManager = new CodeActionsManager(this, model);
 			editorToolTipManager = new EditorToolTipManager(this, model);
 			
 			addEventListener(ChangeEvent.TEXT_CHANGE, handleChange, false, 1);
@@ -824,6 +827,11 @@ package actionScripts.ui.editor.text
 		public function showDiagnostics(diagnostics:Vector.<Diagnostic>):void
 		{
 			diagnosticsManager.showDiagnostics(diagnostics);
+		}
+
+		public function showCodeActions(codeActions:Vector.<Command>):void
+		{
+			codeActionsManager.showCodeActions(codeActions);
 		}
 
 		public function setTooltip(id:String, text:String):void

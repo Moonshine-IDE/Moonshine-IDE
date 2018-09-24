@@ -532,6 +532,10 @@ package actionScripts.ui.editor.text
 				textLine.y = 12;
 			}
 			drawDiagnostics();
+			if(model.codeActions && model.codeActions.length > 0)
+			{
+				trace("code actions:", model.codeActions.length);
+			}
 		}
 		
 		private function drawDiagnostics():void
