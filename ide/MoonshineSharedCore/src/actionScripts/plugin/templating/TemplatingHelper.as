@@ -28,8 +28,6 @@ package actionScripts.plugin.templating
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
-	
-	import components.popup.newFile.NewFilePopup;
 
 	public class TemplatingHelper
 	{
@@ -148,10 +146,10 @@ package actionScripts.plugin.templating
 			switch (file)
 			{
 				case "MXML File":
-					return [ProjectMenuTypes.FLEX_AS];
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
 				case "AS3 Class":
 				case "AS3 Interface":
-					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS];
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
 				case "CSS File":
 				case "XML File":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];

@@ -57,7 +57,6 @@ package actionScripts.plugin.templating
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.renderers.FTETreeItemRenderer;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.TextUtil;
@@ -390,8 +389,7 @@ package actionScripts.plugin.templating
 			var enableTypes:Array;
 			newFileMenu.parents = ["File", "New"];
 			newFileMenu.items = new Vector.<MenuItem>();
-			
-			var visualEditorFileIndex:int;
+
 			for each (var fileTemplate:FileLocation in fileTemplates)
 			{
 				if (fileTemplate.fileBridge.isHidden) continue;
