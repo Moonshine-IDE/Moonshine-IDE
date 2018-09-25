@@ -5,7 +5,9 @@
 	<s:Button id="icon" styleName="codeActionButton"
 		click="icon_clickHandler(event)"/>
 	<s:PopUpAnchor id="anchor" popUpPosition="below" width="{icon.height}" height="{icon.height}">
-		<s:List id="menu" dataProvider="{codeActions}" labelField="title" change="list_changeHandler(event)">
+		<s:List id="menu" dataProvider="{codeActions}" labelField="title"
+			selectedIndex="-1"
+			change="list_changeHandler(event)">
 			<s:layout>
 				<s:VerticalLayout gap="0" horizontalAlign="contentJustify" requestedMinRowCount="1" requestedMaxRowCount="6"/>
 			</s:layout>
@@ -19,6 +21,8 @@
 			import mx.controls.Menu;
 			import mx.collections.IViewCursor;
 			import actionScripts.valueObjects.Command;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ExecuteLanguageServerCommandEvent;
 
 			[Bindable]
 			public var codeActions:ICollectionView;
@@ -31,6 +35,12 @@
 			private function list_changeHandler(event:Event):void
 			{
 				anchor.displayPopUp = false;
+				var command:Command = Command(menu.selectedItem);
+				menu.selectedIndex = -1;
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ExecuteLanguageServerCommandEvent(
+					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+					command.command, command.arguments));
 			}
 
 		]]>
