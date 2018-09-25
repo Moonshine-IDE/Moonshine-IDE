@@ -38,6 +38,10 @@ package actionScripts.ui.editor.text
 	import actionScripts.valueObjects.Settings;
 	
 	import no.doomsday.utilities.math.MathUtils;
+	import org.apache.flex.collections.VectorCollection;
+	import mx.managers.PopUpManager;
+	import mx.core.FlexGlobals;
+	import flash.display.DisplayObjectContainer;
 
 
     public class TextLineRenderer extends Sprite
@@ -73,6 +77,7 @@ package actionScripts.ui.editor.text
 		private var markerBlinkTimer:Timer;
 		private var lastMarkerPosition:Number;
 		private var diagnosticsShape:Shape;
+		private var codeActionView:CodeActionView;
 		
 		private var allInstancesSelection:Sprite;
 		private var selection:Sprite;
@@ -532,10 +537,7 @@ package actionScripts.ui.editor.text
 				textLine.y = 12;
 			}
 			drawDiagnostics();
-			if(model.codeActions && model.codeActions.length > 0)
-			{
-				trace("code actions:", model.codeActions.length);
-			}
+			//drawCodeActions();
 		}
 		
 		private function drawDiagnostics():void
@@ -613,6 +615,44 @@ package actionScripts.ui.editor.text
 						upDirection = !upDirection;
 					}
 				}
+			}
+		}
+
+		/*override public function set x(value:Number):void
+		{
+			super.x = value;
+			drawCodeActions();
+		}
+
+		override public function set y(value:Number):void
+		{
+			super.y = value;
+			drawCodeActions();
+		}*/
+
+		private function drawCodeActions():void
+		{	
+			if(model.codeActions && model.codeActions.length > 0)
+			{
+				if(!codeActionView)
+				{
+					codeActionView = new CodeActionView();
+					this.addChild(codeActionView);
+					PopUpManager.addPopUp(codeActionView, this);
+				}
+				codeActionView.codeActions = new VectorCollection(model.codeActions);
+				codeActionView.validateNow();
+
+				var bounds:Rectangle = textLine.getAtomBounds(0);
+				var point:Point = new Point(textLine.x + bounds.x, -codeActionView.height);
+				point = localToGlobal(point)
+				codeActionView.x = point.x;
+				codeActionView.y = point.y;
+			}
+			else if(codeActionView)
+			{
+				PopUpManager.removePopUp(codeActionView);
+				codeActionView = null;
 			}
 		}
 		

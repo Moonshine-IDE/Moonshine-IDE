@@ -335,3 +335,9 @@ mx|ScrollBar.black
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
 	icon: Embed("/elements/images/debug-step-out-icon.png");
 }
+
+.codeActionButton
+{
+	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	icon: Embed("/elements/images/code-action-icon.png");
+}

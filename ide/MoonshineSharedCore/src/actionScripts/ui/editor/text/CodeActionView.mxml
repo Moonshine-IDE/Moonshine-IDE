@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx">
+
+	<s:Button id="icon" styleName="codeActionButton"
+		click="icon_clickHandler(event)"/>
+	<s:PopUpAnchor id="anchor" popUpPosition="below" width="{icon.height}" height="{icon.height}">
+		<s:List id="menu" dataProvider="{codeActions}" labelField="title" change="list_changeHandler(event)">
+			<s:layout>
+				<s:VerticalLayout gap="0" horizontalAlign="contentJustify" requestedMinRowCount="1" requestedMaxRowCount="6"/>
+			</s:layout>
+		</s:List>
+	</s:PopUpAnchor>
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ICollectionView;
+			import flash.events.MouseEvent;
+			import mx.controls.Menu;
+			import mx.collections.IViewCursor;
+			import actionScripts.valueObjects.Command;
+
+			[Bindable]
+			public var codeActions:ICollectionView;
+
+			private function icon_clickHandler(event:MouseEvent):void
+			{
+				anchor.displayPopUp = !anchor.displayPopUp;
+			}
+
+			private function list_changeHandler(event:Event):void
+			{
+				anchor.displayPopUp = false;
+			}
+
+		]]>
+	</fx:Script>
+</s:Group>
