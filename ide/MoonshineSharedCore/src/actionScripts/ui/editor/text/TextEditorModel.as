@@ -87,16 +87,16 @@ package actionScripts.ui.editor.text
 		
 		public function set caretIndex(idx:int):void
 		{
-			if(_selectedLineIndex == idx)
-			{
-				return;
-			}
-
 			// Get current line indentation
 			var indent:int = selectedLine ? TextUtil.indentAmount(selectedLine.text) : 0;
 			
 			// Store the index with tabs expanded
 			var expandedIdx:int = idx + Math.min(indent, idx) * (Settings.font.tabWidth - 1);
+			
+			if(_caretIndex == expandedIdx)
+			{
+				return;
+			}
 			_caretIndex = expandedIdx;
 			
 			validateSelection();
