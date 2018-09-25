@@ -338,6 +338,6 @@ mx|ScrollBar.black
 
 .codeActionButton
 {
-	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
+	skinClass: ClassReference("elements.skins.CodeActionButtonSkin");
 	icon: Embed("/elements/images/code-action-icon.png");
 }

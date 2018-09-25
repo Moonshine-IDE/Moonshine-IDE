@@ -644,7 +644,20 @@ package actionScripts.ui.editor.text
 				codeActionView.validateNow();
 
 				var bounds:Rectangle = textLine.getAtomBounds(0);
-				var point:Point = new Point(textLine.x + bounds.x, -codeActionView.height);
+				var point:Point = new Point(textLine.x + bounds.x, bounds.height - codeActionView.height);
+
+				var firstNonWhitespace:Object = /\S/.exec(model.text);
+				if(firstNonWhitespace)
+				{
+					var firstNonWhitespaceBounds:Rectangle = textLine.getAtomBounds(firstNonWhitespace.index);
+					if((firstNonWhitespaceBounds.x - bounds.x) < codeActionView.width)
+					{
+						//don't cover any text that appears at the beginning of
+						//the line. if it overlaps, move to previous line.
+						point.y -= textLine.height;
+					}
+				}
+
 				point = localToGlobal(point)
 				codeActionView.x = point.x;
 				codeActionView.y = point.y;
