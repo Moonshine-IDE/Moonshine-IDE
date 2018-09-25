@@ -627,17 +627,21 @@ package actionScripts.utils
             var mainAppContent:String = project.targets[0].fileBridge.read() as String;
 			var isMdlApp:Boolean = mainAppContent.indexOf("mdl:Application") > -1;
 			var isJewelApp:Boolean = mainAppContent.indexOf("j:Application") > -1;
+			var isMXApp:Boolean = mainAppContent.indexOf("mx:Application") > -1;
             var hasExpressNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/express") > -1;
 		    var hasRoyaleNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/basic") > -1 || hasExpressNamespace;
 			var hasFlexJSNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/flexjs/basic") > -1;
 			var hasJewelNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/jewel") > -1;
+			var hasMXNamespace:Boolean = mainAppContent.indexOf("library://ns.apache.org/royale/mx") > -1;
 
-            if ((mainAppContent.indexOf("js:Application") > -1 || isMdlApp || isJewelApp) &&
-				(hasFlexJSNamespace || hasRoyaleNamespace || hasExpressNamespace || hasJewelNamespace))
+			var isRoyale:Boolean = hasRoyaleNamespace || hasJewelNamespace || hasMXNamespace || hasExpressNamespace;
+
+            if ((mainAppContent.indexOf("js:Application") > -1 || isMdlApp || isJewelApp || isMXApp) &&
+				(hasFlexJSNamespace || isRoyale))
             {
                 // FlexJS Application
                 project.isFlexJS  = true;
-				project.isRoyale = hasRoyaleNamespace || hasJewelNamespace;
+				project.isRoyale = isRoyale;
 				
                 // FlexJS MDL applicaiton
                 project.isMDLFlexJS = isMdlApp;
