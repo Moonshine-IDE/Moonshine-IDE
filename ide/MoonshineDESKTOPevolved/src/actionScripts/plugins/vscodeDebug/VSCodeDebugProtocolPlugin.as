@@ -950,7 +950,7 @@ package actionScripts.plugins.vscodeDebug
 			}
 			cp += sdkFile.resolvePath("lib/*").nativePath;
 			processArgs.push(cp);
-			processArgs.push("com.nextgenactionscript.vscode.SWFDebug");
+			processArgs.push("com.as3mxml.vscode.SWFDebug");
 			processArgs.push("--server=" + _port);
 			var cwd:File = new File(_currentProject.folderLocation.resolvePath("bin-debug").fileBridge.nativePath);
 			startupInfo.workingDirectory = cwd;
