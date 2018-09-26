@@ -9,6 +9,7 @@ package actionScripts.ui.editor.text
 	import flash.geom.Point;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CodeAction;
+	import flash.events.FocusEvent;
 
 	public class CodeActionsManager
 	{
@@ -21,6 +22,7 @@ package actionScripts.ui.editor.text
 		{
 			this.editor = editor;
 			this.model = model;
+			editor.addEventListener(FocusEvent.FOCUS_OUT, editor_onFocusOut);
 		}
 
 		public function showCodeActions(codeActions:Vector.<CodeAction>):void
@@ -46,6 +48,11 @@ package actionScripts.ui.editor.text
 				model.selectedLine.codeActions = codeActions.slice();
 			}
 			editor.invalidateLines();
+		}
+
+		private function editor_onFocusOut(event:FocusEvent):void
+		{
+			this.showCodeActions(new <CodeAction>[]);
 		}
 	}
 }

@@ -537,7 +537,7 @@ package actionScripts.ui.editor.text
 				textLine.y = 12;
 			}
 			drawDiagnostics();
-			//drawCodeActions();
+			drawCodeActions();
 		}
 		
 		private function drawDiagnostics():void
@@ -618,7 +618,7 @@ package actionScripts.ui.editor.text
 			}
 		}
 
-		/*override public function set x(value:Number):void
+		override public function set x(value:Number):void
 		{
 			super.x = value;
 			drawCodeActions();
@@ -628,7 +628,7 @@ package actionScripts.ui.editor.text
 		{
 			super.y = value;
 			drawCodeActions();
-		}*/
+		}
 
 		private function drawCodeActions():void
 		{	
