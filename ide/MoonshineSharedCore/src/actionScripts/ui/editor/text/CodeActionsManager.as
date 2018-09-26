@@ -34,7 +34,7 @@ package actionScripts.ui.editor.text
 				var line:TextLineModel = lines[i];
 				if(!line.codeActions)
 				{
-					line.codeActions = new <Command>[];
+					line.codeActions = new <CodeAction>[];
 				}
 				else
 				{

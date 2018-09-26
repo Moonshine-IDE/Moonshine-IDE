@@ -1770,7 +1770,7 @@ package actionScripts.languageServer
 			if(!supportsCodeAction)
 			{
 				var path:String = editor.currentFile.fileBridge.nativePath;
-				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, new <Command>[]));
+				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, new <CodeAction>[]));
 				return;
 			}
 
