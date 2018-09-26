@@ -20,6 +20,7 @@ package actionScripts.ui.editor.text
 {
 	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.Command;
+	import actionScripts.valueObjects.CodeAction;
 
 	public class TextLineModel
 	{
@@ -29,7 +30,7 @@ package actionScripts.ui.editor.text
 		protected var _width:Number = -1;
 		protected var _traceLine:Boolean;
 		protected var _diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
-		protected var _codeActions:Vector.<Command> = new <Command>[];
+		protected var _codeActions:Vector.<CodeAction> = new <CodeAction>[];
 		protected var _isQuoteTextOpen:Boolean;
 		protected var _lastQuoteText:String;
 		protected var _debuggerLineSelection:Boolean;
@@ -87,11 +88,11 @@ package actionScripts.ui.editor.text
 			return _diagnostics;
 		}
 
-		public function set codeActions(value:Vector.<Command>):void
+		public function set codeActions(value:Vector.<CodeAction>):void
 		{
 			_codeActions = value;
 		}
-		public function get codeActions():Vector.<Command>
+		public function get codeActions():Vector.<CodeAction>
 		{
 			return _codeActions;
 		}

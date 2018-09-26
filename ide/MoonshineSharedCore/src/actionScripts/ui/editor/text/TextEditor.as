@@ -46,6 +46,7 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.Position;
     import actionScripts.valueObjects.SignatureHelp;
     import actionScripts.valueObjects.Command;
+    import actionScripts.valueObjects.CodeAction;
 
     /**
      *	Line-based text editor. Text rendering with Flash Text Engine.
@@ -829,7 +830,7 @@ package actionScripts.ui.editor.text
 			diagnosticsManager.showDiagnostics(diagnostics);
 		}
 
-		public function showCodeActions(codeActions:Vector.<Command>):void
+		public function showCodeActions(codeActions:Vector.<CodeAction>):void
 		{
 			codeActionsManager.showCodeActions(codeActions);
 		}

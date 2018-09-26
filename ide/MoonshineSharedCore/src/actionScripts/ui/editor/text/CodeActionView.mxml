@@ -23,6 +23,9 @@
 			import actionScripts.valueObjects.Command;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.ExecuteLanguageServerCommandEvent;
+			import actionScripts.valueObjects.CodeAction;
+			import actionScripts.valueObjects.WorkspaceEdit;
+			import actionScripts.events.LanguageServerEvent;
 
 			[Bindable]
 			public var codeActions:ICollectionView;
@@ -35,12 +38,23 @@
 			private function list_changeHandler(event:Event):void
 			{
 				anchor.displayPopUp = false;
-				var command:Command = Command(menu.selectedItem);
+				var codeAction:CodeAction = CodeAction(menu.selectedItem);
 				menu.selectedIndex = -1;
 				
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ExecuteLanguageServerCommandEvent(
-					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
-					command.command, command.arguments));
+				//if both a WorkspaceEdit and a Command are supplied, the
+				//WorkspaceEdit is applied befor the Command
+				var edit:WorkspaceEdit = codeAction.edit;
+				if(edit)
+				{
+					trace("Not implemented: code action with WorkspaceEdit");
+				}
+				var command:Command = codeAction.command;
+				if(command)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ExecuteLanguageServerCommandEvent(
+						ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+						command.command, command.arguments));
+				}
 			}
 
 		]]>

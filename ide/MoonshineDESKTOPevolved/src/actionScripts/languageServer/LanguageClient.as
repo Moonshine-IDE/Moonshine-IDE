@@ -49,6 +49,7 @@ package actionScripts.languageServer
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
 	import actionScripts.events.CodeActionsEvent;
+	import actionScripts.valueObjects.CodeAction;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1068,12 +1069,16 @@ package actionScripts.languageServer
 		private function handleCodeActionResponse(result:Object):void
 		{
 			var resultCodeActions:Array = result as Array;
-			var eventCodeActions:Vector.<Command> = new <Command>[];
+			var eventCodeActions:Vector.<CodeAction> = new <CodeAction>[];
 			var resultCodeActionsCount:int = resultCodeActions.length;
 			for(var i:int = 0; i < resultCodeActionsCount; i++)
 			{
 				var resultCodeAction:Object = resultCodeActions[i];
-				eventCodeActions[i] = parseCommand(resultCodeAction);
+				var command:Command = parseCommand(resultCodeAction);
+				var codeAction:CodeAction = new CodeAction();
+				codeAction.title = command.title;
+				codeAction.command = command;
+				eventCodeActions[i] = codeAction;
 			}
 			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
 			var path:String = editor.currentFile.fileBridge.nativePath;

@@ -8,13 +8,14 @@ package actionScripts.ui.editor.text
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import actionScripts.valueObjects.Command;
+	import actionScripts.valueObjects.CodeAction;
 
 	public class CodeActionsManager
 	{
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 		
-		private var savedCodeActions:Vector.<Command>;
+		private var savedCodeActions:Vector.<CodeAction>;
 
 		public function CodeActionsManager(editor:TextEditor, model:TextEditorModel)
 		{
@@ -22,7 +23,7 @@ package actionScripts.ui.editor.text
 			this.model = model;
 		}
 
-		public function showCodeActions(codeActions:Vector.<Command>):void
+		public function showCodeActions(codeActions:Vector.<CodeAction>):void
 		{
 			this.savedCodeActions = codeActions;
 
