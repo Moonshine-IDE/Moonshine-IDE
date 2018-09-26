@@ -212,11 +212,14 @@ package actionScripts.ui.editor
 		{
 			_codeActionTimeoutID = -1;
 			var document:String = getTextDocument();
-			var len:Number = editor.model.caretIndex - editor.startPos;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.startPos;
-			var endLine:int = editor.model.selectedLineIndex;
-			var endChar:int = editor.model.caretIndex;
+			var startLine:int = editor.model.getSelectionLineStart();
+			var startChar:int = editor.model.getSelectionCharStart();
+			if(startChar == -1)
+			{
+				startChar = editor.model.caretIndex;
+			}
+			var endLine:int = editor.model.getSelectionLineEnd();
+			var endChar:int = editor.model.getSelectionCharEnd();
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_CODE_ACTION,
 				startChar, startLine, endChar,endLine));

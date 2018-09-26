@@ -50,6 +50,7 @@ package actionScripts.languageServer
 	import actionScripts.events.MenuEvent;
 	import actionScripts.events.CodeActionsEvent;
 	import actionScripts.valueObjects.CodeAction;
+	import actionScripts.utils.LSPUtil;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1067,7 +1068,7 @@ package actionScripts.languageServer
 		}
 
 		private function handleCodeActionResponse(result:Object):void
-		{
+		{	
 			var resultCodeActions:Array = result as Array;
 			var eventCodeActions:Vector.<CodeAction> = new <CodeAction>[];
 			var resultCodeActionsCount:int = resultCodeActions.length;
@@ -1793,7 +1794,19 @@ package actionScripts.languageServer
 			var context:Object = new Object();
 			if(uri in this._savedDiagnostics)
 			{
-				context.diagnostics = this._savedDiagnostics[uri];
+				//we need to filter out diagnostics that don't apply to the
+				//current selection range
+				var eventRange:Range = new Range(
+					new Position(event.startLineNumber, event.startLinePos),
+					new Position(event.endLineNumber, event.endLinePos));
+				var diagnostics:Array = this._savedDiagnostics[uri] as Array;
+				context.diagnostics = diagnostics.filter(function(diagnostic:Object, index:int, original:Array):Boolean
+				{
+					var diagnosticRange:Range = new Range(
+						new Position(diagnostic.range.start.line, diagnostic.range.start.character),
+						new Position(diagnostic.range.end.line, diagnostic.range.end.character));
+					return LSPUtil.rangesIntersect(eventRange, diagnosticRange);
+				});
 			}
 			else
 			{
