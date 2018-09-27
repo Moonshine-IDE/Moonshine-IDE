@@ -29,6 +29,8 @@ package actionScripts.events
 		public static const PROJECT_DEBUG_ENDED:String = "PROJECT_DEBUG_ENDED";
 		public static const PROJECT_BUILD_TERMINATE:String = "PROJECT_BUILD_TERMINATE";
 		
+		public static const LANGUAGE_SERVER_STATUS:String = "LANGUAGE_SERVER_STATUS";
+		
 		public var projectName:String;
 		public var notificationSuffix:String;
 		public var isShowStopButton:Boolean;

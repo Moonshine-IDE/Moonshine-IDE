@@ -48,6 +48,7 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.LanguageServerTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.StatusBarEvent;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -208,6 +209,10 @@ package actionScripts.languageServer
 			_shellInfo.executable = _cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 			initShell();
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS, "ActionScript", "Starting ActionScript & MXML code intelligence..."
+			));
 		}
 
 		private function initShell():void
@@ -378,6 +383,10 @@ package actionScripts.languageServer
 		private function languageClient_initHandler(event:Event):void
 		{
 			sendProjectConfiguration();
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS
+			));
 		}
 
 		private function languageClient_closeHandler(event:Event):void

@@ -54,6 +54,7 @@ package actionScripts.languageServer
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.events.StatusBarEvent;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -90,6 +91,7 @@ package actionScripts.languageServer
 		private var _nativeProcess:NativeProcess;
 		private var _cmdFile:File;
 		private var _javaPath:File;
+		private var _languageStatusDone:Boolean = false;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -291,6 +293,7 @@ package actionScripts.languageServer
 				}
 			};
 
+			_languageStatusDone = false;
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
@@ -362,6 +365,7 @@ package actionScripts.languageServer
 
 		private function languageClient_initHandler(event:Event):void
 		{
+
 		}
 
 		private function languageClient_closeHandler(event:Event):void
@@ -373,7 +377,49 @@ package actionScripts.languageServer
 
 		private function language__status(message:Object):void
 		{
-			trace(message.params.type + ":", message.params.message);
+			if(_languageStatusDone)
+			{
+				return;
+			}
+			switch(message.params.type)
+			{
+				case "Starting":
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						"Java", message.params.message, false
+					));
+					break;
+				}
+				case "Message":
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						"Java", message.params.message, false
+					));
+				}
+				case "Started":
+				{
+					this._languageStatusDone = true;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS
+					));
+					break;
+				}
+				case "Error":
+				{
+					this._languageStatusDone = true;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS
+					));
+					break;
+				}
+				default:
+				{
+					trace("Unknown " + METHOD_LANGUAGE__STATUS + " message type:", message.params.type);
+					break;
+				}
+			}
 		}
 
 		private function language__actionableNotification(notification:Object):void
