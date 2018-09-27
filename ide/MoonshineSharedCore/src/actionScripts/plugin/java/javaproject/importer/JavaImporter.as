@@ -26,8 +26,12 @@ package actionScripts.plugin.java.javaproject.importer
 
 		public static function parse(file:FileLocation, projectName:String=null):JavaProjectVO
 		{
-			var project:JavaProjectVO = new JavaProjectVO(file, projectName);
-			return project;
+			if(!projectName)
+			{
+				var airFile:File = File(file.fileBridge.getFile);
+				projectName = airFile.name;
+			}
+			return new JavaProjectVO(file, projectName);
 		}
 	}
 }
