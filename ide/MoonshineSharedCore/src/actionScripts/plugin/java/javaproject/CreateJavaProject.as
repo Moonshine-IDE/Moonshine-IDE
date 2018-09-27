@@ -94,6 +94,7 @@ package actionScripts.plugin.java.javaproject
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 			settings.getSettingsList().push(
 				new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA, "title"));
+			projectTemplateType = event.templateDir.name;
 
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
 			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
