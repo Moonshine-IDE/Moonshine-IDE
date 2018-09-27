@@ -133,7 +133,10 @@ package actionScripts.plugin.settings
 
 		public function SettingsPlugin()
 		{
-			excludeFromSettings = excludeFromSettings.concat(model.flexCore.getPluginsNotToShowInSettings());
+			excludeFromSettings = excludeFromSettings.concat(
+				model.flexCore.getPluginsNotToShowInSettings(),
+				model.javaCore.getPluginsNotToShowInSettings()
+			);
 			
 			dispatcher.addEventListener(SettingsEvent.EVENT_OPEN_SETTINGS, openAppSettings);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleTabClose);

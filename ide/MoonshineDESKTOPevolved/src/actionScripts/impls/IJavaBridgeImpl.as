@@ -62,6 +62,7 @@ package actionScripts.impls
         public function getPluginsNotToShowInSettings():Array
         {
             return [
+                JavaProjectPlugin,
             ];
         }
 
