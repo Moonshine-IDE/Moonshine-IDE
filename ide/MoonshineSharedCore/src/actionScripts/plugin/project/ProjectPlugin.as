@@ -392,6 +392,15 @@ package actionScripts.plugin.project
 	                        project = model.flexCore.parseFlashBuilder(projectLocation);
 	                    }
 					}
+					
+					if (!project)
+					{
+	                    projectFileLocation = model.javaCore.testJava(projectFile);
+	                    if (projectFileLocation)
+	                    {
+	                        project = model.javaCore.parseJava(projectLocation);
+	                    }
+					}
 
                     projectLocationInfo.splice(0, projectLocationInfo.length);
                     if (project)
