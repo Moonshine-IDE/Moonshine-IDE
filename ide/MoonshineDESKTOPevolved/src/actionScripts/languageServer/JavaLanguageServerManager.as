@@ -59,11 +59,17 @@ package actionScripts.languageServer
 
 	public class JavaLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/jdt-language-server/plugins/org.eclipse.equinox.launcher_1.5.100.v20180611-1436.jar";
-		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "elements/jdt-language-server/config_win";
-		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "elements/jdt-language-server/config_mac";
-		private static const LANGUAGE_ID_JAVA:String = "java";
+		//when updating the JDT language server, the name of this JAR file will
+		//change, and Moonshine will automatically update the version that is
+		//copied to File.applicationStorageDirectory
+		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.100.v20180611-1436.jar";
+		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
+		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
+		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
+		private static const PATH_JDT_LANGUAGE_SERVER_STORAGE:String = "java/jdt-language-server";
+		
+		private static const LANGUAGE_ID_JAVA:String = "java";
 
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
@@ -102,6 +108,7 @@ package actionScripts.languageServer
 			//dispose()
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 
+			prepareApplicationStorage();
 			startNativeProcess();
 		}
 
@@ -158,11 +165,42 @@ package actionScripts.languageServer
 			}
 		}
 
+		private function prepareApplicationStorage():void
+		{
+			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
+			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			if(jarFile.exists)
+			{
+				//we've already copied the files to application storage, so
+				//we're good to go!
+				return;
+			}
+			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
+			//this directory may already exist, if an older version of Moonshine
+			//with an older version of the JDT language server was installed
+			//we don't want conflicts between JDT language server versions, so
+			//delete the entire directory and start fresh
+			if(storageFolder.exists)
+			{
+				storageFolder.deleteDirectory(true);
+			}
+			appFolder.copyTo(storageFolder);
+			if(!storageFolder.exists || !jarFile.exists)
+			{
+				//something went wrong!
+				var message:String = "Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, ConsoleOutputEvent.TYPE_ERROR)
+				);
+			}
+		}
+
 		private function startNativeProcess():void
 		{
+			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
-			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
 			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
 			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
@@ -176,11 +214,11 @@ package actionScripts.languageServer
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
 			{
-				configFile = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_MACOS_CONFIG_PATH);
+				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_MACOS_CONFIG_PATH);
 			}
 			else
 			{
-				configFile = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
+				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
 			processArgs.push(configFile.nativePath);
 			processArgs.push("-data");
