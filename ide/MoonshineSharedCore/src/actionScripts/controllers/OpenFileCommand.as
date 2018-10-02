@@ -96,8 +96,7 @@ package actionScripts.controllers
 			
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				file = new FileLocation();
-				file.fileBridge.browseForOpen("Open File", openFile, cancelOpenFile, ["*.as;*.mxml;*.css;*.txt;*.js;*.xml"]);
+				model.fileCore.browseForOpen("Open File", openFile, cancelOpenFile, ["*.as;*.mxml;*.css;*.txt;*.js;*.xml"]);
 			}
 		}
 		

@@ -128,8 +128,7 @@ package actionScripts.plugin.actionscript.as3project
 			// for AIR
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				flashBuilderProjectFile = new FileLocation();
-				flashBuilderProjectFile.fileBridge.browseForDirectory("Flex Project Directory", openFile, onFileSelectionCancelled);
+				model.fileCore.browseForDirectory("Flex Project Directory", openFile, onFileSelectionCancelled);
 			}
 			// for WEB
 			else
