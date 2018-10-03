@@ -33,9 +33,6 @@ package actionScripts.plugins.ant
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "Ant Configure Plugin. Esc exits."; }
 		
-		
-		private var file:FileLocation;
-		
 		private var idemodel:IDEModel = IDEModel.getInstance();
 		
 		override public function activate():void
@@ -46,8 +43,7 @@ package actionScripts.plugins.ant
 		
 		protected function handleAntConfigure(event:Event):void
 		{
-			file = new FileLocation();
-			file.fileBridge.browseForOpen("Select Build File", selectBuildFile, null, ["*.xml"]);
+			model.fileCore.browseForOpen("Select Build File", selectBuildFile, null, ["*.xml"]);
 		}
 		
 		protected function selectBuildFile(fileSelected:Object):void

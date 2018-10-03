@@ -40,6 +40,7 @@
 			
 			import mx.validators.Validator;
 			
+			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.svn.event.SVNEvent;
 			
 			protected var closeButtonColor:uint = 0x0;
@@ -56,9 +57,8 @@
 			
 			protected function browse():void
 			{
-				var f:File = File.documentsDirectory;
-				f.addEventListener(Event.SELECT, handleDirSelect);
-				f.browseForDirectory("Subversion checkout target");
+				var model:IDEModel = IDEModel.getInstance();
+				model.fileCore.browseForDirectory("Subversion checkout target", handleDirSelect);
 			}
 			
 			protected function handleDirSelect(dir:Object):void

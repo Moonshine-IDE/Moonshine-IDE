@@ -133,8 +133,7 @@
 
 		protected function onAllowAccess(event:MouseEvent):void
 		{
-			var javaLocation:FileLocation = new FileLocation(autoDetectedJavaPath);
-			javaLocation.fileBridge.browseForDirectory("Select Java Path", onJavaDirectorySelected);
+			model.fileCore.browseForDirectory("Select Java Path", onJavaDirectorySelected, null, autoDetectedJavaPath);
 		}
 
 		protected function onJavaDirectorySelected(dir:Object):void

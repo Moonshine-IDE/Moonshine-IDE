@@ -397,8 +397,7 @@ package actionScripts.plugins.ant
 		   if (!IDEModel.getInstance().antScriptFile)
 		   {
 				// Open a file chooser for select Ant script file Ant->Configue
-				file = new FileLocation();
-				file.fileBridge.browseForOpen("Select Build File", selectBuildFile, null, ["*.xml"]);
+				model.fileCore.browseForOpen("Select Build File", selectBuildFile, null, ["*.xml"]);
 		  }
 		  else
 		  {   //If Ant file is already selected from AntScreen

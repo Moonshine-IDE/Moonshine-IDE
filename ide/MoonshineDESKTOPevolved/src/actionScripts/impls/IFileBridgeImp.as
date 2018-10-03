@@ -81,8 +81,10 @@ package actionScripts.impls
 			_file.canonicalize();
 		}
 		
-		public function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null):void
+		public function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null, startFromLocation:String=null):void
 		{
+			setFileInternalPath(startFromLocation);
+			
 			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
 			{
 				var selectedPathValue: String;
@@ -108,6 +110,7 @@ package actionScripts.impls
 					// update the path to bookmarked list
 					var tmpArr:Array = OSXBookmarkerNotifiers.availableBookmarkedPaths.split(",");
 					if (tmpArr.indexOf(selectedPathValue) == -1) OSXBookmarkerNotifiers.availableBookmarkedPaths += ","+ selectedPathValue;
+					_file.nativePath = selectedPathValue;
 					
 					selectListner(new File(selectedPathValue));
 				}
@@ -125,6 +128,7 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
+				_file.nativePath = (event.target as File).nativePath;
 				onCancelHandler(event);
 				selectListner(event.target as File);
 			}
@@ -228,11 +232,33 @@ package actionScripts.impls
 			fs.close();
 		}
 		
-		public function browseForSave(selected:Function, canceled:Function, title:String=null):void
+		public function browseForSave(selected:Function, canceled:Function=null, title:String=null, startFromLocation:String=null):void
 		{
-			_file.addEventListener(Event.SELECT, selected);
-			_file.addEventListener(Event.CANCEL, canceled);
+			setFileInternalPath(startFromLocation);
+			
+			_file.addEventListener(Event.SELECT, onSelectHandler);
+			_file.addEventListener(Event.CANCEL, onCancelHandler);
 			_file.browseForSave(title ? title : "");
+			
+			/*
+			 *@local
+			 */
+			function onSelectHandler(event:Event):void
+			{
+				_file.nativePath = (event.target as File).nativePath;
+				removeListeners(event);
+				selected(event.target as File);
+			}
+			function onCancelHandler(event:Event):void
+			{
+				removeListeners(event);
+				if (canceled != null) canceled(event);
+			}
+			function removeListeners(event:Event):void
+			{
+				event.target.removeEventListener(Event.SELECT, onSelectHandler);
+				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
+			}
 		}
 		
 		public function moveTo(newLocation:FileLocation, overwrite:Boolean=false):void
@@ -371,8 +397,10 @@ package actionScripts.impls
 			}
 		}
 		
-		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void
+		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void
 		{
+			setFileInternalPath(startFromLocation);
+			
 			var filters:Array;
 			var filtersForExt:Array = [];
 			if (fileFilters)
@@ -412,6 +440,7 @@ package actionScripts.impls
 						return;
 					}
 					
+					_file.nativePath = selectedPathValue;
 					selectListner(new File(selectedPathValue));
 				}
 				else if (cancelListener != null) cancelListener();
@@ -428,6 +457,7 @@ package actionScripts.impls
 			*/
 			function onSelectHandler(event:Event):void
 			{
+				_file.nativePath = (event.target as File).nativePath;
 				onCancelHandler(event);
 				selectListner(event.target as File);
 			}
@@ -650,6 +680,12 @@ package actionScripts.impls
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
+		}
+		
+		private function setFileInternalPath(startFromLocation:String):void
+		{
+			// set file path if requires
+			if (startFromLocation && (new File(startFromLocation).exists)) _file.nativePath = startFromLocation;
 		}
 	}
 }

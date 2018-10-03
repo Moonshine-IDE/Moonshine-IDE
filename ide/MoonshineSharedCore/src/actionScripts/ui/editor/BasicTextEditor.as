@@ -61,7 +61,6 @@ package actionScripts.ui.editor
 		protected var created:Boolean;
 		protected var loadingFile:Boolean;
 		protected var tempScrollTo:int = -1;
-		protected var tempSaveAs: FileLocation;
 		protected var loader: DataAgent;
 
 		private var _readOnly:Boolean = false;
@@ -392,8 +391,7 @@ package actionScripts.ui.editor
 				PopUpManager.centerPopUp(pop);
 			}
 			function saveAsPath(path:String):void{
-				tempSaveAs = new FileLocation( path );
-				tempSaveAs.fileBridge.browseForSave(handleSaveAsSelect, removeTempSaveAs, "Save As");
+				model.fileCore.browseForSave(handleSaveAsSelect, null, "Save As", path);
 			}
 			function onProjectSelected(event:Event):void
 			{
@@ -432,17 +430,9 @@ package actionScripts.ui.editor
 			dispatchEvent(new Event('labelChanged'));
 		}
 
-		protected function handleSaveAsSelect(event:Event):void
+		protected function handleSaveAsSelect(fileObj:Object):void
 		{
-			saveAs(tempSaveAs);
-			removeTempSaveAs(event);
-		}
-
-		protected function removeTempSaveAs(event:Event):void
-		{
-			tempSaveAs.fileBridge.getFile.removeEventListener(Event.SELECT, handleSaveAsSelect);
-			tempSaveAs.fileBridge.getFile.removeEventListener(Event.CANCEL, removeTempSaveAs);
-			tempSaveAs = null;
+			saveAs(new FileLocation(fileObj.nativePath));
 		}
 
         private function scrollToTempValue():void

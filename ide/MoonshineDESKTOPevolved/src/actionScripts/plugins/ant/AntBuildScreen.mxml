@@ -59,7 +59,6 @@
 			
 			private var model:IDEModel = IDEModel.getInstance();
 			private var file:FileLocation;
-			private var antConfigurefile:FileLocation;
 			private var sdkPopup:SDKSelectorPopup;
 			private var sdkPathPopup:SDKDefinePopup;
 			private var vResult:ValidationResultEvent;
@@ -175,8 +174,7 @@
 			protected function btnBrowseAnt_clickHandler(event:MouseEvent):void
 			{
 				// TODO Auto-generated method stub
-				file = new FileLocation();
-				file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+				model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled);
 			}
 			
 			private function openFile(fileDir:Object):void
@@ -192,8 +190,7 @@
 			protected function btnAntConfigure_clickHandler(event:MouseEvent):void
 			{
 				// TODO Auto-generated method stub
-				antConfigurefile = new FileLocation();
-				antConfigurefile.fileBridge.browseForOpen("Select Build File", selectBuildFile, cancelOpenFile, ["*.xml"]);
+				model.fileCore.browseForOpen("Select Build File", selectBuildFile, cancelOpenFile, ["*.xml"]);
 			}
 			
 			protected function cancelOpenFile():void
@@ -205,7 +202,6 @@
 			protected function selectBuildFile(fileDir:Object):void
 			{ 
 				txtAntConfigure.text = fileDir.nativePath //model.antScriptFile.fileBridge.nativePath;
-				antConfigurefile= null;
 			}
 			
 			protected function btnAntBuild_clickHandler(event:MouseEvent):void

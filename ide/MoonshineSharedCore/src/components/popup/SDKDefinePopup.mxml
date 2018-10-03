@@ -29,17 +29,17 @@
 										   close="onCloseWindow(event)" creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.valueObjects.SdkDescriptionVO;
-
-		import mx.events.CloseEvent;
-		import mx.events.FlexEvent;
-		import mx.managers.PopUpManager;
-
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.utils.SDKUtils;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.ProjectReferenceVO;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.SdkDescriptionVO;
 
 		public var editedSDKPath:ProjectReferenceVO;
 		private var file:FileLocation;
@@ -62,9 +62,9 @@
 			{
 				sdkPath = editedSDKPath.path;
 			}
-
-			file = new FileLocation(sdkPath);
-			file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+			
+			var model:IDEModel = IDEModel.getInstance();
+			model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled, sdkPath);
 		}
 
 		private function openFile(dir:Object):void

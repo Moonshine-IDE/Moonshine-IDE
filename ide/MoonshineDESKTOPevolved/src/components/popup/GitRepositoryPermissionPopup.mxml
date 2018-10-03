@@ -33,6 +33,7 @@
 			import spark.utils.TextFlowUtil;
 			
 			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			
 			public var isAccepted:Boolean;
@@ -85,8 +86,8 @@
 			
 			private function onAllowAccess(event:MouseEvent):void
 			{
-				var binLocation:FileLocation = new FileLocation(gitRootLocation.nativePath);
-				binLocation.fileBridge.browseForDirectory("Select Directory", onXCodeDirectorySelected);
+				var model:IDEModel = IDEModel.getInstance();
+				model.fileCore.browseForDirectory("Select Directory", onXCodeDirectorySelected, null, gitRootLocation.nativePath);
 			}
 			
 			private function onXCodeDirectorySelected(dir:Object):void

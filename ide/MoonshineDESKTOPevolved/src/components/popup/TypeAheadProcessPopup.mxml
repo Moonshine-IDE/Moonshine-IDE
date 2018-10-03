@@ -4,18 +4,19 @@
 			   width="400" height="200" title="Set JAVA Path">
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.factory.FileLocation;
-			import actionScripts.utils.LanguageServerProjectWatcher;
-			
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.LanguageServerProjectWatcher;
 			private var typeAheadProcee:LanguageServerProjectWatcher;
 			private var file:FileLocation;
 			
 			protected function onBrowserPath(event:MouseEvent):void
 			{
-				file = new FileLocation();
-				file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+				var model:IDEModel = IDEModel.getInstance();
+				model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled);
 			}
 			
 			private function openFile(dir:Object):void

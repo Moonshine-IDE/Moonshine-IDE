@@ -84,20 +84,12 @@
 			
 			private function browse():void
 			{
-				var file:File = File.documentsDirectory;
-				file.addEventListener(Event.SELECT, onDirectorySelected);
-				file.addEventListener(Event.CANCEL, onDirectorySelectionCancelled);
-				file.browseForDirectory("Git checkout target");
+				model.fileCore.browseForDirectory("Git checkout target", onDirectorySelected);
 			}
 			
-			private function onDirectorySelected(event:Event):void
+			private function onDirectorySelected(fileObj:Object):void
 			{
-				var file:File = event.target as File;
-				file.removeEventListener(Event.SELECT, onDirectorySelected);
-				file.removeEventListener(Event.CANCEL, onDirectorySelectionCancelled);
-				
-				mappedPath = file.nativePath;
-				file = null;
+				mappedPath = (fileObj as File).nativePath;
 				
 				isPathMapped = true;
 				updatePossiblePath();
@@ -156,12 +148,6 @@
 						txtTarget.text = "...";
 					}
 				}
-			}
-			
-			private function onDirectorySelectionCancelled(event:Event):void
-			{
-				event.target.removeEventListener(Event.SELECT, onDirectorySelected);
-				event.target.removeEventListener(Event.CANCEL, onDirectorySelectionCancelled);
 			}
 			
 			protected function onCreationCompletes():void

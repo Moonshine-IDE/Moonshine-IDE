@@ -73,7 +73,7 @@ package actionScripts.impls
 			//TODO: implement function
 		}
 		
-		public function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null):void
+		public function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null, startFromLocation:String=null):void
 		{
 			//TODO: implement function
 		}
@@ -114,7 +114,7 @@ package actionScripts.impls
 			//TODO: implement function
 		}
 		
-		public function browseForSave(selected:Function, canceled:Function, title:String=null):void
+		public function browseForSave(selected:Function, canceled:Function=null, title:String=null, startFromLocation:String=null):void
 		{
 			//TODO: implement function
 		}
@@ -186,7 +186,7 @@ package actionScripts.impls
 			_file.deleteFileOrDirectory();
 		}
 		
-		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void
+		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void
 		{
 			
 		}

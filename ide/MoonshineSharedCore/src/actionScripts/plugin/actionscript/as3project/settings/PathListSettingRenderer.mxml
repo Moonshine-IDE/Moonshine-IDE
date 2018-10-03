@@ -45,6 +45,7 @@
 			
 			private var fileBrowsing:PathListItemVO;
 			private var isPresentFileBrowseIsLocale:Boolean = false;
+			private var model:IDEModel = IDEModel.getInstance();
 			
 			protected function init():void
 			{
@@ -72,7 +73,7 @@
 				// {locale} check
 				if (file.fileBridge.nativePath.indexOf("{locale}") != -1) isPresentFileBrowseIsLocale = (OSXBookmarkerNotifiers.isValidLocalePath(file) != null) ? true : false;
 				
-				file.fileBridge.browseForDirectory(setting.label, dirSelect, dirCancel);
+				model.fileCore.browseForDirectory(setting.label, dirSelect, dirCancel, file.fileBridge.nativePath);
 			}
 			
 			protected function dirSelect(dir:Object):void
@@ -84,7 +85,7 @@
 				var tmpLabel: String = setting.getLabelFor(dir);
 				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? IDEModel.getInstance().fileCore.separator +"{locale}" : "");
 				
-				var finalPath: String = (dir is FileLocation) ? (dir as FileLocation).fileBridge.nativePath : new FileLocation(dir.nativePath).fileBridge.nativePath;
+				var finalPath: String = dir.nativePath;
 				if (isPresentFileBrowseIsLocale) finalPath += IDEModel.getInstance().fileCore.separator +"{locale}";
 				
 				fileBrowsing.file.fileBridge.nativePath = finalPath;
@@ -99,9 +100,7 @@
 			protected function browseFile(event:Event):void
 			{
 				fileBrowsing = event.target.data;
-				
-				var file:FileLocation = fileBrowsing.file;
-				file.fileBridge.browseForOpen(setting.label, fileSelect, fileCancel);
+				model.fileCore.browseForOpen(setting.label, fileSelect, fileCancel, null, (fileBrowsing.file as FileLocation).fileBridge.nativePath);
 			}
 			
 			protected function fileSelect(fileDir:Object):void

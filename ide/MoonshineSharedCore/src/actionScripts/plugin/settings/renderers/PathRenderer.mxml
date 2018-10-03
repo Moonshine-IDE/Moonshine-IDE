@@ -124,14 +124,13 @@
 	            }
 	            else
 	            {
-	                file = new FileLocation(setting.stringValue);
 	                if (setting.directory)
 					{
-						file.fileBridge.browseForDirectory("Select directory", openFile, openFileCancelled);
+						model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled, setting.stringValue);
 					}
 	                else
 					{
-						file.fileBridge.browseForOpen("Select file", openFile, openFileCancelled);
+						model.fileCore.browseForOpen("Select file", openFile, openFileCancelled, null, setting.stringValue);
 					} // for Balsmiq project we need only .xml file to get selected.
 	            }
 	        }
@@ -195,7 +194,7 @@
 	        private function openFile(fileDir:Object):void
 	        {
 	            //openFileCancelled(event);
-	            setting.stringValue = (fileDir is FileLocation) ? file.fileBridge.nativePath : fileDir.nativePath;
+	            setting.stringValue = fileDir.nativePath;
 	            historyPaths.addItem(setting.stringValue);
 	            cmbPath.selectedItem = setting.stringValue;
 	            file = null;

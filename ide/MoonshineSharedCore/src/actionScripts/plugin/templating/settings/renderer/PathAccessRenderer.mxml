@@ -39,6 +39,7 @@
 			import mx.events.ToolTipEvent;
 			
 			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.templating.settings.PathAccessSetting;
 			import actionScripts.utils.UtilsCore;
 			
@@ -47,6 +48,7 @@
 			[Bindable] public var setting:PathAccessSetting;
 			
 			private var path:String = "";
+			private var model:IDEModel = IDEModel.getInstance();
 			
 			private function init():void
 			{
@@ -83,7 +85,7 @@
 				
 				CONFIG::OSX
 				{
-					tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
+					model.fileCore.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled, tmpStartLocation.fileBridge.nativePath);
 					return;
 				}
 				
@@ -96,8 +98,8 @@
 				}
 				else
 				{
-					if (tmpStartLocation.fileBridge.isDirectory || setting.isLocalePath) tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
-					else tmpStartLocation.fileBridge.browseForOpen("Select File", openNewAccess, newAccessCancelled);
+					if (tmpStartLocation.fileBridge.isDirectory || setting.isLocalePath) model.fileCore.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled, tmpStartLocation.fileBridge.nativePath);
+					else model.fileCore.browseForOpen("Select File", openNewAccess, newAccessCancelled, null, tmpStartLocation.fileBridge.nativePath);
 				}
 				
 				/*
@@ -108,8 +110,8 @@
 					Alert.yesLabel = "Yes";
 					Alert.cancelLabel = "Cancel";
 					
-					if (event.detail == Alert.CANCEL) tmpStartLocation.fileBridge.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled);
-					else tmpStartLocation.fileBridge.browseForOpen("Select File", openNewAccess, newAccessCancelled);
+					if (event.detail == Alert.CANCEL) model.fileCore.browseForDirectory("Select Directory", openNewAccess, newAccessCancelled, tmpStartLocation.fileBridge.nativePath);
+					else model.fileCore.browseForOpen("Select File", openNewAccess, newAccessCancelled, null, tmpStartLocation.fileBridge.nativePath);
 				}
 			}
 			
@@ -119,7 +121,7 @@
 				// same thing chk korar somoy with non-{locale}, file chooser khulche file selection mode e - eta hochhe jokon file.exists = false, ebong
 				// file.isdirectory always coming false at that time, in onAddPermission() method above
 				
-				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
+				var finalPath: String = fileDir.nativePath;
 				if (setting.isLocalePath) finalPath += setting.originalPath.fileBridge.separator +"{locale}";
 				
 				setting.originalPath.fileBridge.nativePath = finalPath;

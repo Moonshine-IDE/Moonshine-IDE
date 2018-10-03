@@ -32,7 +32,7 @@ package actionScripts.interfaces
 		function onSuccessDelete(value:Object, message:String=null):void;
 		function onFault(message:String=null):void;
 		function canonicalize():void;
-		function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null):void;
+		function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null, startFromLocation:String=null):void;
 		function createFile(forceIsDirectory:Boolean=false):void;
 		function createDirectory():void;
 		function copyTo(value:FileLocation, overwrite:Boolean = false):void;
@@ -41,7 +41,7 @@ package actionScripts.interfaces
 		function getRelativePath(ref:FileLocation, useDotDot:Boolean=false):String;
 		function load():void;
 		function save(content:Object):void;
-		function browseForSave(selected:Function, canceled:Function, title:String=null):void;
+		function browseForSave(selected:Function, canceled:Function=null, title:String=null, startFromLocation:String=null):void;
 		function moveTo(newLocation:FileLocation, overwrite:Boolean=false):void;
 		function moveToAsync(newLocation:FileLocation, overwrite:Boolean=false):void;
 		function deleteDirectory(deleteDirectoryContents:Boolean=false):void;
@@ -55,7 +55,7 @@ package actionScripts.interfaces
 		function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void;
 		function deleteFile():void;
 		function deleteFileAsync():void;
-		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null):void;
+		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void;
 		function moveToTrashAsync():void;
 		function openWithDefaultApplication():void;
 		function checkFileExistenceAndReport():Boolean;

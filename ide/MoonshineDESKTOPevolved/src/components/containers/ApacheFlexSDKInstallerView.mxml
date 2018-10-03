@@ -31,6 +31,7 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			import org.as3commons.asblocks.utils.FileUtil;
@@ -104,8 +105,8 @@
 			 */
 			private function onSDKDirBrowse(event:Event):void
 			{
-				var defaultFile:FileLocation = new FileLocation(installerView.defaultInstallPathToSDK.nativePath);
-				defaultFile.fileBridge.browseForDirectory("Select and permit", onSDKPathSelected);
+				var model:IDEModel = IDEModel.getInstance();
+				model.fileCore.browseForDirectory("Select and permit", onSDKPathSelected, null, installerView.defaultInstallPathToSDK.nativePath);
 			}
 			
 			private function onSDKPathSelected(fileDir:Object):void
