@@ -28,6 +28,8 @@
 
 	<mx:Script>
 		<![CDATA[
+		import actionScripts.events.RefreshVisualEditorSourcesEvent;
+
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
 		import mx.collections.SortField;
@@ -39,7 +41,7 @@
 		import mx.events.ListEvent;
 		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
-		
+
 		import actionScripts.events.AddFolderEvent;
 		import actionScripts.events.DeleteFileEvent;
 		import actionScripts.events.DuplicateEvent;
@@ -67,11 +69,9 @@
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.URLDescriptorVO;
-		
-		import components.popup.NewFolderPopup;
-		import components.popup.RenamePopup;
 
-		private var renameWindow:RenamePopup;
+		import components.popup.NewFolderPopup;
+
 		private var newFolderWindow:NewFolderPopup;
 
 		// Renaming
@@ -148,7 +148,7 @@
 			{
 				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as ProjectVO;
 				var sourceWrapper:FileWrapper = null;
-				if(project is AS3ProjectVO)
+				if (project is AS3ProjectVO)
 				{
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 					sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
@@ -279,7 +279,7 @@
 				{
 					tree.selectedItem = lastSelectedItem;
 				}
-				
+
 				// if still there has no selection to the tree
 				if (!tree.selectedItem && lastSelectedIndex != -1) tree.selectedIndex = lastSelectedIndex;
 				clearTimeout(timeoutValue);
@@ -338,7 +338,7 @@
 					project = projects.getItemAt(event.location) as ProjectVO;
 
 					var sourceWrapper:FileWrapper = null;
-					if(project is AS3ProjectVO)
+					if (project is AS3ProjectVO)
 					{
 						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
 					}
@@ -540,13 +540,26 @@
              */
 			function refreshFileFolder():void
 			{
-				if (!ConstantsCoreVO.IS_AIR)
-				{
-					refreshProjectFromServer(fileWrapper, UtilsCore.getProjectFromProjectFolder(fileWrapper));
-					return;
-				}
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper);
+				var asProject:AS3ProjectVO = project as AS3ProjectVO;
 
-				refreshByWrapperItem(fileWrapper);
+				if (asProject && asProject.isVisualEditorProject)
+				{
+					dispatcher.dispatchEvent(
+							new RefreshVisualEditorSourcesEvent(RefreshVisualEditorSourcesEvent.REFRESH_VISUALEDITOR_SRC,
+									fileWrapper, asProject)
+					);
+				}
+				else
+				{
+					if (!ConstantsCoreVO.IS_AIR)
+					{
+						refreshProjectFromServer(fileWrapper, project);
+						return;
+					}
+
+					refreshByWrapperItem(fileWrapper);
+				}
 			}
 
 			/*
@@ -697,7 +710,7 @@
 						{
 							projects.removeItem(project);
 							updateTreeView();
-							
+
 							// in case of Close project we shall need to close the lang-server here
 							// in case of Delete project this handles by the command class
 							if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
@@ -948,7 +961,7 @@
 			if (activeProject)
 			{
 				model.activeProject = activeProject;
-				if(activeProject is AS3ProjectVO)
+				if (activeProject is AS3ProjectVO)
 				{
 					UtilsCore.setProjectMenuType(activeProject as AS3ProjectVO);
 				}

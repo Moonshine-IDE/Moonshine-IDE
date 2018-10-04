@@ -113,6 +113,8 @@ package actionScripts.impls
     import actionScripts.events.LanguageServerEvent;
     import actionScripts.events.LanguageServerMenuEvent;
 
+    import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
+
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
@@ -191,6 +193,7 @@ package actionScripts.impls
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
+                VisualEditorRefreshFilesPlugin,
 				UncaughtErrorsPlugin
 			];
 		}
@@ -230,7 +233,7 @@ package actionScripts.impls
 		{
 			return [ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin];
+					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
