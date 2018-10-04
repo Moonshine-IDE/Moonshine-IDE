@@ -27,6 +27,7 @@ package actionScripts.events
 	public class NewFileEvent extends Event
 	{
 		public static const EVENT_NEW_FILE:String = "newFileEvent";
+		public static const EVENT_NEW_VISUAL_EDITOR_FILE:String = "newVisualEditorFileEvent";
 		public static const EVENT_NEW_FOLDER:String = "EVENT_NEW_FOLDER";
 		public static const EVENT_ANT_BIN_URL_SET:String = "EVENT_ANT_BIN_URL_SET";
 		public static const EVENT_FILE_RENAMED:String = "EVENT_FILE_RENAMED";
@@ -40,6 +41,7 @@ package actionScripts.events
 		public var insideLocation:FileWrapper;
 		public var extraParameters:Array;
 		public var isFolder:Boolean;
+		public var isOpenAfterCreate:Boolean = true;
 		
 		public var ofProject:ProjectVO;
 		

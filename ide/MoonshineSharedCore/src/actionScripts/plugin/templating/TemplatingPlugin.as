@@ -121,8 +121,6 @@ package actionScripts.plugin.templating
 			super.activate();
 
 			dispatcher.addEventListener(TemplateEvent.CREATE_NEW_FILE, handleCreateFileTemplate);
-            dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
-					handleExportNewProjectFromTemplate);
 			
 			// For web Moonshine, we won't depend on getMenu()
 			// getMenu() exclusively calls for desktop Moonshine
@@ -138,6 +136,11 @@ package actionScripts.plugin.templating
 				{
 					dispatcher.addEventListener(project.fileBridge.name, handleNewProjectFile);
 				}
+			}
+			else
+			{
+	            dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX, handleExportNewProjectFromTemplate);
+				dispatcher.addEventListener(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, onVisualEditorFileCreateRequest, false, 0, true);
 			}
 		}
 		
@@ -915,7 +918,6 @@ package actionScripts.plugin.templating
             {
                 newVisualEditorFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewVisualEditorFilePopup, true) as NewVisualEditorFilePopup;
                 newVisualEditorFilePopup.addEventListener(CloseEvent.CLOSE, handleNewVisualEditorFilePopupClose);
-                newVisualEditorFilePopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onVisualEditorFileCreateRequest);
 
                 // newFileEvent sends by TreeView when right-clicked
                 // context menu
@@ -1035,7 +1037,6 @@ package actionScripts.plugin.templating
         protected function handleNewVisualEditorFilePopupClose(event:CloseEvent):void
         {
             newVisualEditorFilePopup.removeEventListener(CloseEvent.CLOSE, handleNewVisualEditorFilePopupClose);
-            newVisualEditorFilePopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, handleNewVisualEditorFilePopupClose);
             newVisualEditorFilePopup = null;
         }
 
@@ -1208,7 +1209,7 @@ package actionScripts.plugin.templating
 				}
 
                 fileToSave.fileBridge.save(content);
-                notifyNewFileCreated(event.insideLocation, fileToSave);
+                notifyNewFileCreated(event.insideLocation, fileToSave, event.isOpenAfterCreate);
             }
         }
 
@@ -1306,12 +1307,15 @@ package actionScripts.plugin.templating
 			return false;
 		}
 
-		private function notifyNewFileCreated(insideLocation:FileWrapper, fileToSave:FileLocation):void
+		private function notifyNewFileCreated(insideLocation:FileWrapper, fileToSave:FileLocation, isOpenAfterCreate:Boolean=true):void
 		{
             // opens the file after writing done
-            dispatcher.dispatchEvent(
-                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, insideLocation)
-            );
+			if (isOpenAfterCreate)
+			{
+	            dispatcher.dispatchEvent(
+	                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, insideLocation)
+	            );
+			}
 
             // notify the tree view if it needs to refresh
             // the containing folder to make newly created file show

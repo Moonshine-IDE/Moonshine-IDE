@@ -3,8 +3,13 @@
                           xmlns:newfile="components.popup.newFile.*"
                           title="New Visual Editor File">
     <fx:Script><![CDATA[
-        import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-        import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.extResources.com.validator.ValidatorType;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.utils.SimpleValidator;
+		import actionScripts.valueObjects.ConstantsCoreVO;
 
         override protected function refreshTemplatesBasedOnDropDownList():void
         {
@@ -25,5 +30,25 @@
                 }
             }
         }
+		
+		override protected function onCreateButton(event:MouseEvent):void
+		{
+			// validation check for Enter key
+			if (!btnCreate.enabled) return;
+			
+			// validation 2
+			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+			if (SimpleValidator.validate(validateArr))
+			{
+				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, null, new FileLocation(ddlType.selectedItem.nativePath), wrapperOfFolderLocation);
+				tmpEvent.ofProject = wrapperBelongToProject;
+				tmpEvent.fileName = txtFileName.text;
+				GlobalEventDispatcher.getInstance().dispatchEvent(tmpEvent);
+				
+				doBeforeExit();
+				super.closeThis();
+			}
+		}
+		
         ]]></fx:Script>
 </newfile:NewMXMLFilePopup>

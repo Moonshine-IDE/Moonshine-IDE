@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package visualEditor.plugin
 {
+    import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshVisualEditorSourcesEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
 
     public class VisualEditorRefreshFilesPlugin extends PluginBase
@@ -61,15 +63,22 @@ package visualEditor.plugin
             var visualEditorPathForRefresh:String = getFullVisualEditorPathForRefresh(fileWrapper, project);
             var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, fileWrapper.nativePath);
 
-            createNewVisualEditorFiles(newVisualEditorFiles);
+            createNewVisualEditorFiles(newVisualEditorFiles, fileWrapper, project);
         }
 
-        private function createNewVisualEditorFiles(newVisualEditorFiles:Array):void
+        private function createNewVisualEditorFiles(newVisualEditorFiles:Array, originWrapper:FileWrapper, ofProject:AS3ProjectVO):void
         {
             newVisualEditorFiles = validateNewVisualEditorFiles(newVisualEditorFiles);
             for each (var item:Object in newVisualEditorFiles)
             {
                 //Create files based on Visual Editor Tempalte
+				var divTemplateFile:Object = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES[0];
+				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, null, new FileLocation(divTemplateFile.nativePath), originWrapper);
+				tmpEvent.ofProject = ofProject;
+				tmpEvent.fileName = (item.file.name as String).substring(0, (item.file.name as String).toLowerCase().indexOf('.xml'));
+				tmpEvent.isOpenAfterCreate = false; // important in this place
+				
+				dispatcher.dispatchEvent(tmpEvent);
             }
         }
 
@@ -83,7 +92,7 @@ package visualEditor.plugin
                 var rootDiv:XMLList = visualEditorXML.RootDiv;
                 if (rootDiv.length() > 0)
                 {
-                    validatedFiles.push({file: item.newFile, xml: visualEditorXML});
+                    validatedFiles.push({file: item.file, xml: visualEditorXML});
                 }
             }
 
