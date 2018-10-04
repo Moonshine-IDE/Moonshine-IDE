@@ -69,16 +69,15 @@ package visualEditor.plugin
         private function createNewVisualEditorFiles(newVisualEditorFiles:Array, originWrapper:FileWrapper, ofProject:AS3ProjectVO):void
         {
             newVisualEditorFiles = validateNewVisualEditorFiles(newVisualEditorFiles);
-            for each (var item:Object in newVisualEditorFiles)
+            for each (var file:Object in newVisualEditorFiles)
             {
-                //Create files based on Visual Editor Tempalte
 				var divTemplateFile:Object = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES[0];
-				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, null, new FileLocation(divTemplateFile.nativePath), originWrapper);
-				tmpEvent.ofProject = ofProject;
-				tmpEvent.fileName = (item.file.name as String).substring(0, (item.file.name as String).toLowerCase().indexOf('.xml'));
-				tmpEvent.isOpenAfterCreate = false; // important in this place
+				var newFileEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, null, new FileLocation(divTemplateFile.nativePath), originWrapper);
+				newFileEvent.ofProject = ofProject;
+				newFileEvent.fileName = getVisualEditorFileNameWithoutExtension(file.name);
+				newFileEvent.isOpenAfterCreate = false; // important in this place
 				
-				dispatcher.dispatchEvent(tmpEvent);
+				dispatcher.dispatchEvent(newFileEvent);
             }
         }
 
@@ -89,10 +88,10 @@ package visualEditor.plugin
             {
                 var visualEditorFile:FileLocation = item.file;
                 var visualEditorXML:XML = new XML(visualEditorFile.fileBridge.read());
-                var rootDiv:XMLList = visualEditorXML.RootDiv;
+                var rootDiv:XMLList = visualEditorXML.mockup.RootDiv;
                 if (rootDiv.length() > 0)
                 {
-                    validatedFiles.push({file: item.file, xml: visualEditorXML});
+                    validatedFiles.push(item.file);
                 }
             }
 
@@ -123,10 +122,7 @@ package visualEditor.plugin
             {
                 if (!file.isDirectory && file.extension == VISUALEDITOR_FILE_EXTENSION)
                 {
-                    var indexOfFileExtension:int = file.name.lastIndexOf(VISUALEDITOR_FILE_EXTENSION);
-                    var destinationFileName:String = file.name.substr(0, indexOfFileExtension);
-
-                    var destinationFilePath:String = destinationPath + separator + destinationFileName + "xhtml";
+                    var destinationFilePath:String = destinationPath + separator + getVisualEditorFileNameWithoutExtension(file.name) + "xhtml";
                     var destinationFileLocation:FileLocation = new FileLocation(destinationFilePath);
                     if (!destinationFileLocation.fileBridge.exists)
                     {
@@ -150,6 +146,12 @@ package visualEditor.plugin
         {
             return pathForRefresh.indexOf(project.sourceFolder.fileBridge.nativePath) != -1 ||
                    pathForRefresh == project.folderPath;
+        }
+
+        private function getVisualEditorFileNameWithoutExtension(name:String):String
+        {
+            var indexOfFileExtension:int = name.lastIndexOf(VISUALEDITOR_FILE_EXTENSION);
+            return name.substr(0, indexOfFileExtension);
         }
     }
 }
