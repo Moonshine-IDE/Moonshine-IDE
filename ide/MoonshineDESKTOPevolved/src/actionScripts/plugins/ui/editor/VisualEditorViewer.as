@@ -119,6 +119,7 @@ package actionScripts.plugins.ui.editor
 					visualEditorView.visualEditor.componentsOrganizer.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_MOVED, onPropertyEditorChanged);
 					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 					visualEditorView.visualEditor.propertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
+					visualEditorView.visualEditor.removeEventListener("saveCode", onVisualEditorSaveCode);
 				}
 				
 				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
@@ -140,11 +141,18 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.componentsOrganizer.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_MOVED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
-			
+            visualEditorView.visualEditor.addEventListener("saveCode", onVisualEditorSaveCode);
+
 			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 		}
-		
+
+		private function onVisualEditorSaveCode(event:Event):void
+		{
+            _isChanged = true;
+			this.save();
+		}
+
 		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
 		{
 			editor.dataProvider = getMxmlCode();
