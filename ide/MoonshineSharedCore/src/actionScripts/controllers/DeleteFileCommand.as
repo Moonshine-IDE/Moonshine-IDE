@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
-	import flash.display.DisplayObject;
+    import actionScripts.events.RefreshTreeEvent;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
@@ -54,7 +56,8 @@ package actionScripts.controllers
 		private var thisEvent:DeleteFileEvent;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var pendingDeletionProjectsDict:Dictionary = new Dictionary();
-		
+		private var model:IDEModel = IDEModel.getInstance();
+
 		public function execute(event:Event):void
 		{
 			thisEvent = DeleteFileEvent(event);
@@ -116,6 +119,16 @@ package actionScripts.controllers
 						if (veSourceFile && veSourceFile.fileBridge.exists)
 						{
 							veSourceFile.fileBridge.deleteFile();
+
+							if (model.showHiddenPaths)
+                            {
+                                var fileForRefresh:FileLocation = veSourceFile;
+                                if (!veSourceFile.fileBridge.isDirectory)
+                                {
+                                    fileForRefresh = veSourceFile.fileBridge.parent;
+                                }
+                                dispatcher.dispatchEvent(new RefreshTreeEvent(fileForRefresh));
+                            }
 						}
                     }
                 }
@@ -125,7 +138,7 @@ package actionScripts.controllers
                     thisEvent.wrapper.sourceController.remove(thisEvent.file);
                 }
 				
-				for each (tab in IDEModel.getInstance().editors)
+				for each (tab in model.editors)
 				{
 					ed = tab as BasicTextEditor;
 					if (ed 
@@ -159,7 +172,6 @@ package actionScripts.controllers
 
 		private function onProjectDeletionConfirmed(event:DeleteFileEvent):void
 		{
-			var model: IDEModel = IDEModel.getInstance();
 			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(event.wrapper);
 			// sends delete call to factory classes
 			
@@ -217,7 +229,7 @@ package actionScripts.controllers
 			{
 				// when no language server present or not setup
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-				IDEModel.getInstance().flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, false);
+				model.flexCore.deleteProject(event.wrapper, thisEvent.treeViewCompletionHandler, false);
 			}
 		}
 		
@@ -226,7 +238,7 @@ package actionScripts.controllers
 			if (pendingDeletionProjectsDict[event.project.projectFolder.projectReference] != undefined)
 			{
 				dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onProjectLanguageServerClosed);
-				IDEModel.getInstance().flexCore.deleteProject(pendingDeletionProjectsDict[event.project.projectFolder.projectReference], thisEvent.treeViewCompletionHandler, false);
+				model.flexCore.deleteProject(pendingDeletionProjectsDict[event.project.projectFolder.projectReference], thisEvent.treeViewCompletionHandler, false);
 				delete pendingDeletionProjectsDict[event.project.projectFolder.projectReference];
 			}
 		}
@@ -240,7 +252,7 @@ package actionScripts.controllers
 		
 		private function onFileDeleted(event:Event):void
 		{
-			for each (var tab:IContentWindow in IDEModel.getInstance().editors)
+			for each (var tab:IContentWindow in model.editors)
 			{
 				var ed:BasicTextEditor = tab as BasicTextEditor;
 				if (ed 

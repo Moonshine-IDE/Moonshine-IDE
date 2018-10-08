@@ -732,7 +732,11 @@
 				parentCollection.splice(parentCollection.indexOf(value), 1);
 				fileCollection = null;
 
-				if (lastSelectedItem && lastSelectedItem == value) tree.selectedItem = tree.getParentItem(value);
+				if (lastSelectedItem && lastSelectedItem == value)
+				{
+					tree.selectedItem = tree.getParentItem(value);
+				}
+
 				updateTreeView();
 
 				// check if the wrapper is the source folder to the project
