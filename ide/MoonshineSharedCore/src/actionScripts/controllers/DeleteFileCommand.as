@@ -88,7 +88,7 @@ package actionScripts.controllers
 				// this generally when deleting a template project
 				// ideally, deleting a normal project without above prompting
 				// not going to happen
-				onProjectDeletionConfirmed(thisEvent, true);
+				onProjectDeletionConfirmed(thisEvent);
 				return;
 			}
 			
@@ -157,7 +157,7 @@ package actionScripts.controllers
 			}
 		}
 
-		private function onProjectDeletionConfirmed(event:DeleteFileEvent, isDeleteRoot:Boolean=false):void
+		private function onProjectDeletionConfirmed(event:DeleteFileEvent):void
 		{
 			var model: IDEModel = IDEModel.getInstance();
 			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(event.wrapper);

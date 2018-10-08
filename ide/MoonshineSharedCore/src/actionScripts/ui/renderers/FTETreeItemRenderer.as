@@ -282,10 +282,19 @@ package actionScripts.ui.renderers
 					if (fw.file.fileBridge.extension=="xml")
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
-						
-						var str:String = fw.file.fileBridge.read().toString();
-						if ((str.search("<project ")!=-1) || (str.search("<project>")!=-1))
-							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
+
+						if (fw.file.fileBridge.exists)
+                        {
+                            var fwResult:Object = fw.file.fileBridge.read();
+                            if (fwResult)
+                            {
+                                var str:String = fwResult.toString();
+                                if ((str.search("<project ") != -1) || (str.search("<project>") != -1))
+                                {
+                                    model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RUN_ANT_SCRIPT, redispatch, Event.SELECT));
+                                }
+                            }
+                        }
 					}
 
 					setLabelRendererColor(fw);
