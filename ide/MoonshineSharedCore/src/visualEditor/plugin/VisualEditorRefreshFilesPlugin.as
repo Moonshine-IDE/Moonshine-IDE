@@ -58,7 +58,10 @@ package visualEditor.plugin
         {
             var fileWrapper:FileWrapper = event.fileWrapper;
             var project:AS3ProjectVO = event.project;
-            if (!isPathValidForRefresh(fileWrapper.nativePath, project)) return;
+            if (!isPathValidForRefresh(fileWrapper.nativePath, project))
+            {
+                return;
+            }
 
             var visualEditorPathForRefresh:String = getFullVisualEditorPathForRefresh(fileWrapper, project);
             var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, fileWrapper.nativePath);
@@ -69,6 +72,11 @@ package visualEditor.plugin
         private function createNewVisualEditorFiles(newVisualEditorFiles:Array, originWrapper:FileWrapper, ofProject:AS3ProjectVO):void
         {
             newVisualEditorFiles = validateNewVisualEditorFiles(newVisualEditorFiles);
+            if (newVisualEditorFiles.length == 0)
+            {
+                return;
+            }
+
             for each (var file:Object in newVisualEditorFiles)
             {
 				var divTemplateFile:Object = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES[0];

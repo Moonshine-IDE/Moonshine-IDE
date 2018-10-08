@@ -543,23 +543,21 @@
 				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 				var asProject:AS3ProjectVO = project as AS3ProjectVO;
 
-				if (asProject && asProject.isVisualEditorProject)
-				{
-					dispatcher.dispatchEvent(
-							new RefreshVisualEditorSourcesEvent(RefreshVisualEditorSourcesEvent.REFRESH_VISUALEDITOR_SRC,
-									fileWrapper, asProject)
-					);
-				}
-				else
-				{
-					if (!ConstantsCoreVO.IS_AIR)
-					{
-						refreshProjectFromServer(fileWrapper, project);
-						return;
-					}
+                if (!ConstantsCoreVO.IS_AIR)
+                {
+                    refreshProjectFromServer(fileWrapper, project);
+                    return;
+                }
 
-					refreshByWrapperItem(fileWrapper);
-				}
+                refreshByWrapperItem(fileWrapper);
+
+                if (asProject && asProject.isVisualEditorProject)
+                {
+                    dispatcher.dispatchEvent(
+                            new RefreshVisualEditorSourcesEvent(RefreshVisualEditorSourcesEvent.REFRESH_VISUALEDITOR_SRC,
+                                    fileWrapper, asProject)
+                    );
+                }
 			}
 
 			/*
