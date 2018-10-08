@@ -63,7 +63,15 @@ package actionScripts.valueObjects
 			}
 		}
 
-        public function set shallUpdateChildren(value:Boolean):void {	_shallUpdateChildren = value;	}
+		public function get shallUpdateChildren():Boolean
+		{
+			return _shallUpdateChildren;
+		}
+
+        public function set shallUpdateChildren(value:Boolean):void
+		{
+			_shallUpdateChildren = value;
+		}
 
         public function get file():FileLocation
 		{

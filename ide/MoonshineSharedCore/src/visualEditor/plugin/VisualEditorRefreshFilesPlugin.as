@@ -19,6 +19,7 @@
 package visualEditor.plugin
 {
     import actionScripts.events.NewFileEvent;
+    import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.RefreshVisualEditorSourcesEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
@@ -58,23 +59,35 @@ package visualEditor.plugin
         {
             var fileWrapper:FileWrapper = event.fileWrapper;
             var project:AS3ProjectVO = event.project;
-            if (!isPathValidForRefresh(fileWrapper.nativePath, project))
+            var destinationPath:String = fileWrapper.nativePath;
+
+            var isValidSourcePath:Boolean = isPathValidForRefresh(fileWrapper.nativePath, project);
+            var visualEditorPathForRefresh:String = getFullVisualEditorPathForRefresh(fileWrapper, project);
+
+            if (!isValidSourcePath)
             {
-                return;
+                destinationPath = project.sourceFolder.fileBridge.nativePath;
+                fileWrapper = new FileWrapper(new FileLocation(destinationPath), fileWrapper.isRoot,
+                        fileWrapper.projectReference, fileWrapper.shallUpdateChildren);
             }
 
-            var visualEditorPathForRefresh:String = getFullVisualEditorPathForRefresh(fileWrapper, project);
-            var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, fileWrapper.nativePath);
+            var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, destinationPath);
 
-            createNewVisualEditorFiles(newVisualEditorFiles, fileWrapper, project);
+            var newFilesCreated:Boolean = createNewVisualEditorFiles(newVisualEditorFiles, fileWrapper, project);
+            if (!newFilesCreated || !isValidSourcePath)
+            {
+                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(fileWrapper.nativePath)));
+            }
         }
 
-        private function createNewVisualEditorFiles(newVisualEditorFiles:Array, originWrapper:FileWrapper, ofProject:AS3ProjectVO):void
+        private function createNewVisualEditorFiles(newVisualEditorFiles:Array, originWrapper:FileWrapper, ofProject:AS3ProjectVO):Boolean
         {
+            var newFilesCreated:Boolean = false;
+
             newVisualEditorFiles = validateNewVisualEditorFiles(newVisualEditorFiles);
             if (newVisualEditorFiles.length == 0)
             {
-                return;
+                return newFilesCreated;
             }
 
             for each (var file:Object in newVisualEditorFiles)
@@ -86,7 +99,11 @@ package visualEditor.plugin
 				newFileEvent.isOpenAfterCreate = false; // important in this place
 				
 				dispatcher.dispatchEvent(newFileEvent);
+
+                newFilesCreated = true;
             }
+
+            return newFilesCreated;
         }
 
         private function validateNewVisualEditorFiles(newVisualEditorFiles:Array):Array
@@ -113,11 +130,17 @@ package visualEditor.plugin
 
         private function getFullVisualEditorPathForRefresh(fileWrapper:FileWrapper, project:AS3ProjectVO):String
         {
-            var separator:String = project.sourceFolder.fileBridge.separator;
-            var pathForRefresh:String = "";
-            if (fileWrapper.nativePath != project.folderPath)
+            var isValidSourcePath:Boolean = isPathValidForRefresh(fileWrapper.nativePath, project);
+            var pathForRefresh:String = fileWrapper.nativePath;
+            if (!isValidSourcePath)
             {
-                pathForRefresh = separator + getExtractedPathForRefresh(separator, fileWrapper.nativePath);
+                pathForRefresh = project.sourceFolder.fileBridge.nativePath;
+            }
+
+            var separator:String = project.sourceFolder.fileBridge.separator;
+            if (pathForRefresh != project.folderPath)
+            {
+                pathForRefresh = separator + getExtractedPathForRefresh(separator, pathForRefresh);
             }
 
             return project.folderPath.concat(separator, VISUALEDITOR_SRC_FOLDERNAME, pathForRefresh);
