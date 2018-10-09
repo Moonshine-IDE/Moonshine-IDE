@@ -198,6 +198,54 @@
 <!-- 				<image128x128>elements/moonshine_logo/logo_128.png</image128x128> -->
 <!-- 			</icon> -->
 		</fileType>
+		<fileType>
+			<name>Moonshine.CSS.File</name>
+			<extension>css</extension>
+			<description>Moonshine CSS File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Text.File</name>
+			<extension>txt</extension>
+			<description>Moonshine Text File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.MXML.File</name>
+			<extension>mxml</extension>
+			<description>Moonshine MXML File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.XML.File</name>
+			<extension>xml</extension>
+			<description>Moonshine XML File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.JavaScript.File</name>
+			<extension>js</extension>
+			<description>Moonshine JavaScript File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.HTML.File</name>
+			<extension>htm</extension>
+			<description>Moonshine HTML File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.HTML.2.File</name>
+			<extension>html</extension>
+			<description>Moonshine HTML.2 File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.AwayBuilder.File</name>
+			<extension>awd</extension>
+			<description>Moonshine AwayBuilder File</description>
+			<contentType>application/octet-stream</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
