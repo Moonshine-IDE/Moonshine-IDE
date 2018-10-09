@@ -35,6 +35,8 @@ package actionScripts.impls
     
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
+    import actionScripts.events.LanguageServerEvent;
+    import actionScripts.events.LanguageServerMenuEvent;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
@@ -81,6 +83,7 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
+    import actionScripts.plugins.fileAssociation.FileAssociationPlugin;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.help.view.events.VisualEditorEvent;
@@ -110,9 +113,6 @@ package actionScripts.impls
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
-    import actionScripts.events.LanguageServerEvent;
-    import actionScripts.events.LanguageServerMenuEvent;
-
     import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
@@ -194,6 +194,7 @@ package actionScripts.impls
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
                 VisualEditorRefreshFilesPlugin,
+				FileAssociationPlugin,
 				UncaughtErrorsPlugin
 			];
 		}
@@ -212,6 +213,7 @@ package actionScripts.impls
 				HTMLSyntaxPlugin,
 				MXMLSyntaxPlugin,
 				XMLSyntaxPlugin,
+				OrganizeImportsPlugin,
 				SplashScreenPlugin,
 				CleanProject,
 				SVNPlugin,
@@ -222,7 +224,6 @@ package actionScripts.impls
 				ReferencesPlugin,
 				StartupHelperPlugin,
 				RenamePlugin,
-				OrganizeImportsPlugin,
 				Away3DPlugin,
 				GitHubPlugin,
 				HiddenFilesPlugin
@@ -231,7 +232,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
+			return [FileAssociationPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin];
 		}

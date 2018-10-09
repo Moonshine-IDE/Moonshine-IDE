@@ -34,7 +34,6 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
-			import actionScripts.events.OpenFileEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.impls.IAboutBridgeImp;
 			import actionScripts.impls.IClipboardBridgeImp;
@@ -46,7 +45,6 @@
 			import actionScripts.impls.INativeMenuItemBridgeImp;
 			import actionScripts.impls.IVisualEditorProjectBridgeImpl;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.fileAssociation.FileAssociationManager;
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -73,14 +71,6 @@
 	        private static const NEEDED_FOR_COMPILATION8: IJavaBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION9: ILanguageServerBridgeImp = null;
 			
-			//--------------------------------------------------------------------------
-			//
-			//  PRIVATE
-			//
-			//--------------------------------------------------------------------------
-				
-			private var fileAssociation:FileAssociationManager = new FileAssociationManager(this as MoonshineDESKTOP);
-	
 			//--------------------------------------------------------------------------
 			//
 			//  PUBLIC API
@@ -129,9 +119,6 @@
 				SDKUtils.checkBundledSDKPresence();
 				if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
 	
-				// did we start with any args?
-				nativeApplication.addEventListener(InvokeEvent.INVOKE, handleInitializationArgs, false, 0, true);
-	
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
 				nativeWindow.addEventListener(Event.CLOSING, onApplicationClosing);
@@ -145,14 +132,14 @@
 			private function onComplete():void
 			{
 				// opens scope bookmarked urls
-				CONFIG::OSX
-				{
+				/*CONFIG::OSX
+				{*/
 					setTimeout(function():void
 					{
-						OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
+						//OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
 						//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
 					}, 1000);
-				}
+				//}
 	
 				/*if (fileFrom.exists)
 	            {
@@ -216,26 +203,6 @@
 			//  LISTENERS API
 			//
 			//--------------------------------------------------------------------------
-	
-			/**
-			 * On invoke handler
-			 */
-			private function handleInitializationArgs(event:InvokeEvent):void
-			{
-				nativeApplication.removeEventListener(InvokeEvent.INVOKE, handleInitializationArgs);
-				var args:Array = event.arguments as Array;
-				if (args.length)
-				{
-					var path:String = String(args[0]);
-					var f:FileLocation = new FileLocation(path);
-	
-					if (!f.fileBridge.exists) return;
-	
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, f)
-					);
-				}
-			}
 	
 			/**
 			 * On added to stage
