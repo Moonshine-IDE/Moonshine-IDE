@@ -64,11 +64,12 @@ package visualEditor.plugin
             var isValidSourcePath:Boolean = isPathValidForRefresh(fileWrapper.nativePath, project);
             var visualEditorPathForRefresh:String = getFullVisualEditorPathForRefresh(fileWrapper, project);
 
-            if (!isValidSourcePath)
+            if (!isValidSourcePath || fileWrapper.nativePath == project.folderPath)
             {
                 destinationPath = project.sourceFolder.fileBridge.nativePath;
                 fileWrapper = new FileWrapper(new FileLocation(destinationPath), fileWrapper.isRoot,
                         fileWrapper.projectReference, fileWrapper.shallUpdateChildren);
+                isValidSourcePath = false;
             }
 
             var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, destinationPath);
@@ -141,6 +142,10 @@ package visualEditor.plugin
             if (pathForRefresh != project.folderPath)
             {
                 pathForRefresh = separator + getExtractedPathForRefresh(separator, pathForRefresh);
+            }
+            else
+            {
+                pathForRefresh = separator + "main" + separator + "webapp";
             }
 
             return project.folderPath.concat(separator, VISUALEDITOR_SRC_FOLDERNAME, pathForRefresh);
