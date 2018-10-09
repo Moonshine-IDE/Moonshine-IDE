@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor: Added **Organizer** which allows changing order of components.
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
 * New File: Added code completion for Superclass and Interfaces.
+* Java: Initial support for Java language project types, including code intelligence features.
+* Code Generation: In ActionScript and MXML, generate a getter and setter, a local variable, a member variable, or a method. When a quick fix is available at the current position in the editor, a light bulb icon will appear.
+* Go to Definition: Added feature to go to definitions that are defined in SWC files. Opens a temporary, read-only file that displays the public API.
+* Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
+* Go to Type Definition: New menu command to go to the definition of a variable or property's type.
 
 ### Changed
 * Open file/folder dialog retain last opened location.
