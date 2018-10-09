@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [1.16.0 - Pending]
+
+### Added
+* Visual Editor: Added **Organizer** which allows changing order of components.
+* Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
+* New File: Added code completion for Superclass and Interfaces.
+
+### Changed
+* Open file/folder dialog retain last opened location.
+
+### Fixed
+* Visual Editor: Fixed issue where Property panel wasn't display scrollbar.
+* Visual Editor: Fixed issue where deleting file when Hidden files/folder are ON throws exception.
+* Visual Editor PrimeFaces: Fixed issue where saving saving file without main Div was failing.
+* Visual Editor PrimeFaces: Fixed issue where selected PanelGrid cell doesn't didplay it's content properly in Property Editor.
+* Visual Editor PrimeFaces: Fixed issue where Copy/Paste in Grid was failing.
+* Apache Royale: Fixed issue where cannot build MX type of examples.
+* Search: Fixed issue where searching "Backward" does not work.
+* Apache Royale: Fixed issue where user cannot create MXML and AS files.
+* Language server: Fixed issue where Java instance keeps running after application exit.
+
 ## Moonshine IDE [1.15.0]
 
 ### Added
