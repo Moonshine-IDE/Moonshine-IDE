@@ -132,14 +132,14 @@
 			private function onComplete():void
 			{
 				// opens scope bookmarked urls
-				/*CONFIG::OSX
-				{*/
+				CONFIG::OSX
+				{
 					setTimeout(function():void
 					{
-						//OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
+						OSXBookmarkerNotifiers.availableBookmarkedPaths = IDEModel.getInstance().fileCore.getSSBInterface().restoreAccessedPaths();
 						//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
 					}, 1000);
-				//}
+				}
 	
 				/*if (fileFrom.exists)
 	            {
