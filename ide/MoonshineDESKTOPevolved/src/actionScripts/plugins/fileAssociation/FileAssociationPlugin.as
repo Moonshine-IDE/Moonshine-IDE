@@ -19,9 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.fileAssociation
 {
+	import flash.desktop.ClipboardFormats;
 	import flash.desktop.NativeApplication;
+	import flash.desktop.NativeDragManager;
+	import flash.display.InteractiveObject;
 	import flash.events.InvokeEvent;
 	import flash.events.NativeDragEvent;
+	import flash.filesystem.File;
+	
+	import mx.core.FlexGlobals;
 	
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
@@ -33,42 +39,55 @@ package actionScripts.plugins.fileAssociation
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
 		
-		private var openWithCollection:Array;
-		
 		override public function activate():void
 		{
 			super.activate();
 			
-			var topLevel:* = NativeApplication.nativeApplication;
-			
 			// open-with listener
-			topLevel.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 			
 			// drag-drop listeners
-			topLevel.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
-			topLevel.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
+			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
+			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
 		}
 		
 		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
-			openWithCollection = event.arguments;
-			if (openWithCollection.length)
+			if (event.arguments.length)
 			{
-				for each (var i:String in openWithCollection)
-				{
-					dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(i)));
-				}
+				openFilesByPath(event.arguments);
 			}
 		}
 		
 		private function onNativeItemDragEnter(event:NativeDragEvent):void
 		{
+			var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+			for each (var i:File in files)
+			{
+				if (i.isDirectory) return;
+			}
 			
+			// accept drop
+			NativeDragManager.acceptDragDrop(InteractiveObject(event.currentTarget));
 		}
 		
 		private function onNativeItemDragDrop(event:NativeDragEvent):void
 		{
+			var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+			files = files.map(function(element:*, index:int, arr:Array):String
+			{
+				return element.nativePath;
+			});
 			
+			openFilesByPath(files);
+		}
+		
+		private function openFilesByPath(paths:Array):void
+		{
+			for each (var i:String in paths)
+			{
+				dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(i)));
+			}
 		}
 	}
 }
