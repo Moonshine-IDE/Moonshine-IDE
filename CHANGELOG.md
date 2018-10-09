@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Fixed issue where saving saving file without main Div was failing.
 * Visual Editor PrimeFaces: Fixed issue where selected PanelGrid cell doesn't didplay it's content properly in Property Editor.
 * Visual Editor PrimeFaces: Fixed issue where Copy/Paste in Grid was failing.
-* Apache Royale: Fixed issue where cannot build MX type of examples.
+* Apache Royale: Fixed issue where cannot build [MX type of examples](https://github.com/apache/royale-asjs/tree/develop/examples/mxroyale).
 * Search: Fixed issue where searching "Backward" does not work.
 * Apache Royale: Fixed issue where user cannot create MXML and AS files.
 * Language server: Fixed issue where Java instance keeps running after application exit.
