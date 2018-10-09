@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.fileAssociation
 {
+	import flash.desktop.Clipboard;
 	import flash.desktop.ClipboardFormats;
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeDragManager;
@@ -61,6 +62,8 @@ package actionScripts.plugins.fileAssociation
 		
 		private function onNativeItemDragEnter(event:NativeDragEvent):void
 		{
+			if (!event.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT)) return;
+			
 			var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
 			for each (var i:File in files)
 			{
@@ -73,6 +76,8 @@ package actionScripts.plugins.fileAssociation
 		
 		private function onNativeItemDragDrop(event:NativeDragEvent):void
 		{
+			if (!event.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT)) return;
+			
 			var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
 			files = files.map(function(element:*, index:int, arr:Array):String
 			{
