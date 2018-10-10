@@ -92,7 +92,7 @@ package actionScripts.controllers
 				
 				var close:Button = new Button();
 				close.styleName = "lightButton";
-				close.label = "Kill changes";
+				close.label = "Discard";
 				close.addEventListener(MouseEvent.CLICK, closeTab, false, 0, false);
 				
 				var cancel:Button = new Button();
