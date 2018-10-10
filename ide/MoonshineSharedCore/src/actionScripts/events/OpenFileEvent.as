@@ -36,6 +36,8 @@ package actionScripts.events
 		public var openAsTourDe:Boolean;
 		public var tourDeSWFSource:String;
 		
+		public var independentOpenFile:Boolean; // when arbitrary file opened off-Moonshine, or drag into off-Moonshine  
+		
 		public function OpenFileEvent(type:String, file:FileLocation=null, atLine:int = -1, wrapper:FileWrapper=null, ...param)
 		{
 			this.file = file;

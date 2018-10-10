@@ -248,11 +248,11 @@ package actionScripts.controllers
 
 				if (project is AS3ProjectVO &&
 					(project as AS3ProjectVO).isVisualEditorProject &&
-					(extension == "mxml" || extension == "xhtml"))
+					(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile)
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
 				}
-				else if(model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
+				else if(!lastOpenEvent.independentOpenFile && model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
 				{
 					editor = model.languageServerCore.getCustomTextEditorForUri(file.fileBridge.url, project);
 				}

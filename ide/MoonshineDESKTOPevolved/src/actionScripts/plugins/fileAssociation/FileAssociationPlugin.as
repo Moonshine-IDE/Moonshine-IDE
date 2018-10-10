@@ -91,7 +91,10 @@ package actionScripts.plugins.fileAssociation
 		{
 			for each (var i:String in paths)
 			{
-				dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(i)));
+				var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(i));
+				tmpOpenEvent.independentOpenFile = true;
+				
+				dispatcher.dispatchEvent(tmpOpenEvent);
 			}
 		}
 	}
