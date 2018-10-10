@@ -114,14 +114,14 @@ package visualEditor.plugin
             {
                 var visualEditorFile:FileLocation = item.file;
                 var visualEditorXML:XML = new XML(visualEditorFile.fileBridge.read());
-                visualEditorXML.RootDiv.@save = true;
-
-                visualEditorFile.fileBridge.save(visualEditorXML.toXMLString());
 
                 var rootDiv:XMLList = visualEditorXML.RootDiv;
 
                 if (rootDiv.length() > 0)
                 {
+                    visualEditorXML.RootDiv.@save = true;
+                    visualEditorFile.fileBridge.save(visualEditorXML.toXMLString());
+
                     validatedFiles.push(item.file);
                 }
             }
