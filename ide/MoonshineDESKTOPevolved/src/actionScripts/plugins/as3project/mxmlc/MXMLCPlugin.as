@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
+    import com.adobe.utils.StringUtil;
+    
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
@@ -39,7 +41,7 @@ package actionScripts.plugins.as3project.mxmlc
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     import mx.resources.ResourceManager;
-
+    
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.StatusBarEvent;
@@ -1050,9 +1052,9 @@ package actionScripts.plugins.as3project.mxmlc
 
                 warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher runs SWF file
-				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo) 
-				);
+				var tmpLaunchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo);
+				tmpLaunchEvent.url = (pvo.customHTMLPath && (StringUtil.trim(pvo.customHTMLPath).length != 0)) ? pvo.customHTMLPath : null;
+				dispatcher.dispatchEvent(tmpLaunchEvent);
 			}
 			
 			currentProject = null;

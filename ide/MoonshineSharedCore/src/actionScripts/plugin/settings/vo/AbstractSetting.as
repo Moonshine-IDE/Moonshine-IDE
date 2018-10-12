@@ -24,8 +24,15 @@ package actionScripts.plugin.settings.vo
 
     public class AbstractSetting extends EventDispatcher implements ISetting
     {
+		public static const PATH_SELECTED:String = "pathSelected";
+		public static const MESSAGE_CRITICAL:String = "MESSAGE_CRITICAL";
+		public static const MESSAGE_IMPORTANT:String = "MESSAGE_IMPORTANT";
+		public static const MESSAGE_NORMAL:String = "MESSAGE_NORMAL";
+		
 		protected var hasPendingChanges:Boolean = false;
 		protected var pendingChanges:*;
+		protected var message:String;
+		protected var messageType:String;
     	
         private var _name:String;
         [Bindable]
@@ -152,6 +159,5 @@ package actionScripts.plugin.settings.vo
 			provider[name] = pendingChanges;
 			hasPendingChanges = false;
 		}
-
     }
 }

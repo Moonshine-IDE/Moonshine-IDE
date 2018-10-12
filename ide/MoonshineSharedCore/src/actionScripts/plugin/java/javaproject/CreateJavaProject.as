@@ -1,32 +1,35 @@
 package actionScripts.plugin.java.javaproject
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.filesystem.File;
+	import flash.net.SharedObject;
+	
+	import mx.controls.Alert;
+	
+	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewProjectEvent;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.plugin.settings.vo.StringSetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.settings.vo.StaticLabelSetting;
-	import flash.events.Event;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import mx.controls.Alert;
-	import actionScripts.locator.IDEModel;
-	import flash.display.DisplayObject;
-	import flash.net.SharedObject;
-	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.settings.SettingsView;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.ListSetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.plugin.settings.vo.StaticLabelSetting;
+	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.TemplateVO;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import flash.filesystem.File;
-	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
-	import actionScripts.plugin.settings.vo.ListSetting;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
 
 	public class CreateJavaProject
 	{
@@ -112,7 +115,7 @@ package actionScripts.plugin.java.javaproject
 		{
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
-			newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
 			if (eventObject.isExport)
@@ -139,7 +142,7 @@ package actionScripts.plugin.java.javaproject
 			
 			if (tmpFile) 
 			{
-				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), PathSetting.MESSAGE_CRITICAL);
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
@@ -172,7 +175,7 @@ package actionScripts.plugin.java.javaproject
 			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
 			if (newProjectPathSetting) 
 			{
-				newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 			}
 			

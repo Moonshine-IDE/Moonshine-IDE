@@ -183,6 +183,9 @@ package actionScripts.plugins.as3project.importer
 			
 			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
 			if (html) project.htmlPath = new FileLocation(html);
+			
+			var customHtml:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
+			if (customHtml) project.customHTMLPath = customHtml;
 
             project.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
 			

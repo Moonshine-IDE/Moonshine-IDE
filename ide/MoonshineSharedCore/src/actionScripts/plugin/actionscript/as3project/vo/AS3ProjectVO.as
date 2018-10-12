@@ -71,6 +71,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
 		public var htmlPath:FileLocation;
+		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var resourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -118,6 +119,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
+		private var customHTMLFilePath:StringSetting;
 		private var outputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
@@ -302,6 +304,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			customHTMLFilePath = new StringSetting(this, "customHTMLPath", "Custom URL to Launch");
+			customHTMLFilePath.setMessage("Leave this blank if you don't override 'URL to Launch'");
+			
 			outputPathSetting = new PathSetting(this, "outputPath", "Output Path", true, outputPath);
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
@@ -440,6 +445,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         Vector.<ISetting>([
                             targetPlatformSettings,
                             htmlFilePath,
+							customHTMLFilePath,
 							outputPathSetting,
                             additional,
                             mobileRunSettings
@@ -509,6 +515,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                         Vector.<ISetting>([
                             new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
                             htmlFilePath,
+							customHTMLFilePath,
 							outputPathSetting,
                             additional,
                             mobileRunSettings
@@ -572,7 +579,8 @@ package actionScripts.plugin.actionscript.as3project.vo
             {
                 as3Project.htmlPath = new FileLocation(this.htmlPath.fileBridge.nativePath);
             }
-
+			
+			as3Project.customHTMLPath = this.customHTMLPath;
             as3Project.classpaths = this.classpaths.slice(0, this.classpaths.length);
             as3Project.resourcePaths = this.resourcePaths.slice(0, this.resourcePaths.length);
             as3Project.includeLibraries = this.includeLibraries.slice(0, this.includeLibraries.length);

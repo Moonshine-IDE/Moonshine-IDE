@@ -126,6 +126,7 @@ package actionScripts.plugins.as3project.exporter
 				projectType		:	projType,
 				targetPlatform	:	platform,
 				urlToLaunch		:	p.htmlPath ? p.htmlPath.fileBridge.nativePath : "",
+				customUrlToLaunch:	p.customHTMLPath ? p.customHTMLPath : "",
 				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
 				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null
 			}

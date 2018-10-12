@@ -32,31 +32,31 @@
 	removedFromStage="onRemovedFromStage(event)">
 	<fx:Script>
 		<![CDATA[
-	        import mx.collections.ArrayCollection;
-	        import mx.controls.Alert;
-	        import mx.core.FlexGlobals;
-	        import mx.events.CloseEvent;
-	        import mx.events.FlexEvent;
-	        import mx.managers.PopUpManager;
-	        import mx.utils.ObjectUtil;
-	        
-	        import spark.events.IndexChangeEvent;
-	        
-	        import actionScripts.events.AddTabEvent;
-	        import actionScripts.events.GlobalEventDispatcher;
-	        import actionScripts.events.ProjectEvent;
-	        import actionScripts.factory.FileLocation;
-	        import actionScripts.locator.IDEModel;
-	        import actionScripts.plugin.settings.vo.PathSetting;
-	        import actionScripts.ui.IContentWindow;
-	        import actionScripts.ui.tabview.CloseTabEvent;
-	        import actionScripts.utils.SDKUtils;
-	        import actionScripts.utils.UtilsCore;
-	        import actionScripts.valueObjects.ConstantsCoreVO;
-	        import actionScripts.valueObjects.ProjectReferenceVO;
-	        
-	        import components.popup.SDKDefinePopup;
-	        import components.popup.SDKSelectorPopup;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.events.AddTabEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.vo.AbstractSetting;
+			import actionScripts.plugin.settings.vo.PathSetting;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectReferenceVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
 	
 	        [Bindable]
 	        public var setting:PathSetting;
@@ -70,7 +70,6 @@
 	        [Bindable]
 	        private var model:IDEModel = IDEModel.getInstance();
 	
-	        private var file:FileLocation;
 	        private var sdkPopup:SDKSelectorPopup;
 	        private var sdkPathPopup:SDKDefinePopup;
 
@@ -82,23 +81,24 @@
 				this.message = value;
 				this.messageType = type;
 
-				if (!lblMessage)
+				if (!lblMessage || !this.message)
 				{
 					return;
 				}
 				
+				lblMessage.includeInLayout = lblMessage.visible = true;
 				if (isDropDown && historyPaths && historyPaths.length == 0)
 				{
 					value = "Select path to continue";
-					type = PathSetting.MESSAGE_CRITICAL;
+					type = AbstractSetting.MESSAGE_CRITICAL;
 				}
 
 				switch(type)
 				{
-					case PathSetting.MESSAGE_CRITICAL:
+					case AbstractSetting.MESSAGE_CRITICAL:
 						lblMessage.setStyle("color", 0xff0000);
 						break;
-					case PathSetting.MESSAGE_IMPORTANT:
+					case AbstractSetting.MESSAGE_IMPORTANT:
 						lblMessage.setStyle("color", 0x0099ff);
 						break;
 					default:
@@ -126,11 +126,11 @@
 	            {
 	                if (setting.directory)
 					{
-						model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled, setting.stringValue);
+						model.fileCore.browseForDirectory("Select directory", openFile);
 					}
 	                else
 					{
-						model.fileCore.browseForOpen("Select file", openFile, openFileCancelled, null, setting.stringValue);
+						model.fileCore.browseForOpen("Select file", openFile);
 					} // for Balsmiq project we need only .xml file to get selected.
 	            }
 	        }
@@ -197,14 +197,8 @@
 	            setting.stringValue = fileDir.nativePath;
 	            historyPaths.addItem(setting.stringValue);
 	            cmbPath.selectedItem = setting.stringValue;
-	            file = null;
 	
-	            setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
-	        }
-	
-	        private function openFileCancelled():void
-	        {
-	            file = null;
+	            setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 	        }
 	
 	        protected function onCreationCompletes(event:FlexEvent):void
@@ -241,7 +235,7 @@
 					cmbPath.selectedItem = setting.provider[setting.name];
 	            }
 				
-				setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
+				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 
 				setMessage(this.message, this.messageType);
 	        }
@@ -343,7 +337,7 @@
 	        protected function cmbPath_changeHandler(event:IndexChangeEvent):void
 	        {
 	            setting.stringValue = cmbPath.selectedItem;
-				setting.dispatchEvent(new Event(PathSetting.PATH_SELECTED));
+				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 	        }
 	
 	        protected function onRemovedFromStage(event:Event):void
@@ -384,7 +378,7 @@
 				 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
 	<s:Label id="lblMessage" 
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
-			 fontSize="12"/>
+			 fontSize="12" includeInLayout="false" visible="false"/>
 	<s:HGroup id="hgUndefinedSDK" 
 			  width="100%" verticalAlign="middle" gap="4"
 			  visible="false" includeInLayout="false">

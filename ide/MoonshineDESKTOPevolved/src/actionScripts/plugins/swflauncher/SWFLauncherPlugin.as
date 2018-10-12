@@ -38,12 +38,12 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.plugins.swflauncher.launchers.DeviceLauncher;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-	import actionScripts.plugins.swflauncher.launchers.DeviceLauncher;
 	
 	public class SWFLauncherPlugin extends PluginBase
 	{	
@@ -98,7 +98,7 @@ package actionScripts.plugins.swflauncher
 			else
 			{
 				// Open with default app
-				launchExternal(event.file);
+				launchExternal(event.url || event.file);
 			}
 
 			warning("Application " + event.project.name + " started.");
@@ -312,9 +312,9 @@ package actionScripts.plugins.swflauncher
 				print("%s", data);
 			}
 		}
-		protected function launchExternal(file:File):void
+		protected function launchExternal(file:Object):void
 		{
-			var request: URLRequest = new URLRequest(file.url);
+			var request: URLRequest = new URLRequest((file is File) ? file.url : (file as String));
 			try 
 			{
 				navigateToURL(request, '_blank'); // second argument is target

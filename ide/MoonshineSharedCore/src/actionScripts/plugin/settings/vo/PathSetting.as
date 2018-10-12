@@ -25,11 +25,6 @@ package actionScripts.plugin.settings.vo
 	[Event(name="pathSelected", type="flash.events.Event")]
 	public class PathSetting extends AbstractSetting
 	{
-		public static const PATH_SELECTED:String = "pathSelected";
-		public static const MESSAGE_CRITICAL:String = "MESSAGE_CRITICAL";
-		public static const MESSAGE_IMPORTANT:String = "MESSAGE_IMPORTANT";
-		public static const MESSAGE_NORMAL:String = "MESSAGE_NORMAL";
-		
 		[Bindable]
 		public var directory:Boolean;
 		
@@ -39,9 +34,6 @@ package actionScripts.plugin.settings.vo
 
 		private var _isEditable:Boolean = true;
 		private var _path:String;
-
-		private var message:String;
-		private var messageType:String;
 
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
 		{
@@ -70,7 +62,7 @@ package actionScripts.plugin.settings.vo
 			else
 			{
 				message = value;
-				messageType = value;
+				messageType = type;
 			}
 		}
 		

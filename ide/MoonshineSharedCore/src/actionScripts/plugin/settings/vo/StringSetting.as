@@ -48,7 +48,21 @@ package actionScripts.plugin.settings.vo
 			//rdr.text.setStyle("backgroundColor","")
 			rdr.setting = this;
 			rdr.enabled = _isEditable;
+			rdr.setMessage(message, messageType);
 			return rdr;
+		}
+		
+		public function setMessage(value:String, type:String=MESSAGE_NORMAL):void
+		{
+			if (rdr)
+			{
+				rdr.setMessage(value, type);
+			}
+			else
+			{
+				message = value;
+				messageType = type;
+			}
 		}
 		
 		public function set isEditable(value:Boolean):void

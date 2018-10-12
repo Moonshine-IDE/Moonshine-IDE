@@ -36,6 +36,7 @@ package actionScripts.plugins.svn
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
@@ -112,7 +113,7 @@ package actionScripts.plugins.svn
 		public function getSettingsList():Vector.<ISetting>
 		{
 			var binaryPath:PathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false);
-			binaryPath.setMessage("SVN binary needs to be command-line compliant", PathSetting.MESSAGE_IMPORTANT);
+			binaryPath.setMessage("SVN binary needs to be command-line compliant", AbstractSetting.MESSAGE_IMPORTANT);
 			
 			return Vector.<ISetting>([
 				binaryPath

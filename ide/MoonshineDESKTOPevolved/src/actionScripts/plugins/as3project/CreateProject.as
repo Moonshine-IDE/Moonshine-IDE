@@ -44,6 +44,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.ListSetting;
@@ -378,7 +379,7 @@ package actionScripts.plugins.as3project
 		{
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
-			newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
 			if (eventObject.isExport)
@@ -431,9 +432,9 @@ package actionScripts.plugins.as3project
 			
 			if (tmpFile) 
 			{
-				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), PathSetting.MESSAGE_CRITICAL);
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
-			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, PathSetting.MESSAGE_IMPORTANT);
+			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, AbstractSetting.MESSAGE_IMPORTANT);
 			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			
 			if (newProjectPathSetting.stringValue == "") 
@@ -481,7 +482,7 @@ package actionScripts.plugins.as3project
 			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
 			if (newProjectPathSetting) 
 			{
-				newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 			}
 			

@@ -31,6 +31,7 @@ package actionScripts.plugins.swflauncher.event
 		public var file:File;
 		public var project:ProjectVO;
 		public var sdk:File;
+		public var url:String;
 		
 		public function SWFLaunchEvent(type:String, file:File, project:ProjectVO=null, sdk:File=null)
 		{

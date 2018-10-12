@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package visualEditor.plugin
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
@@ -31,10 +35,6 @@ package visualEditor.plugin
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.tabview.CloseTabEvent;
-
-    import flash.display.DisplayObject;
-
-    import flash.events.Event;
 
     public class ExportToPrimeFacesPlugin extends PluginBase
     {
@@ -136,7 +136,7 @@ package visualEditor.plugin
             projectWithExistingsSourceSetting = new BooleanSetting(project, "isExportedToExistingSource", "Project with existing source", true);
 
             newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
-            newProjectPathSetting.addEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+            newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
             projectWithExistingsSourceSetting.addEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
 
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
@@ -152,7 +152,7 @@ package visualEditor.plugin
             if (canSaveProject(newProjectLocation))
             {
                 newProjectPathSetting.setMessage("(Project can not be created in an existing project directory)\n"+ newProjectLocation.fileBridge.nativePath,
-                                                PathSetting.MESSAGE_CRITICAL);
+					AbstractSetting.MESSAGE_CRITICAL);
             }
             else
             {
@@ -361,7 +361,7 @@ package visualEditor.plugin
             exportView.removeEventListener(SettingsView.EVENT_SAVE, onProjectCreateExecute);
             if (newProjectPathSetting)
             {
-                newProjectPathSetting.removeEventListener(PathSetting.PATH_SELECTED, onProjectPathChanged);
+                newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
                 newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
                 projectWithExistingsSourceSetting.removeEventListener(BooleanSetting.VALUE_UPDATED, onProjectWithExistingSourceValueUpdated);
             }
