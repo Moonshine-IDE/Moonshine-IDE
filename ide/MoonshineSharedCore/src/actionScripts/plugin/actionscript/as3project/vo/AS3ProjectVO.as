@@ -209,6 +209,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var tmpCollection:ArrayCollection;
 			//additional.isEditable = air;
 			htmlFilePath.isEditable = !air && !isLibraryProject;
+			customHTMLFilePath.isEditable = !air && !isLibraryProject;
 			nativeExtensionPath.isEditable = air;
 			mobileRunSettings.visible = isMobile;
 			
