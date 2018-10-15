@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Go to Definition: Added feature to go to definitions that are defined in SWC files. This will open a temporary, read-only file that displays the public API.
 * Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
 * Go to Type Definition: New menu command to go to the definition of a variable or property's type.
-* Project Run Settings: New field for browser based projects to launch by custom URL.
+* Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.14.0.
@@ -29,7 +29,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Fixed issue where Copy/Paste was failing in Grid.
 * Visual Editor PrimeFaces: Fixed issue where TabView label did not update after reopening the saved file.
 * Apache Royale: Fixed issue where Moonshine could not build [MX examples](https://github.com/apache/royale-asjs/tree/develop/examples/mxroyale).
-* Search: Fixed issue where searching "Backward" did not work.
+* Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
 * Language server: Fixed issue where Java instance continued running after application exit.
 
