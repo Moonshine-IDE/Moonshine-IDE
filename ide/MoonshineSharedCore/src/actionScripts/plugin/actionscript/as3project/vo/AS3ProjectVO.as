@@ -306,7 +306,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
 			customHTMLFilePath = new StringSetting(this, "customHTMLPath", "Custom URL to Launch");
-			customHTMLFilePath.setMessage("Leave this blank if you don't override 'URL to Launch'\nUse HTTP/HTTPS to invoke browser URL");
+			customHTMLFilePath.setMessage("Leave this blank if you don't override 'URL to Launch'\nIf calling a server, prefix the URL with http:// or https://");
 			
 			outputPathSetting = new PathSetting(this, "outputPath", "Output Path", true, outputPath);
 			nativeExtensionPath = getExtensionsSettings();
