@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [1.16.0 - Pending]
+## Moonshine IDE [1.16.0]
 
 ### Added
 * Visual Editor: Added **Organizer** to allow users to view the structure of the mockup and change the order or nesting of the components.
@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Run Settings: New field for browser based projects to launch by custom URL.
 
 ### Changed
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.14.0.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed
