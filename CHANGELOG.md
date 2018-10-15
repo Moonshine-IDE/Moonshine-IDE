@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Go to Definition: Added feature to go to definitions that are defined in SWC files. This will open a temporary, read-only file that displays the public API.
 * Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
 * Go to Type Definition: New menu command to go to the definition of a variable or property's type.
+* Project Run Settings: New field for browser based projects to launch by custom URL.
 
 ### Changed
 * Open file/folder dialog will retain the last opened location.
