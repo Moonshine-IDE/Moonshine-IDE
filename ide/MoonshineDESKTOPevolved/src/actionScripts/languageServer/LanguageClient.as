@@ -51,6 +51,7 @@ package actionScripts.languageServer
 	import actionScripts.events.CodeActionsEvent;
 	import actionScripts.valueObjects.CodeAction;
 	import actionScripts.utils.LSPUtil;
+	import actionScripts.valueObjects.DocumentSymbol;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1090,12 +1091,21 @@ package actionScripts.languageServer
 		private function handleSymbolsResponse(result:Object):void
 		{
 			var resultSymbolInfos:Array = result as Array;
-			var eventSymbolInfos:Vector.<SymbolInformation> = new <SymbolInformation>[];
+			var eventSymbolInfos:Array = [];
 			var resultSymbolInfosCount:int = resultSymbolInfos.length;
 			for(var i:int = 0; i < resultSymbolInfosCount; i++)
 			{
 				var resultSymbolInfo:Object = resultSymbolInfos[i];
-				eventSymbolInfos[i] = parseSymbolInformation(resultSymbolInfo);
+				if("location" in resultSymbolInfo)
+				{
+					//if location is defined, it's a flat SymbolInformation
+					eventSymbolInfos[i] = parseSymbolInformation(resultSymbolInfo);
+				}
+				else
+				{
+					//otherwise, it's a hierarchical DocumentSymbol
+					eventSymbolInfos[i] = parseDocumentSymbol(resultSymbolInfo);
+				}
 			}
 			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, eventSymbolInfos));
 		}
@@ -1121,12 +1131,38 @@ package actionScripts.languageServer
 			return true;
 		}
 
+		private function parseDocumentSymbol(original:Object):DocumentSymbol
+		{
+			var vo:DocumentSymbol = new DocumentSymbol();
+			vo.name = original.name;
+			vo.detail = original.detail;
+			vo.kind = original.kind;
+			vo.deprecated = original.deprecated;
+			vo.range = parseRange(original.range);
+			vo.selectionRange = parseRange(original.selectionRange);
+			if(original.children && original.children is Array)
+			{
+				var children:Vector.<DocumentSymbol> = new <DocumentSymbol>[];
+				var originalChildren:Array = original.children as Array;
+				var childCount:int = originalChildren.length;
+				for(var i:int = 0; i < childCount; i++)
+				{
+					var originalChild:Object = originalChildren[i];
+					var child:DocumentSymbol = parseDocumentSymbol(originalChild);
+					children[i] = child;
+				}
+				vo.children = children;
+			}
+			return vo;
+		}
+
 		private function parseSymbolInformation(original:Object):SymbolInformation
 		{
 			var vo:SymbolInformation = new SymbolInformation();
 			vo.name = original.name;
 			vo.kind = original.kind;
 			vo.containerName = original.containerName;
+			vo.deprecated = original.deprecated;
 			vo.location = parseLocation(original.location);
 			return vo;
 		}
@@ -1683,7 +1719,7 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsWorkspaceSymbols)
 			{
-				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, new <SymbolInformation>[]));
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, []));
 				return;
 			}
 
@@ -1708,7 +1744,7 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsDocumentSymbols)
 			{
-				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, new <SymbolInformation>[]));
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, []));
 				return;
 			}
 

@@ -8,9 +8,10 @@ package actionScripts.events
 	{
 		public static const EVENT_SHOW_SYMBOLS:String = "newShowSymbols";
 
-		public var symbols:Vector.<SymbolInformation>;
+		//contains SymbolInformation or DocumentSymbol
+		public var symbols:Array;
 
-		public function SymbolsEvent(type:String, symbols:Vector.<SymbolInformation>)
+		public function SymbolsEvent(type:String, symbols:Array)
 		{
 			super(type, false, false);
 			this.symbols = symbols;

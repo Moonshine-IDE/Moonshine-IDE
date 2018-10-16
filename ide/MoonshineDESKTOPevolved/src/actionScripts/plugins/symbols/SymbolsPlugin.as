@@ -34,6 +34,7 @@ package actionScripts.plugins.symbols
 	import mx.core.UIComponent;
 
 	import mx.managers.PopUpManager;
+	import actionScripts.valueObjects.DocumentSymbol;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -91,9 +92,19 @@ package actionScripts.plugins.symbols
 			else
 			{
 				var collection:ArrayCollection = this.symbolsView.symbols;
-				collection.filterFunction = function(item:SymbolInformation):Boolean
+				collection.filterFunction = function(item:Object):Boolean
 				{
-					return item.name.indexOf(query) >= 0;
+					if(item is SymbolInformation)
+					{
+						var symbolInfo:SymbolInformation = SymbolInformation(item);
+						return symbolInfo.name.indexOf(query) >= 0;
+					}
+					else if(item is DocumentSymbol)
+					{
+						var documentSymbol:DocumentSymbol = DocumentSymbol(item);
+						return documentSymbol.name.indexOf(query) >= 0;
+					}
+					return false;
 				};
 				collection.refresh();
 			}
@@ -132,15 +143,41 @@ package actionScripts.plugins.symbols
 		{
 			var collection:ArrayCollection = symbolsView.symbols;
 			collection.removeAll();
-			var symbols:Vector.<SymbolInformation> = event.symbols;
+			var symbols:Array = event.symbols;
 			var itemCount:int = symbols.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
-				var symbol:SymbolInformation = symbols[i];
-				collection.addItem(symbol);
+				var symbol:Object = symbols[i];
+				if(symbol is SymbolInformation)
+				{
+					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
+					collection.addItem(symbolInfo);
+				}
+				else if(symbol is DocumentSymbol)
+				{
+					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
+					collection.addItem(documentSymbol);
+					this.addDocumentSymbolChildren(documentSymbol, collection);
+				}
 			}
 			collection.filterFunction = null;
 			collection.refresh();
+		}
+
+		private function addDocumentSymbolChildren(documentSymbol:DocumentSymbol, collection:ArrayCollection):void
+		{
+			if(!documentSymbol.children)
+			{
+				return;
+			}
+			var children:Vector.<DocumentSymbol> = documentSymbol.children;
+			var childCount:int = children.length;
+			for(var j:int = 0; j < childCount; j++)
+			{
+				var child:DocumentSymbol = children[j];
+				collection.addItem(child);
+				this.addDocumentSymbolChildren(child, collection);
+			}
 		}
 
 	}

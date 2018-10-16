@@ -117,7 +117,7 @@ package actionScripts.ui.editor.text
                 return;
             }
 
-            var symbols:Vector.<SymbolInformation>;
+            var symbols:Array;
             if (this.completionListType == CLASSES_LIST)
             {
                 symbols = event.symbols.filter(filterClasses);
@@ -135,7 +135,11 @@ package actionScripts.ui.editor.text
             var symbolsCount:int = symbols.length;
             for (var i:int = 0; i < symbolsCount; i++)
             {
-                var symbolInformation:SymbolInformation = symbols[i];
+                var symbolInformation:SymbolInformation = symbols[i] as SymbolInformation;
+                if(!symbolInformation)
+                {
+                    continue;
+                }
                 var packageName:String = symbolInformation.containerName ? symbolInformation.containerName + "." + symbolInformation.name : "";
                 var completionItemKind:int = getCompletionItemType(symbolInformation.kind);
 

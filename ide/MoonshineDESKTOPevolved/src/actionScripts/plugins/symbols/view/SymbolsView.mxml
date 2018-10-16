@@ -27,6 +27,9 @@
 		import actionScripts.ui.editor.text.TextEditorModel;
 		import actionScripts.ui.editor.text.TextEditor;
 		import actionScripts.events.OpenLocationEvent;
+		import actionScripts.valueObjects.DocumentSymbol;
+		import actionScripts.valueObjects.Location;
+		import actionScripts.valueObjects.Range;
 
 		public static const EVENT_QUERY_CHANGE:String = "queryChange";
 
@@ -65,9 +68,23 @@
 				return;
 			}
 
-			var tmpObject:SymbolInformation = lstSymbols.selectedItem as SymbolInformation;
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, tmpObject.location));
+			var selectedItem:Object = lstSymbols.selectedItem;
+			if(selectedItem is SymbolInformation)
+			{
+				var symbolInfo:SymbolInformation = selectedItem as SymbolInformation;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, symbolInfo.location));
+			}
+			else if(selectedItem is DocumentSymbol)
+			{
+				var documentSymbol:DocumentSymbol = selectedItem as DocumentSymbol;
+				var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var range:Range = documentSymbol.range;
+				var location:Location = new Location(uri, range);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
+			}
 
 			super.closeThis();
 		}
