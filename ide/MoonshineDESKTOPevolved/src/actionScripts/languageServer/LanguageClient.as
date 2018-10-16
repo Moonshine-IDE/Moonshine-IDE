@@ -490,6 +490,7 @@ package actionScripts.languageServer
 					documentSymbol:
 					{
 						dynamicRegistration: false,
+						hierarchicalDocumentSymbolSupport: false,
 						symbolKind:
 						{
 							//valueSet: []
