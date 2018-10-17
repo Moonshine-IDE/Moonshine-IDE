@@ -323,7 +323,7 @@ package actionScripts.ui.editor.text
                 if (!isLineForAutoCloseAttr)
                 {
                     var linesCount:int = editor.model.lines.length;
-                    var searchedLinesCount:int = editor.model.selectedLineIndex - 50;
+                    var searchedLinesCount:int = editor.model.selectedLineIndex - 250;
                     if (searchedLinesCount < 0)
                     {
                         searchedLinesCount = 0;
@@ -333,12 +333,22 @@ package actionScripts.ui.editor.text
                     {
                         line = editor.model.lines[i];
                         selectedLineText = line.text;
+
+                        if (selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1 ||
+                            selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1)
+                        {
+                            return false;
+                        }
+                    }
+
+                    for (var j:int = editor.model.selectedLineIndex; j > searchedLinesCount; j--)
+                    {
+                        line = editor.model.lines[j];
+                        selectedLineText = line.text;
                         if (selectedLineText)
                         {
-                            if ((selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) != -1 &&
-								 selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) != -1) ||
-								selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1 ||
-								selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1)
+                            if (selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) != -1 &&
+								 selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) != -1)
                             {
                                 break;
                             }
@@ -354,23 +364,21 @@ package actionScripts.ui.editor.text
 
                     if (isLineForAutoCloseAttr)
                     {
-                        searchedLinesCount = editor.model.selectedLineIndex + 50;
+                        searchedLinesCount = editor.model.selectedLineIndex + 250;
                         if (searchedLinesCount > linesCount)
                         {
                             searchedLinesCount = linesCount;
                         }
 
                         isLineForAutoCloseAttr = false;
-                        for (var j:int = editor.model.selectedLineIndex; j < searchedLinesCount; j++)
+                        for (var k:int = editor.model.selectedLineIndex; k < searchedLinesCount; k++)
                         {
-                            line = editor.model.lines[j];
+                            line = editor.model.lines[k];
                             selectedLineText = line.text;
                             if (selectedLineText.indexOf(CompletionListCodeTokens.XML_CLOSE_TAG) != -1 &&
-									selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)
+                                selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)
                             {
-								if (selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) == -1 &&
-									selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) == -1 &&
-                                    selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) == -1)
+								if (selectedLineText.indexOf(CompletionListCodeTokens.XML_OPEN_TAG) == -1)
 								{
                                     isLineForAutoCloseAttr = true;
                                     break;
