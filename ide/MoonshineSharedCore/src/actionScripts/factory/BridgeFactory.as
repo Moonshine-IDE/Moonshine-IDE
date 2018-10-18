@@ -20,6 +20,7 @@
 package actionScripts.factory
 {
     import actionScripts.interfaces.IClipboardBridge;
+    import actionScripts.interfaces.IPrivacyPolicyBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
 
     import flash.system.ApplicationDomain;
@@ -102,6 +103,12 @@ package actionScripts.factory
 			return gb;
 		}
 
+        public static function getPrivacyPolicyInstance():IPrivacyPolicyBridge
+        {
+            var clsToCreate:Object = getClassToCreate("actionScripts.impls.IPrivacyPolicyBridgeImpl");
+            return new clsToCreate();
+        }
+
 		public static function getJavaInstance(): IJavaBridge 
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IJavaBridgeImpl");
@@ -136,5 +143,5 @@ package actionScripts.factory
 			var tmpClass: Object = ApplicationDomain.currentDomain.getDefinition(className);
 			return tmpClass;
 		}
-	}
+    }
 }

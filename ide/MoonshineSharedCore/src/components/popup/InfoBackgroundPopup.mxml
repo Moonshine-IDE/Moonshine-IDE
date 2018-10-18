@@ -21,24 +21,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5" title="About the background image"
-				   autoLayout="true" width="640" height="650"
-				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin" xmlns:divider="actionScripts.ui.divider.*" xmlns:splashscreen="components.views.splashscreen.*">
-	<fx:Declarations>
-	</fx:Declarations>
-	
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   backgroundColor="0xf5f5f5" title="About the background image"
+										   autoLayout="true" width="640" height="650"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:divider="actionScripts.ui.divider.*"
+										   xmlns:splashscreen="components.views.splashscreen.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin">
 	<divider:IDEVDividedBox width="100%" height="100%">
 		<splashscreen:ArtContainer width="100%" minHeight="20" height="200"/>
 		<s:Group width="100%" height="100%">
 			<!-- divider class direct children always scales to full width/height.
 				but we need some space at bottom to look the scroller descent -->
 			<s:TextArea editable="false" focusEnabled="false"
-								width="100%" height="96%"
-								paddingLeft="12" paddingTop="9" paddingRight="13"
-								skinClass="components.skins.TransparentTextAreaSkin" creationComplete="event.target.setStyle('borderVisible', 'false')">
+						width="100%" height="96%"
+						paddingLeft="12" paddingTop="9" paddingRight="13"
+						borderVisible="true"
+						skinClass="components.skins.TransparentTextAreaSkin">
 				<s:textFlow>
 					<s:TextFlow>
 						<s:p fontSize="12" fontWeight="bold">Andromeda on the Rocks</s:p>

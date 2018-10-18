@@ -29,13 +29,11 @@ package actionScripts.impls
     import mx.controls.HTML;
     import mx.core.FlexGlobals;
     import mx.core.IFlexDisplayObject;
-    import mx.core.IVisualElement;
     import mx.resources.IResourceManager;
     import mx.resources.ResourceManager;
     
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
-    import actionScripts.events.LanguageServerEvent;
     import actionScripts.events.LanguageServerMenuEvent;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
@@ -105,11 +103,9 @@ package actionScripts.impls
     import actionScripts.utils.SoftwareVersionChecker;
     import actionScripts.utils.Untar;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.Settings;
     
     import components.containers.DownloadNewFlexSDK;
     import components.popup.DefineFolderAccessPopup;
-    import components.popup.SoftwareInformation;
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
@@ -169,7 +165,7 @@ package actionScripts.impls
 		{
 			return (new TourDeFlexContentsView);
 		}
-		
+
 		public function getTourDeEditor(swfSource:String):BasicTextEditor
 		{
 			return (new TourDeTextEditor(swfSource));
@@ -381,13 +377,11 @@ package actionScripts.impls
 				new MenuItem("Others", [
 					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
 				]),
-				new MenuItem("Help", Settings.os == "win"? [ 
-					new MenuItem('About', null, null, MenuPlugin.EVENT_ABOUT),
-					new MenuItem('Useful Links', null, null, HelpPlugin.EVENT_AS3DOCS),
-					new MenuItem('Tour De Flex', null, null, HelpPlugin.EVENT_TOURDEFLEX)]:
-					[new MenuItem('Useful Links', null, null, HelpPlugin.EVENT_AS3DOCS),
-						new MenuItem('Tour De Flex', null, null, HelpPlugin.EVENT_TOURDEFLEX)
-					])
+				new MenuItem(resourceManager.getString('resources', 'HELP'), [
+					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
+					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
+                    new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY)])
 			]);
 			
 			// adding in-projet search for desktop only
@@ -434,11 +428,6 @@ package actionScripts.impls
 		public function getSDKInstallerView():IFlexDisplayObject
 		{
 			return (new DownloadNewFlexSDK);
-		}
-		
-		public function getSoftwareInformationView():IVisualElement
-		{
-			return (new SoftwareInformation());
 		}
 		
 		public function getJavaPath(completionHandler:Function):void

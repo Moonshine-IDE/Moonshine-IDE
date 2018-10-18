@@ -110,9 +110,9 @@ package actionScripts.plugins.ant
 				cmdFile = new File("/bin/bash");
 			}
 			
-			GlobalEventDispatcher.getInstance().addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
-			GlobalEventDispatcher.getInstance().addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
-			GlobalEventDispatcher.getInstance().addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
+			dispatcher.addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
+            dispatcher.addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
+            dispatcher.addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
 		}
 		
 		public function get antHomePath():String

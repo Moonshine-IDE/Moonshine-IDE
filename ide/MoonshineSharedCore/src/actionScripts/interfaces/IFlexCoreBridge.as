@@ -22,8 +22,7 @@ package actionScripts.interfaces
     import flash.display.DisplayObject;
     
     import mx.core.IFlexDisplayObject;
-    import mx.core.IVisualElement;
-    
+
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -65,9 +64,7 @@ package actionScripts.interfaces
 		function getSDKInstallerView():IFlexDisplayObject;
 		function getTourDeView():IPanelWindow;
 		function getTourDeEditor(swfSource:String):BasicTextEditor;
-		function getSoftwareInformationView():IVisualElement;
 		function getNewAntBuild():IFlexDisplayObject;
-		function updateFlashPlayerTrustContent(value:FileLocation):void;
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;

@@ -37,12 +37,7 @@ package actionScripts.impls
 		{
 			Window(about).open();
 		}
-		
-		public function orderToFront(about:IFlexDisplayObject):void
-		{
-			Window(about).nativeWindow.orderToFront();	
-		}
-		
+
 		public function setFocus(about:IFlexDisplayObject):void
 		{
 			Window(about).setFocus();
