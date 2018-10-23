@@ -334,13 +334,39 @@ package actionScripts.ui.editor.text
                         line = editor.model.lines[i];
                         selectedLineText = line.text;
 
-                        if (selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1 ||
-                            selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1)
+						var hasCdataOpen:Boolean = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1;
+						var hasCdataClose:Boolean = false;
+                        if (hasCdataOpen)
                         {
-                            return false;
+							var cdataOpenIndex:int = i;
+                            searchedLinesCount = editor.model.selectedLineIndex + 250;
+							if (searchedLinesCount > editor.model.lines.length)
+							{
+								searchedLinesCount = editor.model.lines.length;
+							}
+
+                            for (i = editor.model.selectedLineIndex; i < searchedLinesCount; i++)
+							{
+                                line = editor.model.lines[i];
+                                selectedLineText = line.text;
+								hasCdataClose = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1;
+								if (hasCdataClose)
+								{
+									break;
+								}
+							}
+
+                            if (hasCdataClose)
+							{
+								if (i > editor.model.selectedLineIndex && cdataOpenIndex < editor.model.selectedLineIndex)
+                                {
+                                    return false;
+                                }
+							}
                         }
                     }
 
+                    searchedLinesCount = editor.model.selectedLineIndex - 250;
                     for (var j:int = editor.model.selectedLineIndex; j > searchedLinesCount; j--)
                     {
                         line = editor.model.lines[j];

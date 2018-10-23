@@ -30,14 +30,12 @@ package actionScripts.languageServer
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.HtmlFormatter;
-    import actionScripts.utils.findOpenPort;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.Settings;
     
@@ -45,7 +43,6 @@ package actionScripts.languageServer
     import actionScripts.valueObjects.ProjectVO;
     import flash.events.EventDispatcher;
     import actionScripts.ui.editor.ActionScriptTextEditor;
-    import actionScripts.ui.editor.LanguageServerTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.StatusBarEvent;
