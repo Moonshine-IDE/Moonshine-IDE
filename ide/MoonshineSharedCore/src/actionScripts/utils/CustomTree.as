@@ -64,7 +64,10 @@ package actionScripts.utils {
                 var item:Object = childrenForOpen[i];
                 for each (var childForOpen:Object in dataProvider)
                 {
-                    if (childForOpen.hasOwnProperty(itemPropertyName) && childForOpen[itemPropertyName] == item)
+                    var folderLastSeparator:int = childForOpen.nativePath.lastIndexOf(childForOpen.file.fileBridge.separator);
+                    var folder:String = childForOpen.nativePath.substring(folderLastSeparator + 1);
+
+                    if ((childForOpen.hasOwnProperty(itemPropertyName) && childForOpen[itemPropertyName] == item) || folder == item)
                     {
                         if (!isItemOpen(childForOpen))
                         {
