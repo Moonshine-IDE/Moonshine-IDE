@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Visual Editor: Added **Organizer** to allow users to view the structure of the mockup and change the order or nesting of the components.
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
+* Visual Editor PrimeFaces: Added CDATA information to property panel if provided through component.
 * File association support for known file types.
 * New File: Added code completion for Superclass and Interfaces.
 * Java: Initial support for Java language project types, including code intelligence features.
@@ -32,6 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
 * Language server: Fixed issue where Java instance continued running after application exit.
+* Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
 
 ## Moonshine IDE [1.15.0]
 
