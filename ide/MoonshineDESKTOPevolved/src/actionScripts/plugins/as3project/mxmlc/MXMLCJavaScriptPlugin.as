@@ -46,7 +46,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
@@ -97,7 +96,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
 
-		private var cmdLine:CommandLine;
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -137,7 +135,6 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
 			dispatcher.addEventListener(CompilerEventBase.BUILD_AS_JAVASCRIPT, build);
-			cmdLine = new CommandLine();
 			reset();
 		}
 		
@@ -146,7 +143,6 @@ package actionScripts.plugins.as3project.mxmlc
 			super.deactivate();
 			reset();
 			shellInfo = null;
-			cmdLine = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -667,8 +663,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
 				var customFile:String = customSplit[0];
 				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
-				
-				cmdLine.write(customFile+" "+customArgs, pvo.folderLocation);
+
+                print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
 			}
 			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{

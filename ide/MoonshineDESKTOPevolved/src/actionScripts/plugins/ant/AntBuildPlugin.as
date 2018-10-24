@@ -39,16 +39,13 @@ package actionScripts.plugins.ant
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RunANTScriptEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -75,44 +72,36 @@ package actionScripts.plugins.ant
 		override public function get description():String	{ return "Apache Ant® Build Plugin. Esc exits."; }
 		
 		private var cmdFile:File;
-		private var cmdLine:CommandLine;
 		private var shellInfo:NativeProcessStartupInfo;
 		private var nativeProcess:NativeProcess;
 		private var errors:String = "";
 		private var exiting:Boolean = false;
-		private var _antHomePath:String;
 		private var antPath:String = "ant";
 		private var workingDir:FileLocation;
-		private var file:FileLocation;
 		private var selectProjectPopup:SelectOpenedFlexProject;
 		private var selectAntPopup:SelectAntFile;
 		private var antFiles:ArrayCollection = new ArrayCollection();
 		private var currentSDK:FileLocation;
-		private var _buildWithAnt:Boolean;
 		private var selectedProject:AS3ProjectVO;
 		private var  antBuildScreen:IFlexDisplayObject;
 		private var isASuccessBuild:Boolean;
-		//private var antConfigureVo:AntConfigureVo;
-		// test at master added
-		
+
+        private var _antHomePath:String;
+        private var _buildWithAnt:Boolean;
+
 		public function AntBuildPlugin() 
 		{
 			if (Settings.os == "win")
 			{
 				// in windows
-				antPath+=".bat";
+				antPath += ".bat";
 				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 			}
 			else
 			{
 				// in mac
-				//cmdFile = new File("/Applications/Utilities/Terminal.app");
 				cmdFile = new File("/bin/bash");
 			}
-			
-			GlobalEventDispatcher.getInstance().addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
-			GlobalEventDispatcher.getInstance().addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
-			GlobalEventDispatcher.getInstance().addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
 		}
 		
 		public function get antHomePath():String
@@ -124,6 +113,7 @@ package actionScripts.plugins.ant
 			
 			return _antHomePath;
 		}
+
 		public function set antHomePath(value:String):void
 		{
 			_antHomePath = value;
@@ -140,8 +130,12 @@ package actionScripts.plugins.ant
 		override public function activate():void
 		{
 			super.activate();
+
+            dispatcher.addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
+            dispatcher.addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
+            dispatcher.addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
 			dispatcher.addEventListener(EVENT_ANTBUILD, antBuildFileHandler);
-			cmdLine = new CommandLine();
+
 			reset();
 		}
 		
@@ -155,10 +149,7 @@ package actionScripts.plugins.ant
 		override public function deactivate():void 
 		{
 			super.deactivate();
-			nativeProcess.exit();
 			reset();
-			shellInfo = null;
-			cmdLine = null;
 		}
 		
 		override public function resetSettings():void
@@ -169,8 +160,9 @@ package actionScripts.plugins.ant
 		
 		private function reset():void 
 		{
+			stopShell();
+			shellInfo = null;
 			isASuccessBuild = false;
-			nativeProcess = null;
 			selectedProject = null;
 			model.antScriptFile = null;
 		}
@@ -208,7 +200,7 @@ package actionScripts.plugins.ant
 			}
 			else
 			{
-				currentSDK = IDEModel.getInstance().defaultSDK;
+				currentSDK = model.defaultSDK;
 			}
 			//If Flex_HOME or ANT_HOME is missing 	
 		  if(!currentSDK || !model.antHomePath)
@@ -225,15 +217,19 @@ package actionScripts.plugins.ant
 				  }
 			  }
 			  antBuildScreen = model.flexCore.getNewAntBuild();
-			  antBuildScreen.addEventListener(AntBuildEvent.ANT_BUILD,antBuildSelected);
+			  antBuildScreen.addEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
+
 			  if(currentSDK)
-				  (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
-			  GlobalEventDispatcher.getInstance().dispatchEvent(
-				  new AddTabEvent(antBuildScreen as IContentWindow)
-			  );  
+              {
+                  (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
+              }
+
+			  dispatcher.dispatchEvent(new AddTabEvent(antBuildScreen as IContentWindow));
 		  }
 		  else
-			  antBuildSelected(null);// Start Ant Process
+          {
+              antBuildSelected(null);// Start Ant Process
+          }
 		}
 		// For projec Menu
 		private function antBuildForSelectedProject(event:Event):void
@@ -305,7 +301,7 @@ package actionScripts.plugins.ant
 					var antFile:FileLocation = projectReference.folderLocation.resolvePath(projectReference.AntBuildPath);
 					if(antFile.fileBridge.exists)
 					{
-						IDEModel.getInstance().antScriptFile = projectReference.folderLocation.resolvePath(projectReference.AntBuildPath);
+						model.antScriptFile = projectReference.folderLocation.resolvePath(projectReference.AntBuildPath);
 						antBuildHandler();
 						return;
 					}
@@ -352,7 +348,7 @@ package actionScripts.plugins.ant
 						{
 							//Start Ant build if there is only one ant file
 							// Set Ant file in ModelLocatior
-							IDEModel.getInstance().antScriptFile = antFiles.getItemAt(0) as FileLocation;
+							model.antScriptFile = antFiles.getItemAt(0) as FileLocation;
 							antBuildHandler();
 						}
 					}
@@ -370,7 +366,7 @@ package actionScripts.plugins.ant
 		function onAntFileSelected(event:Event):void
 		{
 			//Start build which is selected from Popup
-			IDEModel.getInstance().antScriptFile = selectAntPopup.selectedAntFile;
+			model.antScriptFile = selectAntPopup.selectedAntFile;
 			antBuildHandler();
 		}
 		
@@ -382,28 +378,43 @@ package actionScripts.plugins.ant
 		}
 	  }
 		
-	   private function antBuildSelected(e:AntBuildEvent):void{
-		   if(e)
+	   private function antBuildSelected(event:AntBuildEvent):void
+	   {
+		   if(event)
 		   {
-			   if(e.selectSDK)
-				   currentSDK = e.selectSDK;
-			   if(e.antHome)
-				   antHomePath = e.antHome.fileBridge.nativePath;
+			   if(event.selectSDK)
+               {
+                   currentSDK = event.selectSDK;
+               }
+
+			   if(event.antHome)
+               {
+                   antHomePath = event.antHome.fileBridge.nativePath;
+               }
+
 			   if(antBuildScreen)
-				   GlobalEventDispatcher.getInstance().dispatchEvent(
-					   new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, antBuildScreen as DisplayObject)
+               {
+                   dispatcher.dispatchEvent(
+						   new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, antBuildScreen as DisplayObject)
 				   );
+               }
 		   }
-		   if (!IDEModel.getInstance().antScriptFile)
+
+		   if (!model.antScriptFile)
 		   {
 				// Open a file chooser for select Ant script file Ant->Configue
 				model.fileCore.browseForOpen("Select Build File", selectBuildFile, null, ["*.xml"]);
 		  }
 		  else
 		  {   //If Ant file is already selected from AntScreen
-				workingDir = new FileLocation(IDEModel.getInstance().antScriptFile.fileBridge.nativePath);
+				workingDir = new FileLocation(model.antScriptFile.fileBridge.nativePath);
 				startAntProcess(workingDir);
 		  }
+
+		   if (antBuildScreen)
+           {
+               antBuildScreen.removeEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
+           }
 		}
 
 		protected function selectBuildFile(fileSelected:Object):void
@@ -414,7 +425,7 @@ package actionScripts.plugins.ant
 
 		private function getCurrentSDK(pvo:AS3ProjectVO):FileLocation
 		{
-			return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (IDEModel.getInstance().defaultSDK ? new FileLocation(IDEModel.getInstance().defaultSDK.fileBridge.getFile.nativePath) : null);
+			return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (model.defaultSDK ? new FileLocation(model.defaultSDK.fileBridge.getFile.nativePath) : null);
 		}
 
 		private function startAntProcess(buildDir:FileLocation):void
@@ -502,11 +513,13 @@ package actionScripts.plugins.ant
 
 		private function initShell():void 
 		{
-			if (nativeProcess) {
-				nativeProcess.exit();
+			if (nativeProcess)
+			{
 				exiting = true;
 				reset();
-			} else {
+			}
+			else
+			{
 				startShell();
 			}
 		}
@@ -522,18 +535,6 @@ package actionScripts.plugins.ant
 			nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			nativeProcess.start(shellInfo);
 			print("Ant build Running");
-			
-			// @for test purpose
-			/*setTimeout(function():void
-			{
-				if (nativeProcess && nativeProcess.running)
-				{
-					print("Terminated");
-					nativeProcess.exit(true);
-					var task:TaskListManager = new TaskListManager();
-					task.searchAgainstServiceName(true);
-				}
-			}, 4000);*/
 		}
 		
 		private function shellData(e:ProgressEvent):void 
@@ -626,8 +627,21 @@ package actionScripts.plugins.ant
 			}
 			
 			reset();
-			
 		}
+
+        private function stopShell():void
+        {
+            if (!nativeProcess) return;
+            if (nativeProcess.running)
+			{
+				nativeProcess.exit();
+            }
+
+            nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+            nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+            nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+            nativeProcess = null;
+        }
 
 		protected function compilerError(...msg):void 
 		{
