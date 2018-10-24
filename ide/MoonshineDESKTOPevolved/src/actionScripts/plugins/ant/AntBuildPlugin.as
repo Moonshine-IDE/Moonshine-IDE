@@ -60,7 +60,6 @@ package actionScripts.plugins.ant
 	
 	import components.popup.SelectAntFile;
 	import components.popup.SelectOpenedFlexProject;
-	import components.views.project.TreeView;
 
     public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -82,9 +81,9 @@ package actionScripts.plugins.ant
 		private var selectAntPopup:SelectAntFile;
 		private var antFiles:ArrayCollection = new ArrayCollection();
 		private var currentSDK:FileLocation;
-		private var selectedProject:AS3ProjectVO;
 		private var  antBuildScreen:IFlexDisplayObject;
 		private var isASuccessBuild:Boolean;
+		private var selectedProject:AS3ProjectVO;
 
         private var _antHomePath:String;
         private var _buildWithAnt:Boolean;
@@ -178,12 +177,13 @@ package actionScripts.plugins.ant
 			antBuildHandler();
 		}
 		//Call from Project explorer
-		private function runAntScriprHandler(event:Event):void{
+		private function runAntScriprHandler(event:Event):void
+		{
 			if (!model.antScriptFile.fileBridge.checkFileExistenceAndReport()) return;
 			
 			_buildWithAnt = true;
-			var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();	
-			selectedProject = tmpTreeView.getProjectBySelection();
+			selectedProject = model.activeProject as AS3ProjectVO;
+
 			antBuildHandler();
 		}
 		
@@ -192,7 +192,6 @@ package actionScripts.plugins.ant
 		// To check if custom sdk is set or not
 			if(_buildWithAnt)
 			{
-				//var pvo:ProjectVO = model.activeProject;
 				if(selectedProject)
 				{
 					 currentSDK = getCurrentSDK(selectedProject);
@@ -238,8 +237,6 @@ package actionScripts.plugins.ant
 		
 			if (model.mainView.isProjectViewAdded)
 			{
-				var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();	
-				selectedProject = tmpTreeView.getProjectBySelection();
 				//If any project from treeview is selected
 				if (selectedProject)
 				{
