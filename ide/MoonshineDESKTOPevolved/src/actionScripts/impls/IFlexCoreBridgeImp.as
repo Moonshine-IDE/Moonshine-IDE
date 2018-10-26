@@ -356,9 +356,6 @@ package actionScripts.impls
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),
-				new MenuItem(resourceManager.getString('resources','ANT'), [
-					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
-				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
 					new MenuItem(null),
@@ -379,7 +376,8 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST)
 				]),
 				new MenuItem("Others", [
-					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
+					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER),
+                    new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem("Help", Settings.os == "win"? [ 
 					new MenuItem('About', null, null, MenuPlugin.EVENT_ABOUT),
