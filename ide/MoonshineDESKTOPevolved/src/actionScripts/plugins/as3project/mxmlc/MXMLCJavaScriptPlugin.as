@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import flash.desktop.NativeProcess;
+    import actionScripts.plugin.project.ProjectType;
+
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -211,7 +213,7 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// if above is false
 				selectProjectPopup = new SelectOpenedFlexProject();
-				selectProjectPopup.type = SelectOpenedFlexProject.TYPE_FLEXJS;
+				selectProjectPopup.projectType = ProjectType.AS3PROJ_AS_AIR;
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
 				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);

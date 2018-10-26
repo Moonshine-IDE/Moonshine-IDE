@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
-	import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -130,7 +130,7 @@ package actionScripts.plugins.ant
 		{
 			super.activate();
 
-            dispatcher.addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriprHandler);
+            dispatcher.addEventListener(RunANTScriptEvent.ANT_BUILD,runAntScriptHandler);
             dispatcher.addEventListener(NewFileEvent.EVENT_ANT_BIN_URL_SET, onAntURLSet);
             dispatcher.addEventListener(SELECTED_PROJECT_ANTBUILD, antBuildForSelectedProject);
 			dispatcher.addEventListener(EVENT_ANTBUILD, antBuildFileHandler);
@@ -177,7 +177,7 @@ package actionScripts.plugins.ant
 			antBuildHandler();
 		}
 		//Call from Project explorer
-		private function runAntScriprHandler(event:Event):void
+		private function runAntScriptHandler(event:Event):void
 		{
 			if (!model.antScriptFile.fileBridge.checkFileExistenceAndReport()) return;
 			
@@ -237,6 +237,7 @@ package actionScripts.plugins.ant
 		
 			if (model.mainView.isProjectViewAdded)
 			{
+                selectedProject = model.activeProject as AS3ProjectVO;
 				//If any project from treeview is selected
 				if (selectedProject)
 				{
@@ -252,129 +253,136 @@ package actionScripts.plugins.ant
 					selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				}
 			}
-			
-			function onProjectSelected(event:Event):void
-			{
-				checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
-				onProjectSelectionCancelled(null);
-			}
-			
-			function onProjectSelectionCancelled(event:Event):void
-			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
-				selectProjectPopup = null;
-			}
-			
-			function checkForAntFile(projectReference:AS3ProjectVO):void{
-				// Check if Ant file is set for project or not
-				var buildFlag:Boolean = false;
-				var AntFlag:Boolean = false;
-				antFiles = new ArrayCollection();
-				if(!projectReference.AntBuildPath)
-				{
-				// Find build folder within the selected folder
-				//find for build.xml file with <project> tag
-				for( var i:int=0;i<projectReference.projectFolder.children.length;i++){
-					if(projectReference.projectFolder.children[i].name == "build")
-					{
-						 buildFlag = true;
-						for(var j:int=0;j<projectReference.projectFolder.children[i].children.length;j++)
-						{
-							if(projectReference.projectFolder.children[i].children[j].file.fileBridge.extension == "xml"){
-								var str:String = projectReference.projectFolder.children[i].children[j].file.fileBridge.read().toString();
-								if((str.search("<project ")!=-1) || (str.search("<project>")!=-1)) {
-									// Add xml files in AC.
-									AntFlag = true;
-									antFiles.addItem(projectReference.projectFolder.children[i].children[j].file);
-								}
-							}
-						}
-					}
-				}
-				}
-				else
-				{
-					var antFile:FileLocation = projectReference.folderLocation.resolvePath(projectReference.AntBuildPath);
-					if(antFile.fileBridge.exists)
-					{
-						model.antScriptFile = projectReference.folderLocation.resolvePath(projectReference.AntBuildPath);
-						antBuildHandler();
-						return;
-					}
-					else
-					{
-						var buildDir:FileLocation = antFile.fileBridge.parent;
-						if( buildDir.fileBridge.exists)
-							buildFlag = true;
-						AntFlag = false;
-					}
-				}
-				if( buildFlag)
-				{
-					if(!AntFlag)
-					{
-						Alert.yesLabel = "Choose Ant File";
-						Alert.buttonWidth = 150;
-						Alert.show("There is no Ant file found in the selected Project","Ant File", Alert.YES | Alert.CANCEL, null, alertListener, null, Alert.CANCEL);
-						function alertListener(eventObj:CloseEvent):void {
-							// Check to see if the OK button was pressed.
-							if (eventObj.detail==Alert.YES) {
-								model.antScriptFile = null;
-								antBuildHandler();
-							}
-							else
-							{
-								return;
-							}
-						}
-					}
-					else
-					{
-						if(antFiles.length>1)
-						{
-							//Open a popup for select Ant file
-							selectAntPopup = new SelectAntFile();
-							PopUpManager.addPopUp(selectAntPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-							PopUpManager.centerPopUp(selectAntPopup);
-							selectAntPopup.antFiles = antFiles;
-							selectAntPopup.addEventListener(SelectAntFile.ANTFILE_SELECTED, onAntFileSelected);
-							selectAntPopup.addEventListener(SelectAntFile.ANTFILE_SELECTION_CANCELLED, onAntFileSelectionCancelled);
-						}
-						else
-						{
-							//Start Ant build if there is only one ant file
-							// Set Ant file in ModelLocatior
-							model.antScriptFile = antFiles.getItemAt(0) as FileLocation;
-							antBuildHandler();
-						}
-					}
-				}
-				else
-				{
-					// build flag flase
-					{
-						Alert.buttonWidth = 65;
-						Alert.show("There is no Build folder in selected Project");
-					}
-				}
-
-		}
-		function onAntFileSelected(event:Event):void
-		{
-			//Start build which is selected from Popup
-			model.antScriptFile = selectAntPopup.selectedAntFile;
-			antBuildHandler();
-		}
-		
-		function onAntFileSelectionCancelled(event:Event):void
-		{
-			selectAntPopup.removeEventListener(SelectAntFile.ANTFILE_SELECTED, onAntFileSelected);
-			selectAntPopup.removeEventListener(SelectAntFile.ANTFILE_SELECTION_CANCELLED, onAntFileSelectionCancelled);
-			selectAntPopup = null;
-		}
 	  }
-		
+
+
+        private function onProjectSelected(event:Event):void
+        {
+            this.selectedProject = event.currentTarget.selectedProject;
+
+            checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
+            onProjectSelectionCancelled(null);
+        }
+
+        private function onProjectSelectionCancelled(event:Event):void
+        {
+            selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
+            selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+            selectProjectPopup = null;
+        }
+
+        private function onAntFileSelected(event:Event):void
+        {
+            //Start build which is selected from Popup
+            model.antScriptFile = selectAntPopup.selectedAntFile;
+            antBuildHandler();
+        }
+
+        private function onAntFileSelectionCancelled(event:Event):void
+        {
+            selectAntPopup.removeEventListener(SelectAntFile.ANTFILE_SELECTED, onAntFileSelected);
+            selectAntPopup.removeEventListener(SelectAntFile.ANTFILE_SELECTION_CANCELLED, onAntFileSelectionCancelled);
+            selectAntPopup = null;
+        }
+
+        private function checkForAntFile(selectedAntProject:AS3ProjectVO):void
+        {
+            // Check if Ant file is set for project or not
+            var buildFlag:Boolean = false;
+            var AntFlag:Boolean = false;
+            antFiles = new ArrayCollection();
+            if(!selectedAntProject.antBuildPath)
+            {
+                // Find build folder within the selected folder
+                //find for build.xml file with <project> tag
+                for( var i:int = 0; i < selectedAntProject.projectFolder.children.length; i++)
+                {
+                    if(selectedAntProject.projectFolder.children[i].name == "build")
+                    {
+                        buildFlag = true;
+                        for(var j:int = 0; j < selectedAntProject.projectFolder.children[i].children.length; j++)
+                        {
+                            if(selectedAntProject.projectFolder.children[i].children[j].file.fileBridge.extension == "xml"){
+                                var str:String = selectedAntProject.projectFolder.children[i].children[j].file.fileBridge.read().toString();
+                                if((str.search("<project ")!=-1) || (str.search("<project>")!=-1)) {
+                                    // Add xml files in AC.
+                                    AntFlag = true;
+                                    antFiles.addItem(selectedAntProject.projectFolder.children[i].children[j].file);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var antFile:FileLocation = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                if(antFile.fileBridge.exists)
+                {
+                    model.antScriptFile = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                    antBuildHandler();
+                    return;
+                }
+                else
+                {
+                    var buildDir:FileLocation = antFile.fileBridge.parent;
+                    if( buildDir.fileBridge.exists)
+                        buildFlag = true;
+                    AntFlag = false;
+                }
+            }
+
+            if( buildFlag)
+            {
+                if(!AntFlag)
+                {
+                    Alert.yesLabel = "Choose Ant File";
+                    Alert.buttonWidth = 150;
+                    Alert.show("There is no Ant file found in the selected Project","Ant File", Alert.YES | Alert.CANCEL, null, alertListener, null, Alert.CANCEL);
+                    function alertListener(eventObj:CloseEvent):void {
+                        // Check to see if the OK button was pressed.
+                        if (eventObj.detail==Alert.YES) {
+                            model.antScriptFile = null;
+                            antBuildHandler();
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if(antFiles.length>1)
+                    {
+                        //Open a popup for select Ant file
+                        selectAntPopup = new SelectAntFile();
+                        PopUpManager.addPopUp(selectAntPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
+                        PopUpManager.centerPopUp(selectAntPopup);
+                        selectAntPopup.antFiles = antFiles;
+                        selectAntPopup.addEventListener(SelectAntFile.ANTFILE_SELECTED, onAntFileSelected);
+                        selectAntPopup.addEventListener(SelectAntFile.ANTFILE_SELECTION_CANCELLED, onAntFileSelectionCancelled);
+                    }
+                    else
+                    {
+                        //Start Ant build if there is only one ant file
+                        // Set Ant file in ModelLocatior
+                        model.antScriptFile = antFiles.getItemAt(0) as FileLocation;
+                        antBuildHandler();
+                    }
+                }
+            }
+            else
+            {
+                // build flag flase
+                {
+                    Alert.buttonWidth = 65;
+                    Alert.show("There is no Build folder in selected Project");
+                }
+            }
+
+        }
+
 	   private function antBuildSelected(event:AntBuildEvent):void
 	   {
 		   if(event)

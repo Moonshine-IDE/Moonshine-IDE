@@ -151,12 +151,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 			this.dispatchEvent(new Event(CHANGE_CUSTOM_SDK));
 		}
 		
-		public function get AntBuildPath():String
+		public function get antBuildPath():String
 		{
 			return buildOptions.antBuildPath;
 		}
 		
-		public function set AntBuildPath(value:String):void
+		public function set antBuildPath(value:String):void
 		{
 			buildOptions.antBuildPath = value;
 		}
@@ -403,7 +403,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
                             new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
+                            new PathSetting(this, "antBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
                             additional,
 
                             new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
@@ -477,7 +477,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
                             new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
+                            new PathSetting(this, "antBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
                             additional,
 
                             new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
