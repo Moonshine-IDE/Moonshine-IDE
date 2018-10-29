@@ -9,8 +9,7 @@ package actionScripts.events
         private var _arguments:Array;
         private var _buildDirectory:FileLocation;
 
-        public function ConsoleBuildEvent(type:String, arguments:Array = null,
-                                          buildDirectory:FileLocation = null)
+        public function ConsoleBuildEvent(type:String, arguments:Array = null, buildDirectory:FileLocation = null)
         {
             super(type, false, false);
 

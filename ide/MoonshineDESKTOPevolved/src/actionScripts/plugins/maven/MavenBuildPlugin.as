@@ -119,6 +119,7 @@ package actionScripts.plugins.maven
             }
 
             args.push(getMavenBinPath());
+            args.push("mvn");
 
             return args;
         }
