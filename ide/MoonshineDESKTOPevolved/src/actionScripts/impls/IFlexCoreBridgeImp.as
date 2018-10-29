@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+    import actionScripts.plugins.maven.MavenBuildPlugin;
+
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -189,6 +191,7 @@ package actionScripts.impls
 				ConsolePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
+				MavenBuildPlugin,
 				SearchPlugin,
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
