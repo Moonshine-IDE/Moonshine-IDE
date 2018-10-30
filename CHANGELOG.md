@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
 
 ### Changed
-* Updated [as3mxml](https://as3mxml.com/) engine to version 0.14.0.
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.15.0.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed

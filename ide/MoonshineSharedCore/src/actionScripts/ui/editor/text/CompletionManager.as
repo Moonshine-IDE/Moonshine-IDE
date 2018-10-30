@@ -41,6 +41,11 @@ package actionScripts.ui.editor.text
 
     import spark.collections.SortField;
     import actionScripts.valueObjects.CompletionItemKind;
+    import actionScripts.valueObjects.TextEdit;
+    import actionScripts.valueObjects.WorkspaceEdit;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.utils.applyWorkspaceEdit;
 
     public class CompletionManager
 	{
@@ -207,12 +212,24 @@ package actionScripts.ui.editor.text
 				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
 			}
 
+			var additionalTextEdits:Vector.<TextEdit> = item.additionalTextEdits;
+			if(additionalTextEdits)
+			{
+				var activeEditor:BasicTextEditor = BasicTextEditor(IDEModel.getInstance().activeEditor);
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
+				var changes:Object = {};
+				changes[uri] = additionalTextEdits;
+				workspaceEdit.changes = changes;
+				applyWorkspaceEdit(workspaceEdit);
+			}
+
 			var command:Command = item.command;
 			if(command)
 			{
-				var event:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
+				var commandEvent:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, command.command, command.arguments);
-				GlobalEventDispatcher.getInstance().dispatchEvent(event);
+				GlobalEventDispatcher.getInstance().dispatchEvent(commandEvent);
 			}
 		}
 

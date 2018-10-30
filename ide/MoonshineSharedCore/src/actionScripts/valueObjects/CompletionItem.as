@@ -76,6 +76,21 @@ package actionScripts.valueObjects
 
 		private var _data: *;
 
+		private var _deprecated:Boolean;
+
+		[Bindable("deprecatedChange")]
+		public function get deprecated():Boolean
+		{
+			return this._deprecated;
+		}
+
+		private var _additionalTextEdits:Vector.<TextEdit>;
+
+		public function get additionalTextEdits():Vector.<TextEdit>
+		{
+			return this._additionalTextEdits;
+		}
+
 		/**
 		 * An data entry field that is preserved on a completion item between
 		 * a completion and a completion resolve request.
@@ -91,7 +106,8 @@ package actionScripts.valueObjects
 
         public function CompletionItem(label:String = "", insertText:String = "",
 									   kind:int = -1, detail:String = "",
-									   documentation:String = "", command:Command = null, data:* = undefined):void
+									   documentation:String = "", command:Command = null, data:* = undefined,
+									   deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
 		{
 			this._label = label;
 			this._sortLabel = label.toLowerCase();
@@ -101,6 +117,8 @@ package actionScripts.valueObjects
 			this._documentation = documentation;
 			this._command = command;
 			this._data = data;
+			this._deprecated = deprecated;
+			this._additionalTextEdits = additionalTextEdits;
 
 			this.displayType = detail;
 			this.displayKind = getDisplayKind(kind);

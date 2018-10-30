@@ -41,9 +41,11 @@ public class MXMLNamespaceUtils
     private static final String PREFIX_S = "s";
     private static final String PREFIX_JS = "js";
     private static final String PREFIX_F = "f";
+    private static final String PREFIX_J = "j";
 
     private static final HashMap<String, String> NAMESPACE_TO_PREFIX = new HashMap<>();
 
+    static
     {
         //MXML language
         NAMESPACE_TO_PREFIX.put(IMXMLLanguageConstants.NAMESPACE_MXML_2009, PREFIX_FX);
@@ -60,6 +62,7 @@ public class MXMLNamespaceUtils
         //Royale
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.ROYALE_EXPRESS, PREFIX_JS);
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.ROYALE_BASIC, PREFIX_JS);
+        NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.ROYALE_JEWEL, PREFIX_J);
 
         //Feathers
         NAMESPACE_TO_PREFIX.put(IMXMLLibraryConstants.FEATHERS, PREFIX_F);
