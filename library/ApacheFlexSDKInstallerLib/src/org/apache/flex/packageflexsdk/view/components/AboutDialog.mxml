@@ -19,8 +19,51 @@ limitations under the License.
 -->
 <s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300">
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="300" height="200"
+		  creationComplete="onCreationCompletes()">
+	<fx:Script>
+		<![CDATA[
+			
+			[Bindable] public var installerVersion:String;
+			[Bindable] public var revisionVersion:String = "0000";
+			
+			[Bindable] private var copyrightNotes:String = "Copyright 2016 Prominic.NET, Inc. All rights reserved under the Apache license. No warranty of merchantability or fitness of any kind. Use this software at your own risk.";
+			
+			// revision version
+			private function onCreationCompletes():void
+			{
+				var revisionInfoFile: File = File.applicationDirectory.resolvePath("images/appProperties.txt");
+				if (revisionInfoFile.exists)
+				{
+					var saveData:String;
+					try
+					{
+						var stream:FileStream = new FileStream();
+						stream.open(revisionInfoFile, FileMode.READ);
+						saveData = String(stream.readUTFBytes(stream.bytesAvailable));
+						stream.close();
+					}
+					catch (e:Error)
+					{
+						return;
+					}
+					
+					revisionVersion = saveData.split("\n")[0];
+				}
+			}
+		]]>
+	</fx:Script>
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" gap="12"/>
+	</s:layout>
+	
+	<s:Label text="Moonshine App Store Helper"
+			 fontWeight="bold"/>
+	<s:Label text="Version {installerVersion} ({revisionVersion})"/>
+	<s:Label textAlign="center" width="90%" maxDisplayedLines="6"
+			 text="{copyrightNotes}"/>
 </s:Window>

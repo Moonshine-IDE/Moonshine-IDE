@@ -55,7 +55,7 @@ package org.apache.flex.packageflexsdk.util
 
         override public function load(request:URLRequest):void
         {
-            if (request.url.indexOf("https://") != 0)
+            if (request.url.indexOf("https://") != 0 || (request.url.charAt(0) == "/"))
             {
                 super.load(request);
             }

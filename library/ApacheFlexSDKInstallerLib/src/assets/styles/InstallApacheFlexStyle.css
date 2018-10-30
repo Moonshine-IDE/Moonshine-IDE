@@ -20,6 +20,13 @@ limitations under the License.
 @namespace mx "library://ns.adobe.com/flex/mx";
 @namespace st "ws.tink.spark.controls.*";
 
+@font-face {
+	src: url("/assets/fonts/open-sans/OpenSans-SemiboldItalic.ttf");
+	fontFamily: openSansSemibold;
+	advancedAntiAliasing: true;
+	fontStyle:italic;
+}
+
 st|StepRenderer st|ActivityIndicator
 {
 	skinClass : ClassReference("ws.tink.spark.skins.controls.StepActivityIndicatorSkin");
@@ -45,15 +52,28 @@ st|ProgressBar
 	chromeColor	: #1275a4;
 }
 
-s|Label.linkText 
+s|TextInput
 {
+	fontFamily : openSansSemibold;
+	fontSize : 13;
+	color	: #757575;
+	skinClass : ClassReference("ws.tink.spark.skins.controls.TextInputSkin");
+	borderColor		: #BFBFBF;
+}
+
+s|TextInput:normalWithPrompt,
+s|TextInput:disabledWithPrompt
+{
+	color: #BBBBBB;
+}
+
+s|Label.linkText {
     color: #0000FF;
     verticalAlign: middle;
     textDecoration: none;
 }
 
-s|Label.linkTextHover 
-{
+s|Label.linkTextHover {
     color: #0000FF;
     verticalAlign: middle;
     textDecoration: underline;
