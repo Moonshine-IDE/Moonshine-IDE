@@ -1,12 +1,12 @@
 package actionScripts.plugin.build
 {
-    import actionScripts.events.ConsoleBuildEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.valueObjects.Settings;
 
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
+    import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
@@ -14,7 +14,7 @@ package actionScripts.plugin.build
 
     public class ConsoleBuildPluginBase extends PluginBase
     {
-        private var nativeProcess:NativeProcess;
+        protected var nativeProcess:NativeProcess;
         private var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
         private var console:FileLocation;
@@ -71,12 +71,12 @@ package actionScripts.plugin.build
             running = false;
         }
 
-        protected function stopConsoleBuildHandler(event:ConsoleBuildEvent):void
+        protected function stopConsoleBuildHandler(event:Event):void
         {
 
         }
 
-        protected function startConsoleBuildHandler(event:ConsoleBuildEvent):void
+        protected function startConsoleBuildHandler(event:Event):void
         {
 
         }
@@ -86,25 +86,31 @@ package actionScripts.plugin.build
             var output:IDataInput = nativeProcess.standardOutput;
             var data:String = output.readUTFBytes(output.bytesAvailable);
 
-            debug("%s", data);
+            print("%s", data);
         }
 
         private function onNativeProcessIOError(event:IOErrorEvent):void
         {
-            removeNativeProcessEventListeners();
+            error("%s", event.text);
 
+            removeNativeProcessEventListeners();
             running = false;
         }
 
         private function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
-            removeNativeProcessEventListeners();
+            var output:IDataInput = nativeProcess.standardError;
+            var data:String = output.readUTFBytes(output.bytesAvailable);
 
+            error("%s", data);
+
+            removeNativeProcessEventListeners();
             running = false;
         }
 
         private function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
+            print("Exit code: %s", event.exitCode);
             removeNativeProcessEventListeners();
         }
 

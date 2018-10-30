@@ -54,25 +54,22 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var warnings:Boolean = true;
 		public var verboseStackTraces:Boolean = false;
 		public var linkReport:String;
-		public var loadExterns:String;
 		public var staticLinkRSL:Boolean = false;
 		public var additional:String;
 		public var compilerConstants:String;
-		public var antBuildPath:String;
 		public var customSDKPath:String;
-		public var currentDefaultSDKPath:String;
-		public var oldDefaultSDKPath:String;
-		public var isCleanRequiresBeforeBuild:Boolean;
-		public var deviceBuildCertificate:FileLocation;
-		public var deviceBuildCertificatePassword:String;
 		public var certAndroid:String;
 		public var certAndroidPassword:String;
 		public var certIos:String;
 		public var certIosPassword:String;
 		public var certIosProvisioning:String;
 		public var iosPackagingMode:String = IOS_PACKAGING_FAST;
-		
+
+        public var antBuildPath:String;
+
 		private var _targetPlatform:String;
+        public var oldDefaultSDKPath:String;
+
 		public function set targetPlatform(value:String):void
 		{
 			_targetPlatform = value;

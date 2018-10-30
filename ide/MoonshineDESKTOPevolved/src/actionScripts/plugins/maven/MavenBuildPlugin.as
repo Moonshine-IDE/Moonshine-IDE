@@ -1,13 +1,17 @@
 package actionScripts.plugins.maven
 {
-    import actionScripts.events.ConsoleBuildEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.build.ConsoleBuildPluginBase;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.Settings;
+
+    import flash.events.Event;
+    import flash.events.ProgressEvent;
+    import flash.utils.IDataInput;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -74,21 +78,76 @@ package actionScripts.plugins.maven
             dispatcher.removeEventListener(STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
 
-        override protected function startConsoleBuildHandler(event:ConsoleBuildEvent):void
+        override public function start(args:Vector.<String>, buildDirectory:*):void
+        {
+            print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
+            print("Command: %s", args.join(" "));
+
+            super.start(args, buildDirectory);
+        }
+
+        override protected function startConsoleBuildHandler(event:Event):void
         {
             super.startConsoleBuildHandler(event);
 
             var args:Vector.<String> = getConstantArguments();
-            args.push(event.arguments);
+            var arguments:Array = [];
+            var buildDirectory:FileLocation;
 
-            start(args, event.buildDirectory);
+            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+            if (as3Project)
+            {
+                arguments = as3Project.mavenBuildOptions.getCommandLine();
+                if (arguments.length > 0)
+                {
+                    args.push(arguments.join(" "));
+                }
+
+                if (as3Project.mavenBuildOptions.mavenBuildPath)
+                {
+                    buildDirectory = new FileLocation(as3Project.mavenBuildOptions.mavenBuildPath);
+                }
+            }
+
+            if (!buildDirectory)
+            {
+                error("Maven build directory has not been specified");
+                return;
+            }
+
+            if (arguments.length == 0)
+            {
+                error("Specify Maven commands (Ex. clean install)");
+                return;
+            }
+
+            start(args, buildDirectory);
         }
 
-        override protected function stopConsoleBuildHandler(event:ConsoleBuildEvent):void
+        override protected function stopConsoleBuildHandler(event:Event):void
         {
             super.stopConsoleBuildHandler(event);
 
             stop();
+        }
+
+        override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
+        {
+            var output:IDataInput = nativeProcess.standardOutput;
+            var data:String = output.readUTFBytes(output.bytesAvailable);
+
+            if (data.match(/\[ERROR\]/))
+            {
+                error("%s", data);
+            }
+            else if (data.match(/\[WARNING\]/))
+            {
+                warning("%s", data);
+            }
+            else
+            {
+                print("%s", data);
+            }
         }
 
         private function getMavenBinPath():String
@@ -98,7 +157,7 @@ package actionScripts.plugins.maven
 
             if (Settings.os == "win")
             {
-                return mavenLocation.resolvePath(mavenBin + "mvn.bat").fileBridge.nativePath;
+                return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
             else
             {
@@ -119,7 +178,6 @@ package actionScripts.plugins.maven
             }
 
             args.push(getMavenBinPath());
-            args.push("mvn");
 
             return args;
         }

@@ -154,6 +154,8 @@ package actionScripts.plugins.as3project.importer
             project.testMovie = data.options.option.@testMovie;
 
             project.buildOptions.parse(data.build);
+			project.mavenBuildOptions.parse(data.mavenBuild);
+
             project.swfOutput.parse(data.output, project);
 			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
 			
