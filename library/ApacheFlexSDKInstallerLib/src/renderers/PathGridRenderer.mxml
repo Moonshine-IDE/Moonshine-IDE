@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" minHeight="36" xmlns:controls="ws.tink.spark.controls.*"
+					creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.ToolTipEvent;
+			
+			import spark.components.BusyIndicator;
+			
+			import org.apache.flex.packageflexsdk.view.CustomToolTipGBA;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PUBLIC VARIABLES
+			//
+			//--------------------------------------------------------------------------
+			
+			[Bindable] public var textAlign					: String = "left";
+			
+			private var busyIndicator						: BusyIndicator;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  OVERRIDDEN API
+			//
+			//--------------------------------------------------------------------------
+			
+			/**
+			 * Set DATA
+			 */
+			override public function set data(value:Object):void {
+				
+				if ( value ) 
+				{
+					super.data = value;
+					lbl.text = data[ this.column.dataField ];
+					imgTick.visible = imgTick.includeInLayout = data.isDownloaded;
+					imgError.visible = imgError.includeInLayout = data.hasError;
+					imgNote.visible = imgNote.includeInLayout = (data.isAlreadyDownloaded || data.hasError);
+					
+					if (data.isDownloading && !busyIndicator)
+					{
+						busyIndicator = new BusyIndicator();
+						busyIndicator.verticalCenter = 0;
+						busyIndicator.right = 10;
+						addElementAt(busyIndicator, 1);
+					}
+					else if (!data.isDownloading && busyIndicator)
+					{
+						busyIndicator.stopAllMovieClips();
+						removeElement(busyIndicator);
+						busyIndicator = null;
+					}
+				}
+			}
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				imgNote.addEventListener(ToolTipEvent.TOOL_TIP_CREATE, createCustomToolTip, false, 0, true);
+				imgNote.addEventListener(ToolTipEvent.TOOL_TIP_SHOW, positionTip, false, 0, true);
+			}
+			
+			/**
+			 * Creates custom tooltip
+			 */
+			public static function createCustomToolTip(event:ToolTipEvent):void
+			{
+				var cTT : CustomToolTipGBA = new CustomToolTipGBA();
+				event.toolTip = cTT;
+			}
+			
+			/**
+			 * Positions the toolTip
+			 */
+			public static function positionTip(event:ToolTipEvent):void
+			{
+				var tmpPoint : Point = getContentToGlobalXY( event.currentTarget as UIComponent );
+				event.toolTip.y = tmpPoint.y + 20;
+				event.toolTip.x = event.toolTip.x - 20;
+			}
+			
+			/**
+			 * Getting a component co-ordinate
+			 * in respect of global stage
+			 */
+			public static function getContentToGlobalXY(dObject:UIComponent):Point
+			{
+				var thisHolderPoint : Point = UIComponent(dObject.owner).contentToGlobal( new Point( dObject.x, dObject.y ) );
+				var newP : Point = FlexGlobals.topLevelApplication.globalToContent( thisHolderPoint );
+				return newP;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Label id="lbl"
+			 verticalCenter="0" paddingLeft="6" paddingRight="6" paddingBottom="8" paddingTop="8"
+			 width="90%" maxDisplayedLines="3"
+			 textAlign="{textAlign}" styleName="uiTextSettingsLabel"/>
+	
+	<s:HGroup autoLayout="true"
+			  verticalCenter="0" right="10"
+			  verticalAlign="middle">
+		<s:Image id="imgTick" 
+				 source="@Embed('/assets/icons/icoTick.png')"
+				 visible="false" includeInLayout="false"/>
+		<s:Image id="imgError" 
+				 source="@Embed('/assets/icons/icoErrorCross.png')"
+				 visible="false" includeInLayout="false"/>
+		<s:Image id="imgNote" 
+				 source="@Embed('/assets/icons/icoExclamation.png')"
+				 visible="false" includeInLayout="false"
+				 toolTip="{data.hasError ? 'The installation failed! Check the Log for more details.' : 'Already Downloaded!'}"/>
+	</s:HGroup>
+</s:GridItemRenderer>

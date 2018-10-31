@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+
+
+<!--- 
+
+The DefaultGridHeaderRenderer class defines the default header renderer 
+for the columns of a Spark DataGrid control.
+
+<p>Subclasses defined in MXML can redefine the values of the <code>labelDisplay</code>
+and <code>sortIndicator</code> properties.</p>
+
+@see spark.components.DataGrid
+@see spark.components.GridColumnHeaderGroup
+@see spark.components.gridClasses.GridItemRenderer
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 2.0
+@productversion Flex 4.5
+-->
+
+<s:GridItemRenderer minWidth="21" minHeight="24"
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" height="24">
+    
+    <fx:Declarations>
+        <!--- The default value of the <code>sortIndicator</code> property.
+        It must be an IFactory for an IVisualElement.        
+        
+        <p>This value is specified in a <code>fx:Declaration</code> block and can be overridden
+        by a declaration with <code>id="defaultSortIndicator"</code>
+        in an MXML subclass.</p>
+        
+        @langversion 3.0
+        @playerversion Flash 10
+        @playerversion AIR 2.0
+        @productversion Flex 4.5
+        -->
+        <fx:Component id="defaultSortIndicator">
+            <s:HGroup verticalAlign="middle"  implements="spark.components.gridClasses.IGridVisualElement">
+                <fx:Script fb:purpose="styling">
+                    <![CDATA[
+                        import spark.components.DataGrid;
+                        import spark.components.Grid;
+                        import spark.components.gridClasses.GridColumn;
+                        
+                        /**
+                         *  @private
+                         */
+                        public function prepareGridVisualElement(grid:Grid, rowIndex:int, columnIndex:int):void
+                        {
+                            const dataGrid:DataGrid = grid.dataGrid;
+                            if (!dataGrid || !dataGrid.columnHeaderGroup)
+                                return;
+                            
+                            const sortColumnIndices:Vector.<int> = dataGrid.columnHeaderGroup.visibleSortIndicatorIndices;
+                            if (sortColumnIndices.length == 1)
+                            {
+                                priorityLabel.visible = false;
+                                priorityLabel.includeInLayout = false;
+                            }
+                            else
+                            {
+                                priorityLabel.visible = true;
+                                priorityLabel.includeInLayout = true;
+                                priorityLabel.text = String(sortColumnIndices.indexOf(columnIndex) + 1);
+                            }
+                            
+                            const column:GridColumn = grid.columns.getItemAt(columnIndex) as GridColumn;
+                            arrow.scaleY = (column.sortDescending) ? 1 : -1;
+                            
+                            const color:uint = dataGrid.getStyle("symbolColor");
+                            arrowFill1.color = color;
+                            arrowFill2.color = color;
+                        }
+                    ]]>
+                </fx:Script>
+                
+                <s:Label id="priorityLabel" />
+                
+                <s:Path id="arrow" data="M 3.5 7.0 L 0.0 0.0 L 7.0 0.0 L 3.5 7.0">
+                    <s:fill>
+                        <s:RadialGradient rotation="90" focalPointRatio="1">    
+                            <!--- @private -->
+                            <s:GradientEntry id="arrowFill1" color="0" alpha="0.6" />
+                            <!--- @private -->
+                            <s:GradientEntry id="arrowFill2" color="0" alpha="0.8" />
+                        </s:RadialGradient>
+                    </s:fill>
+                </s:Path>
+            </s:HGroup>
+        </fx:Component>
+        
+        <!--- Displays the renderer's label property, which is set to the column's <code>headerText</code>.
+        It must be an instance of a <code>TextBase</code>, like <code>s:Label</code>.
+        
+        <p>This visual element is added to the <code>labelDisplayGroup</code> by the renderer's
+        <code>prepare()</code> method.   Any size/location constraints specified by the labelDisplay
+        define its location relative to the labelDisplayGroup.</p>
+        
+        <p>This value is specified with a <code>fx:Declaration</code> and can be overridden
+        by a declaration with <code>id="labelDisplay"</code>
+        in an MXML subclass.</p>
+
+        
+        @langversion 3.0
+        @playerversion Flash 10
+        @playerversion AIR 2.0
+        @productversion Flex 4.5
+        -->
+        <s:Label id="labelDisplay" 
+            verticalCenter="1" left="0" right="0" top="0" bottom="0"
+            textAlign="start" color="0xe0e0e0"
+            verticalAlign="middle"
+            maxDisplayedLines="1" fontFamily="DejaVuSans" fontSize="11"
+            showTruncationTip="true" creationComplete="onLabelCompletion(event)"/>
+    </fx:Declarations>
+    
+    <fx:Script>
+        <![CDATA[
+			import flash.filters.DropShadowFilter;
+			
+			import mx.core.IVisualElement;
+			import mx.events.FlexEvent;
+			
+			import spark.components.DataGrid;
+			import spark.components.GridColumnHeaderGroup;
+			import spark.components.gridClasses.GridColumn;
+			import spark.components.gridClasses.IGridVisualElement;
+			import spark.primitives.supportClasses.GraphicElement;
+
+            // chrome color constants and variables
+            private static const DEFAULT_COLOR_VALUE:uint = 0xCC;
+            private static const DEFAULT_COLOR:uint = 0xCCCCCC;
+            private static const DEFAULT_SYMBOL_COLOR:uint = 0x000000;
+            
+            private static var colorTransform:ColorTransform = new ColorTransform();
+            
+            /**
+             *  @private
+             */
+            private function dispatchChangeEvent(type:String):void
+            {
+                if (hasEventListener(type))
+                    dispatchEvent(new Event(type));
+            }            
+            
+            //----------------------------------
+            //  maxDisplayedLines
+            //----------------------------------
+            
+            private var _maxDisplayedLines:int = 1;
+            
+            [Bindable("maxDisplayedLinesChanged")]
+            [Inspectable(minValue="-1")]
+            
+            /**
+             *  The value of this property is used to initialize the 
+             *  <code>maxDisplayedLines</code> property of this renderer's 
+             *  <code>labelDisplay</code> element.
+             * 
+             *  @copy spark.components.supportClasses.TextBase#maxDisplayedLines
+             * 
+             *  @default 1
+             * 
+             *  @langversion 3.0
+             *  @playerversion Flash 10
+             *  @playerversion AIR 1.5
+             *  @productversion Flex 4.5
+             */
+            public function get maxDisplayedLines():int
+            {
+                return _maxDisplayedLines;
+            }
+            
+            /**
+             *  @private
+             */
+            public function set maxDisplayedLines(value:int):void
+            {
+                if (value == _maxDisplayedLines)
+                    return;
+
+                _maxDisplayedLines = value;
+                if (labelDisplay)
+                    labelDisplay.maxDisplayedLines = value;
+                    
+                invalidateSize();
+                invalidateDisplayList();
+                
+                dispatchChangeEvent("maxDisplayedLinesChanged");
+            }
+            
+            //----------------------------------
+            //  sortIndicator
+            //----------------------------------
+            
+            private var _sortIndicator:IFactory;
+            private var sortIndicatorInstance:IVisualElement;
+            
+            [Bindable("sortIndicatorChanged")]
+            
+            /**
+             *  A visual element that's displayed when the column is sorted.
+             * 
+             *  <p>The sortIndicator visual element is added to the <code>sortIndicatorGroup</code>
+             *  by this renderer's <code>prepare()</code> method.  Any size/location constraints 
+             *  specified by the sortIndicator define its location relative to the sortIndicatorGroup.</p>
+             * 
+             *  @default null
+             * 
+             *  @langversion 3.0
+             *  @playerversion Flash 10
+             *  @playerversion AIR 1.5
+             *  @productversion Flex 4.5
+             */
+            public function get sortIndicator():IFactory
+            {
+                return (_sortIndicator) ? _sortIndicator : defaultSortIndicator;
+            }
+            
+            /**
+             *  @private
+             */
+            public function set sortIndicator(value:IFactory):void
+            {
+                if (_sortIndicator == value)
+                    return;
+                
+                _sortIndicator = value;
+                if (sortIndicatorInstance)
+                {
+                    sortIndicatorGroup.includeInLayout = false;
+                    sortIndicatorGroup.removeElement(sortIndicatorInstance);
+                    sortIndicatorInstance = null;
+                }
+                
+                invalidateDisplayList();
+                dispatchChangeEvent("sortIndicatorChanged");
+            }
+            
+            /**
+             *  @private
+             *  Create and add the sortIndicator to the sortIndicatorGroup and the 
+             *  labelDisplay into the labelDisplayGroup.
+             */
+            override public function prepare(hasBeenRecycled:Boolean):void
+            {
+                super.prepare(hasBeenRecycled);
+                
+                if (labelDisplay && labelDisplayGroup && (labelDisplay.parent != labelDisplayGroup))
+                {
+                    labelDisplayGroup.removeAllElements();
+                    labelDisplayGroup.addElement(labelDisplay);
+                }
+                
+                const column:GridColumn = this.column;
+                const dataGrid:DataGrid = (column && column.grid) ? column.grid.dataGrid : null;
+                const columnHeaderGroup:GridColumnHeaderGroup = (dataGrid) ? dataGrid.columnHeaderGroup : null;
+                    
+                if (sortIndicator && columnHeaderGroup)
+                {
+                    if (columnHeaderGroup.isSortIndicatorVisible(column.columnIndex))
+                    {
+                        if (!sortIndicatorInstance)
+                        {
+                            sortIndicatorInstance = sortIndicator.newInstance();
+                            sortIndicatorGroup.addElement(sortIndicatorInstance);
+                            chromeColorChanged = true;
+                            invalidateDisplayList();
+                        }
+                        
+                        // Initialize sortIndicator
+                        sortIndicatorInstance.visible = true;
+                        const gridVisualElement:IGridVisualElement = sortIndicatorInstance as IGridVisualElement;
+                        if (gridVisualElement)
+                            gridVisualElement.prepareGridVisualElement(column.grid, -1, column.columnIndex);
+                        
+                        sortIndicatorGroup.includeInLayout = true;
+                    }
+                    else
+                    {
+                        if (sortIndicatorInstance)
+                        {
+                            sortIndicatorGroup.removeElement(sortIndicatorInstance);
+                            sortIndicatorGroup.includeInLayout = false;
+                            sortIndicatorInstance = null;
+                        }
+                    }
+                }
+                
+                if (selectionIndicator && columnHeaderGroup)
+                {
+                    selectionIndicator.visible = 
+                        columnHeaderGroup.highlightSelectedColumn && (columnHeaderGroup.selectedColumnIndex == column.columnIndex);
+                }
+            }
+            
+            private var chromeColorChanged:Boolean = false;
+            private var colorized:Boolean = false;
+            
+            /**
+             *  @private
+             *  Apply chromeColor style.
+             */
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                // Apply chrome color
+                if (chromeColorChanged)
+                {
+                    var chromeColor:uint = getStyle("chromeColor");
+                    
+                    if (chromeColor != DEFAULT_COLOR || colorized)
+                    {          
+                        colorTransform.redOffset = ((chromeColor & (0xFF << 16)) >> 16) - DEFAULT_COLOR_VALUE;
+                        colorTransform.greenOffset = ((chromeColor & (0xFF << 8)) >> 8) - DEFAULT_COLOR_VALUE;
+                        colorTransform.blueOffset = (chromeColor & 0xFF) - DEFAULT_COLOR_VALUE;
+                        colorTransform.alphaMultiplier = alpha;
+                        
+                        transform.colorTransform = colorTransform;
+                        
+                        var exclusions:Array = [labelDisplay, sortIndicatorInstance];
+                        
+                        // Apply inverse colorizing to exclusions
+                        if (exclusions && exclusions.length > 0)
+                        {
+                            colorTransform.redOffset = -colorTransform.redOffset;
+                            colorTransform.greenOffset = -colorTransform.greenOffset;
+                            colorTransform.blueOffset = -colorTransform.blueOffset;
+                            
+                            for (var i:int = 0; i < exclusions.length; i++)
+                            {
+                                var exclusionObject:Object = exclusions[i];
+                                
+                                if (exclusionObject &&
+                                    (exclusionObject is DisplayObject ||
+                                        exclusionObject is GraphicElement))
+                                {
+                                    colorTransform.alphaMultiplier = exclusionObject.alpha;
+                                    exclusionObject.transform.colorTransform = colorTransform;
+                                }
+                            }
+                        }
+                        
+                        colorized = true;
+                    }
+                    
+                    chromeColorChanged = false;
+                }
+                
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+
+            /**
+             *  @private
+             */
+            override public function styleChanged(styleProp:String):void
+            {
+                var allStyles:Boolean = !styleProp || styleProp == "styleName";
+                
+                super.styleChanged(styleProp);
+                
+                if (allStyles || styleProp == "chromeColor")
+                {
+                    chromeColorChanged = true;
+                    invalidateDisplayList();
+                }
+            }
+			
+			protected function onLabelCompletion(event:FlexEvent):void
+			{
+				labelDisplay.filters = [new DropShadowFilter(1, 90, 0, 0.1, 0, 0)];
+			}
+			
+		]]>
+    </fx:Script>
+    
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="hovered" />
+        <s:State name="down" />
+    </s:states>
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0x333333"/>
+		</s:fill>
+	</s:Rect>
+    
+    <!-- layer 2: fill -->
+    <!--- @private -->
+    <s:Rect id="fill" left="0" right="0" top="0" bottom="1">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x6c6c6c" 
+								 color.down="0x994e5f"/>
+				<s:GradientEntry color="0x565656" 
+								 color.down="0x8d394c"/>
+				<s:GradientEntry color="0x626262" 
+								 color.down="0x904859"/>
+			</s:LinearGradient>
+		</s:fill>
+    </s:Rect>
+    
+    <!--- @private -->
+    <s:Rect id="selectionIndicator" left="1" right="1" top="1" bottom="1" visible="false">
+        <s:stroke>
+            <!--- @private -->
+            <s:SolidColorStroke id="selectionIndicatorFill" color="0x000000" alpha="0.25" weight="1"/>
+        </s:stroke>
+    </s:Rect>    
+    
+    <s:HGroup left="7" right="7" top="5" bottom="5" gap="2" verticalAlign="middle">
+        
+        <!-- layer 7: Container for labelDisplay:TextBase  -->
+        <!--- Defines the size and location of the labelDisplay visual element. 
+        
+        <p>The <code>labelDisplay</code> is added to this Group by the renderer's 
+        <code>prepare()</code> method.  Any size/location constraints
+        specified by the labelDisplay
+        define its layout relative to the labelDisplayGroup.</p>
+        
+        @langversion 3.0
+        @playerversion Flash 10
+        @playerversion AIR 2.0
+        @productversion Flex 4.5
+        -->
+        <s:Group id="labelDisplayGroup" width="100%" />
+        
+        <!-- layer 8: Container for sortIndicator:IVisualElement  -->
+        <!--- Defines the size and location of the sortIndicator visual element. 
+        
+        <p>The <code>sortIndicator</code> is added to this Group by the renderer's 
+        <code>prepare()</code> method.  Any size/location constraints specified
+        by the sortIndicator
+        define its layout relative to the sortIndicatorGroup.  This Group is only
+        included in the layout when the sortIndicator is visible.</p>  
+        
+        @langversion 3.0
+        @playerversion Flash 10
+        @playerversion AIR 2.0
+        @productversion Flex 4.5
+        -->
+        <s:Group id="sortIndicatorGroup" includeInLayout="false" />
+        
+    </s:HGroup>
+    
+</s:GridItemRenderer>

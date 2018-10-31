@@ -71,6 +71,7 @@ limitations under the License.
 			bottom="35"
 			left="0"
 			right="0"
+			fontFamily="openSansSemibold"
 			fontSize="14">
 		<s:layout>
 			<s:VerticalLayout gap="0" horizontalAlign="justify" />

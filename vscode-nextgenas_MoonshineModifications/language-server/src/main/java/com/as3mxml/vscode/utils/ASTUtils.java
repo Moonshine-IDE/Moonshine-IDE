@@ -39,6 +39,7 @@ import org.apache.royale.compiler.tree.as.IFunctionNode;
 import org.apache.royale.compiler.tree.as.IIdentifierNode;
 import org.apache.royale.compiler.tree.as.IImportNode;
 import org.apache.royale.compiler.tree.as.IInterfaceNode;
+import org.apache.royale.compiler.tree.as.IPackageNode;
 import org.apache.royale.compiler.tree.as.IScopedNode;
 import org.apache.royale.compiler.tree.as.ITransparentContainerNode;
 import org.apache.royale.compiler.tree.as.IVariableNode;
@@ -48,10 +49,29 @@ import org.apache.royale.compiler.units.ICompilationUnit;
 public class ASTUtils
 {
     private static final String DOT_STAR = ".*";
+    private static final String UNDERSCORE_UNDERSCORE_AS3_PACKAGE = "__AS3__.";
 
     public static boolean containsWithStart(IASNode node, int offset)
     {
         return offset >= node.getAbsoluteStart() && offset <= node.getAbsoluteEnd();
+    }
+
+    public static IASNode findDescendantOfType(IASNode node, Class<? extends IASNode> classToFind)
+    {
+        for (int i = 0; i < node.getChildCount(); i++)
+        {
+            IASNode child = node.getChild(i);
+            if (classToFind.isInstance(child))
+            {
+                return child;
+            }
+            IASNode result = findDescendantOfType(child, classToFind);
+            if(result != null)
+            {
+                return result;
+            }
+        }
+        return null;
     }
 
     public static IASNode getContainingNodeIncludingStart(IASNode node, int offset)
@@ -70,6 +90,52 @@ public class ASTUtils
             }
         }
         return node;
+    }
+
+    public static boolean needsImport(IASNode offsetNode, String qualifiedName)
+    {
+        int packageEndIndex = qualifiedName.lastIndexOf(".");
+        if(packageEndIndex == -1)
+        {
+            //if it's not in a package, it doesn't need to be imported
+            return false;
+        }
+        if(qualifiedName.startsWith(UNDERSCORE_UNDERSCORE_AS3_PACKAGE))
+        {
+            //things in this package don't need to be imported
+            return false;
+        }
+        IASNode node = offsetNode;
+        while(node != null)
+        {
+            if (node instanceof IPackageNode)
+            {
+                String packageName = qualifiedName.substring(0, packageEndIndex);
+                IPackageNode packageNode = (IPackageNode) node;
+                if (packageName.equals(packageNode.getName()))
+                {
+                    //same package, so it doesn't need to be imported
+                    return false;
+                }
+                //imports outside of the package node do not apply to a node
+                //inside the package
+                break;
+            }
+            for (int i = 0; i < node.getChildCount(); i++)
+            {
+                IASNode child = node.getChild(i);
+                if(child instanceof IImportNode)
+                {
+                    IImportNode importNode = (IImportNode) child;
+                    if (qualifiedName.equals(importNode.getImportName()))
+                    {
+                        return false;
+                    }
+                }
+            }
+            node = node.getParent();
+        }
+        return true;
     }
 
 	public static Set<String> findUnresolvedIdentifiersToImport(IASNode node, ICompilerProject project)
@@ -291,6 +357,7 @@ public class ASTUtils
     
     protected static void findImportNodesToRemove(IASNode node, ICompilerProject project, Set<String> referencedDefinitions, Set<IImportNode> importsToRemove)
     {
+        Set<String> mxmlScriptReferencedDefinitions = null;
         Set<IImportNode> childImports = null;
         if (node instanceof IScopedNode || node instanceof IMXMLScriptNode)
         {
@@ -322,6 +389,13 @@ public class ASTUtils
             }
             findImportNodesToRemove(child, project, referencedDefinitions, importsToRemove);
         }
+        if (node instanceof IMXMLScriptNode)
+        {
+            IMXMLScriptNode scriptNode = (IMXMLScriptNode) node;
+            mxmlScriptReferencedDefinitions = new HashSet<>();
+            findReferencedDefinitionsOutsideMXMLScript(scriptNode.getParent(), project, mxmlScriptReferencedDefinitions);
+        }
+        final Set<String> mxmlRefs = mxmlScriptReferencedDefinitions;
         if (childImports != null)
         {
             childImports.removeIf(importNode ->
@@ -334,17 +408,22 @@ public class ASTUtils
                 if (importName.endsWith(DOT_STAR))
                 {
                     String importPackage = importName.substring(0, importName.length() - 2);
-                    for (String reference : referencedDefinitions)
+                    if (mxmlRefs != null)
                     {
-                        if(reference.startsWith(importPackage)
-                            && !reference.substring(importPackage.length() + 1).contains("."))
+                        if (containsReferenceForImportPackage(importPackage, mxmlRefs))
                         {
-                            //an entire package is imported, so check if any
-                            //references are in that package
                             return true;
                         }
                     }
+                    if (containsReferenceForImportPackage(importPackage, referencedDefinitions))
+                    {
+                        return true;
+                    }
                     return false;
+                }
+                if(mxmlRefs != null && mxmlRefs.contains(importName))
+                {
+                    return true;
                 }
                 return referencedDefinitions.contains(importName);
             });
@@ -352,13 +431,63 @@ public class ASTUtils
         }
     }
 
+    private static boolean containsReferenceForImportPackage(String importPackage, Set<String> referencedDefinitions)
+    {
+        for (String reference : referencedDefinitions)
+        {
+            if(reference.startsWith(importPackage)
+                && !reference.substring(importPackage.length() + 1).contains("."))
+            {
+                //an entire package is imported, so check if any
+                //references are in that package
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void findReferencedDefinitionsOutsideMXMLScript(IASNode node, ICompilerProject project, Set<String> referencedDefinitions)
+    {
+        for (int i = 0, count = node.getChildCount(); i < count; i++)
+        {
+            IASNode child = node.getChild(i);
+            if (child instanceof IMXMLScriptNode)
+            {
+                //skip the script node and children because they are handled in
+                //findImportNodesToRemove()
+                continue;
+            }
+            if (child instanceof IImportNode)
+            {
+                //import nodes can't be references
+                continue;
+            }
+            if (child instanceof IIdentifierNode)
+            {
+                IIdentifierNode identifierNode = (IIdentifierNode) child;
+                IDefinition definition = identifierNode.resolve(project);
+                if (definition != null
+                        && definition.getPackageName().length() > 0
+                        && definition.getQualifiedName().startsWith(definition.getPackageName()))
+                {
+                    referencedDefinitions.add(definition.getQualifiedName());
+                }
+            }
+            findReferencedDefinitionsOutsideMXMLScript(child, project, referencedDefinitions);
+        }
+    }
+
     public static String getIndentBeforeNode(IASNode node, String fileText)
     {
-        int indentLength = node.getColumn();
-        int indentStart = node.getAbsoluteStart() - indentLength;
-        if (indentStart != -1 && indentLength != -1)
+        return getIndentFromOffsetAndColumn(node.getAbsoluteStart(), node.getColumn(), fileText);
+    }
+
+    public static String getIndentFromOffsetAndColumn(int offset, int column, String fileText)
+    {
+        int indentStart = offset - column;
+        if (indentStart != -1 && column != -1)
         {
-            return fileText.substring(indentStart, indentStart + indentLength);
+            return fileText.substring(indentStart, indentStart + column);
         }
         return "";
     }

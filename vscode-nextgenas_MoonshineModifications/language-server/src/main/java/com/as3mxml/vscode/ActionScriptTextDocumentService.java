@@ -35,7 +35,6 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -128,9 +127,9 @@ import org.apache.royale.compiler.tree.mxml.IMXMLClassDefinitionNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLClassReferenceNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLConcatenatedDataBindingNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLEventSpecifierNode;
+import org.apache.royale.compiler.tree.mxml.IMXMLInstanceNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLPropertySpecifierNode;
-import org.apache.royale.compiler.tree.mxml.IMXMLScriptNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLSingleDataBindingNode;
 import org.apache.royale.compiler.tree.mxml.IMXMLSpecifierNode;
 import org.apache.royale.compiler.units.ICompilationUnit;
@@ -139,8 +138,6 @@ import org.apache.royale.compiler.workspaces.IWorkspace;
 import org.apache.royale.utils.FilenameNormalization;
 
 import com.google.common.io.Files;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.as3mxml.asconfigc.ASConfigC;
@@ -157,8 +154,8 @@ import com.as3mxml.vscode.project.ProjectOptions;
 import com.as3mxml.vscode.project.WorkspaceFolderData;
 import com.as3mxml.vscode.services.ActionScriptLanguageClient;
 import com.as3mxml.vscode.utils.ASTUtils;
+import com.as3mxml.vscode.utils.AddImportData;
 import com.as3mxml.vscode.utils.CodeActionsUtils;
-import com.as3mxml.vscode.utils.CodeGenerationUtils;
 import com.as3mxml.vscode.utils.CompilerProblemFilter;
 import com.as3mxml.vscode.utils.CompilerProjectUtils;
 import com.as3mxml.vscode.utils.CompletionItemUtils;
@@ -178,12 +175,12 @@ import com.as3mxml.vscode.utils.ScopeUtils;
 import com.as3mxml.vscode.utils.SourcePathUtils;
 import com.as3mxml.vscode.utils.WaitForBuildFinishRunner;
 import com.as3mxml.vscode.utils.XmlnsRange;
-import com.as3mxml.vscode.utils.CodeActionsUtils.CommandAndRange;
 import com.as3mxml.vscode.utils.DefinitionTextUtils.DefinitionAsText;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -255,7 +252,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     private static final String SDK_LIBRARY_PATH_SIGNATURE_UNIX = "/frameworks/libs/";
     private static final String SDK_LIBRARY_PATH_SIGNATURE_WINDOWS = "\\frameworks\\libs\\";
     private static final String PROPERTY_FRAMEWORK_LIB = "royalelib";
-    private static final String UNDERSCORE_UNDERSCORE_AS3_PACKAGE = "__AS3__.";
     private static final String VECTOR_HIDDEN_PREFIX = "Vector$";
 
     private ActionScriptLanguageClient languageClient;
@@ -1244,68 +1240,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     //the path must be in the workspace or source-path
                     return Collections.emptyList();
                 }
-                List<Either<Command, CodeAction>> commands = new ArrayList<>();
-                for (Diagnostic diagnostic : diagnostics)
-                {
-                    //I don't know why this can be null
-                    String code = diagnostic.getCode();
-                    if (code == null)
-                    {
-                        continue;
-                    }
-                    switch (code)
-                    {
-                        case "1120": //AccessUndefinedPropertyProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            createCodeActionForMissingLocalVariable(textDocument, diagnostic, commands);
-                            createCodeActionForMissingField(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1046": //UnknownTypeProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1017": //UnknownSuperclassProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1045": //UnknownInterfaceProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1061": //StrictUndefinedMethodProblem
-                        {
-                            createCodeActionForMissingMethod(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1119": //AccessUndefinedMemberProblem
-                        {
-                            createCodeActionForMissingField(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1178": //InaccessiblePropertyReferenceProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            break;
-                        }
-                        case "1180": //CallUndefinedMethodProblem
-                        {
-                            //see if there's anything we can import
-                            createCodeActionsForImport(textDocument, diagnostic, commands);
-                            createCodeActionForMissingMethod(textDocument, diagnostic, commands);
-                            break;
-                        }
-                    }
-                }
+                List<Either<Command, CodeAction>> codeActions = new ArrayList<>();
+                findCodeActionsForDiagnostics(textDocument, diagnostics, codeActions);
+
                 ICompilationUnit unit = getCompilationUnit(path);
                 if (unit != null)
                 {
@@ -1320,25 +1257,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     }
                     if (ast != null)
                     {
-                        List<CommandAndRange> codeActions = new ArrayList<>();
                         String fileText = sourceByPath.get(path);
-                        CodeActionsUtils.findCodeActions(ast, currentProject, path, fileText, codeActions);
-                        if (codeActions != null)
-                        {
-                            for (CommandAndRange codeAction : codeActions)
-                            {
-                                Range savedRange = codeAction.range;
-                                Range paramRange = params.getRange();
-                                if (LSPUtils.rangesIntersect(savedRange, paramRange))
-                                {
-                                    commands.add(Either.forLeft(codeAction.command));
-                                }
-                            }
-                        }
+                        CodeActionsUtils.findGetSetCodeActions(ast, currentProject, textDocument.getUri(), fileText, params.getRange(), codeActions);
                     }
                 }
                 cancelToken.checkCanceled();
-                return commands;
+                return codeActions;
             }
             finally
             {
@@ -1346,10 +1270,88 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
         });
     }
-
-    private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
+    public void findCodeActionsForDiagnostics(TextDocumentIdentifier textDocument, List<? extends Diagnostic> diagnostics, List<Either<Command, CodeAction>> codeActions)
     {
+        for (Diagnostic diagnostic : diagnostics)
+        {
+            //I don't know why this can be null
+            String code = diagnostic.getCode();
+            if (code == null)
+            {
+                continue;
+            }
+            switch (code)
+            {
+                case "1120": //AccessUndefinedPropertyProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    createCodeActionForMissingLocalVariable(textDocument, diagnostic, codeActions);
+                    createCodeActionForMissingField(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1046": //UnknownTypeProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1017": //UnknownSuperclassProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1045": //UnknownInterfaceProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1061": //StrictUndefinedMethodProblem
+                {
+                    createCodeActionForMissingMethod(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1119": //AccessUndefinedMemberProblem
+                {
+                    createCodeActionForMissingField(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1178": //InaccessiblePropertyReferenceProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    break;
+                }
+                case "1180": //CallUndefinedMethodProblem
+                {
+                    //see if there's anything we can import
+                    createCodeActionsForImport(textDocument, diagnostic, codeActions);
+                    createCodeActionForMissingMethod(textDocument, diagnostic, codeActions);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void createCodeActionForMissingField(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> codeActions)
+    {
+        RoyaleProject project = textDocumentIdentifierToProject(textDocument);
+        if(project == null)
+        {
+            return;
+        }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        if (offsetNode instanceof IMXMLInstanceNode)
+        {
+            Position position = diagnostic.getRange().getStart();
+            IMXMLTagData tag = getOffsetMXMLTag(textDocument, position);
+            //workaround for bug in Royale compiler
+            position = new Position(position.getLine(), position.getCharacter() + 1);
+            int currentOffset = getOffset(textDocument, position);
+            offsetNode = getEmbeddedActionScriptNodeInMXMLTag(tag, currentOffset, textDocument, position, project);
+        }
         IIdentifierNode identifierNode = null;
         if (offsetNode instanceof IIdentifierNode)
         {
@@ -1376,25 +1378,49 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return;
         }
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String fileText = getFileTextForPath(pathForImport);
+        if(fileText == null)
+        {
+            return;
+        }
 
-        String identifierName = identifierNode.getName();
-        Command generateVariableCommand = new Command();
-        generateVariableCommand.setTitle("Generate Field Variable");
-        generateVariableCommand.setCommand(ICommandConstants.GENERATE_FIELD_VARIABLE);
-        generateVariableCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            identifierName
-        ));
-        commands.add(Either.forLeft(generateVariableCommand));
+        WorkspaceEdit edit = CodeActionsUtils.createWorkspaceEditForGenerateFieldVariable(
+            identifierNode, textDocument.getUri(), fileText);
+        if(edit == null)
+        {
+            return;
+        }
+        
+        CodeAction codeAction = new CodeAction();
+        codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+        codeAction.setTitle("Generate Field Variable");
+        codeAction.setEdit(edit);
+        codeAction.setKind(CodeActionKind.QuickFix);
+        codeActions.add(Either.forRight(codeAction));
     }
     
-    private void createCodeActionForMissingLocalVariable(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
+    private void createCodeActionForMissingLocalVariable(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> codeActions)
     {
+        RoyaleProject project = textDocumentIdentifierToProject(textDocument);
+        if(project == null)
+        {
+            return;
+        }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        if (offsetNode instanceof IMXMLInstanceNode)
+        {
+            Position position = diagnostic.getRange().getStart();
+            IMXMLTagData tag = getOffsetMXMLTag(textDocument, position);
+            //workaround for bug in Royale compiler
+            position = new Position(position.getLine(), position.getCharacter() + 1);
+            int currentOffset = getOffset(textDocument, position);
+            offsetNode = getEmbeddedActionScriptNodeInMXMLTag(tag, currentOffset, textDocument, position, project);
+        }
         IIdentifierNode identifierNode = null;
         if (offsetNode instanceof IIdentifierNode)
         {
@@ -1404,23 +1430,33 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             return;
         }
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String fileText = getFileTextForPath(pathForImport);
+        if(fileText == null)
+        {
+            return;
+        }
 
-        String identifierName = identifierNode.getName();
-        Command generateVariableCommand = new Command();
-        generateVariableCommand.setTitle("Generate Local Variable");
-        generateVariableCommand.setCommand(ICommandConstants.GENERATE_LOCAL_VARIABLE);
-        generateVariableCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            identifierName
-        ));
-        commands.add(Either.forLeft(generateVariableCommand));
+        WorkspaceEdit edit = CodeActionsUtils.createWorkspaceEditForGenerateLocalVariable(
+            identifierNode, textDocument.getUri(), fileText);
+        if(edit == null)
+        {
+            return;
+        }
+
+        CodeAction codeAction = new CodeAction();
+        codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+        codeAction.setTitle("Generate Local Variable");
+        codeAction.setEdit(edit);
+        codeAction.setKind(CodeActionKind.QuickFix);
+        codeActions.add(Either.forRight(codeAction));
     }
 
-    private void createCodeActionForMissingMethod(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
+    private void createCodeActionForMissingMethod(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> codeActions)
     {
         RoyaleProject project = textDocumentIdentifierToProject(textDocument);
         if(project == null)
@@ -1428,72 +1464,66 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return;
         }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        if (offsetNode instanceof IMXMLInstanceNode)
+        {
+            Position position = diagnostic.getRange().getStart();
+            IMXMLTagData tag = getOffsetMXMLTag(textDocument, position);
+            //workaround for bug in Royale compiler
+            position = new Position(position.getLine(), position.getCharacter() + 1);
+            int currentOffset = getOffset(textDocument, position);
+            offsetNode = getEmbeddedActionScriptNodeInMXMLTag(tag, currentOffset, textDocument, position, project);
+        }
         IASNode parentNode = offsetNode.getParent();
+
         IFunctionCallNode functionCallNode = null;
-        String functionName = null;
         if (offsetNode instanceof IFunctionCallNode)
         {
             functionCallNode = (IFunctionCallNode) offsetNode;
-            functionName = functionCallNode.getFunctionName();
         }
         else if (parentNode instanceof IFunctionCallNode)
         {
             functionCallNode = (IFunctionCallNode) offsetNode.getParent();
-            functionName = functionCallNode.getFunctionName();
         }
         else if(offsetNode instanceof IIdentifierNode
                 && parentNode instanceof IMemberAccessExpressionNode)
         {
-            IMemberAccessExpressionNode memberAccessExpressionNode = (IMemberAccessExpressionNode) offsetNode.getParent();
-            IExpressionNode leftOperandNode = memberAccessExpressionNode.getLeftOperandNode();
-            if (leftOperandNode instanceof ILanguageIdentifierNode)
+            IASNode gpNode = parentNode.getParent();
+            if (gpNode instanceof IFunctionCallNode)
             {
-                ILanguageIdentifierNode leftIdentifierNode = (ILanguageIdentifierNode) leftOperandNode;
-                IASNode gpNode = parentNode.getParent();
-                if (leftIdentifierNode.getKind() == ILanguageIdentifierNode.LanguageIdentifierKind.THIS
-                        && gpNode instanceof IFunctionCallNode)
-                {
-                    functionCallNode = (IFunctionCallNode) gpNode;
-                    IIdentifierNode rightIdentifierNode = (IIdentifierNode) offsetNode;
-                    functionName = rightIdentifierNode.getName();
-                }
+                functionCallNode = (IFunctionCallNode) gpNode;
             }
         }
-        if (functionCallNode == null || functionName == null || functionName.length() == 0 || functionCallNode.isNewExpression())
+        if (functionCallNode == null)
+        {
+            return;
+        }
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(textDocument.getUri());
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String fileText = getFileTextForPath(pathForImport);
+        if(fileText == null)
         {
             return;
         }
 
-        ArrayList<String> argTypes = new ArrayList<>();
-        for (IExpressionNode arg : functionCallNode.getArgumentNodes())
+        WorkspaceEdit edit = CodeActionsUtils.createWorkspaceEditForGenerateMethod(
+            functionCallNode, textDocument.getUri(), fileText, project);
+        if(edit == null)
         {
-            ITypeDefinition typeDefinition = arg.resolveType(project);
-            if (typeDefinition != null)
-            {
-                argTypes.add(typeDefinition.getQualifiedName());
-            }
-            else
-            {
-                argTypes.add(IASLanguageConstants.Object);
-            }
+            return;
         }
 
-        Command generateMethodCommand = new Command();
-        generateMethodCommand.setTitle("Generate Method");
-        generateMethodCommand.setCommand(ICommandConstants.GENERATE_METHOD);
-        generateMethodCommand.setArguments(Arrays.asList(
-            textDocument.getUri(),
-            diagnostic.getRange().getStart().getLine(),
-            diagnostic.getRange().getStart().getCharacter(),
-            diagnostic.getRange().getEnd().getLine(),
-            diagnostic.getRange().getEnd().getCharacter(),
-            functionName,
-            argTypes.toArray()
-        ));
-        commands.add(Either.forLeft(generateMethodCommand));
+        CodeAction codeAction = new CodeAction();
+        codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+        codeAction.setTitle("Generate Method");
+        codeAction.setEdit(edit);
+        codeAction.setKind(CodeActionKind.QuickFix);
+        codeActions.add(Either.forRight(codeAction));
     }
 
-    private void createCodeActionsForImport(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> commands)
+    private void createCodeActionsForImport(TextDocumentIdentifier textDocument, Diagnostic diagnostic, List<Either<Command, CodeAction>> codeActions)
     {
         RoyaleProject project = textDocumentIdentifierToProject(textDocument);
         if(project == null)
@@ -1501,11 +1531,41 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return;
         }
         IASNode offsetNode = getOffsetNode(textDocument, diagnostic.getRange().getStart());
+        if (offsetNode instanceof IMXMLInstanceNode)
+        {
+            Position position = diagnostic.getRange().getStart();
+            IMXMLTagData tag = getOffsetMXMLTag(textDocument, position);
+            //workaround for bug in Royale compiler
+            position = new Position(position.getLine(), position.getCharacter() + 1);
+            int currentOffset = getOffset(textDocument, position);
+            offsetNode = getEmbeddedActionScriptNodeInMXMLTag(tag, currentOffset, textDocument, position, project);
+        }
         if (offsetNode == null || !(offsetNode instanceof IIdentifierNode))
         {
             return;
         }
         ImportRange importRange = ImportRange.fromOffsetNode(offsetNode);
+        String uri = importRange.uri;
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String fileText = getFileTextForPath(pathForImport);
+        if(fileText == null)
+        {
+            return;
+        }
+        if(textDocument.getUri().endsWith(MXML_EXTENSION))
+        {
+            Position start = diagnostic.getRange().getStart();
+            int currentOffset = LanguageServerCompilerUtils.getOffsetFromPosition(new StringReader(fileText), start);
+            IMXMLTagData offsetTag = getOffsetMXMLTag(textDocument, start);
+            if (offsetTag != null)
+            {
+                importRange = ImportRange.fromOffsetTag(offsetTag, currentOffset);
+            }
+        }
 
         IIdentifierNode identifierNode = (IIdentifierNode) offsetNode;
         String typeString = identifierNode.getName();
@@ -1513,11 +1573,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         List<IDefinition> types = ASTUtils.findTypesThatMatchName(typeString, project.getCompilationUnits());
         for (IDefinition definitionToImport : types)
         {
-            Command command = createImportCommand(definitionToImport, importRange);
-            if (command != null)
+            WorkspaceEdit edit = CodeActionsUtils.createWorkspaceEditForAddImport(definitionToImport, fileText, uri, importRange.startIndex, importRange.endIndex);
+            if (edit == null)
             {
-                commands.add(Either.forLeft(command));
+                continue;
             }
+            CodeAction codeAction = new CodeAction();
+            codeAction.setTitle("Import " + definitionToImport.getQualifiedName());
+            codeAction.setEdit(edit);
+            codeAction.setKind(CodeActionKind.QuickFix);
+            codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+            codeActions.add(Either.forRight(codeAction));
         }
     }
 
@@ -1642,66 +1708,51 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             compilerWorkspace.startIdleState();
             compilerWorkspace.endIdleState(IWorkspace.NIL_COMPILATIONUNITS_TO_UPDATE);
             cancelToken.checkCanceled();
+            
+            //we don't need to pause code intelligence for these commands
+            Object result = null;
+            switch(params.getCommand())
+            {
+                case ICommandConstants.QUICK_COMPILE:
+                {
+                    result = executeQuickCompileCommand(params);
+                    break;
+                }
+            }
+            if(result != null)
+            {
+                cancelToken.checkCanceled();
+                return result;
+            }
 
+            //pause code intelligence until we're done
             compilerWorkspace.startBuilding();
             try
             {
-                Object result = null;
                 switch(params.getCommand())
                 {
                     case ICommandConstants.ADD_IMPORT:
                     {
-                        result = executeAddImportCommand(params);
+                        executeAddImportCommand(params);
+                        result = new Object();
                         break;
                     }
                     case ICommandConstants.ADD_MXML_NAMESPACE:
                     {
-                        result = executeAddMXMLNamespaceCommand(params);
+                        executeAddMXMLNamespaceCommand(params);
+                        result = new Object();
                         break;
                     }
                     case ICommandConstants.ORGANIZE_IMPORTS_IN_URI:
                     {
-                        result = executeOrganizeImportsInUriCommand(params);
+                        executeOrganizeImportsInUriCommand(params);
+                        result = new Object();
                         break;
                     }
                     case ICommandConstants.ORGANIZE_IMPORTS_IN_DIRECTORY:
                     {
-                        result = executeOrganizeImportsInDirectoryCommand(params);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_GETTER_AND_SETTER:
-                    {
-                        result = executeGenerateGetterAndSetterCommand(params, true, true);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_GETTER:
-                    {
-                        result = executeGenerateGetterAndSetterCommand(params, true, false);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_SETTER:
-                    {
-                        result = executeGenerateGetterAndSetterCommand(params, false, true);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_LOCAL_VARIABLE:
-                    {
-                        result = executeGenerateLocalVariableCommand(params);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_FIELD_VARIABLE:
-                    {
-                        result = executeGenerateFieldVariableCommand(params);
-                        break;
-                    }
-                    case ICommandConstants.GENERATE_METHOD:
-                    {
-                        result = executeGenerateMethodCommand(params);
-                        break;
-                    }
-                    case ICommandConstants.QUICK_COMPILE:
-                    {
-                        result = executeQuickCompileCommand(params);
+                        executeOrganizeImportsInDirectoryCommand(params);
+                        result = new Object();
                         break;
                     }
                     default:
@@ -2624,11 +2675,26 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         if (!isActionScriptCompletionAllowedInNode(params, offsetNode, currentOffset))
         {
             //if we're inside a node that shouldn't have completion!
-            return new CompletionList();
+            return result;
         }
 
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
+        if(path == null)
+        {
+            //something went terribly wrong!
+            return result;
+        }
         ImportRange importRange = ImportRange.fromOffsetNode(offsetNode);
-        String containingPackageName = ASTUtils.nodeToContainingPackageName(offsetNode);
+        if (params.getTextDocument().getUri().endsWith(MXML_EXTENSION))
+        {
+            IMXMLTagData offsetTag = getOffsetMXMLTag(params.getTextDocument(), params.getPosition());
+            if (offsetTag != null)
+            {
+                importRange = ImportRange.fromOffsetTag(offsetTag, currentOffset);
+            }
+        }
+        String fileText = getFileTextForPath(path);
+        AddImportData addImportData = CodeActionsUtils.findAddImportData(fileText, importRange.startIndex, importRange.endIndex);
 
         //variable types
         if (offsetNode instanceof IVariableNode)
@@ -2644,7 +2710,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         || (line == nameExpression.getEndLine() && column > nameExpression.getEndColumn())
                         || (line == typeNode.getLine() && column <= typeNode.getColumn()))
                 {
-                    autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
+                    autoCompleteTypes(offsetNode, addImportData, project, result);
                 }
                 return result;
             }
@@ -2655,7 +2721,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IVariableNode variableNode = (IVariableNode) parentNode;
             if (offsetNode == variableNode.getVariableTypeNode())
             {
-                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
+                autoCompleteTypes(parentNode, addImportData, project, result);
                 return result;
             }
         }
@@ -2674,7 +2740,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         && line <= typeNode.getLine()
                         && column <= typeNode.getColumn())
                 {
-                    autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
+                    autoCompleteTypes(offsetNode, addImportData, project, result);
                     return result;
                 }
             }
@@ -2685,7 +2751,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IFunctionNode functionNode = (IFunctionNode) parentNode;
             if (offsetNode == functionNode.getReturnTypeNode())
             {
-                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
+                autoCompleteTypes(parentNode, addImportData, project, result);
                 return result;
             }
         }
@@ -2697,7 +2763,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (functionCallNode.getNameNode() == offsetNode
                     && functionCallNode.isNewExpression())
             {
-                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
+                autoCompleteTypes(parentNode, addImportData, project, result);
                 return result;
             }
         }
@@ -2705,7 +2771,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordNewID)
         {
-            autoCompleteTypes(nodeAtPreviousOffset, importRange, containingPackageName, project, result);
+            autoCompleteTypes(nodeAtPreviousOffset, addImportData, project, result);
             return result;
         }
         //as and is keyword types
@@ -2717,7 +2783,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             IBinaryOperatorNode binaryOperatorNode = (IBinaryOperatorNode) parentNode;
             if (binaryOperatorNode.getRightOperandNode() == offsetNode)
             {
-                autoCompleteTypes(parentNode, importRange, containingPackageName, project, result);
+                autoCompleteTypes(parentNode, addImportData, project, result);
                 return result;
             }
         }
@@ -2726,7 +2792,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && (nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_AsID
                 || nodeAtPreviousOffset.getNodeID() == ASTNodeID.Op_IsID))
         {
-            autoCompleteTypes(nodeAtPreviousOffset, importRange, containingPackageName, project, result);
+            autoCompleteTypes(nodeAtPreviousOffset, addImportData, project, result);
             return result;
         }
         //class extends keyword
@@ -2735,7 +2801,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
+            autoCompleteTypes(offsetNode, addImportData, project, result);
             return result;
         }
         //class implements keyword
@@ -2744,7 +2810,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordImplementsID)
         {
-            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
+            autoCompleteTypes(offsetNode, addImportData, project, result);
             return result;
         }
         //interface extends keyword
@@ -2753,7 +2819,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 && nodeAtPreviousOffset instanceof IKeywordNode
                 && nodeAtPreviousOffset.getNodeID() == ASTNodeID.KeywordExtendsID)
         {
-            autoCompleteTypes(offsetNode, importRange, containingPackageName, project, result);
+            autoCompleteTypes(offsetNode, addImportData, project, result);
             return result;
         }
 
@@ -2872,7 +2938,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         || (line == leftOperand.getEndLine() && column > leftOperand.getEndColumn())
                         || (line == rightOperand.getLine() && column <= rightOperand.getColumn()))
                 {
-                    autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
+                    autoCompleteMemberAccess(memberAccessNode, addImportData, project, result);
                     return result;
                 }
             }
@@ -2895,7 +2961,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (offsetNode == memberAccessNode.getRightOperandNode()
                     || isValidLeft)
             {
-                autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
+                autoCompleteMemberAccess(memberAccessNode, addImportData, project, result);
                 return result;
             }
         }
@@ -2912,7 +2978,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IIdentifierNode identifierNode = (IIdentifierNode) rightOperandNode;
                 if (identifierNode.getName().equals(""))
                 {
-                    autoCompleteMemberAccess(memberAccessNode, importRange, project, result);
+                    autoCompleteMemberAccess(memberAccessNode, addImportData, project, result);
                     return result;
                 }
             }
@@ -2966,12 +3032,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IScopedNode scopedNode = (IScopedNode) currentNodeForScope;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, false, importRange, containingPackageName, project, result);
+                autoCompleteScope(scopedNode, false, addImportData, project, result);
 
                 //include all public definitions
                 IASScope scope = scopedNode.getScope();
                 IDefinition definitionToSkip = scope.getDefinition();
-                autoCompleteDefinitionsForActionScript(result, project, false, null, definitionToSkip, containingPackageName, false, null, importRange);
+                autoCompleteDefinitionsForActionScript(result, project, scopedNode, false, null, definitionToSkip, false, null, addImportData);
                 autoCompleteKeywords(scopedNode, result);
                 return result;
             }
@@ -2993,8 +3059,17 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return result;
         }
 
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(params.getTextDocument().getUri());
+        if(path == null)
+        {
+            //something went terribly wrong!
+            return result;
+        }
         ImportRange importRange = ImportRange.fromOffsetTag(offsetTag, currentOffset);
+        String fileText = getFileTextForPath(path);
+        AddImportData addImportData = CodeActionsUtils.findAddImportData(fileText, importRange.startIndex, importRange.endIndex);
         XmlnsRange xmlnsRange = XmlnsRange.fromOffsetTag(offsetTag, currentOffset);
+        Position xmlnsPosition = LanguageServerCompilerUtils.getPositionFromOffset(new StringReader(fileText), xmlnsRange.endIndex);
 
         boolean tagsNeedOpenBracket = false;
         if(currentOffset > 0)
@@ -3075,7 +3150,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             if (!isAttribute)
             {
-                autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, null, importRange, xmlnsRange);
+                autoCompleteDefinitionsForMXML(result, project, offsetUnit, offsetTag, true, tagsNeedOpenBracket, null, addImportData, xmlnsPosition);
             }
             return result;
         }
@@ -3099,7 +3174,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         //only add members if the prefix is the same as the
                         //parent tag. members can't have different prefixes.
                         //also allow members when we don't have a prefix.
-                        addMembersForMXMLTypeToAutoComplete(classDefinition, parentTag, false, offsetPrefix.length() == 0, false, importRange, xmlnsRange, project, result);
+                        addMembersForMXMLTypeToAutoComplete(classDefinition, parentTag, false, offsetPrefix.length() == 0, false, addImportData, xmlnsPosition, project, result);
                     }
                     if (!isAttribute)
                     {
@@ -3134,7 +3209,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                         {
                             //only add types if the class defines [DefaultProperty]
                             //metadata
-                            autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
+                            autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsPosition);
                         }
                     }
                 }
@@ -3142,13 +3217,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 {
                     //the parent is something like a property, so matching the
                     //prefix is not required
-                    autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
+                    autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsPosition);
                 }
                 return result;
             }
             else if (MXMLDataUtils.isDeclarationsTag(parentTag))
             {
-                autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsRange);
+                autoCompleteTypesForMXMLFromExistingTag(result, project, offsetUnit, offsetTag, xmlnsPosition);
                 return result;
             }
             return result;
@@ -3168,7 +3243,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
 
             IClassDefinition classDefinition = (IClassDefinition) offsetDefinition;
-            addMembersForMXMLTypeToAutoComplete(classDefinition, offsetTag, isAttribute, !isAttribute, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
+            addMembersForMXMLTypeToAutoComplete(classDefinition, offsetTag, isAttribute, !isAttribute, tagsNeedOpenBracket, addImportData, xmlnsPosition, project, result);
 
             if (!isAttribute)
             {
@@ -3196,7 +3271,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                     //if [DefaultProperty] is set, then we can instantiate
                     //types as child elements
                     //but we don't want to do that when in an attribute
-                    autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, typeFilter, importRange, xmlnsRange);
+                    autoCompleteDefinitionsForMXML(result, project, offsetUnit, offsetTag, true, tagsNeedOpenBracket, typeFilter, addImportData, xmlnsPosition);
                 }
             }
             return result;
@@ -3208,7 +3283,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (!isAttribute)
             {
                 String typeFilter = DefinitionUtils.getMXMLChildElementTypeForDefinition(offsetDefinition, project);
-                autoCompleteDefinitionsForMXML(result, project, offsetUnit, true, tagsNeedOpenBracket, typeFilter, importRange, xmlnsRange);
+                autoCompleteDefinitionsForMXML(result, project, offsetUnit, offsetTag, true, tagsNeedOpenBracket, typeFilter, addImportData, xmlnsPosition);
             }
             return result;
         }
@@ -3816,7 +3891,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         result.getItems().add(item);
     }
 
-    private void autoCompleteTypes(IASNode withNode, ImportRange importRange, String containingPackageName, RoyaleProject project, CompletionList result)
+    private void autoCompleteTypes(IASNode withNode, AddImportData addImportData, RoyaleProject project, CompletionList result)
     {
         //start by getting the types in scope
         IASNode node = withNode;
@@ -3829,20 +3904,20 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 IScopedNode scopedNode = (IScopedNode) node;
 
                 //include all members and local things that are in scope
-                autoCompleteScope(scopedNode, true, importRange, containingPackageName, project, result);
+                autoCompleteScope(scopedNode, true, addImportData, project, result);
                 break;
             }
             node = node.getParent();
         }
         while (node != null);
-        autoCompleteDefinitionsForActionScript(result, project, true, null, null, containingPackageName, false, null, importRange);
+        autoCompleteDefinitionsForActionScript(result, project, withNode, true, null, null, false, null, addImportData);
     }
 
     /**
      * Using an existing tag, that may already have a prefix or short name,
      * populate the completion list.
      */
-    private void autoCompleteTypesForMXMLFromExistingTag(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, XmlnsRange xmlnsRange)
+    private void autoCompleteTypesForMXMLFromExistingTag(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, Position xmlnsPosition)
     {
         IMXMLDataManager mxmlDataManager = compilerWorkspace.getMXMLDataManager();
         MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename()));
@@ -3913,28 +3988,28 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             {
                                 if (tagPrefix.equals(otherPrefix))
                                 {
-                                    addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, null, null, false, project, result);
+                                    addDefinitionAutoCompleteMXML(typeDefinition, xmlnsPosition, false, null, null, false, offsetTag, project, result);
                                 }
                             }
                         }
                         if (tagNamespacePackage != null
                                 && tagNamespacePackage.equals(typeDefinition.getPackageName()))
                         {
-                            addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, null, null, false, project, result);
+                            addDefinitionAutoCompleteMXML(typeDefinition, xmlnsPosition, false, null, null, false, offsetTag, project, result);
                         }
                     }
                     else
                     {
                         //no prefix yet, so complete the definition with a prefix
                         MXMLNamespace ns = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(typeDefinition, mxmlData, project);
-                        addDefinitionAutoCompleteMXML(typeDefinition, xmlnsRange, false, ns.prefix, ns.uri, false, project, result);
+                        addDefinitionAutoCompleteMXML(typeDefinition, xmlnsPosition, false, ns.prefix, ns.uri, false, offsetTag, project, result);
                     }
                 }
             }
         }
     }
 
-    private void autoCompleteDefinitionsForMXML(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, boolean typesOnly, boolean tagsNeedOpenBracket, String typeFilter, ImportRange importRange, XmlnsRange xmlnsRange)
+    private void autoCompleteDefinitionsForMXML(CompletionList result, RoyaleProject project, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, boolean typesOnly, boolean tagsNeedOpenBracket, String typeFilter, AddImportData addImportData, Position xmlnsPosition)
     {
         for (ICompilationUnit unit : project.getCompilationUnits())
         {
@@ -3974,11 +4049,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                             continue;
                         }
 
-                        addMXMLTypeDefinitionAutoComplete(typeDefinition, xmlnsRange, offsetUnit, tagsNeedOpenBracket, project, result);
+                        addMXMLTypeDefinitionAutoComplete(typeDefinition, xmlnsPosition, offsetUnit, offsetTag, tagsNeedOpenBracket, project, result);
                     }
                     else
                     {
-                        addDefinitionAutoCompleteActionScript(definition, null, importRange, project, result);
+                        addDefinitionAutoCompleteActionScript(definition, null, addImportData, project, result);
                     }
                 }
             }
@@ -3986,9 +4061,9 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     }
 
     private void autoCompleteDefinitionsForActionScript(CompletionList result,
-            RoyaleProject project, boolean typesOnly, String requiredPackageName,
-            IDefinition definitionToSkip, String containingPackageName,
-            boolean tagsNeedOpenBracket, String typeFilter, ImportRange importRange)
+            RoyaleProject project, IASNode offsetNode,
+            boolean typesOnly, String requiredPackageName, IDefinition definitionToSkip,
+            boolean tagsNeedOpenBracket, String typeFilter, AddImportData addImportData)
     {
         String skipQualifiedName = null;
         if (definitionToSkip != null)
@@ -4032,7 +4107,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                 continue;
                             }
                         }
-                        addDefinitionAutoCompleteActionScript(definition, containingPackageName, importRange, project, result);
+                        addDefinitionAutoCompleteActionScript(definition, offsetNode, addImportData, project, result);
                     }
                 }
             }
@@ -4046,7 +4121,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void autoCompleteScope(IScopedNode node, boolean typesOnly, ImportRange importRange, String containingPackageName, RoyaleProject project, CompletionList result)
+    private void autoCompleteScope(IScopedNode node, boolean typesOnly, AddImportData addImportData, RoyaleProject project, CompletionList result)
     {
         IScopedNode currentNode = node;
         ASScope scope = (ASScope) node.getScope();
@@ -4058,10 +4133,10 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             if (currentScope instanceof TypeScope && !typesOnly)
             {
                 TypeScope typeScope = (TypeScope) currentScope;
-                addDefinitionsInTypeScopeToAutoComplete(typeScope, scope, true, true, false, false, null, false, importRange, null, project, result);
+                addDefinitionsInTypeScopeToAutoComplete(typeScope, scope, true, true, false, false, null, false, addImportData, null, null, project, result);
                 if (!staticOnly)
                 {
-                    addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, importRange, project, result);
+                    addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, addImportData, project, result);
                 }
             }
             else
@@ -4089,7 +4164,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                                 continue;
                             }
                         }
-                        addDefinitionAutoCompleteActionScript(localDefinition, containingPackageName, importRange, project, result);
+                        addDefinitionAutoCompleteActionScript(localDefinition, currentNode, addImportData, project, result);
                     }
                 }
             }
@@ -4367,7 +4442,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, ImportRange importRange, RoyaleProject project, CompletionList result)
+    private void autoCompleteMemberAccess(IMemberAccessExpressionNode node, AddImportData addImportData, RoyaleProject project, CompletionList result)
     {
         ASScope scope = (ASScope) node.getContainingScope().getScope();
         IExpressionNode leftOperand = node.getLeftOperandNode();
@@ -4376,14 +4451,14 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             ITypeDefinition typeDefinition = (ITypeDefinition) leftDefinition;
             TypeScope typeScope = (TypeScope) typeDefinition.getContainedScope();
-            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, true, importRange, project, result);
+            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, true, addImportData, project, result);
             return;
         }
         ITypeDefinition leftType = leftOperand.resolveType(project);
         if (leftType != null)
         {
             TypeScope typeScope = (TypeScope) leftType.getContainedScope();
-            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, importRange, project, result);
+            addDefinitionsInTypeScopeToAutoCompleteActionScript(typeScope, scope, false, addImportData, project, result);
             return;
         }
 
@@ -4393,7 +4468,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             String packageName = memberAccessToPackageName(memberAccess);
             if (packageName != null)
             {
-                autoCompleteDefinitionsForActionScript(result, project, false, packageName, null, null, false, null, importRange);
+                autoCompleteDefinitionsForActionScript(result, project, node, false, packageName, null, false, null, addImportData);
                 return;
             }
         }
@@ -4631,7 +4706,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
 
     private void addMembersForMXMLTypeToAutoComplete(IClassDefinition definition,
             IMXMLTagData offsetTag, boolean isAttribute, boolean includePrefix, boolean tagsNeedOpenBracket,
-            ImportRange importRange, XmlnsRange xmlnsRange, RoyaleProject project, CompletionList result)
+            AddImportData addImportData, Position xmlnsPosition, RoyaleProject project, CompletionList result)
     {
         ICompilationUnit unit = getCompilationUnit(Paths.get(offsetTag.getSourcePath()));
         if (unit == null)
@@ -4660,7 +4735,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             TypeScope typeScope = (TypeScope) definition.getContainedScope();
             ASScope scope = (ASScope) scopes[0];
-            addDefinitionsInTypeScopeToAutoCompleteMXML(typeScope, scope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
+            addDefinitionsInTypeScopeToAutoCompleteMXML(typeScope, scope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, addImportData, xmlnsPosition, offsetTag, project, result);
             addStyleMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, project, result);
             addEventMetadataToAutoCompleteMXML(typeScope, isAttribute, propertyElementPrefix, tagsNeedOpenBracket, project, result);
             if(isAttribute)
@@ -4711,25 +4786,25 @@ public class ActionScriptTextDocumentService implements TextDocumentService
     }
 
     private void addDefinitionsInTypeScopeToAutoCompleteActionScript(TypeScope typeScope, ASScope otherScope,
-        boolean isStatic, ImportRange importRange,
+        boolean isStatic, AddImportData addImportData,
         RoyaleProject project, CompletionList result)
     {
-        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, isStatic, false, false, false, null, false, importRange, null, project, result);
+        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, isStatic, false, false, false, null, false, addImportData, null, null, project, result);
     }
 
     private void addDefinitionsInTypeScopeToAutoCompleteMXML(TypeScope typeScope, ASScope otherScope,
         boolean isAttribute, String prefix, boolean tagsNeedOpenBracket,
-        ImportRange importRange, XmlnsRange xmlnsRange,
-        RoyaleProject project, CompletionList result)
+        AddImportData addImportData, Position xmlnsPosition,
+        IMXMLTagData offsetTag, RoyaleProject project, CompletionList result)
     {
-        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, false, false, true, isAttribute, prefix, tagsNeedOpenBracket, importRange, xmlnsRange, project, result);
+        addDefinitionsInTypeScopeToAutoComplete(typeScope, otherScope, false, false, true, isAttribute, prefix, tagsNeedOpenBracket, addImportData, xmlnsPosition, offsetTag, project, result);
     }
 
     private void addDefinitionsInTypeScopeToAutoComplete(TypeScope typeScope, ASScope otherScope,
         boolean isStatic, boolean includeSuperStatics,
         boolean forMXML, boolean isAttribute, String prefix, boolean tagsNeedOpenBracket,
-        ImportRange importRange, XmlnsRange xmlnsRange,
-        RoyaleProject project, CompletionList result)
+        AddImportData addImportData, Position xmlnsPosition,
+        IMXMLTagData offsetTag, RoyaleProject project, CompletionList result)
     {
         IMetaTag[] excludeMetaTags = typeScope.getDefinition().getMetaTagsByName(IMetaAttributeConstants.ATTRIBUTE_EXCLUDE);
         ArrayList<IDefinition> memberAccessDefinitions = new ArrayList<>();
@@ -4812,11 +4887,11 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             }
             if (forMXML)
             {
-                addDefinitionAutoCompleteMXML(localDefinition, xmlnsRange, isAttribute, prefix, null, tagsNeedOpenBracket, project, result);
+                addDefinitionAutoCompleteMXML(localDefinition, xmlnsPosition, isAttribute, prefix, null, tagsNeedOpenBracket, offsetTag, project, result);
             }
             else //actionscript
             {
-                addDefinitionAutoCompleteActionScript(localDefinition, null, importRange, project, result);
+                addDefinitionAutoCompleteActionScript(localDefinition, null, addImportData, project, result);
             }
         }
     }
@@ -4975,12 +5050,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
-    private void addMXMLTypeDefinitionAutoComplete(ITypeDefinition definition, XmlnsRange xmlnsRange, ICompilationUnit offsetUnit, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
+    private void addMXMLTypeDefinitionAutoComplete(ITypeDefinition definition, Position xmlnsPosition, ICompilationUnit offsetUnit, IMXMLTagData offsetTag, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
     {
         IMXMLDataManager mxmlDataManager = compilerWorkspace.getMXMLDataManager();
         MXMLData mxmlData = (MXMLData) mxmlDataManager.get(fileSpecGetter.getFileSpecification(offsetUnit.getAbsoluteFilename()));
         MXMLNamespace discoveredNS = MXMLNamespaceUtils.getMXMLNamespaceForTypeDefinition(definition, mxmlData, project);
-        addDefinitionAutoCompleteMXML(definition, xmlnsRange, false, discoveredNS.prefix, discoveredNS.uri, tagsNeedOpenBracket, project, result);
+        addDefinitionAutoCompleteMXML(definition, xmlnsPosition, false, discoveredNS.prefix, discoveredNS.uri, tagsNeedOpenBracket, offsetTag, project, result);
     }
 
     private boolean isDuplicateTypeDefinition(IDefinition definition)
@@ -4993,7 +5068,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return false;
     }
 
-    private void addDefinitionAutoCompleteActionScript(IDefinition definition, String containingPackageName, ImportRange importRange, RoyaleProject project, CompletionList result)
+    private void addDefinitionAutoCompleteActionScript(IDefinition definition, IASNode offsetNode, AddImportData addImportData, RoyaleProject project, CompletionList result)
     {
         String definitionBaseName = definition.getBaseName();
         if (definitionBaseName.length() == 0)
@@ -5031,13 +5106,12 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 //TODO: manually activate signature help
             }
         }*/
-        boolean isInPackage = !definition.getQualifiedName().equals(definition.getBaseName());
-        if (isInPackage && (containingPackageName == null || !definition.getPackageName().equals(containingPackageName)))
+        if (ASTUtils.needsImport(offsetNode, definition.getQualifiedName()))
         {
-            Command command = createImportCommand(definition, importRange);
-            if (command != null)
+            TextEdit textEdit = CodeActionsUtils.createTextEditForAddImport(definition, addImportData);
+            if(textEdit != null)
             {
-                item.setCommand(command);
+                item.setAdditionalTextEdits(Collections.singletonList(textEdit));
             }
         }
         IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
@@ -5048,7 +5122,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         result.getItems().add(item);
     }
 
-    private void addDefinitionAutoCompleteMXML(IDefinition definition, XmlnsRange xmlnsRange, boolean isAttribute, String prefix, String uri, boolean tagsNeedOpenBracket, RoyaleProject project, CompletionList result)
+    private void addDefinitionAutoCompleteMXML(IDefinition definition, Position xmlnsPosition, boolean isAttribute, String prefix, String uri, boolean tagsNeedOpenBracket, IMXMLTagData offsetTag, RoyaleProject project, CompletionList result)
     {
         if (definition.getBaseName().startsWith(VECTOR_HIDDEN_PREFIX))
         {
@@ -5113,9 +5187,15 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 insertTextBuilder.append(">");
             }
             item.setInsertText(insertTextBuilder.toString());
-            if (definition instanceof ITypeDefinition && prefix != null && uri != null)
+            if (definition instanceof ITypeDefinition
+                    && prefix != null && uri != null
+                    && MXMLDataUtils.needsNamespace(offsetTag, prefix, uri))
             {
-                item.setCommand(createMXMLNamespaceCommand(definition, xmlnsRange, prefix, uri));
+                TextEdit textEdit = CodeActionsUtils.createTextEditForAddMXMLNamespace(prefix, uri, xmlnsPosition);
+                if(textEdit != null)
+                {
+                    item.setAdditionalTextEdits(Collections.singletonList(textEdit));
+                }
             }
         }
         IDeprecationInfo deprecationInfo = definition.getDeprecationInfo();
@@ -5124,44 +5204,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             item.setDeprecated(true);
         }
         result.getItems().add(item);
-    }
-
-    private Command createImportCommand(IDefinition definition, ImportRange importRange)
-    {
-        String packageName = definition.getPackageName();
-        if (packageName == null
-                || packageName.isEmpty()
-                || packageName.startsWith(UNDERSCORE_UNDERSCORE_AS3_PACKAGE))
-        {
-            //don't even bother with these things that don't need importing
-            return null;
-        }
-        String qualifiedName = definition.getQualifiedName();
-        Command importCommand = new Command();
-        importCommand.setTitle("Import " + qualifiedName);
-        importCommand.setCommand(ICommandConstants.ADD_IMPORT);
-        importCommand.setArguments(Arrays.asList(
-            qualifiedName,
-            importRange.uri,
-            importRange.startIndex,
-            importRange.endIndex
-        ));
-        return importCommand;
-    }
-
-    private Command createMXMLNamespaceCommand(IDefinition definition, XmlnsRange xmlnsRange, String prefix, String uri)
-    {
-        Command xmlnsCommand = new Command();
-        xmlnsCommand.setTitle("Add Namespace " + uri);
-        xmlnsCommand.setCommand(ICommandConstants.ADD_MXML_NAMESPACE);
-        xmlnsCommand.setArguments(Arrays.asList(
-            prefix,
-            uri,
-            xmlnsRange.uri,
-            xmlnsRange.startIndex,
-            xmlnsRange.endIndex
-        ));
-        return xmlnsCommand;
     }
 
     private void resolveDefinition(IDefinition definition, RoyaleProject project, List<Location> result)
@@ -6140,8 +6182,37 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         }
     }
 
+    private String getFileTextForPath(Path path)
+    {
+        if(sourceByPath.containsKey(path))
+        {
+            return sourceByPath.get(path);
+        }
+        Reader reader = getReaderForPath(path);
+        if(reader == null)
+        {
+            return null;
+        }
+        String text = null;
+        try
+        {
+            text = IOUtils.toString(reader);
+        }
+        catch (IOException e) {}
+        try
+        {
+            reader.close();
+        }
+        catch(IOException e) {}
+        return text;
+    }
+
     private Reader getReaderForPath(Path path)
     {
+        if(path == null)
+        {
+            return null;
+        }
         Reader reader = null;
         if (sourceByPath.containsKey(path))
         {
@@ -6250,7 +6321,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             return -1;
         }
         Reader reader = getReaderForPath(path);
-        return LanguageServerCompilerUtils.getOffsetFromPosition(reader, position);
+        int offset = LanguageServerCompilerUtils.getOffsetFromPosition(reader, position);
+        try
+        {
+            reader.close();
+        }
+        catch(IOException e) {}
+        return offset;
     }
 
     private IASNode getOffsetNode(TextDocumentIdentifier textDocument, Position position)
@@ -6865,7 +6942,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         return range;
     }
 
-    private CompletableFuture<Object> executeOrganizeImportsInDirectoryCommand(ExecuteCommandParams params)
+    private void executeOrganizeImportsInDirectoryCommand(ExecuteCommandParams params)
     {
         List<Object> args = params.getArguments();
         JsonObject uriObject = (JsonObject) args.get(0);
@@ -6874,13 +6951,13 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
         if (path == null)
         {
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
 
         File rootDir = path.toFile();
         if (!rootDir.isDirectory())
         {
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
         ArrayList<File> directories = new ArrayList<>();
         directories.add(rootDir);
@@ -6904,7 +6981,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
                 organizeImportsInUri(file.toURI().toString());
             }
         }
-        return CompletableFuture.completedFuture(new Object());
+        return;
     }
 
     private void organizeImportsInUri(String uri)
@@ -6927,22 +7004,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         {
             //if the file isn't open in an editor, we need to read it from the
             //file system instead.
-            Reader reader = getReaderForPath(pathForImport);
-            if (reader == null)
-            {
-                System.err.println("Error opening file to organize imports: " + pathForImport);
-                return;
-            }
-            try
-            {
-                text = IOUtils.toString(reader);
-            }
-            catch (IOException e) {}
-            try
-            {
-                reader.close();
-            }
-            catch(IOException e) {}
+            text = getFileTextForPath(pathForImport);
             if(text == null)
             {
                 return;
@@ -7007,7 +7069,7 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         languageClient.applyEdit(editParams);
     }
     
-    private CompletableFuture<Object> executeOrganizeImportsInUriCommand(ExecuteCommandParams params)
+    private void executeOrganizeImportsInUriCommand(ExecuteCommandParams params)
     {
         List<Object> args = params.getArguments();
         JsonObject uriObject = (JsonObject) args.get(0);
@@ -7016,22 +7078,20 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
         if (path == null)
         {
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
 
         WorkspaceFolderData folderData = getWorkspaceFolderDataForSourceFile(path);
         if (folderData == null)
         {
             languageClient.showMessage(new MessageParams(MessageType.Error, "Organize Imports failed. File is not in source path."));
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
 
         organizeImportsInUri(uri);
-
-        return CompletableFuture.completedFuture(new Object());
     }
     
-    private CompletableFuture<Object> executeAddImportCommand(ExecuteCommandParams params)
+    private void executeAddImportCommand(ExecuteCommandParams params)
     {
         List<Object> args = params.getArguments();
         String qualifiedName = ((JsonPrimitive) args.get(0)).getAsString();
@@ -7040,32 +7100,32 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         int endIndex = ((JsonPrimitive) args.get(3)).getAsInt();
         if(qualifiedName == null)
         {
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
-        Path pathForImport = Paths.get(URI.create(uri));
-        String text = sourceByPath.get(pathForImport);
-        TextEdit edit = ImportTextEditUtils.createTextEditForImport(qualifiedName, text, startIndex, endIndex);
-        if(edit == null)
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String text = getFileTextForPath(pathForImport);
+        if(text == null)
+        {
+            return;
+        }
+        WorkspaceEdit workspaceEdit = CodeActionsUtils.createWorkspaceEditForAddImport(qualifiedName, text, uri, startIndex, endIndex);
+        if(workspaceEdit == null)
         {
             //no edit required
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
 
         ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
-        HashMap<String,List<TextEdit>> changes = new HashMap<>();
-        List<TextEdit> edits = new ArrayList<>();
-        edits.add(edit);
-        changes.put(uri, edits);
-        workspaceEdit.setChanges(changes);
         editParams.setEdit(workspaceEdit);
 
         languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
     }
     
-    private CompletableFuture<Object> executeAddMXMLNamespaceCommand(ExecuteCommandParams params)
+    private void executeAddMXMLNamespaceCommand(ExecuteCommandParams params)
     {
         List<Object> args = params.getArguments();
         String nsPrefix = ((JsonPrimitive) args.get(0)).getAsString();
@@ -7075,270 +7135,32 @@ public class ActionScriptTextDocumentService implements TextDocumentService
         int endIndex = ((JsonPrimitive) args.get(4)).getAsInt();
         if(nsPrefix == null || nsUri == null)
         {
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
-        Path pathForImport = Paths.get(URI.create(uri));
-        String text = sourceByPath.get(pathForImport);
-        TextEdit edit = ImportTextEditUtils.createTextEditForMXMLNamespace(nsPrefix, nsUri, text, startIndex, endIndex);
-        if(edit == null)
+        Path pathForImport = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+        if(pathForImport == null)
+        {
+            return;
+        }
+        String text = getFileTextForPath(pathForImport);
+        if(text == null)
+        {
+            return;
+        }
+        WorkspaceEdit workspaceEdit = CodeActionsUtils.createWorkspaceEditForAddMXMLNamespace(nsPrefix, nsUri, text, uri, startIndex, endIndex);
+        if(workspaceEdit == null)
         {
             //no edit required
-            return CompletableFuture.completedFuture(new Object());
+            return;
         }
 
         ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
-        HashMap<String,List<TextEdit>> changes = new HashMap<>();
-        List<TextEdit> edits = new ArrayList<>();
-        edits.add(edit);
-        changes.put(uri, edits);
-        workspaceEdit.setChanges(changes);
         editParams.setEdit(workspaceEdit);
 
         languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
-    }
-    
-    private CompletableFuture<Object> executeGenerateLocalVariableCommand(ExecuteCommandParams params)
-    {
-        List<Object> args = params.getArguments();
-        String uri = ((JsonPrimitive) args.get(0)).getAsString();
-        int startLine = ((JsonPrimitive) args.get(1)).getAsInt();
-        int startChar = ((JsonPrimitive) args.get(2)).getAsInt();
-        //int endLine = ((JsonPrimitive) args.get(3)).getAsInt();
-        //int endChar = ((JsonPrimitive) args.get(4)).getAsInt();
-        String name = ((JsonPrimitive) args.get(5)).getAsString();
-
-        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
-        Position position = new Position(startLine, startChar);
-        IASNode offsetNode = getOffsetNode(identifier, position);
-        if (offsetNode == null)
-        {
-            return CompletableFuture.completedFuture(new Object());
-        }
-        IFunctionNode functionNode = (IFunctionNode) offsetNode.getAncestorOfType(IFunctionNode.class);
-        if (functionNode == null)
-        {
-            return CompletableFuture.completedFuture(new Object());
-        }
-        IScopedNode scopedNode = functionNode.getScopedNode();
-        if (scopedNode == null)
-        {
-            return CompletableFuture.completedFuture(new Object());
-        }
-
-        Path pathForImport = Paths.get(URI.create(uri));
-        String fileText = sourceByPath.get(pathForImport);
-        String indent = ASTUtils.getIndentBeforeNode(offsetNode, fileText);
-
-        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        
-        int endLine = scopedNode.getLine();
-        int endChar = scopedNode.getColumn() + 1;
-        WorkspaceEdit workspaceEdit = CodeGenerationUtils.createGenerateLocalVariableWorkspaceEdit(
-            uri, startLine, startChar, endLine, endChar, name, indent);
-        editParams.setEdit(workspaceEdit);
-        languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
-    }
-    
-    private CompletableFuture<Object> executeGenerateFieldVariableCommand(ExecuteCommandParams params)
-    {
-        List<Object> args = params.getArguments();
-        String uri = ((JsonPrimitive) args.get(0)).getAsString();
-        int startLine = ((JsonPrimitive) args.get(1)).getAsInt();
-        int startChar = ((JsonPrimitive) args.get(2)).getAsInt();
-        //int endLine = ((JsonPrimitive) args.get(3)).getAsInt();
-        //int endChar = ((JsonPrimitive) args.get(4)).getAsInt();
-        String name = ((JsonPrimitive) args.get(5)).getAsString();
-        
-        int endLine = -1;
-        String indent = "";
-        
-        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
-        Position position = new Position(startLine, startChar);
-        IASNode offsetNode = getOffsetNode(identifier, position);
-        if (offsetNode == null)
-        {
-            return CompletableFuture.completedFuture(new Object());
-        }
-        IMXMLScriptNode scriptNode = (IMXMLScriptNode) offsetNode.getAncestorOfType(IMXMLScriptNode.class);
-        if (scriptNode != null)
-        {
-            IASNode[] nodes = scriptNode.getASNodes();
-            int nodeCount = nodes.length;
-            if (nodeCount == 0)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            IASNode finalNode = nodes[nodeCount - 1];
-            endLine = finalNode.getEndLine() + 1;
-
-            Path pathForImport = Paths.get(URI.create(uri));
-            String fileText = sourceByPath.get(pathForImport);
-            indent = ASTUtils.getIndentBeforeNode(finalNode, fileText);
-        }
-        else
-        {
-            IClassNode classNode = (IClassNode) offsetNode.getAncestorOfType(IClassNode.class);
-            if (classNode == null)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            IScopedNode scopedNode = classNode.getScopedNode();
-            if (scopedNode == null)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            endLine = scopedNode.getEndLine();
-
-            IFunctionNode functionNode = (IFunctionNode) offsetNode.getAncestorOfType(IFunctionNode.class);
-            if (functionNode != null)
-            {
-                Path pathForImport = Paths.get(URI.create(uri));
-                String fileText = sourceByPath.get(pathForImport);
-                indent = ASTUtils.getIndentBeforeNode(functionNode, fileText);
-            }
-        }
-        
-        int endChar = 0;
-        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        WorkspaceEdit workspaceEdit = CodeGenerationUtils.createGenerateFieldWorkspaceEdit(
-            uri, startLine, startChar, endLine, endChar, name, indent);
-        editParams.setEdit(workspaceEdit);
-
-        languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
-    }
-    
-    private CompletableFuture<Object> executeGenerateMethodCommand(ExecuteCommandParams params)
-    {
-        List<Object> args = params.getArguments();
-        String uri = ((JsonPrimitive) args.get(0)).getAsString();
-        int startLine = ((JsonPrimitive) args.get(1)).getAsInt();
-        int startChar = ((JsonPrimitive) args.get(2)).getAsInt();
-        //int endLine = ((JsonPrimitive) args.get(3)).getAsInt();
-        //int endChar = ((JsonPrimitive) args.get(4)).getAsInt();
-        String name = ((JsonPrimitive) args.get(5)).getAsString();
-
-        ArrayList<String> methodArgs = null;
-        JsonElement methodArgsRaw = (JsonElement) args.get(6);
-        if (methodArgsRaw.isJsonArray())
-        {
-            JsonArray methodArgsJson = methodArgsRaw.getAsJsonArray();
-            methodArgs = new ArrayList<>();
-            for (int i = 0, count = methodArgsJson.size(); i < count; i++)
-            {
-                methodArgs.add(methodArgsJson.get(i).getAsString());
-            }
-        }
-
-        int endLine = -1;
-        String indent = "";
-
-        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
-        Position position = new Position(startLine, startChar);
-        IASNode offsetNode = getOffsetNode(identifier, position);
-        if (offsetNode == null)
-        {
-            return CompletableFuture.completedFuture(new Object());
-        }
-        IMXMLScriptNode scriptNode = (IMXMLScriptNode) offsetNode.getAncestorOfType(IMXMLScriptNode.class);
-        if (scriptNode != null)
-        {
-            IASNode[] nodes = scriptNode.getASNodes();
-            int nodeCount = nodes.length;
-            if (nodeCount == 0)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            IASNode finalNode = nodes[nodeCount - 1];
-            endLine = finalNode.getEndLine() + 1;
-
-            Path pathForImport = Paths.get(URI.create(uri));
-            String fileText = sourceByPath.get(pathForImport);
-            indent = ASTUtils.getIndentBeforeNode(finalNode, fileText);
-        }
-        else
-        {
-            IClassNode classNode = (IClassNode) offsetNode.getAncestorOfType(IClassNode.class);
-            if (classNode == null)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            IScopedNode scopedNode = classNode.getScopedNode();
-            if (scopedNode == null)
-            {
-                return CompletableFuture.completedFuture(new Object());
-            }
-            endLine = scopedNode.getEndLine();
-
-            IFunctionNode functionNode = (IFunctionNode) offsetNode.getAncestorOfType(IFunctionNode.class);
-            if (functionNode != null)
-            {
-                Path pathForImport = Paths.get(URI.create(uri));
-                String fileText = sourceByPath.get(pathForImport);
-                indent = ASTUtils.getIndentBeforeNode(functionNode, fileText);
-            }
-        }
-        ImportRange importRange = ImportRange.fromOffsetNode(offsetNode);
-        
-        int endChar = 0;
-        Path pathForImport = Paths.get(URI.create(uri));
-        String fileText = sourceByPath.get(pathForImport);
-        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        WorkspaceEdit workspaceEdit = CodeGenerationUtils.createGenerateMethodWorkspaceEdit(
-            uri, startLine, startChar, endLine, endChar,
-            name, methodArgs, importRange, indent, fileText);
-        editParams.setEdit(workspaceEdit);
-
-        languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
     }
 
-    private CompletableFuture<Object> executeGenerateGetterAndSetterCommand(ExecuteCommandParams params, boolean generateGetter, boolean generateSetter)
-    {
-        List<Object> args = params.getArguments();
-        String uri = ((JsonPrimitive) args.get(0)).getAsString();
-        int startLine = ((JsonPrimitive) args.get(1)).getAsInt();
-        int startChar = ((JsonPrimitive) args.get(2)).getAsInt();
-        int endLine = ((JsonPrimitive) args.get(3)).getAsInt();
-        int endChar = ((JsonPrimitive) args.get(4)).getAsInt();
-        String name = ((JsonPrimitive) args.get(5)).getAsString();
-        String namespace = ((JsonPrimitive) args.get(6)).getAsString();
-        boolean isStatic = ((JsonPrimitive) args.get(7)).getAsBoolean();
-        String type = ((JsonPrimitive) args.get(8)).getAsString();
-        String assignedValue = null;
-        JsonElement assignedValueArg = (JsonElement) args.get(9);
-        if(assignedValueArg instanceof JsonPrimitive)
-        {
-            assignedValue = assignedValueArg.getAsString();
-        }
-
-        Path path = Paths.get(URI.create(uri));
-        String fileText = sourceByPath.get(path);
-
-        TextDocumentIdentifier identifier = new TextDocumentIdentifier(uri);
-        Position position = new Position(startLine, startChar);
-        IASNode offsetNode = getOffsetNode(identifier, position);
-        String indent = ASTUtils.getIndentBeforeNode(offsetNode, fileText);
-
-        ApplyWorkspaceEditParams editParams = new ApplyWorkspaceEditParams();
-        WorkspaceEdit workspaceEdit = CodeGenerationUtils.createGenerateGetterAndSetterWorkspaceEdit(
-            uri, startLine, startChar, endLine, endChar,
-            name, namespace, isStatic, type, assignedValue,
-            fileText, indent, generateGetter, generateSetter);
-        editParams.setEdit(workspaceEdit);
-        languageClient.applyEdit(editParams);
-
-        return CompletableFuture.completedFuture(new Object());
-    }
-
-    private CompletableFuture<Object> executeQuickCompileCommand(ExecuteCommandParams params)
+    private boolean executeQuickCompileCommand(ExecuteCommandParams params)
     {
         List<Object> args = params.getArguments();
         String uri = ((JsonPrimitive) args.get(0)).getAsString();
@@ -7370,6 +7192,6 @@ public class ActionScriptTextDocumentService implements TextDocumentService
             e.printStackTrace(new PrintStream(buffer));
             languageClient.logCompilerShellOutput("Exception in compiler shell: " + buffer.toString());
         }
-        return CompletableFuture.completedFuture(success);
+        return success;
     }
 }

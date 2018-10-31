@@ -52,6 +52,8 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.CodeAction;
 	import actionScripts.utils.LSPUtil;
 	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.valueObjects.WorkspaceEdit;
+	import actionScripts.utils.applyWorkspaceEdit;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -89,6 +91,9 @@ package actionScripts.languageServer
 		private static const FIELD_CONTENTS:String = "contents";
 		private static const FIELD_SIGNATURES:String = "signatures";
 		private static const FIELD_ITEMS:String = "items";
+		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
+		private static const FIELD_EDIT:String = "edit";
+		private static const FIELD_DIAGNOSTICS:String = "diagnostics";
 		private static const JSON_RPC_VERSION:String = "2.0";
 		private static const METHOD_INITIALIZE:String = "initialize";
 		private static const METHOD_INITIALIZED:String = "initialized";
@@ -1077,11 +1082,20 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultCodeActionsCount; i++)
 			{
 				var resultCodeAction:Object = resultCodeActions[i];
-				var command:Command = parseCommand(resultCodeAction);
-				var codeAction:CodeAction = new CodeAction();
-				codeAction.title = command.title;
-				codeAction.command = command;
-				eventCodeActions[i] = codeAction;
+				if(resultCodeAction.command is String)
+				{
+					//this is a Command instead of a CodeAction
+					var command:Command = parseCommand(resultCodeAction);
+					var codeAction:CodeAction = new CodeAction();
+					codeAction.title = command.title;
+					codeAction.command = command;
+					eventCodeActions[i] = codeAction;
+				}
+				else
+				{
+					codeAction = parseCodeAction(resultCodeAction);
+					eventCodeActions[i] = codeAction;
+				}
 			}
 			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
 			var path:String = editor.currentFile.fileBridge.nativePath;
@@ -1167,7 +1181,17 @@ package actionScripts.languageServer
 			return vo;
 		}
 
-		private function parseDiagnostic(path:String, original:Object):Diagnostic
+		private function parseDiagnostic(original:Object):Diagnostic
+		{
+			var vo:Diagnostic = new Diagnostic();
+			vo.message = original.message;
+			vo.code = original.code;
+			vo.range = parseRange(original.range);
+			vo.severity = original.severity;
+			return vo;
+		}
+
+		private function parseDiagnosticWithPath(path:String, original:Object):Diagnostic
 		{
 			var vo:Diagnostic = new Diagnostic();
 			vo.path = path;
@@ -1209,10 +1233,50 @@ package actionScripts.languageServer
             {
                 command = parseCommand(original.command);
             }
+			var additionalTextEdits:Vector.<TextEdit> = null;
+			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
+			{
+				additionalTextEdits = new <TextEdit>[];
+				var jsonTextEdits:Array = original[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
+				var textEditCount:int = jsonTextEdits.length;
+				for(var i:int = 0; i < textEditCount; i++)
+				{
+					var jsonTextEdit:Object = jsonTextEdits[i];
+					additionalTextEdits[i] = parseTextEdit(jsonTextEdit);
+				}
+			}
 
 			return new CompletionItem(original.label, original.insertText,
                     original.kind, original.detail,
-					original.documentation, command);
+					original.documentation, command, undefined,
+					original.deprecated, additionalTextEdits);
+		}
+
+		private function parseCodeAction(original:Object):CodeAction
+		{
+			var vo:CodeAction = new CodeAction();
+			vo.title = original.title;
+			vo.kind = original.kind;
+			if(FIELD_DIAGNOSTICS in original)
+			{
+				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+				var jsonDiagnostics:Array = original.diagnostics;
+				var diagnosticCount:int = jsonDiagnostics.length;
+				for(var i:int = 0; i < diagnosticCount; i++)
+				{
+					diagnostics[i] = parseDiagnostic(jsonDiagnostics[i]);
+				}
+				vo.diagnostics = diagnostics;
+			}
+			if(FIELD_EDIT in original)
+			{
+				vo.edit = parseWorkspaceEdit(original.edit);
+			}
+			if(FIELD_COMMAND in original)
+			{
+				vo.command = parseCommand(original.command);
+			}
+			return vo;
 		}
 
 		private function parseCommand(original:Object):Command
@@ -1255,6 +1319,29 @@ package actionScripts.languageServer
 			return original.value;
 		}
 
+		private function parseWorkspaceEdit(original:Object):WorkspaceEdit
+		{
+			var workspaceEdit:WorkspaceEdit = new WorkspaceEdit;
+			var changes:Object = {};
+			var jsonChanges:Object = original.changes;
+			for(var uri:String in jsonChanges)
+			{
+				//the key is the file path, the value is a list of TextEdits
+				var resultChanges:Array = jsonChanges[uri];
+				var resultChangesCount:int = resultChanges.length;
+				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+				for(var i:int = 0; i < resultChangesCount; i++)
+				{
+					var resultChange:Object = resultChanges[i];
+					var textEdit:TextEdit = parseTextEdit(resultChange);
+					textEdits[i] = textEdit;
+				}
+				changes[uri] = textEdits;
+			}
+			workspaceEdit.changes = changes;
+			return workspaceEdit;
+		}
+
 		private function parseTextEdit(original:Object):TextEdit
 		{
 			var vo:TextEdit = new TextEdit();
@@ -1275,7 +1362,7 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < diagnosticsCount; i++)
 			{
 				var resultDiagnostic:Object = resultDiagnostics[i];
-				diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
+				diagnostics[i] = parseDiagnosticWithPath(path, resultDiagnostic);
 			}
 			_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
 		}
@@ -1283,23 +1370,8 @@ package actionScripts.languageServer
 		private function workspace__applyEdit(jsonObject:Object):void
 		{
 			var applyEditParams:Object = jsonObject.params;
-			var edit:Object = applyEditParams.edit;
-			var changes:Object = edit.changes;
-			for(var uri:String in changes)
-			{
-				//the key is the file path, the value is a list of TextEdits
-				var file:FileLocation = new FileLocation(uri, true);
-				var resultChanges:Array = changes[uri];
-				var resultChangesCount:int = resultChanges.length;
-				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
-				for(var i:int = 0; i < resultChangesCount; i++)
-				{
-					var resultChange:Object = resultChanges[i];
-					var textEdit:TextEdit = parseTextEdit(resultChange);
-					textEdits[i] = textEdit;
-				}
-				applyTextEditsToFile(file, textEdits);
-			}
+			var workspaceEdit:WorkspaceEdit = parseWorkspaceEdit(applyEditParams.edit);
+			applyWorkspaceEdit(workspaceEdit)
 		}
 
 		private function window__logMessage(jsonObject:Object):void
