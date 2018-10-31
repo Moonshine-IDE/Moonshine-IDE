@@ -1,5 +1,6 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.build.ConsoleBuildPluginBase;
@@ -10,6 +11,7 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
 
@@ -84,6 +86,13 @@ package actionScripts.plugins.maven
             print("Command: %s", args.join(" "));
 
             super.start(args, buildDirectory);
+
+            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+            if (as3Project)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, as3Project.projectName, "Building "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+            }
         }
 
         override protected function startConsoleBuildHandler(event:Event):void
@@ -148,6 +157,18 @@ package actionScripts.plugins.maven
             {
                 print("%s", data);
             }
+        }
+
+        override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+        {
+            super.onNativeProcessExit(event);
+
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+        }
+
+        private function onProjectBuildTerminate(event:StatusBarEvent):void
+        {
+            stop();
         }
 
         private function getMavenBinPath():String
