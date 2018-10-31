@@ -83,8 +83,15 @@ package actionScripts.plugins.maven
 
         override public function start(args:Vector.<String>, buildDirectory:*):void
         {
+            if (!mavenPath)
+            {
+                error("Specify path to Maven folder.");
+                return;
+            }
+
             clearOutput();
 
+            print("Maven path: %s", mavenPath);
             print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
 
