@@ -1,5 +1,6 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -120,13 +121,15 @@ package actionScripts.plugins.maven
 
             if (!buildDirectory)
             {
-                error("Maven build directory has not been specified");
+                warning("Maven build directory has not been specified");
+                dispatcher.dispatchEvent(new ShowSettingsEvent(as3Project, "Maven Build"));
                 return;
             }
 
             if (arguments.length == 0)
             {
-                error("Specify Maven commands (Ex. clean install)");
+                warning("Specify Maven commands (Ex. clean install)");
+                dispatcher.dispatchEvent(new ShowSettingsEvent(as3Project, "Maven Build"));
                 return;
             }
 

@@ -157,7 +157,10 @@ package actionScripts.plugin.project
 			for each (var category:SettingsWrapper in categories)
 			{
 				settingsView.addSetting(category, settingsLabel);
-				if (jumpToSection && jumpToSection.toLowerCase() == category.name.toLowerCase()) settingsView.currentRequestedSelectedItem = category;
+				if (jumpToSection && jumpToSection.toLowerCase() == category.name.toLowerCase())
+				{
+					settingsView.currentRequestedSelectedItem = category;
+                }
 			}
 			
 			settingsView.label = settingsLabel;
