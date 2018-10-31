@@ -83,6 +83,8 @@ package actionScripts.plugins.maven
 
         override public function start(args:Vector.<String>, buildDirectory:*):void
         {
+            clearOutput();
+
             print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
 
