@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
+
     import flash.events.Event;
     import flash.events.MouseEvent;
     
@@ -427,7 +429,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                     new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
-                    new PathSetting(this.mavenBuildOptions, "mavenBuildPath", "Maven Build File", true, this.mavenBuildOptions.mavenBuildPath, false),
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
                     new StringSetting(this.mavenBuildOptions, "commandLine", "Command Line"),
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
@@ -508,7 +510,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                     new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
-                    new PathSetting(this.mavenBuildOptions, "mavenBuildPath", "Maven Build File", true, this.mavenBuildOptions.mavenBuildPath, false),
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
                     new StringSetting(this.mavenBuildOptions, "commandLine", "Command Line"),
                     new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
