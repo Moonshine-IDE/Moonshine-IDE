@@ -20,7 +20,6 @@ package actionScripts.plugin.actionscript.as3project
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.filesystem.File;
     import flash.utils.setTimeout;
     
     import mx.controls.Alert;
@@ -144,7 +143,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			if (!event.anObject) return;
 			
-			openFile(event.anObject as File);
+			openFile(event.anObject);
 		}
 		
 		private function onFileSelectionCancelled():void
