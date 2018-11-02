@@ -177,6 +177,12 @@ package actionScripts.plugins.maven
         {
             super.onNativeProcessExit(event);
 
+            var info:String = isNaN(event.exitCode) ?
+                    "Maven build has been terminated." :
+                    "Maven build has been terminated with exit code: " + event.exitCode;
+
+            warning(info);
+
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 

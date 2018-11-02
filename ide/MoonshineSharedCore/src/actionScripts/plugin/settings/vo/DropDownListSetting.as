@@ -21,18 +21,18 @@ package actionScripts.plugin.settings.vo
 	import mx.collections.IList;
 	import mx.core.IVisualElement;
 	
-	import actionScripts.plugin.settings.renderers.ListSettingRenderer;
+	import actionScripts.plugin.settings.renderers.DropDownListSettingRenderer;
 	
-	public class ListSetting extends AbstractSetting
+	public class DropDownListSetting extends AbstractSetting
 	{
 		[Bindable] public var dataProvider:IList;
 		public var labelField:String;
 		
-		private var rdr:ListSettingRenderer;
+		private var rdr:DropDownListSettingRenderer;
 		
 		private var _isEditable:Boolean = true;
 		
-		public function ListSetting(provider:Object, name:String, label:String, dataProvider:IList, labelField:String=null)
+		public function DropDownListSetting(provider:Object, name:String, label:String, dataProvider:IList, labelField:String=null)
 		{
 			super();
 			this.provider = provider;
@@ -45,7 +45,7 @@ package actionScripts.plugin.settings.vo
 		
 		override public function get renderer():IVisualElement
 		{
-			rdr = new ListSettingRenderer();
+			rdr = new DropDownListSettingRenderer();
 			rdr.setting = this;
 			rdr.enabled = _isEditable;
 			return rdr;

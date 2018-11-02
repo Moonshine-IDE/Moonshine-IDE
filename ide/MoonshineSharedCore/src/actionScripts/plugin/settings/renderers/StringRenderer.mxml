@@ -37,16 +37,10 @@
 
 			[Bindable]
 			public var setting:StringSetting;
-			
-			private var message:String;
-			private var messageType:String;
-			
+
 			public function setMessage(value:String, type:String):void
 			{
-				this.message = value;
-				this.messageType = type;
-				
-				if (!lblMessage || !this.message)
+				if (!lblMessage || !value)
 				{
 					return;
 				}

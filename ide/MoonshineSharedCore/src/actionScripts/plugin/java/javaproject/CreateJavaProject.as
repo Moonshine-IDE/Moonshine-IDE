@@ -19,7 +19,7 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.ListSetting;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -96,7 +96,7 @@ package actionScripts.plugin.java.javaproject
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 			settings.getSettingsList().push(
-				new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA, "title"));
+				new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA, "title"));
 			projectTemplateType = event.templateDir.name;
 
 			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);

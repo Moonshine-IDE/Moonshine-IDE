@@ -44,10 +44,13 @@ package actionScripts.plugin.settings.vo
 		override public function get renderer():IVisualElement
 		{
 			rdr = new StringRenderer();
-			if (restrict) rdr.text.restrict = restrict;
-			//rdr.text.setStyle("backgroundColor","")
+			if (restrict)
+			{
+				rdr.text.restrict = restrict;
+            }
+
 			rdr.setting = this;
-			rdr.enabled = _isEditable;
+			rdr.enabled = isEditable;
 			rdr.setMessage(message, messageType);
 			return rdr;
 		}
@@ -71,9 +74,9 @@ package actionScripts.plugin.settings.vo
 			if (rdr) 
 			{
 				rdr.enabled = _isEditable;
-				//rdr.filters = _isEditable ? [] : [myBlurFilter];
 			}
 		}
+
 		public function get isEditable():Boolean
 		{
 			return _isEditable;

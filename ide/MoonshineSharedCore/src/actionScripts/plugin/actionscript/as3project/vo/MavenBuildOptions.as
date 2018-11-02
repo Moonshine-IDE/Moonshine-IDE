@@ -1,5 +1,6 @@
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.utils.UtilsCore;
 
     import mx.utils.StringUtil;
@@ -8,9 +9,25 @@ package actionScripts.plugin.actionscript.as3project.vo
     {
         public static var defaultOptions:MavenBuildOptions = new MavenBuildOptions();
 
+        private var _buildActions:Array;
+
+        public function MavenBuildOptions()
+        {
+            _buildActions = [
+                new BuildActionVO("Build", "install"),
+                new BuildActionVO("Clean", "clean"),
+                new BuildActionVO("Clean and Build", "clean install")
+            ]
+        }
+
         public var mavenBuildPath:String;
         public var commandLine:String;
         public var settingsFilePath:String;
+
+        public function get buildActions():Array
+        {
+            return _buildActions;
+        }
 
         public function getCommandLine():Array
         {

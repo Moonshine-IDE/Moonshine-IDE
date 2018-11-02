@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
     import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 
     import flash.events.Event;
@@ -38,7 +39,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.ColorSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.IntSetting;
-    import actionScripts.plugin.settings.vo.ListSetting;
+    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -124,7 +125,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var outputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
-		private var targetPlatformSettings:ListSetting;
+		private var targetPlatformSettings:DropDownListSetting;
 
 		public function get air():Boolean
 		{
@@ -314,7 +315,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			outputPathSetting = new PathSetting(this, "outputPath", "Output Path", true, outputPath);
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
-			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
+			targetPlatformSettings = new DropDownListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
 			if (isLibraryProject) targetPlatformSettings.isEditable = false;
 			else targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 
@@ -430,7 +431,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
                     new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
-                    new StringSetting(this.mavenBuildOptions, "commandLine", "Command Line"),
+                    new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
                 new SettingsWrapper("Paths",
@@ -511,7 +512,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
                     new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
-                    new StringSetting(this.mavenBuildOptions, "commandLine", "Command Line"),
+                    new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
                     new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
                 new SettingsWrapper("Paths",
@@ -531,7 +532,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ),
                 new SettingsWrapper("Run",
                         Vector.<ISetting>([
-                            new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
+                            new DropDownListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
                             htmlFilePath,
 							customHTMLFilePath,
 							outputPathSetting,
@@ -678,7 +679,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			if (this.targetPlatformSettings)
             {
-                as3Project.targetPlatformSettings = new ListSetting(this.targetPlatformSettings.provider,
+                as3Project.targetPlatformSettings = new DropDownListSetting(this.targetPlatformSettings.provider,
                         this.targetPlatformSettings.name, this.targetPlatformSettings.label,
                         this.targetPlatformSettings.dataProvider, this.targetPlatformSettings.labelField);
             }
