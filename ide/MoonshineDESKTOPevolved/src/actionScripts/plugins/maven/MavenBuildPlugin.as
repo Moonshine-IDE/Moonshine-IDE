@@ -1,5 +1,6 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
@@ -86,6 +87,7 @@ package actionScripts.plugins.maven
             if (!mavenPath)
             {
                 error("Specify path to Maven folder.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
                 return;
             }
 
