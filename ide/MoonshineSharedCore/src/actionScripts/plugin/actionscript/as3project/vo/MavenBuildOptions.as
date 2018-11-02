@@ -52,7 +52,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
             var pairs:Object = {
                 mavenBuildPath: UtilsCore.serializeString(mavenBuildPath),
-                commandLine: UtilsCore.deserializeString(commandLine),
+                commandLine: UtilsCore.serializeString(commandLine),
                 settingsFilePath: UtilsCore.serializeString(settingsFilePath)
             }
 
