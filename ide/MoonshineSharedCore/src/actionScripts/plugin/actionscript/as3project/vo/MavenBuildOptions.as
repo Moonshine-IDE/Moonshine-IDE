@@ -7,12 +7,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 
     public class MavenBuildOptions
     {
-        public static var defaultOptions:MavenBuildOptions = new MavenBuildOptions();
+        public static var defaultOptions:MavenBuildOptions = new MavenBuildOptions(null);
 
+        private var _defaultMavenBuildPath:String;
         private var _buildActions:Array;
 
-        public function MavenBuildOptions()
+        public function MavenBuildOptions(defaultMavenBuildPath:String)
         {
+            _defaultMavenBuildPath = defaultMavenBuildPath;
             _buildActions = [
                 new BuildActionVO("Build", "install"),
                 new BuildActionVO("Clean", "clean"),
@@ -20,9 +22,19 @@ package actionScripts.plugin.actionscript.as3project.vo
             ]
         }
 
-        public var mavenBuildPath:String;
         public var commandLine:String;
         public var settingsFilePath:String;
+
+        private var _mavenBuildPath:String;
+        public function get mavenBuildPath():String
+        {
+            return !_mavenBuildPath ? _defaultMavenBuildPath : _mavenBuildPath;
+        }
+
+        public function set mavenBuildPath(value:String):void
+        {
+            _mavenBuildPath = value;
+        }
 
         public function get buildActions():Array
         {

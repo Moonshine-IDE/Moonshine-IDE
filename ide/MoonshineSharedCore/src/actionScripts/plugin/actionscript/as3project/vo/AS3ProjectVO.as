@@ -287,7 +287,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
-            mavenBuildOptions = new MavenBuildOptions();
+            mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 			
 			config = new MXMLCConfigVO();
 

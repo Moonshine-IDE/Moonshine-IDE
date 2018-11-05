@@ -27,7 +27,6 @@ package actionScripts.plugin.settings.vo
 	{
 		private var rdr:ProjectDirectoryPathRenderer;
 
-		private var _isEditable:Boolean = true;
 		private var _path:String;
 		private var _projectDirectoryPath:String;
 
@@ -35,10 +34,12 @@ package actionScripts.plugin.settings.vo
 		{
 			super();
 			this.provider = provider;
-			_projectDirectoryPath = projectDirectoryPath;
 			this.name = name;
 			this.label = label;
-			this._path = path;
+
+            _projectDirectoryPath = projectDirectoryPath;
+			_path = path;
+			
 			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
 
