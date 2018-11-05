@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
 * Go to Type Definition: New menu command to go to the definition of a variable or property's type.
 * Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
+* Visual Editor PrimeFaces: Added Undo/Redo on Copy/Paste
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.15.0.
