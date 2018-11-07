@@ -1,0 +1,4 @@
+class $ProjectName {
+	static void main(String... args) {
+	}
+}
