@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
+    import flash.desktop.Clipboard;
+    import flash.desktop.ClipboardFormats;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.events.FocusEvent;
@@ -41,6 +43,7 @@ package actionScripts.ui.renderers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -50,7 +53,6 @@ package actionScripts.ui.renderers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
 	use namespace mx_internal;
 	
@@ -64,6 +66,8 @@ package actionScripts.ui.renderers
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
+		public static const COPY_FILE:String = "Copy";
+		public static const PASTE_FILE:String = "Paste";
         public static const MARK_AS_HIDDEN:String = "Mark as Hidden";
         public static const MARK_AS_VISIBLE:String = "Mark as Visible";
 		public static const RENAME:String = "Rename";
@@ -250,10 +254,20 @@ package actionScripts.ui.renderers
                         model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_AS_HIDDEN, redispatch, Event.SELECT));
                     }
                 }
-
+				
+				// menu item for file-paste to be use in different locations based upon fw property
+				var tmpPasteMenuItem:Object = model.contextMenuCore.getContextMenuItem(PASTE_FILE, redispatch, Event.SELECT);
+				tmpPasteMenuItem.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+				
+				if (fw.children) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 				if (!fw.isRoot)
 				{
-					if (!fw.children) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
+					if (!fw.children) 
+					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
+						model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
+					}
 					
 					if (!fw.isSourceFolder)
 					{
