@@ -256,13 +256,13 @@ package actionScripts.ui.renderers
                 }
 				
 				// menu item for file-paste to be use in different locations based upon fw property
-				var tmpPasteMenuItem:Object = model.contextMenuCore.getContextMenuItem(PASTE_FILE, redispatch, Event.SELECT);
-				tmpPasteMenuItem.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+				// also update this every time it displays
+				var tmpPasteMenuItem:Object = model.contextMenuCore.getContextMenuItem(PASTE_FILE, updatePasteMenuOption, "displaying");
 				
 				if (fw.children) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 				if (!fw.isRoot)
 				{
-					if (!fw.children) 
+					if (!fw.children)
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
 						model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
@@ -416,6 +416,12 @@ package actionScripts.ui.renderers
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
+		}
+		
+		private function updatePasteMenuOption(event:Event):void
+		{
+			event.target.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+			if (event.target.enabled) event.target.addEventListener(Event.SELECT, redispatch, false, 0, true);
 		}
 		
 		private function redispatch(event:Event):void

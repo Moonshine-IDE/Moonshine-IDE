@@ -28,49 +28,49 @@
 
 	<mx:Script>
 		<![CDATA[
-		import actionScripts.events.RefreshVisualEditorSourcesEvent;
-
-		import mx.collections.ArrayCollection;
-		import mx.collections.Sort;
-		import mx.collections.SortField;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.CollectionEvent;
-		import mx.events.CollectionEventKind;
-		import mx.events.ListEvent;
-		import mx.events.TreeEvent;
-		import mx.managers.PopUpManager;
-
-		import actionScripts.events.AddFolderEvent;
-		import actionScripts.events.DeleteFileEvent;
-		import actionScripts.events.DuplicateEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.HiddenFilesEvent;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.events.OpenFileEvent;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.events.RenameApplicationEvent;
-		import actionScripts.events.RenameEvent;
-		import actionScripts.events.RenameFileFolderEvent;
-		import actionScripts.events.RunANTScriptEvent;
-		import actionScripts.events.ShowSettingsEvent;
-		import actionScripts.events.TreeMenuItemEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-		import actionScripts.plugin.templating.TemplatingHelper;
-		import actionScripts.ui.LayoutModifier;
-		import actionScripts.ui.renderers.FTETreeItemRenderer;
-		import actionScripts.ui.tabview.TabViewTab;
-		import actionScripts.utils.FileCoreUtil;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
-		import actionScripts.valueObjects.URLDescriptorVO;
-
-		import components.popup.NewFolderPopup;
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.ListEvent;
+			import mx.events.TreeEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.AddFolderEvent;
+			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.DuplicateEvent;
+			import actionScripts.events.FileCopyPasteEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.HiddenFilesEvent;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.RefreshVisualEditorSourcesEvent;
+			import actionScripts.events.RenameApplicationEvent;
+			import actionScripts.events.RenameEvent;
+			import actionScripts.events.RenameFileFolderEvent;
+			import actionScripts.events.RunANTScriptEvent;
+			import actionScripts.events.ShowSettingsEvent;
+			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.ui.tabview.TabViewTab;
+			import actionScripts.utils.FileCoreUtil;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.NewFolderPopup;
 
 		private var newFolderWindow:NewFolderPopup;
 
@@ -466,6 +466,16 @@
 				case FTETreeItemRenderer.DUPLICATE_FILE:
 				{
 					dispatcher.dispatchEvent(new DuplicateEvent(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, fileWrapper));
+					break;
+				}
+				case FTETreeItemRenderer.COPY_FILE:
+				{
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, fileWrapper));
+					break;
+				}
+				case FTETreeItemRenderer.PASTE_FILE:
+				{
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper))));
 					break;
 				}
 				case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
