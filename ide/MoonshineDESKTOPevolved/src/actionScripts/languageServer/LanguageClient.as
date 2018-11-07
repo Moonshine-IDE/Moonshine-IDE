@@ -308,7 +308,12 @@ package actionScripts.languageServer
 			contentPart.jsonrpc = JSON_RPC_VERSION;
 			contentPart.id = id;
 			contentPart.method = method;
-			contentPart.params = params;
+			if(params !== null)
+			{
+				//omit it completely to avoid errors in servers that try to
+				//parse an object
+				contentPart.params = params;
+			}
 			var contentJSON:String = JSON.stringify(contentPart);
 
 			HELPER_BYTES.clear();
@@ -838,7 +843,7 @@ package actionScripts.languageServer
 			else if(FIELD_ID in object)
 			{
 				var result:Object = object.result;
-				var requestID:int = object.id as int;
+				var requestID:int = getMessageID(object);
 				if(_initializeID != -1 && _initializeID == requestID)
 				{
 					_initializeID = -1;
