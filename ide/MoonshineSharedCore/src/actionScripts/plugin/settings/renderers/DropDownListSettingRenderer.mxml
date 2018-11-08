@@ -23,7 +23,7 @@
   	xmlns:s="library://ns.adobe.com/flex/spark"
 	width="100%"
 	paddingLeft="15" paddingTop="15"
-	paddingRight="15" paddingBottom="15">
+	paddingRight="15" paddingBottom="15" creationComplete="onDropDownListSettingCreationComplete(event)">
 	
 	<fx:Script>
 		<![CDATA[
@@ -36,7 +36,7 @@
 		[Bindable]
 		public var setting:DropDownListSetting;
 
-		protected function onInitialized(event:FlexEvent):void
+		protected function onDropDownListSettingCreationComplete(event:FlexEvent):void
 		{
 			cmbOption.dataProvider = setting.dataProvider;
 			if (setting.labelField) cmbOption.labelField = setting.labelField;
