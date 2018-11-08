@@ -20,10 +20,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
-  		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
 		  width="100%" paddingLeft="15" paddingTop="15"
-		  paddingRight="15" paddingBottom="15"
-          creationComplete="onBuildActionsListCreationComplete(event)">
+		  paddingRight="15" paddingBottom="15">
 	
 	<fx:Script>
 		<![CDATA[
@@ -32,16 +31,20 @@
 		import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 		import actionScripts.plugin.settings.vo.StringSetting;
 
+		import components.popup.BuildActionsSelectorPopup;
+
 		import mx.collections.ArrayList;
 
-		import mx.events.FlexEvent;
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
 
-		import spark.events.GridSelectionEvent;
+		import mx.managers.PopUpManager;
 
 		import spark.events.TextOperationEvent;
 
 		[Bindable]
 		public var setting:BuildActionsListSettings;
+		private var buildActionsSelectorPopup:BuildActionsSelectorPopup;
 
 		public function setMessage(value:String, type:String):void
 		{
@@ -73,35 +76,73 @@
 			setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));
 		}
 
-		private function onBuildActionsListCreationComplete(event:FlexEvent):void
+		private function onBtnClearClick(event:MouseEvent):void
 		{
-			dgActions.dataProvider = new ArrayList(setting.buildActions);
-
-            for each (var item:BuildActionVO in setting.buildActions)
-            {
-                if (item.action == setting.stringValue)
-                {
-                    dgActions.selectedItem = item;
-                    break;
-                }
-            }
+			setting.stringValue = "";
+			lblMessage.text = "";
 		}
 
-		private function onDgActionsSelectionChange(event:GridSelectionEvent):void
+		private function onBtnChangeClick(event:MouseEvent):void
 		{
-			var item:BuildActionVO = dgActions.selectedItem as BuildActionVO;
-			selectedActionValue.text = item.action;
+			buildActionsSelectorPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, BuildActionsSelectorPopup, true) as BuildActionsSelectorPopup;
+			buildActionsSelectorPopup.addEventListener("actionSelected", onBuildActionsSelectorPopupActionSelected);
+			buildActionsSelectorPopup.addEventListener(CloseEvent.CLOSE, onBuildActionsSelectorPopupClose);
+
+			buildActionsSelectorPopup.actions = new ArrayList(setting.buildActions);
+			buildActionsSelectorPopup.selectedItem = this.getCurrentItem();
+
+			PopUpManager.centerPopUp(buildActionsSelectorPopup);
+		}
+
+		private function onBuildActionsSelectorPopupActionSelected(event:Event):void
+		{
+			if (buildActionsSelectorPopup.selectedItem)
+			{
+				setting.stringValue = buildActionsSelectorPopup.selectedItem.action;
+			}
+		}
+
+		private function onBuildActionsSelectorPopupClose(event:CloseEvent):void
+		{
+			buildActionsSelectorPopup.removeEventListener("actionSelected", onBuildActionsSelectorPopupActionSelected);
+			buildActionsSelectorPopup.removeEventListener(CloseEvent.CLOSE, onBuildActionsSelectorPopupClose);
+			buildActionsSelectorPopup = null;
+		}
+
+		public function getCurrentItem():BuildActionVO
+		{
+			for each (var item:BuildActionVO in setting.buildActions)
+			{
+				if (item.action == selectedActionValue.text)
+				{
+					return item;
+				}
+			}
+
+			return null;
 		}
 		]]>
 	</fx:Script>
-	
-	<s:Label id="lbl"
-			 styleName="uiTextSettingsLabel"
-			 text="{setting.label}"/>
+
+	<s:HGroup width="100%">
+
+		<s:Label id="lbl"
+				 styleName="uiTextSettingsLabel"
+				 text="{setting.label}"/>
+
+		<mx:Spacer width="100%"/>
+
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"
+				  click="onBtnClearClick(event)" />
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"
+				  click="onBtnChangeClick(event)" />
+	</s:HGroup>
 	<s:TextInput id="selectedActionValue"
 				 styleName="uiTextSettingsValue"
 				 height="100%" width="100%"
-				 textAlign="right"
+				 textAlign="left"
 				 borderVisible="false"
 				 contentBackgroundAlpha="1"
 				 unfocusedTextSelectionColor="#a8c6ee"
@@ -109,19 +150,6 @@
 				 change="onTextChange(event)"
 				 contentBackgroundColor="#FFFFFF"
 				 text="@{setting.stringValue}"/>
-	<s:DataGrid id="dgActions"
-				width="100%" height="100%"
-				sortableColumns="false" borderVisible="false"
-				contentBackgroundColor="0xFFFFFF" requestedMinRowCount="3"
-				rowHeight="28" horizontalScrollPolicy="off" doubleClickEnabled="true"
-				selectionChange="onDgActionsSelectionChange(event)" minHeight="110">
-		<s:columns>
-			<s:ArrayList>
-				<s:GridColumn headerText="Action name" dataField="actionName" width="200" minWidth="200"/>
-				<s:GridColumn headerText="Action" dataField="action" />
-			</s:ArrayList>
-		</s:columns>
-	</s:DataGrid>
 	<s:Label id="lblMessage"
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
 			 fontSize="12" includeInLayout="false" visible="false" paddingLeft="15"/>

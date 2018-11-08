@@ -34,7 +34,6 @@ package actionScripts.controllers
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.editor.ActionScriptTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
@@ -42,7 +41,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.URLDescriptorVO;
-    import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.valueObjects.ProjectVO;
 
 	public class OpenFileCommand implements ICommand

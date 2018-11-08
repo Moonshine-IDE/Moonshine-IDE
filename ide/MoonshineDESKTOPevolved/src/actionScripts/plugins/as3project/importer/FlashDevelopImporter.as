@@ -16,7 +16,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
-	import flash.filesystem.File;
+    import actionScripts.utils.SerializeUtil;
+
+    import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
@@ -90,15 +92,15 @@ package actionScripts.plugins.as3project.importer
 				project.projectFolder.updateChildren();
 			}
 
-            project.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
-            project.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
-            project.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
-			project.isTrustServerCertificateSVN = UtilsCore.deserializeBoolean(data.trustSVNCertificate);
+            project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
+            project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
+            project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			project.isTrustServerCertificateSVN = SerializeUtil.deserializeBoolean(data.trustSVNCertificate);
 
-            project.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
-            project.isPrimeFacesVisualEditorProject = UtilsCore.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
-			project.isExportedToExistingSource = UtilsCore.deserializeBoolean(data.options.option.@isExportedToExistingSource);
-			project.visualEditorExportPath = UtilsCore.deserializeString(data.options.option.@visualEditorExportPath);
+            project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
+            project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
+			project.isExportedToExistingSource = SerializeUtil.deserializeBoolean(data.options.option.@isExportedToExistingSource);
+			project.visualEditorExportPath = SerializeUtil.deserializeString(data.options.option.@visualEditorExportPath);
 
 			if (project.targets.length > 0)
 			{
@@ -183,23 +185,23 @@ package actionScripts.plugins.as3project.importer
 			if (platform == AS3ProjectPlugin.AS3PROJ_AS_ANDROID) project.buildOptions.targetPlatform = "Android";
 			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) project.buildOptions.targetPlatform = "iOS";
 			
-			var html:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
+			var html:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
 			if (html) project.htmlPath = new FileLocation(html);
 			
-			var customHtml:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
+			var customHtml:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
 			if (customHtml) project.customHTMLPath = customHtml;
 
-            project.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
+            project.isMobileHasSimulatedDevice = new MobileDeviceVO(SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
 			
-			var simulator:String = UtilsCore.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
+			var simulator:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
             project.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
 			
 			if (!project.air) UtilsCore.checkIfRoyaleApplication(project);
 
-            project.buildOptions.isMobileHasSimulatedDevice = new MobileDeviceVO(UtilsCore.deserializeString(data.moonshineRunCustomization.deviceSimulator));
-            project.buildOptions.certAndroid = UtilsCore.deserializeString(data.moonshineRunCustomization.certAndroid);
-            project.buildOptions.certIos = UtilsCore.deserializeString(data.moonshineRunCustomization.certIos);
-            project.buildOptions.certIosProvisioning = UtilsCore.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
+            project.buildOptions.isMobileHasSimulatedDevice = new MobileDeviceVO(SerializeUtil.deserializeString(data.moonshineRunCustomization.deviceSimulator));
+            project.buildOptions.certAndroid = SerializeUtil.deserializeString(data.moonshineRunCustomization.certAndroid);
+            project.buildOptions.certIos = SerializeUtil.deserializeString(data.moonshineRunCustomization.certIos);
+            project.buildOptions.certIosProvisioning = SerializeUtil.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
 			
 			UtilsCore.setProjectMenuType(project);
 			

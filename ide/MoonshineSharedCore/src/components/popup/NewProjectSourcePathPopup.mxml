@@ -43,7 +43,6 @@
 			import actionScripts.events.NewFileEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.ui.renderers.FTETreeItemRenderer;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;

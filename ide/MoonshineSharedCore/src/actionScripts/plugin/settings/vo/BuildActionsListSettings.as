@@ -1,12 +1,12 @@
 package actionScripts.plugin.settings.vo
 {
-    import actionScripts.plugin.settings.renderers.BuildActionsListSettingRenderer;
+    import actionScripts.plugin.settings.renderers.BuildActionsSettingRenderer;
 
     import mx.core.IVisualElement;
 
     public class BuildActionsListSettings extends StringSetting
     {
-        private var rdr:BuildActionsListSettingRenderer;
+        private var rdr:BuildActionsSettingRenderer;
 
         private var _buildActions:Array;
 
@@ -24,7 +24,7 @@ package actionScripts.plugin.settings.vo
 
         override public function get renderer():IVisualElement
         {
-            rdr = new BuildActionsListSettingRenderer();
+            rdr = new BuildActionsSettingRenderer();
             rdr.setting = this;
             rdr.enabled = isEditable;
             rdr.setMessage(message, messageType);

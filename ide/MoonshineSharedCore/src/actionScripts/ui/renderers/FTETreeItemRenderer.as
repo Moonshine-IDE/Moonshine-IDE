@@ -44,7 +44,6 @@ package actionScripts.ui.renderers
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.notifier.ErrorTipManager;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;

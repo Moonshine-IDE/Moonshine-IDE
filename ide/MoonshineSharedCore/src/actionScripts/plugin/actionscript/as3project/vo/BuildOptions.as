@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-	import mx.utils.StringUtil;
+    import actionScripts.utils.SerializeUtil;
+
+    import mx.utils.StringUtil;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.UtilsCore;
@@ -158,39 +160,39 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				var options:XMLList = build.option;
 				
-				accessible							= UtilsCore.deserializeBoolean(options.@accessible);
-				allowSourcePathOverlap				= UtilsCore.deserializeBoolean(options.@allowSourcePathOverlap);
-				benchmark							= UtilsCore.deserializeBoolean(options.@benchmark);
-				es									= UtilsCore.deserializeBoolean(options.@es);
-				optimize							= UtilsCore.deserializeBoolean(options.@optimize);
-				showActionScriptWarnings			= UtilsCore.deserializeBoolean(options.@showActionScriptWarnings);
-				showBindingWarnings					= UtilsCore.deserializeBoolean(options.@showBindingWarnings);
-				showDeprecationWarnings				= UtilsCore.deserializeBoolean(options.@showDeprecationWarnings);
-				showUnusedTypeSelectorWarnings		= UtilsCore.deserializeBoolean(options.@showUnusedTypeSelectorWarnings);
-				strict								= UtilsCore.deserializeBoolean(options.@strict);
-				useNetwork							= UtilsCore.deserializeBoolean(options.@useNetwork);
-				useResourceBundleMetadata			= UtilsCore.deserializeBoolean(options.@useResourceBundleMetadata);
-				warnings							= UtilsCore.deserializeBoolean(options.@warnings);
-				verboseStackTraces					= UtilsCore.deserializeBoolean(options.@verboseStackTraces);
-				staticLinkRSL						= UtilsCore.deserializeBoolean(options.@staticLinkRSL);
+				accessible							= SerializeUtil.deserializeBoolean(options.@accessible);
+				allowSourcePathOverlap				= SerializeUtil.deserializeBoolean(options.@allowSourcePathOverlap);
+				benchmark							= SerializeUtil.deserializeBoolean(options.@benchmark);
+				es									= SerializeUtil.deserializeBoolean(options.@es);
+				optimize							= SerializeUtil.deserializeBoolean(options.@optimize);
+				showActionScriptWarnings			= SerializeUtil.deserializeBoolean(options.@showActionScriptWarnings);
+				showBindingWarnings					= SerializeUtil.deserializeBoolean(options.@showBindingWarnings);
+				showDeprecationWarnings				= SerializeUtil.deserializeBoolean(options.@showDeprecationWarnings);
+				showUnusedTypeSelectorWarnings		= SerializeUtil.deserializeBoolean(options.@showUnusedTypeSelectorWarnings);
+				strict								= SerializeUtil.deserializeBoolean(options.@strict);
+				useNetwork							= SerializeUtil.deserializeBoolean(options.@useNetwork);
+				useResourceBundleMetadata			= SerializeUtil.deserializeBoolean(options.@useResourceBundleMetadata);
+				warnings							= SerializeUtil.deserializeBoolean(options.@warnings);
+				verboseStackTraces					= SerializeUtil.deserializeBoolean(options.@verboseStackTraces);
+				staticLinkRSL						= SerializeUtil.deserializeBoolean(options.@staticLinkRSL);
 				
-				locale								= UtilsCore.deserializeString(options.@locale);
-				loadConfig							= UtilsCore.deserializeString(options.@loadConfig);
-				linkReport							= UtilsCore.deserializeString(options.@linkReport);
-				additional							= UtilsCore.deserializeString(options.@additional);
-				compilerConstants					= UtilsCore.deserializeString(options.@compilerConstants);
-				customSDKPath						= UtilsCore.deserializeString(options.@customSDK);
-				antBuildPath						= UtilsCore.deserializeString(options.@antBuildPath);
+				locale								= SerializeUtil.deserializeString(options.@locale);
+				loadConfig							= SerializeUtil.deserializeString(options.@loadConfig);
+				linkReport							= SerializeUtil.deserializeString(options.@linkReport);
+				additional							= SerializeUtil.deserializeString(options.@additional);
+				compilerConstants					= SerializeUtil.deserializeString(options.@compilerConstants);
+				customSDKPath						= SerializeUtil.deserializeString(options.@customSDK);
+				antBuildPath						= SerializeUtil.deserializeString(options.@antBuildPath);
 			}
 			else if (parseType == TYPE_FB)
 			{
 				additional = StringUtil.trim(build.@additionalCompilerArguments);
 				// FB seems to keep it as -switch value, while mxmlc takes -switch=value
 				//additional = tmpAdditional.replace(/\s+/g,",").replace(/-([^,]+),([^-]+)/g,"-$1=$2");
-				warnings = UtilsCore.deserializeBoolean(build.@warn);
-				accessible = UtilsCore.deserializeBoolean(build.@generateAccessible);
-				strict = UtilsCore.deserializeBoolean(build.@strict);
-				customSDKPath = UtilsCore.deserializeString(build.@flexSDK);
+				warnings = SerializeUtil.deserializeBoolean(build.@warn);
+				accessible = SerializeUtil.deserializeBoolean(build.@generateAccessible);
+				strict = SerializeUtil.deserializeBoolean(build.@strict);
+				customSDKPath = SerializeUtil.deserializeString(build.@flexSDK);
 			}
 		}
 		
@@ -199,32 +201,32 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var build:XML = <build/>;
 			
 			var pairs:Object = {
-				accessible							:	UtilsCore.serializeBoolean(accessible),
-				allowSourcePathOverlap				:	UtilsCore.serializeBoolean(allowSourcePathOverlap),
-				benchmark							:	UtilsCore.serializeBoolean(benchmark),
-				es									:	UtilsCore.serializeBoolean(es),
-				optimize							:	UtilsCore.serializeBoolean(optimize),
-				showActionScriptWarnings			:	UtilsCore.serializeBoolean(showActionScriptWarnings),
-				showBindingWarnings					:	UtilsCore.serializeBoolean(showBindingWarnings),
-				showDeprecationWarnings				:	UtilsCore.serializeBoolean(showDeprecationWarnings),
-				showUnusedTypeSelectorWarnings		:	UtilsCore.serializeBoolean(showUnusedTypeSelectorWarnings),
-				strict								:	UtilsCore.serializeBoolean(strict),
-				useNetwork							:	UtilsCore.serializeBoolean(useNetwork),
-				useResourceBundleMetadata			:	UtilsCore.serializeBoolean(useResourceBundleMetadata),
-				warnings							:	UtilsCore.serializeBoolean(warnings),
-				verboseStackTraces					:	UtilsCore.serializeBoolean(verboseStackTraces),
-				staticLinkRSL						:	UtilsCore.serializeBoolean(staticLinkRSL),
+				accessible							:	SerializeUtil.serializeBoolean(accessible),
+				allowSourcePathOverlap				:	SerializeUtil.serializeBoolean(allowSourcePathOverlap),
+				benchmark							:	SerializeUtil.serializeBoolean(benchmark),
+				es									:	SerializeUtil.serializeBoolean(es),
+				optimize							:	SerializeUtil.serializeBoolean(optimize),
+				showActionScriptWarnings			:	SerializeUtil.serializeBoolean(showActionScriptWarnings),
+				showBindingWarnings					:	SerializeUtil.serializeBoolean(showBindingWarnings),
+				showDeprecationWarnings				:	SerializeUtil.serializeBoolean(showDeprecationWarnings),
+				showUnusedTypeSelectorWarnings		:	SerializeUtil.serializeBoolean(showUnusedTypeSelectorWarnings),
+				strict								:	SerializeUtil.serializeBoolean(strict),
+				useNetwork							:	SerializeUtil.serializeBoolean(useNetwork),
+				useResourceBundleMetadata			:	SerializeUtil.serializeBoolean(useResourceBundleMetadata),
+				warnings							:	SerializeUtil.serializeBoolean(warnings),
+				verboseStackTraces					:	SerializeUtil.serializeBoolean(verboseStackTraces),
+				staticLinkRSL						:	SerializeUtil.serializeBoolean(staticLinkRSL),
 
-				locale								:	UtilsCore.serializeString(locale),
-				loadConfig							:	UtilsCore.serializeString(loadConfig),
-				linkReport							:	UtilsCore.serializeString(linkReport),
-				additional							:	UtilsCore.serializeString(additional),
-				compilerConstants					:	UtilsCore.serializeString(compilerConstants),
-				customSDK							:	UtilsCore.serializeString(customSDKPath),
-				antBuildPath						:	UtilsCore.serializeString(antBuildPath)
+				locale								:	SerializeUtil.serializeString(locale),
+				loadConfig							:	SerializeUtil.serializeString(loadConfig),
+				linkReport							:	SerializeUtil.serializeString(linkReport),
+				additional							:	SerializeUtil.serializeString(additional),
+				compilerConstants					:	SerializeUtil.serializeString(compilerConstants),
+				customSDK							:	SerializeUtil.serializeString(customSDKPath),
+				antBuildPath						:	SerializeUtil.serializeString(antBuildPath)
 			}
 			
-			build.appendChild(UtilsCore.serializePairs(pairs, <option/>));
+			build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
 			
 			return build;
 		}

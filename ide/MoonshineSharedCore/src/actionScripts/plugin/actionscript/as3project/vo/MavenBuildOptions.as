@@ -1,7 +1,7 @@
 package actionScripts.plugin.actionscript.as3project.vo
 {
     import actionScripts.plugin.build.vo.BuildActionVO;
-    import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.SerializeUtil;
 
     import mx.utils.StringUtil;
 
@@ -19,7 +19,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 new BuildActionVO("Build", "install"),
                 new BuildActionVO("Clean", "clean"),
                 new BuildActionVO("Clean and Build", "clean install")
-            ]
+            ];
         }
 
         public var commandLine:String;
@@ -68,11 +68,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         public function parse(build:XMLList):void
         {
-            var options:XMLList = build.option;
-
-            mavenBuildPath = UtilsCore.deserializeString(options.@mavenBuildPath);
-            commandLine = UtilsCore.deserializeString(options.@commandLine);
-            settingsFilePath = UtilsCore.deserializeString(options.@settingsFilePath);
+            parseOptions(build.option);
+            parseActions(build.actions.action);
         }
 
         public function toXML():XML
@@ -80,14 +77,46 @@ package actionScripts.plugin.actionscript.as3project.vo
             var build:XML = <mavenBuild/>;
 
             var pairs:Object = {
-                mavenBuildPath: UtilsCore.serializeString(mavenBuildPath),
-                commandLine: UtilsCore.serializeString(commandLine),
-                settingsFilePath: UtilsCore.serializeString(settingsFilePath)
+                mavenBuildPath: SerializeUtil.serializeString(mavenBuildPath),
+                commandLine: SerializeUtil.serializeString(commandLine),
+                settingsFilePath: SerializeUtil.serializeString(settingsFilePath)
             }
 
-            build.appendChild(UtilsCore.serializePairs(pairs, <option/>));
+            build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
+
+            var availableOptions:XML = <actions/>;
+            for each (var item:BuildActionVO in this.buildActions)
+            {
+                availableOptions.appendChild(SerializeUtil.serializeObjectPairs(
+                        {action: item.action, actionName: item.actionName},
+                        <action />));
+            }
+
+            build.appendChild(availableOptions);
 
             return build;
+        }
+
+        private function parseOptions(options:XMLList):void
+        {
+            mavenBuildPath = SerializeUtil.deserializeString(options.@mavenBuildPath);
+            commandLine = SerializeUtil.deserializeString(options.@commandLine);
+            settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
+        }
+
+        private function parseActions(actions:XMLList):void
+        {
+            if (actions.length() > 0)
+            {
+                _buildActions.splice(0, _buildActions.length);
+                for (var i:int = 0; i < actions.length(); i++)
+                {
+                    if (actions[i])
+                    {
+                        _buildActions.push(new BuildActionVO(actions[i].@actionName, actions[i].@action));
+                    }
+                }
+            }
         }
     }
 }
