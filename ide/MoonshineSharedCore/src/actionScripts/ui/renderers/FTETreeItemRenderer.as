@@ -259,13 +259,16 @@ package actionScripts.ui.renderers
 				// also update this every time it displays
 				var tmpPasteMenuItem:Object = model.contextMenuCore.getContextMenuItem(PASTE_FILE, updatePasteMenuOption, "displaying");
 				
-				if (fw.children) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
+				if (fw.children && ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 				if (!fw.isRoot)
 				{
 					if (!fw.children)
 					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
-						model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
+						if (ConstantsCoreVO.IS_AIR)
+						{
+							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
+							model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
+						}
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
 					}
 					

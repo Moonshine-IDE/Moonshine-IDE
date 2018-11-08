@@ -24,12 +24,17 @@ package actionScripts.plugins.fileAssociation
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeDragManager;
 	import flash.display.InteractiveObject;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.InvokeEvent;
 	import flash.events.NativeDragEvent;
 	import flash.filesystem.File;
 	
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
 	
+	import actionScripts.events.FileCopyPasteEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -39,6 +44,8 @@ package actionScripts.plugins.fileAssociation
 		override public function get name():String			{ return "FileAssociation"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
+		
+		private var filesToBeCopied:Array;
 		
 		override public function activate():void
 		{
@@ -50,6 +57,10 @@ package actionScripts.plugins.fileAssociation
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
+			
+			// file copy/paste listener
+			dispatcher.addEventListener(FileCopyPasteEvent.EVENT_COPY_FILE, onFileCopyRequest, false, 0, true);
+			dispatcher.addEventListener(FileCopyPasteEvent.EVENT_PASTE_FILES, onPasteFilesRequest, false, 0, true);
 		}
 		
 		private function onAppInvokeEvent(event:InvokeEvent):void
@@ -95,6 +106,98 @@ package actionScripts.plugins.fileAssociation
 				tmpOpenEvent.independentOpenFile = true;
 				
 				dispatcher.dispatchEvent(tmpOpenEvent);
+			}
+		}
+		
+		private function onFileCopyRequest(event:FileCopyPasteEvent):void
+		{
+			Clipboard.generalClipboard.setData(ClipboardFormats.FILE_LIST_FORMAT, [event.wrapper.file.fileBridge.getFile]);
+		}
+		
+		private function onPasteFilesRequest(event:FileCopyPasteEvent):void
+		{
+			filesToBeCopied = Clipboard.generalClipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+			initiateFileCopyingProcess(event.wrapper.file.fileBridge.getFile as File);
+		}
+		
+		private function initiateFileCopyingProcess(destination:File, overwrite:Boolean=false, overwriteAll:Boolean=false, cancel:Boolean=false):void
+		{
+			if (filesToBeCopied.length > 0)
+			{
+				if (!overwrite && !overwriteAll && destination.resolvePath(filesToBeCopied[0].name).exists)
+				{
+					Alert.buttonWidth = 110;
+					Alert.yesLabel = "Overwrite";
+					Alert.noLabel = "Skip File";
+					Alert.okLabel = "Overwrite All";
+					Alert.cancelLabel = "Cancel All";
+					Alert.show(filesToBeCopied[0].name + " already exists to destination path.", "Warning!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
+				}
+				else
+				{
+					// copy the file
+					(filesToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
+					(filesToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+					(filesToBeCopied[0] as File).copyToAsync(destination.resolvePath((filesToBeCopied[0] as File).name), true);
+				}
+			}
+			else
+			{
+				// end of the list
+				resetFields();
+			}
+			
+			/*
+			* @local
+			*/
+			function onFileNotification(ev:CloseEvent):void
+			{
+				if (ev.detail == Alert.YES)
+				{
+					initiateFileCopyingProcess(destination, true);
+				} 
+				else if (ev.detail == Alert.NO)
+				{
+					filesToBeCopied.shift();
+					initiateFileCopyingProcess(destination);
+				}
+				else if (ev.detail == Alert.OK)
+				{
+					initiateFileCopyingProcess(destination, false, true);
+				}
+				else if (ev.detail == Alert.CANCEL)
+				{
+					resetFields();
+				}
+			}
+			
+			function onFileCopyingCompletes(ev:Event):void
+			{
+				releaseListeners(ev.target);
+				
+				filesToBeCopied.shift();
+				initiateFileCopyingProcess(destination, false, overwriteAll);
+			}
+			
+			function onFileCopyingError(ev:Event):void
+			{
+				releaseListeners(ev.target);
+			}
+			
+			function releaseListeners(origin:Object):void
+			{
+				origin.removeEventListener(Event.COMPLETE, onFileCopyingCompletes);
+				origin.removeEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+			}
+			
+			function resetFields():void
+			{
+				filesToBeCopied = [];
+				Alert.buttonWidth = 65;
+				Alert.yesLabel = "Yes";
+				Alert.noLabel = "No";
+				Alert.okLabel = "OK";
+				Alert.cancelLabel = "Cancel";
 			}
 		}
 	}
