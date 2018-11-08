@@ -89,7 +89,7 @@ package actionScripts.plugin.build
             print("%s", data);
         }
 
-        private function onNativeProcessIOError(event:IOErrorEvent):void
+        protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             error("%s", event.text);
 
@@ -97,7 +97,7 @@ package actionScripts.plugin.build
             running = false;
         }
 
-        private function onNativeProcessStandardErrorData(event:ProgressEvent):void
+        protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
             var output:IDataInput = nativeProcess.standardError;
             var data:String = output.readUTFBytes(output.bytesAvailable);

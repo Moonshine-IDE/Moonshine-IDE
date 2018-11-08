@@ -13,6 +13,7 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
+    import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
@@ -21,6 +22,8 @@ package actionScripts.plugins.maven
     {
         public static const START_MAVEN_BUILD:String = "startMavenBuild";
         public static const STOP_MAVEN_BUILD:String = "stopMavenBuild";
+
+        private var stopWithoutMessage:Boolean;
 
         public function MavenBuildPlugin()
         {
@@ -162,6 +165,7 @@ package actionScripts.plugins.maven
             if (data.match(/\[ERROR\]/))
             {
                 error("%s", data);
+                stop();
             }
             else if (data.match(/\[WARNING\]/))
             {
@@ -170,19 +174,42 @@ package actionScripts.plugins.maven
             else
             {
                 print("%s", data);
+                if (data.match(/BUILD SUCCESS/))
+                {
+                    stopWithoutMessage = true;
+                    stop();
+                }
             }
+        }
+
+        override protected function onNativeProcessIOError(event:IOErrorEvent):void
+        {
+            super.onNativeProcessIOError(event);
+
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+        }
+
+        override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
+        {
+            super.onNativeProcessStandardErrorData(event);
+
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
             super.onNativeProcessExit(event);
 
-            var info:String = isNaN(event.exitCode) ?
-                    "Maven build has been terminated." :
-                    "Maven build has been terminated with exit code: " + event.exitCode;
+            if (!stopWithoutMessage)
+            {
+                var info:String = isNaN(event.exitCode) ?
+                        "Maven build has been terminated." :
+                        "Maven build has been terminated with exit code: " + event.exitCode;
 
-            warning(info);
+                warning(info);
+            }
 
+            stopWithoutMessage = false;
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 
