@@ -110,7 +110,7 @@ package actionScripts.plugin.templating
 			
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				templatesDir = model.fileCore.resolveApplicationDirectoryPath("elements/templates");
+				templatesDir = model.fileCore.resolveApplicationDirectoryPath("elements".concat(model.fileCore.separator, "templates"));
 				customTemplatesDir = model.fileCore.resolveApplicationStorageDirectoryPath("templates");
 				readTemplates();
 			}

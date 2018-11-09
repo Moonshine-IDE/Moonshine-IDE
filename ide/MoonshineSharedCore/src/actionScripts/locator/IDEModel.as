@@ -72,7 +72,8 @@ package actionScripts.locator
 		public var mavenPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
-		
+		public var payaraServerPath:FileLocation;
+
 		public var recentlyOpenedFiles:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjectOpenedOption:ArrayCollection = new ArrayCollection();

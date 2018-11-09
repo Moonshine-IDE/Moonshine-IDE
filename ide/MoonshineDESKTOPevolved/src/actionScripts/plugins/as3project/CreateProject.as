@@ -690,6 +690,8 @@ package actionScripts.plugins.as3project
 			th.templatingData["$Password"] = projectName +"Certificate";
 			th.templatingData["$FlexHome"] = model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : "";
 			th.templatingData["$MovieVersion"] = movieVersion;
+			th.templatingData["$pom"] = "pom";
+
 			if (_customFlexSDK)
 			{
 				th.templatingData["${flexlib}"] = _customFlexSDK;

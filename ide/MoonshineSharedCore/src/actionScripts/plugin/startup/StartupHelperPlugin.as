@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.startup
 {
+    import actionScripts.factory.FileLocation;
+
     import flash.events.Event;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
     import mx.core.FlexGlobals;
-    import mx.events.CollectionEvent;
     
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.IPlugin;
@@ -32,7 +33,6 @@ package actionScripts.plugin.startup
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     
@@ -97,8 +97,9 @@ package actionScripts.plugin.startup
 
 			// just a little delay to see things visually right
             startHelpingTimeout = setTimeout(startHelping, 1000);
+			copyToLocalStoragePayaraEmbededLauncher();
 		}
-		
+
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -182,10 +183,6 @@ package actionScripts.plugin.startup
 			{
 				model.javaPathForTypeAhead = null;
                 javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
-				
-				// add the listener only if flexJS 0.7.0+ not present
-				/*var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
-				if (!path) model.userSavedSDKs.addEventListener(CollectionEvent.COLLECTION_CHANGE, onSDKListUpdated);*/
 			}
 			else if (model.javaPathForTypeAhead)
 			{
@@ -337,28 +334,7 @@ package actionScripts.plugin.startup
 				showNoSDKStripAndListenForDefaultSDK();
 			}
 		}
-		
-		/**
-		 * On SDK list updated
-		 */
-		private function onSDKListUpdated(event:CollectionEvent):void
-		{
-			var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
-			if (path && model.javaPathForTypeAhead)
-			{
-				model.userSavedSDKs.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onSDKListUpdated);
-				
-				// starting server
-				model.languageServerCore.start();
-			}
-			else if (path && !model.javaPathForTypeAhead)
-			{
-				// if flexJS required SDK added that meets code-completion but Java 
-				// prompt the user again if they wants to setup Java?
-				triggerJavaSetupViewWithParam(false);
-			}
-		}
-		
+
 		/**
 		 * During code-completion server started and
 		 * required SDK removed from SDK list
@@ -402,5 +378,13 @@ package actionScripts.plugin.startup
 		{
 			triggerSDKNotificationView(true, false);
 		}
-	}
+
+        private function copyToLocalStoragePayaraEmbededLauncher():void
+        {
+			var payaraLocation:String = "elements".concat(model.fileCore.separator, "projects", model.fileCore.separator, "PayaraEmbeddedLauncher");
+            model.payaraServerPath = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
+            var localStorage:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
+            model.payaraServerPath.fileBridge.copyTo(localStorage, true);
+        }
+    }
 }
