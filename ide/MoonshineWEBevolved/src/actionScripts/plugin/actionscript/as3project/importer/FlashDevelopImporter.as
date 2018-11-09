@@ -20,6 +20,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 {
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
+	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
@@ -52,11 +53,11 @@ package actionScripts.plugin.actionscript.as3project.importer
 				parsePaths(data.compileTargets.compile, p.targets, p);
 				parsePaths(data.hiddenPaths.hidden, p.hiddenPaths, p);
 				
-				p.prebuildCommands = UtilsCore.deserializeString(data.preBuildCommand);
-				p.postbuildCommands = UtilsCore.deserializeString(data.postBuildCommand);
-				p.postbuildAlways = UtilsCore.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+				p.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
+				p.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
+				p.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
 				
-				p.showHiddenPaths = UtilsCore.deserializeBoolean(data.options.option.@showHiddenPaths);
+				p.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
 				
 				p.testMovie = data.options.option.@testMovie;
 				
