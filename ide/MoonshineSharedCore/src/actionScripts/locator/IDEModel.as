@@ -68,7 +68,8 @@ package actionScripts.locator
 		public var noSDKNotifier:NoSDKNotifier = NoSDKNotifier.getInstance();
 		public var sdkInstallerView:IFlexDisplayObject;
 		public var antHomePath:FileLocation;
-		public var antScriptFile:FileLocation; 
+		public var antScriptFile:FileLocation;
+		public var mavenPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
 		

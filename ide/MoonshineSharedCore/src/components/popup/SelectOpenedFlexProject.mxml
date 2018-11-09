@@ -21,75 +21,74 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5"
-				   width="500" height="230"
-				   creationComplete="onCreationCompletes(event)"
-				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:popup="components.popup.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+				   						   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   backgroundColor="0xf5f5f5" width="500" height="230"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onSelectOpenedFlexProjectCreationComplete(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.controls.Alert;
-			import mx.controls.Image;
-			import mx.events.FlexEvent;
-			
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.ProjectVO;
-			
-			public static const PROJECT_SELECTED: String = "PROJECT_SELECTED";
-			public static const PROJECT_SELECTION_CANCELLED: String = "PROJECT_SELECTION_CANCELLED";
-			public static const TYPE_FLEX: String = "TYPE_FLEX";
-			public static const TYPE_FLEXJS: String = "TYPE_FLEXJS";
-			
-			public var selectedProject:ProjectVO;
-			public var type: String = TYPE_FLEX;
-			
-			[Bindable] private var projects:ArrayCollection = new ArrayCollection();
+		import actionScripts.plugin.project.ProjectType;
 
-			private var model:IDEModel = IDEModel.getInstance();
-			private var loaderIcon: Image;
-			
-			override protected function closeByCrossSign(event:Event):void
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+		import mx.events.FlexEvent;
+
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.valueObjects.ProjectVO;
+
+		public static const PROJECT_SELECTED:String = "PROJECT_SELECTED";
+		public static const PROJECT_SELECTION_CANCELLED:String = "PROJECT_SELECTION_CANCELLED";
+
+		public var selectedProject:ProjectVO;
+		public var projectType:uint = ProjectType.AS3PROJ_AS_AIR;
+
+		[Bindable]
+		private var projects:ArrayCollection;
+
+		private var model:IDEModel = IDEModel.getInstance();
+
+		override protected function closeByCrossSign(event:Event):void
+		{
+			dispatchEvent(new Event(PROJECT_SELECTION_CANCELLED));
+			super.closeByCrossSign(event);
+		}
+
+		protected function onProjectBuildRequest(event:MouseEvent):void
+		{
+			if (!lst_projects.selectedItem)
 			{
-				dispatchEvent(new Event(PROJECT_SELECTION_CANCELLED));
-				super.closeByCrossSign(event);
+				Alert.show("Please, select a Project to Build.", "Error!");
 			}
-			
-			protected function onProjectBuildRequest(event:MouseEvent):void
+			else
 			{
-				if (!lst_projects.selectedItem)
-				{
-					Alert.show("Please, selet a Project to Build.", "Error!");
-				}
-				else
-				{
-					selectedProject = lst_projects.selectedItem as ProjectVO;
-					dispatchEvent(new Event(PROJECT_SELECTED));
-					closeThis();
-				}
+				selectedProject = lst_projects.selectedItem as ProjectVO;
+				dispatchEvent(new Event(PROJECT_SELECTED));
+				closeThis();
 			}
-			
-			protected function onCreationCompletes(event:FlexEvent):void
+		}
+
+		protected function onSelectOpenedFlexProjectCreationComplete(event:FlexEvent):void
+		{
+			projects = new ArrayCollection(model.projects.source);
+			projects.filterFunction = this.filterByProjectType;
+			projects.refresh();
+		}
+
+		public function filterByProjectType(item:AS3ProjectVO):Boolean
+		{
+			if (this.projectType == ProjectType.AS3PROJ_AS_AIR && !item.isRoyale)
 			{
-				if (ConstantsCoreVO.IS_AIR)
-				{
-					for each (var i:AS3ProjectVO in model.projects)
-					{
-						var applicationFileString: String = i.targets[0].fileBridge.read().toString();
-						if (type == TYPE_FLEXJS && (applicationFileString.indexOf("<js:Application") != -1)) projects.addItem(i);
-						else if (type == TYPE_FLEX) projects.addItem(i);
-					}
-				}
-				else
-				{
-					projects = model.projects;
-				}
+				return true;
 			}
-			
+			else if (this.projectType == ProjectType.ROYALE && item.isRoyale)
+			{
+				return true;
+			}
+
+			return false;
+		}
 		]]>
 	</fx:Script>
 	<fx:Declarations>

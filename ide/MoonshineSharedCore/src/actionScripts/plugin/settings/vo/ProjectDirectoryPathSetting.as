@@ -18,49 +18,47 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.vo
 {
-	import mx.core.IVisualElement;
-	
-	import actionScripts.plugin.settings.renderers.StringRenderer;
-	
-	public class StringSetting extends AbstractSetting
-	{
-		public static const VALUE_UPDATED:String = "valueUpdated";
-		
-		private var restrict:String;
-		private var rdr:StringRenderer;
+    import actionScripts.plugin.settings.renderers.ProjectDirectoryPathRenderer;
 
-		private var _isEditable:Boolean = true;
-		
-		public function StringSetting(provider:Object, name:String, label:String, restrict:String=null)
+    import mx.core.IVisualElement;
+
+	[Event(name="pathSelected", type="flash.events.Event")]
+	public class ProjectDirectoryPathSetting extends AbstractSetting
+	{
+		private var rdr:ProjectDirectoryPathRenderer;
+
+		private var _path:String;
+		private var _projectDirectoryPath:String;
+
+		public function ProjectDirectoryPathSetting(provider:Object, projectDirectoryPath:String, name:String, label:String, path:String=null)
 		{
 			super();
 			this.provider = provider;
 			this.name = name;
 			this.label = label;
-			this.restrict = restrict;
-			defaultValue = stringValue;
-		}
-		
-		override public function get renderer():IVisualElement
-		{
-			rdr = new StringRenderer();
-			if (restrict)
-			{
-				rdr.text.restrict = restrict;
-            }
 
-			rdr.setting = this;
-			rdr.enabled = isEditable;
-			rdr.setMessage(message, messageType);
-			return rdr;
+            _projectDirectoryPath = projectDirectoryPath;
+			_path = path;
+			
+			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
-		
+
+		public function get projectDirectoryPath():String
+		{
+			return _projectDirectoryPath;
+		}
+
+		public function get path():String
+		{
+			return _path;
+		}
+
 		public function setMessage(value:String, type:String=MESSAGE_NORMAL):void
 		{
 			if (rdr)
 			{
 				rdr.setMessage(value, type);
-			}
+            }
 			else
 			{
 				message = value;
@@ -68,18 +66,13 @@ package actionScripts.plugin.settings.vo
 			}
 		}
 		
-		public function set isEditable(value:Boolean):void
+		override public function get renderer():IVisualElement
 		{
-			_isEditable = value;
-			if (rdr) 
-			{
-				rdr.enabled = _isEditable;
-			}
-		}
+			rdr = new ProjectDirectoryPathRenderer();
+			rdr.setting = this;
+			rdr.setMessage(message, messageType);
 
-		public function get isEditable():Boolean
-		{
-			return _isEditable;
+			return rdr;
 		}
 	}
 }

@@ -19,35 +19,9 @@
 package actionScripts.plugin.organizeImports
 {
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.RenameEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-	import actionScripts.plugin.rename.view.RenameView;
-	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.utils.CustomTree;
-	import actionScripts.utils.TextUtil;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.utils.applyTextEditsToFile;
-	import actionScripts.valueObjects.FileWrapper;
-	import actionScripts.valueObjects.ProjectReferenceVO;
-	import actionScripts.valueObjects.TextEdit;
-
-	import components.popup.RenamePopup;
-
-	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
 	import actionScripts.events.LanguageServerMenuEvent;
 
 	public class OrganizeImportsPlugin extends PluginBase

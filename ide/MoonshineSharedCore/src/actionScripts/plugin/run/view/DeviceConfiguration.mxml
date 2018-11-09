@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 										   xmlns:s="library://ns.adobe.com/flex/spark" 
-										   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" 
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   width="600" height="240" minWidth="300" minHeight="150"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
-										   title="Device Configurations" xmlns:view="actionScripts.plugin.run.view.*"
+										   title="Device Configurations"
 										   initialize="onInitialized(event)">
 	<fx:Script>
 		<![CDATA[

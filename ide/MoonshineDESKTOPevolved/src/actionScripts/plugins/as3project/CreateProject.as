@@ -47,7 +47,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.ListSetting;
+    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
@@ -293,12 +293,12 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				settings.getSettingsList().splice(3, 0, new ListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
+				settings.getSettingsList().splice(3, 0, new DropDownListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
 			}
 			else if (isFlexJSRoyalProject)
 			{
                 settings.getSettingsList().splice(3, 0,
-						new ListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
+						new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
 			}
 			else if (isLibraryProject)
 			{
@@ -410,7 +410,7 @@ package actionScripts.plugins.as3project
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
                     newProjectPathSetting,
-					new ListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES]))
+					new DropDownListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES]))
                 ]));
             }
 

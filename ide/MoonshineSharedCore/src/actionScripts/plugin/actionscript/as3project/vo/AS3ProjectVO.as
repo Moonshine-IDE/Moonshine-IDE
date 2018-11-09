@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
+    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
+
     import flash.events.Event;
     import flash.events.MouseEvent;
     
@@ -29,7 +32,6 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.ICloneable;
-    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
     import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
     import actionScripts.plugin.run.RunMobileSetting;
@@ -37,7 +39,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.ColorSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.IntSetting;
-    import actionScripts.plugin.settings.vo.ListSetting;
+    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -60,7 +62,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const TEST_MOVIE_AIR:String = "AIR";
 		
 		public static const FLEXJS_DEBUG_PATH:String = "bin/js-debug/index.html";
-		public static const FLEXJS_RELEASE_PATH:String = "bin/js-release";
 		
 		[Bindable] public var isLibraryProject:Boolean;
 		
@@ -70,6 +71,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
+        public var mavenBuildOptions:MavenBuildOptions;
 		public var htmlPath:FileLocation;
 		public var customHTMLPath:String;
 		
@@ -123,8 +125,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var outputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
-		private var targetPlatformSettings:ListSetting;
-		
+		private var targetPlatformSettings:DropDownListSetting;
+
 		public function get air():Boolean
 		{
 			return UtilsCore.isAIR(this);
@@ -150,17 +152,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 			swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(value);
 			this.dispatchEvent(new Event(CHANGE_CUSTOM_SDK));
 		}
-		
-		public function get AntBuildPath():String
+
+		public function get antBuildPath():String
 		{
 			return buildOptions.antBuildPath;
 		}
 		
-		public function set AntBuildPath(value:String):void
+		public function set antBuildPath(value:String):void
 		{
 			buildOptions.antBuildPath = value;
 		}
-		
+
 		public function get isSVN():Boolean
 		{
 			if (menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) != -1) return true;
@@ -261,6 +263,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (!tmpPath) tmpPath = swfOutput.path.fileBridge.parent.fileBridge.nativePath;
 			return tmpPath;
 		}
+
 		public function set outputPath(value:String):void
 		{
 			if (!value || value == "") return;
@@ -284,11 +287,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
+            mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 			
 			config = new MXMLCConfigVO();
 
             projectReference.hiddenPaths = this.hiddenPaths;
-			projectReference.showHiddenPaths = this.showHiddenPaths = IDEModel.getInstance().showHiddenPaths;
+			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>
@@ -311,7 +315,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			outputPathSetting = new PathSetting(this, "outputPath", "Output Path", true, outputPath);
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
-			targetPlatformSettings = new ListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
+			targetPlatformSettings = new DropDownListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
 			if (isLibraryProject) targetPlatformSettings.isEditable = false;
 			else targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
 
@@ -375,7 +379,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 var projectFileName:String = this.isVisualEditorProject ? projectName+".veditorproj" : projectName+".as3proj";
                 var settingsFile:FileLocation = folderLocation.resolvePath(projectFileName);
 				// Write settings
-				IDEModel.getInstance().flexCore.exportFlashDevelop(this, settingsFile);
+				model.flexCore.exportFlashDevelop(this, settingsFile);
 				//}
 			}
 			
@@ -403,7 +407,6 @@ package actionScripts.plugin.actionscript.as3project.vo
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
                             new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
                             additional,
 
                             new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
@@ -423,6 +426,14 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new StringSetting(buildOptions, "loadConfig",						"Load config")
                         ])
                 ),
+				new SettingsWrapper("Ant Build", Vector.<ISetting>([
+                    new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
+                ])),
+                new SettingsWrapper("Maven Build", Vector.<ISetting>([
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+                    new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
+					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
+                ])),
                 new SettingsWrapper("Paths",
                         Vector.<ISetting>([
                             new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
@@ -477,7 +488,6 @@ package actionScripts.plugin.actionscript.as3project.vo
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
                             new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
-                            new PathSetting(this, "AntBuildPath", "Ant Build File", false, buildOptions.antBuildPath, false),
                             additional,
 
                             new StringSetting(buildOptions, "compilerConstants",				"Compiler constants"),
@@ -497,6 +507,14 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new StringSetting(buildOptions, "loadConfig",						"Load config")
                         ])
                 ),
+                new SettingsWrapper("Ant Build", Vector.<ISetting>([
+                    new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
+                ])),
+                new SettingsWrapper("Maven Build", Vector.<ISetting>([
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+                    new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
+                    new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
+                ])),
                 new SettingsWrapper("Paths",
                         Vector.<ISetting>([
 							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
@@ -514,7 +532,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 ),
                 new SettingsWrapper("Run",
                         Vector.<ISetting>([
-                            new ListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
+                            new DropDownListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
                             htmlFilePath,
 							customHTMLFilePath,
 							outputPathSetting,
@@ -661,7 +679,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			if (this.targetPlatformSettings)
             {
-                as3Project.targetPlatformSettings = new ListSetting(this.targetPlatformSettings.provider,
+                as3Project.targetPlatformSettings = new DropDownListSetting(this.targetPlatformSettings.provider,
                         this.targetPlatformSettings.name, this.targetPlatformSettings.label,
                         this.targetPlatformSettings.dataProvider, this.targetPlatformSettings.labelField);
             }

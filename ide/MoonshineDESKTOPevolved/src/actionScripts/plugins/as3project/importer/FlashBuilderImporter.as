@@ -16,6 +16,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
+    import actionScripts.utils.SerializeUtil;
+
     import flash.filesystem.File;
     import flash.filesystem.FileMode;
     import flash.filesystem.FileStream;
@@ -150,8 +152,8 @@ package actionScripts.plugins.as3project.importer
 			var target:FileLocation = p.folderLocation.resolvePath(data.compiler.@sourceFolderPath + "/" + data.@mainApplicationPath); 
 			p.targets.push(target);
 			
-			p.air = UtilsCore.deserializeBoolean(data.compiler.@useApolloConfig);
-			p.isActionScriptOnly = UtilsCore.deserializeBoolean(data.compiler.@useFlashSDK);
+			p.air = SerializeUtil.deserializeBoolean(data.compiler.@useApolloConfig);
+			p.isActionScriptOnly = SerializeUtil.deserializeBoolean(data.compiler.@useFlashSDK);
 
 			// FB doesn't seem to have a notion of output filename, so we guesstimate it
 			p.swfOutput.path = p.folderLocation.resolvePath(data.compiler.@outputFolderPath + "/" + p.targets[0].fileBridge.name.split(".")[0] + ".swf");
