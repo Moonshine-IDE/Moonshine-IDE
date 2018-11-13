@@ -1,5 +1,7 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.events.MavenBuildEvent;
+    import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
@@ -20,10 +22,10 @@ package actionScripts.plugins.maven
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
-        public static const START_MAVEN_BUILD:String = "startMavenBuild";
-        public static const STOP_MAVEN_BUILD:String = "stopMavenBuild";
-
+        private var status:int;
         private var stopWithoutMessage:Boolean;
+
+        private var buildId:String;
 
         public function MavenBuildPlugin()
         {
@@ -73,20 +75,26 @@ package actionScripts.plugins.maven
         {
             super.activate();
 
-            dispatcher.addEventListener(START_MAVEN_BUILD, startConsoleBuildHandler);
-            dispatcher.addEventListener(STOP_MAVEN_BUILD, stopConsoleBuildHandler);
+            dispatcher.addEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
+            dispatcher.addEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
 
         override public function deactivate():void
         {
             super.deactivate();
 
-            dispatcher.removeEventListener(START_MAVEN_BUILD, startConsoleBuildHandler);
-            dispatcher.removeEventListener(STOP_MAVEN_BUILD, stopConsoleBuildHandler);
+            dispatcher.removeEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
+            dispatcher.removeEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
 
         override public function start(args:Vector.<String>, buildDirectory:*):void
         {
+            if (nativeProcess.running && running)
+            {
+                warning("Build is running. Wait for finish...");
+                return;
+            }
+
             if (!mavenPath)
             {
                 error("Specify path to Maven folder.");
@@ -94,13 +102,13 @@ package actionScripts.plugins.maven
                 return;
             }
 
-            clearOutput();
+            warning("Starting Maven build...");
+
+            super.start(args, buildDirectory);
 
             print("Maven path: %s", mavenPath);
             print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
-
-            super.start(args, buildDirectory);
 
             var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
             if (as3Project)
@@ -110,41 +118,51 @@ package actionScripts.plugins.maven
             }
         }
 
+        override public function stop(forceStop:Boolean = false):void
+        {
+            super.stop(forceStop);
+
+            status = MavenBuildStatus.STOPPED;
+        }
+
+        override public function complete():void
+        {
+            nativeProcess.exit();
+            running = false;
+
+            status = MavenBuildStatus.COMPLETE;
+        }
+
         override protected function startConsoleBuildHandler(event:Event):void
         {
             super.startConsoleBuildHandler(event);
 
-            var args:Vector.<String> = getConstantArguments();
-            var arguments:Array = [];
-            var buildDirectory:FileLocation;
-
-            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-            if (as3Project)
-            {
-                arguments = as3Project.mavenBuildOptions.getCommandLine();
-                if (arguments.length > 0)
-                {
-                    args.push(arguments.join(" "));
-                }
-
-                if (as3Project.mavenBuildOptions.mavenBuildPath)
-                {
-                    buildDirectory = new FileLocation(as3Project.mavenBuildOptions.mavenBuildPath);
-                }
-            }
+            this.status = 0;
+            this.buildId = this.getBuildId(event);
+            var arguments:Array = this.getCommandLine(event);
+            var buildDirectory:FileLocation = this.getBuildDirectory(event);
 
             if (!buildDirectory)
             {
                 warning("Maven build directory has not been specified");
-                dispatcher.dispatchEvent(new ShowSettingsEvent(as3Project, "Maven Build"));
+                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject as AS3ProjectVO, "Maven Build"));
                 return;
             }
 
             if (arguments.length == 0)
             {
                 warning("Specify Maven commands (Ex. clean install)");
-                dispatcher.dispatchEvent(new ShowSettingsEvent(as3Project, "Maven Build"));
+                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject as AS3ProjectVO, "Maven Build"));
                 return;
+            }
+
+            var args:Vector.<String> = this.getConstantArguments();
+            if (arguments.length > 0)
+            {
+                for each (var arg:String in arguments)
+                {
+                    args.push(arg);
+                }
             }
 
             start(args, buildDirectory);
@@ -166,6 +184,7 @@ package actionScripts.plugins.maven
             {
                 error("%s", data);
                 stop();
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId));
             }
             else if (data.match(/\[WARNING\]/))
             {
@@ -177,7 +196,7 @@ package actionScripts.plugins.maven
                 if (data.match(/BUILD SUCCESS/))
                 {
                     stopWithoutMessage = true;
-                    stop();
+                    complete();
                 }
             }
         }
@@ -194,6 +213,12 @@ package actionScripts.plugins.maven
             super.onNativeProcessStandardErrorData(event);
 
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+
+            if (status == MavenBuildStatus.COMPLETE)
+            {
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId));
+                this.status = 0;
+            }
         }
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -211,26 +236,17 @@ package actionScripts.plugins.maven
 
             stopWithoutMessage = false;
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+
+            if (status == MavenBuildStatus.COMPLETE)
+            {
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId));
+                this.status = 0;
+            }
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
-        }
-
-        private function getMavenBinPath():String
-        {
-            var mavenLocation:FileLocation = new FileLocation(mavenPath);
-            var mavenBin:String = "bin/";
-
-            if (Settings.os == "win")
-            {
-                return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
-            }
         }
 
         private function getConstantArguments():Vector.<String>
@@ -245,9 +261,57 @@ package actionScripts.plugins.maven
                 args.push("-c");
             }
 
-            args.push(getMavenBinPath());
+            args.push(UtilsCore.getMavenBinPath());
 
             return args;
+        }
+
+        private function getBuildId(event:Event):String
+        {
+            var mavenBuildEvent:MavenBuildEvent = event as MavenBuildEvent;
+            if (mavenBuildEvent)
+            {
+                return mavenBuildEvent.buildId;
+            }
+
+            return null;
+        }
+
+        private function getCommandLine(event:Event):Array
+        {
+            var mavenBuildEvent:MavenBuildEvent = event as MavenBuildEvent;
+            if (mavenBuildEvent)
+            {
+                return mavenBuildEvent.commands;
+            }
+
+            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+            if (as3Project)
+            {
+                return as3Project.mavenBuildOptions.getCommandLine();
+            }
+
+            return [];
+        }
+
+        private function getBuildDirectory(event:Event):FileLocation
+        {
+            var mavenBuildEvent:MavenBuildEvent = event as MavenBuildEvent;
+            if (mavenBuildEvent)
+            {
+                return new FileLocation(mavenBuildEvent.buildDirectory);
+            }
+
+            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+            if (as3Project)
+            {
+                if (as3Project.mavenBuildOptions.mavenBuildPath)
+                {
+                    return new FileLocation(as3Project.mavenBuildOptions.mavenBuildPath);
+                }
+            }
+
+            return null;
         }
     }
 }

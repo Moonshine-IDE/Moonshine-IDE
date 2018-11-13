@@ -382,9 +382,9 @@ package actionScripts.plugin.startup
         private function copyToLocalStoragePayaraEmbededLauncher():void
         {
 			var payaraLocation:String = "elements".concat(model.fileCore.separator, "projects", model.fileCore.separator, "PayaraEmbeddedLauncher");
-            model.payaraServerPath = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
-            var localStorage:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
-            model.payaraServerPath.fileBridge.copyTo(localStorage, true);
+            var payaraAppPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
+            model.payaraServerPath = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
+            payaraAppPath.fileBridge.copyTo(model.payaraServerPath, true);
         }
     }
 }

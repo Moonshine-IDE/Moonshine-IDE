@@ -75,6 +75,7 @@ package actionScripts.ui.renderers
 		public static const PROJECT_SETUP:String = "Project Setup";
 		public static const CLOSE:String = "Close";
 		public static const DELETE_PROJECT:String = "Delete Project";
+		public static const PREVIEW:String = "Preview";
 
 		private var label2:Label;
 		private var editText:TextInput;
@@ -216,12 +217,19 @@ package actionScripts.ui.renderers
 			{
 				contextMenu = model.contextMenuCore.getContextMenu();
 
+                var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
+
                 model.contextMenuCore.addItem(contextMenu,
                         model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
                 model.contextMenuCore.addItem(contextMenu,
                         model.contextMenuCore.getContextMenuItem(
 								ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
 								redispatch, Event.SELECT));
+
+				if (project && project.isPrimeFacesVisualEditorProject)
+				{
+                    model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(PREVIEW, redispatch, Event.SELECT));
+				}
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
@@ -263,8 +271,8 @@ package actionScripts.ui.renderers
 					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
 					{
 						// make this option available for the files Only inside the source folder location
-						var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
-						if (project && !project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
+						if (project && !project.isVisualEditorProject && !project.isLibraryProject &&
+							project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
 						{
 							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
 								model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));

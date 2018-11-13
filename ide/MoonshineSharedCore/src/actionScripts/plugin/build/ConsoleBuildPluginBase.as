@@ -2,6 +2,7 @@ package actionScripts.plugin.build
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.Settings;
 
     import flash.desktop.NativeProcess;
@@ -17,9 +18,7 @@ package actionScripts.plugin.build
         protected var nativeProcess:NativeProcess;
         private var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
-        private var console:FileLocation;
-
-        private var running:Boolean;
+        protected var running:Boolean;
 
         public function ConsoleBuildPluginBase()
         {
@@ -30,7 +29,7 @@ package actionScripts.plugin.build
         {
             super.activate();
 
-            console = new FileLocation(getConsoleLocation());
+            var console:FileLocation = new FileLocation(UtilsCore.getConsolePath());
             nativeProcess = new NativeProcess();
             nativeProcessStartupInfo = new NativeProcessStartupInfo();
 
@@ -52,7 +51,16 @@ package actionScripts.plugin.build
 
         public function start(args:Vector.<String>, buildDirectory:*):void
         {
-            if (nativeProcess.running && running) return;
+            if (nativeProcess.running && running)
+            {
+                warning("Build is running. Wait for finish...");
+                return;
+            }
+            else if (nativeProcess.running)
+            {
+                removeNativeProcessEventListeners();
+                nativeProcess = new NativeProcess();
+            }
 
             running = true;
 
@@ -64,10 +72,15 @@ package actionScripts.plugin.build
             nativeProcess.start(nativeProcessStartupInfo);
         }
 
-        public function stop():void
+        public function stop(forceStop:Boolean = false):void
         {
-            nativeProcess.exit();
+            nativeProcess.exit(forceStop);
 
+            running = false;
+        }
+
+        public function complete():void
+        {
             running = false;
         }
 
@@ -108,6 +121,11 @@ package actionScripts.plugin.build
             running = false;
         }
 
+        protected function onNativeProcessStandardInputClose(event:Event):void
+        {
+
+        }
+
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
             removeNativeProcessEventListeners();
@@ -120,6 +138,7 @@ package actionScripts.plugin.build
             nativeProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onNativeProcessIOError);
             nativeProcess.addEventListener(IOErrorEvent.STANDARD_INPUT_IO_ERROR, onNativeProcessIOError);
             nativeProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, onNativeProcessIOError);
+            nativeProcess.addEventListener(Event.STANDARD_INPUT_CLOSE, onNativeProcessStandardInputClose);
             nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
         }
 
@@ -131,21 +150,6 @@ package actionScripts.plugin.build
             nativeProcess.removeEventListener(IOErrorEvent.STANDARD_INPUT_IO_ERROR, onNativeProcessIOError);
             nativeProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, onNativeProcessIOError);
             nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
-        }
-
-        private function getConsoleLocation():String
-        {
-            if (Settings.os == "win")
-            {
-                // in windows
-                return "c:\\Windows\\System32\\cmd.exe";
-            }
-            else
-            {
-                // in mac
-                return "/bin/bash";
-            }
-
         }
     }
 }

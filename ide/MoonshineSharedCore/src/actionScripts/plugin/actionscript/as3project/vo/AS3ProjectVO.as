@@ -551,7 +551,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
                                 new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
 							])
-					)
+					),
+					new SettingsWrapper("Maven Build", Vector.<ISetting>([
+						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+						new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
+						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
+					]))
 				]);
 		}
 		

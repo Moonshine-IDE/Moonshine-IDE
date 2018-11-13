@@ -767,42 +767,7 @@ package actionScripts.utils
 				}
 			}
 		}
-		private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
-		{
-			if (!value) return;
-			
-			var extension:String = value.file.fileBridge.extension;
-			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
-			{
-				collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
-				return;
-			}
-			
-			if ((value.children is Array) && (value.children as Array).length > 0)
-			{
-				for each (var c:FileWrapper in value.children)
-				{
-					extension = c.file.fileBridge.extension;
-					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
-					{
-						collection.addItem(new ResourceVO(c.file.fileBridge.name, c));
-					}
-					else if (c.file.fileBridge.isDirectory)
-					{
-						parseChildrens(c, collection, readableExtensions);
-					}
-				}
-			}
-		}
-		private static function isAcceptableResource(extension:String, readableExtensions:Array=null):Boolean
-		{
-			readableExtensions ||= ConstantsCoreVO.READABLE_FILES;
-			return readableExtensions.some(
-				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
-					return item == extension;
-				});
-		}
-		
+
 		/**
 		 * Returns menu options on current
 		 * recent opened projects
@@ -898,5 +863,73 @@ package actionScripts.utils
 			
 			return tmpValue;
 		}
-	}
+
+		public static function getConsolePath():String
+		{
+			var separator:String = model.fileCore.separator;
+            if (Settings.os == "win")
+            {
+                // in windows
+                return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
+            }
+            else
+            {
+                // in mac
+                return separator.concat("bin", separator, "bash");
+            }
+		}
+
+        public static function getMavenBinPath():String
+        {
+            var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
+            var mavenBin:String = "bin/";
+
+            if (Settings.os == "win")
+            {
+                return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
+            }
+        }
+
+        private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
+        {
+            if (!value) return;
+
+            var extension:String = value.file.fileBridge.extension;
+            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+            {
+                collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
+                return;
+            }
+
+            if ((value.children is Array) && (value.children as Array).length > 0)
+            {
+                for each (var c:FileWrapper in value.children)
+                {
+                    extension = c.file.fileBridge.extension;
+                    if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
+                    {
+                        collection.addItem(new ResourceVO(c.file.fileBridge.name, c));
+                    }
+                    else if (c.file.fileBridge.isDirectory)
+                    {
+                        parseChildrens(c, collection, readableExtensions);
+                    }
+                }
+            }
+        }
+
+        private static function isAcceptableResource(extension:String, readableExtensions:Array=null):Boolean
+        {
+            readableExtensions ||= ConstantsCoreVO.READABLE_FILES;
+            return readableExtensions.some(
+                    function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+                        return item == extension;
+                    });
+        }
+
+    }
 }

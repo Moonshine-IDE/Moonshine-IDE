@@ -28,6 +28,7 @@
 
 	<mx:Script>
 		<![CDATA[
+		import actionScripts.events.PreviewPluginEvent;
 		import actionScripts.events.RefreshVisualEditorSourcesEvent;
 
 		import mx.collections.ArrayCollection;
@@ -526,6 +527,9 @@
 					FileCoreUtil.showInExplorer(fileWrapper.file);
 					break;
 				}
+				case FTETreeItemRenderer.PREVIEW:
+					dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, fileWrapper));
+					break;
 				case FTETreeItemRenderer.MARK_AS_VISIBLE:
 					dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_VISIBLE, fileWrapper));
 					break;
