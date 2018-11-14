@@ -383,8 +383,8 @@ package actionScripts.plugin.startup
         {
 			var payaraLocation:String = "elements".concat(model.fileCore.separator, "projects", model.fileCore.separator, "PayaraEmbeddedLauncher");
             var payaraAppPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
-            model.payaraServerPath = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
-            payaraAppPath.fileBridge.copyTo(model.payaraServerPath, true);
+            model.payaraServerLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
+            payaraAppPath.fileBridge.copyTo(model.payaraServerLocation, true);
         }
     }
 }

@@ -75,7 +75,7 @@ package visualEditor.plugin
             _currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
             if (!_currentProject) return;
 
-            if (!model.payaraServerPath)
+            if (!model.payaraServerLocation)
             {
                 warning("Server for PrimeFaces preview has not been setup");
                 return;
@@ -90,21 +90,14 @@ package visualEditor.plugin
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
             dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
-                    PAYARA_SERVER_BUILD, model.payaraServerPath.fileBridge.nativePath, ["clean", "compile"]));
+                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, ["clean", "compile"]));
         }
 
         private function runPreviewServer():void
         {
-            var execArgs:String = "-Dexec.args=\"-classpath %classpath " +
-                    "-Dnet.prominic.project=" + getMavenBuildProjectPath() +
-                    " net.prominic.PayaraEmbeddedLauncher\"";
-            var execExecutable:String = "-Dexec.executable=".concat("\"", model.javaPathForTypeAhead.fileBridge.nativePath, "\"");
-            var mavenPlugin:String = "org.codehaus.mojo:exec-maven-plugin:1.6.0:exec";
+            var args:Vector.<String> = this.getArguments();
 
-            var args:Vector.<String> = this.getConstantArguments();
-            args.push(execArgs, execExecutable, mavenPlugin);
-
-            start(args, _currentProject.folderLocation);
+            start(args, model.payaraServerLocation);
         }
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
@@ -132,7 +125,7 @@ package visualEditor.plugin
             running = false;
         }
 
-        private function getConstantArguments():Vector.<String>
+        private function getArguments():Vector.<String>
         {
             var args:Vector.<String> = new Vector.<String>();
             if (Settings.os == "win")
@@ -144,7 +137,20 @@ package visualEditor.plugin
                 args.push("-c");
             }
 
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+
+            var execArgs:String = "-Dexec.args=".concat('"',
+                    "-classpath %classpath -Dnet.prominic.project='", getMavenBuildProjectPath(),
+                    "' net.prominic.PayaraEmbeddedLauncher", '"');
+            var executable:String = "-Dexec.executable=".concat('"', executableJavaLocation.fileBridge.nativePath, '"');
+            var mavenPlugin:String = "org.codehaus.mojo:exec-maven-plugin:1.6.0:exec";
+
+           // print(UtilsCore.getMavenBinPath() + execArgs);
+
             args.push(UtilsCore.getMavenBinPath());
+            args.push(execArgs);
+            args.push(executable);
+            args.push(mavenPlugin);
 
             return args;
         }
@@ -159,7 +165,7 @@ package visualEditor.plugin
 
             var separator:String = projectPomFile.fileBridge.separator;
 
-            return projectPomFile.fileBridge.nativePath.concat(separator, "target", separator, artifactId, "-", version);
+            return _currentProject.folderLocation.fileBridge.nativePath.concat(separator, "target", separator, artifactId, "-", version);
         }
     }
 }

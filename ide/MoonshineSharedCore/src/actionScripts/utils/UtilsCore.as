@@ -608,22 +608,29 @@ package actionScripts.utils
 		/**
 		 * Returns possible Java exeuctable in system
 		 */
-		public static function getJavaPath():FileLocation
+		public static function getExecutableJavaLocation():FileLocation
 		{
 			var executableFile:FileLocation;
-			
-			if (ConstantsCoreVO.IS_MACOS) executableFile = new FileLocation("/usr/bin/java");
+			var separator:String = model.fileCore.separator;
+
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+            }
 			else 
 			{
 				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists) 
 				{
-					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\bin\\javaw.exe");
-					if (!executableFile.fileBridge.exists) executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\javaw.exe"); // in case of user setup by 'javaPath/bin'
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "javaw.exe"));
+					if (!executableFile.fileBridge.exists)
+					{
+						executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "javaw.exe"));
+                    } // in case of user setup by 'javaPath/bin'
 				}
 				else
 				{
 					var javaFolder:String = Capabilities.supports64BitProcesses ? "Program Files (x86)" : "Program Files";
-					var tmpJavaLocation:FileLocation = new FileLocation("C:/"+ javaFolder +"/Java");
+					var tmpJavaLocation:FileLocation = new FileLocation("C:".concat(separator, javaFolder, separator, "Java"));
 					if (tmpJavaLocation.fileBridge.exists)
 					{
 						var javaFiles:Array = tmpJavaLocation.fileBridge.getDirectoryListing();
@@ -631,7 +638,7 @@ package actionScripts.utils
 						{
 							if (j.nativePath.indexOf("jre") != -1)
 							{
-								executableFile = new FileLocation(j.nativePath +"\\bin\\javaw.exe");
+								executableFile = new FileLocation(j.nativePath + separator + "bin" + separator + "javaw.exe");
 								break;
 							}
 						}

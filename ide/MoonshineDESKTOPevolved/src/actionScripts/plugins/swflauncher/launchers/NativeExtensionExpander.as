@@ -73,7 +73,7 @@ package actionScripts.plugins.swflauncher.launchers
 				processArgs.push("..\\"+ byANE.name);
 			}
 			
-			var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
+			var tmpExecutableJava:FileLocation = UtilsCore.getExecutableJavaLocation();
 			if (!ConstantsCoreVO.IS_MACOS && (!tmpExecutableJava || !tmpExecutableJava.fileBridge.exists))
 			{
 				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
