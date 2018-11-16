@@ -124,7 +124,7 @@ package actionScripts.plugins.maven
                 arguments = as3Project.mavenBuildOptions.getCommandLine();
                 if (arguments.length > 0)
                 {
-                    args.push(arguments.join(" "));
+                    args.push(getMavenBinPath().concat(" ", arguments.join(" ")));
                 }
 
                 if (as3Project.mavenBuildOptions.mavenBuildPath)
@@ -244,8 +244,6 @@ package actionScripts.plugins.maven
             {
                 args.push("-c");
             }
-
-            args.push(getMavenBinPath());
 
             return args;
         }

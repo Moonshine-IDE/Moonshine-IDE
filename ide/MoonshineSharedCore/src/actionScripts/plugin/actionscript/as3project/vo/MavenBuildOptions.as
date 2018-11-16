@@ -44,9 +44,22 @@ package actionScripts.plugin.actionscript.as3project.vo
         public function getCommandLine():Array
         {
             var commandLineOptions:Array = [];
+
+            if (settingsFilePath)
+            {
+                commandLineOptions.push("-settings ".concat("\"", settingsFilePath, "\""));
+            }
+
             if (commandLine)
             {
-                commandLineOptions = commandLine.split(" ");
+                if (commandLineOptions.length > 0)
+                {
+                    commandLineOptions = commandLineOptions.concat(commandLine.split(" "));
+                }
+                else
+                {
+                    commandLineOptions = commandLine.split(" ");
+                }
                 commandLineOptions = commandLineOptions.filter(function(item:String, index:int, arr:Array):Boolean{
                     item = StringUtil.trim(item);
                     if (item)
@@ -56,11 +69,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 
                     return false;
                 });
-            }
-
-            if (settingsFilePath)
-            {
-                commandLineOptions.push("-s" + settingsFilePath);
             }
 
             return commandLineOptions;
