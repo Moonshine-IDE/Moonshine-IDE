@@ -12,6 +12,7 @@ package actionScripts.plugins.maven
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
@@ -159,10 +160,7 @@ package actionScripts.plugins.maven
             var args:Vector.<String> = this.getConstantArguments();
             if (arguments.length > 0)
             {
-                for each (var arg:String in arguments)
-                {
-                    args.push(arg);
-                }
+                args.push(UtilsCore.getMavenBinPath().concat(" ", arguments.join(" ")));
             }
 
             start(args, buildDirectory);
@@ -260,8 +258,6 @@ package actionScripts.plugins.maven
             {
                 args.push("-c");
             }
-
-            args.push(UtilsCore.getMavenBinPath());
 
             return args;
         }
