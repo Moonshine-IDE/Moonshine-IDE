@@ -1,9 +1,8 @@
-package actionScripts.plugin.build
+package actionScripts.plugins.build
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.Settings;
 
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;

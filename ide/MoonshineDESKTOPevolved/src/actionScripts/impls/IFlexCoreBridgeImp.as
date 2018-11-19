@@ -117,7 +117,7 @@ package actionScripts.impls
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
-    import visualEditor.plugin.PreviewPrimeFacesProjectPlugin;
+    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge

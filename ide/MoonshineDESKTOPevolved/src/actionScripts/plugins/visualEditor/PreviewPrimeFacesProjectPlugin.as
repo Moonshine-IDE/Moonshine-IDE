@@ -16,19 +16,15 @@
 // Use this software at your own risk.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package visualEditor.plugin
+package actionScripts.plugins.visualEditor
 {
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.build.ConsoleBuildPluginBase;
+    import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.Settings;
-
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
 
     import flash.events.Event;
 

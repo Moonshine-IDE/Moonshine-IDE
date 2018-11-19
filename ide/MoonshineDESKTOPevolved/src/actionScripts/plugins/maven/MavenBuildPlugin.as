@@ -1,17 +1,15 @@
 package actionScripts.plugins.maven
 {
     import actionScripts.events.MavenBuildEvent;
-    import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.build.ConsoleBuildPluginBase;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
-    import actionScripts.utils.UtilsCore;
+    import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.Settings;
 
