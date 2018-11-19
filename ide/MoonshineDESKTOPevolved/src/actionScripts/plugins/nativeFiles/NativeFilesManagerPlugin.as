@@ -17,7 +17,7 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.fileAssociation
+package actionScripts.plugins.nativeFiles
 {
 	import flash.desktop.Clipboard;
 	import flash.desktop.ClipboardFormats;
@@ -36,16 +36,19 @@ package actionScripts.plugins.fileAssociation
 	
 	import actionScripts.events.FileCopyPasteEvent;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.valueObjects.FileWrapper;
 
-	public class FileAssociationPlugin extends PluginBase
+	public class NativeFilesManagerPlugin extends PluginBase
 	{
 		override public function get name():String			{ return "FileAssociation"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
 		
 		private var filesToBeCopied:Array;
+		private var filesCompleted:Array;
 		
 		override public function activate():void
 		{
@@ -116,11 +119,12 @@ package actionScripts.plugins.fileAssociation
 		
 		private function onPasteFilesRequest(event:FileCopyPasteEvent):void
 		{
+			filesCompleted = [];
 			filesToBeCopied = Clipboard.generalClipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
-			initiateFileCopyingProcess(event.wrapper.file.fileBridge.getFile as File);
+			initiateFileCopyingProcess(event.wrapper, event.wrapper.file.fileBridge.getFile as File);
 		}
 		
-		private function initiateFileCopyingProcess(destination:File, overwrite:Boolean=false, overwriteAll:Boolean=false, cancel:Boolean=false):void
+		private function initiateFileCopyingProcess(destinationWrapper:FileWrapper, destination:File, overwrite:Boolean=false, overwriteAll:Boolean=false, cancel:Boolean=false):void
 		{
 			if (filesToBeCopied.length > 0)
 			{
@@ -145,6 +149,13 @@ package actionScripts.plugins.fileAssociation
 			{
 				// end of the list
 				resetFields();
+				// send the completed list of file to
+				// treeView to update the tree by generating
+				// appropriate renderer objects
+				var tmpTreeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, null, destinationWrapper);
+				tmpTreeEvent.extra = filesCompleted;
+				dispatcher.dispatchEvent(tmpTreeEvent);
+				filesCompleted = null;
 			}
 			
 			/*
@@ -154,16 +165,16 @@ package actionScripts.plugins.fileAssociation
 			{
 				if (ev.detail == Alert.YES)
 				{
-					initiateFileCopyingProcess(destination, true);
+					initiateFileCopyingProcess(destinationWrapper, destination, true);
 				} 
 				else if (ev.detail == Alert.NO)
 				{
 					filesToBeCopied.shift();
-					initiateFileCopyingProcess(destination);
+					initiateFileCopyingProcess(destinationWrapper, destination);
 				}
 				else if (ev.detail == Alert.OK)
 				{
-					initiateFileCopyingProcess(destination, false, true);
+					initiateFileCopyingProcess(destinationWrapper, destination, false, true);
 				}
 				else if (ev.detail == Alert.CANCEL)
 				{
@@ -175,8 +186,9 @@ package actionScripts.plugins.fileAssociation
 			{
 				releaseListeners(ev.target);
 				
+				if (!overwrite && !overwriteAll) filesCompleted.push(destination.resolvePath((filesToBeCopied[0] as File).name));
 				filesToBeCopied.shift();
-				initiateFileCopyingProcess(destination, false, overwriteAll);
+				initiateFileCopyingProcess(destinationWrapper, destination, false, overwriteAll);
 			}
 			
 			function onFileCopyingError(ev:Event):void

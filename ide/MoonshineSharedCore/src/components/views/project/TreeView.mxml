@@ -191,6 +191,7 @@
 			dispatcher.addEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested, false, 0, true);
+			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied, false, 0, true);
 			dispatcher.addEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest, false, 0, true);
 		}
 
@@ -199,6 +200,7 @@
 			dispatcher.removeEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates);
 			dispatcher.removeEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates);
 			dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested);
+			dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied);
 			dispatcher.removeEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest);
 		}
 
@@ -649,6 +651,35 @@
 				tree.selectedItem = tmpFileW;
 
 				var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
+				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+				clearTimeout(timeoutValue);
+			}, 300);
+		}
+			
+		private function onNewFilesFoldersCopied(event:TreeMenuItemEvent):void
+		{
+			var insideLocation:FileWrapper = TreeMenuItemEvent(event).data;
+			if (event.extra && event.extra is Array)
+			{
+				for each (var nativeFile:Object in event.extra)
+				{
+					var newFile:FileWrapper = new FileWrapper(new FileLocation(nativeFile.nativePath), false, insideLocation.projectReference);
+					newFile.defaultName = nativeFile.name;
+					if (nativeFile.isDirectory) newFile.children = [];
+					insideLocation.children.push(newFile);
+				}
+			}
+			
+			// Make sure item is open before adding
+			tree.callLater(tree.expandItem, [insideLocation, true]);
+			
+			// refresh the folder section and select
+			var timeoutValue:uint = setTimeout(function ():void
+			{
+				insideLocation.sortChildren();
+				tree.selectedItem = insideLocation;
+				
+				var indexToItemRenderer:int = tree.getItemIndex(insideLocation);
 				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
 				clearTimeout(timeoutValue);
 			}, 300);
