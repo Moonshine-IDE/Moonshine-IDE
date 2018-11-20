@@ -85,7 +85,7 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
-    import actionScripts.plugins.fileAssociation.FileAssociationPlugin;
+    import actionScripts.plugins.nativeFiles.NativeFilesManagerPlugin;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.help.view.events.VisualEditorEvent;
@@ -197,7 +197,7 @@ package actionScripts.impls
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
                 VisualEditorRefreshFilesPlugin,
-				FileAssociationPlugin,
+				NativeFilesManagerPlugin,
 				UncaughtErrorsPlugin
 			];
 		}
@@ -235,7 +235,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
+			return [NativeFilesManagerPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin];
 		}

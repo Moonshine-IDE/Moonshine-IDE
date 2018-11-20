@@ -48,7 +48,6 @@ package actionScripts.plugins.nativeFiles
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
 		
 		private var filesToBeCopied:Array;
-		private var filesCompleted:Array;
 		
 		override public function activate():void
 		{
@@ -119,7 +118,6 @@ package actionScripts.plugins.nativeFiles
 		
 		private function onPasteFilesRequest(event:FileCopyPasteEvent):void
 		{
-			filesCompleted = [];
 			filesToBeCopied = Clipboard.generalClipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
 			initiateFileCopyingProcess(event.wrapper, event.wrapper.file.fileBridge.getFile as File);
 		}
@@ -150,12 +148,8 @@ package actionScripts.plugins.nativeFiles
 				// end of the list
 				resetFields();
 				// send the completed list of file to
-				// treeView to update the tree by generating
-				// appropriate renderer objects
-				var tmpTreeEvent:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, null, destinationWrapper);
-				tmpTreeEvent.extra = filesCompleted;
-				dispatcher.dispatchEvent(tmpTreeEvent);
-				filesCompleted = null;
+				// treeView to update the tree
+				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, null, destinationWrapper));
 			}
 			
 			/*
@@ -186,7 +180,6 @@ package actionScripts.plugins.nativeFiles
 			{
 				releaseListeners(ev.target);
 				
-				if (!overwrite && !overwriteAll) filesCompleted.push(destination.resolvePath((filesToBeCopied[0] as File).name));
 				filesToBeCopied.shift();
 				initiateFileCopyingProcess(destinationWrapper, destination, false, overwriteAll);
 			}
