@@ -20,54 +20,29 @@
             <version>5.183</version>
         </dependency>
     </dependencies>
-    
     <build>
         <plugins>
-            <!-- Building plugin -->
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>net.prominic.PayaraEmbeddedLauncher</mainClass>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
-                        <!-- this is used for inheritance merges -->
-                        <phase>package</phase>
-                        <!-- bind to the packaging phase -->
                         <goals>
-                            <goal>single</goal>
+                            <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <classpathLayoutType>repository</classpathLayoutType>
-                        </manifest>
-                    </archive>
+                    <executable>${env.JAVA_EXEC}</executable>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>-Dnet.prominic.project=${env.TARGET_PATH}</argument>
+                        <argument>net.prominic.PayaraEmbeddedLauncher</argument>
+                    </arguments>
                 </configuration>
             </plugin>            
         </plugins>
     </build>
-    
 </project>

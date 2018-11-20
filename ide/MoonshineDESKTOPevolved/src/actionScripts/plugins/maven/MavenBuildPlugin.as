@@ -138,6 +138,7 @@ package actionScripts.plugins.maven
 
             this.status = 0;
             this.buildId = this.getBuildId(event);
+            var preArguments:Array = this.getPreCommandLine(event);
             var arguments:Array = this.getCommandLine(event);
             var buildDirectory:FileLocation = this.getBuildDirectory(event);
 
@@ -158,7 +159,13 @@ package actionScripts.plugins.maven
             var args:Vector.<String> = this.getConstantArguments();
             if (arguments.length > 0)
             {
-                args.push(UtilsCore.getMavenBinPath().concat(" ", arguments.join(" ")));
+                var preCommandLine:String = preArguments.length > 0 ?
+                                            preArguments.join(" && ").concat(" && ")
+                                            : "";
+                var commandLine:String = arguments.join(" ");
+                var fullCommandLine:String = preCommandLine.concat(UtilsCore.getMavenBinPath(), " ", commandLine);
+
+                args.push(fullCommandLine);
             }
 
             start(args, buildDirectory);
@@ -269,6 +276,17 @@ package actionScripts.plugins.maven
             }
 
             return null;
+        }
+
+        private function getPreCommandLine(event:Event):Array
+        {
+            var mavenBuildEvent:MavenBuildEvent = event as MavenBuildEvent;
+            if (mavenBuildEvent)
+            {
+                return mavenBuildEvent.preCommands;
+            }
+
+            return [];
         }
 
         private function getCommandLine(event:Event):Array

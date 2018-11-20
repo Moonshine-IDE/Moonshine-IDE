@@ -18,7 +18,8 @@ package actionScripts.plugin.actionscript.as3project.vo
             _buildActions = [
                 new BuildActionVO("Build", "install"),
                 new BuildActionVO("Clean", "clean"),
-                new BuildActionVO("Clean and Build", "clean install")
+                new BuildActionVO("Clean and Build", "clean install"),
+                new BuildActionVO("Exploded", "war:exploded")
             ];
         }
 

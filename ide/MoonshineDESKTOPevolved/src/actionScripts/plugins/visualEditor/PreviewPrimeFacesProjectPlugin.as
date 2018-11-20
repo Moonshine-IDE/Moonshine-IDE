@@ -24,11 +24,11 @@ package actionScripts.plugins.visualEditor
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.Settings;
-
     import flash.events.Event;
 
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
+    import flash.events.ProgressEvent;
 
     public class PreviewPrimeFacesProjectPlugin extends ConsoleBuildPluginBase
     {
@@ -85,28 +85,45 @@ package actionScripts.plugins.visualEditor
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
-            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
-                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, ["clean", "compile"]));
+            dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
+        }
+
+        override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
+        {
+            super.onNativeProcessStandardOutputData(event);
+
+            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
+            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
+
+            dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
         }
 
         private function runPreviewServer():void
         {
-            var args:Vector.<String> = this.getArguments();
+            var preCommands:Array = this.getPreRunPreviewServerCommands();
+            var commands:Array = ["compile", "exec:exec"];
 
-            start(args, model.payaraServerLocation);
+            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
+                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
+        }
+
+        private function  getPreRunPreviewServerCommands():Array
+        {
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+
+            return ["set JAVA_EXEC=".concat(executableJavaLocation.fileBridge.nativePath),
+                    "set TARGET_PATH=".concat("\"", getMavenBuildProjectPath(), "\"")];
         }
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
         {
             if (event.buildId == PAYARA_SERVER_BUILD)
             {
-                dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
+                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
+                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
             }
             else
             {
-                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
-                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
-
                 runPreviewServer();
             }
         }
@@ -119,36 +136,6 @@ package actionScripts.plugins.visualEditor
             dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
             running = false;
-        }
-
-        private function getArguments():Vector.<String>
-        {
-            var args:Vector.<String> = new Vector.<String>();
-            if (Settings.os == "win")
-            {
-                args.push("/C");
-            }
-            else
-            {
-                args.push("-c");
-            }
-
-            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
-
-            var execArgs:String = "-Dexec.args=".concat('"',
-                    "-classpath %classpath -Dnet.prominic.project='", getMavenBuildProjectPath(),
-                    "' net.prominic.PayaraEmbeddedLauncher", '"');
-            var executable:String = "-Dexec.executable=".concat('"', executableJavaLocation.fileBridge.nativePath, '"');
-            var mavenPlugin:String = "org.codehaus.mojo:exec-maven-plugin:1.6.0:exec";
-
-           // print(UtilsCore.getMavenBinPath() + execArgs);
-
-            args.push(UtilsCore.getMavenBinPath());
-            args.push(execArgs);
-            args.push(executable);
-            args.push(mavenPlugin);
-
-            return args;
         }
 
         private function getMavenBuildProjectPath():String
