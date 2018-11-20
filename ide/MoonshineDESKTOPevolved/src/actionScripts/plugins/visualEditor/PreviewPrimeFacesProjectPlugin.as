@@ -21,7 +21,8 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugins.build.ConsoleBuildPluginBase;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.FileWrapper;
     import flash.events.Event;
@@ -30,11 +31,12 @@ package actionScripts.plugins.visualEditor
 
     import flash.events.ProgressEvent;
 
-    public class PreviewPrimeFacesProjectPlugin extends ConsoleBuildPluginBase
+    public class PreviewPrimeFacesProjectPlugin extends PluginBase
     {
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
 
         private var _currentProject:AS3ProjectVO;
+        private var running:Boolean;
 
         public function PreviewPrimeFacesProjectPlugin()
         {
@@ -88,16 +90,6 @@ package actionScripts.plugins.visualEditor
             dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
         }
 
-        override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
-        {
-            super.onNativeProcessStandardOutputData(event);
-
-            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
-            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
-
-            dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
-        }
-
         private function runPreviewServer():void
         {
             var preCommands:Array = this.getPreRunPreviewServerCommands();
@@ -105,14 +97,6 @@ package actionScripts.plugins.visualEditor
 
             dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
                     PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
-        }
-
-        private function  getPreRunPreviewServerCommands():Array
-        {
-            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
-
-            return ["set JAVA_EXEC=".concat(executableJavaLocation.fileBridge.nativePath),
-                    "set TARGET_PATH=".concat("\"", getMavenBuildProjectPath(), "\"")];
         }
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
@@ -136,6 +120,14 @@ package actionScripts.plugins.visualEditor
             dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
             running = false;
+        }
+
+        private function  getPreRunPreviewServerCommands():Array
+        {
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+
+            return ["set JAVA_EXEC=".concat(executableJavaLocation.fileBridge.nativePath),
+                    "set TARGET_PATH=".concat("\"", getMavenBuildProjectPath(), "\"")];
         }
 
         private function getMavenBuildProjectPath():String

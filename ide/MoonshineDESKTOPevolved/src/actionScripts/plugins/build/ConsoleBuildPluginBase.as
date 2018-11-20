@@ -95,10 +95,7 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
         {
-            var output:IDataInput = nativeProcess.standardOutput;
-            var data:String = output.readUTFBytes(output.bytesAvailable);
-
-            print("%s", data);
+            print("%s", getDataFromBytes(nativeProcess.standardOutput));
         }
 
         protected function onNativeProcessIOError(event:IOErrorEvent):void
@@ -111,10 +108,7 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
-            var output:IDataInput = nativeProcess.standardError;
-            var data:String = output.readUTFBytes(output.bytesAvailable);
-
-            error("%s", data);
+            error("%s", getDataFromBytes(nativeProcess.standardError));
 
             removeNativeProcessEventListeners();
             running = false;
@@ -128,6 +122,11 @@ package actionScripts.plugins.build
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
             removeNativeProcessEventListeners();
+        }
+
+        protected function getDataFromBytes(data:IDataInput):String
+        {
+            return data.readUTFBytes(data.bytesAvailable);
         }
 
         private function addNativeProcessEventListeners():void

@@ -9,6 +9,7 @@ package actionScripts.events
 
         public static const MAVEN_BUILD_FAILED:String = "mavenBuildFailed";
         public static const MAVEN_BUILD_COMPLETE:String = "mavenBuildComplete";
+        public static const MAVEN_BUILD_TERMINATED:String = "mavenBuildTerminated";
 
         private var _buildId:String;
         private var _buildDirectory:String;

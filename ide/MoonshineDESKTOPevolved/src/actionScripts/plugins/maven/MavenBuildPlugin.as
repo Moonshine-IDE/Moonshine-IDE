@@ -17,7 +17,6 @@ package actionScripts.plugins.maven
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
-    import flash.utils.IDataInput;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -25,6 +24,11 @@ package actionScripts.plugins.maven
         private var stopWithoutMessage:Boolean;
 
         private var buildId:String;
+
+        private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
+        private static const WARNING:RegExp = /\[WARNING\]/;
+        private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
+        private static const ERROR:RegExp = /\[ERROR\]/;
 
         public function MavenBuildPlugin()
         {
@@ -180,27 +184,21 @@ package actionScripts.plugins.maven
 
         override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
         {
-            var output:IDataInput = nativeProcess.standardOutput;
-            var data:String = output.readUTFBytes(output.bytesAvailable);
+            var data:String = getDataFromBytes(nativeProcess.standardOutput);
 
-            if (data.match(/\[ERROR\]/))
+            if (data.match(ERROR))
             {
                 error("%s", data);
-                stop();
-                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId));
+                buildFailed(data);
             }
-            else if (data.match(/\[WARNING\]/))
+            else if (data.match(WARNING))
             {
                 warning("%s", data);
             }
             else
             {
                 print("%s", data);
-                if (data.match(/BUILD SUCCESS/))
-                {
-                    stopWithoutMessage = true;
-                    complete();
-                }
+                buildSuccess(data);
             }
         }
 
@@ -213,14 +211,27 @@ package actionScripts.plugins.maven
 
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
-            super.onNativeProcessStandardErrorData(event);
-
-            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            var data:String = getDataFromBytes(nativeProcess.standardError);
+            if (buildFailed(data) || data.match(ERROR))
+            {
+                error("%s", data);
+            }
+            else if (data.match(WARNING))
+            {
+                warning("%s", data);
+            }
+            else
+            {
+                print("%s", data);
+            }
 
             if (status == MavenBuildStatus.COMPLETE)
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId));
                 this.status = 0;
+                running = false;
             }
         }
 
@@ -250,6 +261,29 @@ package actionScripts.plugins.maven
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
+            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_TERMINATED, this.buildId));
+        }
+
+        private function buildFailed(data:String):Boolean
+        {
+            if (data.match(BUILD_FAILED))
+            {
+                stop();
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId));
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private function buildSuccess(data:String):void
+        {
+            if (data.match(BUILD_SUCCESS))
+            {
+                stopWithoutMessage = true;
+                complete();
+            }
         }
 
         private function getConstantArguments():Vector.<String>
