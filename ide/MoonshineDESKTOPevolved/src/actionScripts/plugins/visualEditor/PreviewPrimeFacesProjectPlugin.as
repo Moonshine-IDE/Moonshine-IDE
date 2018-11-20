@@ -24,6 +24,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import flash.events.Event;
 
@@ -125,9 +126,10 @@ package actionScripts.plugins.visualEditor
         private function  getPreRunPreviewServerCommands():Array
         {
             var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+            var prefixSet:String = ConstantsCoreVO.IS_MACOS ? "export" : "set";
 
-            return ["set JAVA_EXEC=".concat(executableJavaLocation.fileBridge.nativePath),
-                    "set TARGET_PATH=".concat("\"", getMavenBuildProjectPath(), "\"")];
+            return [prefixSet.concat(" JAVA_EXEC=", executableJavaLocation.fileBridge.nativePath),
+                    prefixSet.concat(" TARGET_PATH=", "\"", getMavenBuildProjectPath(), "\"")];
         }
 
         private function getMavenBuildProjectPath():String
