@@ -659,30 +659,11 @@
 		private function onNewFilesFoldersCopied(event:TreeMenuItemEvent):void
 		{
 			var insideLocation:FileWrapper = TreeMenuItemEvent(event).data;
-			if (event.extra && event.extra is Array)
-			{
-				for each (var nativeFile:Object in event.extra)
-				{
-					var newFile:FileWrapper = new FileWrapper(new FileLocation(nativeFile.nativePath), false, insideLocation.projectReference);
-					newFile.defaultName = nativeFile.name;
-					if (nativeFile.isDirectory) newFile.children = [];
-					insideLocation.children.push(newFile);
-				}
-			}
-			
-			// Make sure item is open before adding
-			tree.callLater(tree.expandItem, [insideLocation, true]);
 			
 			// refresh the folder section and select
-			var timeoutValue:uint = setTimeout(function ():void
-			{
-				insideLocation.sortChildren();
-				tree.selectedItem = insideLocation;
-				
-				var indexToItemRenderer:int = tree.getItemIndex(insideLocation);
-				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
-				clearTimeout(timeoutValue);
-			}, 300);
+			tree.selectedItem = insideLocation;
+			refreshByWrapperItem(insideLocation);
+			tree.callLater(tree.expandItem, [insideLocation, true]);
 		}
 
 		protected function onProjectRenameRequest(event:RenameApplicationEvent):void
