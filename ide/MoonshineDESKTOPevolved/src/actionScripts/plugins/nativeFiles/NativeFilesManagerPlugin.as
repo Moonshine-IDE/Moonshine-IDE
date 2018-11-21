@@ -128,12 +128,12 @@ package actionScripts.plugins.nativeFiles
 			{
 				if (!overwrite && !overwriteAll && destination.resolvePath(filesToBeCopied[0].name).exists)
 				{
-					Alert.buttonWidth = 110;
-					Alert.yesLabel = "Overwrite";
+					Alert.buttonWidth = 90;
+					Alert.yesLabel = "Overwrite All";
 					Alert.noLabel = "Skip File";
-					Alert.okLabel = "Overwrite All";
+					Alert.okLabel = "Overwrite";
 					Alert.cancelLabel = "Cancel All";
-					Alert.show(filesToBeCopied[0].name + " already exists to destination path.", "Warning!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
+					Alert.show(filesToBeCopied[0].name + " already exists to destination path.", "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
 				}
 				else
 				{
@@ -159,7 +159,7 @@ package actionScripts.plugins.nativeFiles
 			{
 				if (ev.detail == Alert.YES)
 				{
-					initiateFileCopyingProcess(destinationWrapper, destination, true);
+					initiateFileCopyingProcess(destinationWrapper, destination, false, true);
 				} 
 				else if (ev.detail == Alert.NO)
 				{
@@ -168,7 +168,7 @@ package actionScripts.plugins.nativeFiles
 				}
 				else if (ev.detail == Alert.OK)
 				{
-					initiateFileCopyingProcess(destinationWrapper, destination, false, true);
+					initiateFileCopyingProcess(destinationWrapper, destination, true);
 				}
 				else if (ev.detail == Alert.CANCEL)
 				{
