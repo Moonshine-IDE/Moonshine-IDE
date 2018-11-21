@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <root>
 	<isDesktop>true</isDesktop> <!-- true|false -->
-	<isDevelopmentVersion>false</isDevelopmentVersion> <!-- true|false -->
-	<buildVersion><![CDATA[1.2.0]]></buildVersion>
+	<isDevelopmentVersion>true</isDevelopmentVersion> <!-- true|false -->
+	<buildVersion><![CDATA[1.16.0]]></buildVersion>
 	<keepDebugFiles>false</keepDebugFiles> <!-- true|false -->
 
 	<!-- FLEX SDK INFORMATION -->
-	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
-	<winSDKPath64><![CDATA[]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath><![CDATA[d:\Work\flex-sdk-4.16.1_adobe_ari_31]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath64><![CDATA[d:\Work\flex-sdk-4.16.1_adobe_ari_31]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	
 	<!-- BUNDLED SDK PATHS -->

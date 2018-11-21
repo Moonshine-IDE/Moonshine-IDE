@@ -2,32 +2,32 @@
 @namespace s "library://ns.adobe.com/flex/spark";
 
 @font-face {
-	src: url("/elements/fonts/DejaVuSansMono.ttf");
+	src: url("../../../src/elements/fonts/DejaVuSansMono.ttf");
 	fontFamily: "DejaVuMono";
 	embedAsCFF: true;
 }
 
 @font-face {
-	src: url("/elements/fonts/DejaVuSans.ttf");
+	src: url("../../../src/elements/fonts/DejaVuSans.ttf");
 	fontFamily: "DejaVuSans";
 	embedAsCFF: true;
 }
 
 @font-face {
-	src: url("/elements/fonts/DejaVuSans-Oblique.ttf");
+	src: url("../../../src/elements/fonts/DejaVuSans-Oblique.ttf");
 	fontFamily: "DejaVuSans";
 	fontStyle: italic;
 	embedAsCFF: true;
 }
 
 @font-face {
-	src: url("/elements/fonts/DejaVuSansCondensed.ttf");
+	src: url("../../../src/elements/fonts/DejaVuSansCondensed.ttf");
 	fontFamily: "DejaVuSansCond";
 	embedAsCFF: true;
 }
 
 @font-face {
-	src: url("/elements/fonts/DejaVuSerif-Italic.ttf");
+	src: url("../../../src/elements/fonts/DejaVuSerif-Italic.ttf");
 	fontFamily: "DejaVuSerif";
 	fontStyle: italic;
 	embedAsCFF: true;
@@ -154,7 +154,7 @@ s|TitleWindow
 	backgroundColor: #f9f9f7;
 }
 
-global 
+global
 {
 	font-size: 13;
 	font-sharpness: 100;
@@ -172,12 +172,12 @@ global
 
 .powerButton
 {
-	up-icon: 			Embed("/elements/gfx/pwr_red_up.png");
-	over-icon:	 		Embed("/elements/gfx/pwr_red_over.png");
-	down-icon: 			Embed("/elements/gfx/pwr_red_down.png");
-	selected-up-icon:	Embed("/elements/gfx/pwr_green_up.png");
-	selected-over-icon:	Embed("/elements/gfx/pwr_green_over.png");
-	selected-down-icon:	Embed("/elements/gfx/pwr_green_down.png");
+	up-icon: 			Embed("../../../src/elements/gfx/pwr_red_up.png");
+	over-icon:	 		Embed("../../../src/elements/gfx/pwr_red_over.png");
+	down-icon: 			Embed("../../../src/elements/gfx/pwr_red_down.png");
+	selected-up-icon:	Embed("../../../src/elements/gfx/pwr_green_up.png");
+	selected-over-icon:	Embed("../../../src/elements/gfx/pwr_green_over.png");
+	selected-down-icon:	Embed("../../../src/elements/gfx/pwr_green_down.png");
 }
 
 .textInput
@@ -185,7 +185,7 @@ global
 	contentBackgroundAlpha: 1;
 	contentBackgroundColor: #444444;
 	color: #f3f3f3;
-	promptColor: #a6a6a6; 
+	promptColor: #a6a6a6;
 	fontSize: 13;
 	focus-thickness: 0;
 	skinClass: ClassReference('actionScripts.plugin.findreplace.view.PromptTextInputSkin');
@@ -195,7 +195,7 @@ global
 	contentBackgroundAlpha: 1;
 	contentBackgroundColor: #444444;
 	color: #f3f3f3;
-	promptColor: #a6a6a6; 
+	promptColor: #a6a6a6;
 	fontSize: 13;
 	focus-thickness: 0;
 	skinClass: ClassReference('actionScripts.plugin.findreplace.view.StatusTextInputSkin');
@@ -246,12 +246,12 @@ s|HScrollBar
 s|DropDownList
 {
 	alternatingItemColors: #444444, #4d4c4c;
-	
+
 }*/
 
 s|DataGroup
 {
-/*	rollOverColor: #393939;*/
+	/*	rollOverColor: #393939;*/
 }
 
 .multiLineList
@@ -277,7 +277,7 @@ mx|ScrollBar
 	thumb-left-side-line: #C9C9C9;
 	thumb-hline1: #C5C5C5;
 	thumb-hline2: #FFFFFF;
-	
+
 	thumb-skin: 		ClassReference('elements.skins.VScrollBarThumbSkin');
 	track-skin: 		ClassReference('elements.skins.VScrollBarTrackSkin');
 	up-arrow-skin: 		ClassReference(null);
@@ -286,9 +286,9 @@ mx|ScrollBar
 
 mx|AdvancedDataGrid
 {
-	defaultLeafIcon:Embed('/elements/images/debugLeaf.png');
-	folderOpenIcon:Embed('/elements/images/debugOpenFolder.png');
-	folderClosedIcon:Embed('/elements/images/debugOpenFolder.png');
+	defaultLeafIcon:Embed('../../../src/elements/images/debugLeaf.png');
+	folderOpenIcon:Embed('../../../src/elements/images/debugOpenFolder.png');
+	folderClosedIcon:Embed('../../../src/elements/images/debugOpenFolder.png');
 }
 
 mx|ScrollBar.black
@@ -303,41 +303,41 @@ mx|ScrollBar.black
 .debugStopButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-stop-icon.png");
+	icon: Embed("../../../src/elements/images/debug-stop-icon.png");
 }
 
 .debugPlayButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-play-icon.png");
+	icon: Embed("../../../src/elements/images/debug-play-icon.png");
 }
 
 .debugPauseButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-pause-icon.png");
+	icon: Embed("../../../src/elements/images/debug-pause-icon.png");
 }
 
 .debugStepIntoButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-step-into-icon.png");
+	icon: Embed("../../../src/elements/images/debug-step-into-icon.png");
 }
 
 .debugStepOverButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-step-over-icon.png");
+	icon: Embed("../../../src/elements/images/debug-step-over-icon.png");
 }
 
 .debugStepOutButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");
-	icon: Embed("/elements/images/debug-step-out-icon.png");
+	icon: Embed("../../../src/elements/images/debug-step-out-icon.png");
 }
 
 .codeActionButton
 {
 	skinClass: ClassReference("elements.skins.CodeActionButtonSkin");
-	icon: Embed("/elements/images/code-action-icon.png");
+	icon: Embed("../../../src/elements/images/code-action-icon.png");
 }

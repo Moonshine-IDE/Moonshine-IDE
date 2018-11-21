@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
 * Visual Editor PrimeFaces: Added CDATA information to property panel if provided through component.
 * File association support for known file types.
+* Copying of files and folders from inside or outside of Moonshine, to the project sidebar.
 * New File: Added code completion for Superclass and Interfaces.
 * Java: Initial support for Java language project types, including code intelligence features.
 * Code Generation: In ActionScript and MXML, generate a getter and setter, a local variable, a member variable, or a method. When a quick fix is available at the current position in the editor, a light bulb icon will appear.
@@ -36,6 +37,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
 * Language server: Fixed issue where Java instance continued running after application exit.
 * Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
+* Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
 
 ## Moonshine IDE [1.15.0]
 

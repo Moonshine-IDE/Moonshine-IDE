@@ -30,48 +30,49 @@
 		<![CDATA[
 		import actionScripts.events.PreviewPluginEvent;
 		import actionScripts.events.RefreshVisualEditorSourcesEvent;
-
-		import mx.collections.ArrayCollection;
-		import mx.collections.Sort;
-		import mx.collections.SortField;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.CollectionEvent;
-		import mx.events.CollectionEventKind;
-		import mx.events.ListEvent;
-		import mx.events.TreeEvent;
-		import mx.managers.PopUpManager;
-
-		import actionScripts.events.AddFolderEvent;
-		import actionScripts.events.DeleteFileEvent;
-		import actionScripts.events.DuplicateEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.HiddenFilesEvent;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.events.OpenFileEvent;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.events.RenameApplicationEvent;
-		import actionScripts.events.RenameEvent;
-		import actionScripts.events.RenameFileFolderEvent;
-		import actionScripts.events.RunANTScriptEvent;
-		import actionScripts.events.ShowSettingsEvent;
-		import actionScripts.events.TreeMenuItemEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-		import actionScripts.plugin.templating.TemplatingHelper;
-		import actionScripts.ui.LayoutModifier;
-		import actionScripts.ui.renderers.FTETreeItemRenderer;
-		import actionScripts.ui.tabview.TabViewTab;
-		import actionScripts.utils.FileCoreUtil;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
-		import actionScripts.valueObjects.URLDescriptorVO;
-
-		import components.popup.NewFolderPopup;
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.ListEvent;
+			import mx.events.TreeEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.AddFolderEvent;
+			import actionScripts.events.DeleteFileEvent;
+			import actionScripts.events.DuplicateEvent;
+			import actionScripts.events.FileCopyPasteEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.HiddenFilesEvent;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.events.OpenFileEvent;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.events.RefreshVisualEditorSourcesEvent;
+			import actionScripts.events.RenameApplicationEvent;
+			import actionScripts.events.RenameEvent;
+			import actionScripts.events.RenameFileFolderEvent;
+			import actionScripts.events.RunANTScriptEvent;
+			import actionScripts.events.ShowSettingsEvent;
+			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.templating.TemplatingHelper;
+			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import actionScripts.ui.tabview.TabViewTab;
+			import actionScripts.utils.FileCoreUtil;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.URLDescriptorVO;
+			
+			import components.popup.NewFolderPopup;
 
 		private var newFolderWindow:NewFolderPopup;
 
@@ -192,6 +193,7 @@
 			dispatcher.addEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested, false, 0, true);
+			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied, false, 0, true);
 			dispatcher.addEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest, false, 0, true);
 		}
 
@@ -200,6 +202,7 @@
 			dispatcher.removeEventListener(ProjectEvent.TREE_DATA_UPDATES, onProjectTreeUpdates);
 			dispatcher.removeEventListener(ProjectEvent.PROJECT_FILES_UPDATES, onProjectFilesUpdates);
 			dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested);
+			dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied);
 			dispatcher.removeEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest);
 		}
 
@@ -469,6 +472,16 @@
 					dispatcher.dispatchEvent(new DuplicateEvent(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, fileWrapper));
 					break;
 				}
+				case FTETreeItemRenderer.COPY_FILE:
+				{
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, fileWrapper));
+					break;
+				}
+				case FTETreeItemRenderer.PASTE_FILE:
+				{
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper))));
+					break;
+				}
 				case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
 				{
 					TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(tree.getParentItem(fileWrapper)));
@@ -646,6 +659,16 @@
 				tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
 				clearTimeout(timeoutValue);
 			}, 300);
+		}
+			
+		private function onNewFilesFoldersCopied(event:TreeMenuItemEvent):void
+		{
+			var insideLocation:FileWrapper = TreeMenuItemEvent(event).data;
+			
+			// refresh the folder section and select
+			tree.selectedItem = insideLocation;
+			refreshByWrapperItem(insideLocation);
+			tree.callLater(tree.expandItem, [insideLocation, true]);
 		}
 
 		protected function onProjectRenameRequest(event:RenameApplicationEvent):void

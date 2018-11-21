@@ -41,6 +41,9 @@
 			
 			[Bindable] public var downlaoding			: Boolean;
 			[Bindable] public var updater				: NativeApplicationUpdater;
+
+           /*[Embed('../../MoonshineSharedCore/src/elements/images/imgInstall.png')]
+            private var imgInstall:Class;*/
 			
 		]]>
 	</fx:Script>
@@ -62,7 +65,7 @@
 			<s:VerticalLayout verticalAlign="middle"/>
 		</s:layout>
 		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle">
-			<s:Image source="@Embed('/elements/images/imgInstall.png')"/>
+		<!--	<s:Image source="{imgInstall}"/>-->
 			<s:VGroup>
 				<s:Label text="Updates:"
 						 styleName="dashboardLabel"/>
