@@ -30,7 +30,7 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import mx.events.FlexEvent;
+			import mx.events.FlexEvent;
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
@@ -261,7 +261,7 @@
 														   downloadError="updater_errorHandler(event)"
 														   updateError="updater_errorHandler(event)"/>
 	</fx:Declarations>
-	<fx:Style source="../../MoonshineSharedCore/src/elements/style/style.css"/>
+	<fx:Style source="/elements/style/style.css"/>
 	<fx:Style source="/assets/styles/InstallApacheFlexStyle.css"/>
 	<fx:Style source="/assets/styles/awaybuilder_defaults.css"/>
 

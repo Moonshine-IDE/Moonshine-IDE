@@ -22,7 +22,6 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
@@ -30,13 +29,18 @@ package actionScripts.plugins.visualEditor
 
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
-    import flash.events.ProgressEvent;
+    import flash.net.URLRequest;
+    import flash.net.navigateToURL;
 
     public class PreviewPrimeFacesProjectPlugin extends PluginBase
     {
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
+        private const URL_PREVIEW:String = "http://localhost:8180/";
+        private const PREVIEW_EXTENSION_FILE:String = "xhtml";
 
         private var _currentProject:AS3ProjectVO;
+        private var _filePreview:FileLocation;
+
         private var running:Boolean;
 
         public function PreviewPrimeFacesProjectPlugin()
@@ -70,7 +74,7 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
-            running = true;
+            _filePreview = event.fileWrapper.file;
             _currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
             if (!_currentProject) return;
 
@@ -80,24 +84,7 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
-            preparePreviewServer();
-        }
-
-        private function preparePreviewServer():void
-        {
-            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
-            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
-
-            dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
-        }
-
-        private function runPreviewServer():void
-        {
-            var preCommands:Array = this.getPreRunPreviewServerCommands();
-            var commands:Array = ["compile", "exec:exec"];
-
-            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
-                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
+            prepareProjectForPreviewing();
         }
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
@@ -106,11 +93,42 @@ package actionScripts.plugins.visualEditor
             {
                 dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
                 dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
+                warning("Preview server is running...");
+
+                startPreview();
             }
-            else
+            else if (!running)
             {
-                runPreviewServer();
+                running = true;
+                preparePreviewServer();
             }
+        }
+
+        private function prepareProjectForPreviewing():void
+        {
+            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
+            dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
+
+            dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
+        }
+
+        private function preparePreviewServer():void
+        {
+            var preCommands:Array = this.getPreRunPreviewServerCommands();
+            var commands:Array = ["compile", "exec:exec"];
+
+            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
+                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
+        }
+
+        private function startPreview():void
+        {
+            var fileName:String = _filePreview.fileBridge.isDirectory ?
+                    _currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
+                    _filePreview.fileBridge.name;
+
+            var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
+            navigateToURL(urlReq);
         }
 
         private function onMavenBuildFailed(event:MavenBuildEvent):void

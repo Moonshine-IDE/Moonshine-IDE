@@ -29,6 +29,7 @@ package actionScripts.plugins.maven
         private static const WARNING:RegExp = /\[WARNING\]/;
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
+        private static const SUCCESS:RegExp = /\[SUCCESS\]/;
 
         public function MavenBuildPlugin()
         {
@@ -279,7 +280,7 @@ package actionScripts.plugins.maven
 
         private function buildSuccess(data:String):void
         {
-            if (data.match(BUILD_SUCCESS))
+            if (data.match(BUILD_SUCCESS) || data.match(SUCCESS))
             {
                 stopWithoutMessage = true;
                 complete();
