@@ -261,11 +261,11 @@ package actionScripts.ui.renderers
 				if (fw.children && ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 				if (!fw.isRoot)
 				{
+					if (ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
 					if (!fw.children)
 					{
 						if (ConstantsCoreVO.IS_AIR)
 						{
-							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
 							model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 						}
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
