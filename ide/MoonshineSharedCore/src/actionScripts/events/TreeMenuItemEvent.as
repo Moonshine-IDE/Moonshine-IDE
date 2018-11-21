@@ -31,6 +31,7 @@ package actionScripts.events
 		public static const NEW_FILE_CREATED:String = "NEW_FILE_CREATED";
 		public static const FILE_DELETED:String = "FILE_DELETED";
 		public static const FILE_RENAMED:String = "FILE_RENAMED";
+		public static const NEW_FILES_FOLDERS_COPIED:String = "NEW_FILE_FOLDER_COPIED";
 		
 		public var menuLabel:String;
 		public var data:FileWrapper;
