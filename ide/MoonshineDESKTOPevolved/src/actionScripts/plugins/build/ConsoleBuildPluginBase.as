@@ -73,7 +73,10 @@ package actionScripts.plugins.build
 
         public function stop(forceStop:Boolean = false):void
         {
-            nativeProcess.exit(forceStop);
+            if (running)
+            {
+                nativeProcess.exit(forceStop);
+            }
 
             running = false;
         }
