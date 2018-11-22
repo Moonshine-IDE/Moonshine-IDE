@@ -20,8 +20,10 @@ package actionScripts.plugins.visualEditor
 {
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
+    import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugins.maven.MavenBuildStatus;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
@@ -57,6 +59,7 @@ package actionScripts.plugins.visualEditor
             super.activate();
 
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
+            dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
 
         override public function deactivate():void
@@ -84,7 +87,26 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
-            prepareProjectForPreviewing();
+            if (running)
+            {
+                startPreview();
+            }
+            else
+            {
+                prepareProjectForPreviewing();
+            }
+        }
+
+        private function closeProjectHandler(event:ProjectEvent):void
+        {
+            if (event.project == _currentProject)
+            {
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.STOP_MAVEN_BUILD, PAYARA_SERVER_BUILD, MavenBuildStatus.STOPPED));
+                _filePreview = null;
+                _currentProject = null;
+
+                running = false;
+            }
         }
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
@@ -118,7 +140,7 @@ package actionScripts.plugins.visualEditor
             var commands:Array = ["compile", "exec:exec"];
 
             dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
-                    PAYARA_SERVER_BUILD, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
+                    PAYARA_SERVER_BUILD, MavenBuildStatus.STARTED, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
         }
 
         private function startPreview():void
@@ -141,17 +163,19 @@ package actionScripts.plugins.visualEditor
             running = false;
         }
 
-        private function  getPreRunPreviewServerCommands():Array
+        private function getPreRunPreviewServerCommands():Array
         {
             var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
             var prefixSet:String = ConstantsCoreVO.IS_MACOS ? "export" : "set";
 
             return [prefixSet.concat(" JAVA_EXEC=", executableJavaLocation.fileBridge.nativePath),
-                    prefixSet.concat(" TARGET_PATH=", "\"", getMavenBuildProjectPath(), "\"")];
+                    prefixSet.concat(" TARGET_PATH=", getMavenBuildProjectPath())];
         }
 
         private function getMavenBuildProjectPath():String
         {
+            if (!_currentProject) return null;
+
             var projectPomFile:FileLocation = new FileLocation(_currentProject.mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
             var pom:XML = XML(projectPomFile.fileBridge.read());
 

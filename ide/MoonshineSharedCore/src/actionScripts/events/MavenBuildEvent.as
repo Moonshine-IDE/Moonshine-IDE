@@ -16,7 +16,9 @@ package actionScripts.events
         private var _preCommands:Array;
         private var _commands:Array;
 
-        public function MavenBuildEvent(type:String, buildId:String, buildDirectory:String = null, preCommands:Array = null, commands:Array = null)
+        private var _status:int;
+
+        public function MavenBuildEvent(type:String, buildId:String, status:int, buildDirectory:String = null, preCommands:Array = null, commands:Array = null)
         {
             super(type, false, false);
 
@@ -44,6 +46,11 @@ package actionScripts.events
         public function get commands():Array
         {
             return _commands;
+        }
+
+        public function get status():int
+        {
+            return _status;
         }
     }
 }

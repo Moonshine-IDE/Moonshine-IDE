@@ -230,7 +230,7 @@ package actionScripts.plugins.maven
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 
-                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId));
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
                 running = false;
             }
@@ -254,7 +254,7 @@ package actionScripts.plugins.maven
 
             if (status == MavenBuildStatus.COMPLETE)
             {
-                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId));
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
             }
         }
@@ -262,7 +262,7 @@ package actionScripts.plugins.maven
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
-            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_TERMINATED, this.buildId));
+            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_TERMINATED, this.buildId, MavenBuildStatus.STOPPED));
         }
 
         private function buildFailed(data:String):Boolean
@@ -270,7 +270,7 @@ package actionScripts.plugins.maven
             if (data.match(BUILD_FAILED))
             {
                 stop();
-                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId));
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
 
                 return true;
             }
