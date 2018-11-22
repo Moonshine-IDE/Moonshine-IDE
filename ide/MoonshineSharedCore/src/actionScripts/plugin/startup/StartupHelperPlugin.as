@@ -384,7 +384,14 @@ package actionScripts.plugin.startup
 			var payaraLocation:String = "elements".concat(model.fileCore.separator, "projects", model.fileCore.separator, "PayaraEmbeddedLauncher");
             var payaraAppPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
             model.payaraServerLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
-            payaraAppPath.fileBridge.copyTo(model.payaraServerLocation, true);
+            try
+            {
+                payaraAppPath.fileBridge.copyTo(model.payaraServerLocation, true);
+            }
+			catch (e:Error)
+			{
+				warning("Problem with updating PayaraEmbeddedLauncher %s", e.message);
+			}
         }
     }
 }
