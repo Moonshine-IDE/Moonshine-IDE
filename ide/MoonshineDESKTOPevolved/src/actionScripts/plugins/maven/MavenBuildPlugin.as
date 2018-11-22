@@ -180,7 +180,7 @@ package actionScripts.plugins.maven
         {
             super.stopConsoleBuildHandler(event);
 
-            stop();
+            stop(true);
         }
 
         override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void

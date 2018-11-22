@@ -101,7 +101,7 @@ package actionScripts.plugins.visualEditor
         {
             if (event.project == _currentProject)
             {
-                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.STOP_MAVEN_BUILD, PAYARA_SERVER_BUILD, MavenBuildStatus.STOPPED));
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.STOP_MAVEN_BUILD, null, MavenBuildStatus.STOPPED));
                 _filePreview = null;
                 _currentProject = null;
 
