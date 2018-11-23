@@ -347,7 +347,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_RELEASE),
 					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CLEAN_PROJECT),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE], MavenBuildEvent.START_MAVEN_BUILD)
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], MavenBuildEvent.START_MAVEN_BUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,

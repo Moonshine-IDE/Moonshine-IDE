@@ -202,7 +202,16 @@ package actionScripts.plugins.ui.editor
                 {
                     var projectName:String = MavenPomUtil.getProjectId(pomLocation);
                     var projectVersion:String = MavenPomUtil.getProjectVersion(pomLocation);
-					var destinationFile:FileLocation = new FileLocation(targetPath.concat(separator, projectName, "-", projectVersion));
+					var destinationFolderLocation:FileLocation = new FileLocation(targetPath.concat(separator, projectName, "-", projectVersion));
+					if (destinationFolderLocation.fileBridge.exists)
+					{
+						var srcFolderLocation:FileLocation = visualEditorProject.sourceFolder;
+						var relativePath:String = currentFile.fileBridge.nativePath.replace(srcFolderLocation.fileBridge.nativePath, "");
+						var destinationFilePath:String = destinationFolderLocation.fileBridge.nativePath.concat(relativePath);
+						var destinationFile:FileLocation = destinationFolderLocation.resolvePath(destinationFilePath);
+
+						currentFile.fileBridge.copyTo(destinationFile, true);
+					}
                 }
 			}
         }
