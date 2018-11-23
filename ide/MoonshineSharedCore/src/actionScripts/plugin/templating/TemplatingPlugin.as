@@ -1209,7 +1209,6 @@ package actionScripts.plugin.templating
 				}
 
                 fileToSave.fileBridge.save(content);
-                notifyNewFileCreated(event.insideLocation, fileToSave, event.isOpenAfterCreate);
             }
         }
 

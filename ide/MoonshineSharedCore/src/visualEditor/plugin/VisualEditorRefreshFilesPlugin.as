@@ -75,7 +75,7 @@ package visualEditor.plugin
             var newVisualEditorFiles:Array = getNewVisualEditorSourceFiles(visualEditorPathForRefresh, destinationPath);
 
             var newFilesCreated:Boolean = createNewVisualEditorFiles(newVisualEditorFiles, fileWrapper, project);
-            if (!newFilesCreated || !isValidSourcePath)
+            if (newFilesCreated || isValidSourcePath)
             {
                 dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(fileWrapper.nativePath)));
             }
