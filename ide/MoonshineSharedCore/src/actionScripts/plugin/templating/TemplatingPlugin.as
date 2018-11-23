@@ -1173,6 +1173,16 @@ package actionScripts.plugin.templating
                 var content:String = String(event.fromTemplate.fileBridge.read());
 				var extension:String = ".mxml";
 				var project:AS3ProjectVO = event.ofProject as AS3ProjectVO;
+				var shallNotifyToTree:Boolean = true;
+				
+				// to handle event relay in custom way in case of
+				// auto-xhtml-file-generation - this will not relay the
+				// immediate event to treeview
+				if (event.extraParameters.length != 0 && ('relayEvent' in event.extraParameters[0]))
+				{
+					shallNotifyToTree = event.extraParameters[0].relayEvent;
+				}
+				
 				if (project && project.isPrimeFacesVisualEditorProject)
 				{
                     extension = ".xhtml";
@@ -1209,6 +1219,7 @@ package actionScripts.plugin.templating
 				}
 
                 fileToSave.fileBridge.save(content);
+				if (shallNotifyToTree) notifyNewFileCreated(event.insideLocation, fileToSave, event.isOpenAfterCreate);
             }
         }
 
