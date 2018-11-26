@@ -94,7 +94,11 @@ package visualEditor.plugin
             for each (var file:Object in newVisualEditorFiles)
             {
 				var divTemplateFile:Object = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES[0];
-				var newFileEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, null, new FileLocation(divTemplateFile.nativePath), originWrapper);
+				var newFileEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, 
+					null, 
+					new FileLocation(divTemplateFile.nativePath), 
+					originWrapper, 
+					{relayEvent: false});
 				newFileEvent.ofProject = ofProject;
 				newFileEvent.fileName = getVisualEditorFileNameWithoutExtension(file.name);
 				newFileEvent.isOpenAfterCreate = false; // important in this place
