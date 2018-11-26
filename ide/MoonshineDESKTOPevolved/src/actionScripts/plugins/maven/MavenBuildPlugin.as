@@ -30,6 +30,7 @@ package actionScripts.plugins.maven
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
         private static const SUCCESS:RegExp = /\[SUCCESS\]/;
+        private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
 
         public function MavenBuildPlugin()
         {
@@ -280,7 +281,7 @@ package actionScripts.plugins.maven
 
         private function buildSuccess(data:String):void
         {
-            if (data.match(BUILD_SUCCESS) || data.match(SUCCESS))
+            if (data.match(BUILD_SUCCESS) || data.match(SUCCESS) || data.match(APP_WAS_DEPLOYED))
             {
                 stopWithoutMessage = true;
                 complete();

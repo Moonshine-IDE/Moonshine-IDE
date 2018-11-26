@@ -34,7 +34,6 @@ public class PayaraEmbeddedLauncher {
             glassfish.start();
             Deployer deployer = glassfish.getDeployer();
             deployer.deploy(new File(System.getProperty("net.prominic.project")), "--name=app", "--contextroot=/", "--force=true");
-            System.out.println("[SUCCESS] Application succesfully deployed");
         } catch (GlassFishException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
