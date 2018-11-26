@@ -71,12 +71,6 @@ package actionScripts.plugins.visualEditor
 
         private function previewPrimeFacesFileHandler(event:PreviewPluginEvent):void
         {
-            if (running)
-            {
-                warning("Starting Preview is in progress...");
-                return;
-            }
-
             _filePreview = event.fileWrapper.file;
             _currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
             if (!_currentProject) return;
@@ -145,9 +139,10 @@ package actionScripts.plugins.visualEditor
 
         private function startPreview():void
         {
+            var filePath:String = _filePreview.fileBridge.nativePath.replace(_currentProject.sourceFolder.fileBridge.nativePath, "");
             var fileName:String = _filePreview.fileBridge.isDirectory ?
                     _currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
-                    _filePreview.fileBridge.name;
+                    filePath;
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
             navigateToURL(urlReq);
