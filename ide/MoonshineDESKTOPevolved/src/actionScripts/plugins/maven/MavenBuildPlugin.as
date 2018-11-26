@@ -30,7 +30,8 @@ package actionScripts.plugins.maven
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
         private static const SUCCESS:RegExp = /\[SUCCESS\]/;
-        private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
+        private static const APP_WAS_DEPLOYED:RegExp = /INFO: app was successfully deployed/;
+        private static const APP_FAILED:RegExp = /Failed to start, exiting/;
 
         public function MavenBuildPlugin()
         {
@@ -166,8 +167,8 @@ package actionScripts.plugins.maven
             if (arguments.length > 0)
             {
                 var preCommandLine:String = preArguments.length > 0 ?
-                                            preArguments.join(" && ").concat(" && ")
-                                            : "";
+                        preArguments.join(" && ").concat(" && ")
+                        : "";
                 var commandLine:String = arguments.join(" ");
                 var fullCommandLine:String = preCommandLine.concat(UtilsCore.getMavenBinPath(), " ", commandLine);
 
@@ -268,7 +269,7 @@ package actionScripts.plugins.maven
 
         private function buildFailed(data:String):Boolean
         {
-            if (data.match(BUILD_FAILED))
+            if (data.match(BUILD_FAILED) || data.match(APP_FAILED))
             {
                 stop();
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
@@ -281,7 +282,11 @@ package actionScripts.plugins.maven
 
         private function buildSuccess(data:String):void
         {
-            if (data.match(BUILD_SUCCESS) || data.match(SUCCESS) || data.match(APP_WAS_DEPLOYED))
+            if (data.match(APP_FAILED))
+            {
+                buildFailed(data);
+            }
+            else if (data.match(BUILD_SUCCESS) || data.match(SUCCESS) || data.match(APP_WAS_DEPLOYED))
             {
                 stopWithoutMessage = true;
                 complete();
