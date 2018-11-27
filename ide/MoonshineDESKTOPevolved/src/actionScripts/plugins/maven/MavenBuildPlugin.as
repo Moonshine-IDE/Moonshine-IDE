@@ -30,7 +30,7 @@ package actionScripts.plugins.maven
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
         private static const SUCCESS:RegExp = /\[SUCCESS\]/;
-        private static const APP_WAS_DEPLOYED:RegExp = /INFO: app was successfully deployed/;
+        private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
         private static const APP_FAILED:RegExp = /Failed to start, exiting/;
 
         public function MavenBuildPlugin()
