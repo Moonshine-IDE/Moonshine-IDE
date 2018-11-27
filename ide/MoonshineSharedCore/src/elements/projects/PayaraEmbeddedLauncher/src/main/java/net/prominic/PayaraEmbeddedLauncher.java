@@ -18,9 +18,6 @@ import org.glassfish.embeddable.GlassFishProperties;
  */
 public class PayaraEmbeddedLauncher {
 
-    private static final Logger LOG = Logger.getLogger(PayaraEmbeddedLauncher.class.getName());
-
-
     public static void main(String[] args) {
         try {
             System.out.println("[INFO] Starting embedded Payara...");
@@ -34,8 +31,10 @@ public class PayaraEmbeddedLauncher {
             glassfish.start();
             Deployer deployer = glassfish.getDeployer();
             deployer.deploy(new File(System.getProperty("net.prominic.project")), "--name=app", "--contextroot=/", "--force=true");
+            System.out.println("[FINISHED] Starting embedded Payara server has been finished.");
         } catch (GlassFishException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            System.out.println("[ERROR] " + ex);
+            System.out.println("[FAILED] Server failed to start");
         }
     }
 

@@ -29,9 +29,9 @@ package actionScripts.plugins.maven
         private static const WARNING:RegExp = /\[WARNING\]/;
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
-        private static const SUCCESS:RegExp = /\[SUCCESS\]/;
         private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
         private static const APP_FAILED:RegExp = /Failed to start, exiting/;
+        private static const FINISHED:RegExp = /\[FINISHED\]/;
 
         public function MavenBuildPlugin()
         {
@@ -290,10 +290,14 @@ package actionScripts.plugins.maven
             {
                 buildFailed(data);
             }
-            else if (data.match(BUILD_SUCCESS) || data.match(SUCCESS) || data.match(APP_WAS_DEPLOYED))
+            else if (data.match(BUILD_SUCCESS) || (data.match(FINISHED) && status == MavenBuildStatus.SUCCESS))
             {
                 stopWithoutMessage = true;
                 complete();
+            }
+            else if (data.match(APP_WAS_DEPLOYED))
+            {
+                status = MavenBuildStatus.SUCCESS;
             }
         }
 
