@@ -371,7 +371,7 @@
 						if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 	
 						projectFolders.addItemAt(project.projectFolder, 0);
-						if ((project as AS3ProjectVO).isVisualEditorProject)
+						if ((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject)
 						{
 							refreshFileFolder(project.projectFolder, project);
 						}
