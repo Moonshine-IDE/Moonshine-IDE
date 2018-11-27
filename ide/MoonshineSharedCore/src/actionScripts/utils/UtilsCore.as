@@ -685,7 +685,7 @@ package actionScripts.utils
                         }
 					}
 				}
-				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
+				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
 				{
 					editorsToClose.push(model.editors[i]);
 					if (!isSkipSaveConfirmation && model.editors[i].isChanged())
