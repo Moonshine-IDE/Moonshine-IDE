@@ -236,6 +236,10 @@ package actionScripts.plugins.maven
                 this.status = 0;
                 running = false;
             }
+            else
+            {
+                buildSuccess(data);
+            }
         }
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
