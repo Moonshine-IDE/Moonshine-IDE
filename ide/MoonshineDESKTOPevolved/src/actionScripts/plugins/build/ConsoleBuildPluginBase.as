@@ -143,7 +143,7 @@ package actionScripts.plugins.build
             nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
         }
 
-        private function removeNativeProcessEventListeners():void
+        protected function removeNativeProcessEventListeners():void
         {
             nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onNativeProcessStandardOutputData);
             nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onNativeProcessStandardErrorData);

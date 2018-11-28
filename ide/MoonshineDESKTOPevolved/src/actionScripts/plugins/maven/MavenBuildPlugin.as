@@ -109,6 +109,7 @@ package actionScripts.plugins.maven
             warning("Starting Maven build...");
 
             super.start(args, buildDirectory);
+            status = MavenBuildStatus.STARTED;
 
             print("Maven path: %s", mavenPath);
             print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
@@ -191,21 +192,7 @@ package actionScripts.plugins.maven
         override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
         {
             var data:String = getDataFromBytes(nativeProcess.standardOutput);
-
-            if (data.match(ERROR))
-            {
-                error("%s", data);
-                buildFailed(data);
-            }
-            else if (data.match(WARNING))
-            {
-                warning("%s", data);
-            }
-            else
-            {
-                print("%s", data);
-                buildSuccess(data);
-            }
+            processOutput(data);
         }
 
         override protected function onNativeProcessIOError(event:IOErrorEvent):void
@@ -218,19 +205,7 @@ package actionScripts.plugins.maven
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
             var data:String = getDataFromBytes(nativeProcess.standardError);
-            if (buildFailed(data) || data.match(ERROR))
-            {
-                error("%s", data);
-            }
-            else if (data.match(WARNING))
-            {
-                warning("%s", data);
-            }
-            else
-            {
-                print("%s", data);
-                buildSuccess(data);
-            }
+            processOutput(data);
 
             if (status == MavenBuildStatus.COMPLETE)
             {
@@ -269,6 +244,23 @@ package actionScripts.plugins.maven
         {
             stop();
             dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_TERMINATED, this.buildId, MavenBuildStatus.STOPPED));
+        }
+
+        protected function processOutput(data:String):void
+        {
+            if (buildFailed(data) || data.match(ERROR))
+            {
+                error("%s", data);
+            }
+            else if (data.match(WARNING))
+            {
+                warning("%s", data);
+            }
+            else
+            {
+                print("%s", data);
+                buildSuccess(data);
+            }
         }
 
         protected function buildFailed(data:String):Boolean

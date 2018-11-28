@@ -21,20 +21,25 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.PluginBase;
     import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.plugins.maven.MavenBuildStatus;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.Settings;
+
     import flash.events.Event;
 
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
+    import flash.events.NativeProcessExitEvent;
+
+    import flash.events.ProgressEvent;
+
     import flash.net.URLRequest;
     import flash.net.navigateToURL;
-    import flash.utils.setTimeout;
 
     public class PreviewPrimeFacesProjectPlugin extends MavenBuildPlugin
     {
@@ -75,6 +80,18 @@ package actionScripts.plugins.visualEditor
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
         }
 
+        override public function complete():void
+        {
+            if (Settings.os == "win")
+            {
+                stopWithoutMessage = true;
+                nativeProcess.exit();
+            }
+
+            status = MavenBuildStatus.COMPLETE;
+            startPreview();
+        }
+
         override protected function startConsoleBuildHandler(event:Event):void
         {
 
@@ -85,10 +102,38 @@ package actionScripts.plugins.visualEditor
 
         }
 
-        override public function complete():void
+        override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
-            setTimeout(super.complete, 3000);
-            startPreview();
+            var data:String = getDataFromBytes(nativeProcess.standardError);
+            processOutput(data);
+
+            if (status == MavenBuildStatus.COMPLETE)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+                running = false;
+            }
+        }
+
+        override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+        {
+            removeNativeProcessEventListeners();
+
+            if (!stopWithoutMessage)
+            {
+                var info:String = isNaN(event.exitCode) ?
+                        "Maven build has been terminated." :
+                        "Maven build has been terminated with exit code: " + event.exitCode;
+
+                warning(info);
+            }
+
+            stopWithoutMessage = false;
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+
+            if (status == MavenBuildStatus.COMPLETE)
+            {
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
+            }
         }
 
         override protected function buildFailed(data:String):Boolean
@@ -130,7 +175,7 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
-            if (running)
+            if (status == MavenBuildStatus.COMPLETE)
             {
                 startPreview();
             }
@@ -148,7 +193,11 @@ package actionScripts.plugins.visualEditor
                 _filePreview = null;
                 _currentProject = null;
 
+                stopWithoutMessage = true;
+                stop();
+
                 running = false;
+                status = 0;
             }
         }
 
