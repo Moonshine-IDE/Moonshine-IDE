@@ -23,6 +23,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.plugins.maven.MavenBuildStatus;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -33,17 +34,20 @@ package actionScripts.plugins.visualEditor
 
     import flash.net.URLRequest;
     import flash.net.navigateToURL;
+    import flash.utils.setTimeout;
 
-    public class PreviewPrimeFacesProjectPlugin extends PluginBase
+    public class PreviewPrimeFacesProjectPlugin extends MavenBuildPlugin
     {
+        private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
+        private static const APP_FAILED:RegExp = /Failed to start, exiting/;
+        private static const FINISHED:RegExp = /\[FINISHED\]/;
+
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
         private const URL_PREVIEW:String = "http://localhost:8180/";
         private const PREVIEW_EXTENSION_FILE:String = "xhtml";
 
         private var _currentProject:AS3ProjectVO;
         private var _filePreview:FileLocation;
-
-        private var running:Boolean;
 
         public function PreviewPrimeFacesProjectPlugin()
         {
@@ -58,6 +62,8 @@ package actionScripts.plugins.visualEditor
         {
             super.activate();
 
+            this.mavenPath = model.mavenPath;
+
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
@@ -67,6 +73,49 @@ package actionScripts.plugins.visualEditor
             super.deactivate();
 
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
+        }
+
+        override protected function startConsoleBuildHandler(event:Event):void
+        {
+
+        }
+
+        override protected function stopConsoleBuildHandler(event:Event):void
+        {
+
+        }
+
+        override public function complete():void
+        {
+            setTimeout(super.complete, 3000);
+            startPreview();
+        }
+
+        override protected function buildFailed(data:String):Boolean
+        {
+            var failed:Boolean = super.buildFailed(data);
+            if (!failed)
+            {
+                if (data.match(APP_FAILED))
+                {
+                    stop();
+                    dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
+
+                    failed = true;
+                }
+            }
+
+            return failed;
+        }
+
+        override protected function buildSuccess(data:String):void
+        {
+            super.buildSuccess(data);
+
+            if (data.match(APP_WAS_DEPLOYED))
+            {
+                complete();
+            }
         }
 
         private function previewPrimeFacesFileHandler(event:PreviewPluginEvent):void
@@ -105,19 +154,20 @@ package actionScripts.plugins.visualEditor
 
         private function onMavenBuildComplete(event:MavenBuildEvent):void
         {
-            if (event.buildId == PAYARA_SERVER_BUILD)
-            {
-                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
-                dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
-                warning("Preview server is running...");
+            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
+            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
-                startPreview();
-            }
-            else if (!running)
-            {
-                running = true;
-                preparePreviewServer();
-            }
+            preparePreviewServer();
+        }
+
+        private function onMavenBuildFailed(event:MavenBuildEvent):void
+        {
+            error("Starting Preview has been stopped");
+
+            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
+            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
+
+            running = false;
         }
 
         private function prepareProjectForPreviewing():void
@@ -133,8 +183,8 @@ package actionScripts.plugins.visualEditor
             var preCommands:Array = this.getPreRunPreviewServerCommands();
             var commands:Array = ["compile", "exec:exec"];
 
-            dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD,
-                    PAYARA_SERVER_BUILD, MavenBuildStatus.STARTED, model.payaraServerLocation.fileBridge.nativePath, preCommands, commands));
+            buildId = PAYARA_SERVER_BUILD;
+            prepareStart(buildId, preCommands, commands, model.payaraServerLocation);
         }
 
         private function startPreview():void
@@ -146,16 +196,6 @@ package actionScripts.plugins.visualEditor
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
             navigateToURL(urlReq);
-        }
-
-        private function onMavenBuildFailed(event:MavenBuildEvent):void
-        {
-            error("Starting Preview has been stopped");
-
-            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
-            dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
-
-            running = false;
         }
 
         private function getPreRunPreviewServerCommands():Array

@@ -20,18 +20,15 @@ package actionScripts.plugins.maven
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
-        private var status:int;
-        private var stopWithoutMessage:Boolean;
+        protected var status:int;
+        protected var stopWithoutMessage:Boolean;
 
-        private var buildId:String;
+        protected var buildId:String;
 
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
         private static const ERROR:RegExp = /\[ERROR\]/;
-        private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
-        private static const APP_FAILED:RegExp = /Failed to start, exiting/;
-        private static const FINISHED:RegExp = /\[FINISHED\]/;
 
         public function MavenBuildPlugin()
         {
@@ -104,6 +101,7 @@ package actionScripts.plugins.maven
             if (!mavenPath)
             {
                 error("Specify path to Maven folder.");
+                stop(true);
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
                 return;
             }
@@ -139,16 +137,8 @@ package actionScripts.plugins.maven
             status = MavenBuildStatus.COMPLETE;
         }
 
-        override protected function startConsoleBuildHandler(event:Event):void
+        protected function prepareStart(buildId:String, preArguments:Array, arguments:Array, buildDirectory:FileLocation):void
         {
-            super.startConsoleBuildHandler(event);
-
-            this.status = 0;
-            this.buildId = this.getBuildId(event);
-            var preArguments:Array = this.getPreCommandLine(event);
-            var arguments:Array = this.getCommandLine(event);
-            var buildDirectory:FileLocation = this.getBuildDirectory(event);
-
             if (!buildDirectory)
             {
                 warning("Maven build directory has not been specified");
@@ -166,16 +156,29 @@ package actionScripts.plugins.maven
             var args:Vector.<String> = this.getConstantArguments();
             if (arguments.length > 0)
             {
-                var preCommandLine:String = preArguments.length > 0 ?
+                var preArgs:String = preArguments.length > 0 ?
                         preArguments.join(" && ").concat(" && ")
                         : "";
                 var commandLine:String = arguments.join(" ");
-                var fullCommandLine:String = preCommandLine.concat(UtilsCore.getMavenBinPath(), " ", commandLine);
+                var fullCommandLine:String = preArgs.concat(UtilsCore.getMavenBinPath(), " ", commandLine);
 
                 args.push(fullCommandLine);
             }
 
             start(args, buildDirectory);
+        }
+
+        override protected function startConsoleBuildHandler(event:Event):void
+        {
+            super.startConsoleBuildHandler(event);
+
+            this.status = 0;
+            this.buildId = this.getBuildId(event);
+            var preArguments:Array = this.getPreCommandLine(event);
+            var arguments:Array = this.getCommandLine(event);
+            var buildDirectory:FileLocation = this.getBuildDirectory(event);
+
+            prepareStart(this.buildId, preArguments, arguments, buildDirectory);
         }
 
         override protected function stopConsoleBuildHandler(event:Event):void
@@ -226,6 +229,7 @@ package actionScripts.plugins.maven
             else
             {
                 print("%s", data);
+                buildSuccess(data);
             }
 
             if (status == MavenBuildStatus.COMPLETE)
@@ -235,10 +239,6 @@ package actionScripts.plugins.maven
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
                 running = false;
-            }
-            else
-            {
-                buildSuccess(data);
             }
         }
 
@@ -271,9 +271,9 @@ package actionScripts.plugins.maven
             dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_TERMINATED, this.buildId, MavenBuildStatus.STOPPED));
         }
 
-        private function buildFailed(data:String):Boolean
+        protected function buildFailed(data:String):Boolean
         {
-            if (data.match(BUILD_FAILED) || data.match(APP_FAILED))
+            if (data.match(BUILD_FAILED))
             {
                 stop();
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
@@ -284,20 +284,12 @@ package actionScripts.plugins.maven
             return false;
         }
 
-        private function buildSuccess(data:String):void
+        protected function buildSuccess(data:String):void
         {
-            if (data.match(APP_FAILED))
-            {
-                buildFailed(data);
-            }
-            else if (data.match(BUILD_SUCCESS) || (data.match(FINISHED) && status == MavenBuildStatus.SUCCESS))
+            if (data.match(BUILD_SUCCESS))
             {
                 stopWithoutMessage = true;
                 complete();
-            }
-            else if (data.match(APP_WAS_DEPLOYED))
-            {
-                status = MavenBuildStatus.SUCCESS;
             }
         }
 
