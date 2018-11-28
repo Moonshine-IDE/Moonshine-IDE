@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mockup>
-    <RootDiv width="700" height="450" class="flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop" wrap="false"/>
+    <MainApplication id="mainApplicationWindow" x="0" y="0" width="700" height="450" title="$ProjectName"/>
 </mockup>
