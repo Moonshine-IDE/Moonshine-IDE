@@ -48,6 +48,7 @@ package actionScripts.ui.renderers
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.notifier.ErrorTipManager;
+    import actionScripts.utils.CustomTree;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
@@ -221,11 +222,11 @@ package actionScripts.ui.renderers
 				contextMenu = model.contextMenuCore.getContextMenu();
 
                 model.contextMenuCore.addItem(contextMenu,
-                        model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
+                        model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
                 model.contextMenuCore.addItem(contextMenu,
                         model.contextMenuCore.getContextMenuItem(
 								ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
-								redispatch, Event.SELECT));
+								updateOverMultiSelectionOption, "displaying"));
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
@@ -273,7 +274,7 @@ package actionScripts.ui.renderers
 					
 					if (!fw.isSourceFolder)
 					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, updateOverMultiSelectionOption, "displaying"));
                     }
 					
 					// avail only for .as and .mxml files
@@ -423,6 +424,12 @@ package actionScripts.ui.renderers
 		private function updatePasteMenuOption(event:Event):void
 		{
 			event.target.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+			if (event.target.enabled) event.target.addEventListener(Event.SELECT, redispatch, false, 0, true);
+		}
+		
+		private function updateOverMultiSelectionOption(event:Event):void
+		{
+			event.target.enabled = (this.owner as CustomTree).selectedItems.length == 1;
 			if (event.target.enabled) event.target.addEventListener(Event.SELECT, redispatch, false, 0, true);
 		}
 		

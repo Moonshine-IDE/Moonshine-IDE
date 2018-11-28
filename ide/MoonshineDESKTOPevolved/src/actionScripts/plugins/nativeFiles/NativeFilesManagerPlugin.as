@@ -113,13 +113,19 @@ package actionScripts.plugins.nativeFiles
 		
 		private function onFileCopyRequest(event:FileCopyPasteEvent):void
 		{
-			Clipboard.generalClipboard.setData(ClipboardFormats.FILE_LIST_FORMAT, [event.wrapper.file.fileBridge.getFile]);
+			var files:Array = [];
+			for each (var fw:FileWrapper in event.wrappers)
+			{
+				files.push(fw.file.fileBridge.getFile);
+			}
+			
+			Clipboard.generalClipboard.setData(ClipboardFormats.FILE_LIST_FORMAT, files);
 		}
 		
 		private function onPasteFilesRequest(event:FileCopyPasteEvent):void
 		{
 			filesToBeCopied = Clipboard.generalClipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
-			initiateFileCopyingProcess(event.wrapper, event.wrapper.file.fileBridge.getFile as File);
+			initiateFileCopyingProcess(event.wrappers[0], event.wrappers[0].file.fileBridge.getFile as File);
 		}
 		
 		private function initiateFileCopyingProcess(destinationWrapper:FileWrapper, destination:File, overwrite:Boolean=false, overwriteAll:Boolean=false, cancel:Boolean=false):void

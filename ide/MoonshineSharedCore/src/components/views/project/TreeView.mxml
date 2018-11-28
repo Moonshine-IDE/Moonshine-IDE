@@ -437,6 +437,7 @@
 	
 				var project:ProjectVO;
 				var fileWrapper:FileWrapper = FileWrapper(event.data);
+				var isMultiSelection:Boolean = tree.selectedItems.length > 1;
 	
 				switch (event.menuLabel)
 				{
@@ -500,12 +501,12 @@
 					}
 					case FTETreeItemRenderer.COPY_FILE:
 					{
-						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, fileWrapper));
+						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, isMultiSelection ? tree.selectedItems : [fileWrapper]));
 						break;
 					}
 					case FTETreeItemRenderer.PASTE_FILE:
 					{
-						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper))));
+						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [FileWrapper(tree.getParentItem(fileWrapper))]));
 						break;
 					}
 					case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
@@ -1041,6 +1042,7 @@
 			borderVisible="false"
 			rowHeight="18"
 			useRollOver="true"
+			allowMultipleSelection="true"
 			doubleClickEnabled="true"
 			labelField="name"
 			itemOpen="onTreeItemOpen(event)"

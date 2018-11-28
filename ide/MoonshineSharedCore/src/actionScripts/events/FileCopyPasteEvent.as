@@ -20,19 +20,17 @@ package actionScripts.events
 {
 	import flash.events.Event;
 	
-	import actionScripts.valueObjects.FileWrapper;
-
 	public class FileCopyPasteEvent extends Event
 	{
 		public static const EVENT_COPY_FILE:String = "copyFile";
 		public static const EVENT_PASTE_FILES:String = "pasteFiles";
 
-		public var wrapper:FileWrapper;
+		public var wrappers:Array;
 
-		public function FileCopyPasteEvent(type:String, wrapper:FileWrapper)
+		public function FileCopyPasteEvent(type:String, wrappers:Array)
 		{
 			super(type, false, true);
-			this.wrapper = wrapper;
+			this.wrappers = wrappers;
 		}
 	}
 }
