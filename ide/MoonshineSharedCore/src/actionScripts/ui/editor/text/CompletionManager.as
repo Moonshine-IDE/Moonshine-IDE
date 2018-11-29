@@ -384,6 +384,11 @@ package actionScripts.ui.editor.text
                     }
 
                     searchedLinesCount = editor.model.selectedLineIndex - 250;
+					if (searchedLinesCount < 0)
+					{
+						searchedLinesCount = 0;
+                    }
+
                     for (var j:int = editor.model.selectedLineIndex; j > searchedLinesCount; j--)
                     {
                         line = editor.model.lines[j];
