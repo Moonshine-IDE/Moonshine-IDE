@@ -45,7 +45,7 @@ public class PayaraEmbeddedLauncher {
                  BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
-                    if (inputLine.equals("exit")) {
+                    if (inputLine.equals("shutdown")) {
                         glassfish.stop();
                         glassfish.dispose();
                         break;

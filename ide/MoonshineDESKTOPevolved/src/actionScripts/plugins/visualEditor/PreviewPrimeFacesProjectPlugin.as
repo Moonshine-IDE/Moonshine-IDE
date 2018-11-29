@@ -34,9 +34,12 @@ package actionScripts.plugins.visualEditor
 
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
+    import flash.events.IOErrorEvent;
+
     import flash.events.NativeProcessExitEvent;
 
     import flash.events.ProgressEvent;
+    import flash.net.Socket;
 
     import flash.net.URLRequest;
     import flash.net.navigateToURL;
@@ -50,9 +53,14 @@ package actionScripts.plugins.visualEditor
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
         private const URL_PREVIEW:String = "http://localhost:8180/";
         private const PREVIEW_EXTENSION_FILE:String = "xhtml";
+        private const LOCAL_HOST:String = "localhost";
+        private const PAYARA_SHUTDOWN_PORT:int = 44444;
+        private const PAYARA_SHUTDOWN_COMMAND:String = "shutdown";
 
-        private var _currentProject:AS3ProjectVO;
-        private var _filePreview:FileLocation;
+        private var currentProject:AS3ProjectVO;
+        private var filePreview:FileLocation;
+
+        private var payaraShutdownSocket:Socket;
 
         public function PreviewPrimeFacesProjectPlugin()
         {
@@ -90,6 +98,20 @@ package actionScripts.plugins.visualEditor
 
             status = MavenBuildStatus.COMPLETE;
             startPreview();
+        }
+
+        override public function stop(forceStop:Boolean = false):void
+        {
+            if (status == MavenBuildStatus.COMPLETE)
+            {
+                payaraShutdownSocket = new Socket(LOCAL_HOST, PAYARA_SHUTDOWN_PORT);
+                payaraShutdownSocket.addEventListener(Event.CONNECT, onPayaraShutdownSocketConnect);
+                payaraShutdownSocket.addEventListener(IOErrorEvent.IO_ERROR, onPayaraShutdownSocketIOError);
+            }
+            else
+            {
+                super.stop(forceStop);
+            }
         }
 
         override protected function startConsoleBuildHandler(event:Event):void
@@ -163,11 +185,44 @@ package actionScripts.plugins.visualEditor
             }
         }
 
+        private function onPayaraShutdownSocketIOError(event:IOErrorEvent):void
+        {
+            payaraShutdownSocket.removeEventListener(Event.CONNECT, onPayaraShutdownSocketConnect);
+            payaraShutdownSocket.removeEventListener(IOErrorEvent.IO_ERROR, onPayaraShutdownSocketIOError);
+
+            error("Shutdown socket connection error %s", event.text);
+
+            if (payaraShutdownSocket.connected)
+            {
+                payaraShutdownSocket.close();
+                payaraShutdownSocket = null;
+            }
+        }
+
+        private function onPayaraShutdownSocketConnect(event:Event):void
+        {
+            payaraShutdownSocket.removeEventListener(Event.CONNECT, onPayaraShutdownSocketConnect);
+            payaraShutdownSocket.removeEventListener(IOErrorEvent.IO_ERROR, onPayaraShutdownSocketIOError);
+
+            payaraShutdownSocket.writeUTFBytes(PAYARA_SHUTDOWN_COMMAND);
+            payaraShutdownSocket.flush();
+
+            super.stop();
+
+            warning("Payara server for project %s has been shutdown.", currentProject.name);
+
+            filePreview = null;
+            currentProject = null;
+
+            payaraShutdownSocket.close();
+            payaraShutdownSocket = null;
+        }
+
         private function previewPrimeFacesFileHandler(event:PreviewPluginEvent):void
         {
-            _filePreview = event.fileWrapper.file;
-            _currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
-            if (!_currentProject) return;
+            filePreview = event.fileWrapper.file;
+            currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
+            if (!currentProject) return;
 
             if (!model.payaraServerLocation)
             {
@@ -187,11 +242,9 @@ package actionScripts.plugins.visualEditor
 
         private function closeProjectHandler(event:ProjectEvent):void
         {
-            if (event.project == _currentProject)
+            if (event.project == currentProject)
             {
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.STOP_MAVEN_BUILD, null, MavenBuildStatus.STOPPED));
-                _filePreview = null;
-                _currentProject = null;
 
                 stopWithoutMessage = true;
                 stop();
@@ -238,9 +291,9 @@ package actionScripts.plugins.visualEditor
 
         private function startPreview():void
         {
-            var filePath:String = _filePreview.fileBridge.nativePath.replace(_currentProject.sourceFolder.fileBridge.nativePath, "");
-            var fileName:String = _filePreview.fileBridge.isDirectory ?
-                    _currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
+            var filePath:String = filePreview.fileBridge.nativePath.replace(currentProject.sourceFolder.fileBridge.nativePath, "");
+            var fileName:String = filePreview.fileBridge.isDirectory ?
+                    currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
                     filePath;
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
@@ -258,9 +311,9 @@ package actionScripts.plugins.visualEditor
 
         private function getMavenBuildProjectPath():String
         {
-            if (!_currentProject) return null;
+            if (!currentProject) return null;
 
-            var projectPomFile:FileLocation = new FileLocation(_currentProject.mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
+            var projectPomFile:FileLocation = new FileLocation(currentProject.mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
             var pom:XML = XML(projectPomFile.fileBridge.read());
 
             var artifactId:String = pom.elements(new QName("http://maven.apache.org/POM/4.0.0", "artifactId"))[0];
@@ -268,7 +321,7 @@ package actionScripts.plugins.visualEditor
 
             var separator:String = projectPomFile.fileBridge.separator;
 
-            return _currentProject.folderLocation.fileBridge.nativePath.concat(separator, "target", separator, artifactId, "-", version);
+            return currentProject.folderLocation.fileBridge.nativePath.concat(separator, "target", separator, artifactId, "-", version);
         }
     }
 }
