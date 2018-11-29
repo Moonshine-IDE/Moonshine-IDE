@@ -291,6 +291,8 @@ package actionScripts.plugins.visualEditor
 
         private function startPreview():void
         {
+            if (!currentProject || !filePreview) return;
+            
             var filePath:String = filePreview.fileBridge.nativePath.replace(currentProject.sourceFolder.fileBridge.nativePath, "");
             var fileName:String = filePreview.fileBridge.isDirectory ?
                     currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
