@@ -34,6 +34,7 @@ package actionScripts.locator
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.interfaces.IJavaBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
+    import actionScripts.interfaces.IGroovyBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -52,6 +53,7 @@ package actionScripts.locator
 		public var clipboardCore: IClipboardBridge;
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;
+		public var groovyCore:IGroovyBridge;
 		public var languageServerCore:ILanguageServerBridge;
 		
 		// Currently active editor

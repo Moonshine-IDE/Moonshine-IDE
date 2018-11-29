@@ -65,6 +65,7 @@
 				ideModel.visualEditorCore = BridgeFactory.getVisualEditorInstance();
 				ideModel.clipboardCore = BridgeFactory.getClipboardInstance();
 				ideModel.javaCore = BridgeFactory.getJavaInstance();
+				ideModel.groovyCore = BridgeFactory.getGroovyInstance();
 			}
 			
 			/**

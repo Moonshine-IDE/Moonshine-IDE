@@ -29,5 +29,6 @@ package actionScripts.plugin.project
 		public static const VISUAL_EDITOR_PRIMEFACES:String = "PrimeFaces";
 		public static const AWAY3D:String = "Away3D Project";
         public static const JAVA:String = "Java";
+        public static const GROOVY:String = "Groovy";
     }
 }

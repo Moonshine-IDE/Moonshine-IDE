@@ -401,6 +401,15 @@ package actionScripts.plugin.project
 	                        project = model.javaCore.parseJava(projectLocation);
 	                    }
 					}
+					
+					if (!project)
+					{
+	                    projectFileLocation = model.groovyCore.testGroovy(projectFile);
+	                    if (projectFileLocation)
+	                    {
+	                        project = model.groovyCore.parseGroovy(projectLocation);
+	                    }
+					}
 
                     projectLocationInfo.splice(0, projectLocationInfo.length);
                     if (project)

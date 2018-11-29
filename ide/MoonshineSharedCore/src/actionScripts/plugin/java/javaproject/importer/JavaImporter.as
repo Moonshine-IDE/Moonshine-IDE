@@ -8,7 +8,15 @@ package actionScripts.plugin.java.javaproject.importer
 	{
 		public static function test(file:File):FileLocation
 		{
-			if (!file.exists) return null;
+			if (!file.exists)
+			{
+				return null;
+			}
+			var srcMainJava:File = file.resolvePath("src/main/java");
+			if (!srcMainJava.exists || !srcMainJava.isDirectory)
+			{
+				return null;
+			}
 			
 			var listing:Array = file.getDirectoryListing();
 			for each (var i:File in listing)

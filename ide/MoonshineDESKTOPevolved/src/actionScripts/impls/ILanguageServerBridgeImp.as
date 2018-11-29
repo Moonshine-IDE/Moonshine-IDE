@@ -12,6 +12,8 @@ package actionScripts.impls
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.languageServer.JavaLanguageServerManager;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+	import actionScripts.languageServer.GroovyLanguageServerManager;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
@@ -210,6 +212,12 @@ package actionScripts.impls
 				var javaProject:JavaProjectVO = JavaProjectVO(project);
 				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
 				manager = javaManager;
+			}
+			if(project is GroovyProjectVO)
+			{
+				var groovyProject:GroovyProjectVO = GroovyProjectVO(project);
+				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(groovyProject);
+				manager = groovyManager;
 			}
 			manager.addEventListener(Event.CLOSE, manager_closeHandler);
 			managers.push(manager);

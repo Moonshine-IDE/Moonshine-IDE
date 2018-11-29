@@ -307,7 +307,9 @@ package actionScripts.plugin.actionscript.as3project
         private function canCreateProject(event:NewProjectEvent):Boolean
         {
             var projectTemplateName:String = event.templateDir.fileBridge.name;
-            return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 && projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1;
+            return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
+				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
+				projectTemplateName.indexOf(ProjectTemplateType.GROOVY) == -1;
         }
 	}
 }
