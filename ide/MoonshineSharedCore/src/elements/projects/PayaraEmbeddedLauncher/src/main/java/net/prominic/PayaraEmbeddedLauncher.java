@@ -1,6 +1,12 @@
 package net.prominic;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,7 +24,10 @@ import org.glassfish.embeddable.GlassFishProperties;
  */
 public class PayaraEmbeddedLauncher {
 
-    public static void main(String[] args) {
+    private static final Logger LOG = Logger.getLogger(PayaraEmbeddedLauncher.class.getName());
+
+
+    public static void main(String[] args) throws IOException {
         try {
             System.out.println("[INFO] Starting embedded Payara...");
             System.out.println("[INFO] Project to be deployed: " + System.getProperty("net.prominic.project"));
@@ -31,8 +40,21 @@ public class PayaraEmbeddedLauncher {
             glassfish.start();
             Deployer deployer = glassfish.getDeployer();
             deployer.deploy(new File(System.getProperty("net.prominic.project")), "--name=app", "--contextroot=/", "--force=true");
+            try (ServerSocket serverSocket = new ServerSocket(44444);
+                 Socket clientSocket = serverSocket.accept();
+                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    if (inputLine.equals("exit")) {
+                        glassfish.stop();
+                        glassfish.dispose();
+                        break;
+                    }
+                }
+            }
             System.out.println("[FINISHED] Starting embedded Payara server has been finished.");
         } catch (GlassFishException ex) {
+            LOG.log(Level.SEVERE, null, ex);
             System.out.println("[ERROR] " + ex);
             System.out.println("[FAILED] Server failed to start");
         }
