@@ -90,6 +90,8 @@ package actionScripts.plugins.visualEditor
 
         override public function complete():void
         {
+            if (status == MavenBuildStatus.STOPPED) return;
+
             if (Settings.os == "win")
             {
                 stopWithoutMessage = true;
@@ -207,7 +209,7 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket.writeUTFBytes(PAYARA_SHUTDOWN_COMMAND);
             payaraShutdownSocket.flush();
 
-            super.stop();
+            super.stop(true);
 
             warning("Payara server for project %s has been shutdown.", currentProject.name);
 
@@ -216,8 +218,6 @@ package actionScripts.plugins.visualEditor
 
             payaraShutdownSocket.close();
             payaraShutdownSocket = null;
-
-            status = 0;
         }
 
         private function previewPrimeFacesFileHandler(event:PreviewPluginEvent):void
@@ -232,7 +232,7 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
-            if (status == MavenBuildStatus.COMPLETE)
+            if (status == MavenBuildStatus.COMPLETE && status != MavenBuildStatus.STOPPED)
             {
                 startPreview();
             }
@@ -250,9 +250,6 @@ package actionScripts.plugins.visualEditor
 
                 stopWithoutMessage = true;
                 stop();
-
-                running = false;
-                status = 0;
             }
         }
 
