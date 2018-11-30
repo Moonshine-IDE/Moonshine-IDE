@@ -87,10 +87,12 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
-    import actionScripts.plugins.nativeFiles.NativeFilesManagerPlugin;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.help.view.events.VisualEditorEvent;
+    import actionScripts.plugins.maven.MavenBuildPlugin;
+    import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
+    import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
@@ -201,7 +203,8 @@ package actionScripts.impls
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
                 VisualEditorRefreshFilesPlugin,
-				NativeFilesManagerPlugin,
+				FileAssociationPlugin,
+				FilesCopyPlugin,
 				UncaughtErrorsPlugin
 			];
 		}
@@ -239,7 +242,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [NativeFilesManagerPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
+			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
 		}
