@@ -93,12 +93,7 @@ package actionScripts.plugins.nativeFiles
 				adjustDestinationFilePath(filesToBeCopied[0]);
 				if (!overwrite && !overwriteAll && copiedFileDestination.exists)
 				{
-					Alert.buttonWidth = 100;
-					Alert.okLabel = "Overwrite";
-					Alert.yesLabel = "Overwrite All";
-					Alert.noLabel = "Skip File";
-					Alert.cancelLabel = "Cancel All";
-					
+					setAlerts(false);
 					Alert.show("File already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
 				}
 				else
@@ -117,8 +112,7 @@ package actionScripts.plugins.nativeFiles
 					adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
 					if (!overwrite && !overwriteAll && copiedFileDestination.exists)
 					{
-						Alert.okLabel = "Check Files";
-						Alert.yesLabel = "Overwrite";
+						setAlerts(true);
 						Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
 					}
 					else
@@ -180,6 +174,23 @@ package actionScripts.plugins.nativeFiles
 				else if (ev.detail == Alert.CANCEL)
 				{
 					resetAndNotifyCaller();
+				}
+			}
+			
+			function setAlerts(forDirectory:Boolean):void
+			{
+				Alert.buttonWidth = 90;
+				Alert.noLabel = "Skip File";
+				Alert.cancelLabel = "Cancel All";
+				if (!forDirectory)
+				{
+					Alert.okLabel = "Overwrite";
+					Alert.yesLabel = "Overwrite All";
+				}
+				else
+				{
+					Alert.okLabel = "Check Files";
+					Alert.yesLabel = "Overwrite";
 				}
 			}
 			
