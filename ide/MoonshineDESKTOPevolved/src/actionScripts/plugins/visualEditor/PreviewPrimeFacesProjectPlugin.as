@@ -105,6 +105,12 @@ package actionScripts.plugins.visualEditor
 
         override public function stop(forceStop:Boolean = false):void
         {
+            if (!running && status != MavenBuildStatus.COMPLETE)
+            {
+                warning("Preview is not running.");
+                return;
+            }
+
             if (status == MavenBuildStatus.COMPLETE)
             {
                 payaraShutdownSocket = new Socket(LOCAL_HOST, PAYARA_SHUTDOWN_PORT);
@@ -243,7 +249,7 @@ package actionScripts.plugins.visualEditor
             }
         }
 
-        private function stopVisualEditorPreviewHandler(event:PreviewPluginEvent):void
+        private function stopVisualEditorPreviewHandler(event:Event):void
         {
             stop(true);
         }
