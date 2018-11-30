@@ -212,8 +212,7 @@ package actionScripts.plugins.nativeFiles
 			{
 				releaseListeners(ev.target);
 				
-				if (!ev.target.isDirectory) filesToBeCopied.shift();
-				else foldersOnlyToBeCopied.shift();
+				filesToBeCopied.shift();
 				initiateFileCopyingProcess(destinationWrapper, destination, false, overwriteAll);
 			}
 			
