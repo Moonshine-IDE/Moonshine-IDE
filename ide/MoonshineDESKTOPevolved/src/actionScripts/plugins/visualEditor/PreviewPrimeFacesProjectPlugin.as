@@ -77,7 +77,8 @@ package actionScripts.plugins.visualEditor
 
             this.mavenPath = model.mavenPath;
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler)
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
 
@@ -85,7 +86,7 @@ package actionScripts.plugins.visualEditor
         {
             super.deactivate();
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_PRIMEFACES_FILE, previewPrimeFacesFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
         }
 
         override public function complete():void
@@ -220,7 +221,7 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket = null;
         }
 
-        private function previewPrimeFacesFileHandler(event:PreviewPluginEvent):void
+        private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
         {
             filePreview = event.fileWrapper.file;
             currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
@@ -240,6 +241,11 @@ package actionScripts.plugins.visualEditor
             {
                 prepareProjectForPreviewing();
             }
+        }
+
+        private function stopVisualEditorPreviewHandler(event:PreviewPluginEvent):void
+        {
+            stop(true);
         }
 
         private function closeProjectHandler(event:ProjectEvent):void

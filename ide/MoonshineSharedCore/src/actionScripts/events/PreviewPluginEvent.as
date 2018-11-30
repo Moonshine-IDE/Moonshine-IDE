@@ -6,7 +6,8 @@ package actionScripts.events
 
     public class PreviewPluginEvent extends Event
     {
-        public static const PREVIEW_PRIMEFACES_FILE:String = "previewPrimeFacesFile";
+        public static const PREVIEW_VISUALEDITOR_FILE:String = "previewVisualEditorFile";
+        public static const STOP_VISUALEDITOR_PREVIEW:String = "stopVisualEditorPreview";
 
         private var _fileWrapper:FileWrapper;
 
