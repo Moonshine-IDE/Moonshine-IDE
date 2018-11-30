@@ -78,7 +78,7 @@ package actionScripts.plugins.visualEditor
             this.mavenPath = model.mavenPath;
 
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
-            dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler)
+            dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler);
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
 
@@ -218,26 +218,34 @@ package actionScripts.plugins.visualEditor
 
             super.stop(true);
 
+            payaraShutdownSocket.close();
+            payaraShutdownSocket = null;
+
             warning("Payara server for project %s has been shutdown.", currentProject.name);
 
             filePreview = null;
             currentProject = null;
-
-            payaraShutdownSocket.close();
-            payaraShutdownSocket = null;
         }
 
         private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
         {
-            filePreview = event.fileWrapper.file;
-            currentProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
-            if (!currentProject) return;
+            var newProject:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
+            if (!newProject) return;
+
+            if (currentProject && currentProject != newProject)
+            {
+                warning("Stop preview running for project %s", currentProject.name);
+                return;
+            }
 
             if (!model.payaraServerLocation)
             {
                 warning("Server for PrimeFaces preview has not been setup");
                 return;
             }
+
+            filePreview = event.fileWrapper.file;
+            currentProject = newProject;
 
             if (status == MavenBuildStatus.COMPLETE && status != MavenBuildStatus.STOPPED)
             {
