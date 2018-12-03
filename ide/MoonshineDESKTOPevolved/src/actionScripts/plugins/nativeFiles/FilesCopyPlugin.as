@@ -74,13 +74,23 @@ package actionScripts.plugins.nativeFiles
 				{
 					if (!manchurian)
 					{
-						var folderName:String = files[i].name;
-						manchurian = files[i].nativePath.substring(0, files[i].nativePath.indexOf(File.separator +folderName));
+						generatePathPrefix(files[i]);
 					}
 					
 					foldersOnlyToBeCopied.push(files.splice(i, 1)[0]);
 					i--;
 				}
+			}
+			
+			if (!manchurian) generatePathPrefix(files[0]);
+			
+			/*
+			 * @local
+			 */
+			function generatePathPrefix(file:File):void
+			{
+				var folderName:String = file.name;
+				manchurian = file.nativePath.substring(0, file.nativePath.indexOf(File.separator + folderName));
 			}
 		}
 		
@@ -110,7 +120,14 @@ package actionScripts.plugins.nativeFiles
 				if (foldersOnlyToBeCopied.length != 0)
 				{
 					adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
-					if (!overwrite && !overwriteAll && copiedFileDestination.exists)
+					if (copiedFileDestination.nativePath.indexOf(foldersOnlyToBeCopied[0].nativePath + File.separator) != -1)
+					{
+						// parent not permitted to copied as children
+						Alert.show("Parent is not permitted to copy as children:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination +"\nCopy terminates.", "Error!");
+						resetAndNotifyCaller();
+						return;
+					}
+					else if (!overwrite && !overwriteAll && copiedFileDestination.exists)
 					{
 						setAlerts(true);
 						Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
@@ -158,7 +175,6 @@ package actionScripts.plugins.nativeFiles
 			{
 				if (ev.detail == Alert.YES)
 				{
-					filesToBeCopied = foldersOnlyToBeCopied.splice(0, 1);
 					initiateFileCopyingProcess(destinationWrapper, destination, true);
 				} 
 				else if (ev.detail == Alert.NO)
@@ -212,8 +228,8 @@ package actionScripts.plugins.nativeFiles
 			{
 				releaseListeners(ev.target);
 				
-				if (!ev.target.isDirectory) filesToBeCopied.shift();
-				else foldersOnlyToBeCopied.shift();
+				if (ev.target.isDirectory) foldersOnlyToBeCopied.shift();
+				else filesToBeCopied.shift();
 				initiateFileCopyingProcess(destinationWrapper, destination, false, overwriteAll);
 			}
 			
@@ -228,6 +244,14 @@ package actionScripts.plugins.nativeFiles
 				ev.target.removeEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListingCompleted);
 				
 				filesToBeCopied = ev.files;
+				if (filesToBeCopied.length == 0)
+				{
+					// in case there is no files in the targeted folder
+					resetFields();
+					Alert.show("The folder contains no file or folder.\nProcess terminates.", "Note!");
+					return;
+				}
+				
 				foldersOnlyToBeCopied.splice(0, 1);
 				extractFoldersOnly(filesToBeCopied);
 				initiateFileCopyingProcess(destinationWrapper, destination, false, overwriteAll);
