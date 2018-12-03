@@ -300,7 +300,6 @@ package actionScripts.plugins.as3project
 				newProjectNameSetting, // No space input either plx
 				new PathSetting(this, 'archivePath', 'Archive File to Project', false),
 				newProjectPathSetting,
-				new DropDownListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"),
 				new PathSetting(this,'customFlexSDK', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customFlexSDK, true)
 			]));
 		}
