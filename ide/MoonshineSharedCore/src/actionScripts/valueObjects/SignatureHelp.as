@@ -11,8 +11,8 @@ package actionScripts.valueObjects
 	 */
 	public class SignatureHelp
 	{
-		public var activeSignature:int;
-		public var activeParameter:int;
+		public var activeSignature:int = -1;
+		public var activeParameter:int = -1;
 		public var signatures:Vector.<SignatureInformation>;
 	}
 }
