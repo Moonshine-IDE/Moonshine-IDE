@@ -130,7 +130,7 @@
 					}
 	                else
 					{
-						model.fileCore.browseForOpen("Select file", openFile);
+						model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters);
 					} // for Balsmiq project we need only .xml file to get selected.
 	            }
 	        }

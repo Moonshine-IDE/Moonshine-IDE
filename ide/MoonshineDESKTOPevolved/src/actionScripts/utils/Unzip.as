@@ -19,6 +19,7 @@
 package actionScripts.utils
 {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
@@ -28,12 +29,17 @@ package actionScripts.utils
 	
 	import mx.controls.Alert;
 	
-	import deng.fzip.FZip;
-	import deng.fzip.FZipErrorEvent;
-	import deng.fzip.FZipFile;
-
-	public class Unzip
+	import actionScripts.extResources.deng.fzip.fzip.FZip;
+	import actionScripts.extResources.deng.fzip.fzip.FZipErrorEvent;
+	import actionScripts.extResources.deng.fzip.fzip.FZipFile;
+	
+	[Event(name="FILE_LOAD_SUCCESS", type="flash.events.Event")]
+	[Event(name="FILE_LOAD_ERROR", type="flash.events.Event")]
+	public class Unzip extends EventDispatcher
 	{
+		public static const FILE_LOAD_SUCCESS:String = "fileLoadSuccess";
+		public static const FILE_LOAD_ERROR:String = "fileLoadError";
+		
 		private var fZip:FZip;
 		
 		public function Unzip(zipFile:File)
@@ -94,7 +100,10 @@ package actionScripts.utils
 				for (var i:int = 0; i < filesCount; i++)
 				{
 					fzipFile = (fZip.getFileAt(i) as FZipFile);
-					if (fzipFile.filename.substr(fzipFile.filename.length-3, fzipFile.filename.length) == extensionName) filesList.push(fzipFile);
+					if (!fzipFile.isDirectory)
+					{
+						if (fzipFile.extension == extensionName) filesList.push(fzipFile);
+					}
 				}
 				return filesList;
 			}
@@ -102,7 +111,7 @@ package actionScripts.utils
 			return null;
 		}
 		
-		public function unzipTo(destination:File):void
+		public function unzipTo(destination:File, onCompletion:Function=null):void
 		{
 			if (!fZip || !destination.exists) return;
 			
@@ -110,7 +119,7 @@ package actionScripts.utils
 			var bytes:ByteArray;
 			var toFile:File;
 			var fs:FileStream;
-			for (var i:int = 0; i < filesCount; i++)
+			for (var i:int; i < filesCount; i++)
 			{
 				fzipFile = (fZip.getFileAt(i) as FZipFile);
 				toFile = destination.resolvePath(fzipFile.filename);
@@ -120,6 +129,8 @@ package actionScripts.utils
 				fs.writeBytes(fzipFile.content);
 				fs.close();
 			}
+			
+			if (onCompletion != null) onCompletion(destination);
 		}
 		
 		private function addListeners(isAdd:Boolean):void
@@ -142,6 +153,7 @@ package actionScripts.utils
 		{
 			addListeners(false);
 			_filesCount = fZip.getFileCount();
+			dispatchEvent(new Event(FILE_LOAD_SUCCESS));
 		}
 		
 		private function onFzipParserError(event:FZipErrorEvent):void
@@ -149,6 +161,7 @@ package actionScripts.utils
 			// in zip error cases
 			Alert.show("Unable to load zip file:\n"+ event.text, "Error");
 			addListeners(false);
+			dispatchEvent(new Event(FILE_LOAD_ERROR));
 		}
 		
 		private function onFzipIOError(event:IOErrorEvent):void
@@ -156,6 +169,7 @@ package actionScripts.utils
 			// in file/read error cases
 			Alert.show("Unable to load zip file:\n"+ event.text, "Error");
 			addListeners(false);
+			dispatchEvent(new Event(FILE_LOAD_ERROR));
 		}
 	}
 }

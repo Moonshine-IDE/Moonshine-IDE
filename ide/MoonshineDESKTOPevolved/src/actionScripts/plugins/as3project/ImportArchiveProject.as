@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import flash.display.DisplayObject;
+    import com.adobe.utils.StringUtil;
+    
     import flash.events.Event;
     import flash.filesystem.File;
     import flash.net.SharedObject;
@@ -27,6 +28,8 @@ package actionScripts.plugins.as3project
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.extResources.deng.fzip.fzip.FZipFile;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -41,6 +44,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
+    import actionScripts.utils.Unzip;
 	
     public class ImportArchiveProject
 	{
@@ -50,7 +54,8 @@ package actionScripts.plugins.as3project
 		private var project:AS3ProjectVO;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var isInvalidToSave:Boolean;
+		private var unzip:Unzip;
+		private var settingsView:SettingsView;
 		
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
@@ -99,6 +104,78 @@ package actionScripts.plugins.as3project
 			_customFlexSDK = value;
 		}
 		
+		private function get isInvalidToSave():Boolean
+		{
+			if ((!folderPath || StringUtil.trim(folderPath).length == 0) ||
+				(!projectName || StringUtil.trim(projectName).length == 0) ||
+				(!archivePath || StringUtil.trim(archivePath).length == 0))
+			{
+				_currentCauseToBeInvalid = "Not enough information.";
+				return true;
+			}
+			return false;
+		}
+		
+		private function testArchivePath():void
+		{
+			unzip = new Unzip(new File(archivePath));
+			unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
+			unzip.addEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
+			
+			/*
+			 * @local
+			 */
+			function onFileLoadSuccess(ev:Event):void
+			{
+				releaseListeners();
+				
+				// verify if known project archive as per
+				// FlashDevelopImporter.test()
+				var tmpFiles:Array = unzip.getFilesList();
+				if (tmpFiles)
+				{
+					var extension:String;
+					for each (var file:FZipFile in tmpFiles)
+					{
+						// we don't provide by easy extension property by the api
+						if (!file.isDirectory)
+						{
+							extension = file.extension;
+							if (extension == "as3proj" || extension == "veditorproj")
+							{
+								// TODO::
+								// we need to decide on which level of folder/sub-folder we 
+								// should check to determine if a valid project archive, i.e.
+								// a project configuration file can exists to the root of zip file
+								// or it can resides somewhere inside some sub-folder. 
+								// since per existing valid project folder rule, the configuration
+								// file is suppose to exist to the project root, we need to decide on -
+								// 1. if we want to check the configuration only to root or to any sub-folder
+								// 2. if configuration found in sub-folder, shall we taken that sub-folder is the root of a project?
+								
+								// for now, let's continue if valid project archive
+								createSaveContinue();
+								return;
+							}
+						}
+					}
+					
+					// if came through here, it's not a valid project archive
+					Alert.show("No valid Moonshine project found to the archive. Please check.", "Error!");
+				}
+			}
+			function onFileLoadError(ev:Event):void
+			{
+				releaseListeners();
+				Alert.show("Unable to load the archive file.\nPlease check, if the file is valid or exist to the path.", "Error!");
+			}
+			function releaseListeners():void
+			{
+				unzip.removeEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
+				unzip.removeEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
+			}
+		}
+		
 		private function openImportProjectWindow():void
 		{
 			var lastSelectedProjectPath:String;
@@ -109,8 +186,20 @@ package actionScripts.plugins.as3project
 				}
 			
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			{
+				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) 
+				{
+					lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+					if (!folderPath && lastSelectedProjectPath) 
+					{
+						folderPath = (model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+					}
+				}
+			}
 			
-			var settingsView:SettingsView = new SettingsView();
+			settingsView = new SettingsView();
 			settingsView.Width = 150;
 			settingsView.defaultSaveLabel = "Import";
 			settingsView.isNewProjectSettings = true;
@@ -118,11 +207,12 @@ package actionScripts.plugins.as3project
 			settingsView.addCategory("");
 
 			var settings:SettingsWrapper = getProjectSettings();
-			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
+			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSavePreparation);
 			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
 			settingsView.addSetting(settings, "");
 			
 			settingsView.label = "Import Project";
+			newProjectPathSetting.setMessage((folderPath ? folderPath : ".. ") + model.fileCore.separator +" ..");
 			
 			dispatcher.dispatchEvent(
 				new AddTabEvent(settingsView)
@@ -153,23 +243,21 @@ package actionScripts.plugins.as3project
 			]));
 		}
 		
-		private function checkIfProjectDirectory(value:FileLocation):void
+		private function checkIfProjectDirectory(value:File):void
 		{
-			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
-			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = FlashDevelopImporter.test(value);
+			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value);
 			
 			if (tmpFile) 
 			{
-				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
-			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			else newProjectPathSetting.setMessage(value.nativePath);
 			
 			if (newProjectPathSetting.stringValue == "") 
 			{
-				isInvalidToSave = true;
-				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
+				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 			}
-			else isInvalidToSave = tmpFile ? true : false;
 		}
 
 		//--------------------------------------------------------------------------
@@ -190,15 +278,16 @@ package actionScripts.plugins.as3project
 		
 		private function onProjectNameChanged(event:Event):void
 		{
-			checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+			if (folderPath)
+			{
+				checkIfProjectDirectory((new File(folderPath)).resolvePath(newProjectNameSetting.stringValue));
+			}
 		}
 		
 		private function createClose(event:Event):void
 		{
-			var settings:SettingsView = event.target as SettingsView;
-			
-			settings.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
-			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
+			settingsView.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
+			settingsView.removeEventListener(SettingsView.EVENT_SAVE, createSavePreparation);
 			if (newProjectPathSetting) 
 			{
 				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
@@ -206,7 +295,7 @@ package actionScripts.plugins.as3project
 			}
 			
 			dispatcher.dispatchEvent(
-				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject)
+				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settingsView)
 			);
 		}
 		
@@ -215,7 +304,7 @@ package actionScripts.plugins.as3project
 			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
 		}
 		
-		private function createSave(event:Event):void
+		private function createSavePreparation(event:Event):void
 		{
 			if (isInvalidToSave) 
 			{
@@ -223,11 +312,23 @@ package actionScripts.plugins.as3project
 				return;
 			}
 			
-			var view:SettingsView = event.target as SettingsView;
-			var targetFolder:FileLocation = project.folderLocation;
-
-			// Close settings view
-			createClose(event);
+			testArchivePath();
+		}
+		
+		private function createSaveContinue():void
+		{
+			// create destination folder by projectName
+			var destinationProjectFolder:File = (new File(folderPath)).resolvePath(projectName);
+			destinationProjectFolder.createDirectory();
+			
+			unzip.unzipTo(destinationProjectFolder, onUnzipSuccess);
+		}
+		
+		private function onUnzipSuccess(destination:File):void
+		{
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destination));
+			// close settings view
+			createClose(null);
 		}
     }
 }

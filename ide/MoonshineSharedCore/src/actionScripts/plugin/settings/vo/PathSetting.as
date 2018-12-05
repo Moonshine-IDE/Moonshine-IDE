@@ -27,6 +27,7 @@ package actionScripts.plugin.settings.vo
 	{
 		[Bindable]
 		public var directory:Boolean;
+		public var fileFilters:Array;
 		
 		private var isSDKPath:Boolean;
 		private var isDropDown:Boolean;
