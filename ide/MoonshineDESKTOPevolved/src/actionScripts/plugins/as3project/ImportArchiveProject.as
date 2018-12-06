@@ -58,6 +58,7 @@ package actionScripts.plugins.as3project
 		private var unzip:Unzip;
 		private var settingsView:SettingsView;
 		private var isNameManualChanged:Boolean;
+		private var isProjectResidesInSubFolder:String;
 		
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
@@ -120,6 +121,7 @@ package actionScripts.plugins.as3project
 		
 		private function testArchivePath():void
 		{
+			isProjectResidesInSubFolder = null;
 			unzip = new Unzip(new File(archivePath));
 			unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
 			unzip.addEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
@@ -137,6 +139,8 @@ package actionScripts.plugins.as3project
 				if (tmpFiles)
 				{
 					var extension:String;
+					var tmpSplit:Array;
+					var fileNameOnly:String;
 					for each (var file:FZipFile in tmpFiles)
 					{
 						// we don't provide by easy extension property by the api
@@ -145,23 +149,27 @@ package actionScripts.plugins.as3project
 							extension = file.extension;
 							if (extension == "as3proj" || extension == "veditorproj")
 							{
-								// TODO::
-								// we need to decide on which level of folder/sub-folder we 
-								// should check to determine if a valid project archive, i.e.
-								// a project configuration file can exists to the root of zip file
-								// or it can resides somewhere inside some sub-folder. 
-								// since per existing valid project folder rule, the configuration
-								// file is suppose to exist to the project root, we need to decide on -
-								// 1. if we want to check the configuration only to root or to any sub-folder
-								// 2. if configuration found in sub-folder, shall we taken that sub-folder is the root of a project?
+								// conventionally the configuration file is suppose to reside
+								// to the root of the project folder; thus, following
+								// check ensure that if the project resides in some 
+								// sub-folder inside the zip; So next Moonshine loads the
+								// project by that sub-folder only
+								if (file.filename.indexOf("/") != -1)
+								{
+									tmpSplit = file.filename.split("/");
+									fileNameOnly = tmpSplit.pop();
+									isProjectResidesInSubFolder = tmpSplit.join("/");
+								}
 								
-								// for now, let's continue if valid project archive
 								// try to generate the name as extracted from the
 								// project configuration file
 								if (!projectName && archivePath && !isNameManualChanged)
 								{
-									var tmpSplit:Array = file.filename.split(File.separator);
-									var fileNameOnly:String = tmpSplit.pop();
+									if (!tmpSplit)
+									{
+										tmpSplit = file.filename.split(File.separator);
+										fileNameOnly = tmpSplit.pop();
+									}
 									projectName = newProjectNameSetting.stringValue = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
 									onProjectNameChanged(null, false);
 								}
@@ -338,7 +346,9 @@ package actionScripts.plugins.as3project
 		
 		private function onUnzipSuccess(destination:File):void
 		{
-			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destination));
+			// the condition is to make sure that project by subfolder
+			// if the project resides in some subfolder
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, isProjectResidesInSubFolder ? destination.resolvePath(isProjectResidesInSubFolder) : destination));
 			// close settings view
 			createClose(null);
 		}

@@ -141,7 +141,12 @@ package actionScripts.utils
 			{
 				fzipFile = (fZip.getFileAt(filesUnzippedCount) as FZipFile);
 				toFile = destination.resolvePath(fzipFile.filename);
-				FileUtils.writeToFileAsync(toFile, fzipFile.content, onSuccessWrite, onErrorWrite);
+				if (fzipFile.isDirectory) 
+				{
+					toFile.createDirectory();
+					onSuccessWrite();
+				}
+				else FileUtils.writeToFileAsync(toFile, fzipFile.content, onSuccessWrite, onErrorWrite);
 			}
 			else if (onCompletion != null)
 			{
