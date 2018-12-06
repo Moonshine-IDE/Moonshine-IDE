@@ -22,14 +22,9 @@ package actionScripts.utils
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
-	import flash.events.OutputProgressEvent;
-	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
-	import flash.net.URLLoader;
-	import flash.net.URLLoaderDataFormat;
-	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	
 	import mx.controls.Alert;
@@ -47,6 +42,7 @@ package actionScripts.utils
 		
 		private var fZip:FZip;
 		private var loader:Loader;
+		private var filesUnzippedCount:int;
 		
 		private var _filesCount:int;
 		public function get filesCount():int
@@ -60,46 +56,21 @@ package actionScripts.utils
 			// Since load method as provided by the FZip
 			// fails on macOS for some reason, we need
 			// manual handling to loads its bytes data
-			var fileStream:FileStream = new FileStream();
-			manageListenersToZipRead(fileStream, true);
-			fileStream.openAsync(zipFile, FileMode.READ);
+			FileUtils.readFromFileAsync(zipFile, FileUtils.DATA_FORMAT_BYTEARRAY, onReadCompletes, onReadIOError);
 		}
 		
-		private function onOutputProgress(event:ProgressEvent):void
+		private function onReadCompletes(value:ByteArray):void
 		{
-			if (event.bytesTotal == event.bytesLoaded)
-			{
-				var loadedBytes:ByteArray = new ByteArray();
-				event.target.readBytes(loadedBytes);
-				manageListenersToZipRead(event.target as FileStream, false);
-				
-				fZip = new FZip();
-				fZip.loadBytes(loadedBytes);
-				
-				_filesCount = fZip.getFileCount();
-				dispatchEvent(new Event(FILE_LOAD_SUCCESS));
-			}
+			fZip = new FZip();
+			fZip.loadBytes(value);
+			
+			_filesCount = fZip.getFileCount();
+			dispatchEvent(new Event(FILE_LOAD_SUCCESS));
 		}
 		
-		private function onIOErrorReadChannel(event:IOErrorEvent):void
+		private function onReadIOError(value:String):void
 		{
-			manageListenersToZipRead(event.target as FileStream, false);
 			dispatchEvent(new Event(FILE_LOAD_ERROR));
-		}
-		
-		private function manageListenersToZipRead(origin:FileStream, attach:Boolean):void
-		{
-			if (attach)
-			{
-				origin.addEventListener(ProgressEvent.PROGRESS, onOutputProgress);
-				origin.addEventListener(IOErrorEvent.IO_ERROR, onIOErrorReadChannel);
-			}
-			else
-			{
-				origin.close();
-				origin.removeEventListener(ProgressEvent.PROGRESS, onOutputProgress);
-				origin.removeEventListener(IOErrorEvent.IO_ERROR, onIOErrorReadChannel);
-			}
 		}
 		
 		public function getFileAt(index:int):FZipFile
@@ -166,18 +137,30 @@ package actionScripts.utils
 			var bytes:ByteArray;
 			var toFile:File;
 			var fs:FileStream;
-			for (var i:int; i < filesCount; i++)
+			if (filesUnzippedCount < filesCount)
 			{
-				fzipFile = (fZip.getFileAt(i) as FZipFile);
+				fzipFile = (fZip.getFileAt(filesUnzippedCount) as FZipFile);
 				toFile = destination.resolvePath(fzipFile.filename);
-				fs = new FileStream();
-				
-				fs.open(toFile, FileMode.WRITE);
-				fs.writeBytes(fzipFile.content);
-				fs.close();
+				FileUtils.writeToFileAsync(toFile, fzipFile.content, onSuccessWrite, onErrorWrite);
+			}
+			else if (onCompletion != null)
+			{
+				filesUnzippedCount = 0;
+				onCompletion(destination);
 			}
 			
-			if (onCompletion != null) onCompletion(destination);
+			/*
+			 * @local
+			 */
+			function onSuccessWrite():void
+			{
+				filesUnzippedCount++;
+				unzipTo(destination, onCompletion);
+			}
+			function onErrorWrite(value:String):void
+			{
+				filesUnzippedCount = 0;
+			}
 		}
 		
 		private function addListeners(isAdd:Boolean):void

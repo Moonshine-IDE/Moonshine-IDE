@@ -50,12 +50,14 @@ package actionScripts.plugins.as3project
 	{
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
+		private var archivePathSetting:PathSetting;
 		private var cookie:SharedObject;
 		private var project:AS3ProjectVO;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var unzip:Unzip;
 		private var settingsView:SettingsView;
+		private var isNameManualChanged:Boolean;
 		
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
@@ -154,7 +156,16 @@ package actionScripts.plugins.as3project
 								// 2. if configuration found in sub-folder, shall we taken that sub-folder is the root of a project?
 								
 								// for now, let's continue if valid project archive
-								createSaveContinue();
+								// try to generate the name as extracted from the
+								// project configuration file
+								if (!projectName && archivePath && !isNameManualChanged)
+								{
+									var tmpSplit:Array = file.filename.split(File.separator);
+									var fileNameOnly:String = tmpSplit.pop();
+									projectName = newProjectNameSetting.stringValue = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
+									onProjectNameChanged(null, false);
+								}
+								
 								return;
 							}
 						}
@@ -228,11 +239,11 @@ package actionScripts.plugins.as3project
 		{
             newProjectNameSetting = new StringSetting(this, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(this, 'folderPath', 'Directory to Save', true, null, false, true);
+			archivePathSetting = new PathSetting(this, 'archivePath', 'Archive File to Project', false);
+			archivePathSetting.fileFilters = ["*.zip"];
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
-			
-			var archivePathSetting:PathSetting = new PathSetting(this, 'archivePath', 'Archive File to Project', false);
-			archivePathSetting.fileFilters = ["*.zip"];
+			archivePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onArchivePathChanged);
 
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
 				new StaticLabelSetting('Import an Archive Project'),
@@ -268,18 +279,23 @@ package actionScripts.plugins.as3project
 		
 		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void
 		{
-			return; // temp
-			
-			if (makeNull) project.projectFolder = null;
-			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-			newProjectPathSetting.label = "Parent Directory";
-			checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+			checkIfProjectDirectory((new File(folderPath)).resolvePath(newProjectNameSetting.stringValue));
 		}
 		
-		private function onProjectNameChanged(event:Event):void
+		private function onArchivePathChanged(event:Event, makeNull:Boolean=true):void
+		{
+			if ((archivePathSetting.stringValue != "") && (archivePath != archivePathSetting.stringValue))
+			{
+				archivePath = archivePathSetting.stringValue;
+				testArchivePath();
+			}
+		}
+		
+		private function onProjectNameChanged(event:Event, isManual:Boolean=true):void
 		{
 			if (folderPath)
 			{
+				if (isManual) isNameManualChanged = true;
 				checkIfProjectDirectory((new File(folderPath)).resolvePath(newProjectNameSetting.stringValue));
 			}
 		}
@@ -291,6 +307,7 @@ package actionScripts.plugins.as3project
 			if (newProjectPathSetting) 
 			{
 				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
+				archivePathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onArchivePathChanged);
 				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 			}
 			
@@ -312,11 +329,6 @@ package actionScripts.plugins.as3project
 				return;
 			}
 			
-			testArchivePath();
-		}
-		
-		private function createSaveContinue():void
-		{
 			// create destination folder by projectName
 			var destinationProjectFolder:File = (new File(folderPath)).resolvePath(projectName);
 			destinationProjectFolder.createDirectory();
