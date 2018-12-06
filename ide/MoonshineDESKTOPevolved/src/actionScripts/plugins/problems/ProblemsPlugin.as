@@ -90,8 +90,8 @@ package actionScripts.plugins.problems
 			itemCount = diagnostics.length;
 			for(i = 0; i < itemCount; i++)
 			{
-				var diagnostic:Diagnostic = diagnostics[i];
-				objectTree.addItem(diagnostic);
+				item = diagnostics[i];
+				objectTree.addItem(item);
 			}
 		}
 

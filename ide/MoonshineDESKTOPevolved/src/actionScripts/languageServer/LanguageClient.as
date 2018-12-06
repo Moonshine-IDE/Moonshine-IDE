@@ -238,6 +238,16 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+
+			//clear any remaining diagnostics
+			for(var uri:String in this._savedDiagnostics)
+			{
+				var path:String = (new File(uri)).nativePath;
+				delete this._savedDiagnostics[uri];
+				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+				_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+			}
+
 			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
 			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
@@ -788,57 +798,7 @@ package actionScripts.languageServer
 		{
 			if(FIELD_METHOD in object)
 			{
-				var found:Boolean = true;
-				var method:String = object.method;
-				switch(method)
-				{
-					case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
-					{
-						textDocument__publishDiagnostics(object);
-						//this is a notification and does not require a response
-						break;
-					}
-					case METHOD_WORKSPACE__APPLY_EDIT:
-					{
-						workspace__applyEdit(object);
-						sendResponse(object.id, { applied: true });
-						break;
-					}
-					case METHOD_WINDOW__LOG_MESSAGE:
-					{
-						window__logMessage(object);
-						break;
-					}
-					case METHOD_WINDOW__SHOW_MESSAGE:
-					{
-						window__showMessage(object);
-						break;
-					}
-					case METHOD_CLIENT__REGISTER_CAPABILITY:
-					{
-						//TODO: implement this
-						sendResponse(object.id, {});
-						break;
-					}
-					case METHOD_TELEMETRY__EVENT:
-					{
-						//just ignore this one
-						break;
-					}
-					default:
-					{
-						found = false;
-						break;
-					}
-				}
-				if(!found)
-				{
-					found = this.handleNotification(object);
-				}
-				if(!found)
-				{
-					trace("Unknown language server method:", method);
-				}
+				this.parseMethod(object);
 			}
 			else if(FIELD_ID in object)
 			{
@@ -914,6 +874,65 @@ package actionScripts.languageServer
 						handleSymbolsResponse(result);
 					}
 				}
+			}
+		}
+
+		private function parseMethod(object:Object):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			var found:Boolean = true;
+			var method:String = object.method;
+			switch(method)
+			{
+				case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
+				{
+					textDocument__publishDiagnostics(object);
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_WORKSPACE__APPLY_EDIT:
+				{
+					workspace__applyEdit(object);
+					sendResponse(object.id, { applied: true });
+					break;
+				}
+				case METHOD_WINDOW__LOG_MESSAGE:
+				{
+					window__logMessage(object);
+					break;
+				}
+				case METHOD_WINDOW__SHOW_MESSAGE:
+				{
+					window__showMessage(object);
+					break;
+				}
+				case METHOD_CLIENT__REGISTER_CAPABILITY:
+				{
+					//TODO: implement this
+					sendResponse(object.id, {});
+					break;
+				}
+				case METHOD_TELEMETRY__EVENT:
+				{
+					//just ignore this one
+					break;
+				}
+				default:
+				{
+					found = false;
+					break;
+				}
+			}
+			if(!found)
+			{
+				found = this.handleNotification(object);
+			}
+			if(!found)
+			{
+				trace("Unknown language server method:", method);
 			}
 		}
 
