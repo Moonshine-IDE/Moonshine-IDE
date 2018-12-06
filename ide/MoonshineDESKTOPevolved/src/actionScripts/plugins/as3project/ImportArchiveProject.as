@@ -170,19 +170,16 @@ package actionScripts.plugins.as3project
 								
 								// try to generate the name as extracted from the
 								// project configuration file
-								if (archivePath)
+								if (!tmpSplit)
 								{
-									if (!tmpSplit)
-									{
-										tmpSplit = file.filename.split(File.separator);
-										fileNameOnly = tmpSplit.pop();
-									}
-									originalNameByConfiguration = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
-									if (!projectName && !isNameManualChanged)
-									{
-										projectName = newProjectNameSetting.stringValue = originalNameByConfiguration;
-										onProjectNameChanged(null, false);
-									}
+									tmpSplit = file.filename.split(File.separator);
+									fileNameOnly = tmpSplit.pop();
+								}
+								originalNameByConfiguration = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
+								if (!projectName && !isNameManualChanged)
+								{
+									projectName = newProjectNameSetting.stringValue = originalNameByConfiguration;
+									onProjectNameChanged(null, false);
 								}
 								
 								return;
