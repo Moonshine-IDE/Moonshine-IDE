@@ -18,12 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
+	import flash.events.OutputProgressEvent;
+	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	
@@ -41,18 +46,60 @@ package actionScripts.utils
 		public static const FILE_LOAD_ERROR:String = "fileLoadError";
 		
 		private var fZip:FZip;
-		
-		public function Unzip(zipFile:File)
-		{
-			fZip = new FZip();
-			addListeners(true);
-			fZip.load(new URLRequest(zipFile.nativePath));
-		}
+		private var loader:Loader;
 		
 		private var _filesCount:int;
 		public function get filesCount():int
 		{
 			return _filesCount;
+		}
+		
+		public function Unzip(zipFile:File)
+		{
+			// @NOTE
+			// Since load method as provided by the FZip
+			// fails on macOS for some reason, we need
+			// manual handling to loads its bytes data
+			var fileStream:FileStream = new FileStream();
+			manageListenersToZipRead(fileStream, true);
+			fileStream.openAsync(zipFile, FileMode.READ);
+		}
+		
+		private function onOutputProgress(event:ProgressEvent):void
+		{
+			if (event.bytesTotal == event.bytesLoaded)
+			{
+				var loadedBytes:ByteArray = new ByteArray();
+				event.target.readBytes(loadedBytes);
+				manageListenersToZipRead(event.target as FileStream, false);
+				
+				fZip = new FZip();
+				fZip.loadBytes(loadedBytes);
+				
+				_filesCount = fZip.getFileCount();
+				dispatchEvent(new Event(FILE_LOAD_SUCCESS));
+			}
+		}
+		
+		private function onIOErrorReadChannel(event:IOErrorEvent):void
+		{
+			manageListenersToZipRead(event.target as FileStream, false);
+			dispatchEvent(new Event(FILE_LOAD_ERROR));
+		}
+		
+		private function manageListenersToZipRead(origin:FileStream, attach:Boolean):void
+		{
+			if (attach)
+			{
+				origin.addEventListener(ProgressEvent.PROGRESS, onOutputProgress);
+				origin.addEventListener(IOErrorEvent.IO_ERROR, onIOErrorReadChannel);
+			}
+			else
+			{
+				origin.close();
+				origin.removeEventListener(ProgressEvent.PROGRESS, onOutputProgress);
+				origin.removeEventListener(IOErrorEvent.IO_ERROR, onIOErrorReadChannel);
+			}
 		}
 		
 		public function getFileAt(index:int):FZipFile
