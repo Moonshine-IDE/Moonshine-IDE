@@ -63,6 +63,8 @@ package actionScripts.plugins.as3project
 		private var settingsView:SettingsView;
 		private var isNameManualChanged:Boolean;
 		private var isProjectResidesInSubFolder:String;
+		private var originalNameByConfiguration:String;
+		private var originalExtensionConfiguration:String;
 		
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
@@ -126,6 +128,8 @@ package actionScripts.plugins.as3project
 		private function testArchivePath():void
 		{
 			isProjectResidesInSubFolder = null;
+			originalNameByConfiguration = null;
+			originalExtensionConfiguration = null;
 			unzip = new Unzip(new File(archivePath));
 			unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
 			unzip.addEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
@@ -142,7 +146,6 @@ package actionScripts.plugins.as3project
 				var tmpFiles:Array = unzip.getFilesList();
 				if (tmpFiles)
 				{
-					var extension:String;
 					var tmpSplit:Array;
 					var fileNameOnly:String;
 					for each (var file:FZipFile in tmpFiles)
@@ -150,8 +153,8 @@ package actionScripts.plugins.as3project
 						// we don't provide by easy extension property by the api
 						if (!file.isDirectory)
 						{
-							extension = file.extension;
-							if (extension == "as3proj" || extension == "veditorproj")
+							originalExtensionConfiguration = isAllowedTemplateFile(file.extension);
+							if (originalExtensionConfiguration)
 							{
 								// conventionally the configuration file is suppose to reside
 								// to the root of the project folder; thus, following
@@ -167,15 +170,19 @@ package actionScripts.plugins.as3project
 								
 								// try to generate the name as extracted from the
 								// project configuration file
-								if (!projectName && archivePath && !isNameManualChanged)
+								if (archivePath)
 								{
 									if (!tmpSplit)
 									{
 										tmpSplit = file.filename.split(File.separator);
 										fileNameOnly = tmpSplit.pop();
 									}
-									projectName = newProjectNameSetting.stringValue = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
-									onProjectNameChanged(null, false);
+									originalNameByConfiguration = fileNameOnly.substring(0, fileNameOnly.lastIndexOf("."));
+									if (!projectName && !isNameManualChanged)
+									{
+										projectName = newProjectNameSetting.stringValue = originalNameByConfiguration;
+										onProjectNameChanged(null, false);
+									}
 								}
 								
 								return;
@@ -242,9 +249,11 @@ package actionScripts.plugins.as3project
 			);
 		}
 
-        private function isAllowedTemplateFile(projectFileExtension:String):Boolean
+        private function isAllowedTemplateFile(projectFileExtension:String):String
         {
-            return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj" || !projectFileExtension;
+            if (projectFileExtension == "as3proj") return "as3proj";
+			if (projectFileExtension == "veditorproj") return "veditorproj";
+			return null;
         }
 
 		private function getProjectSettings():SettingsWrapper
@@ -352,7 +361,18 @@ package actionScripts.plugins.as3project
 		{
 			// the condition is to make sure that project by subfolder
 			// if the project resides in some subfolder
-			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, isProjectResidesInSubFolder ? destination.resolvePath(isProjectResidesInSubFolder) : destination));
+			var projectActualFolder:File = isProjectResidesInSubFolder ? destination.resolvePath(isProjectResidesInSubFolder) : destination;
+			
+			// update the configuration file name if a custom name is given
+			// so the project loads by the custom name
+			if (originalNameByConfiguration != projectName)
+			{
+				var fromFile:File = projectActualFolder.resolvePath(originalNameByConfiguration +"."+ originalExtensionConfiguration);
+				var toFile:File = projectActualFolder.resolvePath(projectName +"."+ originalExtensionConfiguration);
+				fromFile.moveTo(toFile, true);
+			}
+			
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectActualFolder));
 			// close settings view
 			createClose(null);
 		}
