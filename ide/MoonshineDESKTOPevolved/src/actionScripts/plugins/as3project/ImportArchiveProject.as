@@ -45,6 +45,10 @@ package actionScripts.plugins.as3project
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.Unzip;
+	CONFIG::OSX
+		{
+		import actionScripts.utils.OSXBookmarkerNotifiers;
+		}
 	
     public class ImportArchiveProject
 	{
