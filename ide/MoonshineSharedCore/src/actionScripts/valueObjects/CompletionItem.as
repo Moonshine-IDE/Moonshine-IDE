@@ -133,7 +133,7 @@ package actionScripts.valueObjects
 
 		public function set displayType(value:String):void
 		{
-            if (kind == CompletionItemKind.METHOD || kind == CompletionItemKind.PROPERTY || kind == CompletionItemKind.VARIABLE)
+            if (value && (kind == CompletionItemKind.METHOD || kind == CompletionItemKind.PROPERTY || kind == CompletionItemKind.VARIABLE))
             {
                 var lastColonIndex:int = value.lastIndexOf(":");
                 _displayType = value.substring(lastColonIndex + 1);

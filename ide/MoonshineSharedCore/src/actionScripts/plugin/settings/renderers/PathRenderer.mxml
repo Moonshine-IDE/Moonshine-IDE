@@ -19,11 +19,17 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
-		  xmlns:mx="library://ns.adobe.com/flex/mx"
-		  width="100%" paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15"
-		  creationComplete="onPathRendererCreationComplete(event)"
-		  removedFromStage="onRemovedFromStage(event)">
+<s:VGroup
+		xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		width="100%"
+		paddingLeft="15"
+		paddingTop="15"
+		paddingRight="15"
+		paddingBottom="15"
+		creationComplete="onCreationCompletes(event)"
+		removedFromStage="onRemovedFromStage(event)">
 	<fx:Script>
 		<![CDATA[
 		import mx.collections.ArrayCollection;
@@ -87,7 +93,7 @@
 				type = AbstractSetting.MESSAGE_CRITICAL;
 			}
 
-			switch (type)
+			switch(type)
 			{
 				case AbstractSetting.MESSAGE_CRITICAL:
 					lblMessage.setStyle("color", 0xff0000);
@@ -120,11 +126,11 @@
 			{
 				if (setting.directory)
 				{
-					model.fileCore.browseForDirectory("Select directory", openFile, null, setting.stringValue);
+					model.fileCore.browseForDirectory("Select directory", openFile);
 				}
 				else
 				{
-					model.fileCore.browseForOpen("Select file", openFile);
+					model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters);
 				} // for Balsmiq project we need only .xml file to get selected.
 			}
 		}
@@ -195,7 +201,7 @@
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 		}
 
-		protected function onPathRendererCreationComplete(event:FlexEvent):void
+		protected function onCreationCompletes(event:FlexEvent):void
 		{
 			// process this following only in case of project's custom SDK
 			if (isSDKPath && setting.stringValue)
@@ -328,7 +334,7 @@
 			event.currentTarget.text = "";
 		}
 
-		protected function onCmbPathChange(event:IndexChangeEvent):void
+		protected function cmbPath_changeHandler(event:IndexChangeEvent):void
 		{
 			setting.stringValue = cmbPath.selectedItem;
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
@@ -341,46 +347,45 @@
 		}
 		]]>
 	</fx:Script>
-	
+
 	<s:HGroup width="100%">
 		<s:Label styleName="uiTextSettingsLabel"
 				 text="{setting.label}" />
-		
+
 		<mx:Spacer width="100%"/>
-		
+
 		<s:Button label="Clear"
-				  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
-				  click="clearPath()" />	
-		
+				  skinClass="{LinkButtonSkin}"
+				  click="clearPath()" />
+
 		<s:Button label="Change"
-				  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
+				  skinClass="{LinkButtonSkin}"
 				  click="selectPath()" />
-		
+
 		<s:Button label="Download a New SDK"
-				  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
+				  skinClass="{LinkButtonSkin}"
 				  click="onDownloadNewSDK()"
 				  includeInLayout="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}" visible="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}"/>
 	</s:HGroup>
 
 	<s:Label id="lblValue"
-		styleName="uiTextSettingsValue"
-		paddingTop="10" width="98%"
-		text="{setting.stringValue? setting.stringValue : 'Not Set' }" visible="{!isDropDown}" includeInLayout="{!isDropDown}"  />
-	<s:ComboBox  id="cmbPath" width="100%" dataProvider="{historyPaths}" visible="{isDropDown}"
-				alternatingItemColors="[#FFFFFF, #FFFFFF]" selectionColor="#cccccc" rollOverColor="#eeeeee"
-				requireSelection="true"
-				includeInLayout="{isDropDown}" change="onCmbPathChange(event)"/>
-	<s:Label id="lblMessage" 
+			 styleName="uiTextSettingsValue"
+			 paddingTop="10" width="98%"
+			 text="{setting.stringValue? setting.stringValue : 'Not Set' }" visible="{!isDropDown}" includeInLayout="{!isDropDown}"  />
+	<s:ComboBox  width="100%" dataProvider="{historyPaths}" id="cmbPath" visible="{isDropDown}"
+				 alternatingItemColors="[#FFFFFF, #FFFFFF]"  selectionColor="#cccccc" rollOverColor="#eeeeee"
+				 requireSelection="true"
+				 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
+	<s:Label id="lblMessage"
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
 			 fontSize="12" includeInLayout="false" visible="false"/>
-	<s:HGroup id="hgUndefinedSDK" 
+	<s:HGroup id="hgUndefinedSDK"
 			  width="100%" verticalAlign="middle" gap="4"
 			  visible="false" includeInLayout="false">
 		<s:Label text="This SDK is not defined."
 				 styleName="uiTextSettingsLabel" color="#ff0000" fontSize="12"/>
 		<s:Button label="Define it now"
-				  useHandCursor="true" buttonMode="true"
-				  skinClass="actionScripts.plugin.settings.renderers.LinkButtonSkin"
-				  click="onSDKAddition(event)"/>	
+				  skinClass="{LinkButtonSkin}" useHandCursor="true" buttonMode="true"
+				  click="onSDKAddition(event)"/>
 	</s:HGroup>
 </s:VGroup>
