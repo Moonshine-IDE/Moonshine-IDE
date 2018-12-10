@@ -28,7 +28,6 @@ package actionScripts.plugins.visualEditor
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
 
@@ -48,7 +47,7 @@ package actionScripts.plugins.visualEditor
     {
         private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
         private static const APP_FAILED:RegExp = /Failed to start, exiting/;
-        private static const FINISHED:RegExp = /\[FINISHED\]/;
+        private static const CLOSED:RegExp = /\[CLOSED\]/;
 
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
         private const URL_PREVIEW:String = "http://localhost:8180/";
@@ -75,8 +74,6 @@ package actionScripts.plugins.visualEditor
         {
             super.activate();
 
-            this.mavenPath = model.mavenPath;
-
             dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
             dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler);
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
@@ -92,12 +89,6 @@ package actionScripts.plugins.visualEditor
         override public function complete():void
         {
             if (status == MavenBuildStatus.STOPPED) return;
-
-            if (Settings.os == "win")
-            {
-                stopWithoutMessage = true;
-                nativeProcess.exit();
-            }
 
             status = MavenBuildStatus.COMPLETE;
             startPreview();
@@ -167,6 +158,22 @@ package actionScripts.plugins.visualEditor
             }
         }
 
+        override protected function processOutput(data:String):void
+        {
+            if (data.match(CLOSED))
+            {
+                stopWithoutMessage = true;
+                super.stop(true);
+
+                warning("Preview server for project %s has been shutdown.", currentProject.name);
+
+                filePreview = null;
+                currentProject = null;
+                return;
+            }
+            super.processOutput(data);
+        }
+
         override protected function buildFailed(data:String):Boolean
         {
             var failed:Boolean = super.buildFailed(data);
@@ -216,15 +223,8 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket.writeUTFBytes(PAYARA_SHUTDOWN_COMMAND);
             payaraShutdownSocket.flush();
 
-            super.stop(true);
-
             payaraShutdownSocket.close();
             payaraShutdownSocket = null;
-
-            warning("Payara server for project %s has been shutdown.", currentProject.name);
-
-            filePreview = null;
-            currentProject = null;
         }
 
         private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
@@ -234,7 +234,7 @@ package actionScripts.plugins.visualEditor
 
             if (currentProject && currentProject != newProject)
             {
-                warning("Stop preview running for project %s", currentProject.name);
+                stop(true);
                 return;
             }
 

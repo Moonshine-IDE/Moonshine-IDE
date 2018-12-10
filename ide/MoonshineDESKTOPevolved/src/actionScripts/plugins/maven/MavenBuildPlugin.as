@@ -50,19 +50,15 @@ package actionScripts.plugins.maven
             return "Apache Maven® Build Plugin. Esc exits.";
         }
 
-        private var _mavenPath:String;
-
         public function get mavenPath():String
         {
-            return _mavenPath;
+            return model ? model.mavenPath : null;
         }
 
         public function set mavenPath(value:String):void
         {
-            if (_mavenPath != value)
+            if (model.mavenPath != value)
             {
-                _mavenPath = value;
-
                 model.mavenPath = value;
             }
         }
