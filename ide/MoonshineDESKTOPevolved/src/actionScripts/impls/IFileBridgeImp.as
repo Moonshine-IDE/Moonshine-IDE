@@ -215,7 +215,10 @@ package actionScripts.impls
 			
 			content = replace(content, data);
 			
-			FileUtils.writeToFileAsync(dst.fileBridge.getFile as File, content);
+			var w:FileStream = new FileStream();
+			w.open(dst.fileBridge.getFile as File, FileMode.WRITE);
+			w.writeUTFBytes(content);
+			w.close();
 		}
 		
 		public function createFile(forceIsDirectory:Boolean=false):void
@@ -338,7 +341,9 @@ package actionScripts.impls
 				}
 			}
 			catch (e:Error)
-			{}
+			{
+				trace(e.getStackTrace());
+			}
 			
 			return saveData;
 		}
