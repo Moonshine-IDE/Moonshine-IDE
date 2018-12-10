@@ -58,7 +58,9 @@ package actionScripts.plugins.visualEditor
 
         private var currentProject:AS3ProjectVO;
         private var newProject:AS3ProjectVO;
+
         private var filePreview:FileLocation;
+        private var newFilePreview:FileLocation;
 
         private var payaraShutdownSocket:Socket;
 
@@ -164,6 +166,7 @@ package actionScripts.plugins.visualEditor
             if (projectClosed(data))
             {
                 currentProject = this.newProject;
+                filePreview = this.newFilePreview;
                 prepareProjectForPreviewing();
                 return;
             }
@@ -197,6 +200,7 @@ package actionScripts.plugins.visualEditor
             if (data.match(APP_WAS_DEPLOYED))
             {
                 complete();
+                warning("Preview server has been successfully started for project %s", currentProject.name);
             }
         }
 
@@ -234,6 +238,8 @@ package actionScripts.plugins.visualEditor
             if (currentProject && currentProject != newProject)
             {
                 this.newProject = newProject;
+                this.newFilePreview = event.fileWrapper.file;
+
                 stop(true);
                 return;
             }
@@ -243,6 +249,9 @@ package actionScripts.plugins.visualEditor
                 warning("Server for PrimeFaces preview has not been setup");
                 return;
             }
+
+            this.newProject = null;
+            this.newFilePreview = null;
 
             filePreview = event.fileWrapper.file;
             currentProject = newProject;
@@ -293,7 +302,10 @@ package actionScripts.plugins.visualEditor
 
         private function prepareProjectForPreviewing():void
         {
-            if (!currentProject) return;
+            if (!currentProject && !filePreview) return;
+
+            this.newProject = null;
+            this.newFilePreview = null;
 
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
