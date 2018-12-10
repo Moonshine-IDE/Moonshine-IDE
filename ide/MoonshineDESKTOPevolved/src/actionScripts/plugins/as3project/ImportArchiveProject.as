@@ -256,8 +256,8 @@ package actionScripts.plugins.as3project
 		private function getProjectSettings():SettingsWrapper
 		{
             newProjectNameSetting = new StringSetting(this, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
-			newProjectPathSetting = new PathSetting(this, 'folderPath', 'Directory to Save', true, null, false, true);
-			archivePathSetting = new PathSetting(this, 'archivePath', 'Archive File to Project', false);
+			newProjectPathSetting = new PathSetting(this, 'folderPath', 'Target Directory', true, null, false, true);
+			archivePathSetting = new PathSetting(this, 'archivePath', 'Archive File', false);
 			archivePathSetting.fileFilters = ["*.zip"];
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
