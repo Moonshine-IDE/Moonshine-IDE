@@ -39,6 +39,8 @@ package actionScripts.events
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
 		public static const EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG:String = "importProjectDirect";
 		
+		public static const EVENT_IMPORT_PROJECT_ARCHIVE:String = "importProjectArchive";
+		
 		public static const LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 		public static const LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
 		

@@ -17,6 +17,8 @@
     <classEntry path="elements.skins.IDEProgressBarSkin"/>
     <classEntry path="components.popup.SearchInProjectPreviewPopup"/>
     <classEntry path="actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO"/>
+    <classEntry path="actionScripts.plugin.errors.UncaughtErrorsPlugin"/>
+    <classEntry path="actionScripts.ui.menu.CustomMenuBox"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

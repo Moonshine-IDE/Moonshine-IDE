@@ -22,16 +22,19 @@ package actionScripts.plugins.core
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.SecurityErrorEvent;
+    import flash.filesystem.File;
     
     import mx.controls.Alert;
     
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugins.as3project.CreateProject;
+    import actionScripts.plugins.as3project.ImportArchiveProject;
     import actionScripts.valueObjects.FileWrapper;
 
     public class ProjectBridgeImplBase
     {
         protected var executeCreateProject:CreateProject;
+		protected var executeImportArchiveProject:ImportArchiveProject;
 		
 		private var filesToBeDeleted:Array;
 		private var deletableProjectWrapper:FileWrapper;
@@ -41,6 +44,11 @@ package actionScripts.plugins.core
         {
             executeCreateProject = new CreateProject(event);
         }
+		
+		public function importArchiveProject():void
+		{
+			executeImportArchiveProject = new ImportArchiveProject();
+		}
 
         public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function, isDeleteRoot:Boolean=false):void
         {

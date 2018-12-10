@@ -19,27 +19,27 @@
 		<link>
 			<name>[source path] ant_on_air-src</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/src</locationURI>
+			<locationURI>DOCUMENTS/Prominic_Git/git/flex-utilities/flex-installer/ant_on_air/src</locationURI>
 		</link>
 		<link>
 			<name>[source path] common-src</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/common/src</locationURI>
+			<locationURI>DOCUMENTS/Prominic_Git/git/flex-utilities/flex-installer/common/src</locationURI>
 		</link>
 		<link>
 			<name>[source path] en_US</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/locale/en_US</locationURI>
+			<locationURI>DOCUMENTS/Prominic_Git/git/flex-utilities/flex-installer/ant_on_air/locale/en_US</locationURI>
 		</link>
 		<link>
 			<name>[source path] external</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0/ant_on_air/external</locationURI>
+			<locationURI>DOCUMENTS/Prominic_Git/git/flex-utilities/flex-installer/ant_on_air/external</locationURI>
 		</link>
 		<link>
 			<name>bin-debug</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/MoonshineMultiCodeBase/MoonshineDESKTOPevolved/libs</locationURI>
+			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
