@@ -38,22 +38,25 @@ package actionScripts.plugins.swflauncher.launchers
 		{
 			for each (var i:File in extensions)
 			{
-				var onlyFileName:String = i.name.split(".")[0];
-				var extensionNamedFolder:File = i.parent.resolvePath(onlyFileName +"ANE.ane");
-				
-				// if no named folder exists
-				if (!extensionNamedFolder.exists)
+				if (i.extension.toLowerCase() == "ane")
 				{
-					extensionNamedFolder.createDirectory();
-					startUnzipProcess(extensionNamedFolder, i);
-				}
-				// in case of named folder already exists
-				else if (extensionNamedFolder.isDirectory)
-				{
-					// predict if all files are available
-					if (extensionNamedFolder.getDirectoryListing().length < 4)
+					var onlyFileName:String = i.name.substr(0, i.name.length - 4);
+					var extensionNamedFolder:File = i.parent.resolvePath(onlyFileName +"ANE.ane");
+					
+					// if no named folder exists
+					if (!extensionNamedFolder.exists)
 					{
+						extensionNamedFolder.createDirectory();
 						startUnzipProcess(extensionNamedFolder, i);
+					}
+					// in case of named folder already exists
+					else if (extensionNamedFolder.isDirectory)
+					{
+						// predict if all files are available
+						if (extensionNamedFolder.getDirectoryListing().length < 4)
+						{
+							startUnzipProcess(extensionNamedFolder, i);
+						}
 					}
 				}
 			}
