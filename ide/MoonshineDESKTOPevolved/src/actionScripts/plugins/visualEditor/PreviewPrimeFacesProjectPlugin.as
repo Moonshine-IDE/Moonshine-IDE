@@ -57,6 +57,7 @@ package actionScripts.plugins.visualEditor
         private const PAYARA_SHUTDOWN_COMMAND:String = "shutdown";
 
         private var currentProject:AS3ProjectVO;
+        private var newProject:AS3ProjectVO;
         private var filePreview:FileLocation;
 
         private var payaraShutdownSocket:Socket;
@@ -160,18 +161,16 @@ package actionScripts.plugins.visualEditor
 
         override protected function processOutput(data:String):void
         {
-            if (data.match(CLOSED))
+            if (projectClosed(data))
             {
-                stopWithoutMessage = true;
-                super.stop(true);
-
-                warning("Preview server for project %s has been shutdown.", currentProject.name);
-
-                filePreview = null;
-                currentProject = null;
+                currentProject = this.newProject;
+                prepareProjectForPreviewing();
                 return;
             }
-            super.processOutput(data);
+            else
+            {
+                super.processOutput(data);
+            }
         }
 
         override protected function buildFailed(data:String):Boolean
@@ -234,6 +233,7 @@ package actionScripts.plugins.visualEditor
 
             if (currentProject && currentProject != newProject)
             {
+                this.newProject = newProject;
                 stop(true);
                 return;
             }
@@ -293,6 +293,8 @@ package actionScripts.plugins.visualEditor
 
         private function prepareProjectForPreviewing():void
         {
+            if (!currentProject) return;
+
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, onMavenBuildComplete);
             dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
@@ -301,6 +303,8 @@ package actionScripts.plugins.visualEditor
 
         private function preparePreviewServer():void
         {
+            if (!currentProject) return;
+
             var preCommands:Array = this.getPreRunPreviewServerCommands();
             var commands:Array = ["compile", "exec:exec"];
 
@@ -343,6 +347,24 @@ package actionScripts.plugins.visualEditor
             var separator:String = projectPomFile.fileBridge.separator;
 
             return currentProject.folderLocation.fileBridge.nativePath.concat(separator, "target", separator, artifactId, "-", version);
+        }
+
+        private function projectClosed(data:String):Boolean
+        {
+            if (data.match(CLOSED))
+            {
+                stopWithoutMessage = true;
+                super.stop(true);
+
+                warning("Preview server for project %s has been shutdown.", currentProject.name);
+
+                filePreview = null;
+                currentProject = null;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }
