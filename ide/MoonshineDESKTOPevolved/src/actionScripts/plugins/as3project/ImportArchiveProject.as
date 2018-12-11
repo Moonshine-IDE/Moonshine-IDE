@@ -225,6 +225,11 @@ package actionScripts.plugins.as3project
 					}
 				}
 			}
+			else
+			{
+				folderPath = File.documentsDirectory.nativePath;
+				if (!model.recentSaveProjectPath.contains(folderPath)) model.recentSaveProjectPath.addItem(folderPath);
+			}
 			
 			settingsView = new SettingsView();
 			settingsView.Width = 150;

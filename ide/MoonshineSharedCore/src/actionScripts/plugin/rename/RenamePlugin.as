@@ -75,7 +75,6 @@ package actionScripts.plugin.rename
 		{
 			super.activate();
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
-			dispatcher.addEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 			dispatcher.addEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
@@ -84,7 +83,6 @@ package actionScripts.plugin.rename
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
-			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 			dispatcher.removeEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
@@ -117,25 +115,6 @@ package actionScripts.plugin.rename
 			
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
 				this._startChar, this._line, this._endChar, this._line, renameView.newName));
-		}
-		
-		private function applyRenameHandler(event:RenameEvent):void
-		{
-			var changes:Object = event.changes;
-			var fileCount:int = 0;
-			for(var key:String in changes)
-			{
-				fileCount++;
-				//the key is the file path, the value is a list of TextEdits
-				var file:FileLocation = new FileLocation(key, true);
-				var changesInFile:Vector.<TextEdit> = changes[key] as Vector.<TextEdit>;
-				applyTextEditsToFile(file, changesInFile);
-			}
-			
-			if (fileCount === 0)
-			{
-				Alert.show("Could not rename symbol.", "Rename symbol", Alert.OK, renameView);
-			}
 		}
 		
 		private function handleOpenRenameFileView(event:RenameEvent):void

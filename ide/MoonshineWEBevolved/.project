@@ -15,4 +15,21 @@
 		<nature>com.adobe.flexbuilder.project.flexnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] en_US</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</locationURI>
+		</link>
+		<link>
+			<name>[source path] ja_JP</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</locationURI>
+		</link>
+		<link>
+			<name>[source path] src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
