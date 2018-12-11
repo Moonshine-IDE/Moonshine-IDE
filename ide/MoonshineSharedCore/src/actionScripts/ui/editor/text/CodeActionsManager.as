@@ -45,7 +45,15 @@ package actionScripts.ui.editor.text
 			}
 			if (model.selectedLine)
 			{
-				model.selectedLine.codeActions = codeActions.slice();
+				model.selectedLine.codeActions = codeActions.filter(function(codeAction:CodeAction, index:int, original:Vector.<CodeAction>):Boolean
+				{
+					if(codeAction.kind == CodeAction.KIND_SOURCE_ORGANIZE_IMPORTS)
+					{
+						//we don't display this one in the light bulb
+						return false;
+					}
+					return true;
+				});
 			}
 			editor.invalidateLines();
 		}

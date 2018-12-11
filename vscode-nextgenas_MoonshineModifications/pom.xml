@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.moonshine-ide</groupId>
+  <artifactId>as3mxml-language-server</artifactId>
+  <name>as3mxml-language-server</name>
+  <version>0.9.4</version>
+  
+  <build>
+    <finalName>codecompletion.jar</finalName>
+  </build>
+
+  <dependencies>
+    <!--<dependency>
+      <groupId>org.apache.royale.compiler</groupId>
+      <artifactId>compiler</artifactId>
+      <version>0.9.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.royale.compiler</groupId>
+      <artifactId>compiler-jx</artifactId>
+      <version>0.9.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-complete</artifactId>
+      <version>3.5.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j</artifactId>
+      <version>0.4.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>0.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <version>1.7.21</version>
+    </dependency>
+    <dependency>
+      <groupId>com.nextgenactionscript.vscode</groupId>
+      <artifactId>asconfigc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.0.2</version>
+      <scope>test</scope>
+    </dependency>-->
+  </dependencies>
+
+</project>

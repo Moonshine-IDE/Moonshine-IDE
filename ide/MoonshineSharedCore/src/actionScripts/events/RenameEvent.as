@@ -22,7 +22,6 @@ package actionScripts.events
 
 	public class RenameEvent extends Event
 	{
-		public static const EVENT_APPLY_RENAME:String = "newApplyRename";
 		public static const EVENT_OPEN_RENAME_SYMBOL_VIEW:String = "openRenameSymbolView";
 		public static const EVENT_OPEN_RENAME_FILE_VIEW:String = "openRenameFileView";
 

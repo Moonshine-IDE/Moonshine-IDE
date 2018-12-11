@@ -54,6 +54,11 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.DocumentSymbol;
 	import actionScripts.valueObjects.WorkspaceEdit;
 	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.valueObjects.TextDocumentEdit;
+	import actionScripts.valueObjects.TextDocumentIdentifier;
+	import actionScripts.valueObjects.RenameFile;
+	import actionScripts.valueObjects.DeleteFile;
+	import actionScripts.valueObjects.CreateFile;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1015,21 +1020,8 @@ package actionScripts.languageServer
 
 		private function handleRenameResponse(result:Object):void
 		{
-			var resultChanges:Object = result.changes;
-			var eventChanges:Object = {};
-			for(var key:String in resultChanges)
-			{
-				var resultChangesList:Array = resultChanges[key] as Array;
-				var eventChangesList:Vector.<TextEdit> = new <TextEdit>[];
-				var resultChangesCount:int = resultChangesList.length;
-				for(var i:int = 0; i < resultChangesCount; i++)
-				{
-					var resultChange:Object = resultChangesList[i];
-					eventChangesList[i] = parseTextEdit(resultChange);
-				}
-				eventChanges[key] = eventChangesList;
-			}
-			_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
+			var workspaceEdit:WorkspaceEdit = this.parseWorkspaceEdit(result);
+			applyWorkspaceEdit(workspaceEdit);
 		}
 
 		private function handleLocationsResponse(result:Array):Vector.<Location>
@@ -1346,23 +1338,70 @@ package actionScripts.languageServer
 		private function parseWorkspaceEdit(original:Object):WorkspaceEdit
 		{
 			var workspaceEdit:WorkspaceEdit = new WorkspaceEdit;
-			var changes:Object = {};
 			var jsonChanges:Object = original.changes;
-			for(var uri:String in jsonChanges)
+			if(jsonChanges)
 			{
-				//the key is the file path, the value is a list of TextEdits
-				var resultChanges:Array = jsonChanges[uri];
-				var resultChangesCount:int = resultChanges.length;
-				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
-				for(var i:int = 0; i < resultChangesCount; i++)
+				var changes:Object = {};
+				for(var uri:String in jsonChanges)
 				{
-					var resultChange:Object = resultChanges[i];
-					var textEdit:TextEdit = parseTextEdit(resultChange);
-					textEdits[i] = textEdit;
+					//the key is the file path, the value is a list of TextEdits
+					var resultChanges:Array = jsonChanges[uri];
+					var resultChangesCount:int = resultChanges.length;
+					var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+					for(var i:int = 0; i < resultChangesCount; i++)
+					{
+						var resultChange:Object = resultChanges[i];
+						var textEdit:TextEdit = parseTextEdit(resultChange);
+						textEdits[i] = textEdit;
+					}
+					changes[uri] = textEdits;
 				}
-				changes[uri] = textEdits;
+				workspaceEdit.changes = changes;
 			}
-			workspaceEdit.changes = changes;
+			var jsonDocumentChanges:Array = original.documentChanges;
+			if(jsonDocumentChanges)
+			{
+				var documentChanges:Array = [];
+				var changesCount:int = jsonDocumentChanges.length;
+				for(i = 0; i < changesCount; i++)
+				{
+					var documentChange:Object = jsonDocumentChanges[i];
+					if("kind" in documentChange)
+					{
+						switch(documentChange.kind)
+						{
+							case RenameFile.KIND:
+							{
+								var renameFile:RenameFile = parseRenameFile(documentChange);
+								documentChanges.push(renameFile);
+								break;
+							}
+							case CreateFile.KIND:
+							{
+								var createFile:CreateFile = parseCreateFile(documentChange);
+								documentChanges.push(createFile);
+								break;
+							}
+							case DeleteFile.KIND:
+							{
+								var deleteFile:DeleteFile = parseDeleteFile(documentChange);
+								documentChanges.push(deleteFile);
+								break;
+							}
+							default:
+							{
+								trace("parseWorkspaceEdit: Unknown document change:", documentChange.kind);
+							}
+						}
+					}
+					else
+					{
+						var textDocumentEdit:TextDocumentEdit = parseTextDocumentEdit(documentChange);
+						documentChanges.push(textDocumentEdit);
+					}
+				}
+				workspaceEdit.documentChanges = documentChanges;
+			}
 			return workspaceEdit;
 		}
 
@@ -1371,6 +1410,51 @@ package actionScripts.languageServer
 			var vo:TextEdit = new TextEdit();
 			vo.range = parseRange(original.range);
 			vo.newText = original.newText;
+			return vo;
+		}
+
+		private function parseTextDocument(original:Object):TextDocumentIdentifier
+		{
+			var vo:TextDocumentIdentifier = new TextDocumentIdentifier();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseTextDocumentEdit(original:Object):TextDocumentEdit
+		{
+			var vo:TextDocumentEdit = new TextDocumentEdit();
+			vo.textDocument = parseTextDocument(original.textDocument);
+			var originalEdits:Array = original.edits;
+			var edits:Vector.<TextEdit> = new <TextEdit>[];
+			var editsCount:int = originalEdits.length;
+			for(var i:int = 0; i < editsCount; i++)
+			{
+				var edit:TextEdit = parseTextEdit(originalEdits[i]);
+				edits.push(edit);
+			}
+			vo.edits = edits;
+			return vo;
+		}
+
+		private function parseCreateFile(original:Object):CreateFile
+		{
+			var vo:CreateFile = new CreateFile();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseDeleteFile(original:Object):DeleteFile
+		{
+			var vo:DeleteFile = new DeleteFile();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseRenameFile(original:Object):RenameFile
+		{
+			var vo:RenameFile = new RenameFile();
+			vo.oldUri = original.oldUri;
+			vo.newUri = original.newUri;
 			return vo;
 		}
 		
@@ -1968,7 +2052,6 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsRename)
 			{
-				_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, {}));
 				return;
 			}
 
