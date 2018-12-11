@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Added Apache Maven support.
 
 ### Changed
-* Updated [as3mxml](https://as3mxml.com/) engine to version 0.15.0.
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.16.0.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed
@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Language server: Fixed issue where Java instance continued running after application exit.
 * Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
 * Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
+* Problems: Fixed issue where problems were not cleared after closing a project.
 
 ## Moonshine IDE [1.15.0]
 
