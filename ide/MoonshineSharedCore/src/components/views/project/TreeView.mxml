@@ -478,22 +478,8 @@
 					case FTETreeItemRenderer.DELETE_PROJECT:
 					case FTETreeItemRenderer.DELETE_FILE_FOLDER:
 					{
-						if (isMultiSelection)
+						if (isMultiSelection && isMultiSelectionIsValid())
 						{
-							for each (var fw:FileWrapper in tree.selectedItems)
-							{
-								if (fw.isRoot)
-								{
-									Alert.show("Project and files are not allowed to delete selectively.", "Error");
-									return;
-								}
-								if (!fw.file.fileBridge.exists)
-								{
-									Alert.show("One or more files to the selection does not exists.", "Error");
-									return;
-								}
-							}
-							
 							Alert.show("Are you sure you want to delete selected file/folder from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
 							break;
 						}
@@ -615,6 +601,38 @@
 				function renameFileFolder(rendererObject:FTETreeItemRenderer):void
 				{
 					dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, rendererObject.data));
+				}
+				
+				/*
+				 * @local
+				 * Checks if multi-selection is valid to proceed
+				 * against context-menu options
+				 */
+				function isMultiSelectionIsValid():Boolean
+				{
+					var hasProjectRoot:Boolean;
+					var hasProjectFiles:Boolean;
+					for each (var fw:FileWrapper in tree.selectedItems)
+					{
+						if (fw.isRoot) hasProjectRoot = true;
+						else hasProjectFiles = true;
+						
+						// terminate if any file do not exists
+						if (!fw.file.fileBridge.exists)
+						{
+							Alert.show("One or more files to the selection does not exists.", "Error");
+							return false;
+						}
+					}
+					
+					// terminates if project and project's files selected at same time
+					if (hasProjectFiles && hasProjectRoot)
+					{
+						Alert.show("Project and files are not allowed to delete selectively.", "Error");
+						return false;
+					}
+					
+					return true;
 				}
 			}
 	
