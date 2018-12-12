@@ -91,7 +91,7 @@ package actionScripts.controllers
 			{
                 for each (var fw:FileWrapper in thisEvent.wrappers)
 				{
-					onFileDeletionConfirmed(fw, thisEvent.projectAssociatedWithFile);
+					onFileDeletionConfirmed(fw);
 				}
 				
 				thisEvent.treeViewCompletionHandler(thisEvent.wrappers);
@@ -111,7 +111,7 @@ package actionScripts.controllers
 			}
 		}
 		
-		private function onFileDeletionConfirmed(fw:FileWrapper, project:ProjectVO):void
+		private function onFileDeletionConfirmed(fw:FileWrapper):void
 		{
 			var veSourceFile:FileLocation = null;
 			var tab:IContentWindow;
@@ -121,7 +121,7 @@ package actionScripts.controllers
 			{
 				fw.file.fileBridge.deleteDirectory(true);
 				
-				veSourceFile = getVisualEditorSourceFile(fw, project);
+				veSourceFile = getVisualEditorSourceFile(fw);
 				if (veSourceFile && veSourceFile.fileBridge.exists)
 				{
 					veSourceFile.fileBridge.deleteDirectory(true);
@@ -130,21 +130,18 @@ package actionScripts.controllers
 			else
 			{
 				fw.file.fileBridge.deleteFile();
-				if (project)
+				veSourceFile = getVisualEditorSourceFile(fw);
+				if (veSourceFile && veSourceFile.fileBridge.exists)
 				{
-					veSourceFile = getVisualEditorSourceFile(fw, project);
-					if (veSourceFile && veSourceFile.fileBridge.exists)
+					veSourceFile.fileBridge.deleteFile();
+					if (model.showHiddenPaths)
 					{
-						veSourceFile.fileBridge.deleteFile();
-						if (model.showHiddenPaths)
+						var fileForRefresh:FileLocation = veSourceFile;
+						if (!veSourceFile.fileBridge.isDirectory)
 						{
-							var fileForRefresh:FileLocation = veSourceFile;
-							if (!veSourceFile.fileBridge.isDirectory)
-							{
-								fileForRefresh = veSourceFile.fileBridge.parent;
-							}
-							dispatcher.dispatchEvent(new RefreshTreeEvent(fileForRefresh));
+							fileForRefresh = veSourceFile.fileBridge.parent;
 						}
+						dispatcher.dispatchEvent(new RefreshTreeEvent(fileForRefresh));
 					}
 				}
 			}
@@ -160,7 +157,7 @@ package actionScripts.controllers
 				if (ed 
 					&& ed.currentFile
 					&& (ed.currentFile.fileBridge.nativePath == fw.file.fileBridge.nativePath || 
-						(fw.file.fileBridge.nativePath.indexOf(ed.currentFile.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)))
+						(ed.currentFile.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)))
 				{
 					dispatcher.dispatchEvent(
 						new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
@@ -291,9 +288,9 @@ package actionScripts.controllers
 			wrapper = null;
 		}
 
-        private function getVisualEditorSourceFile(fw:FileWrapper, project:ProjectVO):FileLocation
+        private function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
         {
-            var as3ProjectVO:AS3ProjectVO = project as AS3ProjectVO;
+            var as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
             if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
             {
                 var veSourcePathFile:String = fw.file.fileBridge.nativePath

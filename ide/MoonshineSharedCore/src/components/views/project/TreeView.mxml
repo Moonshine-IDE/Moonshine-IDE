@@ -471,7 +471,7 @@
 					}
 					case FTETreeItemRenderer.CLOSE:
 					{
-						onFileDeletedOnServer(fileWrapper, event.menuLabel);
+						onFileDeletedOnServer([fileWrapper], event.menuLabel);
 						break;
 					}
 					case FTETreeItemRenderer.DELETE:
@@ -481,18 +481,21 @@
 						if (isMultiSelection && isMultiSelectionIsValid())
 						{
 							Alert.show("Are you sure you want to delete selected file/folder from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
-							break;
+							return;
+						}
+						else if (!isMultiSelection)
+						{
+							if (fileWrapper.isWorking) return;
+							if (!fileWrapper.isRoot && fileWrapper.file.fileBridge.exists)
+							{
+								Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+							}
+							else
+							{
+								onFileDeleteConfirm(null);
+							}
 						}
 						
-						if (fileWrapper.isWorking) return;
-						if (!fileWrapper.isRoot && fileWrapper.file.fileBridge.exists)
-						{
-							Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
-						}
-						else
-						{
-							onFileDeleteConfirm(null);
-						}
 						break;
 					}
 					case FTETreeItemRenderer.RENAME:
@@ -628,7 +631,16 @@
 					// terminates if project and project's files selected at same time
 					if (hasProjectFiles && hasProjectRoot)
 					{
-						Alert.show("Project and files are not allowed to delete selectively.", "Error");
+						Alert.show("Project and files of projects are not allowed to bulk delete.", "Error");
+						return false;
+					}
+					
+					// terminate if multiple projects are trying to delete
+					// (based on the current popup confirmation design with files to be deleted - 
+					// we should show only confirmation to reduce complexity
+					if (hasProjectRoot && tree.selectedItems.length > 1)
+					{
+						Alert.show("Multiple projects are are not allowed to bulk delete.", "Error");
 						return false;
 					}
 					
@@ -754,7 +766,7 @@
 			private function onFileDeletedOnServer(value:Array, removalType:String = null):void
 			{
 				if (!value) return;
-				deleteFileWrapper = value;
+				/*deleteFileWrapper = value;
 	
 				var openItems:Object = tree.openItems;
 				var parentCollection:Array;
@@ -814,7 +826,7 @@
 					}
 	
 					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
-				}
+				}*/
 	
 				/*
 				 *@local
