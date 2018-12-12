@@ -25,29 +25,17 @@
 		<link>
 			<name>[source path] en_US</name>
 			<type>2</type>
-<<<<<<< HEAD
-			<location>G:/DevareaLocal/Prominic/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</location>
-=======
 			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</locationURI>
->>>>>>> master
 		</link>
 		<link>
 			<name>[source path] ja_JP</name>
 			<type>2</type>
-<<<<<<< HEAD
-			<location>G:/DevareaLocal/Prominic/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</location>
-=======
 			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</locationURI>
->>>>>>> master
 		</link>
 		<link>
 			<name>[source path] src</name>
 			<type>2</type>
-<<<<<<< HEAD
-			<location>G:/DevareaLocal/Prominic/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src</location>
-=======
 			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src</locationURI>
->>>>>>> master
 		</link>
 	</linkedResources>
 </projectDescription>
