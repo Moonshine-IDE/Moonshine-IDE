@@ -41,6 +41,7 @@
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.FileWrapper;
@@ -100,7 +101,7 @@
 				var filesList:Array = [, project.folderLocation.fileBridge.resolvePath(".git"),
 					project.projectFile]; // either FileLocation or Vector.<FileLocation>
 				
-				if(project is AS3ProjectVO)
+				if (project is AS3ProjectVO)
 				{
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 					filesList.unshift(as3Project.swfOutput.path, as3Project.htmlPath, new FileLocation(as3Project.buildOptions.antBuildPath),
@@ -109,6 +110,12 @@
 						as3Project.runtimeSharedLibraries, as3Project.hiddenPaths, as3Project.resourcePaths, 
 						as3Project.classpaths, as3Project.config.file);
 					if (as3Project.isVisualEditorProject) filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"));
+				}
+				else if (project is JavaProjectVO)
+				{
+					filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"), project.folderLocation.fileBridge.resolvePath("pom.xml"),
+						project.folderLocation.fileBridge.resolvePath("build.gradle"));
+					filesList.concat(project.projectFolder.projectReference.hiddenPaths);
 				}
 				
 				for (var i:int; i < filesList.length; i++)
@@ -191,6 +198,11 @@
 					if (value.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator) != -1 &&
 						value.fileBridge.nativePath.indexOf(as3Project.sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 							return value;
+				}
+				else
+				{
+					if (value.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator) != -1)
+						return value;
 				}
 				
 				return null;
