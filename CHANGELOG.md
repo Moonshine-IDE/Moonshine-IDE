@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor: Added **Organizer** to allow users to view the structure of the mockup and change the order or nesting of the components.
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
 * Visual Editor PrimeFaces: Added CDATA information to property panel if provided through component.
+* Visual Editor PrimeFaces: Added instant preview for project files in the browser.
 * File association support for known file types.
 * Copying of files and folders from inside or outside of Moonshine, to the project sidebar.
 * New File: Added code completion for Superclass and Interfaces.
