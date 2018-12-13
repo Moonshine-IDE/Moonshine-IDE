@@ -773,14 +773,14 @@
 				var lastSelectedItem:Object = tree.selectedItem;
 				var lastProcessedProjectPath:String;
 				// if the file/folder is a project root
-				if (value.isRoot)
+				if (value[0].isRoot)
 				{
-					/*tmpProject = UtilsCore.getProjectFromProjectFolder(value);
-					UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
+					tmpProject = UtilsCore.getProjectFromProjectFolder(value[0]);
+					UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value[0], (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
 					{
 						for each (var project:ProjectVO in projects)
 						{
-							if (project.projectFolder.nativePath === value.nativePath)
+							if (project.projectFolder.nativePath === value[0].nativePath)
 							{
 								projects.removeItem(project);
 								updateTreeView();
@@ -791,7 +791,7 @@
 								break;
 							}
 						}
-					});*/
+					});
 				}
 				else
 				{
