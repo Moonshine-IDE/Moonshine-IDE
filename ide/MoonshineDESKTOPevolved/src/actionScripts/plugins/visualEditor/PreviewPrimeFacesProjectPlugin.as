@@ -339,10 +339,17 @@ package actionScripts.plugins.visualEditor
         {
             if (!currentProject || !filePreview) return;
 
-            var filePath:String = filePreview.fileBridge.nativePath.replace(currentProject.sourceFolder.fileBridge.nativePath, "");
-            var fileName:String = filePreview.fileBridge.isDirectory ?
-                    currentProject.name.concat(".", PREVIEW_EXTENSION_FILE) :
-                    filePath;
+            var fileName:String = filePreview.fileBridge.nativePath.replace(currentProject.sourceFolder.fileBridge.nativePath, "");
+            if (filePreview.fileBridge.isDirectory)
+            {
+                fileName = currentProject.name.concat(".", PREVIEW_EXTENSION_FILE);
+                var mainFile:FileLocation = currentProject.targets[0];
+                if (!mainFile.fileBridge.exists)
+                {
+                    warning("Project does not contains main file. Choose specific file for preview.");
+                    return;
+                }
+            }
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
             navigateToURL(urlReq);
