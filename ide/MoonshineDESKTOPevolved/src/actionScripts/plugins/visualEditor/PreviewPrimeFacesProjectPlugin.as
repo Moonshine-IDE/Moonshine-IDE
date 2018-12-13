@@ -246,6 +246,15 @@ package actionScripts.plugins.visualEditor
                 return;
             }
 
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+            if (!executableJavaLocation)
+            {
+                running = false;
+                error("In order to run preview server you have to specify Java Development Kit path.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+                return;
+            }
+
             if (!model.payaraServerLocation)
             {
                 warning("Server for PrimeFaces preview has not been setup");
@@ -319,16 +328,7 @@ package actionScripts.plugins.visualEditor
         {
             if (!currentProject) return;
 
-            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
-            if (!executableJavaLocation)
-            {
-                running = false;
-                error("In order to run preview server you have to specify Java Development Kit path.");
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
-                return;
-            }
-
-            var preCommands:Array = this.getPreRunPreviewServerCommands(executableJavaLocation.fileBridge.nativePath);
+            var preCommands:Array = this.getPreRunPreviewServerCommands();
             var commands:Array = ["compile", "exec:exec"];
 
             buildId = PAYARA_SERVER_BUILD;
@@ -348,11 +348,12 @@ package actionScripts.plugins.visualEditor
             navigateToURL(urlReq);
         }
 
-        private function getPreRunPreviewServerCommands(javaPath:String):Array
+        private function getPreRunPreviewServerCommands():Array
         {
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
             var prefixSet:String = ConstantsCoreVO.IS_MACOS ? "export" : "set";
 
-            return [prefixSet.concat(" JAVA_EXEC=", javaPath),
+            return [prefixSet.concat(" JAVA_EXEC=", executableJavaLocation.fileBridge.nativePath),
                     prefixSet.concat(" TARGET_PATH=", getMavenBuildProjectPath())];
         }
 
