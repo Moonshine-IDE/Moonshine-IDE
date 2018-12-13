@@ -21,6 +21,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.SettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.maven.MavenBuildPlugin;
@@ -318,7 +319,16 @@ package actionScripts.plugins.visualEditor
         {
             if (!currentProject) return;
 
-            var preCommands:Array = this.getPreRunPreviewServerCommands();
+            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
+            if (!executableJavaLocation)
+            {
+                running = false;
+                error("In order to run preview server you have to specify Java Development Kit path.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+                return;
+            }
+
+            var preCommands:Array = this.getPreRunPreviewServerCommands(executableJavaLocation.fileBridge.nativePath);
             var commands:Array = ["compile", "exec:exec"];
 
             buildId = PAYARA_SERVER_BUILD;
@@ -338,12 +348,11 @@ package actionScripts.plugins.visualEditor
             navigateToURL(urlReq);
         }
 
-        private function getPreRunPreviewServerCommands():Array
+        private function getPreRunPreviewServerCommands(javaPath:String):Array
         {
-            var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
             var prefixSet:String = ConstantsCoreVO.IS_MACOS ? "export" : "set";
 
-            return [prefixSet.concat(" JAVA_EXEC=", executableJavaLocation.fileBridge.nativePath),
+            return [prefixSet.concat(" JAVA_EXEC=", javaPath),
                     prefixSet.concat(" TARGET_PATH=", getMavenBuildProjectPath())];
         }
 
