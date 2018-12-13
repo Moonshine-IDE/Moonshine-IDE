@@ -136,9 +136,9 @@ package actionScripts.plugins.maven
 
         protected function prepareStart(buildId:String, preArguments:Array, arguments:Array, buildDirectory:FileLocation):void
         {
-            if (!buildDirectory)
+            if (!buildDirectory || !buildDirectory.fileBridge.exists)
             {
-                warning("Maven build directory has not been specified");
+                warning("Maven build directory has not been specified or is invalid.");
                 dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject as AS3ProjectVO, "Maven Build"));
                 return;
             }
