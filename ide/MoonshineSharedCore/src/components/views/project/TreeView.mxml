@@ -593,7 +593,7 @@
 					if (!event2 || event2.detail == Alert.YES)
 					{
 						var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(tree.selectedItems[0] as FileWrapper);
-						dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, tree.selectedItems, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+						dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, isMultiSelection ? tree.selectedItems : [fileWrapper], onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
 					}
 				}
 	
@@ -766,15 +766,16 @@
 			private function onFileDeletedOnServer(value:Array, removalType:String = null):void
 			{
 				if (!value) return;
-				/*deleteFileWrapper = value;
 	
 				var openItems:Object = tree.openItems;
 				var parentCollection:Array;
 				var tmpProject:ProjectVO;
+				var lastSelectedItem:Object = tree.selectedItem;
+				var lastProcessedProjectPath:String;
 				// if the file/folder is a project root
 				if (value.isRoot)
 				{
-					tmpProject = UtilsCore.getProjectFromProjectFolder(value);
+					/*tmpProject = UtilsCore.getProjectFromProjectFolder(value);
 					UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
 					{
 						for each (var project:ProjectVO in projects)
@@ -790,43 +791,16 @@
 								break;
 							}
 						}
-					});
+					});*/
 				}
 				else
 				{
-					var lastSelectedItem:Object = tree.selectedItem;
-	
-					// search through open projects as we don't know
-					// which project the FileWrapper is belongs to
-					for each (var fw:FileWrapper in projectFolders)
+					for each (var fw:FileWrapper in value)
 					{
-						parentCollection = findFilePosition(fw);
-						if (parentCollection) break;
+						deleteFileWrapper = fw;
+						proceedWithDeletionOfNode(fw);
 					}
-	
-					parentCollection.splice(parentCollection.indexOf(value), 1);
-					fileCollection = null;
-	
-					if (lastSelectedItem && lastSelectedItem == value)
-					{
-						tree.selectedItem = tree.getParentItem(value);
-					}
-	
-					updateTreeView();
-	
-					// check if the wrapper is the source folder to the project
-					tmpProject = UtilsCore.getProjectFromProjectFolder(value);
-					if (tmpProject is AS3ProjectVO)
-					{
-						var tmpAS3Project:AS3ProjectVO = AS3ProjectVO(tmpProject);
-						if (tmpAS3Project.sourceFolder.fileBridge.nativePath == value.nativePath)
-						{
-							tmpAS3Project.sourceFolder = null;
-						}
-					}
-	
-					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
-				}*/
+				}
 	
 				/*
 				 *@local
@@ -834,6 +808,50 @@
 				function updateTreeView():void
 				{
 					model.selectedprojectFolders = projectFolders;
+				}
+				
+				function proceedWithDeletionOfNode(value:FileWrapper):void
+				{
+					// search through open projects as we don't know
+					// which project the FileWrapper is belongs to
+					for each (var fw:FileWrapper in projectFolders)
+					{
+						parentCollection = findFilePosition(fw);
+						if (parentCollection) break;
+					}
+					
+					try
+					{
+						// this is a scenario when both parent and children
+						// get selected and called for deletion
+						parentCollection.splice(parentCollection.indexOf(value), 1);
+						if (lastSelectedItem && lastSelectedItem == value)
+						{
+							tree.selectedItem = tree.getParentItem(value);
+						}
+					}
+					catch (e:Error)
+					{
+						return;
+					}
+					
+					fileCollection = null;
+					updateTreeView();
+					
+					// check if the wrapper is the source folder to the project
+					if (lastProcessedProjectPath != value.projectReference.path)
+					{
+						tmpProject = UtilsCore.getProjectFromProjectFolder(value);
+					}
+					if (tmpProject && (tmpProject is AS3ProjectVO))
+					{
+						if ((tmpProject as AS3ProjectVO).sourceFolder.fileBridge.nativePath == value.nativePath)
+						{
+							(tmpProject as AS3ProjectVO).sourceFolder = null;
+						}
+					}
+					
+					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
 				}
 			}
 	

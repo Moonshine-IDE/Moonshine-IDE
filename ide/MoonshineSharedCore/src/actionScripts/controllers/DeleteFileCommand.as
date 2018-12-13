@@ -119,7 +119,7 @@ package actionScripts.controllers
 			
 			if (fw.file.fileBridge.isDirectory)
 			{
-				fw.file.fileBridge.deleteDirectory(true);
+				if (fw.file.fileBridge.exists) fw.file.fileBridge.deleteDirectory(true);
 				
 				veSourceFile = getVisualEditorSourceFile(fw);
 				if (veSourceFile && veSourceFile.fileBridge.exists)
@@ -129,7 +129,8 @@ package actionScripts.controllers
 			}
 			else
 			{
-				fw.file.fileBridge.deleteFile();
+				if (fw.file.fileBridge.exists) fw.file.fileBridge.deleteFile();
+
 				veSourceFile = getVisualEditorSourceFile(fw);
 				if (veSourceFile && veSourceFile.fileBridge.exists)
 				{
