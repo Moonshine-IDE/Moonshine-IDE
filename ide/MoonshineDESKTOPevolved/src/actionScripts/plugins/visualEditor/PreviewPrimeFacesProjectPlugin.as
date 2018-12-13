@@ -25,6 +25,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.plugins.maven.MavenBuildStatus;
+    import actionScripts.utils.MavenPomUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
@@ -351,10 +352,9 @@ package actionScripts.plugins.visualEditor
             if (!currentProject) return null;
 
             var projectPomFile:FileLocation = new FileLocation(currentProject.mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
-            var pom:XML = XML(projectPomFile.fileBridge.read());
 
-            var artifactId:String = pom.elements(new QName("http://maven.apache.org/POM/4.0.0", "artifactId"))[0];
-            var version:String = pom.elements(new QName("http://maven.apache.org/POM/4.0.0", "version"))[0];
+            var artifactId:String = MavenPomUtil.getProjectId(projectPomFile);
+            var version:String = MavenPomUtil.getProjectVersion(projectPomFile);
 
             var separator:String = projectPomFile.fileBridge.separator;
 
