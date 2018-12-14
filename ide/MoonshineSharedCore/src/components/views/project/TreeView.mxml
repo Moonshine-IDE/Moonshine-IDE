@@ -438,6 +438,7 @@
 				var project:ProjectVO;
 				var fileWrapper:FileWrapper = FileWrapper(event.data);
 				var isMultiSelection:Boolean = tree.selectedItems.length > 1;
+				var fw:FileWrapper;
 	
 				switch (event.menuLabel)
 				{
@@ -453,20 +454,15 @@
 					case FTETreeItemRenderer.OPEN:
 					case FTETreeItemRenderer.OPEN_FILE_FOLDER:
 					{
-						if (fileWrapper.file.fileBridge.isDirectory)
+						if (isMultiSelection)
 						{
-							if (tree.dataDescriptor.isBranch(fileWrapper))
+							for each (fw in tree.selectedItems)
 							{
-								tree.expandItem(fileWrapper, !tree.isItemOpen(fileWrapper), true);
+								openFileFolder(fw);
 							}
-							return;
 						}
-	
-						if (fileWrapper.isWorking) return;
-	
-						dispatcher.dispatchEvent(
-								new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileWrapper.file, -1, fileWrapper)
-						);
+						else
+							openFileFolder(fileWrapper);
 						break;
 					}
 					case FTETreeItemRenderer.CLOSE:
@@ -645,6 +641,27 @@
 					}
 					
 					return true;
+				}
+				
+				/*
+				 * @local
+				 * opens a folder or open a file
+				 */
+				function openFileFolder(value:FileWrapper):void
+				{
+					if (value.file.fileBridge.isDirectory)
+					{
+						if (tree.dataDescriptor.isBranch(value))
+						{
+							tree.expandItem(value, true, true);
+						}
+					}
+					else if (!value.file.fileBridge.isDirectory && !value.isWorking)
+					{
+						dispatcher.dispatchEvent(
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, value.file, -1, value)
+						);
+					}
 				}
 			}
 	

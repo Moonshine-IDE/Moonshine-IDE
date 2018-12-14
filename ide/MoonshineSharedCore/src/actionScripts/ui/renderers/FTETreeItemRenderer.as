@@ -269,7 +269,7 @@ package actionScripts.ui.renderers
 						{
 							model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 						}
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, updateOverMultiSelectionOption, "displaying"));
 					}
 					
 					if (!fw.isSourceFolder)
