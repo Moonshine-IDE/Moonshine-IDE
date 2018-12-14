@@ -372,6 +372,18 @@ package actionScripts.plugins.as3project
 				var fromFile:File = projectActualFolder.resolvePath(originalNameByConfiguration +"."+ originalExtensionConfiguration);
 				var toFile:File = projectActualFolder.resolvePath(projectName +"."+ originalExtensionConfiguration);
 				fromFile.moveTo(toFile, true);
+				
+				// updating name property
+				var tmpObject:Object = new Object();
+				tmpObject["$ProjectName"] = projectName;
+				
+				// pom file content update
+				var pomFile:File = projectActualFolder.resolvePath("pom.xml");
+				if (pomFile.exists)
+				{
+					var tmpFL:FileLocation = new FileLocation(pomFile.nativePath);
+					tmpFL.fileBridge.copyFileTemplate(tmpFL, tmpObject);
+				}
 			}
 			
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectActualFolder));
