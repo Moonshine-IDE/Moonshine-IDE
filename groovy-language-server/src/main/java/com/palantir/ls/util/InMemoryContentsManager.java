@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
@@ -34,13 +36,12 @@ public final class InMemoryContentsManager implements ContentsManager {
 
     private final StringBuilder contents = new StringBuilder();
     private final Path path;
-    private final String initialContents;
     private static final String NEWLINE = System.lineSeparator();
 
     public InMemoryContentsManager(Path path, String initialContents) throws IOException {
         this.path = path;
-        this.initialContents = initialContents;
-        reload();
+        contents.setLength(0);
+        contents.append(initialContents);
     }
 
     public Path getPath() {
@@ -55,7 +56,15 @@ public final class InMemoryContentsManager implements ContentsManager {
     @Override
     public void reload() {
         contents.setLength(0);
-        contents.append(initialContents);
+        try
+        {
+            String newContents = FileUtils.readFileToString(path.toFile());
+            contents.append(newContents);
+        }
+        catch(IOException e)
+        {
+
+        }
     }
 
     @Override
