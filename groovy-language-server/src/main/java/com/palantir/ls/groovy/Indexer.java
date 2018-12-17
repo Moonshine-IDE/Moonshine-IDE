@@ -23,7 +23,12 @@ import com.palantir.ls.util.Ranges;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.codehaus.groovy.ast.ASTNode;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 
 public class Indexer {
@@ -32,9 +37,11 @@ public class Indexer {
     private final Map<Location, Location> gotoReferenced = Maps.newHashMap();
     // Maps from source file path -> set of symbols in that file
     private final Map<URI, Set<SymbolInformation>> fileSymbols = Maps.newHashMap();
+    private final Map<SymbolInformation, ASTNode> fileASTNodes = Maps.newHashMap();
 
-    public void addSymbol(URI uri, SymbolInformation node) {
-        fileSymbols.computeIfAbsent(uri, k -> Sets.newHashSet()).add(node);
+    public void addSymbol(URI uri, SymbolInformation symbol, ASTNode node) {
+        fileSymbols.computeIfAbsent(uri, k -> Sets.newHashSet()).add(symbol);
+        fileASTNodes.put(symbol, node);
     }
 
     public void addReference(Location referenced, Location node) {
@@ -50,6 +57,49 @@ public class Indexer {
 
     public Optional<Location> gotoReferenced(Location location) {
         return Optional.fromNullable(gotoReferenced.get(location));
+    }
+
+    public Optional<SymbolInformation> getSymbol(URI uri, Position position) {
+        if(!fileSymbols.containsKey(uri)) {
+            return Optional.absent();
+        }
+        Set<SymbolInformation> symbols = fileSymbols.get(uri);
+        if(symbols.isEmpty()) {
+            return Optional.absent();
+        }
+        symbols = symbols.stream().filter(symbol -> {
+            Range range = symbol.getLocation().getRange();
+            if(!Ranges.isValid(range)) {
+                return false;
+            }
+            return Ranges.contains(symbol.getLocation().getRange(), position);
+        })
+        // If there is more than one result, we want the symbol whose range starts the latest, with a secondary
+        // sort of earliest end range.
+        .sorted((s1, s2) -> Ranges.POSITION_COMPARATOR.compare(
+                s1.getLocation().getRange().getEnd(),
+                s2.getLocation().getRange().getEnd()))
+        .sorted((s1, s2) -> Ranges.POSITION_COMPARATOR.reversed().compare(
+                s1.getLocation().getRange().getStart(),
+                s2.getLocation().getRange().getStart()))
+        .collect(Collectors.toSet());
+        if(symbols.isEmpty()) {
+            return Optional.absent();
+        }
+        return Optional.of(symbols.iterator().next());
+    }
+
+    public Optional<ASTNode> getASTNode(URI uri, Position position) {
+        Optional<SymbolInformation> optionalSymbol = getSymbol(uri, position);
+        if(!optionalSymbol.isPresent()) {
+            return Optional.absent();
+        }
+        SymbolInformation symbol = optionalSymbol.get();
+        if(!fileASTNodes.containsKey(symbol)) {
+            return Optional.absent();
+        }
+        ASTNode node = fileASTNodes.get(symbol);
+        return Optional.of(node);
     }
 
     public Map<URI, Set<SymbolInformation>> getFileSymbols() {

@@ -88,6 +88,7 @@ public class GroovyLanguageServer implements LanguageServer, LanguageClientAware
         serverCapabilities.setDocumentSymbolProvider(true);
         serverCapabilities.setReferencesProvider(true);
         serverCapabilities.setDefinitionProvider(true);
+        serverCapabilities.setHoverProvider(true);
         InitializeResult initializeResult = new InitializeResult(serverCapabilities);
 
         targetDirectory = Files.createTempDir().toPath();

@@ -19,6 +19,7 @@ package com.palantir.ls.groovy;
 import com.google.common.base.Optional;
 import com.palantir.ls.groovy.util.GroovyConstants;
 import com.palantir.ls.groovy.util.GroovyLocations;
+import com.palantir.ls.groovy.util.GroovySymbolInformations;
 import com.palantir.ls.util.Ranges;
 import com.palantir.ls.util.UriSupplier;
 import java.net.URI;
@@ -28,11 +29,9 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CodeVisitorSupport;
-import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -45,7 +44,6 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
 
 public class MethodVisitor extends CodeVisitorSupport {
 
@@ -240,7 +238,7 @@ public class MethodVisitor extends CodeVisitorSupport {
         if (expression.getLeftExpression() instanceof Variable) {
             Variable var = (Variable) expression.getLeftExpression();
             SymbolInformation symbol = getVariableSymbolInformation(var);
-            indexer.addSymbol(uri, symbol);
+            indexer.addSymbol(uri, symbol, (ASTNode) var);
             if (var.getType() != null && classes.containsKey(var.getType().getName())) {
                 indexer.addReference(classes.get(var.getType().getName()), createLocation(var.getType()));
             }
@@ -258,33 +256,12 @@ public class MethodVisitor extends CodeVisitorSupport {
 
     private SymbolInformation getVariableSymbolInformation(Variable variable) {
         final String containerName;
-        final SymbolKind kind;
-        final Location location;
         if (methodNode.isPresent()) {
             containerName = methodNode.get().getName();
         } else {
             containerName = clazz.getName();
         }
-
-        if (variable instanceof DynamicVariable) {
-            kind = SymbolKind.Field;
-            location = GroovyLocations.createLocation(uriSupplier.get(uri));
-        } else if (variable instanceof FieldNode) {
-            kind = SymbolKind.Field;
-            location = createLocation(uri, (FieldNode) variable);
-        } else if (variable instanceof Parameter) {
-            kind = SymbolKind.Variable;
-            location = createLocation(uri, (Parameter) variable);
-        } else if (variable instanceof PropertyNode) {
-            kind = SymbolKind.Field;
-            location = createLocation(uri, (PropertyNode) variable);
-        } else if (variable instanceof VariableExpression) {
-            kind = SymbolKind.Variable;
-            location = createLocation(uri, (VariableExpression) variable);
-        } else {
-            throw new IllegalArgumentException(String.format("Unknown type of variable: %s", variable));
-        }
-        return new SymbolInformation(variable.getName(), kind, location, containerName);
+        return GroovySymbolInformations.createSymbolInformation(variable, uri, Optional.of(containerName));
     }
 
     private static int calculateArgumentsScore(Parameter[] parameters, ArgumentListExpression arguments) {

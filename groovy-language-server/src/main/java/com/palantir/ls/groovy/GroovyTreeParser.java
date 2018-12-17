@@ -27,13 +27,16 @@ import com.google.common.collect.Sets;
 import com.palantir.ls.api.TreeParser;
 import com.palantir.ls.groovy.util.GroovyConstants;
 import com.palantir.ls.groovy.util.GroovyLocations;
+import com.palantir.ls.groovy.util.GroovySymbolInformations;
 import com.palantir.ls.util.CompletionUtils;
 import com.palantir.ls.util.Ranges;
 import com.palantir.ls.util.UriSupplier;
 import com.palantir.ls.util.Uris;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,22 +44,24 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 /**
  * Groovy implementation of the TreeParser. Depends on a supplier of a Groovy CompilationUnit.
@@ -119,11 +124,10 @@ public final class GroovyTreeParser implements TreeParser {
             sourceUnit.getAST().getClasses().forEach(clazz -> {
                 if (!clazz.isScript()) {
                     // Add class symbol
-                    SymbolInformation classSymbol =
-                            createSymbolInformation(clazz.getName(), getKind(clazz),
-                                    GroovyLocations.createClassDefinitionLocation(sourceUri, clazz),
-                                    Optional.fromNullable(clazz.getOuterClass()).transform(ClassNode::getName));
-                    newIndexer.addSymbol(sourceUri, classSymbol);
+                    SymbolInformation classSymbol = GroovySymbolInformations.createSymbolInformation(
+                            clazz, sourceUri, 
+                            Optional.fromNullable(clazz.getOuterClass()).transform(ClassNode::getName));
+                    newIndexer.addSymbol(sourceUri, classSymbol, clazz);
 
                     // Add implemented interfaces reference
                     Stream.of(clazz.getInterfaces())
@@ -143,8 +147,8 @@ public final class GroovyTreeParser implements TreeParser {
                 Map<String, FieldNode> classFields = Maps.newHashMap();
                 // Add all the class's field symbols
                 clazz.getFields().forEach(field -> {
-                    SymbolInformation symbol = getVariableSymbolInformation(clazz.getName(), sourceUri, field);
-                    newIndexer.addSymbol(sourceUri, symbol);
+                    SymbolInformation symbol = GroovySymbolInformations.createSymbolInformation(field, sourceUri, Optional.of(clazz.getName()));
+                    newIndexer.addSymbol(sourceUri, symbol, field);
                     if (classes.containsKey(field.getType().getName())) {
                         newIndexer.addReference(classes.get(field.getType().getName()),
                                 GroovyLocations.createLocation(sourceUri, field.getType()));
@@ -164,8 +168,8 @@ public final class GroovyTreeParser implements TreeParser {
                 sourceUnit.getAST().getStatementBlock().getVariableScope().getDeclaredVariables().values().forEach(
                         variable -> {
                             SymbolInformation symbol =
-                                    getVariableSymbolInformation(scriptClass.getName(), sourceUri, variable);
-                            newIndexer.addSymbol(sourceUnit.getSource().getURI(), symbol);
+                                GroovySymbolInformations.createSymbolInformation(variable, sourceUri, Optional.of(scriptClass.getName()));
+                            newIndexer.addSymbol(sourceUnit.getSource().getURI(), symbol, (ASTNode) variable);
                             if (classes.containsKey(variable.getType().getName())) {
                                 newIndexer.addReference(classes.get(variable.getType().getName()),
                                         GroovyLocations.createLocation(sourceUri, variable.getType()));
@@ -271,6 +275,144 @@ public final class GroovyTreeParser implements TreeParser {
     }
 
     @Override
+    public Hover getHover(URI uri, Position position) {
+        Hover hover = new Hover();
+        Optional<ASTNode> optionalNode = indexer.getASTNode(uri, position);
+        if(optionalNode.isPresent())
+        {
+            List<Either<String, MarkedString>> contents = new ArrayList<>();
+            hover.setContents(contents);
+            ASTNode node = optionalNode.get();
+            if(node instanceof ClassNode)
+            {
+                ClassNode classNode = (ClassNode) node;
+                StringBuilder builder = new StringBuilder();
+                if(!classNode.isSyntheticPublic())
+                {
+                    builder.append("public ");
+                }
+                if(classNode.isAbstract())
+                {
+                    builder.append("abstract ");
+                }
+                if(classNode.isInterface())
+                {
+                    builder.append("interface ");
+                }
+                else if(classNode.isEnum())
+                {
+                    builder.append("enum ");
+                }
+                else
+                {
+                    builder.append("class ");
+                }
+                builder.append(classNode.getName());
+
+                ClassNode superClass = classNode.getSuperClass();
+                if(!superClass.getName().equals(GroovyConstants.JAVA_DEFAULT_OBJECT))
+                {
+                    builder.append("extends ");
+                    builder.append(superClass.getNameWithoutPackage());
+                }
+
+                contents.add(Either.forLeft(builder.toString()));
+            }
+            else if(node instanceof MethodNode)
+            {
+                MethodNode methodNode = (MethodNode) node;
+                StringBuilder builder = new StringBuilder();
+                if(methodNode.isPublic())
+                {
+                    if(!methodNode.isSyntheticPublic())
+                    {
+                        builder.append("public ");
+                    }
+                }
+                else if(methodNode.isProtected())
+                {
+                    builder.append("protected ");
+                }
+                else if(methodNode.isPrivate())
+                {
+                    builder.append("private ");
+                }
+
+                if(methodNode.isStatic())
+                {
+                    builder.append("static ");
+                }
+                
+                if(methodNode.isFinal())
+                {
+                    builder.append("final ");
+                }
+                ClassNode returnType = methodNode.getReturnType();
+                builder.append(returnType.getNameWithoutPackage());
+                builder.append(" ");
+                builder.append(methodNode.getName());
+                builder.append("(");
+                Parameter[] params = methodNode.getParameters();
+                for(int i = 0; i < params.length; i++)
+                {
+                    if(i > 0)
+                    {
+                        builder.append(", ");
+                    }
+                    Parameter paramNode = params[i];
+                    ClassNode paramType = paramNode.getType();
+                    builder.append(paramType.getNameWithoutPackage());
+                    builder.append(" ");
+                    builder.append(paramNode.getName());
+                }
+                builder.append(")");
+                contents.add(Either.forLeft(builder.toString()));
+            }
+            else if(node instanceof Variable)
+            {
+                Variable varNode = (Variable) node;
+                StringBuilder builder = new StringBuilder();
+                if(varNode instanceof FieldNode)
+                {
+                    FieldNode fieldNode = (FieldNode) node;
+                    if(fieldNode.isPublic())
+                    {
+                        builder.append("public ");
+                    }
+                    if(fieldNode.isProtected())
+                    {
+                        builder.append("protected ");
+                    }
+                    if(fieldNode.isPrivate())
+                    {
+                        builder.append("private ");
+                    }
+
+                    if(fieldNode.isFinal())
+                    {
+                        builder.append("final ");
+                    }
+
+                    if(fieldNode.isStatic())
+                    {
+                        builder.append("static ");
+                    }
+                }
+                ClassNode varType = varNode.getType();
+                builder.append(varType.getNameWithoutPackage());
+                builder.append(" ");
+                builder.append(varNode.getName());
+                contents.add(Either.forLeft(builder.toString()));
+            }
+            else
+            {
+                System.err.println("*** " + node);
+            }
+        }
+        return hover;
+    }
+
+    @Override
     public Set<SymbolInformation> getFilteredSymbols(String query) {
         checkNotNull(query, "query must not be null");
         Pattern pattern = getQueryPattern(query);
@@ -279,52 +421,21 @@ public final class GroovyTreeParser implements TreeParser {
                 .collect(Collectors.toSet());
     }
 
-    private static SymbolKind getKind(ClassNode node) {
-        if (node.isInterface()) {
-            return SymbolKind.Interface;
-        } else if (node.isEnum()) {
-            return SymbolKind.Enum;
-        }
-        return SymbolKind.Class;
-    }
-
-    // sourceUri should already have been converted to a workspace URI
-    private SymbolInformation getVariableSymbolInformation(String parentName, URI sourceUri, Variable variable) {
-        final SymbolKind kind;
-        final Location location;
-        if (variable instanceof DynamicVariable) {
-            kind = SymbolKind.Field;
-            location = GroovyLocations.createLocation(sourceUri);
-        } else if (variable instanceof FieldNode) {
-            kind = SymbolKind.Field;
-            location = GroovyLocations.createLocation(sourceUri, (FieldNode) variable);
-        } else if (variable instanceof Parameter) {
-            kind = SymbolKind.Variable;
-            location = GroovyLocations.createLocation(sourceUri, (Parameter) variable);
-        } else if (variable instanceof PropertyNode) {
-            kind = SymbolKind.Field;
-            location = GroovyLocations.createLocation(sourceUri, (PropertyNode) variable);
-        } else if (variable instanceof VariableExpression) {
-            kind = SymbolKind.Variable;
-            location = GroovyLocations.createLocation(sourceUri, (VariableExpression) variable);
-        } else {
-            throw new IllegalArgumentException(String.format("Unknown type of variable: %s", variable));
-        }
-        return new SymbolInformation(variable.getName(), kind, location, parentName);
-    }
-
     // sourceUri should already have been converted to a workspace URI
     private void parseMethod(Indexer newIndexer, URI sourceUri, ClassNode parent, Map<String, Location> classes,
             Map<String, FieldNode> classFields, MethodNode method) {
-        SymbolInformation methodSymbol =
-                createSymbolInformation(method.getName(), SymbolKind.Method,
-                        GroovyLocations.createLocation(sourceUri, method), Optional.of(parent.getName()));
-        newIndexer.addSymbol(sourceUri, methodSymbol);
+        SymbolInformation methodSymbol = GroovySymbolInformations.createSymbolInformation(
+                method, sourceUri, Optional.of(parent.getName()));
+        newIndexer.addSymbol(sourceUri, methodSymbol, method);
+        newIndexer.addReference(GroovyLocations.createLocation(sourceUri, method),
+                GroovyLocations.createLocation(sourceUri, method));
 
         // Method parameters
         method.getVariableScope().getDeclaredVariables().values().forEach(variable -> {
-            SymbolInformation variableSymbol = getVariableSymbolInformation(method.getName(), sourceUri, variable);
-            newIndexer.addSymbol(sourceUri, variableSymbol);
+            SymbolInformation variableSymbol = GroovySymbolInformations.createSymbolInformation(variable, sourceUri, Optional.of(method.getName()));
+            newIndexer.addSymbol(sourceUri, variableSymbol, (ASTNode) variable);
+            newIndexer.addReference(GroovyLocations.createLocation(sourceUri, (ASTNode) variable),
+                    GroovyLocations.createLocation(sourceUri, (ASTNode) variable));
             if (classes.containsKey(variable.getType().getName())) {
                 newIndexer.addReference(classes.get(variable.getType().getName()),
                         GroovyLocations.createLocation(sourceUri, variable.getType()));
@@ -346,11 +457,6 @@ public final class GroovyTreeParser implements TreeParser {
                         Optional.of(method), uriSupplier));
             }
         }
-    }
-
-    private static SymbolInformation createSymbolInformation(String name, SymbolKind kind, Location location,
-            Optional<String> parentName) {
-        return new SymbolInformation(name, kind, location, parentName.orNull());
     }
 
     private static class ReferenceLocation {

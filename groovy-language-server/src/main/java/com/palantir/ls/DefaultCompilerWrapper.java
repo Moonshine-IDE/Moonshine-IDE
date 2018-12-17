@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.FileEvent;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -74,6 +75,11 @@ public class DefaultCompilerWrapper implements CompilerWrapper {
     @Override
     public Optional<Location> gotoDefinition(URI uri, Position position) {
         return parser.gotoDefinition(uri, position);
+    }
+
+    @Override
+    public Hover getHover(URI uri, Position position) {
+        return parser.getHover(uri, position);
     }
 
     @Override

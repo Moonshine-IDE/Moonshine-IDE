@@ -116,7 +116,9 @@ public abstract class AbstractTextDocumentService implements TextDocumentService
 
     @Override
     public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-        throw new UnsupportedOperationException();
+        URI uri = Uris.resolveToRoot(getWorkspacePath(), position.getTextDocument().getUri());
+        return CompletableFuture.completedFuture(getState().getCompilerWrapper()
+                .getHover(uri, position.getPosition()));
     }
 
     @Override

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.ReferenceParams;
@@ -64,6 +65,11 @@ public interface TreeParser {
      * Returns the goto definition location of the given position if it exists.
      */
     Optional<Location> gotoDefinition(URI uri, Position position);
+
+    /**
+     * Returns the hover information of the given position if it exists.
+     */
+    Hover getHover(URI uri, Position position);
 
     /**
      * Returns a list of symbols filtered based on a wildcard query.
