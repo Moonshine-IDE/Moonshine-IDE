@@ -70,7 +70,7 @@ package actionScripts.impls
 			if (!tmpOpenFile) return;
 			
 			dispatcher.dispatchEvent(
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpOpenFile)
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile])
 			);
 		}
 		

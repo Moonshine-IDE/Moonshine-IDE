@@ -454,15 +454,8 @@
 					case FTETreeItemRenderer.OPEN:
 					case FTETreeItemRenderer.OPEN_FILE_FOLDER:
 					{
-						if (isMultiSelection)
-						{
-							for each (fw in tree.selectedItems)
-							{
-								openFileFolder(fw);
-							}
-						}
-						else
-							openFileFolder(fileWrapper);
+						if (isMultiSelection) openFileFolder(tree.selectedItems);
+						else openFileFolder([fileWrapper]);
 						break;
 					}
 					case FTETreeItemRenderer.CLOSE:
@@ -476,7 +469,7 @@
 					{
 						if (isMultiSelection && isMultiSelectionIsValid())
 						{
-							Alert.show("Are you sure you want to delete selected file/folder from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+							Alert.show("Are you sure you want to delete all selected files and folders from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
 							return;
 						}
 						else if (!isMultiSelection)
@@ -647,20 +640,26 @@
 				 * @local
 				 * opens a folder or open a file
 				 */
-				function openFileFolder(value:FileWrapper):void
+				function openFileFolder(fws:Array):void
 				{
-					if (value.file.fileBridge.isDirectory)
+					var tmpFLs:Array = [];
+					var tmpFWs:Array = [];
+					for each (var fw:FileWrapper in fws)
 					{
-						if (tree.dataDescriptor.isBranch(value))
+						if (fw.file.fileBridge.isDirectory && tree.dataDescriptor.isBranch(fw))
 						{
-							tree.expandItem(value, true, true);
+							tree.expandItem(fw, true, true);
+						}
+						else
+						{
+							tmpFLs.push(fw.file);
+							tmpFWs.push(fw);
 						}
 					}
-					else if (!value.file.fileBridge.isDirectory && !value.isWorking)
+					
+					if (tmpFLs.length > 0)
 					{
-						dispatcher.dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, value.file, -1, value)
-						);
+						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFLs, -1, tmpFWs));
 					}
 				}
 			}
@@ -1049,7 +1048,7 @@
 	
 					refreshActiveProject(item);
 					dispatcher.dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, item.file, -1, item)
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
 					);
 				}
 			}

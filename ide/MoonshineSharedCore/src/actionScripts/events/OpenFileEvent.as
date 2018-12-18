@@ -29,28 +29,38 @@ package actionScripts.events
 		public static const TRACE_LINE:String = "traceLineEvent";
 		public static const JUMP_TO_SEARCH_LINE:String = "jumpToLineEvent";
 		
-		public var file:FileLocation;
+		public var files:Vector.<FileLocation>;
 		public var atLine:int;
 		public var atChar:int = -1;
-		public var wrapper:FileWrapper;
+		public var wrappers:Vector.<FileWrapper>;
 		public var openAsTourDe:Boolean;
 		public var tourDeSWFSource:String;
 		
 		public var independentOpenFile:Boolean; // when arbitrary file opened off-Moonshine, or drag into off-Moonshine  
 		
-		public function OpenFileEvent(type:String, file:FileLocation=null, atLine:int = -1, wrapper:FileWrapper=null, ...param)
+		public function OpenFileEvent(type:String, files:Array=null, atLine:int = -1, wrappers:Array=null, ...param)
 		{
-			this.file = file;
-			this.atLine = atLine;
-			this.wrapper = wrapper;
-			if (param && param.length > 0)
+			try
 			{
-				this.openAsTourDe = param[0];
-				if (this.openAsTourDe) this.tourDeSWFSource = param[1];
+				if (files) this.files = Vector.<FileLocation>(files as Array);
+				if (wrappers) this.wrappers = Vector.<FileWrapper>(wrappers as Array);
+			} 
+			catch (e:Error)
+			{
+				trace("Error:: Unrecognized 'Open' object type.");
+			}
+
+			if (files.length > 1)
+			{
+				this.atLine = atLine;
+				if (param && param.length > 0)
+				{
+					this.openAsTourDe = param[0];
+					if (this.openAsTourDe) this.tourDeSWFSource = param[1];
+				}
 			}
 			
 			super(type, false, true);
 		}
-		
 	}
 }

@@ -708,7 +708,7 @@ package actionScripts.plugins.fdb
 						
 					}
 					// Open file & scroll & select the given line
-					dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, getFileTargetPath(nameOfFile), bpLine2));
+					dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, [getFileTargetPath(nameOfFile)], bpLine2));
 					// Chances are we're not in focus here, so let's focus Moonshine
 					// This slows everything down like /crazy/. Why?
 					// NativeApplication.nativeApplication.activate(NativeApplication.nativeApplication.openedWindows[0]);
@@ -782,7 +782,7 @@ package actionScripts.plugins.fdb
 					if(match)
 					{
 						var nextLine3:int = match[0];
-						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, getFileTargetPath(nameOfFile), nextLine3-1));
+						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, [getFileTargetPath(nameOfFile)], nextLine3-1));
 						dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER,handleCodeStepOver );
 					}
 					isMatchFound = true;

@@ -104,7 +104,7 @@ package actionScripts.plugins.nativeFiles
 		{
 			for each (var i:String in paths)
 			{
-				var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, new FileLocation(i));
+				var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(i)]);
 				tmpOpenEvent.independentOpenFile = true;
 				
 				dispatcher.dispatchEvent(tmpOpenEvent);

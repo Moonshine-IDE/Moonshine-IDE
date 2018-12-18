@@ -486,7 +486,7 @@ package actionScripts.plugin.templating
 			
 			// Add to project view so user can rename it
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, newTemplate)
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [newTemplate])
 			);
 			
 			// Update internal template list
@@ -579,7 +579,7 @@ package actionScripts.plugin.templating
 			else if (!custom.fileBridge.isDirectory)
 			{
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, custom)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [custom])
 				);
 			}
 		}
@@ -765,7 +765,7 @@ package actionScripts.plugin.templating
 				helper.fileTemplate(event.template, event.location);
 				
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, event.location)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [event.location])
 				);
 			}
 			else
@@ -1323,7 +1323,7 @@ package actionScripts.plugin.templating
 			if (isOpenAfterCreate)
 			{
 	            dispatcher.dispatchEvent(
-	                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, insideLocation)
+	                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileToSave], -1, [insideLocation])
 	            );
 			}
 

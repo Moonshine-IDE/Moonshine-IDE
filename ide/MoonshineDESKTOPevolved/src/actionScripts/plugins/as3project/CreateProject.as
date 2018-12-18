@@ -574,7 +574,7 @@ package actionScripts.plugins.as3project
 			if (!isCustomTemplateProject && !isLibraryProject)
 			{
 				dispatcher.dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
 				);
 			}
 

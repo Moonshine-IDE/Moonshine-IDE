@@ -599,7 +599,7 @@ package actionScripts.plugins.vscodeDebug
 			var line:int = stackFrame.line - 1;
 			var character:int = stackFrame.column;
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.TRACE_LINE,
-				new FileLocation(filePath), line);
+				[new FileLocation(filePath)], line);
 			openEvent.atChar = character;
 			dispatcher.dispatchEvent(openEvent);
 			
