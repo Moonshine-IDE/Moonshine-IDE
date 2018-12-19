@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.palantir.ls.util.Ranges;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class Indexer {
         if(symbols.isEmpty()) {
             return Optional.absent();
         }
-        symbols = symbols.stream().filter(symbol -> {
+        List<SymbolInformation> filteredSymbols = symbols.stream().filter(symbol -> {
             Range range = symbol.getLocation().getRange();
             if(!Ranges.isValid(range)) {
                 return false;
@@ -82,11 +83,11 @@ public class Indexer {
         .sorted((s1, s2) -> Ranges.POSITION_COMPARATOR.reversed().compare(
                 s1.getLocation().getRange().getStart(),
                 s2.getLocation().getRange().getStart()))
-        .collect(Collectors.toSet());
-        if(symbols.isEmpty()) {
+        .collect(Collectors.toList());
+        if(filteredSymbols.isEmpty()) {
             return Optional.absent();
         }
-        return Optional.of(symbols.iterator().next());
+        return Optional.of(filteredSymbols.iterator().next());
     }
 
     public Optional<ASTNode> getASTNode(URI uri, Position position) {
