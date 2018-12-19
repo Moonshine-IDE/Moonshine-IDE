@@ -60,6 +60,17 @@ public class Indexer {
         return Optional.fromNullable(gotoReferenced.get(location));
     }
 
+    public Optional<ASTNode> gotoReferencedNode(Location location) {
+        Optional<Location> optionalLocation = gotoReferenced(location);
+        if(!optionalLocation.isPresent())
+        {
+            return Optional.absent();
+        }
+        Location referencedLocation = optionalLocation.get();
+        URI uri = URI.create(referencedLocation.getUri());
+        return getASTNode(uri, referencedLocation.getRange().getStart());
+    }
+
     public Optional<SymbolInformation> getSymbol(URI uri, Position position) {
         if(!fileSymbols.containsKey(uri)) {
             return Optional.absent();

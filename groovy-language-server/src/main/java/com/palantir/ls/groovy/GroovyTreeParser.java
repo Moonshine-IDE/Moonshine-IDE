@@ -51,7 +51,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.eclipse.lsp4j.CompletionList;
@@ -277,137 +276,151 @@ public final class GroovyTreeParser implements TreeParser {
     @Override
     public Hover getHover(URI uri, Position position) {
         Hover hover = new Hover();
-        Optional<ASTNode> optionalNode = indexer.getASTNode(uri, position);
-        if(optionalNode.isPresent())
+
+        List<Location> possibleLocations = indexer.getGotoReferenced().keySet().stream()
+                .filter(loc -> uri.equals(URI.create(loc.getUri())) && Ranges.contains(loc.getRange(), position))
+                // If there is more than one result, we want the symbol whose range starts the latest, with a secondary
+                // sort of earliest end range.
+                .sorted((l1, l2) -> Ranges.POSITION_COMPARATOR.compare(l1.getRange().getEnd(), l2.getRange().getEnd()))
+                .sorted((l1, l2) -> Ranges.POSITION_COMPARATOR.reversed().compare(l1.getRange().getStart(),
+                        l2.getRange().getStart()))
+                .collect(Collectors.toList());
+        if (possibleLocations.isEmpty()) {
+            return hover;
+        }
+
+        Optional<ASTNode> optionalNode = indexer.gotoReferencedNode(possibleLocations.get(0));
+        if(!optionalNode.isPresent()) {
+            return hover;
+        }
+
+        List<Either<String, MarkedString>> contents = new ArrayList<>();
+        hover.setContents(contents);
+        ASTNode node = optionalNode.get();
+        if(node instanceof ClassNode)
         {
-            List<Either<String, MarkedString>> contents = new ArrayList<>();
-            hover.setContents(contents);
-            ASTNode node = optionalNode.get();
-            if(node instanceof ClassNode)
+            ClassNode classNode = (ClassNode) node;
+            StringBuilder builder = new StringBuilder();
+            if(!classNode.isSyntheticPublic())
             {
-                ClassNode classNode = (ClassNode) node;
-                StringBuilder builder = new StringBuilder();
-                if(!classNode.isSyntheticPublic())
+                builder.append("public ");
+            }
+            if(classNode.isAbstract())
+            {
+                builder.append("abstract ");
+            }
+            if(classNode.isInterface())
+            {
+                builder.append("interface ");
+            }
+            else if(classNode.isEnum())
+            {
+                builder.append("enum ");
+            }
+            else
+            {
+                builder.append("class ");
+            }
+            builder.append(classNode.getName());
+
+            ClassNode superClass = classNode.getSuperClass();
+            if(!superClass.getName().equals(GroovyConstants.JAVA_DEFAULT_OBJECT))
+            {
+                builder.append("extends ");
+                builder.append(superClass.getNameWithoutPackage());
+            }
+
+            contents.add(Either.forLeft(builder.toString()));
+        }
+        else if(node instanceof MethodNode)
+        {
+            MethodNode methodNode = (MethodNode) node;
+            StringBuilder builder = new StringBuilder();
+            if(methodNode.isPublic())
+            {
+                if(!methodNode.isSyntheticPublic())
                 {
                     builder.append("public ");
                 }
-                if(classNode.isAbstract())
-                {
-                    builder.append("abstract ");
-                }
-                if(classNode.isInterface())
-                {
-                    builder.append("interface ");
-                }
-                else if(classNode.isEnum())
-                {
-                    builder.append("enum ");
-                }
-                else
-                {
-                    builder.append("class ");
-                }
-                builder.append(classNode.getName());
-
-                ClassNode superClass = classNode.getSuperClass();
-                if(!superClass.getName().equals(GroovyConstants.JAVA_DEFAULT_OBJECT))
-                {
-                    builder.append("extends ");
-                    builder.append(superClass.getNameWithoutPackage());
-                }
-
-                contents.add(Either.forLeft(builder.toString()));
             }
-            else if(node instanceof MethodNode)
+            else if(methodNode.isProtected())
             {
-                MethodNode methodNode = (MethodNode) node;
-                StringBuilder builder = new StringBuilder();
-                if(methodNode.isPublic())
+                builder.append("protected ");
+            }
+            else if(methodNode.isPrivate())
+            {
+                builder.append("private ");
+            }
+
+            if(methodNode.isStatic())
+            {
+                builder.append("static ");
+            }
+            
+            if(methodNode.isFinal())
+            {
+                builder.append("final ");
+            }
+            ClassNode returnType = methodNode.getReturnType();
+            builder.append(returnType.getNameWithoutPackage());
+            builder.append(" ");
+            builder.append(methodNode.getName());
+            builder.append("(");
+            Parameter[] params = methodNode.getParameters();
+            for(int i = 0; i < params.length; i++)
+            {
+                if(i > 0)
                 {
-                    if(!methodNode.isSyntheticPublic())
-                    {
-                        builder.append("public ");
-                    }
+                    builder.append(", ");
                 }
-                else if(methodNode.isProtected())
+                Parameter paramNode = params[i];
+                ClassNode paramType = paramNode.getType();
+                builder.append(paramType.getNameWithoutPackage());
+                builder.append(" ");
+                builder.append(paramNode.getName());
+            }
+            builder.append(")");
+            contents.add(Either.forLeft(builder.toString()));
+        }
+        else if(node instanceof Variable)
+        {
+            Variable varNode = (Variable) node;
+            StringBuilder builder = new StringBuilder();
+            if(varNode instanceof FieldNode)
+            {
+                FieldNode fieldNode = (FieldNode) node;
+                if(fieldNode.isPublic())
+                {
+                    builder.append("public ");
+                }
+                if(fieldNode.isProtected())
                 {
                     builder.append("protected ");
                 }
-                else if(methodNode.isPrivate())
+                if(fieldNode.isPrivate())
                 {
                     builder.append("private ");
                 }
 
-                if(methodNode.isStatic())
-                {
-                    builder.append("static ");
-                }
-                
-                if(methodNode.isFinal())
+                if(fieldNode.isFinal())
                 {
                     builder.append("final ");
                 }
-                ClassNode returnType = methodNode.getReturnType();
-                builder.append(returnType.getNameWithoutPackage());
-                builder.append(" ");
-                builder.append(methodNode.getName());
-                builder.append("(");
-                Parameter[] params = methodNode.getParameters();
-                for(int i = 0; i < params.length; i++)
-                {
-                    if(i > 0)
-                    {
-                        builder.append(", ");
-                    }
-                    Parameter paramNode = params[i];
-                    ClassNode paramType = paramNode.getType();
-                    builder.append(paramType.getNameWithoutPackage());
-                    builder.append(" ");
-                    builder.append(paramNode.getName());
-                }
-                builder.append(")");
-                contents.add(Either.forLeft(builder.toString()));
-            }
-            else if(node instanceof Variable)
-            {
-                Variable varNode = (Variable) node;
-                StringBuilder builder = new StringBuilder();
-                if(varNode instanceof FieldNode)
-                {
-                    FieldNode fieldNode = (FieldNode) node;
-                    if(fieldNode.isPublic())
-                    {
-                        builder.append("public ");
-                    }
-                    if(fieldNode.isProtected())
-                    {
-                        builder.append("protected ");
-                    }
-                    if(fieldNode.isPrivate())
-                    {
-                        builder.append("private ");
-                    }
 
-                    if(fieldNode.isFinal())
-                    {
-                        builder.append("final ");
-                    }
-
-                    if(fieldNode.isStatic())
-                    {
-                        builder.append("static ");
-                    }
+                if(fieldNode.isStatic())
+                {
+                    builder.append("static ");
                 }
-                ClassNode varType = varNode.getType();
-                builder.append(varType.getNameWithoutPackage());
-                builder.append(" ");
-                builder.append(varNode.getName());
-                contents.add(Either.forLeft(builder.toString()));
             }
-            else
-            {
-                System.err.println("*** " + node);
-            }
+            ClassNode varType = varNode.getType();
+            builder.append(varType.getNameWithoutPackage());
+            builder.append(" ");
+            builder.append(varNode.getName());
+            contents.add(Either.forLeft(builder.toString()));
+        }
+        else
+        {
+            System.err.println("*** " + node);
         }
         return hover;
     }
