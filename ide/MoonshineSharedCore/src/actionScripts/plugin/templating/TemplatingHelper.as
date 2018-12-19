@@ -168,6 +168,8 @@ package actionScripts.plugin.templating
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+				case "Java File":
+					return [ProjectMenuTypes.JAVA];
 			}
 			
 			return [];

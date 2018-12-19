@@ -35,6 +35,7 @@ package actionScripts.plugins.symbols
 
 	import mx.managers.PopUpManager;
 	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -112,7 +113,8 @@ package actionScripts.plugins.symbols
 
 		private function handleOpenDocumentSymbolsView(event:Event):void
 		{
-			if(!(model.activeEditor is ActionScriptTextEditor))
+			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!editor)
 			{
 				return;
 			}
