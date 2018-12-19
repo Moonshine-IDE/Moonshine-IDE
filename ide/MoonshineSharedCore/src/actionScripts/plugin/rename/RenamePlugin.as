@@ -42,7 +42,6 @@ package actionScripts.plugin.rename
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.plugin.rename.view.RenameView;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.utils.CustomTree;
 	import actionScripts.utils.TextUtil;
@@ -53,6 +52,7 @@ package actionScripts.plugin.rename
 	import actionScripts.valueObjects.TextEdit;
 
 	import components.popup.RenamePopup;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -91,7 +91,7 @@ package actionScripts.plugin.rename
 
 		private function handleOpenRenameView(event:Event):void
 		{
-			var editor:ActionScriptTextEditor = model.activeEditor as ActionScriptTextEditor;
+			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
 			if(!editor)
 			{
 				return;

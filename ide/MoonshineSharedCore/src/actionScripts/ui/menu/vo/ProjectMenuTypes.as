@@ -31,6 +31,7 @@ package actionScripts.ui.menu.vo
 		public static const LIBRARY_FLEX_AS:String = "libraryFlexAS";
 		public static const GIT_PROJECT:String = "gitProject";
 		public static const SVN_PROJECT:String = "svnProject";
+		public static const JAVA:String = "java";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE:Array;
