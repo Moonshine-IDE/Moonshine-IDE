@@ -104,46 +104,46 @@ package actionScripts.plugins.nativeFiles
 		{
 			var copiedFileDestination:File;
 			var relativePathToCopiedFileDestination:String;
-			if (filesToBeCopied.length > 0)
+			if (foldersOnlyToBeCopied.length != 0)
 			{
-				adjustDestinationFilePath(filesToBeCopied[0]);
-				if (!overwrite && !overwriteAll && copiedFileDestination.exists)
+				adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
+				if (copiedFileDestination.nativePath.indexOf(foldersOnlyToBeCopied[0].nativePath + File.separator) != -1)
 				{
-					setAlerts(false);
-					Alert.show("File already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
+					// parent not permitted to copied as children
+					Alert.show("Parent is not permitted to copy as children:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination +"\nCopy terminates.", "Error!");
+					resetAndNotifyCaller();
+					return;
+				}
+				else if (!overwrite && !overwriteAll && copiedFileDestination.exists)
+				{
+					setAlerts(true);
+					Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
 				}
 				else
 				{
-					// copy the file
-					(filesToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
-					(filesToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
-					(filesToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
+					// copy folder and all its contents
+					(foldersOnlyToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
+					(foldersOnlyToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+					(foldersOnlyToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
 				}
 			}
 			else
 			{
 				// go for folder copying
-				if (foldersOnlyToBeCopied.length != 0)
+				if (filesToBeCopied.length != 0)
 				{
-					adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
-					if (copiedFileDestination.nativePath.indexOf(foldersOnlyToBeCopied[0].nativePath + File.separator) != -1)
+					adjustDestinationFilePath(filesToBeCopied[0]);
+					if (!overwrite && !overwriteAll && copiedFileDestination.exists)
 					{
-						// parent not permitted to copied as children
-						Alert.show("Parent is not permitted to copy as children:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination +"\nCopy terminates.", "Error!");
-						resetAndNotifyCaller();
-						return;
-					}
-					else if (!overwrite && !overwriteAll && copiedFileDestination.exists)
-					{
-						setAlerts(true);
-						Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
+						setAlerts(false);
+						Alert.show("File already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
 					}
 					else
 					{
-						// copy folder and all its contents
-						(foldersOnlyToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
-						(foldersOnlyToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
-						(foldersOnlyToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
+						// copy the file
+						(filesToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
+						(filesToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+						(filesToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
 					}
 					
 					return;

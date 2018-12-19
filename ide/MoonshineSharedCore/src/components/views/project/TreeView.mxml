@@ -437,9 +437,12 @@
 	
 				var project:ProjectVO;
 				var fileWrapper:FileWrapper = FileWrapper(event.data);
-				var isMultiSelection:Boolean = tree.selectedItems.length > 1;
+				var isMultiSelection:Boolean;
 				var fw:FileWrapper;
-	
+				
+				if ((tree.selectedItems.length > 1) 
+					&& (tree.selectedItems.indexOf(fileWrapper) != -1)) isMultiSelection = true;
+
 				switch (event.menuLabel)
 				{
 					case FTETreeItemRenderer.SETTINGS:
