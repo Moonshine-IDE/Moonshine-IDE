@@ -53,6 +53,7 @@ import actionScripts.valueObjects.Settings;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.ui.menu.vo.ProjectMenuTypes;
 import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
 
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -287,6 +288,13 @@ import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 							{
 								return item === ProjectMenuTypes.JAVA;
+							});
+						}
+						else if(currentProject is GroovyProjectVO)
+						{
+							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+							{
+								return item === ProjectMenuTypes.GROOVY;
 							});
 						}
 						else if(currentProject is AS3ProjectVO)

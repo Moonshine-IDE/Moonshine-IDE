@@ -32,6 +32,7 @@ package actionScripts.ui.menu.vo
 		public static const GIT_PROJECT:String = "gitProject";
 		public static const SVN_PROJECT:String = "svnProject";
 		public static const JAVA:String = "java";
+		public static const GROOVY:String = "groovy";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE:Array;

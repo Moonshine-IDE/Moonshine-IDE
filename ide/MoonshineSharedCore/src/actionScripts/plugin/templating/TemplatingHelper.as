@@ -161,6 +161,8 @@ package actionScripts.plugin.templating
 					return [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
 				case "Java File":
 					return [ProjectMenuTypes.JAVA];
+				case "Groovy File":
+					return [ProjectMenuTypes.GROOVY];
 			}
 			
 			return [];
