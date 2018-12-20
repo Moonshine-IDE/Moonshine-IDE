@@ -1895,7 +1895,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			if(event.isDefaultPrevented())
+			{
+				return;
+			}
+			//TODO: fix this to properly merge symbols from all projects
+			if(!isActiveEditorInProject() && _model.projects.length != 1)
 			{
 				return;
 			}
