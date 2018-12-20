@@ -251,7 +251,7 @@ package actionScripts.controllers
 				Alert.buttonWidth = 90;
 				Alert.yesLabel = "Open All";
 				Alert.cancelLabel = "Cancel All";
-				Alert.show("Unable to open all selected binary files.\nDo you want to open the files by operating system?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
+				Alert.show("Unable to open the selected binary files.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
 				{
 					Alert.buttonWidth = 65;
 					Alert.yesLabel = "Yes";
@@ -268,7 +268,7 @@ package actionScripts.controllers
 			}
 			else if ((binaryFiles.length != 0) && (binaryFiles.length == 1))
 			{
-				Alert.show("Unable to open binary file "+ files[0].name +".\nDo you want to open the file by operating system?", "Error!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+				Alert.show("Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
 				{
 					if (event.detail == Alert.YES)
 					{
