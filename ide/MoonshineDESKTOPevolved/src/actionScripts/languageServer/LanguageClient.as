@@ -1262,9 +1262,12 @@ package actionScripts.languageServer
 				}
 			}
 
+			//ideally, we'd just pass undefined as the argument, but the
+			//Apache Flex compiler produces a weird warning, for some reason
+			var data:* = undefined;
 			return new CompletionItem(original.label, original.insertText,
                     original.kind, original.detail,
-					original.documentation, command, undefined,
+					original.documentation, command, data,
 					original.deprecated, additionalTextEdits);
 		}
 
