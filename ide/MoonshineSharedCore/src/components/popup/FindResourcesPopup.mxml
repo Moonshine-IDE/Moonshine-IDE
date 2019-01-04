@@ -83,7 +83,7 @@
 
 			var tmpObject:ResourceVO = lstResources.selectedItem as ResourceVO;
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpObject.sourceWrapper.file, -1, tmpObject.sourceWrapper)
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpObject.sourceWrapper.file], -1, [tmpObject.sourceWrapper])
 			);
 
 			super.closeThis();

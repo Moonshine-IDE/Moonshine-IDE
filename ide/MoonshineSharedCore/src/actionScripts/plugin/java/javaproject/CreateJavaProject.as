@@ -2,7 +2,6 @@ package actionScripts.plugin.java.javaproject
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.filesystem.File;
 	import flash.net.SharedObject;
 	
 	import mx.controls.Alert;
@@ -137,7 +136,7 @@ package actionScripts.plugin.java.javaproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = JavaImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = JavaImporter.test(value.fileBridge.getFile);
 			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 

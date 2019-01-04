@@ -87,7 +87,7 @@ package actionScripts.plugins.core
 			}
 			
 			// confirm to the caller
-			projectDeleteCompletionMethod(deletableProjectWrapper);
+			projectDeleteCompletionMethod([deletableProjectWrapper]);
 			
 			// remove footprint
 			filesToBeDeleted = null;

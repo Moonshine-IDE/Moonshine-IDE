@@ -440,6 +440,11 @@
 
             var project:ProjectVO;
             var fileWrapper:FileWrapper = FileWrapper(event.data);
+			var isMultiSelection:Boolean;
+			var fw:FileWrapper;
+			
+			if ((tree.selectedItems.length > 1) 
+				&& (tree.selectedItems.indexOf(fileWrapper) != -1)) isMultiSelection = true;
 
             switch (event.menuLabel)
             {
@@ -455,40 +460,36 @@
                 case FTETreeItemRenderer.OPEN:
                 case FTETreeItemRenderer.OPEN_FILE_FOLDER:
                 {
-                    if (fileWrapper.file.fileBridge.isDirectory)
-                    {
-                        if (tree.dataDescriptor.isBranch(fileWrapper))
-                        {
-                            tree.expandItem(fileWrapper, !tree.isItemOpen(fileWrapper), true);
-                        }
-                        return;
-                    }
-
-                    if (fileWrapper.isWorking) return;
-
-                    dispatcher.dispatchEvent(
-                            new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileWrapper.file, -1, fileWrapper)
-                    );
-                    break;
+					if (isMultiSelection) openFileFolder(tree.selectedItems);
+					else openFileFolder([fileWrapper]);
+					break;
                 }
                 case FTETreeItemRenderer.CLOSE:
                 {
-                    onFileDeletedOnServer(fileWrapper, event.menuLabel);
+					onFileDeletedOnServer([fileWrapper], event.menuLabel);
                     break;
                 }
                 case FTETreeItemRenderer.DELETE:
                 case FTETreeItemRenderer.DELETE_PROJECT:
                 case FTETreeItemRenderer.DELETE_FILE_FOLDER:
                 {
-                    if (fileWrapper.isWorking) return;
-                    if (!fileWrapper.isRoot && fileWrapper.file.fileBridge.exists)
-                    {
-                        Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
-                    }
-                    else
-                    {
-                        onFileDeleteConfirm(null);
-                    }
+					if (isMultiSelection && isMultiSelectionIsValid())
+					{
+						Alert.show("Are you sure you want to delete all selected files and folders from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+						return;
+					}
+					else if (!isMultiSelection)
+					{
+						if (fileWrapper.isWorking) return;
+						if (!fileWrapper.isRoot && fileWrapper.file.fileBridge.exists)
+						{
+							Alert.show("Are you sure you want to delete '" + fileWrapper.file.fileBridge.name + "' from the file system?", "Confirm", Alert.YES | Alert.CANCEL, null, onFileDeleteConfirm);
+						}
+						else
+						{
+							onFileDeleteConfirm(null);
+						}
+					}
                     break;
                 }
                 case FTETreeItemRenderer.RENAME:
@@ -503,12 +504,12 @@
                 }
                 case FTETreeItemRenderer.COPY_FILE:
                 {
-                    dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, fileWrapper));
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, isMultiSelection ? tree.selectedItems : [fileWrapper]));
                     break;
                 }
                 case FTETreeItemRenderer.PASTE_FILE:
                 {
-                    dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper))));
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [FileWrapper(tree.getParentItem(fileWrapper))]));
                     break;
                 }
                 case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
@@ -588,8 +589,8 @@
             {
                 if (!event2 || event2.detail == Alert.YES)
                 {
-                    var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper);
-                    dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, fileWrapper, onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(tree.selectedItems[0] as FileWrapper);
+					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, isMultiSelection ? tree.selectedItems : [fileWrapper], onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
                 }
             }
 
@@ -601,6 +602,74 @@
             {
                 dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, rendererObject.data));
             }
+			
+			/*
+			* @local
+			* Checks if multi-selection is valid to proceed
+			* against context-menu options
+			*/
+			function isMultiSelectionIsValid():Boolean
+			{
+				var hasProjectRoot:Boolean;
+				var hasProjectFiles:Boolean;
+				for each (var fw:FileWrapper in tree.selectedItems)
+				{
+					if (fw.isRoot) hasProjectRoot = true;
+					else hasProjectFiles = true;
+					
+					// terminate if any file do not exists
+					if (!fw.file.fileBridge.exists)
+					{
+						Alert.show("One or more files to the selection does not exists.", "Error");
+						return false;
+					}
+				}
+				
+				// terminates if project and project's files selected at same time
+				if (hasProjectFiles && hasProjectRoot)
+				{
+					Alert.show("Project and files of projects are not allowed to bulk delete.", "Error");
+					return false;
+				}
+				
+				// terminate if multiple projects are trying to delete
+				// (based on the current popup confirmation design with files to be deleted - 
+				// we should show only confirmation to reduce complexity
+				if (hasProjectRoot && tree.selectedItems.length > 1)
+				{
+					Alert.show("Multiple projects are are not allowed to bulk delete.", "Error");
+					return false;
+				}
+				
+				return true;
+			}
+			
+			/*
+			* @local
+			* opens a folder or open a file
+			*/
+			function openFileFolder(fws:Array):void
+			{
+				var tmpFLs:Array = [];
+				var tmpFWs:Array = [];
+				for each (var fw:FileWrapper in fws)
+				{
+					if (fw.file.fileBridge.isDirectory && tree.dataDescriptor.isBranch(fw))
+					{
+						tree.expandItem(fw, true, true);
+					}
+					else
+					{
+						tmpFLs.push(fw.file);
+						tmpFWs.push(fw);
+					}
+				}
+				
+				if (tmpFLs.length > 0)
+				{
+					dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpFLs, -1, tmpFWs));
+				}
+			}
         }
 
         protected function handleNewFolderPopupClose(event:CloseEvent):void
@@ -718,78 +787,95 @@
             return null;
         }
 
-        private function onFileDeletedOnServer(value:FileWrapper, removalType:String = null):void
+        private function onFileDeletedOnServer(value:Array, removalType:String = null):void
         {
-            if (!value) return;
-            deleteFileWrapper = value;
-
-            var openItems:Object = tree.openItems;
-            var parentCollection:Array;
-            var tmpProject:ProjectVO;
-            // if the file/folder is a project root
-            if (value.isRoot)
-            {
-                tmpProject = UtilsCore.getProjectFromProjectFolder(value);
-                UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value, (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
-                {
-                    for each (var project:ProjectVO in projects)
-                    {
-                        if (project.projectFolder.nativePath === value.nativePath)
-                        {
-                            projects.removeItem(project);
-                            updateTreeView();
-
-                            // in case of Close project we shall need to close the lang-server here
-                            // in case of Delete project this handles by the command class
-                            if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-                            break;
-                        }
-                    }
-                });
-            }
-            else
-            {
-                var lastSelectedItem:Object = tree.selectedItem;
-
-                // search through open projects as we don't know
-                // which project the FileWrapper is belongs to
-                for each (var fw:FileWrapper in projectFolders)
-                {
-                    parentCollection = findFilePosition(fw);
-                    if (parentCollection) break;
-                }
-
-                parentCollection.splice(parentCollection.indexOf(value), 1);
-                fileCollection = null;
-
-                if (lastSelectedItem && lastSelectedItem == value)
-                {
-                    tree.selectedItem = tree.getParentItem(value);
-                }
-
-                updateTreeView();
-
-                // check if the wrapper is the source folder to the project
-                tmpProject = UtilsCore.getProjectFromProjectFolder(value);
-                if (tmpProject is AS3ProjectVO)
-                {
-                    var tmpAS3Project:AS3ProjectVO = AS3ProjectVO(tmpProject);
-                    if (tmpAS3Project.sourceFolder.fileBridge.nativePath == value.nativePath)
-                    {
-                        tmpAS3Project.sourceFolder = null;
-                    }
-                }
-
-                dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
-            }
-
-            /*
-             *@local
-             */
-            function updateTreeView():void
-            {
-                model.selectedprojectFolders = projectFolders;
-            }
+			if (!value) return;
+			
+			var openItems:Object = tree.openItems;
+			var parentCollection:Array;
+			var tmpProject:ProjectVO;
+			var lastSelectedItem:Object = tree.selectedItem;
+			var lastProcessedProjectPath:String;
+			// if the file/folder is a project root
+			if (value[0].isRoot)
+			{
+				tmpProject = UtilsCore.getProjectFromProjectFolder(value[0]);
+				UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value[0], (removalType == FTETreeItemRenderer.CLOSE ? false : true), function ():void
+				{
+					for each (var project:ProjectVO in projects)
+					{
+						if (project.projectFolder.nativePath === value[0].nativePath)
+						{
+							projects.removeItem(project);
+							updateTreeView();
+							
+							// in case of Close project we shall need to close the lang-server here
+							// in case of Delete project this handles by the command class
+							if (removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
+							break;
+						}
+					}
+				});
+			}
+			else
+			{
+				for each (var fw:FileWrapper in value)
+				{
+					deleteFileWrapper = fw;
+					proceedWithDeletionOfNode(fw);
+				}
+			}
+			
+			/*
+			*@local
+			*/
+			function updateTreeView():void
+			{
+				model.selectedprojectFolders = projectFolders;
+			}
+			function proceedWithDeletionOfNode(value:FileWrapper):void
+			{
+				// search through open projects as we don't know
+				// which project the FileWrapper is belongs to
+				for each (var fw:FileWrapper in projectFolders)
+				{
+					parentCollection = findFilePosition(fw);
+					if (parentCollection) break;
+				}
+				
+				try
+				{
+					// this is a scenario when both parent and children
+					// get selected and called for deletion
+					parentCollection.splice(parentCollection.indexOf(value), 1);
+					if (lastSelectedItem && lastSelectedItem == value)
+					{
+						tree.selectedItem = tree.getParentItem(value);
+					}
+				}
+				catch (e:Error)
+				{
+					return;
+				}
+				
+				fileCollection = null;
+				updateTreeView();
+				
+				// check if the wrapper is the source folder to the project
+				if (lastProcessedProjectPath != value.projectReference.path)
+				{
+					tmpProject = UtilsCore.getProjectFromProjectFolder(value);
+				}
+				if (tmpProject && (tmpProject is AS3ProjectVO))
+				{
+					if ((tmpProject as AS3ProjectVO).sourceFolder.fileBridge.nativePath == value.nativePath)
+					{
+						(tmpProject as AS3ProjectVO).sourceFolder = null;
+					}
+				}
+				
+				dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_DELETED, null, deleteFileWrapper));
+			}
         }
 
         private function findFilePosition(value:FileWrapper):Array
@@ -959,7 +1045,6 @@
             var item:FileWrapper = tree.selectedItem as FileWrapper;
             if (tree.dataDescriptor.isBranch(item))
             {
-
                 refreshActiveProject(item);
                 tree.expandItem(item, !tree.isItemOpen(item), true);
             }
@@ -969,7 +1054,7 @@
 
                 refreshActiveProject(item);
                 dispatcher.dispatchEvent(
-                        new OpenFileEvent(OpenFileEvent.OPEN_FILE, item.file, -1, item)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
                 );
             }
         }
@@ -1047,6 +1132,7 @@
 			borderVisible="false"
 			rowHeight="18"
 			useRollOver="true"
+			allowMultipleSelection="true"
 			doubleClickEnabled="true"
 			labelField="name"
 			itemOpen="onTreeItemOpen(event)"

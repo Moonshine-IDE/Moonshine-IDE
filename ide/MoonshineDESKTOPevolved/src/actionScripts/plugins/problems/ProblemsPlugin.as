@@ -99,7 +99,7 @@ package actionScripts.plugins.problems
 		{
 			var diagnostic:Diagnostic = Diagnostic(event.itemRenderer.data);
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-				new FileLocation(diagnostic.path), diagnostic.range.start.line);
+				[new FileLocation(diagnostic.path)], diagnostic.range.start.line);
 			openEvent.atChar = diagnostic.range.start.character;
 			dispatcher.dispatchEvent(openEvent);
 		}

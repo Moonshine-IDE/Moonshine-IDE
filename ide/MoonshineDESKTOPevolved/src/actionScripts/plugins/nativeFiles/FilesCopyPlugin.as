@@ -33,7 +33,7 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.FileWrapper;
-
+	
 	public class FilesCopyPlugin extends PluginBase
 	{
 		override public function get name():String			{ return "FilesCopyPlugin"; }
@@ -55,7 +55,13 @@ package actionScripts.plugins.nativeFiles
 		
 		private function onFileCopyRequest(event:FileCopyPasteEvent):void
 		{
-			Clipboard.generalClipboard.setData(ClipboardFormats.FILE_LIST_FORMAT, [event.wrapper.file.fileBridge.getFile]);
+			var files:Array = [];
+			for each (var fw:FileWrapper in event.wrappers)
+			{
+				files.push(fw.file.fileBridge.getFile);
+			}
+			
+			Clipboard.generalClipboard.setData(ClipboardFormats.FILE_LIST_FORMAT, files);
 		}
 		
 		private function onPasteFilesRequest(event:FileCopyPasteEvent):void
@@ -63,7 +69,7 @@ package actionScripts.plugins.nativeFiles
 			filesToBeCopied = Clipboard.generalClipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
 			extractFoldersOnly(filesToBeCopied);
 			
-			initiateFileCopyingProcess(event.wrapper, event.wrapper.file.fileBridge.getFile as File);
+			initiateFileCopyingProcess(event.wrappers[0], event.wrappers[0].file.fileBridge.getFile as File);
 		}
 		
 		private function extractFoldersOnly(files:Array):void
@@ -85,8 +91,8 @@ package actionScripts.plugins.nativeFiles
 			if (!manchurian) generatePathPrefix(files[0]);
 			
 			/*
-			 * @local
-			 */
+			* @local
+			*/
 			function generatePathPrefix(file:File):void
 			{
 				var folderName:String = file.name;
@@ -98,46 +104,46 @@ package actionScripts.plugins.nativeFiles
 		{
 			var copiedFileDestination:File;
 			var relativePathToCopiedFileDestination:String;
-			if (filesToBeCopied.length > 0)
+			if (foldersOnlyToBeCopied.length != 0)
 			{
-				adjustDestinationFilePath(filesToBeCopied[0]);
-				if (!overwrite && !overwriteAll && copiedFileDestination.exists)
+				adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
+				if (copiedFileDestination.nativePath.indexOf(foldersOnlyToBeCopied[0].nativePath + File.separator) != -1)
 				{
-					setAlerts(false);
-					Alert.show("File already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
+					// parent not permitted to copied as children
+					Alert.show("Parent is not permitted to copy as children:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination +"\nCopy terminates.", "Error!");
+					resetAndNotifyCaller();
+					return;
+				}
+				else if (!overwrite && !overwriteAll && copiedFileDestination.exists)
+				{
+					setAlerts(true);
+					Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
 				}
 				else
 				{
-					// copy the file
-					(filesToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
-					(filesToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
-					(filesToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
+					// copy folder and all its contents
+					(foldersOnlyToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
+					(foldersOnlyToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+					(foldersOnlyToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
 				}
 			}
 			else
 			{
 				// go for folder copying
-				if (foldersOnlyToBeCopied.length != 0)
+				if (filesToBeCopied.length != 0)
 				{
-					adjustDestinationFilePath(foldersOnlyToBeCopied[0]);
-					if (copiedFileDestination.nativePath.indexOf(foldersOnlyToBeCopied[0].nativePath + File.separator) != -1)
+					adjustDestinationFilePath(filesToBeCopied[0]);
+					if (!overwrite && !overwriteAll && copiedFileDestination.exists)
 					{
-						// parent not permitted to copied as children
-						Alert.show("Parent is not permitted to copy as children:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination +"\nCopy terminates.", "Error!");
-						resetAndNotifyCaller();
-						return;
-					}
-					else if (!overwrite && !overwriteAll && copiedFileDestination.exists)
-					{
-						setAlerts(true);
-						Alert.show("Directory already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFolderOnlyNotification);
+						setAlerts(false);
+						Alert.show("File already exists to destination path:\n"+ destination.name + File.separator + relativePathToCopiedFileDestination, "Confirm!", Alert.YES|Alert.NO|Alert.OK|Alert.CANCEL, null, onFileNotification);
 					}
 					else
 					{
-						// copy folder and all its contents
-						(foldersOnlyToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
-						(foldersOnlyToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
-						(foldersOnlyToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
+						// copy the file
+						(filesToBeCopied[0] as File).addEventListener(Event.COMPLETE, onFileCopyingCompletes);
+						(filesToBeCopied[0] as File).addEventListener(IOErrorEvent.IO_ERROR, onFileCopyingError);
+						(filesToBeCopied[0] as File).copyToAsync(copiedFileDestination, true);
 					}
 					
 					return;
@@ -148,8 +154,8 @@ package actionScripts.plugins.nativeFiles
 			}
 			
 			/*
-			 * @local
-			 */
+			* @local
+			*/
 			function onFileNotification(ev:CloseEvent):void
 			{
 				if (ev.detail == Alert.YES)

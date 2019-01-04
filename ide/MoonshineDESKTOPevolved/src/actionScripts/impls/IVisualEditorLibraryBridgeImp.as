@@ -69,9 +69,7 @@ package actionScripts.impls
 			var tmpOpenFile:FileLocation = new FileLocation(visualEditorProject.sourceFolder.fileBridge.nativePath + visualEditorProject.projectFile.fileBridge.separator + path);
 			if (!tmpOpenFile) return;
 			
-			dispatcher.dispatchEvent(
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, tmpOpenFile)
-			);
+			new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile])
 		}
 		
 		public function getVisualEditorComponent():VisualEditor

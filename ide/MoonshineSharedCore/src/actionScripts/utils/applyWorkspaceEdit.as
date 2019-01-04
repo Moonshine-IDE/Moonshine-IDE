@@ -25,9 +25,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.RenameFile;
 	import actionScripts.valueObjects.CreateFile;
 	import actionScripts.valueObjects.DeleteFile;
-	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
-	import flash.filesystem.FileMode;
 	import actionScripts.locator.IDEModel;
 	import mx.collections.ArrayCollection;
 
@@ -93,20 +90,18 @@ package actionScripts.utils
 	}
 }
 
-import actionScripts.factory.FileLocation;
-import actionScripts.utils.applyTextEditsToFile;
-import actionScripts.valueObjects.TextEdit;
-import actionScripts.valueObjects.RenameFile;
-import actionScripts.valueObjects.CreateFile;
-import actionScripts.valueObjects.DeleteFile;
-import flash.filesystem.File;
-import flash.filesystem.FileMode;
-import flash.filesystem.FileStream;
 import mx.collections.ArrayCollection;
-import actionScripts.locator.IDEModel;
-import actionScripts.ui.editor.LanguageServerTextEditor;
+
 import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.LanguageServerEvent;
+import actionScripts.factory.FileLocation;
+import actionScripts.locator.IDEModel;
+import actionScripts.ui.editor.LanguageServerTextEditor;
+import actionScripts.utils.applyTextEditsToFile;
+import actionScripts.valueObjects.CreateFile;
+import actionScripts.valueObjects.DeleteFile;
+import actionScripts.valueObjects.RenameFile;
+import actionScripts.valueObjects.TextEdit;
 
 function applyTextEditsToURI(uri:String, textEdits:Vector.<TextEdit>):void
 {
@@ -118,9 +113,7 @@ function handleRenameFile(renameFile:RenameFile):void
 {
 	var renameOldLocation:FileLocation = new FileLocation(renameFile.oldUri, true);
 	var renameNewLocation:FileLocation = new FileLocation(renameFile.newUri, true);
-	var oldFile:File = renameOldLocation.fileBridge.getFile as File;
-	var newFile:File = renameNewLocation.fileBridge.getFile as File;
-	oldFile.moveTo(newFile, true);
+	renameOldLocation.fileBridge.moveTo(renameNewLocation, true);
 
 	var editors:ArrayCollection = IDEModel.getInstance().editors;
 	var editorCount:int = editors.length;
@@ -131,41 +124,37 @@ function handleRenameFile(renameFile:RenameFile):void
 		{
 			continue;
 		}
-		var editorFile:File = editor.currentFile.fileBridge.getFile as File;
-		if(!editorFile || editorFile.nativePath !== oldFile.nativePath)
+		var editorFile:FileLocation = editor.currentFile;
+		if(!editorFile || editorFile.fileBridge.nativePath !== renameOldLocation.fileBridge.nativePath)
 		{
 			continue;
 		}
 		editor.currentFile = renameNewLocation;
 		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-			0, 0, 0, 0, null, 0, 0, oldFile.url));
+			0, 0, 0, 0, null, 0, 0, renameOldLocation.fileBridge.url));
 		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-			0, 0, 0, 0, editor.getEditorComponent().dataProvider, 0, 0, newFile.url));
+			0, 0, 0, 0, editor.getEditorComponent().dataProvider, 0, 0, renameNewLocation.fileBridge.url));
 	}
 }
 
 function handleCreateFile(createFile:CreateFile):void
 {
 	var createLocation:FileLocation = new FileLocation(createFile.uri, true);
-	var fileToCreate:File = createLocation.fileBridge.getFile as File;
-	var stream:FileStream = new FileStream();
-	stream.open(fileToCreate, FileMode.WRITE);
-	stream.close();
+	createLocation.fileBridge.createFile();
 }
 
 function handleDeleteFile(deleteFile:DeleteFile):void
 {
 	var deleteLocation:FileLocation = new FileLocation(deleteFile.uri, true);
-	var fileToDelete:File = deleteLocation.fileBridge.getFile as File;
-	if(fileToDelete.exists)
+	if(deleteLocation.fileBridge.exists)
 	{
-		if(fileToDelete.isDirectory)
+		if(deleteLocation.fileBridge.isDirectory)
 		{
-			fileToDelete.deleteDirectory(true);
+			deleteLocation.fileBridge.deleteDirectory(true);
 		}
 		else
 		{
-			fileToDelete.deleteFile();
+			deleteLocation.fileBridge.deleteFile();
 		}
 	}
 }

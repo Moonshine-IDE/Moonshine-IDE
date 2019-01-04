@@ -53,7 +53,7 @@ package actionScripts.controllers
 			if(scheme == "file")
 			{
 				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-					new FileLocation(location.uri, true), location.range.start.line);
+					[new FileLocation(location.uri, true)], location.range.start.line);
 				openEvent.atChar = location.range.start.character;
 				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
 			}

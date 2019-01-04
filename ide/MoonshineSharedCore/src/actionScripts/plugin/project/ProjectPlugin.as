@@ -343,7 +343,7 @@ package actionScripts.plugin.project
                             projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
 
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
-                            dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileLocation, -1, fileWrapper));
+							dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileLocation], -1, [fileWrapper]));
                         }
 						else
 						{
