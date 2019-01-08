@@ -420,7 +420,7 @@ public final class GroovyTreeParser implements TreeParser {
         }
         else
         {
-            System.err.println("*** " + node);
+            System.err.println("*** hover not available for node: " + node);
         }
         return hover;
     }
