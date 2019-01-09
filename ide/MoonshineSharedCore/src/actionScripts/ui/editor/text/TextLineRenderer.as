@@ -241,7 +241,7 @@ package actionScripts.ui.editor.text
 			var markerPos:Number = 0;
             var atom:int;
 
-            if (beforeCharAtIndex == 0)
+            if (beforeCharAtIndex == 0 || !textLine)
 			{
 				// Draw on empty line
 			}
