@@ -20,6 +20,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
     import actionScripts.plugin.settings.vo.BuildActionsListSettings;
     import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
+    import actionScripts.plugin.settings.vo.SettingsWrapper;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -60,9 +61,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
 		public static const TEST_MOVIE_OPEN_DOCUMENT:String = "OpenDocument";
 		public static const TEST_MOVIE_AIR:String = "AIR";
-		
-		public static const FLEXJS_DEBUG_PATH:String = "bin/js-debug/index.html";
-		
+
 		[Bindable] public var isLibraryProject:Boolean;
 		
 		public var fromTemplate:FileLocation;
@@ -123,9 +122,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var htmlFilePath:PathSetting;
 		private var customHTMLFilePath:StringSetting;
 		private var outputPathSetting:PathSetting;
+		private var jsOutputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
 		private var targetPlatformSettings:DropDownListSetting;
+
+        private var _jsOutputPath:String;
 
 		public function get air():Boolean
 		{
@@ -244,7 +246,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				if (htmlPath) return htmlPath.fileBridge.nativePath;
 				
-				var html:FileLocation = !isFlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(FLEXJS_DEBUG_PATH);
+				var html:FileLocation = !isFlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(getRoyaleDebugPath());
 				htmlPath = html;
 				
 				return htmlPath.fileBridge.nativePath;
@@ -252,6 +254,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
 			return "";
 		}
+
 		public function set getHTMLPath(value:String):void
 		{
 			if (value) htmlPath = new FileLocation(value);
@@ -271,7 +274,30 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var fileNameSplit:Array = swfOutput.path.fileBridge.nativePath.split(folderLocation.fileBridge.separator);
 			swfOutput.path = new FileLocation(value + folderLocation.fileBridge.separator + fileNameSplit[fileNameSplit.length - 1]);
 		}
-		
+
+        public function get jsOutputPath():String
+        {
+            var tmpPath:String = this.folderLocation.fileBridge.getRelativePath(new FileLocation(_jsOutputPath));
+            if (tmpPath)
+			{
+				return tmpPath;
+            }
+
+            return _jsOutputPath;
+        }
+
+        public function set jsOutputPath(value:String):void
+        {
+			if (!value) return;
+
+            _jsOutputPath = value;
+        }
+
+		public function getRoyaleDebugPath():String
+		{
+			return jsOutputPath.concat("/bin/bin-debug/index.html");
+		}
+
 		private function onTargetPlatformChanged(event:Event):void
 		{
 			if (mobileRunSettings) 
@@ -293,6 +319,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
+			jsOutputPath = projectFolder.nativePath;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>
@@ -303,6 +330,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (additional) additional = null;
 			if (htmlFilePath) htmlFilePath = null;
 			if (outputPathSetting) outputPathSetting = null;
+			if (jsOutputPathSetting) jsOutputPathSetting = null;
 			if (nativeExtensionPath) nativeExtensionPath = null;
 			if (mobileRunSettings) mobileRunSettings = null;
 			if (targetPlatformSettings) targetPlatformSettings = null;
@@ -316,8 +344,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
 			targetPlatformSettings = new DropDownListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
-			if (isLibraryProject) targetPlatformSettings.isEditable = false;
-			else targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+
+			if (isRoyale)
+			{
+				jsOutputPathSetting = new PathSetting(this, "jsOutputPath", "JavaScript Output Path", true, jsOutputPath);
+			}
+
+			if (isLibraryProject)
+			{
+				targetPlatformSettings.isEditable = false;
+            }
+			else
+			{
+				targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+            }
 
 			if (isVisualEditorProject)
 			{
@@ -452,18 +492,27 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
                             new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
                         ])
-                ),
-                new SettingsWrapper("Run",
-                        Vector.<ISetting>([
-                            targetPlatformSettings,
-                            htmlFilePath,
-							customHTMLFilePath,
-							outputPathSetting,
-                            additional,
-                            mobileRunSettings
-                        ])
                 )
             ]);
+
+            var runSettingsContent:Vector.<ISetting> = Vector.<ISetting>([
+                    targetPlatformSettings,
+                    htmlFilePath,
+                    customHTMLFilePath,
+                    outputPathSetting
+            ]);
+
+            var runSettings:SettingsWrapper = new SettingsWrapper("Run", runSettingsContent);
+            if (this.isRoyale)
+            {
+                runSettingsContent.insertAt(4, jsOutputPathSetting);
+            }
+			else
+			{
+				runSettingsContent.push(mobileRunSettings);
+			}
+
+            settings.push(runSettings);
 
             if (!isMDLFlexJS)
             {
@@ -484,7 +533,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function getSettingsForOtherTypeOfProjects():Vector.<SettingsWrapper>
 		{
             return Vector.<SettingsWrapper>([
-
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
                             new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
@@ -534,11 +582,10 @@ package actionScripts.plugin.actionscript.as3project.vo
                         Vector.<ISetting>([
                             new DropDownListSetting(this, "targetPlatform", "Platform", platformTypes, "name"),
                             htmlFilePath,
-							customHTMLFilePath,
-							outputPathSetting,
-                            additional,
+                            customHTMLFilePath,
+                            outputPathSetting,
                             mobileRunSettings
-                        ])
+					])
                 )
             ]);
 		}

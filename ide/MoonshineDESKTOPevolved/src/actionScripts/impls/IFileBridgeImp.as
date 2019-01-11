@@ -679,7 +679,18 @@ package actionScripts.impls
 		private function setFileInternalPath(startFromLocation:String):void
 		{
 			// set file path if requires
-			if (startFromLocation && (new File(startFromLocation).exists)) _file.nativePath = startFromLocation;
+			try
+            {
+                var pathExists:File = new File(startFromLocation);
+                if (startFromLocation && pathExists.exists)
+                {
+                    _file.nativePath = startFromLocation;
+                }
+            }
+			catch(e:Error)
+			{
+
+			}
 		}
 	}
 }

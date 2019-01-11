@@ -126,7 +126,7 @@
 			{
 				if (setting.directory)
 				{
-					model.fileCore.browseForDirectory("Select directory", openFile);
+					model.fileCore.browseForDirectory("Select directory", openFile, null, setting.stringValue);
 				}
 				else
 				{

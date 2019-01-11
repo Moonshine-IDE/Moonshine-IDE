@@ -33,8 +33,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.filesystem.FileStream;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
 
     import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -362,6 +360,8 @@ package actionScripts.plugins.as3project.mxmlc
 					sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
 					compilerPathHomeArg = "ROYALE_COMPILER_HOME=" + SDKstr;
                 }
+
+				jsCompilationArg += " -js-output=".concat(project.jsOutputPath);
 			}
 
             if(Settings.os == "win")
@@ -559,7 +559,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		private function shellData(e:ProgressEvent):void 
+		private function shellData(e:ProgressEvent):void
 		{
 			if(fcsh)
 			{
@@ -571,51 +571,8 @@ package actionScripts.plugins.as3project.mxmlc
 				match = data.match(/successfully compiled and optimized/);
 				if (match) 
 				{
-					// @ note
-					// @ devsena
-					// while working on MOON#311 (create new project with existing source)
-					// I noticed that FlexJS compiler produce it's 'bin' folder to first
-					// folder of the source path. Thus if a source file exists at
-					// <projectRoot>/src/subA/subB/JSApplication.mxml, the 'bin' folder produces at
-					// <projectRoot>/src. I also noticed if the source folder name do not starts with 'src'
-					// this problem also arise. Ideally the 'bin' folder was supposed to create at
-					// <projectRoot>. 
-					// Following folder move will fix this problem
-
                     print("%s", data);
-
-					// source location
-					var sourcePath:String = currentProject.folderLocation.fileBridge.getRelativePath((currentProject as AS3ProjectVO).classpaths[0]);
-					var sourcePathSplit:Array = sourcePath.split("/");
-					var sourceFolder:FileLocation = (currentProject as AS3ProjectVO).classpaths[0].fileBridge.parent;
-					if (sourcePathSplit[0] != "src" || sourceFolder.fileBridge.nativePath != (currentProject as AS3ProjectVO).folderLocation.fileBridge.nativePath)
-					{
-						sourceFolder = currentProject.folderLocation.fileBridge.resolvePath(sourcePathSplit[0] + "/bin");
-						if (sourceFolder.fileBridge.exists)
-						{
-							successMessage = data;
-							sourceFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
-							sourceFolder.fileBridge.moveToAsync((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin"), true);
-						}
-						else
-						{
-							sourceFolder = currentProject.folderLocation.fileBridge.resolvePath("bin");
-							if (sourceFolder.fileBridge.exists)
-							{
-                                timeoutValue = setTimeout(function():void {
-									onSuccesfullBuildCompleted(null);
-									clearTimeout(timeoutValue)
-                                }, 50);
-                            }
-						}
-					}
-					else
-                    {
-                        timeoutValue = setTimeout(function():void {
-                            onSuccesfullBuildCompleted(null);
-                            clearTimeout(timeoutValue)
-                        }, 50);
-                    }
+                    onSuccesfullBuildCompleted(null);
                     return;
 				}
 
@@ -648,7 +605,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function launchApplication():void
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.getRoyaleDebugPath()).fileBridge.getFile as File;
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
@@ -701,7 +658,7 @@ package actionScripts.plugins.as3project.mxmlc
 				return;
 			}
 
-            var buildResultFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+            var buildResultFile:File = currentProject.folderLocation.resolvePath(pvo.getRoyaleDebugPath()).fileBridge.getFile as File;
 			var debugDestination:File = buildResultFile.parent;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
 

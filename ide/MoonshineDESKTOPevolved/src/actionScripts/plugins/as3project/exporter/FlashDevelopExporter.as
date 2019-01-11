@@ -17,6 +17,7 @@
 package actionScripts.plugins.as3project.exporter
 {
     import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.SerializeUtil;
 
     import flash.filesystem.File;
 	import flash.filesystem.FileMode;
@@ -53,7 +54,14 @@ package actionScripts.plugins.as3project.exporter
 			// Get output node with relative paths		
 			var outputXML: XML = p.swfOutput.toXML(p.folderLocation);
 			project.appendChild(outputXML);
-			
+
+			var jsOutput:XML = <jsOutput></jsOutput>;
+			var jsOutputPath:Object = {
+				path: SerializeUtil.serializeString(p.jsOutputPath)
+			};
+			jsOutput.appendChild(SerializeUtil.serializePairs(jsOutputPath, <option />));
+			project.appendChild(jsOutput);
+
 			project.insertChildAfter(outputXML, "<!-- Other classes to be compiled into your SWF -->");
 			
 			project.appendChild(exportPaths(p.classpaths, <classpaths />, <class />, p));
