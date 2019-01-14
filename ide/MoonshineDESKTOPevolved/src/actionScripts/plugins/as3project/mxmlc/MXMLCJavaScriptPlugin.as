@@ -33,6 +33,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.filesystem.FileStream;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
+    import flash.utils.setTimeout;
 
     import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -563,24 +564,10 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if(fcsh)
 			{
-				var timeoutValue:uint;
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
-				var match:Array;
-				match = data.match(/successfully compiled and optimized/);
-				if (match) 
-				{
-                    print("%s", data);
-                    onSuccesfullBuildCompleted(null);
-                    return;
-				}
 
-				if (data.charAt(data.length-1) == "\n")
-				{
-					data = data.substr(0, data.length-1);
-                }
-				print("%s", data);
+				printBuildProgress(data);
 			}
 		}
 		
@@ -605,7 +592,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function launchApplication():void
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.getRoyaleDebugPath()).fileBridge.getFile as File;
+			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
@@ -635,12 +622,16 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
-				if (!pvo.htmlPath) pvo.getHTMLPath;
+				var urlToLaunch:FileLocation = pvo.htmlPath;
+				if (!pvo.htmlPath)
+				{
+                    urlToLaunch = new FileLocation(pvo.urlToLaunch);
+                }
 
                 warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo)
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, urlToLaunch.fileBridge.getFile as File, pvo)
 				);
 			}
 			currentProject = null;
@@ -685,13 +676,13 @@ package actionScripts.plugins.as3project.mxmlc
             }
             else if (runAfterBuild)
             {
-                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
                 launchApplication();
             }
             else
             {
                 success("Project Build Successfully.");
-                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
             }
 		}
 
@@ -712,28 +703,7 @@ package actionScripts.plugins.as3project.mxmlc
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
-                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
-				if (syntaxMatch)
-				{
-                    error("%s\n", data);
-                    return;
-				}
-
-                var generalMatch:Array = data.match(new RegExp("[^:]*:?\s*Error:\s(.*)", "i"));
-				if (!syntaxMatch && generalMatch)
-				{
-                    error("%s\n", data);
-					return;
-				}
-
-                var warningMatch:Array = data.match(new RegExp("WARNING:", "i"));
-                if (warningMatch && !generalMatch && !syntaxMatch)
-                {
-                    warning(data);
-                    return;
-                }
-
-				print(data);
+				printBuildProgress(data);
 			}
 		}
 		
@@ -745,6 +715,47 @@ package actionScripts.plugins.as3project.mxmlc
 				exiting = false;
 				startShell();
 			}
+		}
+
+		private function printBuildProgress(data:String):void
+		{
+            var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
+            if (syntaxMatch)
+            {
+                error("%s\n", data);
+                return;
+            }
+
+            var generalMatch:Array = data.match(new RegExp("[^:]*:?\s*Error:\s(.*)", "i"));
+            if (!syntaxMatch && generalMatch)
+            {
+                error("%s\n", data);
+                return;
+            }
+
+            var warningMatch:Array = data.match(new RegExp("WARNING:", "i"));
+            if (warningMatch && !generalMatch && !syntaxMatch)
+            {
+                warning(data);
+                return;
+            }
+
+            var match:Array = data.match(/successfully compiled and optimized|has been successfully compiled/);
+            if (match)
+            {
+                print("%s", data);
+                setTimeout(function():void {
+					onSuccesfullBuildCompleted(null);
+                }, 100);
+                return;
+            }
+
+            if (data.charAt(data.length-1) == "\n")
+            {
+                data = data.substr(0, data.length-1);
+            }
+
+            print("%s", data);
 		}
 	}
 }

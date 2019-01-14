@@ -20,8 +20,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
     import actionScripts.plugin.settings.vo.BuildActionsListSettings;
     import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
-    import actionScripts.plugin.settings.vo.SettingsWrapper;
-
     import flash.events.Event;
     import flash.events.MouseEvent;
     
@@ -128,6 +126,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var targetPlatformSettings:DropDownListSetting;
 
         private var _jsOutputPath:String;
+		private var _urlToLaunch:String;
 
 		public function get air():Boolean
 		{
@@ -240,24 +239,36 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return tmpCollection;
 		}
 		
-		public function get getHTMLPath():String
+		public function get urlToLaunch():String
 		{
-			if (!air && !isLibraryProject)
+			if (!_urlToLaunch)
 			{
-				if (htmlPath) return htmlPath.fileBridge.nativePath;
-				
-				var html:FileLocation = !isFlexJS ? folderLocation.resolvePath("bin-debug/"+ swfOutput.path.fileBridge.name.split(".")[0] +".html") : folderLocation.resolvePath(getRoyaleDebugPath());
-				htmlPath = html;
-				
-				return htmlPath.fileBridge.nativePath;
+                if (!air && !isLibraryProject)
+                {
+                    var html:FileLocation = !isRoyale ?
+                            folderLocation.fileBridge.resolvePath(folderLocation.fileBridge.separator
+									+ "bin-debug" + folderLocation.fileBridge.separator +
+                                    swfOutput.path.fileBridge.name.split(".")[0] + ".html")
+                            : new FileLocation(getRoyaleDebugPath());
+                    htmlPath = html;
+
+                    return html.fileBridge.nativePath;
+                }
 			}
-			
-			return "";
+
+			return _urlToLaunch;
 		}
 
-		public function set getHTMLPath(value:String):void
+		public function set urlToLaunch(value:String):void
 		{
-			if (value) htmlPath = new FileLocation(value);
+			if (value)
+			{
+                _urlToLaunch = value;
+            }
+			else
+			{
+
+			}
 		}
 		
 		public function get outputPath():String
@@ -296,7 +307,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function getRoyaleDebugPath():String
 		{
 			var indexHtmlPath:String = folderLocation.fileBridge.separator.concat("bin",
-					                   folderLocation.fileBridge.separator, "bind-debug",
+					                   folderLocation.fileBridge.separator, "js-debug",
 					                   folderLocation.fileBridge.separator, "index.html");
 			return jsOutputPath.concat(indexHtmlPath);
 		}
@@ -339,7 +350,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (targetPlatformSettings) targetPlatformSettings = null;
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-			htmlFilePath = new PathSetting(this, "getHTMLPath", "URL to Launch", false, getHTMLPath);
+			htmlFilePath = new PathSetting(this, "urlToLaunch", "URL to Launch", false, urlToLaunch);
 			customHTMLFilePath = new StringSetting(this, "customHTMLPath", "Custom URL to Launch");
 			customHTMLFilePath.setMessage("Leave this blank if you don't override 'URL to Launch'\nIf calling a server, prefix the URL with http:// or https://");
 			
