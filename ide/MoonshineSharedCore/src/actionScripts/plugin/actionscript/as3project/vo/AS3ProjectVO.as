@@ -295,7 +295,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		public function getRoyaleDebugPath():String
 		{
-			return jsOutputPath.concat("/bin/bin-debug/index.html");
+			var indexHtmlPath:String = folderLocation.fileBridge.separator.concat("bin",
+					                   folderLocation.fileBridge.separator, "bind-debug",
+					                   folderLocation.fileBridge.separator, "index.html");
+			return jsOutputPath.concat(indexHtmlPath);
 		}
 
 		private function onTargetPlatformChanged(event:Event):void
