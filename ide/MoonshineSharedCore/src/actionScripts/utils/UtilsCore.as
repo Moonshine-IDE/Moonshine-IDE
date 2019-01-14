@@ -667,13 +667,20 @@ package actionScripts.utils
 			// any particular project (example usage in 'Close All' option in File menu)
 			if (projectOrWrapper)
 			{
-				if (projectOrWrapper is ProjectVO) projectReferencePath = (projectOrWrapper as ProjectVO).folderLocation.fileBridge.nativePath;
-				else if (projectOrWrapper is FileWrapper && (projectOrWrapper as FileWrapper).projectReference) projectReferencePath = (projectOrWrapper as FileWrapper).projectReference.path;
+				if (projectOrWrapper is ProjectVO)
+				{
+					projectReferencePath = (projectOrWrapper as ProjectVO).folderLocation.fileBridge.nativePath;
+                }
+				else if (projectOrWrapper is FileWrapper && (projectOrWrapper as FileWrapper).projectReference)
+				{
+					projectReferencePath = (projectOrWrapper as FileWrapper).projectReference.path;
+                }
 			}
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && (!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
+				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile &&
+					(!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
 				{
                     var editor:BasicTextEditor = model.editors[i];
 					if (editor)
@@ -685,7 +692,8 @@ package actionScripts.utils
                         }
 					}
 				}
-				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
+				else if (model.editors[i] is SettingsView && model.editors[i].associatedData &&
+						(!projectReferencePath || ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
 				{
 					editorsToClose.push(model.editors[i]);
 					if (!isSkipSaveConfirmation && model.editors[i].isChanged())

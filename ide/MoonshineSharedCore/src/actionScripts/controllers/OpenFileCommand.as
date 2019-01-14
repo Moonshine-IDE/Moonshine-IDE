@@ -63,23 +63,27 @@ package actionScripts.controllers
 		{
 			ActionNotifier.getInstance().notify("Open file");
 			model = IDEModel.getInstance();
-			
+
 			if (event is OpenFileEvent)
 			{
 				binaryFiles = [];
 				countIndex = 0;
 				
-				var e:OpenFileEvent = event as OpenFileEvent;
-				lastOpenEvent = e;
-				openAsTourDe = e.openAsTourDe;
-				tourDeSWFSource = e.tourDeSWFSource;
-				if (e.atLine > -1)
+				var openFileEvent:OpenFileEvent = event as OpenFileEvent;
+				lastOpenEvent = openFileEvent;
+				openAsTourDe = openFileEvent.openAsTourDe;
+				tourDeSWFSource = openFileEvent.tourDeSWFSource;
+				if (openFileEvent.atLine > -1)
 				{
-					atLine = e.atLine;
-					if (e.atChar > -1)
+					atLine = openFileEvent.atLine;
+					if (openFileEvent.atChar > -1)
 					{
-						atChar = e.atChar;
+						atChar = openFileEvent.atChar;
 					}
+				}
+				if (openFileEvent.wrappers && openFileEvent.wrappers.length > 0)
+				{
+					wrapper = openFileEvent.wrappers[0];
 				}
 				prepareBeforeOpen();
 			}

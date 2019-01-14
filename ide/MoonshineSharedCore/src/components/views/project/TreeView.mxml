@@ -790,8 +790,7 @@
         private function onFileDeletedOnServer(value:Array, removalType:String = null):void
         {
 			if (!value) return;
-			
-			var openItems:Object = tree.openItems;
+
 			var parentCollection:Array;
 			var tmpProject:ProjectVO;
 			var lastSelectedItem:Object = tree.selectedItem;
