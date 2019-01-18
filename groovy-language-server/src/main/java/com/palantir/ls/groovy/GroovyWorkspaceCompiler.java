@@ -74,7 +74,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
 
     private Map<URI, List<Diagnostic>> prevDiagnosticsByFile;
 
-    private CompilationUnit unit;
+    private GroovyCompilationUnit unit;
 
     // Map from origin source filename to its changed version source writer
     private Map<URI, InMemoryContentsManager> originalSourceToChangedSource = Maps.newHashMap();
@@ -82,7 +82,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
     private GroovyWorkspaceCompiler(Path workspaceRoot, CompilerConfiguration config) {
         this.workspaceRoot = workspaceRoot;
         this.config = config;
-        this.unit = new CompilationUnit(config);
+        this.unit = new GroovyCompilationUnit(config, new ErrorCollectorWithoutThrow(config));
     }
 
     /**
@@ -232,7 +232,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
             throw new RuntimeException("Could not reset compiled files after changes. "
                     + "User may not have permission to modify target directory.");
         }
-        unit = new CompilationUnit(config);
+        unit = new GroovyCompilationUnit(config, new ErrorCollectorWithoutThrow(config));
         addAllSourcesToCompilationUnit();
     }
 
