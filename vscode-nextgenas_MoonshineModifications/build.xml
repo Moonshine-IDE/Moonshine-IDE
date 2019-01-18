@@ -3,7 +3,7 @@
         Build script for Bamboo
     </description>
     <!-- set global properties for this build -->
-    <property name="src" location="language-server-wrapper/src/main/java"/>
+    <property name="src" location="src/main/java"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
     <property name="lib" location="target"/>

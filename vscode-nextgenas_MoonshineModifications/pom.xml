@@ -10,7 +10,7 @@
   <version>0.9.4</version>
   
   <build>
-    <finalName>codecompletion.jar</finalName>
+    <finalName>moonshine-as3mxml.jar</finalName>
   </build>
 
   <dependencies>
