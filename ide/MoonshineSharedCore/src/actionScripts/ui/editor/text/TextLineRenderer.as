@@ -392,8 +392,6 @@ package actionScripts.ui.editor.text
 		
 		public function getCharIndexFromPoint(globalX:int, returnNextAfterCenter:Boolean=true):int
 		{
-			if (textLine == null) return -1;
-
 			var localPoint:Point = this.globalToLocal(new Point(globalX,0));
 			var localPointX:Number = localPoint.x;
 			var modelTextLength:int = model.text.length;
@@ -402,7 +400,7 @@ package actionScripts.ui.editor.text
 			{
 				return localPointX >= lineNumberWidth ? 0 : -1;
 			}
-			else if (localPointX >= textLine.x + textLine.width) // After text
+			else if (textLine && localPointX >= textLine.x + textLine.width) // After text
 			{
 				return modelTextLength;
 			}
@@ -410,7 +408,7 @@ package actionScripts.ui.editor.text
 			{
 				// Get a line through the middle of the text field for y
 				var mid:Point = this.localToGlobal(new Point(0, lineHeight/2));
-				var atomIndexAtPoint:int = textLine.getAtomIndexAtPoint(globalX, mid.y);
+				var atomIndexAtPoint:int = textLine ? textLine.getAtomIndexAtPoint(globalX, mid.y) : -1;
 				
 				if (atomIndexAtPoint > -1 && returnNextAfterCenter)
 				{

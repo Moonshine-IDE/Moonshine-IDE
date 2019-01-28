@@ -339,9 +339,10 @@ package actionScripts.ui.editor.text
 
                 var linesCount:int = editor.model.lines.length;
                 var isNonXMLFile:Boolean;
-                for (var i:int = 0; i < linesCount; i++)
+				var lineIndex:int;
+                for (lineIndex = 0; lineIndex < linesCount; lineIndex++)
                 {
-                    line = editor.model.lines[i];
+                    line = editor.model.lines[lineIndex];
                     if (line.text && line.text.indexOf(CompletionListCodeTokens.PACKAGE) > -1)
                     {
                         isNonXMLFile = true;
@@ -357,25 +358,25 @@ package actionScripts.ui.editor.text
                         searchedLinesCount = 0;
                     }
 
-                    for (var i:int = editor.model.selectedLineIndex; i > searchedLinesCount; i--)
+                    for (lineIndex = editor.model.selectedLineIndex; lineIndex > searchedLinesCount; lineIndex--)
                     {
-                        line = editor.model.lines[i];
+                        line = editor.model.lines[lineIndex];
                         selectedLineText = line.text;
 
 						var hasCdataOpen:Boolean = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1;
 						var hasCdataClose:Boolean = false;
                         if (hasCdataOpen)
                         {
-							var cdataOpenIndex:int = i;
+							var cdataOpenIndex:int = lineIndex;
                             searchedLinesCount = editor.model.selectedLineIndex + 250;
 							if (searchedLinesCount > editor.model.lines.length)
 							{
 								searchedLinesCount = editor.model.lines.length;
 							}
 
-                            for (i = editor.model.selectedLineIndex; i < searchedLinesCount; i++)
+                            for (lineIndex = editor.model.selectedLineIndex; lineIndex < searchedLinesCount; lineIndex++)
 							{
-                                line = editor.model.lines[i];
+                                line = editor.model.lines[lineIndex];
                                 selectedLineText = line.text;
 								hasCdataClose = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1;
 								if (hasCdataClose)
@@ -386,7 +387,7 @@ package actionScripts.ui.editor.text
 
                             if (hasCdataClose)
 							{
-								if (i > editor.model.selectedLineIndex && cdataOpenIndex < editor.model.selectedLineIndex)
+								if (lineIndex > editor.model.selectedLineIndex && cdataOpenIndex < editor.model.selectedLineIndex)
                                 {
                                     return false;
                                 }
@@ -400,9 +401,9 @@ package actionScripts.ui.editor.text
 						searchedLinesCount = 0;
                     }
 
-                    for (var j:int = editor.model.selectedLineIndex; j > searchedLinesCount; j--)
+                    for (lineIndex = editor.model.selectedLineIndex; lineIndex > searchedLinesCount; lineIndex--)
                     {
-                        line = editor.model.lines[j];
+                        line = editor.model.lines[lineIndex];
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
@@ -430,9 +431,9 @@ package actionScripts.ui.editor.text
                         }
 
                         isLineForAutoCloseAttr = false;
-                        for (var k:int = editor.model.selectedLineIndex; k < searchedLinesCount; k++)
+                        for (lineIndex = editor.model.selectedLineIndex; lineIndex < searchedLinesCount; lineIndex++)
                         {
-                            line = editor.model.lines[k];
+                            line = editor.model.lines[lineIndex];
                             selectedLineText = line.text;
                             if (selectedLineText.indexOf(CompletionListCodeTokens.XML_CLOSE_TAG) != -1 &&
                                 selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)
