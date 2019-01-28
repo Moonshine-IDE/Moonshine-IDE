@@ -282,20 +282,25 @@ package actionScripts.ui.editor.text
 				end = tmp;
 			}
 
-            if (start > textLine.atomCount)
+            var selWidth:int = 0;
+            var selStart:int = 0;
+			if (textLine)
             {
-                start = textLine.atomCount - 1;
+                if (start > textLine.atomCount)
+                {
+                    start = textLine.atomCount - 1;
+                }
+
+                if (end > textLine.atomCount)
+                {
+                    end = textLine.atomCount;
+                }
+
+                var endBounds:Rectangle = textLine.getAtomBounds(end-1);
+                selStart = Math.floor(textLine.getAtomBounds(start).x);
+                selWidth = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
             }
 
-            if (end > textLine.atomCount)
-            {
-                end = textLine.atomCount;
-            }
-
-			var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
-			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
-			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
-			
 			drawSelectionRect(selStart, selWidth);
 		}
 		
