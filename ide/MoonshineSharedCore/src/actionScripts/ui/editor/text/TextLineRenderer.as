@@ -392,6 +392,8 @@ package actionScripts.ui.editor.text
 		
 		public function getCharIndexFromPoint(globalX:int, returnNextAfterCenter:Boolean=true):int
 		{
+			if (textLine == null) return -1;
+
 			var localPoint:Point = this.globalToLocal(new Point(globalX,0));
 			var localPointX:Number = localPoint.x;
 			var modelTextLength:int = model.text.length;
