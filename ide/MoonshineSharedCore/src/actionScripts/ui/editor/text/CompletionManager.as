@@ -337,9 +337,20 @@ package actionScripts.ui.editor.text
 						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) == -1 &&
 						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) == -1;
 
-                if (!isLineForAutoCloseAttr)
+                var linesCount:int = editor.model.lines.length;
+                var isNonXMLFile:Boolean;
+                for (var i:int = 0; i < linesCount; i++)
                 {
-                    var linesCount:int = editor.model.lines.length;
+                    line = editor.model.lines[i];
+                    if (line.text && line.text.indexOf(CompletionListCodeTokens.PACKAGE) > -1)
+                    {
+                        isNonXMLFile = true;
+                        break;
+                    }
+                }
+
+                if (!isLineForAutoCloseAttr && !isNonXMLFile)
+                {
                     var searchedLinesCount:int = editor.model.selectedLineIndex - 250;
                     if (searchedLinesCount < 0)
                     {
