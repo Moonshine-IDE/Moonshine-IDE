@@ -14,7 +14,6 @@ package actionScripts.ui.editor
 	import actionScripts.valueObjects.Location;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.events.SaveFileEvent;
-	import actionScripts.ui.editor.text.TextEditor;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	import actionScripts.events.CodeActionsEvent;

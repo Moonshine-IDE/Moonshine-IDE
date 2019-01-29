@@ -8,7 +8,6 @@ package actionScripts.languageServer
 	import actionScripts.events.HoverEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.ReferencesEvent;
-	import actionScripts.events.RenameEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.SymbolsEvent;
 	import actionScripts.events.LanguageServerEvent;
@@ -18,7 +17,6 @@ package actionScripts.languageServer
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
 	import actionScripts.valueObjects.Diagnostic;
@@ -44,7 +42,6 @@ package actionScripts.languageServer
 
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
-	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;

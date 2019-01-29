@@ -19,7 +19,6 @@
 package actionScripts.ui.editor.text
 {
 	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CodeAction;
 
 	public class TextLineModel

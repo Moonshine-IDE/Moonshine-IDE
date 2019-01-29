@@ -18,15 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.TextDocumentEdit;
 	import actionScripts.valueObjects.TextEdit;
 	import actionScripts.valueObjects.WorkspaceEdit;
 	import actionScripts.valueObjects.RenameFile;
 	import actionScripts.valueObjects.CreateFile;
 	import actionScripts.valueObjects.DeleteFile;
-	import actionScripts.locator.IDEModel;
-	import mx.collections.ArrayCollection;
 
 	public function applyWorkspaceEdit(edit:WorkspaceEdit):void
 	{

@@ -351,12 +351,6 @@ package actionScripts.ui.editor.text
 		
 		public function drawTraceSelection(start:int, end:int):void
 		{
-			/*if (start == end || start < 0) 
-			{
-			trace(start +"   "+end);
-			removeTraceSelection();
-			return;	
-			}*/
 			if (start > end)
 			{
 				var tmp:int = start;
