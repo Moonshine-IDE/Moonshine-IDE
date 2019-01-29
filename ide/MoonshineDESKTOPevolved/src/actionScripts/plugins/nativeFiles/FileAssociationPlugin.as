@@ -30,7 +30,9 @@ package actionScripts.plugins.nativeFiles
 	
 	import mx.core.FlexGlobals;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 
@@ -39,6 +41,8 @@ package actionScripts.plugins.nativeFiles
 		override public function get name():String			{ return "FileAssociationPlugin"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
+		
+		private static var projectFileTypes:Array = ["as3proj", "veditorproj"];
 		
 		override public function activate():void
 		{
@@ -89,12 +93,39 @@ package actionScripts.plugins.nativeFiles
 		
 		private function openFilesByPath(paths:Array):void
 		{
+			// since multi-folder-file selection is not possible
+			// to open multiple projects at a time, we don't
+			// need the following to be an array; also single
+			// folder is suppose to have only configuration than
+			// multiple
+			var projectFile:FileLocation;
+			
 			for each (var i:String in paths)
 			{
-				var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(i)]);
-				tmpOpenEvent.independentOpenFile = true;
-				
-				dispatcher.dispatchEvent(tmpOpenEvent);
+				var tmpFl:FileLocation = new FileLocation(i);
+				// separate project-configuration files
+				if (projectFileTypes.indexOf(tmpFl.fileBridge.extension) != -1)
+				{
+					projectFile = tmpFl;
+				}
+				else
+				{
+					// open to editor any other redable files
+					var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpFl]);
+					tmpOpenEvent.independentOpenFile = true;
+					
+					dispatcher.dispatchEvent(tmpOpenEvent);
+				}
+			}
+			
+			// for project-configurations
+			if (projectFile)
+			{
+				// considering file is the only configuration file 
+				// containing to its parent folder
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectFile.fileBridge.parent.fileBridge.getFile)
+				);
 			}
 		}
 	}

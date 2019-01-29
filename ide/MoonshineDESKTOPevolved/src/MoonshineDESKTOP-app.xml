@@ -246,6 +246,18 @@
 			<description>Moonshine AwayBuilder File</description>
 			<contentType>application/octet-stream</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.1.File</name>
+			<extension>as3proj</extension>
+			<description>Moonshine Project Configuration File 1</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.2.File</name>
+			<extension>veditorproj</extension>
+			<description>Moonshine Project Configuration File 2</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
