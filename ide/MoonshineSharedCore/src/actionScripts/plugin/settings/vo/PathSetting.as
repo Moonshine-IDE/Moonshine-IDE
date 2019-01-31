@@ -36,7 +36,8 @@ package actionScripts.plugin.settings.vo
 		private var _isEditable:Boolean = true;
 		private var _path:String;
 
-		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean, path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
+		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean,
+									path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
 		{
 			super();
 			this.provider = provider;
