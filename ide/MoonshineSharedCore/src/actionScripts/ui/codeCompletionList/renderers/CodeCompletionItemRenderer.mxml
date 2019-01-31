@@ -3,8 +3,8 @@
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*" maxWidth="650"
                 addedToStage="onItemAddedToStage(event)" removedFromStage="onItemRemovedFromStage(event)">
-    <s:HGroup id="labelDisplayGroup" gap="2" verticalAlign="middle"
-              left="2" right="{detailsGroup.width + 10}">
+    <s:HGroup id="labelDisplayGroup" gap="2" horizontalAlign="left" verticalAlign="middle"
+              left="2" right="{detailsGroup.width + 10}" verticalCenter="0">
         <codecompletionlist:CodeIconIndicator id="codeIconIndicator" data="{data}"/>
         <s:Label id="labelDisplay" color="0x101010" verticalCenter="0" fontSize="12"
                  textAlign="left" showTruncationTip="true" maxDisplayedLines="1"/>
