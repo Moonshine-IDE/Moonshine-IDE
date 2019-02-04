@@ -20,7 +20,6 @@ package actionScripts.utils
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
 
     import flash.net.SharedObject;
@@ -82,8 +81,12 @@ package actionScripts.utils
             var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
             var projectTree:Array = cookie.data.projectTree;
             if (!projectTree) return;
-
-			removeProjectItem(item, propertyNameKey, propertyNameKeyValue, "projectTree");
+            var cookieName:String = "projectTree";
+			var isItemRemoved:Boolean = removeProjectItem(item, propertyNameKey, propertyNameKeyValue, cookieName);
+            if (isItemRemoved && propertyNameKeyValue == "path")
+            {
+                removeProjectLefovers(item, propertyNameKeyValue);
+            }
 		}
 
 		public static function saveLocationOfOpenedProjectFile(fileName:String, filePath:String, projectPath:String):void
@@ -181,27 +184,54 @@ package actionScripts.utils
 		}
 
 		private static function removeProjectItem(item:Object, propertyNameKey:String,
-                                                  propertyNameKeyValue:String, cookieName:String):void
+                                                  propertyNameKeyValue:String, cookieName:String):Boolean
 		{
 			var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
 
             if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
             {
 				var data:Object = cookie.data;
-                if (!data.hasOwnProperty(cookieName)) return;
+                if (!data.hasOwnProperty(cookieName)) return false;
 
                 for (var i:int = 0; i < data[cookieName].length; i++)
                 {
                     var itemForRemove:Object = data[cookieName][i];
+                    var itemForRemoveProperty:String = itemForRemove[item[propertyNameKey]];
+                    var itemValue:String = item[propertyNameKeyValue];
                     if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
-                            itemForRemove[item[propertyNameKey]] == item[propertyNameKeyValue])
+                        itemForRemoveProperty == itemValue)
                     {
                         data[cookieName].removeAt(i);
                         cookie.flush();
-                        break;
+                        return true;
                     }
                 }
             }
+
+            return false;
 		}
-	}
+
+        private static function removeProjectLefovers(item:Object, propertyNameKeyValue:String):void
+        {
+            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var cookieName:String = "projectTree";
+
+            var data:Object = cookie.data;
+            for (var i:int = 0; i < data[cookieName].length; i++)
+            {
+                var itemForRemove:Object = data[cookieName][i];
+                var itemValue:String = item[propertyNameKeyValue];
+
+                for (var itemRemove:Object in itemForRemove)
+                {
+                    var itemProperty:String = itemForRemove[itemRemove];
+                    if (itemProperty.indexOf(itemValue) > -1)
+                    {
+                        data[cookieName].removeAt(i);
+                        cookie.flush();
+                    }
+                }
+            }
+        }
+    }
 }

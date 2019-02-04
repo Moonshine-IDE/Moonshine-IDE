@@ -363,28 +363,27 @@ package actionScripts.plugin.project
 			
             var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projects");
             if (!cookie) return;
-
             var projectsForOpen:Array = cookie.data["projects"];
             if (projectsForOpen && projectsForOpen.length > 0)
             {
-                var projectLocationInfo:Array = [];
+                var projectLocationInfo:Object = {};
 				ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT = projectsForOpen.length;
                 for (var i:int = 0; i < projectsForOpen.length; i++)
                 {
                     var project:ProjectVO;
                     for (var item:Object in projectsForOpen[i])
                     {
-                        projectLocationInfo.push(item);
-                        projectLocationInfo.push(projectsForOpen[i][item]);
+                        projectLocationInfo.path = item;
+                        projectLocationInfo.name = projectsForOpen[i][item];
                     }
 
-                    var projectLocation:FileLocation = new FileLocation(projectLocationInfo[0]);
+                    var projectLocation:FileLocation = new FileLocation(projectLocationInfo.path);
                     var projectFile:Object = projectLocation.fileBridge.getFile;
                     var projectFileLocation:FileLocation = model.flexCore.testFlashDevelop(projectFile);
 
                     if (projectFileLocation)
                     {
-                        project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo[1]);
+                        project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo.name);
                     }
 					
 					if (!project)
@@ -405,12 +404,20 @@ package actionScripts.plugin.project
 	                    }
 					}
 
-                    projectLocationInfo.splice(0, projectLocationInfo.length);
                     if (project)
                     {
                         dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
                         project = null;
                     }
+					else
+					{
+						var pr:Object = projectsForOpen[i];
+						SharedObjectUtil.removeProjectFromOpen(projectLocationInfo.path, projectLocationInfo.name);
+						SharedObjectUtil.removeProjectTreeItemFromOpenedItems(projectLocationInfo, "name", "path");
+					}
+
+                    projectLocationInfo.projectPath = null;
+                    projectLocationInfo.projectName = null;
                 }
             }
         }
