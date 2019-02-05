@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Added Apache Maven support.
 
 ### Changed
-* Updated [as3mxml](https://as3mxml.com/) engine to version 0.17.1.
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.17.2.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed
