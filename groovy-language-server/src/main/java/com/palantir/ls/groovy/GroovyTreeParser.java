@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.palantir.ls.api.TreeParser;
+import com.palantir.ls.groovy.util.GroovyASTUtils;
 import com.palantir.ls.groovy.util.GroovyConstants;
 import com.palantir.ls.groovy.util.GroovyLocations;
 import com.palantir.ls.groovy.util.GroovySymbolInformations;
@@ -51,7 +52,12 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Hover;
@@ -74,6 +80,7 @@ public final class GroovyTreeParser implements TreeParser {
     private final UriSupplier uriSupplier;
 
     private Indexer indexer = new Indexer();
+    private ASTNodeVisitor astVisitor;
 
     private GroovyTreeParser(Supplier<CompilationUnit> unitSupplier, Path workspaceRoot,
             UriSupplier uriSupplier) {
@@ -116,11 +123,16 @@ public final class GroovyTreeParser implements TreeParser {
                         uriSupplier.get(sourceUnit.getSource().getURI()), clazz));
             });
         });
+        
+        astVisitor = new ASTNodeVisitor();
 
         unit.iterator().forEachRemaining(sourceUnit -> {
+            astVisitor.setSourceUnit(sourceUnit);
+
             URI sourceUri = uriSupplier.get(sourceUnit.getSource().getURI());
             // This will iterate through all classes, interfaces and enums, including inner ones.
             sourceUnit.getAST().getClasses().forEach(clazz -> {
+                astVisitor.visitClass(clazz);
                 if (!clazz.isScript()) {
                     // Add class symbol
                     SymbolInformation classSymbol = GroovySymbolInformations.createSymbolInformation(
@@ -157,7 +169,10 @@ public final class GroovyTreeParser implements TreeParser {
 
                 // Add all method symbols
                 clazz.getAllDeclaredMethods()
-                        .forEach(method -> parseMethod(newIndexer, sourceUri, clazz, classes, classFields, method));
+                        .forEach(method ->
+                        {
+                            parseMethod(newIndexer, sourceUri, clazz, classes, classFields, method);
+                        });
             });
 
             // Add symbols declared within the statement block variable scope which includes script
@@ -276,30 +291,55 @@ public final class GroovyTreeParser implements TreeParser {
     @Override
     public Hover getHover(URI uri, Position position) {
         Hover hover = new Hover();
-
-        List<Location> possibleLocations = indexer.getGotoReferenced().keySet().stream()
-                .filter(loc -> uri.equals(URI.create(loc.getUri())) && Ranges.contains(loc.getRange(), position))
-                // If there is more than one result, we want the symbol whose range starts the latest, with a secondary
-                // sort of earliest end range.
-                .sorted((l1, l2) -> Ranges.POSITION_COMPARATOR.compare(l1.getRange().getEnd(), l2.getRange().getEnd()))
-                .sorted((l1, l2) -> Ranges.POSITION_COMPARATOR.reversed().compare(l1.getRange().getStart(),
-                        l2.getRange().getStart()))
-                .collect(Collectors.toList());
-        if (possibleLocations.isEmpty()) {
-            return hover;
-        }
-
-        Optional<ASTNode> optionalNode = indexer.gotoReferencedNode(possibleLocations.get(0));
-        if(!optionalNode.isPresent()) {
-            return hover;
-        }
-
         List<Either<String, MarkedString>> contents = new ArrayList<>();
         hover.setContents(contents);
-        ASTNode node = optionalNode.get();
-        if(node instanceof ClassNode)
+
+        ASTNode offsetNode = astVisitor.getNodeAtLineAndColumn(position.getLine(), position.getCharacter());
+        ASTNode parentNode = astVisitor.getParent(offsetNode);
+        System.err.println("%%% HOVER: " + offsetNode);
+        System.err.println("   parent: " + parentNode);
+
+        ASTNode hoverNode = null;
+
+        if(offsetNode instanceof ExpressionStatement)
         {
-            ClassNode classNode = (ClassNode) node;
+            ExpressionStatement statement = (ExpressionStatement) offsetNode;
+            offsetNode = statement.getExpression();
+        }
+
+        if(offsetNode instanceof ClassNode
+                || offsetNode instanceof MethodNode
+                || offsetNode instanceof Variable)
+        {
+            hoverNode = offsetNode;
+        }
+        else if(offsetNode instanceof ConstantExpression && parentNode != null)
+        {
+            if(parentNode instanceof MethodCallExpression)
+            {
+                MethodCallExpression methodCallExpression = (MethodCallExpression) parentNode;
+                hoverNode = GroovyASTUtils.getMethodFromCallExpression(methodCallExpression, astVisitor);
+            }
+            else if(parentNode instanceof PropertyExpression)
+            {
+                PropertyExpression propertyExpression = (PropertyExpression) parentNode;
+                hoverNode = GroovyASTUtils.getPropertyFromExpression(propertyExpression, astVisitor);
+            }
+        }
+        else if(offsetNode instanceof VariableExpression)
+        {
+            VariableExpression variableExpression = (VariableExpression) offsetNode;
+            hoverNode = (ASTNode) variableExpression.getAccessedVariable();
+        }
+
+        if(hoverNode == null)
+        {
+            return hover;
+        }
+
+        if(hoverNode instanceof ClassNode)
+        {
+            ClassNode classNode = (ClassNode) hoverNode;
             StringBuilder builder = new StringBuilder();
             if(!classNode.isSyntheticPublic())
             {
@@ -324,7 +364,7 @@ public final class GroovyTreeParser implements TreeParser {
             builder.append(classNode.getName());
 
             ClassNode superClass = classNode.getSuperClass();
-            if(!superClass.getName().equals(GroovyConstants.JAVA_DEFAULT_OBJECT))
+            if(superClass != null && !superClass.getName().equals(GroovyConstants.JAVA_DEFAULT_OBJECT))
             {
                 builder.append("extends ");
                 builder.append(superClass.getNameWithoutPackage());
@@ -332,9 +372,9 @@ public final class GroovyTreeParser implements TreeParser {
 
             contents.add(Either.forLeft(builder.toString()));
         }
-        else if(node instanceof MethodNode)
+        else if(hoverNode instanceof MethodNode)
         {
-            MethodNode methodNode = (MethodNode) node;
+            MethodNode methodNode = (MethodNode) hoverNode;
             StringBuilder builder = new StringBuilder();
             if(methodNode.isPublic())
             {
@@ -382,13 +422,13 @@ public final class GroovyTreeParser implements TreeParser {
             builder.append(")");
             contents.add(Either.forLeft(builder.toString()));
         }
-        else if(node instanceof Variable)
+        else if(hoverNode instanceof Variable)
         {
-            Variable varNode = (Variable) node;
+            Variable varNode = (Variable) hoverNode;
             StringBuilder builder = new StringBuilder();
             if(varNode instanceof FieldNode)
             {
-                FieldNode fieldNode = (FieldNode) node;
+                FieldNode fieldNode = (FieldNode) varNode;
                 if(fieldNode.isPublic())
                 {
                     builder.append("public ");
@@ -420,7 +460,7 @@ public final class GroovyTreeParser implements TreeParser {
         }
         else
         {
-            System.err.println("*** hover not available for node: " + node);
+            System.err.println("*** hover not available for node: " + hoverNode);
         }
         return hover;
     }

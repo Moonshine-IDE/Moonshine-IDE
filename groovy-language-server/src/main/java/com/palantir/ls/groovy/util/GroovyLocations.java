@@ -40,7 +40,9 @@ public final class GroovyLocations {
     public static Location createLocation(URI uri, ASTNode node) {
         return new Location(
                 uri.toString(),
-                GroovyRanges.createRange(node));
+                Ranges.createZeroBasedRange(
+                    node.getLineNumber(), node.getColumnNumber(),
+                    node.getLastLineNumber(), node.getLastColumnNumber()));
     }
 
     /**
