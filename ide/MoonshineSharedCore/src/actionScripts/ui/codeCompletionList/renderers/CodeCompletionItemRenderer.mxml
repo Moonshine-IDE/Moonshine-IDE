@@ -7,9 +7,9 @@
               left="2" right="{detailsGroup.width + 10}" verticalCenter="0">
         <codecompletionlist:CodeIconIndicator id="codeIconIndicator" data="{data}"/>
         <s:Label id="labelDisplay" color="0x101010" verticalCenter="0" fontSize="12"
-                 textAlign="left" showTruncationTip="true" maxDisplayedLines="1"/>
+                 textAlign="left" showTruncationTip="true" maxDisplayedLines="1" maxWidth="250"/>
         <s:Label id="details" fontSize="10" textAlign="left" showTruncationTip="true"
-                 maxDisplayedLines="1" maxWidth="250" color="0x606060"
+                 maxDisplayedLines="1" maxWidth="310" color="0x606060"
                  visible="{data.kind == CompletionItemKind.CLASS}" includeInLayout="{data.kind == CompletionItemKind.CLASS}"/>
     </s:HGroup>
     <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2"
@@ -29,74 +29,58 @@
         private var signatureToolTip:ToolTipPopupWithTimer;
         private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
-        override public function set data(value:Object):void
-        {
+        override public function set data(value:Object):void {
             super.data = value;
-            if (value)
-            {
-                if (displayType)
-                {
+            if (value) {
+                if (displayType) {
                     displayType.text = getDisplayType(value.detail);
                 }
 
-                if (codeIconIndicator)
-                {
+                if (codeIconIndicator) {
                     codeIconIndicator.currentState = getDisplayKind(data.kind);
                 }
 
-                if (details && data.kind == CompletionItemKind.CLASS && data.detail)
-                {
+                if (details && data.kind == CompletionItemKind.CLASS && data.detail) {
                     details.text = getShortDetails(data.detail);
                 }
             }
         }
 
-        override protected function set hovered(value:Boolean):void
-        {
-            if (selected && data)
-            {
+        override protected function set hovered(value:Boolean):void {
+            if (selected && data) {
                 this.toolTip = null;
-            }
-            else if (data)
-            {
+            } else if (data) {
                 this.toolTip = data.detail;
             }
 
             super.hovered = value;
         }
 
-        override public function set selected(value:Boolean):void
-        {
+        override public function set selected(value:Boolean):void {
             super.selected = value;
-            if (signatureToolTip && !selected)
-            {
+            if (signatureToolTip && !selected) {
                 signatureToolTip.close();
             }
         }
 
-        private function onCodeIconIndicatorClick(event:MouseEvent):void
-        {
+        private function onCodeIconIndicatorClick(event:MouseEvent):void {
             dispatcher.dispatchEvent(new Event("showDocumentation"));
         }
 
-        private function showSignatureToolTip():void
-        {
+        private function showSignatureToolTip():void {
             if (!signatureToolTip) return;
 
-            if (!selected)
-            {
+            if (!selected) {
                 signatureToolTip.close();
             }
 
-            if (selected && data)
-            {
+            if (selected && data) {
                 callLater(refreshSignatureToolTip);
                 PopUpManager.addPopUp(signatureToolTip, this);
             }
         }
 
-        private function refreshSignatureToolTip():void
-        {
+        private function refreshSignatureToolTip():void {
             if (!signatureToolTip) return;
 
             var toolTipPosition:Point = localToGlobal(new Point(labelDisplay.x, labelDisplay.y + labelDisplay.height));
@@ -105,19 +89,15 @@
             signatureToolTip.y = toolTipPosition.y;
         }
 
-        private function onItemAddedToStage(event:Event):void
-        {
-            if (!signatureToolTip)
-            {
+        private function onItemAddedToStage(event:Event):void {
+            if (!signatureToolTip) {
                 signatureToolTip = new ToolTipPopupWithTimer();
             }
             dispatcher.addEventListener("showDocumentation", onItemShowDocumentation);
         }
 
-        private function onItemRemovedFromStage(event:Event):void
-        {
-            if (signatureToolTip)
-            {
+        private function onItemRemovedFromStage(event:Event):void {
+            if (signatureToolTip) {
                 signatureToolTip.close();
                 signatureToolTip = null;
             }
@@ -125,130 +105,98 @@
             dispatcher.removeEventListener("showDocumentation", onItemShowDocumentation);
         }
 
-        private function onItemShowDocumentation(event:Event):void
-        {
+        private function onItemShowDocumentation(event:Event):void {
             showSignatureToolTip();
         }
 
-        public function getDisplayKind(kind:int):String
-        {
-            switch (kind)
-            {
-                case CompletionItemKind.CLASS:
-                {
+        public function getDisplayKind(kind:int):String {
+            switch (kind) {
+                case CompletionItemKind.CLASS: {
                     return "Class";
                 }
-                case CompletionItemKind.COLOR:
-                {
+                case CompletionItemKind.COLOR: {
                     return "Color";
                 }
-                case CompletionItemKind.CONSTANT:
-                {
+                case CompletionItemKind.CONSTANT: {
                     return "Constant";
                 }
-                case CompletionItemKind.CONSTRUCTOR:
-                {
+                case CompletionItemKind.CONSTRUCTOR: {
                     return "Constructor";
                 }
-                case CompletionItemKind.ENUM:
-                {
+                case CompletionItemKind.ENUM: {
                     return "Enum";
                 }
-                case CompletionItemKind.ENUM_MEMBER:
-                {
+                case CompletionItemKind.ENUM_MEMBER: {
                     return "EnumMember";
                 }
-                case CompletionItemKind.EVENT:
-                {
+                case CompletionItemKind.EVENT: {
                     return "Event";
                 }
-                case CompletionItemKind.FIELD:
-                {
+                case CompletionItemKind.FIELD: {
                     return "Field";
                 }
-                case CompletionItemKind.FILE:
-                {
+                case CompletionItemKind.FILE: {
                     return "File";
                 }
-                case CompletionItemKind.FOLDER:
-                {
+                case CompletionItemKind.FOLDER: {
                     return "Folder";
                 }
-                case CompletionItemKind.FUNCTION:
-                {
+                case CompletionItemKind.FUNCTION: {
                     return "Function";
                 }
-                case CompletionItemKind.INTERFACE:
-                {
+                case CompletionItemKind.INTERFACE: {
                     return "Interface";
                 }
-                case CompletionItemKind.KEYWORD:
-                {
+                case CompletionItemKind.KEYWORD: {
                     return "Keyword";
                 }
-                case CompletionItemKind.METHOD:
-                {
+                case CompletionItemKind.METHOD: {
                     return "Method";
                 }
-                case CompletionItemKind.MODULE:
-                {
+                case CompletionItemKind.MODULE: {
                     return "Module";
                 }
-                case CompletionItemKind.OPERATOR:
-                {
+                case CompletionItemKind.OPERATOR: {
                     return "Operator";
                 }
-                case CompletionItemKind.PROPERTY:
-                {
+                case CompletionItemKind.PROPERTY: {
                     return "Property";
                 }
-                case CompletionItemKind.REFERENCE:
-                {
+                case CompletionItemKind.REFERENCE: {
                     return "Reference";
                 }
-                case CompletionItemKind.SNIPPET:
-                {
+                case CompletionItemKind.SNIPPET: {
                     return "Snippet";
                 }
-                case CompletionItemKind.STRUCT:
-                {
+                case CompletionItemKind.STRUCT: {
                     return "Struct";
                 }
-                case CompletionItemKind.TEXT:
-                {
+                case CompletionItemKind.TEXT: {
                     return "Text";
                 }
-                case CompletionItemKind.TYPE_PARAMETER:
-                {
+                case CompletionItemKind.TYPE_PARAMETER: {
                     return "TypeParameter";
                 }
-                case CompletionItemKind.UNIT:
-                {
+                case CompletionItemKind.UNIT: {
                     return "Unit";
                 }
-                case CompletionItemKind.VALUE:
-                {
+                case CompletionItemKind.VALUE: {
                     return "Value";
                 }
-                case CompletionItemKind.VARIABLE:
-                {
+                case CompletionItemKind.VARIABLE: {
                     return "Variable";
                 }
             }
             return null;
         }
 
-        public function getDisplayType(detail:String):String
-        {
+        public function getDisplayType(detail:String):String {
             if (detail && (data.kind == CompletionItemKind.METHOD
                     || data.kind == CompletionItemKind.PROPERTY
-                    || data.kind == CompletionItemKind.VARIABLE))
-            {
+                    || data.kind == CompletionItemKind.VARIABLE)) {
                 var lastColonIndex:int = detail.lastIndexOf(":");
                 return detail.substring(lastColonIndex + 1);
-            }
-            else
-            {
+            } else {
                 return this.getDisplayKind(data.kind);
             }
         }
@@ -256,7 +204,12 @@
         private function getShortDetails(detail:String):String
         {
             var firstSpaceIndex:int = detail.indexOf(" ");
-            return detail.substr(firstSpaceIndex, detail.length);
+            if (firstSpaceIndex > -1)
+            {
+                return detail.substr(firstSpaceIndex + 1, detail.length);
+            }
+
+            return detail;
         }
         ]]></fx:Script>
 </s:ItemRenderer>
