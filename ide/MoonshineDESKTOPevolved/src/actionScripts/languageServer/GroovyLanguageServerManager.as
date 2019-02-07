@@ -139,7 +139,7 @@ package actionScripts.languageServer
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			processArgs.push("-cp");
 			processArgs.push(jarFile.nativePath);
-			processArgs.push("com.palantir.ls.groovy.GroovyLanguageServer");
+			processArgs.push("net.prominic.groovyls.GroovyLanguageServer");
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = _cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);

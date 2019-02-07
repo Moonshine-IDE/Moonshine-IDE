@@ -19,13 +19,15 @@ package com.palantir.ls.util;
 import java.net.URI;
 import java.nio.file.Paths;
 
+import com.palantir.ls.util.UriSupplier;
+
 public class SimpleUriSupplier implements UriSupplier {
 
-    @Override
-    public URI get(URI uri) {
+	@Override
+	public URI get(URI uri) {
 		// we still convert it into a Path and then back into a URI to normalize
 		// the URI. Otherwise the URI could start with either 'file:///' or
 		// 'file:/'. Now it will always start with 'file:///'.
 		return Paths.get(uri).toUri();
-    }
+	}
 }

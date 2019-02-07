@@ -32,6 +32,8 @@ import com.palantir.ls.util.InMemoryContentsManager;
 import com.palantir.ls.util.Ranges;
 import com.palantir.ls.util.Uris;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.prominic.groovyls.compiler.control.ErrorCollectorWithoutThrow;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -89,7 +91,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
      * Creates a new instance of GroovyWorkspaceCompiler.
      *
      * @param targetDirectory the directory in which to put generated files
-     * @param workspaceRoot the directory to compile
+     * @param workspaceRoot   the directory to compile
      * @return the newly created GroovyWorkspaceCompiler
      */
     @SuppressFBWarnings("PT_FINAL_TYPE_RETURN")
@@ -101,8 +103,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
 
         CompilerConfiguration config = new CompilerConfiguration();
         config.setTargetDirectory(targetDirectory.toFile());
-        GroovyWorkspaceCompiler workspaceCompiler =
-                new GroovyWorkspaceCompiler(workspaceRoot, config);
+        GroovyWorkspaceCompiler workspaceCompiler = new GroovyWorkspaceCompiler(workspaceRoot, config);
         workspaceCompiler.addAllSourcesToCompilationUnit();
 
         return workspaceCompiler;
@@ -123,7 +124,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
         try {
             unit.compile();
         } catch (MultipleCompilationErrorsException e) {
-            //ignore
+            // ignore
         }
         return parseErrors(unit.getErrorCollector());
     }
@@ -179,22 +180,23 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
         changes.forEach(change -> {
             URI uri = Uris.resolveToRoot(workspaceRoot, change.getUri());
             switch (change.getType()) {
-                case Changed:
-                case Deleted:
-                    if (originalSourceToChangedSource.containsKey(uri)) {
-                        originalSourceToChangedSource.remove(uri);
-                    }
-                    break;
-                default:
-                    // Nothing to do in other cases
-                    break;
+            case Changed:
+            case Deleted:
+                if (originalSourceToChangedSource.containsKey(uri)) {
+                    originalSourceToChangedSource.remove(uri);
+                }
+                break;
+            default:
+                // Nothing to do in other cases
+                break;
             }
         });
         resetCompilationUnit();
     }
 
     private void addAllSourcesToCompilationUnit() {
-        // We don't include the files that have a corresponding FileBackedContentsManager
+        // We don't include the files that have a corresponding
+        // FileBackedContentsManager
         // since that means they will be replaced.
         for (File file : Files.fileTreeTraverser().preOrderTraversal(workspaceRoot.toFile())) {
             String fileExtension = Files.getFileExtension(file.getAbsolutePath());
@@ -204,18 +206,13 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
             }
         }
         // Add the replaced sources
-        originalSourceToChangedSource.values()
-                .forEach(contentsManager ->
-                {
-                    SourceUnit sourceUnit = new SourceUnit(contentsManager.getPath().toString(),
-                        new StringReaderSourceWithURI(contentsManager.getContents(),
-                            contentsManager.getPath().toUri(),
+        originalSourceToChangedSource.values().forEach(contentsManager -> {
+            SourceUnit sourceUnit = new SourceUnit(contentsManager.getPath().toString(),
+                    new StringReaderSourceWithURI(contentsManager.getContents(), contentsManager.getPath().toUri(),
                             unit.getConfiguration()),
-                            unit.getConfiguration(),
-                            unit.getClassLoader(),
-                            unit.getErrorCollector());
-                    unit.addSource(sourceUnit);
-                });
+                    unit.getConfiguration(), unit.getClassLoader(), unit.getErrorCollector());
+            unit.addSource(sourceUnit);
+        });
     }
 
     private void resetCompilationUnit() {
@@ -227,8 +224,7 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
                     + "Make sure you have permission to modify your target directory.");
         }
         if (!config.getTargetDirectory().mkdir()) {
-            logger.error("Could not recreate target directory: '{}'",
-                    config.getTargetDirectory().getAbsolutePath());
+            logger.error("Could not recreate target directory: '{}'", config.getTargetDirectory().getAbsolutePath());
             throw new RuntimeException("Could not reset compiled files after changes. "
                     + "User may not have permission to modify target directory.");
         }
@@ -241,11 +237,9 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
 
         for (int i = 0; i < collector.getWarningCount(); i++) {
             WarningMessage message = collector.getWarning(i);
-            String message1 = message.getMessage() == null
-                    ? ""
-                    : message.getMessage();
-            Diagnostic diag = new Diagnostic(
-                    Ranges.UNDEFINED_RANGE, message1, DiagnosticSeverity.Warning, GroovyConstants.GROOVY_COMPILER);
+            String message1 = message.getMessage() == null ? "" : message.getMessage();
+            Diagnostic diag = new Diagnostic(Ranges.UNDEFINED_RANGE, message1, DiagnosticSeverity.Warning,
+                    GroovyConstants.GROOVY_COMPILER);
             diagnosticsByFile.computeIfAbsent(workspaceRoot.toUri(), (ignored) -> Lists.newArrayList()).add(diag);
         }
         for (int i = 0; i < collector.getErrorCount(); i++) {
@@ -256,36 +250,31 @@ public final class GroovyWorkspaceCompiler implements WorkspaceCompiler, Supplie
                 SyntaxErrorMessage syntaxErrorMessage = (SyntaxErrorMessage) message;
                 SyntaxException cause = syntaxErrorMessage.getCause();
 
-                Range range =
-                        Ranges.createZeroBasedRange(cause.getStartLine(), cause.getStartColumn(), cause.getEndLine(),
-                                cause.getEndColumn());
+                Range range = Ranges.createZeroBasedRange(cause.getStartLine(), cause.getStartColumn(),
+                        cause.getEndLine(), cause.getEndColumn());
                 uri = Paths.get(cause.getSourceLocator()).toUri();
-                diagnostic = new Diagnostic(
-                        range, cause.getMessage(), DiagnosticSeverity.Error, GroovyConstants.GROOVY_COMPILER);
+                diagnostic = new Diagnostic(range, cause.getMessage(), DiagnosticSeverity.Error,
+                        GroovyConstants.GROOVY_COMPILER);
             } else {
                 StringWriter data = new StringWriter();
                 PrintWriter writer = new PrintWriter(data);
                 message.write(writer);
                 uri = workspaceRoot.toUri();
                 String message1 = data.toString();
-                diagnostic = new Diagnostic(
-                        Ranges.UNDEFINED_RANGE, message1, DiagnosticSeverity.Error, GroovyConstants.GROOVY_COMPILER);
+                diagnostic = new Diagnostic(Ranges.UNDEFINED_RANGE, message1, DiagnosticSeverity.Error,
+                        GroovyConstants.GROOVY_COMPILER);
             }
             diagnosticsByFile.computeIfAbsent(uri, (ignored) -> Lists.newArrayList()).add(diagnostic);
         }
-        Set<PublishDiagnosticsParams> result = diagnosticsByFile.entrySet()
-                .stream()
+        Set<PublishDiagnosticsParams> result = diagnosticsByFile.entrySet().stream()
                 .map(entry -> new PublishDiagnosticsParams(entry.getKey().toString(), entry.getValue()))
                 .collect(Collectors.toSet());
 
-        if (prevDiagnosticsByFile != null)
-        {
-            for (URI key : prevDiagnosticsByFile.keySet())
-            {
-                if (!diagnosticsByFile.containsKey(key))
-                {
-                    //send an empty list of diagnostics for files that had
-                    //diagnostics previously or they won't be cleared
+        if (prevDiagnosticsByFile != null) {
+            for (URI key : prevDiagnosticsByFile.keySet()) {
+                if (!diagnosticsByFile.containsKey(key)) {
+                    // send an empty list of diagnostics for files that had
+                    // diagnostics previously or they won't be cleared
                     result.add(new PublishDiagnosticsParams(key.toString(), Lists.newArrayList()));
                 }
             }

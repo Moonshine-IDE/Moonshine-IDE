@@ -3,13 +3,13 @@ plugins {
   id "java"
 }
 
-ext.mainClass = "com.palantir.ls.groovy.GroovyLanguageServer"
+ext.mainClass = "net.prominic.groovyls.GroovyLanguageServer"
 
 tasks.build.dependsOn tasks.shadowJar
 
 shadowJar {
 	manifest {
-		attributes "Main-Class": "com.palantir.ls.groovy.GroovyLanguageServer"
+		attributes "Main-Class": "net.prominic.groovyls.GroovyLanguageServer"
 	}
 }
 
