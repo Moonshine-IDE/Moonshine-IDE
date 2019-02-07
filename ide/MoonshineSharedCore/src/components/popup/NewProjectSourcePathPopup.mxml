@@ -33,10 +33,6 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.clearTimeout;
-			import flash.utils.setTimeout;
-			
-			import mx.controls.Image;
 			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			
@@ -98,7 +94,9 @@
 			
 			protected function onTreeItemClicked(event:ListEvent):void
 			{
-				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(wrapperBelongToProject.folderLocation.fileBridge.nativePath, tree.selectedItem.nativePath);
+				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+						Vector.<FileLocation>([wrapperBelongToProject.folderLocation]),
+						tree.selectedItem.nativePath);
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 			}
 			

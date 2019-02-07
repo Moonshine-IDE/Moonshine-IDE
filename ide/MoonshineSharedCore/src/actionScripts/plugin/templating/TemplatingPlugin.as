@@ -1093,7 +1093,7 @@ package actionScripts.plugin.templating
 
 				content = content.replace(pattern, event.fileName);
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
 				content = content.replace("$imports", as3FileAttributes.getImports());
@@ -1125,7 +1125,7 @@ package actionScripts.plugin.templating
 
 				content = content.replace(pattern, event.fileName);
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
                 content = content.replace("$imports", as3InterfaceAttributes.getImports());

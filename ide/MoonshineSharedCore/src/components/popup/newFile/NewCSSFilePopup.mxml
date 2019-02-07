@@ -30,9 +30,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.factory.FileLocation;
+			import actionScripts.factory.FileLocation;
 
-		import mx.events.FlexEvent;
+			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
 			import spark.events.TextOperationEvent;
@@ -139,7 +139,9 @@
 			
 			protected function onTreeItemClicked(event:ListEvent):void
 			{
-				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(tree.selectedItem.projectReference.path, tree.selectedItem.nativePath);
+				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+						Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+						tree.selectedItem.nativePath);
 				
 				// re-validate upon folder location change
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;

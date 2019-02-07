@@ -46,10 +46,8 @@ package actionScripts.plugin.rename
 	import actionScripts.utils.CustomTree;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
-	import actionScripts.valueObjects.TextEdit;
 
 	import components.popup.RenamePopup;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
@@ -190,7 +188,7 @@ package actionScripts.plugin.rename
 				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(event.fileWrapper));
 				newFilePopup.wrapperOfFolderLocation = creatingItemIn;
 				newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
-				
+
 				PopUpManager.centerPopUp(newFilePopup);
 			}
 		}
@@ -258,28 +256,33 @@ package actionScripts.plugin.rename
 					// do not update package path if not inside source directory
 					if (isInsideSourceDirectory)
 					{
-						var tmpPackagePath:String = UtilsCore.getPackageReferenceByProjectPath(project.sourceFolder.fileBridge.nativePath, projectRef.nativePath, null, null, false);
-						if (tmpPackagePath.charAt(0) == ".") tmpPackagePath = tmpPackagePath.substr(1, tmpPackagePath.length);
+						var tmpPackagePath:String = UtilsCore.getPackageReferenceByProjectPath(Vector.<FileLocation>([project.sourceFolder]), projectRef.nativePath, null, null, false);
+						if (tmpPackagePath.charAt(0) == ".")
+						{
+							tmpPackagePath = tmpPackagePath.substr(1, tmpPackagePath.length);
+						}
 						
 						return "package "+ tmpPackagePath;
 					}
 				}
-				
-				if (!isClassDecFound && (classNameStartIndex = line.indexOf(" class "+ sourceFileName)) !== -1)
+
+                classNameStartIndex = line.indexOf(" class "+ sourceFileName);
+				if (!isClassDecFound && classNameStartIndex !== -1)
 				{
 					isClassDecFound = true;
 					return line.substr(0, classNameStartIndex + 7) + newFileName + line.substr(classNameStartIndex + 7 + sourceFileName.length, line.length);
 				}
-				
-				if (!isConstructorFound && (classNameStartIndex = line.indexOf(" function "+ sourceFileName +"(")) !== -1)
+
+                classNameStartIndex = line.indexOf(" function "+ sourceFileName +"(");
+				if (!isConstructorFound && classNameStartIndex !== -1)
 				{
 					isConstructorFound = true;
 					return line.substr(0, classNameStartIndex + 10) + newFileName + line.substr(classNameStartIndex + 10 + sourceFileName.length, line.length);
 				}
-				
+
 				return line;
 			});
-			
+
 			return sourceContentLines.join("\n");
 		}
 		

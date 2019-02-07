@@ -296,15 +296,36 @@ package actionScripts.utils
 		 * Returns dotted package references
 		 * against a project path
 		 */
-		public static function getPackageReferenceByProjectPath(projectPath:String, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
-			if (fileWrapper) filePath = fileWrapper.nativePath;
-			else if (fileLocation) filePath = fileLocation.fileBridge.nativePath;
+			if (fileWrapper)
+			{
+				filePath = fileWrapper.nativePath;
+			}
+			else if (fileLocation)
+			{
+				filePath = fileLocation.fileBridge.nativePath;
+			}
 			
 			var separator:String = model.fileCore.separator;
-			var projectPathSplit:Array = projectPath.split(separator);
-			filePath = filePath.replace(projectPath, "");
-			if (appendProjectNameAsPrefix) return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+			var classPathCount:int = classPaths.length;
+			var projectPathSplit:Array = null;
+			for (var i:int = 0; i < classPathCount; i++)
+			{
+				var location:FileLocation = classPaths[i];
+				if (filePath.indexOf(location.fileBridge.nativePath) > -1)
+				{
+					projectPathSplit = location.fileBridge.nativePath.split(separator);
+					filePath = filePath.replace(location.fileBridge.nativePath, "");
+					break;
+				}
+			}
+			//var projectPathSplit:Array = projectPath.split(separator);
+			//filePath = filePath.replace(projectPath, "");
+			if (appendProjectNameAsPrefix && projectPathSplit)
+			{
+				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+			}
 			return filePath.split(separator).join(".");
 		}
 		
