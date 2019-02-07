@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-    import actionScripts.interfaces.IPrivacyPolicyBridge;
-
     import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
@@ -51,7 +49,6 @@ package actionScripts.locator
 		public var contextMenuCore: IContextMenuBridge;
 		public var flexCore: IFlexCoreBridge;
 		public var aboutCore: IAboutBridge;
-        public var privacyPolicyCore:IPrivacyPolicyBridge;
         public var clipboardCore: IClipboardBridge;
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;

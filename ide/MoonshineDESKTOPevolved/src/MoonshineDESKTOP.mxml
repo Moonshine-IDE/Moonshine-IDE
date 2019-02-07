@@ -30,9 +30,7 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.impls.IPrivacyPolicyBridgeImpl;
-
-		import mx.events.FlexEvent;
+			import mx.events.FlexEvent;
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
@@ -72,7 +70,6 @@
 	        private static const NEEDED_FOR_COMPILATION7:IClipboardBridgeImp = null;
 	        private static const NEEDED_FOR_COMPILATION8:IJavaBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION9:ILanguageServerBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION10:IPrivacyPolicyBridgeImpl = null;
 			
 			//--------------------------------------------------------------------------
 			//

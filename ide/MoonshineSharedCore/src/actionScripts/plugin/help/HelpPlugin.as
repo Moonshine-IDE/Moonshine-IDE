@@ -19,7 +19,9 @@
 package actionScripts.plugin.help
 {
 	import flash.events.Event;
-	
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+
 	import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.events.AddTabEvent;
@@ -31,6 +33,8 @@ package actionScripts.plugin.help
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+
+import mx.resources.ResourceManager;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
@@ -97,9 +101,9 @@ package actionScripts.plugin.help
 		}
 
         private function privacyPolicyHandler(event:Event):void
-        {
-			var privacyPolicy:IContentWindow = model.privacyPolicyCore.getNewPrivacyPolicyScreen(null) as IContentWindow;
-            dispatcher.dispatchEvent(new AddTabEvent(privacyPolicy));
+		{
+			var url:String = ResourceManager.getInstance().getString('resources', 'PRIVACY_POLICY_URL');
+			navigateToURL(new URLRequest(url));
         }
 	}
 }

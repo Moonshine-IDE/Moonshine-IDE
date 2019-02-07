@@ -20,7 +20,6 @@
 package actionScripts.factory
 {
     import actionScripts.interfaces.IClipboardBridge;
-    import actionScripts.interfaces.IPrivacyPolicyBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
 
     import flash.system.ApplicationDomain;
@@ -102,12 +101,6 @@ package actionScripts.factory
 			var gb: IAboutBridge = new clsToCreate();
 			return gb;
 		}
-
-        public static function getPrivacyPolicyInstance():IPrivacyPolicyBridge
-        {
-            var clsToCreate:Object = getClassToCreate("actionScripts.impls.IPrivacyPolicyBridgeImpl");
-            return new clsToCreate();
-        }
 
 		public static function getJavaInstance(): IJavaBridge 
 		{
