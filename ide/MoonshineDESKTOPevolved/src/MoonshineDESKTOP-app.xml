@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/31.0">
+<application xmlns="http://ns.adobe.com/air/application/28.0">
 
 <!-- Adobe AIR Application Descriptor File Template.
 
@@ -323,7 +323,7 @@
     <!-- </android> -->
 	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file
 
-	
-	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>-->
+	-->
+	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>
 
 </application>
