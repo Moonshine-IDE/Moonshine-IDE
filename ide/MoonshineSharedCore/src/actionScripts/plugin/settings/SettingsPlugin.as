@@ -101,7 +101,6 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.moonshine_internal;
     import actionScripts.valueObjects.ConstantsCoreVO;
 

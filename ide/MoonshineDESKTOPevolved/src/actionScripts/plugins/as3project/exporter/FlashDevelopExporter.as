@@ -16,14 +16,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.exporter
 {
-	import flash.filesystem.File;
+    import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.SerializeUtil;
+
+    import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.utils.UtilsCore;
 	
 	public class FlashDevelopExporter
 	{
@@ -52,7 +54,14 @@ package actionScripts.plugins.as3project.exporter
 			// Get output node with relative paths		
 			var outputXML: XML = p.swfOutput.toXML(p.folderLocation);
 			project.appendChild(outputXML);
-			
+
+			var jsOutput:XML = <jsOutput></jsOutput>;
+			var jsOutputPath:Object = {
+				path: SerializeUtil.serializeString(p.jsOutputPath)
+			};
+			jsOutput.appendChild(SerializeUtil.serializePairs(jsOutputPath, <option />));
+			project.appendChild(jsOutput);
+
 			project.insertChildAfter(outputXML, "<!-- Other classes to be compiled into your SWF -->");
 			
 			project.appendChild(exportPaths(p.classpaths, <classpaths />, <class />, p));
@@ -60,6 +69,7 @@ package actionScripts.plugins.as3project.exporter
 			project.appendChild(exportPaths(p.nativeExtensions, <moonshineNativeExtensionPaths />, <class />, p));
 			
 			project.appendChild(p.buildOptions.toXML());
+			project.appendChild(p.mavenBuildOptions.toXML());
 			
 			project.appendChild(exportPaths(p.includeLibraries, <includeLibraries />, <element />, p));
 			project.appendChild(exportPaths(p.libraries, <libraryPaths />, <element />, p));
@@ -91,7 +101,7 @@ package actionScripts.plugins.as3project.exporter
 			
 			tmpXML = <postBuildCommand />;
 			tmpXML.appendChild(p.postbuildCommands);
-			tmpXML.@alwaysRun = UtilsCore.serializeBoolean(p.postbuildAlways);
+			tmpXML.@alwaysRun = SerializeUtil.serializeBoolean(p.postbuildAlways);
 			project.appendChild(tmpXML);
 			
 			tmpXML = <trustSVNCertificate />;
@@ -100,19 +110,19 @@ package actionScripts.plugins.as3project.exporter
 			
 			var options:XML = <options />;
 			var optionPairs:Object = {
-				showHiddenPaths		:	UtilsCore.serializeBoolean(p.showHiddenPaths),
-				testMovie			:	UtilsCore.serializeString(p.testMovie),
-				defaultBuildTargets	:	UtilsCore.serializeString(p.defaultBuildTargets),
-				testMovieCommand	:	UtilsCore.serializeString(p.testMovieCommand),
-                isPrimeFacesVisualEditor: UtilsCore.serializeBoolean(p.isPrimeFacesVisualEditorProject),
-                isExportedToExistingSource: UtilsCore.serializeBoolean(p.isExportedToExistingSource),
-                visualEditorExportPath: UtilsCore.serializeString(p.visualEditorExportPath)
+				showHiddenPaths		:	SerializeUtil.serializeBoolean(p.showHiddenPaths),
+				testMovie			:	SerializeUtil.serializeString(p.testMovie),
+				defaultBuildTargets	:	SerializeUtil.serializeString(p.defaultBuildTargets),
+				testMovieCommand	:	SerializeUtil.serializeString(p.testMovieCommand),
+                isPrimeFacesVisualEditor: SerializeUtil.serializeBoolean(p.isPrimeFacesVisualEditorProject),
+                isExportedToExistingSource: SerializeUtil.serializeBoolean(p.isExportedToExistingSource),
+                visualEditorExportPath: SerializeUtil.serializeString(p.visualEditorExportPath)
 			}
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{
 				optionPairs.testMovieCommand = p.testMovieCommand;
 			}
-			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			project.appendChild(options);
 			
 			var projType:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
@@ -130,7 +140,7 @@ package actionScripts.plugins.as3project.exporter
 				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
 				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null
 			}
-			options.appendChild(UtilsCore.serializePairs(optionPairs, <option />));
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			
 			tmpXML = <deviceSimulator/>;
 			tmpXML.appendChild(p.buildOptions.isMobileHasSimulatedDevice ? p.buildOptions.isMobileHasSimulatedDevice.name : null);

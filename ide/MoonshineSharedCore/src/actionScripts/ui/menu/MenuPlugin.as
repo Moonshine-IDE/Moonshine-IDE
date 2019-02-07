@@ -50,6 +50,9 @@ import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.KeyboardShortcut;
 import actionScripts.valueObjects.Settings;
+import actionScripts.valueObjects.ProjectVO;
+import actionScripts.ui.menu.vo.ProjectMenuTypes;
+import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -117,7 +120,7 @@ import actionScripts.valueObjects.Settings;
 		
 		protected static var shortcutManager:KeyboardShortcutManager = KeyboardShortcutManager.getInstance();
 		private var buildingNativeMenu:Boolean = false;
-		private var lastSelectedProjectBeforeMacDisableStateChange:AS3ProjectVO;
+		private var lastSelectedProjectBeforeMacDisableStateChange:ProjectVO;
 		
 		override public function activate():void
 		{
@@ -222,9 +225,9 @@ import actionScripts.valueObjects.Settings;
 			updateMenuOptionsBasedOnActiveProject();
         }
 
-		private function updateMenuOptionsBasedOnActiveProject(lastSelectedProject:AS3ProjectVO=null):void
+		private function updateMenuOptionsBasedOnActiveProject(lastSelectedProject:ProjectVO=null):void
 		{
-			var activeProject:AS3ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject as AS3ProjectVO;
+			var activeProject:ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject;
 
 			if (ConstantsCoreVO.IS_AIR)
             {
@@ -255,7 +258,7 @@ import actionScripts.valueObjects.Settings;
             }
 		}
 
-		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:AS3ProjectVO):void
+		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:ProjectVO):void
 		{
             var countMenuItems:int = menuItems.length;
 			var enable:Boolean;
@@ -279,10 +282,21 @@ import actionScripts.valueObjects.Settings;
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
-						enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+						if(currentProject is JavaProjectVO)
 						{
-							return currentProject.menuType.indexOf(item) != -1;
-						});
+							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+							{
+								return item === ProjectMenuTypes.JAVA;
+							});
+						}
+						else if(currentProject is AS3ProjectVO)
+						{
+							var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
+							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+							{
+								return as3Project.menuType.indexOf(item) != -1;
+							});
+						}
 						menuItem.enabled = enable;
 					}
 				}
@@ -383,7 +397,7 @@ import actionScripts.valueObjects.Settings;
 			// in case of OSX, top menu append with a new system level menu (i.e. Moonshine) at 0th index
 			// thus, menu index for Windows what could be 0, shall be 1 in OSX
 			noCodeCompletionOptionsToMenuMapping[2 + noSDKOptionsRootIndex] = [6, 7, 8];
-			noSDKOptionsToMenuMapping[3 + noSDKOptionsRootIndex] = [2, 3, 4, 5, 6, 8];
+			noSDKOptionsToMenuMapping[3 + noSDKOptionsRootIndex] = [3, 4, 5, 6, 7, 9];
 			noSDKOptionsToMenuMapping[4 + noSDKOptionsRootIndex] = [0, 2, 3, 4];
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
@@ -575,7 +589,7 @@ import actionScripts.valueObjects.Settings;
 		{
             applyNewNativeMenu(windowMenusForDisableStateMac);
 			
-			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
+			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject;
 		}
 		
 		private function onMacNoMenuStateChange(event:Event):void
@@ -584,7 +598,7 @@ import actionScripts.valueObjects.Settings;
 			moonshineMenu = FlexGlobals.topLevelApplication.nativeApplication.menu.items[0];
             applyNewNativeMenu(new Vector.<MenuItem>());
 			
-			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject as AS3ProjectVO;
+			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject;
 		}
 
 		private function onMacEnableStateChange(event:Event):void

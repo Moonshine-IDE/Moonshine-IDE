@@ -39,6 +39,7 @@ package actionScripts.ui.editor.text
 
     import spark.components.TitleWindow;
     import actionScripts.valueObjects.SymbolKind;
+    import actionScripts.valueObjects.DocumentSymbol;
 
     [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager
@@ -247,14 +248,34 @@ package actionScripts.ui.editor.text
             completionList.closeDocumentation();
         }
 
-        private function filterClasses(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
+        private function filterClasses(item:Object, index:int, vector:Array):Boolean
         {
-            return item.kind == SymbolKind.CLASS;
+            if(item is SymbolInformation)
+            {
+                var symbolInfo:SymbolInformation = SymbolInformation(item);
+                return symbolInfo.kind == SymbolKind.CLASS;
+            }
+            if(item is DocumentSymbol)
+            {
+                var documentSymbol:DocumentSymbol = DocumentSymbol(item);
+                return documentSymbol.kind == SymbolKind.CLASS;
+            }
+            return false;
         }
 
-        private function filterInterfaces(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
+        private function filterInterfaces(item:Object, index:int, vector:Array):Boolean
         {
-            return item.kind == SymbolKind.INTERFACE;
+            if(item is SymbolInformation)
+            {
+                var symbolInfo:SymbolInformation = SymbolInformation(item);
+                return symbolInfo.kind == SymbolKind.INTERFACE;
+            }
+            if(item is DocumentSymbol)
+            {
+                var documentSymbol:DocumentSymbol = DocumentSymbol(item);
+                return documentSymbol.kind == SymbolKind.INTERFACE;
+            }
+            return false;
         }
 
         private function getCompletionItemType(symbolKind:int):int

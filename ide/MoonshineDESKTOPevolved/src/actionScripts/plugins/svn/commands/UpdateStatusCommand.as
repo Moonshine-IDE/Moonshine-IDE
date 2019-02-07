@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
-	import flash.desktop.NativeProcess;
+    import actionScripts.utils.SerializeUtil;
+
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
@@ -28,7 +30,6 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.svn.provider.SVNStatus;
-	import actionScripts.utils.UtilsCore;
 	
 	public class UpdateStatusCommand extends SVNCommandBase
 	{
@@ -157,7 +158,7 @@ package actionScripts.plugins.svn.commands
 				st.status = entry.child('wc-status').@item.toString();
 				st.revision = parseInt(entry.child('wc-status').@revision);
 				st.author = entry..author;
-				st.treeConflict = UtilsCore.deserializeBoolean(entry.child('wc.status').attribute('tree-conflicted'));
+				st.treeConflict = SerializeUtil.deserializeBoolean(entry.child('wc.status').attribute('tree-conflicted'));
 				//st.date = DateUtil.parseBlaDate(entry..date);
 				status[path] = st;
 			}

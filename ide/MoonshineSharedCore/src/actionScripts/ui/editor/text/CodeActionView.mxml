@@ -26,6 +26,7 @@
 			import actionScripts.valueObjects.CodeAction;
 			import actionScripts.valueObjects.WorkspaceEdit;
 			import actionScripts.events.LanguageServerEvent;
+			import actionScripts.utils.applyWorkspaceEdit;
 
 			[Bindable]
 			public var codeActions:ICollectionView;
@@ -46,7 +47,7 @@
 				var edit:WorkspaceEdit = codeAction.edit;
 				if(edit)
 				{
-					trace("Not implemented: code action with WorkspaceEdit");
+					applyWorkspaceEdit(edit);
 				}
 				var command:Command = codeAction.command;
 				if(command)

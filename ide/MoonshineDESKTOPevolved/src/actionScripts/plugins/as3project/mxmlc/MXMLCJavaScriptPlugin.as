@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import flash.desktop.NativeProcess;
+    import actionScripts.plugin.project.ProjectType;
+
+    import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -31,7 +33,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.filesystem.FileStream;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
-    import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
 
     import mx.collections.ArrayCollection;
@@ -46,7 +47,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.mxmlc.CommandLine;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.core.compiler.CompilerEventBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
@@ -97,7 +97,6 @@ package actionScripts.plugins.as3project.mxmlc
 		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
 
-		private var cmdLine:CommandLine;
 		private var fschstr:String;
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -137,7 +136,6 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
 			dispatcher.addEventListener(CompilerEventBase.BUILD_AS_JAVASCRIPT, build);
-			cmdLine = new CommandLine();
 			reset();
 		}
 		
@@ -146,7 +144,6 @@ package actionScripts.plugins.as3project.mxmlc
 			super.deactivate();
 			reset();
 			shellInfo = null;
-			cmdLine = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -215,7 +212,7 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// if above is false
 				selectProjectPopup = new SelectOpenedFlexProject();
-				selectProjectPopup.type = SelectOpenedFlexProject.TYPE_FLEXJS;
+				selectProjectPopup.projectType = ProjectType.AS3PROJ_AS_AIR;
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
 				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
@@ -364,6 +361,8 @@ package actionScripts.plugins.as3project.mxmlc
 					sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
 					compilerPathHomeArg = "ROYALE_COMPILER_HOME=" + SDKstr;
                 }
+
+				jsCompilationArg += " -js-output=".concat(project.jsOutputPath);
 			}
 
             if(Settings.os == "win")
@@ -561,71 +560,14 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		private function shellData(e:ProgressEvent):void 
+		private function shellData(e:ProgressEvent):void
 		{
 			if(fcsh)
 			{
-				var timeoutValue:uint;
 				var output:IDataInput = fcsh.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
-				var match:Array;
-				match = data.match(/successfully compiled and optimized/);
-				if (match) 
-				{
-					// @ note
-					// @ devsena
-					// while working on MOON#311 (create new project with existing source)
-					// I noticed that FlexJS compiler produce it's 'bin' folder to first
-					// folder of the source path. Thus if a source file exists at
-					// <projectRoot>/src/subA/subB/JSApplication.mxml, the 'bin' folder produces at
-					// <projectRoot>/src. I also noticed if the source folder name do not starts with 'src'
-					// this problem also arise. Ideally the 'bin' folder was supposed to create at
-					// <projectRoot>. 
-					// Following folder move will fix this problem
 
-                    print("%s", data);
-
-					// source location
-					var sourcePath:String = currentProject.folderLocation.fileBridge.getRelativePath((currentProject as AS3ProjectVO).classpaths[0]);
-					var sourcePathSplit:Array = sourcePath.split("/");
-					var sourceFolder:FileLocation = (currentProject as AS3ProjectVO).classpaths[0].fileBridge.parent;
-					if (sourcePathSplit[0] != "src" || sourceFolder.fileBridge.nativePath != (currentProject as AS3ProjectVO).folderLocation.fileBridge.nativePath)
-					{
-						sourceFolder = currentProject.folderLocation.fileBridge.resolvePath(sourcePathSplit[0] + "/bin");
-						if (sourceFolder.fileBridge.exists)
-						{
-							successMessage = data;
-							sourceFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
-							sourceFolder.fileBridge.moveToAsync((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin"), true);
-						}
-						else
-						{
-							sourceFolder = currentProject.folderLocation.fileBridge.resolvePath("bin");
-							if (sourceFolder.fileBridge.exists)
-							{
-                                timeoutValue = setTimeout(function():void {
-									onSuccesfullBuildCompleted(null);
-									clearTimeout(timeoutValue)
-                                }, 50);
-                            }
-						}
-					}
-					else
-                    {
-                        timeoutValue = setTimeout(function():void {
-                            onSuccesfullBuildCompleted(null);
-                            clearTimeout(timeoutValue)
-                        }, 50);
-                    }
-                    return;
-				}
-
-				if (data.charAt(data.length-1) == "\n")
-				{
-					data = data.substr(0, data.length-1);
-                }
-				print("%s", data);
+				printBuildProgress(data);
 			}
 		}
 		
@@ -650,7 +592,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function launchApplication():void
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
@@ -667,8 +609,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
 				var customFile:String = customSplit[0];
 				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
-				
-				cmdLine.write(customFile+" "+customArgs, pvo.folderLocation);
+
+                print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
 			}
 			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
@@ -680,12 +622,16 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
-				if (!pvo.htmlPath) pvo.getHTMLPath;
+				var urlToLaunch:FileLocation = pvo.htmlPath;
+				if (!pvo.htmlPath)
+				{
+                    urlToLaunch = new FileLocation(pvo.urlToLaunch);
+                }
 
                 warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, pvo.htmlPath.fileBridge.getFile as File, pvo)
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, urlToLaunch.fileBridge.getFile as File, pvo)
 				);
 			}
 			currentProject = null;
@@ -703,7 +649,7 @@ package actionScripts.plugins.as3project.mxmlc
 				return;
 			}
 
-            var buildResultFile:File = currentProject.folderLocation.resolvePath(AS3ProjectVO.FLEXJS_DEBUG_PATH).fileBridge.getFile as File;
+            var buildResultFile:File = currentProject.folderLocation.resolvePath(pvo.getRoyaleDebugPath()).fileBridge.getFile as File;
 			var debugDestination:File = buildResultFile.parent;
 			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
 
@@ -730,13 +676,13 @@ package actionScripts.plugins.as3project.mxmlc
             }
             else if (runAfterBuild)
             {
-                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
                 launchApplication();
             }
             else
             {
                 success("Project Build Successfully.");
-                dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.folderLocation.resolvePath("bin")));
+                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
             }
 		}
 
@@ -757,28 +703,7 @@ package actionScripts.plugins.as3project.mxmlc
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
-                var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
-				if (syntaxMatch)
-				{
-                    error("%s\n", data);
-                    return;
-				}
-
-                var generalMatch:Array = data.match(new RegExp("[^:]*:?\s*Error:\s(.*)", "i"));
-				if (!syntaxMatch && generalMatch)
-				{
-                    error("%s\n", data);
-					return;
-				}
-
-                var warningMatch:Array = data.match(new RegExp("WARNING:", "i"));
-                if (warningMatch && !generalMatch && !syntaxMatch)
-                {
-                    warning(data);
-                    return;
-                }
-
-				print(data);
+				printBuildProgress(data);
 			}
 		}
 		
@@ -790,6 +715,47 @@ package actionScripts.plugins.as3project.mxmlc
 				exiting = false;
 				startShell();
 			}
+		}
+
+		private function printBuildProgress(data:String):void
+		{
+            var syntaxMatch:Array = data.match(/(.*?)\((\d*)\): col: (\d*) (Error:|Syntax error:) (.+).+/);
+            if (syntaxMatch)
+            {
+                error("%s\n", data);
+                return;
+            }
+
+            var generalMatch:Array = data.match(new RegExp("[^:]*:?\s*Error:\s(.*)", "i"));
+            if (!syntaxMatch && generalMatch)
+            {
+                error("%s\n", data);
+                return;
+            }
+
+            var warningMatch:Array = data.match(new RegExp("WARNING:", "i"));
+            if (warningMatch && !generalMatch && !syntaxMatch)
+            {
+                warning(data);
+                return;
+            }
+
+            var match:Array = data.match(/successfully compiled and optimized|has been successfully compiled/);
+            if (match)
+            {
+                print("%s", data);
+                setTimeout(function():void {
+					onSuccesfullBuildCompleted(null);
+                }, 100);
+                return;
+            }
+
+            if (data.charAt(data.length-1) == "\n")
+            {
+                data = data.substr(0, data.length-1);
+            }
+
+            print("%s", data);
 		}
 	}
 }

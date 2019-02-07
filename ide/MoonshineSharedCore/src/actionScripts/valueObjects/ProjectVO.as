@@ -62,6 +62,8 @@ package actionScripts.valueObjects
 		
         protected var projectReference: ProjectReferenceVO;
 
+		protected var model:IDEModel = IDEModel.getInstance();
+
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
 			//if (ConstantsCoreVO.IS_AIR && !folderLocation) folder = folder.getDirectoryListing();
@@ -219,7 +221,7 @@ package actionScripts.valueObjects
 			var jsonObj:Object = JSON.parse(rawData);
 			
 			ConstantsCoreVO.AS3PROJ_CONFIG_SOURCE = XML(jsonObj.text);
-			IDEModel.getInstance().flexCore.parseFlashDevelop(IDEModel.getInstance().activeProject as AS3ProjectVO);
+			model.flexCore.parseFlashDevelop(IDEModel.getInstance().activeProject as AS3ProjectVO);
 		}
 		
 		private function onFBProjectLoaded(value:Object, message:String=null):void

@@ -76,7 +76,6 @@ package actionScripts.plugin.actionscript.mxmlc
 		private var queue:Vector.<String> = new Vector.<String>();
 		private var errors:String = "";
 		
-		private var cmdLine:CommandLine;
 		private var _instance:MXMLCPlugin;
 		
 		public function MXMLCPlugin() 
@@ -107,7 +106,6 @@ package actionScripts.plugin.actionscript.mxmlc
 			tempObj.commandDesc = "Release Flex application";
 			registerCommand('release',tempObj);
 			
-			cmdLine = new CommandLine();
 			reset();
 		}
 		
@@ -116,7 +114,6 @@ package actionScripts.plugin.actionscript.mxmlc
 			super.deactivate();
 			
 			reset();
-			cmdLine = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

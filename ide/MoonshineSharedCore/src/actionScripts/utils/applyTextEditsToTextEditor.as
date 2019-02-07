@@ -33,6 +33,7 @@ package actionScripts.utils
 		var textEditsCount:int = textEdits.length;
 		var line:int = textEditor.model.selectedLineIndex;
 		var char:int = textEditor.model.caretIndex;
+		var scrollPosition:int = textEditor.model.scrollPosition;
 		for(var i:int = 0; i < textEditsCount; i++)
 		{
 			var change:TextEdit = textEdits[i];
@@ -58,5 +59,6 @@ package actionScripts.utils
 		textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, multi));
 		textEditor.model.selectedLineIndex = line;
 		textEditor.model.caretIndex = char;
+		textEditor.scrollTo(scrollPosition);
 	}
 }

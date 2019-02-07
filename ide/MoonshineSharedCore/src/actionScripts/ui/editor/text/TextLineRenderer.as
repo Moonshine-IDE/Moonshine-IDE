@@ -241,7 +241,7 @@ package actionScripts.ui.editor.text
 			var markerPos:Number = 0;
             var atom:int;
 
-            if (beforeCharAtIndex == 0)
+            if (beforeCharAtIndex == 0 || !textLine)
 			{
 				// Draw on empty line
 			}
@@ -282,20 +282,25 @@ package actionScripts.ui.editor.text
 				end = tmp;
 			}
 
-            if (start > textLine.atomCount)
+            var selWidth:int = 0;
+            var selStart:int = 0;
+			if (textLine)
             {
-                start = textLine.atomCount - 1;
+                if (start > textLine.atomCount)
+                {
+                    start = textLine.atomCount - 1;
+                }
+
+                if (end > textLine.atomCount)
+                {
+                    end = textLine.atomCount;
+                }
+
+                var endBounds:Rectangle = textLine.getAtomBounds(end-1);
+                selStart = Math.floor(textLine.getAtomBounds(start).x);
+                selWidth = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
             }
 
-            if (end > textLine.atomCount)
-            {
-                end = textLine.atomCount;
-            }
-
-			var selStart:int = Math.floor(textLine.getAtomBounds(start).x);
-			var endBounds:Rectangle = textLine.getAtomBounds(end-1);
-			var selWidth:int = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
-			
 			drawSelectionRect(selStart, selWidth);
 		}
 		
@@ -346,12 +351,6 @@ package actionScripts.ui.editor.text
 		
 		public function drawTraceSelection(start:int, end:int):void
 		{
-			/*if (start == end || start < 0) 
-			{
-			trace(start +"   "+end);
-			removeTraceSelection();
-			return;	
-			}*/
 			if (start > end)
 			{
 				var tmp:int = start;
@@ -400,7 +399,7 @@ package actionScripts.ui.editor.text
 			{
 				return localPointX >= lineNumberWidth ? 0 : -1;
 			}
-			else if (localPointX >= textLine.x + textLine.width) // After text
+			else if (textLine && localPointX >= textLine.x + textLine.width) // After text
 			{
 				return modelTextLength;
 			}
@@ -408,7 +407,7 @@ package actionScripts.ui.editor.text
 			{
 				// Get a line through the middle of the text field for y
 				var mid:Point = this.localToGlobal(new Point(0, lineHeight/2));
-				var atomIndexAtPoint:int = textLine.getAtomIndexAtPoint(globalX, mid.y);
+				var atomIndexAtPoint:int = textLine ? textLine.getAtomIndexAtPoint(globalX, mid.y) : -1;
 				
 				if (atomIndexAtPoint > -1 && returnNextAfterCenter)
 				{

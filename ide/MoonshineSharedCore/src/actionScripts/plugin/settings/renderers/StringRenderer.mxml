@@ -37,16 +37,10 @@
 
 			[Bindable]
 			public var setting:StringSetting;
-			
-			private var message:String;
-			private var messageType:String;
-			
+
 			public function setMessage(value:String, type:String):void
 			{
-				this.message = value;
-				this.messageType = type;
-				
-				if (!lblMessage || !this.message)
+				if (!lblMessage || !value)
 				{
 					return;
 				}
@@ -79,22 +73,14 @@
 	
 			private function focusIn():void
 			{
-				text.visible = true;
-				text.includeInLayout = true;
-	
-				textPrompt.visible = false;
-				textPrompt.includeInLayout = false;
+				/*text.visible = true;
+				text.includeInLayout = true;*/
 	
 				callLater(text.setFocus);
 			}
 	
 			private function updatePrompt():void
 			{
-				var hasText:Boolean = (StringUtil.trim(text.text).length != 0);
-	
-				text.visible = text.includeInLayout = hasText;
-				textPrompt.visible = textPrompt.includeInLayout = !hasText;
-	
 				//to show project Name highlighted while creating new Project
 				if (setting.name == "projectName")
 				{
@@ -118,32 +104,19 @@
 			paddingTop="15"
 			paddingBottom="15" paddingRight="50" paddingLeft="15"
 			mouseDown="focusIn()" />
-	
 		<s:TextInput id="text"
 			styleName="uiTextSettingsValue"
 			height="100%" width="100%"
 			textAlign="right"
 			borderVisible="false"
-			contentBackgroundAlpha="1"
-			unfocusedTextSelectionColor="#a8c6ee"
 			focusAlpha="0"
 			change="onTextChange(event)"
 			focusOut="updatePrompt()"
+			prompt="No value"
 			contentBackgroundColor="#FFFFFF"
 			text="@{setting.stringValue}"/>
-	
-		<s:TextInput id="textPrompt"
-			styleName="uiTextSettingsLabel"
-			height="100%" width="100%"
-			textAlign="right"
-			borderVisible="false"
-			contentBackgroundAlpha="0"
-			focusAlpha="0"
-			text="No value"
-			visible="false"
-			includeInLayout="false"
-			mouseDown="focusIn()"/>
 	</s:HGroup>
+	
 	<s:Label id="lblMessage" 
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
 			 fontSize="12" includeInLayout="false" visible="false" paddingLeft="15"/>

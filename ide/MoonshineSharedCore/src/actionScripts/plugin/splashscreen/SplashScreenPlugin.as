@@ -49,8 +49,6 @@ package actionScripts.plugin.splashscreen
 		
 		public static const EVENT_SHOW_SPLASH:String = "showSplashEvent";
 		
-		private var splashScreen:SplashScreen;
-		
 		[Bindable]
 		public var showSplash:Boolean = true;
 
@@ -84,11 +82,6 @@ package actionScripts.plugin.splashscreen
 			return UtilsCore.getRecentProjectsMenu();
 		}
 		
-		protected function handleOpenRecentProject(event:MenuEvent):void
-		{
-			if (splashScreen) splashScreen.openRecentItem(event.data as ProjectReferenceVO);
-		}
-		
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
@@ -106,14 +99,11 @@ package actionScripts.plugin.splashscreen
             // Don't add another splash if one is up already
             for each (var tab:IContentWindow in model.editors)
             {
-                if (tab == splashScreen) return;
+                if (tab is SplashScreen) return;
             }
 
-            if (!splashScreen)
-            {
-                splashScreen = new SplashScreen();
-                splashScreen.plugin = this;
-            }
+			var splashScreen:SplashScreen = new SplashScreen();
+			splashScreen.plugin = this;
 
             model.editors.addItem(splashScreen);
 			

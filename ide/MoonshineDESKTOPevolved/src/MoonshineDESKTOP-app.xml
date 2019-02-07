@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/28.0">
+<application xmlns="http://ns.adobe.com/air/application/31.0">
 
 <!-- Adobe AIR Application Descriptor File Template.
 
@@ -246,6 +246,18 @@
 			<description>Moonshine AwayBuilder File</description>
 			<contentType>application/octet-stream</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.1.File</name>
+			<extension>as3proj</extension>
+			<description>Moonshine Project Configuration File 1</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.2.File</name>
+			<extension>veditorproj</extension>
+			<description>Moonshine Project Configuration File 2</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
@@ -309,9 +321,9 @@
         <!-- Indicates if the app contains video or not. Necessary for ordering of video planes with graphics plane, especially in Jellybean - if you app does video this must be set to true - valid values are true or false -->
         <!-- <containsVideo></containsVideo> -->
     <!-- </android> -->
-	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file -->
+	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file
 
 	
-	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>
+	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>-->
 
 </application>

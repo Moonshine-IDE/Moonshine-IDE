@@ -110,7 +110,7 @@ package actionScripts.plugin.templating
 			
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				templatesDir = model.fileCore.resolveApplicationDirectoryPath("elements/templates");
+				templatesDir = model.fileCore.resolveApplicationDirectoryPath("elements".concat(model.fileCore.separator, "templates"));
 				customTemplatesDir = model.fileCore.resolveApplicationStorageDirectoryPath("templates");
 				readTemplates();
 			}
@@ -486,7 +486,7 @@ package actionScripts.plugin.templating
 			
 			// Add to project view so user can rename it
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, newTemplate)
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [newTemplate])
 			);
 			
 			// Update internal template list
@@ -579,7 +579,7 @@ package actionScripts.plugin.templating
 			else if (!custom.fileBridge.isDirectory)
 			{
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, custom)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [custom])
 				);
 			}
 		}
@@ -765,7 +765,7 @@ package actionScripts.plugin.templating
 				helper.fileTemplate(event.template, event.location);
 				
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, event.location)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [event.location])
 				);
 			}
 			else
@@ -1093,7 +1093,7 @@ package actionScripts.plugin.templating
 
 				content = content.replace(pattern, event.fileName);
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
 				content = content.replace("$imports", as3FileAttributes.getImports());
@@ -1125,7 +1125,7 @@ package actionScripts.plugin.templating
 
 				content = content.replace(pattern, event.fileName);
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths[0].fileBridge.nativePath, event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths, event.insideLocation.nativePath, null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
                 content = content.replace("$imports", as3InterfaceAttributes.getImports());
@@ -1173,6 +1173,16 @@ package actionScripts.plugin.templating
                 var content:String = String(event.fromTemplate.fileBridge.read());
 				var extension:String = ".mxml";
 				var project:AS3ProjectVO = event.ofProject as AS3ProjectVO;
+				var shallNotifyToTree:Boolean = true;
+				
+				// to handle event relay in custom way in case of
+				// auto-xhtml-file-generation - this will not relay the
+				// immediate event to treeview
+				if (event.extraParameters.length != 0 && ('relayEvent' in event.extraParameters[0]))
+				{
+					shallNotifyToTree = event.extraParameters[0].relayEvent;
+				}
+				
 				if (project && project.isPrimeFacesVisualEditorProject)
 				{
                     extension = ".xhtml";
@@ -1209,7 +1219,7 @@ package actionScripts.plugin.templating
 				}
 
                 fileToSave.fileBridge.save(content);
-                notifyNewFileCreated(event.insideLocation, fileToSave, event.isOpenAfterCreate);
+				if (shallNotifyToTree) notifyNewFileCreated(event.insideLocation, fileToSave, event.isOpenAfterCreate);
             }
         }
 
@@ -1313,7 +1323,7 @@ package actionScripts.plugin.templating
 			if (isOpenAfterCreate)
 			{
 	            dispatcher.dispatchEvent(
-	                    new OpenFileEvent(OpenFileEvent.OPEN_FILE, fileToSave, -1, insideLocation)
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileToSave], -1, [insideLocation])
 	            );
 			}
 

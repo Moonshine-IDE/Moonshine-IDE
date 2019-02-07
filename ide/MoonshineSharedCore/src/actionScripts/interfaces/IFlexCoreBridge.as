@@ -70,6 +70,7 @@ package actionScripts.interfaces
 		function getJavaPath(completionHandler:Function):void;
 		function reAdjustApplicationSize(width:Number, height:Number):void;
         function createProject(event:NewProjectEvent):void;
+		function importArchiveProject():void;
 
         /**
          *

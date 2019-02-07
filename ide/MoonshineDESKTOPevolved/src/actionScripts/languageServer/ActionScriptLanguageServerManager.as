@@ -51,7 +51,8 @@ package actionScripts.languageServer
 
 	public class ActionScriptLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/codecompletion.jar";
+		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
+		private static const BUNDLED_COMPILER_PATH:String = "elements/as3mxml-language-server/bundled-compiler/";
 		private static const LANGUAGE_ID_ACTIONSCRIPT:String = "nextgenas";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION:String = "moonshine/didChangeProjectConfiguration";
@@ -197,11 +198,21 @@ package actionScripts.languageServer
 
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
-			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
+			if (Settings.os == "win")
+			{
+				cp += ";"
+			}
+			else
+			{
+				cp += ":";
+			}
+			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 			processArgs.push("-Dfile.encoding=UTF8");
 			processArgs.push("-Droyalelib=" + frameworksPath);
-			processArgs.push("-jar");
-			processArgs.push(jarFile.nativePath);
+			processArgs.push("-cp");
+			processArgs.push(cp);
+			processArgs.push("moonshine.Main");
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = _cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);

@@ -34,7 +34,6 @@ package actionScripts.controllers
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.editor.ActionScriptTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
@@ -42,7 +41,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.URLDescriptorVO;
-    import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.valueObjects.ProjectVO;
 
 	public class OpenFileCommand implements ICommand
@@ -58,45 +56,95 @@ package actionScripts.controllers
 
 		private var loader: DataAgent;
 		private var lastOpenEvent:OpenFileEvent;
+		private var binaryFiles:Array;		
+		private var countIndex:int;
 
 		public function execute(event:Event):void
 		{
 			ActionNotifier.getInstance().notify("Open file");
 			model = IDEModel.getInstance();
-			
+
 			if (event is OpenFileEvent)
 			{
-				var e:OpenFileEvent = event as OpenFileEvent;
-				lastOpenEvent = e;
-				if (e.file)
+				binaryFiles = [];
+				countIndex = 0;
+				
+				var openFileEvent:OpenFileEvent = event as OpenFileEvent;
+				lastOpenEvent = openFileEvent;
+				openAsTourDe = openFileEvent.openAsTourDe;
+				tourDeSWFSource = openFileEvent.tourDeSWFSource;
+				if (openFileEvent.atLine > -1)
 				{
-					// in case of awd file proceed to different process
-					if (e.file.fileBridge.extension == "awd")
+					atLine = openFileEvent.atLine;
+					if (openFileEvent.atChar > -1)
 					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.OPEN_PROJECT_AWAY3D, e.file));
-						return;
+						atChar = openFileEvent.atChar;
 					}
-					
-                    openAsTourDe = e.openAsTourDe;
-					tourDeSWFSource = e.tourDeSWFSource;
-					wrapper = e.wrapper;
-					file = e.file;
-					if (e.atLine > -1)
-					{
-						atLine = e.atLine;
-						if (e.atChar > -1)
-						{
-							atChar = e.atChar;
-						}
-					}
-					openFile(null, event.type);
-					return;
 				}
+				if (openFileEvent.wrappers && openFileEvent.wrappers.length > 0)
+				{
+					wrapper = openFileEvent.wrappers[0];
+				}
+				prepareBeforeOpen();
 			}
-			
-			if (ConstantsCoreVO.IS_AIR)
+			else if (ConstantsCoreVO.IS_AIR)
 			{
 				model.fileCore.browseForOpen("Open File", openFile, cancelOpenFile, ["*.as;*.mxml;*.css;*.txt;*.js;*.xml"]);
+			}
+		}
+		
+		protected function prepareBeforeOpen():void
+		{
+			var tmpFL:FileLocation;
+			var tmpFW:FileWrapper;
+			if (lastOpenEvent.files)
+			{
+				if (lastOpenEvent.files.length != 0)
+				{
+					tmpFL = lastOpenEvent.files[0];
+					// in case of awd file proceed to different process
+					if (tmpFL.fileBridge.extension == "awd")
+					{
+						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.OPEN_PROJECT_AWAY3D, tmpFL));
+						fileLoadCompletes(null);
+					}
+					else
+					{
+						tmpFL.fileBridge.getFile.addEventListener(Event.COMPLETE, fileLoadCompletes);
+						tmpFL.fileBridge.load();
+					}
+				}
+				else
+				{
+					if (binaryFiles.length > 0) openBinaryFiles(binaryFiles);
+				}
+			}
+			else
+			{
+				openFile(null, lastOpenEvent.type);
+			}
+			
+			/*
+			* @local
+			*/
+			function fileLoadCompletes(event:Event):void
+			{
+				if (event)
+				{
+					event.target.removeEventListener(Event.COMPLETE, fileLoadCompletes);
+					if (UtilsCore.isBinary(event.target.data.toString()))
+					{
+						binaryFiles.push(tmpFL);
+					}
+					else
+					{
+						openFile(tmpFL, lastOpenEvent.type, tmpFW, (event.target.data as String));
+					}
+				}
+				
+				lastOpenEvent.files.shift();
+				countIndex++;
+				prepareBeforeOpen();
 			}
 		}
 		
@@ -106,9 +154,13 @@ package actionScripts.controllers
 			event.target.removeEventListener(Event.CANCEL, cancelOpenFile);*/
 		}
 
-		protected function openFile(fileDir:Object=null, openType:String=null):void
+		protected function openFile(fileDir:Object=null, openType:String=null, fileWrapper:FileWrapper=null, fileData:String=null):void
 		{
-			if (fileDir) file = new FileLocation(fileDir.nativePath);
+			if (fileDir) 
+			{
+				if (fileDir is FileLocation) file = fileDir as FileLocation;
+				else file = new FileLocation(fileDir.nativePath);
+			}
 
 			var isFileOpen:Boolean = false;
 			
@@ -165,41 +217,24 @@ package actionScripts.controllers
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				file.fileBridge.getFile.addEventListener(Event.COMPLETE, fileLoadedFromLocal);
-				file.fileBridge.load();
+				if (openAsTourDe) openTextFile(fileData, true);
+				else openTextFile(fileData);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new FileChangeEvent(FileChangeEvent.EVENT_FILECHANGE,file.fileBridge.nativePath,0,0,0));
 			}
 			else
 			{
 				if (wrapper) wrapper.isWorking = true;
-				loader = new DataAgent(URLDescriptorVO.FILE_OPEN, fileLoadedFromServer, fileFault, {path:file.fileBridge.nativePath});
+				file = fileDir as FileLocation;
+				loader = new DataAgent(URLDescriptorVO.FILE_OPEN, fileLoadedFromServer, fileFault, {path:fileDir.fileBridge.nativePath});
 			}
 		}
 		
 		private function fileLoadedFromServer(value:Object, message:String=null):void
 		{
-			if (UtilsCore.isBinary(value.toString())) openBinaryFile();
+			if (UtilsCore.isBinary(value.toString())) openBinaryFiles([file]);
 			else openTextFile(value);
 			
 			fileFault(null);
-		}
-		
-		private function fileLoadedFromLocal(event:Event):void
-		{
-			event.target.removeEventListener(Event.COMPLETE, fileLoadedFromLocal);
-			
-			if (UtilsCore.isBinary(file.fileBridge.data.toString()))
-			{
-				openBinaryFile();
-            }
-			else if (openAsTourDe)
-			{
-				openTextFile(null, true);
-            }
-			else
-			{
-				openTextFile(null);
-            }
 		}
 		
 		private function fileFault(message:String):void
@@ -210,21 +245,44 @@ package actionScripts.controllers
 			file = null;
 		}
 		
-		private function openBinaryFile():void
+		private function openBinaryFiles(files:Array):void
 		{
-			Alert.show("Unable to open binary file "+ file.name +".\nDo you want to open the file by operating system?", "Error!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+			if ((binaryFiles.length != 0) && (binaryFiles.length > 1))
 			{
-				if (event.detail == Alert.YES)
+				Alert.buttonWidth = 90;
+				Alert.yesLabel = "Open All";
+				Alert.cancelLabel = "Cancel All";
+				Alert.show("Unable to open the selected binary files.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
 				{
-					file.fileBridge.openWithDefaultApplication();
-				}
-			});
+					Alert.buttonWidth = 65;
+					Alert.yesLabel = "Yes";
+					Alert.cancelLabel = "Cancel";
+					
+					if (event.detail == Alert.YES)
+					{
+						for each (var fl:FileLocation in files)
+						{
+							fl.fileBridge.openWithDefaultApplication();
+						}
+					}
+				});
+			}
+			else if ((binaryFiles.length != 0) && (binaryFiles.length == 1))
+			{
+				Alert.show("Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+				{
+					if (event.detail == Alert.YES)
+					{
+						files[0].fileBridge.openWithDefaultApplication();
+					}
+				});
+			}
 			// Let WebKit try to display binary files (works for images)
 			/*var htmlViewer:BasicHTMLViewer = new BasicHTMLViewer();
 			htmlViewer.open(file);
 			
 			ged.dispatchEvent(
-				new AddTabEvent(htmlViewer)
+			new AddTabEvent(htmlViewer)
 			);*/
 		}
 		
@@ -282,7 +340,7 @@ package actionScripts.controllers
 			}
 			else
 			{
-				editor.open(file);
+				editor.open(file, value);
 			}
 			
 			if (atLine > -1)

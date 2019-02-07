@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="810" height="800" showStatusBar="false"
+		  title="Adobe Flex SDK License Agreement">
+	<fx:Script>
+		<![CDATA[
+			import org.apache.flex.packageflexsdk.resource.ViewResourceConstants;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable]private var adobelicenseTextStr:String = "Adobe Flex SDK License Agreement:  All files contained in this Adobe Flex SDK download are subject to and governed by the " +
+														"Adobe Flex SDK License Agreement specified here: http://www.adobe.com/products/eulas/pdfs/adobe_flex_software_development_kit-combined-20110916_0930.pdf, " +
+														"By downloading, modifying, distributing, using and/or accessing any files in this Adobe Flex SDK, " +
+														"you agree to the terms and conditions of the applicable end user license agreement.  " +
+														"In addition to the Adobe license terms, you also agree to be bound by the third-party terms specified here: " +
+														"http://www.adobe.com/products/eula/third_party/. " +
+														"Adobe recommends that you review these third-party terms."
+			
+			protected function tabbar1_changeHandler(event:IndexChangeEvent):void
+			{
+				if(event.target.selectedItem.toString() == "Adobe Flex SDK License Agreement" )
+				{
+					htmlTabs.selectedChild = adobeLicenseHTML;
+				}
+				else if(event.target.selectedItem.toString() == "Third Party Terms" )
+				{
+					htmlTabs.selectedChild = thirdPartyHTML;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout />
+	</s:layout>
+	<s:TextArea 
+		width="100%" 
+		height="75" 
+		fontSize="12" 
+		text="{adobelicenseTextStr}" 
+		verticalScrollPolicy="off" 
+		editable="false"/>
+	<s:TabBar change="tabbar1_changeHandler(event)">
+		<s:ArrayCollection>
+			<fx:String>Adobe Flex SDK License Agreement</fx:String>
+			<fx:String>Third Party Terms</fx:String>
+		</s:ArrayCollection>
+	</s:TabBar>
+	<mx:ViewStack id="htmlTabs" width="100%" height="100%">
+		<s:NavigatorContent id="adobeLicenseHTML" width="100%" height="100%">
+			<mx:HTML width="100%" height="100%" location="http://www.adobe.com/products/eulas/pdfs/adobe_flex_software_development_kit-combined-20110916_0930.pdf" />
+		</s:NavigatorContent>
+		<s:NavigatorContent id="thirdPartyHTML" width="100%" height="100%">
+			<mx:HTML width="100%" height="100%" location="http://www.adobe.com/products/eula/third_party/pdfs/flex4_5_sdk_opensource_legal_notices.pdf" />
+		</s:NavigatorContent>
+	</mx:ViewStack>
+	<s:HGroup width="100%" height="50" verticalAlign="middle" paddingRight="15">
+		<s:Spacer width="100%" />
+		<s:Button label="{ViewResourceConstants.instance.BTN_LABEL_CLOSE}" click="close()" styleName="genericBtnStyle"  />
+	</s:HGroup>
+</s:Window>

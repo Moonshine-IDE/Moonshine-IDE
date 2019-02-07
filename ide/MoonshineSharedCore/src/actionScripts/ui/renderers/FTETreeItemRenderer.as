@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
+    import flash.desktop.Clipboard;
+    import flash.desktop.ClipboardFormats;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.events.FocusEvent;
@@ -41,16 +43,16 @@ package actionScripts.ui.renderers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.notifier.ErrorTipManager;
+    import actionScripts.utils.CustomTree;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
 	use namespace mx_internal;
 	
@@ -64,6 +66,8 @@ package actionScripts.ui.renderers
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
+		public static const COPY_FILE:String = "Copy";
+		public static const PASTE_FILE:String = "Paste";
         public static const MARK_AS_HIDDEN:String = "Mark as Hidden";
         public static const MARK_AS_VISIBLE:String = "Mark as Visible";
 		public static const RENAME:String = "Rename";
@@ -76,6 +80,7 @@ package actionScripts.ui.renderers
 		public static const PROJECT_SETUP:String = "Project Setup";
 		public static const CLOSE:String = "Close";
 		public static const DELETE_PROJECT:String = "Delete Project";
+		public static const PREVIEW:String = "Preview";
 
 		private var label2:Label;
 		private var editText:TextInput;
@@ -217,12 +222,19 @@ package actionScripts.ui.renderers
 			{
 				contextMenu = model.contextMenuCore.getContextMenu();
 
-                model.contextMenuCore.addItem(contextMenu,
-                        model.contextMenuCore.getContextMenuItem(COPY_PATH, redispatch, Event.SELECT));
-                model.contextMenuCore.addItem(contextMenu,
-                        model.contextMenuCore.getContextMenuItem(
-								ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
-								redispatch, Event.SELECT));
+                var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
+
+				model.contextMenuCore.addItem(contextMenu,
+					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
+				model.contextMenuCore.addItem(contextMenu,
+					model.contextMenuCore.getContextMenuItem(
+						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
+						updateOverMultiSelectionOption, "displaying"));
+
+				if (project && project.isPrimeFacesVisualEditorProject)
+				{
+                    model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(PREVIEW, redispatch, Event.SELECT));
+				}
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
@@ -250,21 +262,33 @@ package actionScripts.ui.renderers
                         model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_AS_HIDDEN, redispatch, Event.SELECT));
                     }
                 }
-
+				
+				// menu item for file-paste to be use in different locations based upon fw property
+				// also update this every time it displays
+				var tmpPasteMenuItem:Object = model.contextMenuCore.getContextMenuItem(PASTE_FILE, updatePasteMenuOption, "displaying");
+				
+				if (fw.children && ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
 				if (!fw.isRoot)
 				{
-					if (!fw.children) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, redispatch, Event.SELECT));
+					if (ConstantsCoreVO.IS_AIR) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COPY_FILE, redispatch, Event.SELECT));
+					if (!fw.children)
+					{
+						if (ConstantsCoreVO.IS_AIR)
+						{
+							model.contextMenuCore.addItem(contextMenu, tmpPasteMenuItem);
+						}
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(DUPLICATE_FILE, updateOverMultiSelectionOption, "displaying"));
+					}
 					
 					if (!fw.isSourceFolder)
 					{
-						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, redispatch, Event.SELECT));
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, updateOverMultiSelectionOption, "displaying"));
                     }
 					
 					// avail only for .as and .mxml files
 					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
 					{
 						// make this option available for the files Only inside the source folder location
-						var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
 						if (project && !project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
 						{
 							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
@@ -402,6 +426,18 @@ package actionScripts.ui.renderers
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
+		}
+		
+		private function updatePasteMenuOption(event:Event):void
+		{
+			event.target.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+			if (event.target.enabled) event.target.addEventListener(Event.SELECT, redispatch, false, 0, true);
+		}
+		
+		private function updateOverMultiSelectionOption(event:Event):void
+		{
+			event.target.enabled = (this.owner as CustomTree).selectedItems.length == 1;
+			if (event.target.enabled) event.target.addEventListener(Event.SELECT, redispatch, false, 0, true);
 		}
 		
 		private function redispatch(event:Event):void

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" minHeight="36">
+	<fx:Script>
+		<![CDATA[
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PUBLIC VARIABLES
+			//
+			//--------------------------------------------------------------------------
+			
+			[Bindable] public var textAlign					: String = "left";
+			
+			//--------------------------------------------------------------------------
+			//
+			//  OVERRIDDEN API
+			//
+			//--------------------------------------------------------------------------
+			
+			/**
+			 * Set DATA
+			 */
+			override public function set data(value:Object):void {
+				
+				if ( value ) {
+					super.data = value;
+					lbl.text = data[ this.column.dataField ];
+				}
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Label id="lbl"
+			 paddingLeft="10" paddingRight="6" paddingBottom="8" paddingTop="8" verticalCenter="0"
+			 width="100%" maxDisplayedLines="3"
+			 textAlign="{textAlign}"/>
+</s:GridItemRenderer>

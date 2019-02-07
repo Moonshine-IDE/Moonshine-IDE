@@ -22,7 +22,6 @@ package visualEditor.plugin
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ProjectVO;
 
     import flash.events.Event;
 

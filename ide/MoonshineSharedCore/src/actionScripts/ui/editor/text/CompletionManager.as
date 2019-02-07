@@ -41,6 +41,11 @@ package actionScripts.ui.editor.text
 
     import spark.collections.SortField;
     import actionScripts.valueObjects.CompletionItemKind;
+    import actionScripts.valueObjects.TextEdit;
+    import actionScripts.valueObjects.WorkspaceEdit;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.utils.applyWorkspaceEdit;
 
     public class CompletionManager
 	{
@@ -207,12 +212,24 @@ package actionScripts.ui.editor.text
 				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
 			}
 
+			var additionalTextEdits:Vector.<TextEdit> = item.additionalTextEdits;
+			if(additionalTextEdits)
+			{
+				var activeEditor:BasicTextEditor = BasicTextEditor(IDEModel.getInstance().activeEditor);
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
+				var changes:Object = {};
+				changes[uri] = additionalTextEdits;
+				workspaceEdit.changes = changes;
+				applyWorkspaceEdit(workspaceEdit);
+			}
+
 			var command:Command = item.command;
 			if(command)
 			{
-				var event:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
+				var commandEvent:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, command.command, command.arguments);
-				GlobalEventDispatcher.getInstance().dispatchEvent(event);
+				GlobalEventDispatcher.getInstance().dispatchEvent(commandEvent);
 			}
 		}
 
@@ -320,34 +337,46 @@ package actionScripts.ui.editor.text
 						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) == -1 &&
 						selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) == -1;
 
-                if (!isLineForAutoCloseAttr)
+                var linesCount:int = editor.model.lines.length;
+                var isNonXMLFile:Boolean;
+				var lineIndex:int;
+                for (lineIndex = 0; lineIndex < linesCount; lineIndex++)
                 {
-                    var linesCount:int = editor.model.lines.length;
+                    line = editor.model.lines[lineIndex];
+                    if (line.text && line.text.indexOf(CompletionListCodeTokens.PACKAGE) > -1)
+                    {
+                        isNonXMLFile = true;
+                        break;
+                    }
+                }
+
+                if (!isLineForAutoCloseAttr && !isNonXMLFile)
+                {
                     var searchedLinesCount:int = editor.model.selectedLineIndex - 250;
                     if (searchedLinesCount < 0)
                     {
                         searchedLinesCount = 0;
                     }
 
-                    for (var i:int = editor.model.selectedLineIndex; i > searchedLinesCount; i--)
+                    for (lineIndex = editor.model.selectedLineIndex; lineIndex > searchedLinesCount; lineIndex--)
                     {
-                        line = editor.model.lines[i];
+                        line = editor.model.lines[lineIndex];
                         selectedLineText = line.text;
 
 						var hasCdataOpen:Boolean = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_OPEN) != -1;
 						var hasCdataClose:Boolean = false;
                         if (hasCdataOpen)
                         {
-							var cdataOpenIndex:int = i;
+							var cdataOpenIndex:int = lineIndex;
                             searchedLinesCount = editor.model.selectedLineIndex + 250;
 							if (searchedLinesCount > editor.model.lines.length)
 							{
 								searchedLinesCount = editor.model.lines.length;
 							}
 
-                            for (i = editor.model.selectedLineIndex; i < searchedLinesCount; i++)
+                            for (lineIndex = editor.model.selectedLineIndex; lineIndex < searchedLinesCount; lineIndex++)
 							{
-                                line = editor.model.lines[i];
+                                line = editor.model.lines[lineIndex];
                                 selectedLineText = line.text;
 								hasCdataClose = selectedLineText.indexOf(CompletionListCodeTokens.CDATA_CLOSE) != -1;
 								if (hasCdataClose)
@@ -358,7 +387,7 @@ package actionScripts.ui.editor.text
 
                             if (hasCdataClose)
 							{
-								if (i > editor.model.selectedLineIndex && cdataOpenIndex < editor.model.selectedLineIndex)
+								if (lineIndex > editor.model.selectedLineIndex && cdataOpenIndex < editor.model.selectedLineIndex)
                                 {
                                     return false;
                                 }
@@ -367,9 +396,14 @@ package actionScripts.ui.editor.text
                     }
 
                     searchedLinesCount = editor.model.selectedLineIndex - 250;
-                    for (var j:int = editor.model.selectedLineIndex; j > searchedLinesCount; j--)
+					if (searchedLinesCount < 0)
+					{
+						searchedLinesCount = 0;
+                    }
+
+                    for (lineIndex = editor.model.selectedLineIndex; lineIndex > searchedLinesCount; lineIndex--)
                     {
-                        line = editor.model.lines[j];
+                        line = editor.model.lines[lineIndex];
                         selectedLineText = line.text;
                         if (selectedLineText)
                         {
@@ -397,9 +431,9 @@ package actionScripts.ui.editor.text
                         }
 
                         isLineForAutoCloseAttr = false;
-                        for (var k:int = editor.model.selectedLineIndex; k < searchedLinesCount; k++)
+                        for (lineIndex = editor.model.selectedLineIndex; lineIndex < searchedLinesCount; lineIndex++)
                         {
-                            line = editor.model.lines[k];
+                            line = editor.model.lines[lineIndex];
                             selectedLineText = line.text;
                             if (selectedLineText.indexOf(CompletionListCodeTokens.XML_CLOSE_TAG) != -1 &&
                                 selectedLineText.indexOf(CompletionListCodeTokens.XML_SELF_CLOSE_TAG) == -1)

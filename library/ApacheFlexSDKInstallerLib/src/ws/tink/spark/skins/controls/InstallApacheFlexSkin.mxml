@@ -80,16 +80,11 @@ limitations under the License.
         <s:State name="normalAndInactive" stateGroups="inactiveGroup" />
         <s:State name="disabledAndInactive" stateGroups="disabledGroup, inactiveGroup" />
     </s:states>
-	
-	<s:Rect width="100%" height="100%">
-		<s:fill>
-			<s:SolidColor color="0xDBDBDB"/>
-		</s:fill>
-	</s:Rect>
 
     <!-- layer 1: background fill -->
-	<s:BitmapImage source="@Embed('/assets/icons/bg_logo.png')" scaleX=".8" scaleY=".8" smooth="true" horizontalCenter="0" scaleMode="letterbox" />
-	<s:BitmapImage id="textIcon" source="@Embed('/assets/icons/apache_flex_logo_text.png')" scaleX=".2" scaleY=".2" smooth="true" horizontalCenter="0" top="5" />
+	<s:BitmapImage source="@Embed('/assets/icons/bg_logo.png')" top="0" left="0"  scaleMode="letterbox" />
+	<s:BitmapImage source="@Embed('/assets/icons/bg_logo.png')" top="25" left="0"  scaleMode="letterbox" />
+	<s:BitmapImage id="textIcon" source="@Embed('/assets/icons/apache_flex_logo_text.png')" scaleX=".3" scaleY=".3" smooth="true" horizontalCenter="0" top="5" />
 
     <!-- layer 2: content + status bar -->
     <s:Group left="0" right="0" top="0" bottom="0" minHeight="24" minWidth="0" >

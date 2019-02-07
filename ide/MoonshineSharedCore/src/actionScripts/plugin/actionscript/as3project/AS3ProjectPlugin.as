@@ -20,7 +20,6 @@ package actionScripts.plugin.actionscript.as3project
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.filesystem.File;
     import flash.utils.setTimeout;
     
     import mx.controls.Alert;
@@ -67,7 +66,6 @@ package actionScripts.plugin.actionscript.as3project
 		override public function get author():String 		{return "Moonshine Project Team";}
 		override public function get description():String 	{return "AS3 project importing, exporting & scaffolding.";}
 		
-		
 		public function AS3ProjectPlugin()
 		{
 			super();
@@ -77,6 +75,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.addEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.addEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
@@ -88,6 +87,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.removeEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.removeEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
@@ -96,7 +96,7 @@ package actionScripts.plugin.actionscript.as3project
 		}
 		
 		// If user opens project file, open project automagically
-		private function importFDProject(projectFile:FileLocation=null, openWithChoice:Boolean=false):void
+		private function importFDProject(projectFile:FileLocation=null, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
 			// Is file in an already opened project?
 			for each (var p:ProjectVO in model.projects)
@@ -109,12 +109,12 @@ package actionScripts.plugin.actionscript.as3project
 			}
 			
 			// Assume user wants to open project by clicking settings file
-			openProject(projectFile, openWithChoice);
+			openProject(projectFile, openWithChoice, openByProject);
 		}
 		
-		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false):void
+		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
-			var p:AS3ProjectVO = model.flexCore.parseFlashDevelop(null, projectFile);
+			var p:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
 			p.projectFile = projectFile;
 			model.activeProject = p;
 			
@@ -140,11 +140,16 @@ package actionScripts.plugin.actionscript.as3project
 			}
 		}
 		
+		private function importArchiveProject(event:Event):void
+		{
+			model.flexCore.importArchiveProject();
+		}
+		
 		private function importProjectWithoutDialog(event:ProjectEvent):void
 		{
 			if (!event.anObject) return;
 			
-			openFile(event.anObject as File);
+			openFile(event.anObject);
 		}
 		
 		private function onFileSelectionCancelled():void
@@ -165,6 +170,17 @@ package actionScripts.plugin.actionscript.as3project
 			flashBuilderProjectFile = model.flexCore.testFlashBuilder(dir);
 			if (flashBuilderProjectFile) isFBProject = true;
 			if (flashDevelopProjectFile) isFDProject = true;
+			
+			// for Java projects
+			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
+			{
+				flashDevelopProjectFile = model.javaCore.testJava(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.javaCore.parseJava(new FileLocation(dir.nativePath)));
+					return;
+				}
+			}
 			
 			if (!isFBProject && !isFDProject)
 			{

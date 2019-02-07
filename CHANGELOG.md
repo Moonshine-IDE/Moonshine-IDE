@@ -8,7 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Visual Editor: Added **Organizer** to allow users to view the structure of the mockup and change the order or nesting of the components.
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
+* Visual Editor PrimeFaces: Added CDATA information to property panel if provided through component.
+* Visual Editor PrimeFaces: Added instant preview for project files in the browser.
 * File association support for known file types.
+* Copying of files and folders from inside or outside of Moonshine, to the project sidebar.
 * New File: Added code completion for Superclass and Interfaces.
 * Java: Initial support for Java language project types, including code intelligence features.
 * Code Generation: In ActionScript and MXML, generate a getter and setter, a local variable, a member variable, or a method. When a quick fix is available at the current position in the editor, a light bulb icon will appear.
@@ -16,9 +19,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
 * Go to Type Definition: New menu command to go to the definition of a variable or property's type.
 * Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
+* Visual Editor PrimeFaces: Added Undo/Redo on Copy/Paste.
+* Added Apache Maven support.
 
 ### Changed
-* Updated [as3mxml](https://as3mxml.com/) engine to version 0.14.0.
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.17.2.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed
@@ -32,6 +37,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
 * Language server: Fixed issue where Java instance continued running after application exit.
+* Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
+* Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
+* Problems: Fixed issue where problems were not cleared after closing a project.
 
 ## Moonshine IDE [1.15.0]
 

@@ -50,7 +50,6 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.mxmlc.CommandLine;
     import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
     import actionScripts.plugin.core.compiler.CompilerEventBase;
     import actionScripts.plugin.settings.ISettingsProvider;
@@ -107,8 +106,7 @@ package actionScripts.plugins.as3project.mxmlc
 		/** Project currently under compilation */
 		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
-		
-		private var cmdLine:CommandLine;
+
 		private var	tempObj:Object;
 		private var fschstr:String;
 		private var SDKstr:String;
@@ -228,8 +226,7 @@ package actionScripts.plugins.as3project.mxmlc
 			tempObj.commandDesc = "Build the currently selected project in release mode.";
 			tempObj.style = "red";
 			registerCommand('release',tempObj);
-			
-			cmdLine = new CommandLine();
+
 			reset();
 		}
 		
@@ -239,7 +236,6 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			reset();
 			shellInfo = null;
-			cmdLine = null;
 		}
 		
 		override public function resetSettings():void
@@ -1034,8 +1030,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
 				var customFile:String = customSplit[0];
 				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
-				
-				cmdLine.write(customFile+" "+customArgs, pvo.folderLocation);
+
+				print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
 			}
 			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{

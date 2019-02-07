@@ -39,7 +39,7 @@ package org.apache.flex.packageflexsdk.model
 											 licenseURL:String,
 											 key:String,
 											 required:Boolean,
-											 selected:Boolean=true,
+											 selected:Boolean=false,
 											 installed:Boolean=false,
 											 aborted:Boolean=false,
 											 answered:Boolean=false

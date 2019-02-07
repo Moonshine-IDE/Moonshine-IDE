@@ -3,21 +3,24 @@
         Build script for Bamboo
     </description>
     <!-- set global properties for this build -->
-    <property name="src" location="language-server-wrapper/src/main/java"/>
+    <property name="src" location="src/main/java"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
     <property name="lib" location="target"/>
-    <property name="jar.name" value="codecompletion.jar" />
+    <property name="jar.name" value="moonshine-as3mxml.jar" />
     <property name="jar.path" value="${dist}/${jar.name}" />
     <!-- define the parameter name, to avoid reproducing the name. -->
     <property name="target.property" value="target.path" />
     <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
-    <property name="target.path" value="../ide/MoonshineSharedCore/src/elements/" />
-    <property name="royale.version" value="0.9.2" />
+    <property name="target.path" value="../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/" />
+    <property name="as3mxml.version" value="0.17.1" />
     
     <!-- classpath -->
     <path id="default.classpath">
-      <fileset dir="target">
+      <fileset dir="${target.path}/bundled-compiler">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${target.path}/bin">
         <include name="*.jar"/>
       </fileset>
       <pathelement location="${build}"/>
@@ -45,8 +48,6 @@
                 debug="true"
                 source="1.8"
                 target="1.8">
-            <src path="asconfigc/src/main/java"/>
-            <src path="language-server/src/main/java"/>
             <src path="${src}"/>
             <classpath>
                 <path refid="default.classpath" />
@@ -59,59 +60,15 @@
             <manifest>
                 <attribute name="Main-Class" value="moonshine.Main"/>
                 <attribute name="Class-Path" value="."/>
-                <!--
-                    Moonshine packages JARs from Royale instead of loading
-                    separate JARs from a real SDK. The language server tries to
-                    read the Royale version, so we need a valid value.
-                -->
-                <attribute name="Implementation-Version" value="${royale.version}"/> 
+                <attribute name="Implementation-Version" value="${as3mxml.version}"/> 
             </manifest>
             <fileset dir="${build}"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-2.7.7.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-3.3.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-complete-3.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/antlr-runtime-3.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/args4j-2.0.28.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/closure-compiler-v20161201.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-beanutils-1.9.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-cli-1.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-collections-3.2.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-digester-1.8.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-io-2.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-logging-1.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/commons-validator-1.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-${royale.version}.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-common-${royale.version}.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jburg-types-1.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/compiler-jx-${royale.version}.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/flex-tool-api-1.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-0.0-20150902-b129bb9e.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/google-closure-library-third-party-0.0-20150902-b129bb9e.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/gson-2.7.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/guava-19.0-rc3.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/gunit-3.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/hamcrest-core-1.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/jackson-core-2.9.5.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/jackson-databind-2.9.5.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/jburg-1.10.3.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/jflex-1.6.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/json-schema-validator-0.1.19.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/jsr305-3.0.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/junit-4.10.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/lzma-sdk-4j-9.22.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j-0.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.generator-0.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.lsp4j.jsonrpc-0.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib-2.15.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtend.lib.macro-2.15.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/org.eclipse.xtext.xbase.lib-2.15.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/stringtemplate-3.2.1.jar"/>
         </jar>
     </target>
     
     <target name="deploy" depends="check-target-path, dist" 
             description="Deploy the jar to the path specified by the user-specified ${target.property} property." >
-        <copy file="${jar.path}" toDir="${target.path}" overwrite="true" failonerror="true" />
+        <copy file="${jar.path}" toDir="${target.path}/bin" overwrite="true" failonerror="true" />
     </target>
     
     

@@ -54,6 +54,6 @@ limitations under the License.
 	</fx:Script>
 	
 	<s:CheckBox id="checkbox1" selected="{data.selected}" enabled="true" change="checkbox1_changeHandler(event)"  />
-	<s:Label text="{data.label}" fontSize="12" click="text_changeHandler(checkbox1)" width="100%" paddingTop="4" />
+	<s:Label text="{data.label}" fontFamily="openSansBold" fontSize="11" click="text_changeHandler(checkbox1)" width="100%" />
 	
 </s:ItemRenderer>

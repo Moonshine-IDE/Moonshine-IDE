@@ -22,7 +22,6 @@ package actionScripts.plugins.references
 	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.references.view.ReferencesView;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.valueObjects.Location;
 
 	import flash.display.DisplayObject;
@@ -31,6 +30,7 @@ package actionScripts.plugins.references
 
 	import mx.collections.ArrayCollection;
 	import mx.managers.PopUpManager;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	public class ReferencesPlugin extends PluginBase
 	{
@@ -62,7 +62,7 @@ package actionScripts.plugins.references
 
 		private function handleOpenFindReferencesView(event:Event):void
 		{
-			var editor:ActionScriptTextEditor = model.activeEditor as ActionScriptTextEditor;
+			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
 			if(!editor)
 			{
 				return;

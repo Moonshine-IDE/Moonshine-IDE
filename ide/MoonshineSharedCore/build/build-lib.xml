@@ -825,6 +825,9 @@
 				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
+				<delete dir="installer" />
+				<delete file="appScripts/TestMXMLCall.scpt"/>
+				<delete file="appScripts/openwithapplication.sh"/>
 			</then>
 		</if>
 	</target>
@@ -847,6 +850,7 @@
 				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
+				<delete dir="installer" />
 			</then>
 		</if>
 	</target>

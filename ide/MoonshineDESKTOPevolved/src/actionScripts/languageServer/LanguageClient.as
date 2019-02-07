@@ -8,7 +8,6 @@ package actionScripts.languageServer
 	import actionScripts.events.HoverEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.ReferencesEvent;
-	import actionScripts.events.RenameEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.SymbolsEvent;
 	import actionScripts.events.LanguageServerEvent;
@@ -18,7 +17,6 @@ package actionScripts.languageServer
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
 	import actionScripts.valueObjects.Diagnostic;
@@ -44,7 +42,6 @@ package actionScripts.languageServer
 
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
-	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
@@ -52,6 +49,13 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.CodeAction;
 	import actionScripts.utils.LSPUtil;
 	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.valueObjects.WorkspaceEdit;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.valueObjects.TextDocumentEdit;
+	import actionScripts.valueObjects.TextDocumentIdentifier;
+	import actionScripts.valueObjects.RenameFile;
+	import actionScripts.valueObjects.DeleteFile;
+	import actionScripts.valueObjects.CreateFile;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -89,6 +93,9 @@ package actionScripts.languageServer
 		private static const FIELD_CONTENTS:String = "contents";
 		private static const FIELD_SIGNATURES:String = "signatures";
 		private static const FIELD_ITEMS:String = "items";
+		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
+		private static const FIELD_EDIT:String = "edit";
+		private static const FIELD_DIAGNOSTICS:String = "diagnostics";
 		private static const JSON_RPC_VERSION:String = "2.0";
 		private static const METHOD_INITIALIZE:String = "initialize";
 		private static const METHOD_INITIALIZED:String = "initialized";
@@ -233,6 +240,16 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+
+			//clear any remaining diagnostics
+			for(var uri:String in this._savedDiagnostics)
+			{
+				var path:String = (new File(uri)).nativePath;
+				delete this._savedDiagnostics[uri];
+				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+				_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+			}
+
 			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
 			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
@@ -303,7 +320,12 @@ package actionScripts.languageServer
 			contentPart.jsonrpc = JSON_RPC_VERSION;
 			contentPart.id = id;
 			contentPart.method = method;
-			contentPart.params = params;
+			if(params !== null)
+			{
+				//omit it completely to avoid errors in servers that try to
+				//parse an object
+				contentPart.params = params;
+			}
 			var contentJSON:String = JSON.stringify(contentPart);
 
 			HELPER_BYTES.clear();
@@ -778,62 +800,12 @@ package actionScripts.languageServer
 		{
 			if(FIELD_METHOD in object)
 			{
-				var found:Boolean = true;
-				var method:String = object.method;
-				switch(method)
-				{
-					case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
-					{
-						textDocument__publishDiagnostics(object);
-						//this is a notification and does not require a response
-						break;
-					}
-					case METHOD_WORKSPACE__APPLY_EDIT:
-					{
-						workspace__applyEdit(object);
-						sendResponse(object.id, { applied: true });
-						break;
-					}
-					case METHOD_WINDOW__LOG_MESSAGE:
-					{
-						window__logMessage(object);
-						break;
-					}
-					case METHOD_WINDOW__SHOW_MESSAGE:
-					{
-						window__showMessage(object);
-						break;
-					}
-					case METHOD_CLIENT__REGISTER_CAPABILITY:
-					{
-						//TODO: implement this
-						sendResponse(object.id, {});
-						break;
-					}
-					case METHOD_TELEMETRY__EVENT:
-					{
-						//just ignore this one
-						break;
-					}
-					default:
-					{
-						found = false;
-						break;
-					}
-				}
-				if(!found)
-				{
-					found = this.handleNotification(object);
-				}
-				if(!found)
-				{
-					trace("Unknown language server method:", method);
-				}
+				this.parseMethod(object);
 			}
 			else if(FIELD_ID in object)
 			{
 				var result:Object = object.result;
-				var requestID:int = object.id as int;
+				var requestID:int = getMessageID(object);
 				if(_initializeID != -1 && _initializeID == requestID)
 				{
 					_initializeID = -1;
@@ -904,6 +876,65 @@ package actionScripts.languageServer
 						handleSymbolsResponse(result);
 					}
 				}
+			}
+		}
+
+		private function parseMethod(object:Object):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			var found:Boolean = true;
+			var method:String = object.method;
+			switch(method)
+			{
+				case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
+				{
+					textDocument__publishDiagnostics(object);
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_WORKSPACE__APPLY_EDIT:
+				{
+					workspace__applyEdit(object);
+					sendResponse(object.id, { applied: true });
+					break;
+				}
+				case METHOD_WINDOW__LOG_MESSAGE:
+				{
+					window__logMessage(object);
+					break;
+				}
+				case METHOD_WINDOW__SHOW_MESSAGE:
+				{
+					window__showMessage(object);
+					break;
+				}
+				case METHOD_CLIENT__REGISTER_CAPABILITY:
+				{
+					//TODO: implement this
+					sendResponse(object.id, {});
+					break;
+				}
+				case METHOD_TELEMETRY__EVENT:
+				{
+					//just ignore this one
+					break;
+				}
+				default:
+				{
+					found = false;
+					break;
+				}
+			}
+			if(!found)
+			{
+				found = this.handleNotification(object);
+			}
+			if(!found)
+			{
+				trace("Unknown language server method:", method);
 			}
 		}
 
@@ -986,21 +1017,8 @@ package actionScripts.languageServer
 
 		private function handleRenameResponse(result:Object):void
 		{
-			var resultChanges:Object = result.changes;
-			var eventChanges:Object = {};
-			for(var key:String in resultChanges)
-			{
-				var resultChangesList:Array = resultChanges[key] as Array;
-				var eventChangesList:Vector.<TextEdit> = new <TextEdit>[];
-				var resultChangesCount:int = resultChangesList.length;
-				for(var i:int = 0; i < resultChangesCount; i++)
-				{
-					var resultChange:Object = resultChangesList[i];
-					eventChangesList[i] = parseTextEdit(resultChange);
-				}
-				eventChanges[key] = eventChangesList;
-			}
-			_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, eventChanges));
+			var workspaceEdit:WorkspaceEdit = this.parseWorkspaceEdit(result);
+			applyWorkspaceEdit(workspaceEdit);
 		}
 
 		private function handleLocationsResponse(result:Array):Vector.<Location>
@@ -1077,11 +1095,20 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultCodeActionsCount; i++)
 			{
 				var resultCodeAction:Object = resultCodeActions[i];
-				var command:Command = parseCommand(resultCodeAction);
-				var codeAction:CodeAction = new CodeAction();
-				codeAction.title = command.title;
-				codeAction.command = command;
-				eventCodeActions[i] = codeAction;
+				if(resultCodeAction.command is String)
+				{
+					//this is a Command instead of a CodeAction
+					var command:Command = parseCommand(resultCodeAction);
+					var codeAction:CodeAction = new CodeAction();
+					codeAction.title = command.title;
+					codeAction.command = command;
+					eventCodeActions[i] = codeAction;
+				}
+				else
+				{
+					codeAction = parseCodeAction(resultCodeAction);
+					eventCodeActions[i] = codeAction;
+				}
 			}
 			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
 			var path:String = editor.currentFile.fileBridge.nativePath;
@@ -1167,7 +1194,17 @@ package actionScripts.languageServer
 			return vo;
 		}
 
-		private function parseDiagnostic(path:String, original:Object):Diagnostic
+		private function parseDiagnostic(original:Object):Diagnostic
+		{
+			var vo:Diagnostic = new Diagnostic();
+			vo.message = original.message;
+			vo.code = original.code;
+			vo.range = parseRange(original.range);
+			vo.severity = original.severity;
+			return vo;
+		}
+
+		private function parseDiagnosticWithPath(path:String, original:Object):Diagnostic
 		{
 			var vo:Diagnostic = new Diagnostic();
 			vo.path = path;
@@ -1209,10 +1246,53 @@ package actionScripts.languageServer
             {
                 command = parseCommand(original.command);
             }
+			var additionalTextEdits:Vector.<TextEdit> = null;
+			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
+			{
+				additionalTextEdits = new <TextEdit>[];
+				var jsonTextEdits:Array = original[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
+				var textEditCount:int = jsonTextEdits.length;
+				for(var i:int = 0; i < textEditCount; i++)
+				{
+					var jsonTextEdit:Object = jsonTextEdits[i];
+					additionalTextEdits[i] = parseTextEdit(jsonTextEdit);
+				}
+			}
 
+			//ideally, we'd just pass undefined as the argument, but the
+			//Apache Flex compiler produces a weird warning, for some reason
+			var data:* = undefined;
 			return new CompletionItem(original.label, original.insertText,
                     original.kind, original.detail,
-					original.documentation, command);
+					original.documentation, command, data,
+					original.deprecated, additionalTextEdits);
+		}
+
+		private function parseCodeAction(original:Object):CodeAction
+		{
+			var vo:CodeAction = new CodeAction();
+			vo.title = original.title;
+			vo.kind = original.kind;
+			if(FIELD_DIAGNOSTICS in original)
+			{
+				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+				var jsonDiagnostics:Array = original.diagnostics;
+				var diagnosticCount:int = jsonDiagnostics.length;
+				for(var i:int = 0; i < diagnosticCount; i++)
+				{
+					diagnostics[i] = parseDiagnostic(jsonDiagnostics[i]);
+				}
+				vo.diagnostics = diagnostics;
+			}
+			if(FIELD_EDIT in original)
+			{
+				vo.edit = parseWorkspaceEdit(original.edit);
+			}
+			if(FIELD_COMMAND in original)
+			{
+				vo.command = parseCommand(original.command);
+			}
+			return vo;
 		}
 
 		private function parseCommand(original:Object):Command
@@ -1255,11 +1335,126 @@ package actionScripts.languageServer
 			return original.value;
 		}
 
+		private function parseWorkspaceEdit(original:Object):WorkspaceEdit
+		{
+			var workspaceEdit:WorkspaceEdit = new WorkspaceEdit;
+			var jsonChanges:Object = original.changes;
+			if(jsonChanges)
+			{
+				var changes:Object = {};
+				for(var uri:String in jsonChanges)
+				{
+					//the key is the file path, the value is a list of TextEdits
+					var resultChanges:Array = jsonChanges[uri];
+					var resultChangesCount:int = resultChanges.length;
+					var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+					for(var i:int = 0; i < resultChangesCount; i++)
+					{
+						var resultChange:Object = resultChanges[i];
+						var textEdit:TextEdit = parseTextEdit(resultChange);
+						textEdits[i] = textEdit;
+					}
+					changes[uri] = textEdits;
+				}
+				workspaceEdit.changes = changes;
+			}
+			var jsonDocumentChanges:Array = original.documentChanges;
+			if(jsonDocumentChanges)
+			{
+				var documentChanges:Array = [];
+				var changesCount:int = jsonDocumentChanges.length;
+				for(i = 0; i < changesCount; i++)
+				{
+					var documentChange:Object = jsonDocumentChanges[i];
+					if("kind" in documentChange)
+					{
+						switch(documentChange.kind)
+						{
+							case RenameFile.KIND:
+							{
+								var renameFile:RenameFile = parseRenameFile(documentChange);
+								documentChanges.push(renameFile);
+								break;
+							}
+							case CreateFile.KIND:
+							{
+								var createFile:CreateFile = parseCreateFile(documentChange);
+								documentChanges.push(createFile);
+								break;
+							}
+							case DeleteFile.KIND:
+							{
+								var deleteFile:DeleteFile = parseDeleteFile(documentChange);
+								documentChanges.push(deleteFile);
+								break;
+							}
+							default:
+							{
+								trace("parseWorkspaceEdit: Unknown document change:", documentChange.kind);
+							}
+						}
+					}
+					else
+					{
+						var textDocumentEdit:TextDocumentEdit = parseTextDocumentEdit(documentChange);
+						documentChanges.push(textDocumentEdit);
+					}
+				}
+				workspaceEdit.documentChanges = documentChanges;
+			}
+			return workspaceEdit;
+		}
+
 		private function parseTextEdit(original:Object):TextEdit
 		{
 			var vo:TextEdit = new TextEdit();
 			vo.range = parseRange(original.range);
 			vo.newText = original.newText;
+			return vo;
+		}
+
+		private function parseTextDocument(original:Object):TextDocumentIdentifier
+		{
+			var vo:TextDocumentIdentifier = new TextDocumentIdentifier();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseTextDocumentEdit(original:Object):TextDocumentEdit
+		{
+			var vo:TextDocumentEdit = new TextDocumentEdit();
+			vo.textDocument = parseTextDocument(original.textDocument);
+			var originalEdits:Array = original.edits;
+			var edits:Vector.<TextEdit> = new <TextEdit>[];
+			var editsCount:int = originalEdits.length;
+			for(var i:int = 0; i < editsCount; i++)
+			{
+				var edit:TextEdit = parseTextEdit(originalEdits[i]);
+				edits.push(edit);
+			}
+			vo.edits = edits;
+			return vo;
+		}
+
+		private function parseCreateFile(original:Object):CreateFile
+		{
+			var vo:CreateFile = new CreateFile();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseDeleteFile(original:Object):DeleteFile
+		{
+			var vo:DeleteFile = new DeleteFile();
+			vo.uri = original.uri;
+			return vo;
+		}
+
+		private function parseRenameFile(original:Object):RenameFile
+		{
+			var vo:RenameFile = new RenameFile();
+			vo.oldUri = original.oldUri;
+			vo.newUri = original.newUri;
 			return vo;
 		}
 		
@@ -1275,7 +1470,7 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < diagnosticsCount; i++)
 			{
 				var resultDiagnostic:Object = resultDiagnostics[i];
-				diagnostics[i] = parseDiagnostic(path, resultDiagnostic);
+				diagnostics[i] = parseDiagnosticWithPath(path, resultDiagnostic);
 			}
 			_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
 		}
@@ -1283,23 +1478,8 @@ package actionScripts.languageServer
 		private function workspace__applyEdit(jsonObject:Object):void
 		{
 			var applyEditParams:Object = jsonObject.params;
-			var edit:Object = applyEditParams.edit;
-			var changes:Object = edit.changes;
-			for(var uri:String in changes)
-			{
-				//the key is the file path, the value is a list of TextEdits
-				var file:FileLocation = new FileLocation(uri, true);
-				var resultChanges:Array = changes[uri];
-				var resultChangesCount:int = resultChanges.length;
-				var textEdits:Vector.<TextEdit> = new <TextEdit>[];
-				for(var i:int = 0; i < resultChangesCount; i++)
-				{
-					var resultChange:Object = resultChanges[i];
-					var textEdit:TextEdit = parseTextEdit(resultChange);
-					textEdits[i] = textEdit;
-				}
-				applyTextEditsToFile(file, textEdits);
-			}
+			var workspaceEdit:WorkspaceEdit = parseWorkspaceEdit(applyEditParams.edit);
+			applyWorkspaceEdit(workspaceEdit)
 		}
 
 		private function window__logMessage(jsonObject:Object):void
@@ -1712,7 +1892,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			if(event.isDefaultPrevented())
+			{
+				return;
+			}
+			//TODO: fix this to properly merge symbols from all projects
+			if(!isActiveEditorInProject() && _model.projects.length != 1)
 			{
 				return;
 			}
@@ -1872,7 +2057,6 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsRename)
 			{
-				_globalDispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_APPLY_RENAME, {}));
 				return;
 			}
 

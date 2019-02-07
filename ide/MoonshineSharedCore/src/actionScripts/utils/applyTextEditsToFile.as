@@ -59,7 +59,7 @@ package actionScripts.utils
 			});
 		}
 		dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, editorOpenHandler);
-		var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, file);
+		var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [file]);
 		dispatcher.dispatchEvent(openEvent);
 	}
 }

@@ -45,6 +45,8 @@ package actionScripts.impls
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import mx.controls.Alert;
+	import actionScripts.utils.FileUtils;
+	import flash.utils.ByteArray;
 	
 	/**
 	 * IFileBridgeImp
@@ -339,37 +341,29 @@ package actionScripts.impls
 				}
 			}
 			catch (e:Error)
-			{}
+			{
+				trace(e.getStackTrace());
+			}
 			
 			return saveData;
 		}
 		
 		public function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void
 		{
-			var stream:FileStream = new FileStream();
-			stream.addEventListener(IOErrorEvent.IO_ERROR, onReadIO);
-			stream.addEventListener(Event.COMPLETE, onReadComplete);
-			stream.openAsync(_file, FileMode.READ);
+			FileUtils.readFromFileAsync(_file, FileUtils.DATA_FORMAT_STRING, onReadComplete, onReadIO);
 			
 			/*
 			 * @local
 			 */
-			function onReadComplete(event:Event):void
+			function onReadComplete(value:String):void
 			{
-				var readObj:Object = fieldTypeReadObject(event.target.readUTFBytes(event.target.bytesAvailable));
+				var readObj:Object = fieldTypeReadObject(value);
 				if (fieldInProvider) provider[fieldInProvider] = fieldInReadObject ? fieldTypeProvider(readObj[fieldInReadObject]) : fieldTypeProvider(readObj);
 				else provider = fieldInReadObject ? fieldTypeProvider(readObj[fieldInReadObject]) : fieldTypeProvider(readObj);
-				
-				event.target.close();
-				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onReadIO);
-				event.target.removeEventListener(Event.COMPLETE, onReadComplete);
 			}
-			function onReadIO(event:IOErrorEvent):void
+			function onReadIO(value:String):void
 			{
 				//Alert.show(event.toString());
-				event.target.close();
-				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onReadIO);
-				event.target.removeEventListener(Event.COMPLETE, onReadComplete);
 			}
 		}
 		
@@ -685,7 +679,18 @@ package actionScripts.impls
 		private function setFileInternalPath(startFromLocation:String):void
 		{
 			// set file path if requires
-			if (startFromLocation && (new File(startFromLocation).exists)) _file.nativePath = startFromLocation;
+			try
+            {
+                var pathExists:File = new File(startFromLocation);
+                if (startFromLocation && pathExists.exists)
+                {
+                    _file.nativePath = startFromLocation;
+                }
+            }
+			catch(e:Error)
+			{
+
+			}
 		}
 	}
 }

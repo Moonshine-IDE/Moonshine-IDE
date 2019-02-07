@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   frameRate="60" height="768" minWidth="1024" xmlns:local="*"
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				var iv:InstallApacheFlex = new InstallApacheFlex();
+				addElement(iv);
+			}
+			
+		]]>
+	</fx:Script>
+</s:WindowedApplication>
