@@ -27,11 +27,17 @@
 				   implements="actionScripts.ui.IContentWindow"
 		           creationComplete="onAboutScreenCreationComplete(event)">
 	<s:layout>
-		<s:VerticalLayout paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
-						  verticalAlign="middle" horizontalAlign="center" />
+		<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10"
+						  verticalAlign="top" horizontalAlign="left" />
 	</s:layout>
 	<fx:Script>
 		<![CDATA[
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+
+			import mx.core.FlexHTMLLoader;
+
+			import mx.core.UIComponent;
 			import mx.events.FlexEvent;
 
 			public function get longLabel():String
@@ -60,9 +66,28 @@
 	
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
+				var model:IDEModel = IDEModel.getInstance();
 
+				var htmlContent:UIComponent = new UIComponent();
+				htmlContent.percentWidth = 100;
+				htmlContent.percentHeight = 100;
+
+				var flexHtmlLoader:FlexHTMLLoader = new FlexHTMLLoader();
+				flexHtmlLoader.width = this.width - 10;
+				flexHtmlLoader.height = this.height;
+
+				var elementsLocation:FileLocation = model.fileCore.resolveApplicationDirectoryPath(
+						"elements".concat(
+								model.fileCore.separator,
+								"data",
+								model.fileCore.separator, "privacypolicies.html"));
+				var urlReq:URLRequest = new URLRequest(elementsLocation.fileBridge.nativePath);
+				flexHtmlLoader.load(urlReq);
+				htmlContent.addChild(flexHtmlLoader);
+
+				this.addElement(htmlContent);
 			}
-			
 		]]>
 	</fx:Script>
+
 </s:BorderContainer>
