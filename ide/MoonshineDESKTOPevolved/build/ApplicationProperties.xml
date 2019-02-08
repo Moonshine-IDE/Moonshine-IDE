@@ -6,8 +6,8 @@
 	<keepDebugFiles>false</keepDebugFiles> <!-- true|false -->
 
 	<!-- FLEX SDK INFORMATION -->
-	<winSDKPath><![CDATA[d:\Work\flex-sdk-4.16.1_adobe_ari_31]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
-	<winSDKPath64><![CDATA[d:\Work\flex-sdk-4.16.1_adobe_ari_31]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath64><![CDATA[]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	
 	<!-- BUNDLED SDK PATHS -->
