@@ -21,6 +21,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
 * Visual Editor PrimeFaces: Added Undo/Redo on Copy/Paste.
 * Added Apache Maven support.
+* Added [Privacy Policy](http://moonshine-ide.com/privacy-policy/) document available in menu **Help**.
+* Support for opening project by double clicking on IDE files .as3proj and .veditorproj.
+* Open/Import zip archive which contains Moonshine project.
+* Project Tree: Allow multiple file selection.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.17.2.
@@ -33,6 +37,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Fixed issue where selecting a PanelGrid cell did not display its content properly in Property Editor.
 * Visual Editor PrimeFaces: Fixed issue where Copy/Paste was failing in Grid.
 * Visual Editor PrimeFaces: Fixed issue where TabView label did not update after reopening the saved file.
+* Visual Editor PrimeFaces: Fixed issue where Calendar component wasn't updated due to changes in property panel.
 * Apache Royale: Fixed issue where Moonshine could not build [MX examples](https://github.com/apache/royale-asjs/tree/develop/examples/mxroyale).
 * Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
@@ -40,6 +45,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
 * Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
 * Problems: Fixed issue where problems were not cleared after closing a project.
+* Code Editor: Fixed issue where package name was incorrect after file creation.
 
 ## Moonshine IDE [1.15.0]
 
