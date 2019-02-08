@@ -50,7 +50,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Java Projects: Fixed issue where importing a Java project not determines by its correct project type, also failed in project deletion
 * Native Extension Usage: Fixed issue where compiling project with multiple Native Extension files used only one in the process
 * Flash Browser Project: Fixed issue where Flash browser project had no option to choose and run by a browser URL
-* File Browser: Fixed issue where file-system browser always opening by user's desktop path
 
 ## Moonshine IDE [1.15.0]
 
