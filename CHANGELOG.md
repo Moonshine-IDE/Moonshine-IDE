@@ -39,13 +39,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Fixed issue where TabView label did not update after reopening the saved file.
 * Visual Editor PrimeFaces: Fixed issue where Calendar component wasn't updated due to changes in property panel.
 * Apache Royale: Fixed issue where Moonshine could not build [MX examples](https://github.com/apache/royale-asjs/tree/develop/examples/mxroyale).
-* Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
+* Search: Fixed issue with the Backward option in Find/Replace.
 * Language server: Fixed issue where Java instance continued running after application exit.
 * Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
 * Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
 * Problems: Fixed issue where problems were not cleared after closing a project.
 * Code Editor: Fixed issue where package name was incorrect after file creation.
+* Java Projects: Fixed issue where opening a Java project throws error.
+* Java Projects: Fixed issue where importing a Java project not determines by its correct project type, also failed in project deletion
+* Native Extension Usage: Fixed issue where compiling project with multiple Native Extension files used only one in the process
+* Flash Browser Project: Fixed issue where Flash browser project had no option to choose and run by a browser URL
+* File Browser: Fixed issue where file-system browser always opening by user's desktop path
 
 ## Moonshine IDE [1.15.0]
 
