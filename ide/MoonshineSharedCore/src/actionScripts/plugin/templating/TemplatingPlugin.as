@@ -1131,7 +1131,7 @@ package actionScripts.plugin.templating
                 content = content.replace("$imports", as3InterfaceAttributes.getImports());
 				content = content.replace("$modifierA", as3InterfaceAttributes.modifierA);
 
-                var extendClass:String = as3InterfaceAttributes.extendsClassInterface;
+                var extendClass:String = as3InterfaceAttributes.implementsInterface;
                 content = content.replace("$exstends", extendClass ? "extends " + extendClass : "");
 
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
