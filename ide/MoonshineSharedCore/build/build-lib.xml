@@ -221,7 +221,7 @@
 			<!-- consider a web build -->
 			<else>
 				<property name="isOSX" value="false"/>
-				<antcall target="disposeTempWindows" />
+				<antcall target="disposeTempWindowsWeb" />
 			</else>
 		</if>
 	</target>
@@ -823,6 +823,16 @@
 				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
+				<delete dir="installer" />
+			</then>
+		</if>
+	</target>
+	<target name="disposeTempWindowsWeb" depends="CompileWeb">
+		<if>
+			<equals arg1="${keepDebugFiles}" arg2="false"/>
+			<then>
+				<delete dir="${debug_dir}" />
+				<delete dir="elements" />
 				<delete dir="installer" />
 			</then>
 		</if>
