@@ -46,6 +46,7 @@ package actionScripts.ui.editor.text
     {
         private static const CLASSES_LIST:String = "classesList";
         private static const INTERFACES_LIST:String = "interfacesList";
+        private static const NO_PACKAGE:String = "No Package";
 
         protected var dispatcher:EventDispatcher = GlobalEventDispatcher.getInstance();
 
@@ -195,10 +196,12 @@ package actionScripts.ui.editor.text
 
         private function completeItem(completionItem:CompletionItem):void
         {
+            var isDetailValid:Boolean = completionItem.detail && completionItem.detail.indexOf("No Package") == -1;
+
             if (this.completionListType == CLASSES_LIST)
             {
                 this.superClassName = completionItem.label;
-                if (completionItem.detail)
+                if (isDetailValid)
                 {
                     this._classesImports.push(completionItem.detail);
                 }
@@ -206,7 +209,7 @@ package actionScripts.ui.editor.text
             else if (this.completionListType == INTERFACES_LIST)
             {
                 this.interfaceName = completionItem.label;
-                if (completionItem.detail)
+                if (isDetailValid)
                 {
                     this._interfacesImports.push(completionItem.detail);
                 }
