@@ -19,25 +19,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-    import actionScripts.valueObjects.RoyaleOutputTarget;
-    import actionScripts.valueObjects.SdkDescriptionVO;
-
     import flash.events.Event;
-	import flash.events.EventDispatcher;
+    import flash.events.EventDispatcher;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
-	
-	import mx.collections.ArrayCollection;
-	
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.help.HelpPlugin;
-	import actionScripts.plugin.startup.StartupHelperPlugin;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectReferenceVO;
+    
+    import mx.collections.ArrayCollection;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.NewFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.help.HelpPlugin;
+    import actionScripts.plugin.startup.StartupHelperPlugin;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+    import actionScripts.valueObjects.RoyaleOutputTarget;
+    import actionScripts.valueObjects.SdkDescriptionVO;
 	
 	public class SDKUtils extends EventDispatcher
 	{
@@ -47,7 +46,7 @@ package actionScripts.utils
 		public static const EVENT_SDK_PROMPT_DNS: String = "EVENT_SDK_PROMPT_DNS";
 		public static const EXTRACTED_FOLDER_NAME:String = "MoonshineSDKs";
 		
-		private static const SDKS:Array = ["FlexJS_SDK", "Flex_SDK"];
+		private static const SDKS:Array = ["FlexJS_SDK", "Flex_SDK", "Royale_SDK"];
 		
 		private static var currentSDKIndex:int;
 		private static var isSDKExtractionFailed:Boolean;
@@ -168,7 +167,7 @@ package actionScripts.utils
 						var tmpDirListing:Array = targetDir.fileBridge.getDirectoryListing();
 						for each (var j:Object in tmpDirListing)
 						{
-							if (j.isDirectory && (j.name.indexOf("Flex") != -1))
+							if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
 							{
 								bundledFlexSDK = getSdkDescription(new FileLocation(j.nativePath));
 								if (bundledFlexSDK)
@@ -246,6 +245,10 @@ package actionScripts.utils
 
 			// lets load flex-sdk-description.xml to get it's label
 			var description:FileLocation = location.fileBridge.resolvePath("royale-sdk-description.xml");
+			if (!description.fileBridge.exists)
+			{
+				description = location.fileBridge.resolvePath("royale-asjs/royale-sdk-description.xml");
+			}
 			if (!description.fileBridge.exists)
 			{
 				description = location.fileBridge.resolvePath("flex-sdk-description.xml");
