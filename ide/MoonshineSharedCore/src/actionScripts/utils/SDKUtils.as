@@ -80,9 +80,10 @@ package actionScripts.utils
 							tmpDirListing = tmpFolder.fileBridge.getDirectoryListing();
 							for each (j in tmpDirListing)
 							{
-								if (j.isDirectory && (j.name.indexOf("Flex") != -1))
+								if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
 								{
 									ConstantsCoreVO.IS_HELPER_DOWNLOADED_SDK_PRESENT = true;
+									break;
 								}
 							}
 						}

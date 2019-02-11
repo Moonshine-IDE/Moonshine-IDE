@@ -397,7 +397,7 @@
 			<key>LSApplicationCategoryType</key>
 			<string>public.app-category.developer-tools</string>
 			<key>CFBundleVersion</key>
-			<string>43.0</string>]]></replacevalue>
+			<string>44.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -409,7 +409,7 @@
 			<key>LSApplicationCategoryType</key>
 			<string>public.app-category.developer-tools</string>
 			<key>CFBundleVersion</key>
-			<string>43.0</string>]]></replacevalue>
+			<string>44.0</string>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
