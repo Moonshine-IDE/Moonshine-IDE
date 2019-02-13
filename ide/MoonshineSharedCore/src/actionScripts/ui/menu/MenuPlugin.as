@@ -612,14 +612,14 @@ import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 		private function onGitClonePermissionChange(event:Event):void
 		{
 			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[8].submenu.items[0];
+			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
 			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE ? "Clone" : "Grant Permission";
 		}
 		
 		private function onSVNCheckoutPermissionChange(event:Event):void
 		{
 			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
+			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
 			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
 		}
 		
