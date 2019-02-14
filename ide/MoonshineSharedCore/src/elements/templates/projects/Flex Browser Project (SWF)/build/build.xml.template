@@ -73,7 +73,7 @@
 	
 	<!-- Compile web SWF to build directory for desktop packaging -->
 	<target name="compileWeb" depends="init">
-		<mxmlc file="${SOURCE_APP_FILE}" output="${SWF_FILE_PATH}" swf-version="25" locale="en_US" static-rsls="true" optimize="true" actionscript-file-encoding="UTF-8" incremental="false" keep-generated-actionscript="false" maxmemory="1024m" fork="true">
+		<mxmlc file="${SOURCE_APP_FILE}" output="${SWF_FILE_PATH}" locale="en_US" static-rsls="true" optimize="true" actionscript-file-encoding="UTF-8" incremental="false" keep-generated-actionscript="false" maxmemory="1024m" fork="true">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 			<source-path path-element="${FLEX_HOME}/frameworks" />
 			<source-path path-element="${SOURCE_DIR}"/>

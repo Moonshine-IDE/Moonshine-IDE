@@ -23,6 +23,16 @@ package
 		 */
 		public function Main()
 		{
+
+			//create the theme. this class will automatically pass skins to any
+			//Feathers component that is added to the stage. components do not
+			//have default skins, so you must always use a theme or skin the
+			//components manually. you should always create a theme immediately
+			//when your app starts up to ensure that all components are
+			//properly skinned.
+			//see http://feathersui.com/help/themes.html
+			new MetalWorksMobileTheme();
+			super();
 			//we'll initialize things after we've been added to the stage
 			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 		}
@@ -39,15 +49,6 @@ package
 		protected function addedToStageHandler(event:Event):void
 		{
 			this.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-
-			//create the theme. this class will automatically pass skins to any
-			//Feathers component that is added to the stage. components do not
-			//have default skins, so you must always use a theme or skin the
-			//components manually. you should always create a theme immediately
-			//when your app starts up to ensure that all components are
-			//properly skinned.
-			//see http://feathersui.com/help/themes.html
-			new MetalWorksMobileTheme();
 
 			//create a button and give it some text to display.
 			this.button = new Button();

@@ -146,7 +146,7 @@
 	
 	<!-- COMPILE SWF TO BUILD-DEBUG DIRECTORY -->
 	<target name="compileSWF" depends="modifyDescriptor">
-		<mxmlc file="${SOURCE_APP_FILE}" output="${SWF_FILE_PATH}" swf-version="25" configname="air" locale="en_US" fork="true" optimize="true" debug="false" actionscript-file-encoding="UTF-8" incremental="false" keep-generated-actionscript="false" maxmemory="1024m">
+		<mxmlc file="${SOURCE_APP_FILE}" output="${SWF_FILE_PATH}" configname="air" locale="en_US" fork="true" optimize="true" debug="false" actionscript-file-encoding="UTF-8" incremental="false" keep-generated-actionscript="false" maxmemory="1024m">
 			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
 			<source-path path-element="${SOURCE_DIR}"/>
 			<compiler.library-path dir="${DEBUG_DIR}" append="true">
