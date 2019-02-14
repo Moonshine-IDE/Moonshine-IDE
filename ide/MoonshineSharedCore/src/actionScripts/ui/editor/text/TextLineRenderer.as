@@ -40,9 +40,6 @@ package actionScripts.ui.editor.text
 	import no.doomsday.utilities.math.MathUtils;
 	import org.apache.flex.collections.VectorCollection;
 	import mx.managers.PopUpManager;
-	import mx.core.FlexGlobals;
-	import flash.display.DisplayObjectContainer;
-
 
     public class TextLineRenderer extends Sprite
 	{	
