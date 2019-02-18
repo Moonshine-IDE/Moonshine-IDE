@@ -47,10 +47,7 @@ package actionScripts.controllers
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.popup.StandardPopup;
-	import components.views.splashscreen.SplashScreen;
-	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.valueObjects.ProjectVO;
 	import flash.utils.setTimeout;
 	import flash.utils.clearTimeout;
 

@@ -35,7 +35,6 @@ package actionScripts.ui
     import actionScripts.valueObjects.ConstantsCoreVO;
     
     import components.views.project.TreeView;
-    import components.views.splashscreen.SplashScreen;
 
     // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox

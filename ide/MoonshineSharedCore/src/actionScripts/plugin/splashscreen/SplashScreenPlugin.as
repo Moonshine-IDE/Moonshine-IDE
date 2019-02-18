@@ -20,13 +20,7 @@
 package actionScripts.plugin.splashscreen
 {
     import flash.events.Event;
-    import flash.events.EventDispatcher;
-    
     import mx.collections.ArrayCollection;
-    import mx.resources.ResourceManager;
-    
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.MenuEvent;
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.settings.ISettingsProvider;
@@ -36,7 +30,6 @@ package actionScripts.plugin.splashscreen
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.TemplateVO;
     
     import components.views.splashscreen.SplashScreen;
