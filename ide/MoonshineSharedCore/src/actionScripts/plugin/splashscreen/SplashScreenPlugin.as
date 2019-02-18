@@ -29,8 +29,6 @@ package actionScripts.plugin.splashscreen
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.TemplateVO;
     
     import components.views.splashscreen.SplashScreen;
 
@@ -82,6 +80,11 @@ package actionScripts.plugin.splashscreen
 			])
 		}
 
+		override public function dispatchEvent(event:flash.events.Event):Boolean
+		{
+			return dispatcher.dispatchEvent(event);
+		}
+
 		protected function handleShowSplash(event:Event):void
 		{
 			showSplashScreen();
@@ -99,25 +102,6 @@ package actionScripts.plugin.splashscreen
 			splashScreen.plugin = this;
 
             model.editors.addItem(splashScreen);
-			
-            // following will load template data from local for desktop
-            if (ConstantsCoreVO.IS_AIR)
-            {
-                projectsTemplates = getProjectsTemplatesForSpashScreen();
-            }
-        }
-
-		private function getProjectsTemplatesForSpashScreen():ArrayCollection
-		{
-			var templates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source.filter(filterProjectsTemplates);
-			var specialTemplates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source.filter(filterProjectsTemplates);
-
-			return new ArrayCollection(templates.concat(specialTemplates));
-		}
-
-		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
-		{
-			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.title) == -1;
         }
     }
 }

@@ -21,7 +21,9 @@ package actionScripts.impls
 {
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
-    import actionScripts.plugins.maven.MavenBuildPlugin;
+	import actionScripts.plugin.splashscreen.NewProjectScreenPlugin;
+	import actionScripts.plugin.splashscreen.SamplesScreenPlugin;
+	import actionScripts.plugins.maven.MavenBuildPlugin;
 
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
@@ -221,6 +223,8 @@ package actionScripts.impls
 				XMLSyntaxPlugin,
 				OrganizeImportsPlugin,
 				SplashScreenPlugin,
+				NewProjectScreenPlugin,
+				SamplesScreenPlugin,
 				CleanProject,
 				SVNPlugin,
 				VSCodeDebugProtocolPlugin,
@@ -240,7 +244,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
+					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, NewProjectScreenPlugin, SamplesScreenPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

@@ -26,18 +26,18 @@
 		<![CDATA[
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			private var loader:Loader = new Loader();
-			
+
 			private function init():void
 			{
 				labelDisplay.removeEventListener(MouseEvent.CLICK, handleClick);
 				labelDisplay.addEventListener(MouseEvent.CLICK, handleClick);
 			}
-			
+
 			private function handleClick(event:Event):void
-			{		
+			{
 				dispatchEvent( new Event("itemClick", true, false) );
 			}
-			
+
 			override public function set data(value:Object):void
 			{
 				super.data = value;
@@ -48,8 +48,8 @@
 					if(value.logoImagePath)
 					{
 						fileIcon.includeInLayout = true;
-						loader.load(new URLRequest(value.logoImagePath));  
-						loader.contentLoaderInfo.addEventListener(Event.COMPLETE,doneLoad);
+						loader.load(new URLRequest(value.logoImagePath));
+						loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onProjectIconLoadingComplete);
 					}
 					else
 					{
@@ -62,9 +62,23 @@
 					label = value.fileBridge.name;
 				}
 			}
-			private function doneLoad(e:Event):void
+
+			private function onProjectIconLoadingComplete(event:Event):void
 			{
-				fileIcon.source = e.currentTarget.content;
+				fileIcon.source = event.currentTarget.content;
+			}
+
+			override protected function set hovered(value:Boolean):void
+			{
+				super.hovered = value;
+				if (value && labelDisplay)
+				{
+					labelDisplay.setStyle("color", 0xFFFFFF);
+				}
+				else if (!value && labelDisplay)
+				{
+					labelDisplay.setStyle("color", 0xD6D6D6);
+				}
 			}
 		]]>
 	</fx:Script>
@@ -83,8 +97,6 @@
 			fontSize="15"
 			baseline="50"
 			height="100%"
-			verticalAlign="middle"
-			mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)"
-			 creationComplete="event.target.setStyle('color', 0XD6D6D6)"
+			verticalAlign="middle" color="0xD6D6D6"
 			useHandCursor="true" buttonMode="true" mouseChildren="false"/>
 </s:ItemRenderer>

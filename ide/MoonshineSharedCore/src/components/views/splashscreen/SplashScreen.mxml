@@ -19,79 +19,35 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
-		   xmlns:s="library://ns.adobe.com/flex/spark"
-		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:project="components.views.project.*"
 		   implements="actionScripts.ui.IContentWindow"
-		   label="Home"
-		   width="100%"
-		   height="100%" xmlns:splashscreen="components.views.splashscreen.*"
-		   creationComplete="onCreationCompletes(event)" removedFromStage="onTabRemoved(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		   label="Home" backgroundColor="0x444444"
+		   width="100%" height="100%"
+		   creationComplete="onSplashScreenCreationComplete(event)" horizontalScrollPolicy="off"
+		   verticalScrollPolicy="off">
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.effects.Fade;
-			import mx.events.EffectEvent;
+		import actionScripts.plugin.splashscreen.NewProjectScreenPlugin;
+		import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+
 			import mx.events.FlexEvent;
-			import mx.events.ResizeEvent;
-			import mx.managers.PopUpManager;
-			
-			import spark.effects.Move;
-			
-			import actionScripts.controllers.DataAgent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.MenuEvent;
-			import actionScripts.events.NewProjectEvent;
-			import actionScripts.events.OpenFileEvent;
-			import actionScripts.events.ProjectEvent;
-			import actionScripts.events.SettingsEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
-			import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-			import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-			import actionScripts.plugin.templating.TemplatingHelper;
-			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.ProjectReferenceVO;
-			import actionScripts.valueObjects.TemplateVO;
-			import actionScripts.valueObjects.URLDescriptorVO;
-			
-			import components.popup.Authentication;
-			import components.popup.AuthenticationPopUp;
-			import components.popup.NegativeRatingPopup;
-			import components.popup.PositiveRatingPopup;
-			import components.renderers.RecentProjectRenderer;
-			import components.renderers.TemplateItemRenderer;
-			
-			import flashx.textLayout.events.FlowElementMouseEvent;
-			
-			import no.doomsday.console.core.events.ConsoleEvent;
-			import actionScripts.valueObjects.ProjectVO;
-			
-			[Embed("/elements/images/icoThumbUp.png")]
-			private const ICON_THUMB_UP:Class;
-			[Embed("/elements/images/icoThumbDown.png")]
-			private const ICON_THUMB_DOWN:Class;
+
+			[Embed(source="/elements/images/overview.png")]
+			[Bindable]
+			protected var overview:Class;
+
+			[Embed(source="/elements/images/samples.png")]
+			[Bindable]
+			protected var samples:Class;
+
+			[Embed(source="/elements/images/newproject.png")]
+			[Bindable]
+			protected var newproject:Class;
 
 			[Bindable]
-			public var plugin: SplashScreenPlugin;
-			
-			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-
-			protected var loader: DataAgent;
-			protected var recentOpenedProjectObject:Object;
-			protected var authPopup:AuthenticationPopUp;
-			protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			protected var positiveRatingPopup:PositiveRatingPopup;
-			protected var negativeRatingPopup:NegativeRatingPopup;
-			
-			private var renderedCount:int;
-			private var doAtOnce:Boolean;
-			private var isNoSDKMessageShown:Boolean;
+			public var plugin:SplashScreenPlugin;
 
 			public function get longLabel():String
 			{
@@ -111,485 +67,39 @@
 			public function save():void
 			{
 			}
-			
-			public function openRecentItem(refVO:ProjectReferenceVO):void
+
+			private function onSplashScreenCreationComplete(event:FlexEvent):void
 			{
-				// do not open an already opened project
-				if (model.mainView.getTreeViewPanel() &&  UtilsCore.checkProjectIfAlreadyOpened(refVO.path)) return;
-				
-				// desktop
-				if (ConstantsCoreVO.IS_AIR)
-				{
-					recentOpenedProjectObject = new FileLocation(refVO.path);
-					
-					if (!FileLocation(recentOpenedProjectObject).fileBridge.exists)
-					{
-						Alert.show("Can't import: The file does not exist anymore.", "Error!");
-						return;
-					}
-					
-					if (recentOpenedProjectObject.fileBridge.isDirectory)
-					{
-						var project:ProjectVO;
-						var lastOpenedOption:String;
-						
-						// check if any last opend option is associated with the project
-						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
-						{
-							if (i.path == recentOpenedProjectObject.fileBridge.nativePath)
-							{
-								lastOpenedOption = i.option;
-								break;
-							}
-						}
-						
-						project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
-						
-						if (!project)
-						{
-							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
-							return;
-						}
-						
-						// save old sdk details to the project
-						if(project is AS3ProjectVO)
-						{
-							var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-							as3Project.buildOptions.oldDefaultSDKPath = refVO.sdk;
-						}
-						
-						// trigger the project to open
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
-					}
-					else
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, [recentOpenedProjectObject as FileLocation])
-						);
-					}
-				}
-					// web
-				else
-				{
-					recentOpenedProjectObject = refVO;
-					// check if there is no login or not
-					if (URLDescriptorVO.BASE_URL_MIRROR == "")
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, false, false, {
-								path: recentOpenedProjectObject.path,
-								name: recentOpenedProjectObject.name
-							})
-						);
-					}
-					else if (ConstantsCoreVO.IS_AUTH_REQUIRED)
-					{
-						loader = new DataAgent(URLDescriptorVO.LOGIN_TEST, onProjectLoadSuccess, onLoginTestFault, null);
-					}
-					else
-					{
-						loadRecentProject();
-					}
-				}
+
 			}
 
-			private function updateRecetProjectList(event:Event):void
+			private function onVerviewScreen(event:MouseEvent):void
 			{
-				recentProjects.removeAllElements();
-				for each (var i:ProjectReferenceVO in model.recentlyOpenedProjects)
-				{
-					var tmpRow:RecentProjectRenderer = new RecentProjectRenderer();
-					tmpRow.project = i;
-					recentProjects.addElement(tmpRow);
-				}
-				
-				updateRecentLabelPosition();
-			}
-			
-			private function updateRecentLabelPosition():void
-			{
-				if (recentProjects.numElements > 0)
-				{
-					vgProjects.callLater(function():void
-					{
-						var tmpRow:RecentProjectRenderer = recentProjects.getElementAt(0) as RecentProjectRenderer;
-						lblRecent.y = vgProjects.contentToLocal(new Point(tmpRow.x, tmpRow.y)).y;
-					});
-				}
-			}
-			
-			private function updateRecetFileList(event:Event):void
-			{
-				recentFiles.removeAllElements();
-				for each (var i:ProjectReferenceVO in model.recentlyOpenedFiles)
-				{
-					var tmpRow:RecentProjectRenderer = new RecentProjectRenderer();
-					tmpRow.project = i;
-					recentFiles.addElement(tmpRow);
-				}
-			}
-			
-			private function loadRecentProject():void
-			{
-				// we need another check here, too
-				if (UtilsCore.checkProjectIfAlreadyOpened(recentOpenedProjectObject.path)) return;
 
-				var activeProj:MXMLProjectVO = new MXMLProjectVO(recentOpenedProjectObject.path, recentOpenedProjectObject.name);
-				activeProj.projectName = recentOpenedProjectObject.name;
-				activeProj.projectRemotePath = "";
-				model.activeProject = activeProj;
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ProjectEvent(ProjectEvent.ADD_PROJECT, activeProj)
-				);
-
-				// just to makeup some visual distruaction
-				if (authPopup && authPopup.isPopUp)
-				{
-					PopUpManager.removePopUp(authPopup);
-					authPopup = null;
-				}
 			}
 
-			private function handleProjectOpen(event:Event):void
+			private function onNewProjectScreen(event:MouseEvent):void
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT)
-				);
+				plugin.dispatchEvent(new Event(NewProjectScreenPlugin.EVENT_SHOW_NEWPROJECT_SCREEN));
 			}
 
-			private function handleTemplateClick(event:Event):void
+			private function onSamplesScreen(event:MouseEvent):void
 			{
-				var rdr:TemplateItemRenderer = event.target as TemplateItemRenderer;
-				var fl:Object = ConstantsCoreVO.IS_AIR ? rdr.data as TemplateVO : rdr.data as FileLocation;
 
-				if (ConstantsCoreVO.IS_AIR)
-				{
-					if (fl.file.fileBridge.isDirectory)
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new Event("eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
-						);
-					}
-					else
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new Event("eventNewFileFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
-						);
-					}
-				}
-				else
-				{
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, FileLocation(fl).fileBridge.name, null, null)
-					);
-				}
 			}
-
-			private function handleRecentClick(event:Event):void
-			{
-				var refVO:ProjectReferenceVO = RecentProjectRenderer(event.target).project;
-				openRecentItem(refVO);
-			}
-
-			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):ProjectVO
-			{
-				var projectFile:Object = recentOpenedProjectObject.fileBridge.getFile;
-				var projectFileLocation:FileLocation;
-
-				if (!lastOpenedOption ||
-					 lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
-					 lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
-				{
-					projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
-					if (projectFileLocation)
-					{
-						return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
-					}
-
-					projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
-					if (projectFileLocation)
-					{
-						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-					}
-
-					projectFileLocation = model.javaCore.testJava(projectFile);
-					if (projectFileLocation)
-					{
-						return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
-					}
-				}
-
-				return null;
-			}
-
-			private function onProjectLoadSuccess(value:Object):void
-			{
-				loader = null;
-
-				var xData:XML = XML(String(value));
-				if (!xData) return;
-				if (xData.status == Authentication.SESSION_UNAUTHENTICATED)
-				{
-					authPopup = new AuthenticationPopUp();
-					PopUpManager.addPopUp(authPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-					PopUpManager.centerPopUp(authPopup);
-					authPopup.addEventListener(Authentication.SUCCESS, authSuccessHandler);
-					authPopup.addEventListener(Authentication.CANCEL, authCancelHandler);
-				}
-				else if (xData.status == Authentication.SESSION_AUTHLIMITEDACCESS)
-				{
-					Alert.show("You do not have sufficient rights to performn this operation. If you feel this is in error please contact the Administrator.", "Error!");
-				}
-				else
-				{
-					loadRecentProject();
-				}
-			}
-
-			private function onLoginTestFault(result:Object):void
-			{
-				loader = null;
-			}
-
-			private function authSuccessHandler(evt:Event):void
-			{
-				loadRecentProject();
-			}
-
-			private function authCancelHandler(evt:Event):void
-			{
-				authPopup.removeEventListener(Authentication.SUCCESS, authSuccessHandler);
-				authPopup.removeEventListener(Authentication.CANCEL, authCancelHandler);
-				PopUpManager.removePopUp(authPopup);
-				authPopup = null;
-			}
-
-			protected function onCreationCompletes(event:FlexEvent):void
-			{
-				addEventListener(ResizeEvent.RESIZE, onStageResized);
-				addEventListener(RecentProjectRenderer.RECENT_PROJECT_RENDERER_CLICK, handleRecentClick);
-				dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
-				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
-				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
-				dispatcher.addEventListener(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW, onOpenReportBugWithError, false, 0, true);
-				dispatcher.addEventListener("eventOpenRecentProject", onOpenRecentProject);
-				dispatcher.addEventListener("eventOpenRecentFile", onOpenRecentFile);
-
-				grpNoSDKMess.y = this.height;
-				
-				// manual run for the first time
-				updateRecetProjectList(null);
-				updateRecetFileList(null);
-			}
-			
-			private function onOpenRecentProject(menuEvent:MenuEvent):void
-			{
-				openRecentItem(menuEvent.data as ProjectReferenceVO);
-			}
-			
-			private function onOpenRecentFile(menuEvent:MenuEvent):void
-			{
-				openRecentItem(menuEvent.data as ProjectReferenceVO);
-			}
-
-			private function onStageResized(event:ResizeEvent):void
-			{
-				if (isNoSDKMessageShown) grpNoSDKMess.y = this.height - grpNoSDKMess.height;
-				updateRecentLabelPosition();
-			}
-
-			private function onDefaultSDKStateChanged(event:Event):void
-			{
-				var isSDKAvailable:Boolean = model.defaultSDK ? true : false;
-				if (!isSDKAvailable && !isNoSDKMessageShown)
-				{
-					isNoSDKMessageShown = true;
-					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
-
-					var tmpFade:Fade = new Fade(grpNoSDKMess);
-					tmpFade.alphaFrom = 0;
-					tmpFade.alphaTo = 1;
-					tmpFade.play();
-				}
-				else if (isSDKAvailable && isNoSDKMessageShown)
-				{
-					var tmpMove:Move = new Move(grpNoSDKMess);
-					tmpMove.yFrom = grpNoSDKMess.y;
-					tmpMove.yTo = height;
-					tmpMove.addEventListener(EffectEvent.EFFECT_END, onEffectEnds);
-					tmpMove.play();
-					isNoSDKMessageShown = false;
-				}
-				else if (isNoSDKMessageShown)
-				{
-					grpNoSDKMess.y = this.height - grpNoSDKMess.height;
-				}
-
-				function onEffectEnds(effEvent:EffectEvent):void
-				{
-					effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
-					grpNoSDKMess.alpha = 0;
-				}
-			}
-
-
-			private function onEffectEnds(effEvent:EffectEvent):void
-			{
-				effEvent.target.removeEventListener(EffectEvent.EFFECT_END, onEffectEnds);
-				grpNoSDKMess.visible = false;
-			}
-
-			/**
-			 * On agreement link clicked
-			 */
-			private function handleLinkEvent(event:FlowElementMouseEvent):void
-			{
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
-			}
-			
-			protected function onPositiveRating(event:MouseEvent):void
-			{
-				positiveRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, PositiveRatingPopup, true) as PositiveRatingPopup;
-				PopUpManager.centerPopUp(positiveRatingPopup);
-			}
-
-			protected function onNegativeRating(event:MouseEvent, withError:String=null):void
-			{
-				negativeRatingPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NegativeRatingPopup, true) as NegativeRatingPopup;
-				negativeRatingPopup.width = screen.width * .6;
-				negativeRatingPopup.height = screen.height * .7;
-				negativeRatingPopup.errorDetails = withError;
-				PopUpManager.centerPopUp(negativeRatingPopup);
-			}
-			
-			private function onOpenReportBugWithError(event:ConsoleEvent):void
-			{
-				onNegativeRating(null, event.text);
-			}
-			
-			protected function onTabRemoved(event:Event):void
-			{
-				removeEventListener(ResizeEvent.RESIZE, onStageResized);
-				removeEventListener(RecentProjectRenderer.RECENT_PROJECT_RENDERER_CLICK, handleRecentClick);
-				dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, onDefaultSDKStateChanged);
-				dispatcher.removeEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
-				dispatcher.removeEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
-				dispatcher.removeEventListener(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW, onOpenReportBugWithError);
-				dispatcher.removeEventListener("eventOpenRecentProject", onOpenRecentProject);
-				dispatcher.removeEventListener("eventOpenRecentFile", onOpenRecentFile);
-			}
-			
 		]]>
 	</fx:Script>
-	
-	<splashscreen:ArtContainer/>
-	
-	<s:VGroup id="vgLeftList"
-		left="20" verticalCenter="0"
-		gap="20" width="60%">
-		<s:Label 
-			text="OPEN"
-			color="0xFFFFFF"
-			paddingTop="3"
-			paddingLeft="3"
-			paddingRight="3"
-			paddingBottom="0"
-			fontFamily="DejaVuSerif"
-			fontStyle="italic"
-			fontSize="18" />
-		<s:DataGroup id="projectOpenList" dataProvider="{ConstantsCoreVO.TEMPLATES_OPEN_PROJECTS}"
-					 itemRenderer="components.renderers.TemplateItemRenderer"
-					 color="0xFFFFFF" width="100%"
-					 creationComplete="projectOpenList.addEventListener('itemClick', handleProjectOpen)">
-			<s:layout>
-				<s:VerticalLayout
-					gap="10"
-					clipAndEnableScrolling="false" />
-			</s:layout>
-		</s:DataGroup>
-		<s:Label 
-			text="CREATE"
-			color="0xD6D6D6"
-			paddingTop="3"
-			paddingLeft="3"
-			paddingRight="3"
-			paddingBottom="0"
-			fontFamily="DejaVuSerif"
-			fontStyle="italic"
-			fontSize="18"
-			/>
-		<s:DataGroup id="projectTemplateList"
-					 dataProvider="{plugin.projectsTemplates}"
-					 itemRenderer="components.renderers.TemplateItemRenderer"
-					 color="0xFFFFFF" width="100%"
-					 creationComplete="projectTemplateList.addEventListener('itemClick', handleTemplateClick)">
-			<s:layout>
-				<s:VerticalLayout
-					gap="10" 
-					clipAndEnableScrolling="false" />
-			</s:layout>
-		</s:DataGroup>
-		<s:Label 
-			text="FEEDBACK"
-			color="0xD6D6D6"
-			paddingTop="3"
-			paddingLeft="3"
-			paddingRight="3"
-			paddingBottom="0"
-			fontFamily="DejaVuSerif"
-			fontStyle="italic"
-			fontSize="18"
-			/>
-		<s:HGroup autoLayout="true" verticalAlign="middle">
-			<s:Button label="This is great!"
-					  icon="{ICON_THUMB_UP}" height="26"
-					  click="onPositiveRating(event)"/>
-			<s:Button label="I'm having some problems"
-					  icon="{ICON_THUMB_DOWN}" height="26"
-					  click="onNegativeRating(event)"/>
-		</s:HGroup>
-	</s:VGroup>
-	
-	<s:Group id="vgProjects"
-		width="40%" right="0" top="20" bottom="40">
-		<s:Label id="lblRecent"
-			text="RECENT"
-			color="0xFFFFFF"
-			paddingTop="2"
-			paddingLeft="3"
-			paddingBottom="0"
-			fontFamily="DejaVuSerif"
-			fontStyle="italic"
-			fontSize="18" 
-			right="20"/>
-		<s:VGroup width="100%" top="36" bottom="0" gap="0">
-			<s:Scroller width="100%" height="50%" horizontalScrollPolicy="off">
-				<s:VGroup id="recentProjects" 
-						  width="100%" paddingRight="20" gap="5" verticalAlign="bottom" horizontalAlign="right"/>
-			</s:Scroller>
-			<s:Spacer height="20"/>
-			<s:Scroller width="100%" height="50%" horizontalScrollPolicy="off">
-				<s:VGroup id="recentFiles" 
-						  width="100%" paddingRight="20" gap="5" horizontalAlign="right"/>
-			</s:Scroller>
-		</s:VGroup>
-	</s:Group>
-	
-	<s:Group id="grpNoSDKMess" 
-			 width="100%" height="24" alpha="0">
-		<s:Rect width="100%" height="100%">
-			<s:fill>
-				<s:SolidColor color="0xffffcc"/>
-			</s:fill>
-		</s:Rect>
-		<s:RichEditableText editable="false" focusEnabled="false"
-							width="100%" color="0x333333" textAlign="center" verticalCenter="0" fontSize="11">
-			<s:textFlow>
-				<s:TextFlow>
-					<s:p>Some options may unavailable until default SDK set. You can set by clicking <s:a click="handleLinkEvent(event)">here</s:a>.</s:p>
-				</s:TextFlow>
-			</s:textFlow>
-		</s:RichEditableText>
+	<s:Group>
+		<s:layout>
+			<s:TileLayout columnWidth="300" horizontalGap="15" verticalGap="5"
+						  requestedColumnCount="2" requestedRowCount="3"
+					      padding="15"/>
+		</s:layout>
+		<project:SplashScreenItem image="{overview}" label="Overview"
+								  click="onVerviewScreen(event)"/>
+		<project:SplashScreenItem image="{newproject}" label="Create new project"
+								  click="onNewProjectScreen(event)"/>
+		<project:SplashScreenItem image="{samples}" label="Samples"
+								  click="onSamplesScreen(event)"/>
 	</s:Group>
 </mx:Canvas>

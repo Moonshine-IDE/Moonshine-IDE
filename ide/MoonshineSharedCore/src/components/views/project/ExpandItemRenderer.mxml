@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				percentWidth="100"
+				currentState="normal" label="{data.title}">
+	<s:layout>
+		<s:VerticalLayout gap="5" horizontalAlign="center"/>
+	</s:layout>	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="expand"/>
+	</s:states>
+	<s:HGroup id="mainContent" horizontalAlign="left" verticalAlign="middle"
+			  percentWidth="100">
+		<s:Image id="exampleLogo" />
+		<s:VGroup gap="1" horizontalAlign="left" verticalAlign="top" percentWidth="100">
+			<s:Label id="labelDisplay" fontWeight="bold"/>
+			<s:Label id="description" text="{data.description}" 
+					 maxWidth="{this.width - openExamplesBtn.width}"/>
+		</s:VGroup>
+		<s:Button id="openExamplesBtn" label="Open" width="80"/>
+	</s:HGroup>
+	<s:DataGroup id="moreContent" excludeFrom="normal" 
+			 itemRenderer="components.views.project.ProjectDescriptionItemRenderer"
+			 dataProvider="{data.projects}" percentWidth="100" maxWidth="{this.width}">	
+		<s:layout>
+			<s:VerticalLayout gap="5" horizontalAlign="left" verticalAlign="top"
+							  paddingLeft="5" paddingRight="5"/>
+		</s:layout>
+	</s:DataGroup>
+
+	<s:Button height="20" label.normal="More..." label.expand="Close" 
+		      click="onExpandClick(event)"/>
+
+	<fx:Script>
+	<![CDATA[
+		override protected function set hovered(value:Boolean):void
+		{
+				
+		}		
+		
+		override protected function getCurrentRendererState():String
+		{
+		    return currentState;
+		}
+
+		private function onExpandClick(event:MouseEvent):void
+		{
+			currentState = currentState == "normal" ? "expand" : "normal";
+		}
+	]]>
+</fx:Script>
+</s:ItemRenderer>

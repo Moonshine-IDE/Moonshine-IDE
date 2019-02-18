@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+          useHandCursor="true" buttonMode="true" verticalAlign="middle" horizontalAlign="left"
+          rollOver="onItemRollOver(event)" rollOut="onItemRollOut(event)">
+    <fx:Script><![CDATA[
+        [Bindable]
+        public var image:Class;
+        [Bindable]
+        public var label:String;
+
+        private function onItemRollOver(event:MouseEvent):void
+        {
+            labelDisplay.setStyle("color", 0xFFFFFF);
+        }
+
+        private function onItemRollOut(event:MouseEvent):void
+        {
+            labelDisplay.setStyle("color", 0xD6D6D6);
+        }
+        ]]></fx:Script>
+    <s:Image source="{image}" width="64" height="64"/>
+    <s:Label id="labelDisplay" text="{label}" fontFamily="DejaVuSans" fontSize="15"
+             verticalAlign="middle" color="0xD6D6D6"/>
+</s:HGroup>
