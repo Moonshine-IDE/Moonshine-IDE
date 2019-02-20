@@ -1,5 +1,7 @@
 package actionScripts.plugin.java.javaproject
 {
+	import actionScripts.utils.MavenPomUtil;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
@@ -28,7 +30,6 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.TemplateVO;
 
 	public class CreateJavaProject
 	{
@@ -195,7 +196,6 @@ package actionScripts.plugin.java.javaproject
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:JavaProjectVO = view.associatedData as JavaProjectVO;
-			var targetFolder:FileLocation = project.folderLocation;
 
 			//save project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -213,8 +213,6 @@ package actionScripts.plugin.java.javaproject
             project = createFileSystemBeforeSave(project, view.exportProject as JavaProjectVO);
 			if (!project) return;
 
-            targetFolder = targetFolder.resolvePath(project.projectName);
-			
 			// Close settings view
 			createClose(event);
 			

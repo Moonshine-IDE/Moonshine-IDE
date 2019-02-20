@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-    import flash.display.DisplayObject;
+	import components.popup.newFile.NewJavaFilePopup;
+
+	import flash.display.DisplayObject;
     import flash.events.Event;
     
     import mx.collections.ArrayCollection;
@@ -71,15 +73,17 @@ package actionScripts.plugin.templating
     import components.popup.newFile.NewFilePopup;
     import components.popup.newFile.NewMXMLFilePopup;
     import components.popup.newFile.NewVisualEditorFilePopup;
-	
-	/*
-	Templating plugin
-	
-	Provides templates & possibility to customize them
-	
-	Standard templates ship in the app-dir, but since we can't change those files once installed 
-	we override them by copying them to app-storage-dir & let the user modify them there.
-	*/
+
+    import mx.utils.StringUtil;
+
+    /*
+    Templating plugin
+
+    Provides templates & possibility to customize them
+
+    Standard templates ship in the app-dir, but since we can't change those files once installed
+    we override them by copying them to app-storage-dir & let the user modify them there.
+    */
 	
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
 	{
@@ -98,6 +102,7 @@ package actionScripts.plugin.templating
 		protected var newProjectTemplateSetting:NewTemplateSetting;
 		protected var newMXMLComponentPopup:NewMXMLFilePopup;
 		protected var newAS3ComponentPopup:NewASFilePopup;
+		protected var newJavaComponentPopup:NewJavaFilePopup;
 		protected var newCSSComponentPopup:NewCSSFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newFilePopup:NewFilePopup;
@@ -809,6 +814,9 @@ package actionScripts.plugin.templating
 					case "Visual Editor PrimeFaces File":
 						openVisualEditorComponentTypeChoose(event);
 						break;
+					case "Java Class":
+						openJavaTypeChoose(event, false);
+						break;
 					default:
 						for (i = 0; i < fileTemplates.length; i++)
 						{
@@ -1082,7 +1090,49 @@ package actionScripts.plugin.templating
 			newAS3ComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewInterfaceCreateRequest);
 			newAS3ComponentPopup = null;
 		}
-		
+
+		protected function handleJavaPopupClose(event:CloseEvent):void
+		{
+			newJavaComponentPopup.removeEventListener(CloseEvent.CLOSE, handleJavaPopupClose);
+			newJavaComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newJavaComponentPopup = null;
+		}
+
+		protected function openJavaTypeChoose(event:Event, isInterfaceDialog:Boolean):void
+		{
+			if (!newJavaComponentPopup)
+			{
+				newJavaComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewJavaFilePopup, true) as NewJavaFilePopup;
+				newJavaComponentPopup.addEventListener(CloseEvent.CLOSE, handleJavaPopupClose);
+				newJavaComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+				newJavaComponentPopup.isInterfaceDialog = isInterfaceDialog;
+
+				// newFileEvent sends by TreeView when right-clicked
+				// context menu
+				if (event is NewFileEvent)
+				{
+					newJavaComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newJavaComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newJavaComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newJavaComponentPopup.folderLocation = creatingItemIn.file;
+						newJavaComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newJavaComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+
+				PopUpManager.centerPopUp(newJavaComponentPopup);
+			}
+		}
+
 		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
 		{
 			if (event.fromTemplate.fileBridge.exists)
@@ -1093,22 +1143,36 @@ package actionScripts.plugin.templating
 
 				content = content.replace(pattern, event.fileName);
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath((event.ofProject as AS3ProjectVO).classpaths, event.insideLocation.nativePath, null, null, false);
-				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], event.insideLocation.nativePath, null, null, false);
+				if (packagePath != "")
+				{
+					packagePath = packagePath.substr(1, packagePath.length);
+				} // removing . at index 0
+				else
+				{
+					if (event.fileExtension == ".java")
+					{
+						content = content.replace("package", "");
+						content = content.replace(";", "");
+					}
+				}
+
 				content = content.replace("$packageName", packagePath);
 				content = content.replace("$imports", as3FileAttributes.getImports());
 				content = content.replace("$modifierA", as3FileAttributes.modifierA);
-				
+
 				var tmpModifierBData:String = as3FileAttributes.getModifiersB();
 				content = content.replace(((tmpModifierBData != "") ? "$modifierB" : "$modifierB "), tmpModifierBData);
 
 				var extendClass:String = as3FileAttributes.extendsClassInterface;
-				content = content.replace("$exstends", extendClass ? "extends " + extendClass : "");
+				content = content.replace("$extends", extendClass ? "extends " + extendClass : "");
 
                 var implementsInterface:String = as3FileAttributes.implementsInterface;
                 content = content.replace("$implements", implementsInterface ? "implements " + implementsInterface : "");
 
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".as");
+                content = StringUtil.trim(content);
+
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + event.fileExtension);
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
@@ -1140,7 +1204,7 @@ package actionScripts.plugin.templating
                 notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
-		
+
 		protected function onMXMLFileCreateRequest(event:NewFileEvent):void
 		{
 			if (event.fromTemplate.fileBridge.exists)

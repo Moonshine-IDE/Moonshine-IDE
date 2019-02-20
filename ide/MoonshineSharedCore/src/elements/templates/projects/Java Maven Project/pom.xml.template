@@ -9,4 +9,13 @@
   <name>$ProjectName</name>
   <version>0.1.0-SNAPSHOT</version>
 
+   <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
+        </plugins>
+   </build>
 </project>

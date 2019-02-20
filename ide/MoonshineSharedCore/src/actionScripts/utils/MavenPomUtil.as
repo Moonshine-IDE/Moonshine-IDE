@@ -21,5 +21,15 @@ package actionScripts.utils
 
             return String(pomXML.xsiNamespace::version);
         }
+
+        public static function getProjectSourceDirectory(pomLocation:FileLocation):String
+        {
+            var fileContent:Object = pomLocation.fileBridge.read();
+            var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
+            var pomXML:XML = new XML(fileContent);
+            var build:XML = XML(pomXML.xsiNamespace::build);
+
+            return String(build.xsiNamespace::sourceDirectory);
+        }
     }
 }

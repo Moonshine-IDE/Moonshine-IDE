@@ -54,7 +54,10 @@
 		public var isInterfaceDialog:Boolean;
 
 		[Bindable]
-		private var newAsFileCompletionManager:NewASFileCompletionManager;
+		protected var newAsFileCompletionManager:NewASFileCompletionManager;
+
+		[Bindable]
+		protected var createdFileExtension:String = ".as";
 
 		override protected function onBrowseButton(event:MouseEvent):void
 		{
@@ -101,6 +104,8 @@
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_AS3INTERFACE : ConstantsCoreVO.TEMPLATE_AS3CLASS, wrapperOfFolderLocation, attributes);
 				tmpEvent.fileName = txtFileName.text;
 				tmpEvent.ofProject = wrapperBelongToProject;
+                tmpEvent.fileExtension = this.createdFileExtension;
+
 				dispatchEvent(tmpEvent);
 
 				doBeforeExit();
@@ -143,12 +148,12 @@
 			// it shows only the origianl set text to PromptTextInput.text if
 			// binded to a label component, thus:
 			modifiedName = txtFileName.text;
-			if (isDestinationValid) warningMessage = modifiedName + ".as is already exists.";
+			if (isDestinationValid) warningMessage = modifiedName + createdFileExtension + " is already exists.";
 
 			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
 			else
 			{
-				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".as");
+				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + createdFileExtension);
 				targetFile.fileBridge.canonicalize();
 
 				btnCreate.enabled = !targetFile.fileBridge.exists;
@@ -275,7 +280,7 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
 								  change="onNameChanged(event)" enter="onBtnCreateClick(null)" marginRight="50"/>
-			<s:Label text=".as" styleName="textInputLabel" textAlign="right"
+			<s:Label text="{createdFileExtension}" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:Label text="Modifiers:"/>

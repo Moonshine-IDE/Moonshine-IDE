@@ -17,7 +17,7 @@
 		<jsf.version>2.2.15</jsf.version>
 		<primefaces.version>6.2</primefaces.version>
 
-		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 	</properties>
     
     <dependencies>

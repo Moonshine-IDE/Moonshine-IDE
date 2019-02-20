@@ -430,9 +430,9 @@ package actionScripts.utils
 			else if (locationToCompare) pathToCompare = locationToCompare.fileBridge.nativePath + project.folderLocation.fileBridge.separator;
 			
 			// if no sourceFolder exists at all let add file anywhere
-			if (!(project as AS3ProjectVO).sourceFolder) return true;
+			if (!project["sourceFolder"]) return true;
 			
-			if (pathToCompare.indexOf((project as AS3ProjectVO).sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
+			if (pathToCompare.indexOf(project["sourceFolder"].fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 			{
 				return false;
 			}

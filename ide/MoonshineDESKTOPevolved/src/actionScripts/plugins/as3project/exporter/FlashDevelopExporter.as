@@ -17,7 +17,6 @@
 package actionScripts.plugins.as3project.exporter
 {
     import actionScripts.utils.SerializeUtil;
-    import actionScripts.utils.SerializeUtil;
 
     import flash.filesystem.File;
 	import flash.filesystem.FileMode;

@@ -2,6 +2,9 @@ package actionScripts.plugin.java.javaproject.importer
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.utils.MavenPomUtil;
+
+	import flash.filesystem.File;
 
 	public class JavaImporter
 	{
@@ -23,14 +26,26 @@ package actionScripts.plugin.java.javaproject.importer
 			return null;
 		}
 
-		public static function parse(file:FileLocation, projectName:String=null):JavaProjectVO
+		public static function parse(projectFolder:FileLocation, projectName:String=null):JavaProjectVO
 		{
 			if(!projectName)
 			{
-				var airFile:Object = file.fileBridge.getFile;
+				var airFile:Object = projectFolder.fileBridge.getFile;
 				projectName = airFile.name;
 			}
-			return new JavaProjectVO(file, projectName);
+
+			var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+
+			var pomFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("pom.xml");
+			if (pomFile.fileBridge.exists)
+			{
+				var sourceDirectory:String = MavenPomUtil.getProjectSourceDirectory(pomFile);
+				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
+
+				javaProject.classpaths.push(javaProject.sourceFolder);
+			}
+
+			return javaProject;
 		}
 	}
 }
