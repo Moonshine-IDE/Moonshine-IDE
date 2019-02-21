@@ -27,9 +27,19 @@ package actionScripts.utils
             var fileContent:Object = pomLocation.fileBridge.read();
             var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
             var pomXML:XML = new XML(fileContent);
-            var build:XML = XML(pomXML.xsiNamespace::build);
+            var buildName:QName = new QName(xsiNamespace, "build");
 
-            return String(build.xsiNamespace::sourceDirectory);
+            if (pomXML.hasOwnProperty(buildName))
+            {
+                var build:XML = new XML(pomXML.xsiNamespace::build);
+                var sourceDirectory:QName = new QName(xsiNamespace, "sourceDirectory");
+                if (build.hasOwnProperty(sourceDirectory))
+                {
+                    return String(build.xsiNamespace::sourceDirectory);
+                }
+            }
+
+            return "";
         }
     }
 }

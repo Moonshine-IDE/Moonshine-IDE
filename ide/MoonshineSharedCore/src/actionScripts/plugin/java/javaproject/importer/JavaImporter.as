@@ -39,8 +39,19 @@ package actionScripts.plugin.java.javaproject.importer
 			var pomFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("pom.xml");
 			if (pomFile.fileBridge.exists)
 			{
+				var separator:String = javaProject.projectFolder.file.fileBridge.separator;
+				const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
 				var sourceDirectory:String = MavenPomUtil.getProjectSourceDirectory(pomFile);
+				if (!sourceDirectory)
+				{
+					sourceDirectory = defaultSourceFolderPath;
+				}
 				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
+
+				if (!javaProject.sourceFolder.fileBridge.exists)
+				{
+					javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
+				}
 
 				javaProject.classpaths.push(javaProject.sourceFolder);
 			}
