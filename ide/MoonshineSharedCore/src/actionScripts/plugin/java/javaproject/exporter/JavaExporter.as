@@ -9,7 +9,8 @@ package actionScripts.plugin.java.javaproject.exporter
         {
             if (!project.hasPom()) return;
 
-            var pomFile:FileLocation = new FileLocation(project.mavenBuildOptions.mavenBuildPath);
+            var separator:String = project.projectFolder.file.fileBridge.separator;
+            var pomFile:FileLocation = new FileLocation(project.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
             var fileContent:Object = pomFile.fileBridge.read();
             var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
             var pomXML:XML = new XML(fileContent);
