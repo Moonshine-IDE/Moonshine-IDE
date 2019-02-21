@@ -409,7 +409,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// declare necessary arguments
-				file = File.applicationDirectory.resolvePath("appScripts/TestMXMLCall.scpt");
+				file = File.applicationDirectory.resolvePath("macOScripts/TestMXMLCall.scpt");
 				shellInfo = new NativeProcessStartupInfo();
 				var arg:Vector.<String>;
 				

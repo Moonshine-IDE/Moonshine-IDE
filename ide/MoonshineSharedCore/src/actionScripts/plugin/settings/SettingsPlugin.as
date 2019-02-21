@@ -67,8 +67,6 @@ package actionScripts.plugin.settings
 	 *
 	 * */
 
-    import actionScripts.utils.SharedObjectConst;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.net.SharedObject;
@@ -77,6 +75,7 @@ package actionScripts.plugin.settings
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
@@ -89,18 +88,18 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.settings.vo.PluginSetting;
     import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
     import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.plugin.syntax.AS3SyntaxPlugin;
     import actionScripts.plugin.syntax.CSSSyntaxPlugin;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.JSSyntaxPlugin;
+    import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
     import actionScripts.plugin.syntax.XMLSyntaxPlugin;
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.moonshine_internal;
     import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -195,7 +194,7 @@ package actionScripts.plugin.settings
             cookie.flush();
 
 			// restarting all startup process again
-			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
+			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_RESTART_HELPING));
 		}
 		
 		private function getClassName(instance:*):String

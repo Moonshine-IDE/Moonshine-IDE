@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   implements="actionScripts.ui.IContentWindow"
+			   width="100%" height="100%"
+			   creationComplete="onCreationCompletes()" xmlns:components="components.*">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.HelperEvent;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.utils.HelperUtils;
+			import actionScripts.valueObjects.FileWrapper;
+			
+			private static const LABEL:String = "Getting Started";
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var workspaceWrapper:FileWrapper;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  INTERFACE API
+			//
+			//--------------------------------------------------------------------------
+			
+			public function get longLabel():String
+			{
+				return LABEL;
+			}
+			
+			public function get label():String
+			{
+				return LABEL;
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE API
+			//
+			//--------------------------------------------------------------------------
+			
+			protected function onCreationCompletes():void
+			{
+				updateUI();
+				dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
+			}
+			
+			private function updateUI():void
+			{
+				var ps:PluginSetting = new PluginSetting("Moonshine IDE is Installed. What's Next?", "Moonshine Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				body.addElementAt(ps.renderer, 0);
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE LISTENERS
+			//
+			//--------------------------------------------------------------------------
+			
+			private function onInvokeEventFired(event:InvokeEvent):void
+			{
+				var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
+				if (updateNotifierFile.fileBridge.exists)
+				{
+					var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
+					viewHelper.updateComponentStatusAsDownloaded(String(notifierValue.item.@id));
+					
+					// delete the file
+					updateNotifierFile.fileBridge.deleteFile();
+				}
+			}
+			
+			private function runAppStoreHelper(event:HelperEvent):void
+			{
+				HelperUtils.runAppStoreHelper();
+			}
+			
+			private function onOpenSettings(event:HelperEvent):void
+			{
+				// TODO: need to open by section in future
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xf5f5f5"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:VGroup id="body"
+			  width="100%" height="100%"
+			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
+			  horizontalAlign="center">
+		<s:Button label="Download Third-party Software"
+				  click="runAppStoreHelper(null)"/>
+		<components:HelperView id="viewHelper" 
+							   width="100%" height="100%"
+							   isRunningInsideMoonshine="true"
+							   DOWNLOAD_COMPONENT="runAppStoreHelper(event)"
+							   OPEN_MOON_SETTINGS="onOpenSettings(event)"/>
+	</s:VGroup>
+</s:Group>

@@ -76,3 +76,35 @@ s|Label.linkTextHover {
     verticalAlign: middle;
     textDecoration: underline;
 }
+
+.uiTextRendererLabel
+{
+	fontFamily: 'DejaVuSans';
+	fontSize: 16;
+	kerning: on;
+	cffHinting: none;
+	color: #000000;
+}
+
+.uiTextRendererLabelSub
+{
+	fontFamily: 'DejaVuSans';
+	fontSize: 14;
+	kerning: on;
+	cffHinting: none;
+	color: #000000;
+}
+
+.uiTextRendererDescription
+{
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+	kerning: on;
+	cffHinting: none;
+	color: #444444;
+}
+
+.noBorderList
+{
+	borderVisible: false;
+}

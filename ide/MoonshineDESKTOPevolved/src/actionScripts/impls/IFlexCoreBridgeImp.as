@@ -19,10 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.events.MavenBuildEvent;
-    import actionScripts.events.PreviewPluginEvent;
-    import actionScripts.plugins.maven.MavenBuildPlugin;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -39,10 +35,13 @@ package actionScripts.impls
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.LanguageServerMenuEvent;
+    import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
@@ -66,7 +65,6 @@ package actionScripts.impls
     import actionScripts.plugin.search.SearchPlugin;
     import actionScripts.plugin.settings.SettingsPlugin;
     import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.plugin.syntax.AS3SyntaxPlugin;
     import actionScripts.plugin.syntax.CSSSyntaxPlugin;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
@@ -93,10 +91,12 @@ package actionScripts.impls
     import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
+    import actionScripts.plugins.startup.StartupHelperPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
     import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;
     import actionScripts.plugins.ui.editor.TourDeTextEditor;
+    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
     import actionScripts.ui.IPanelWindow;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -115,7 +115,6 @@ package actionScripts.impls
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
-    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
@@ -390,6 +389,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources', 'HELP'), [
 					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem("Getting Started", null, null, StartupHelperPlugin.EVENT_GETTING_STARTED),
 					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
 					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
                     new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY)])
@@ -415,7 +415,7 @@ package actionScripts.impls
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
 							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, null, ProjectEvent.ACCESS_MANAGER)));
-							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST : StartupHelperPlugin.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
+							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST : StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
 							break;
 						}
 					}

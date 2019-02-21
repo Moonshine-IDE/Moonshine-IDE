@@ -140,6 +140,7 @@
 	<property name="background_dir" value="../src/backgrounds"/>
     <property name="swfFilename" value="${debug_dir}/Moonshine.swf" />
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
+	<property name="LibraryHelperSharedCore" value="../../../../ProminicSVNBranch/MoonshineHelperSharedCore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
 	<property name="LibraryApacheFlexSDK" value="../../ApacheFlexSDKInstaller/ApacheFlexSDKInstallerLib"/>
 	<property name="LibraryApacheFlexSDKHelperSourceA" value="../../ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0-src"/>
@@ -279,6 +280,7 @@
 			<arg line="installer" />
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
+			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	 </target>
@@ -305,6 +307,7 @@
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
+			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	 </target>
@@ -353,6 +356,7 @@
 			<arg line="../extensions"/>
 			<arg line="elements" />
 			<arg line="tourDeFlex" />
+			<arg line="helperResources"/>
 			<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	</target>
@@ -375,8 +379,9 @@
 			<arg line="elements" />
 			<arg line="assets" />
 			<arg line="tourDeFlex" />
-			<arg line="appScripts" />
+			<arg line="macOScripts" />
 			<arg line="defaultSDKs"/>
+			<arg line="helperResources"/>
 			<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	</target>
@@ -581,6 +586,9 @@
 		<copy todir="${basedir}/tourDeFlex" overwrite="true">
 			<fileset dir="../tourDeFlex"/>
 		</copy>
+		<copy todir="${basedir}/helperResources" overwrite="true">
+			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
+		</copy>
 		
 		<antcall target="copyElementsFolder"/>
 
@@ -602,8 +610,8 @@
 				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.app"/>
 				<copy file="entitlement.plist" todir="${debug_dir}" overwrite="true"/>
 				<copy file="../extensions/SSB.ane" todir="${debug_dir}" overwrite="true"/>
-				<copy todir="${basedir}/appScripts" overwrite="true">
-					<fileset dir="${applicationSourceDirectory}/appScripts"/>
+				<copy todir="${basedir}/macOScripts" overwrite="true">
+					<fileset dir="${applicationSourceDirectory}/macOScripts"/>
 				</copy>
 			</then>
 			<else>
@@ -680,6 +688,7 @@
 			<!-- Locale paths -->
 			<source-path path-element="${LibraryMoonshineCore}/src/locale/{locale}"/>
 			<source-path path-element="${applicationSourceDirectory}"/>
+			<source-path path-element="${LibraryHelperSharedCore}/src"/>
 			<compiler.library-path dir="../libs" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
@@ -710,6 +719,7 @@
 			<!-- Locale paths -->
 			<source-path path-element="${LibraryMoonshineCore}/src/locale/{locale}"/>
 			<source-path path-element="${applicationSourceDirectory}"/>
+			<source-path path-element="${LibraryHelperSharedCore}/src"/>
 			<compiler.library-path dir="../libs" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
@@ -824,6 +834,7 @@
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
+				<delete dir="helperResources"/>
 			</then>
 		</if>
 	</target>
@@ -847,7 +858,8 @@
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
-				<delete dir="appScripts"/>
+				<delete dir="macOScripts"/>
+				<delete dir="helperResources"/>
 			</then>
 		</if>
 	</target>

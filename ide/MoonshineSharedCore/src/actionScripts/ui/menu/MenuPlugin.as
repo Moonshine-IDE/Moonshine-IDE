@@ -35,6 +35,7 @@ import actionScripts.factory.NativeMenuItemLocation;
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.PluginBase;
 import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 import actionScripts.plugin.settings.ISettingsProvider;
 import actionScripts.plugin.settings.vo.ISetting;
@@ -45,14 +46,13 @@ import actionScripts.ui.menu.interfaces.ICustomMenu;
 import actionScripts.ui.menu.vo.CustomMenu;
 import actionScripts.ui.menu.vo.CustomMenuItem;
 import actionScripts.ui.menu.vo.MenuItem;
+import actionScripts.ui.menu.vo.ProjectMenuTypes;
 import actionScripts.utils.KeyboardShortcutManager;
 import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.KeyboardShortcut;
-import actionScripts.valueObjects.Settings;
 import actionScripts.valueObjects.ProjectVO;
-import actionScripts.ui.menu.vo.ProjectMenuTypes;
-import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+import actionScripts.valueObjects.Settings;
 
     // This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -253,7 +253,6 @@ import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
                             recursiveDisableMenuOptionsByProject(menuItem.submenu.items, activeProject);
                         }
                     }
-
                 }
             }
 		}

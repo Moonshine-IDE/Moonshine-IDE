@@ -16,26 +16,31 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.startup
+package actionScripts.plugins.startup
 {
-    import actionScripts.factory.FileLocation;
-
     import flash.events.Event;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
     import mx.core.FlexGlobals;
     
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.StartupHelperEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.impls.IDetectionUtilCumHelperImp;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.ui.IContentWindow;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     
+    import components.popup.GettingStartedPopup;
     import components.popup.JavaPathSetupPopup;
     import components.popup.SDKUnzipConfirmPopup;
 
@@ -45,18 +50,18 @@ package actionScripts.plugin.startup
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "Startup Helper Plugin. Esc exits."; }
 		
-		public static const EVENT_TYPEAHEAD_REQUIRES_SDK:String = "EVENT_TYPEAHEAD_REQUIRES_SDK";
-		public static const EVENT_SDK_SETUP_REQUEST:String = "EVENT_SDK_SETUP_REQUEST";
-		public static const EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST:String = "EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST";
-		public static const EVENT_SDK_UNZIP_REQUEST:String = "EVENT_SDK_UNZIP_REQUEST";
-		public static const EVENT_RESTART_HELPING:String = "EVENT_RESTART_HELPING";
+		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		
 		private static const SDK_XTENDED:String = "SDK_XTENDED";
 		private static const CC_JAVA:String = "CC_JAVA";
 		private static const CC_SDK:String = "CC_SDK";
+		private static const CC_ANT:String = "CC_ANT";
+		private static const CC_MAVEN:String = "CC_MAVEN";
 		
+		private var dependencyCheckUtil:IDetectionUtilCumHelperImp = new IDetectionUtilCumHelperImp();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
+		private var gettingStartedPopup:GettingStartedPopup;
 		private var sequences:Array;
 		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
@@ -65,6 +70,21 @@ package actionScripts.plugin.startup
 		private var startHelpingTimeout:uint;
 		private var changeMenuSDKTimeout:uint;
 		private var didShowPreviouslyOpenedTabs:Boolean;
+		
+		private var _isAllDependenciesPresent:Boolean = true;
+		private function set isAllDependenciesPresent(value:Boolean):void
+		{
+			_isAllDependenciesPresent = value;
+			if (!_isAllDependenciesPresent)
+			{
+				// dispatch event to open Getting Started tab
+				onGettingStartedRequest(null);
+			}
+		}
+		private function get isAllDependenciesPresent():Boolean
+		{
+			return _isAllDependenciesPresent;
+		}
 		
 		/**
 		 * INITIATOR
@@ -76,13 +96,14 @@ package actionScripts.plugin.startup
 			// we want this to be work in desktop version only
 			if (!ConstantsCoreVO.IS_AIR) return;
 			
-			dispatcher.addEventListener(EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
+			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
 			{
-				dispatcher.addEventListener(EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
-				dispatcher.addEventListener(EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
+				dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
+				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
 			
 			preInitHelping();
@@ -93,7 +114,7 @@ package actionScripts.plugin.startup
 		 */
 		private function preInitHelping():void
 		{
-			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK];
+			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN];
 
 			// just a little delay to see things visually right
             startHelpingTimeout = setTimeout(startHelping, 1000);
@@ -128,6 +149,16 @@ package actionScripts.plugin.startup
 					checkSDKPrsenceForTypeahead();
 					break;
 				}
+				case CC_ANT:
+				{
+					checkAntPathPresence();
+					break;
+				}
+				case CC_MAVEN:
+				{
+					checkMavenPathPresence();
+					break;
+				}
 			}
 
 			if (!didShowPreviouslyOpenedTabs)
@@ -148,16 +179,18 @@ package actionScripts.plugin.startup
 		{
 			sequenceIndex++;
 			
-			if (!model.defaultSDK && (!ConstantsCoreVO.IS_MACOS || (ConstantsCoreVO.IS_MACOS && (!ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS || forceShow))))
+			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
+			if (!isPresent && (!ConstantsCoreVO.IS_MACOS || (ConstantsCoreVO.IS_MACOS && (!ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS || forceShow))))
 			{
-				triggerSDKNotificationView(false, false);
+				//triggerSDKNotificationView(false, false);
+				isAllDependenciesPresent = false;
 			}
-			else if (model.defaultSDK)
+			else if (isPresent)
 			{
 				// restart rest of the checkings
 				startHelping();
 			}
-			else if (!model.defaultSDK)
+			else if (!isPresent)
 			{
 				// lets show up the default sdk requirement strip at bottom
                 changeMenuSDKTimeout = setTimeout(function():void
@@ -176,15 +209,15 @@ package actionScripts.plugin.startup
 		private function checkJavaPathPresenceForTypeahead():void
 		{
 			sequenceIndex++;
-
-			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
-
-			if ((!model.javaPathForTypeAhead || !isJavaPathExists) && !ccNotificationView)
+			
+			var isPresent:Boolean = dependencyCheckUtil.isJavaPresent();
+			if (!isPresent && !ccNotificationView)
 			{
+				isAllDependenciesPresent = false;
 				model.javaPathForTypeAhead = null;
-                javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
+                //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 			}
-			else if (model.javaPathForTypeAhead)
+			else
 			{
 				// restart rest of the checkings
 				startHelping();
@@ -198,20 +231,23 @@ package actionScripts.plugin.startup
 		{
 			sequenceIndex++;
 			
+			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
 			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
-			if (!model.defaultSDK && !ccNotificationView && !isSDKSetupShowing)
+			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
 			{
-                javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
+				isAllDependenciesPresent = false;
+                //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
 			}
-			else if (!model.defaultSDK && isSDKSetupShowing)
+			else if (!isPresent && isSDKSetupShowing)
 			{
+				isAllDependenciesPresent = false;
 				showNoSDKStripAndListenForDefaultSDK();
 			}
-			else if (model.defaultSDK && model.javaPathForTypeAhead)
+			else if (isPresent && dependencyCheckUtil.isJavaPresent())
 			{
 				// starting server
 				model.languageServerCore.start();
-				dispatcher.addEventListener(EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
+				dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
 				
 				// check if any projects already opened 
 				// so we can start servers against them as well
@@ -223,6 +259,40 @@ package actionScripts.plugin.startup
 						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, i));
 					}
 				}
+				
+				startHelping();
+			}
+		}
+		
+		/**
+		 * Checks internal Ant path
+		 */
+		private function checkAntPathPresence():void
+		{
+			sequenceIndex++;
+			
+			var isPresent:Boolean = dependencyCheckUtil.isAntPresent();
+			if (!isPresent)
+			{
+				isAllDependenciesPresent = false;
+			}
+			else
+			{
+				startHelping();
+			}
+		}
+		
+		/**
+		 * Checks internal Maven path
+		 */
+		private function checkMavenPathPresence():void
+		{
+			sequenceIndex++;
+			
+			var isPresent:Boolean = dependencyCheckUtil.isMavenPresent();
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				isAllDependenciesPresent = false;
 			}
 		}
 		
@@ -277,7 +347,7 @@ package actionScripts.plugin.startup
 		/**
 		 * To restart helping process
 		 */
-		private function onRestartRequest(event:Event):void
+		private function onRestartRequest(event:StartupHelperEvent):void
 		{
 			sdkNotificationView = null;
 			ccNotificationView = null;
@@ -287,6 +357,31 @@ package actionScripts.plugin.startup
 			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
 			
 			preInitHelping();
+		}
+		
+		/**
+		 * On getting started menu item
+		 */
+		private function onGettingStartedRequest(event:Event):void
+		{
+			if (!gettingStartedPopup)
+			{
+				gettingStartedPopup = new GettingStartedPopup;
+				gettingStartedPopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
+			}
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new AddTabEvent(gettingStartedPopup as IContentWindow)
+			);
+		}
+		
+		/**
+		 * On getting started closed
+		 */
+		private function onGettingStartedClosed(event:Event):void
+		{
+			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
+			gettingStartedPopup = null;
 		}
 		
 		/**
@@ -339,7 +434,7 @@ package actionScripts.plugin.startup
 		 * During code-completion server started and
 		 * required SDK removed from SDK list
 		 */
-		private function onTypeaheadFailedDueToSDK(event:Event):void
+		private function onTypeaheadFailedDueToSDK(event:StartupHelperEvent):void
 		{
 			triggerJavaSetupViewWithParam(true);
 		}
@@ -365,7 +460,7 @@ package actionScripts.plugin.startup
 		 * On helper application download requrest from File menu
 		 * in OSX
 		 */
-		private function onSDKSetupRequest(event:Event):void
+		private function onSDKSetupRequest(event:StartupHelperEvent):void
 		{
 			sequenceIndex = 0;
 			checkDefaultSDK(true);
@@ -374,7 +469,7 @@ package actionScripts.plugin.startup
 		/**
 		 * On Moonshine App Store Helper request from top menu
 		 */
-		private function onMoonshineHelperDownloadRequest(event:Event):void
+		private function onMoonshineHelperDownloadRequest(event:StartupHelperEvent):void
 		{
 			triggerSDKNotificationView(true, false);
 		}
