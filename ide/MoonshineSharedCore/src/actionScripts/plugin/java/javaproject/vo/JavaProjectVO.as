@@ -27,6 +27,12 @@ package actionScripts.plugin.java.javaproject.vo
 			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 		}
 
+		public function hasPom():Boolean
+		{
+			var pomFile:FileLocation = new FileLocation(mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
+			return pomFile.fileBridge.exists;
+		}
+
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
 			var settings:Vector.<SettingsWrapper> = getJavaSettings();
@@ -43,13 +49,6 @@ package actionScripts.plugin.java.javaproject.vo
 		override public function saveSettings():void
 		{
 			JavaExporter.export(this);
-		}
-
-		private function hasPom():Boolean
-		{
-			var pomFile:FileLocation = new FileLocation(mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
-
-			return pomFile.fileBridge.exists;
 		}
 
 		private function getJavaSettings():Vector.<SettingsWrapper>
