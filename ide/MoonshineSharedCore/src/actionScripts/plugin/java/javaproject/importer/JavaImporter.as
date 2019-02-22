@@ -2,6 +2,7 @@ package actionScripts.plugin.java.javaproject.importer
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.utils.GradleBuildUtil;
 	import actionScripts.utils.MavenPomUtil;
 
 	import flash.filesystem.File;
@@ -37,26 +38,45 @@ package actionScripts.plugin.java.javaproject.importer
 			var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
 
 			var pomFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("pom.xml");
+			var gradleFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("build.gradle");
+
+			var sourceDirectory:String = null;
 			if (pomFile.fileBridge.exists)
 			{
-				var separator:String = javaProject.projectFolder.file.fileBridge.separator;
-				const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
-				var sourceDirectory:String = MavenPomUtil.getProjectSourceDirectory(pomFile);
-				if (!sourceDirectory)
-				{
-					sourceDirectory = defaultSourceFolderPath;
-				}
-				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
+				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
+			}
+			else if (gradleFile.fileBridge.exists)
+			{
+				sourceDirectory = GradleBuildUtil.getProjectSourceDirectory(gradleFile);
+			}
+			
+			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
+			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
 
-				if (!javaProject.sourceFolder.fileBridge.exists)
-				{
-					javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
-				}
-
-				javaProject.classpaths.push(javaProject.sourceFolder);
+			if (!sourceDirectory)
+			{
+				sourceDirectory = defaultSourceFolderPath;
 			}
 
+			javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
+			if (!javaProject.sourceFolder.fileBridge.exists)
+			{
+				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
+			}
+
+			javaProject.classpaths.push(javaProject.sourceFolder);
+
 			return javaProject;
+		}
+
+		private static function parsePom(pomFile:FileLocation, javaProject:JavaProjectVO):void
+		{
+
+		}
+
+		private static function parseGradle(gradleFile:FileLocation, javaProject:JavaProjectVO):void
+		{
+
 		}
 	}
 }
