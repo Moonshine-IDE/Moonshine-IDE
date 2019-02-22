@@ -18,19 +18,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
+	import actionScripts.factory.FileLocation;
+	import actionScripts.utils.UtilsCore;
+
     [Bindable] public class SDKReferenceVO
     {
+		private static const JS_SDK_COMPILER_NEW:String = "js/bin/mxmlc";
+		private static const JS_SDK_COMPILER_OLD:String = "bin/mxmlc";
+		private static const FLEX_SDK_COMPILER:String = "bin/fcsh";
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
 		//
 		//--------------------------------------------------------------------------
 		
-        public var path:String;
         public var version:String;
         public var build:String;
 		public var type:String;
 		public var status:String;
+		
+        private var _path:String;
+		public function set path(value:String):void
+		{
+			if (_path != value)
+			{
+				_path = value;
+				findType();
+			}
+		}
+		public function get path():String
+		{
+			return _path;
+		}
 		
 		private var _outputTargets:Array;
 		public function get outputTargets():Array
@@ -65,6 +85,13 @@ package actionScripts.valueObjects
             
             return hasJSOutput;
         }
+		
+		private var _fileLocation:FileLocation;
+		public function get fileLocation():FileLocation
+		{
+			if (!_fileLocation) _fileLocation = new FileLocation(path);
+			return _fileLocation;
+		}
 		
 		//--------------------------------------------------------------------------
 		//
@@ -106,5 +133,60 @@ package actionScripts.valueObjects
 
             return providedName;
         }
+		
+		private function findType():void
+		{
+			var isTypeFound:Boolean = isFlex();
+			if (isTypeFound) 
+			{
+				type = SDKTypes.FLEX;
+				return;
+			}
+			
+			isTypeFound = isFlexJS();
+			if (isTypeFound) 
+			{
+				type = SDKTypes.FLEXJS;
+				return;
+			}
+		}
+		
+		private function isFlexJS():Boolean
+		{
+			// determine if the sdk version is lower than 0.8.0 or not
+			var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
+			
+			var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+			var mxmlcFile:File = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
+			if (!mxmlcFile.exists)
+			{
+				return true;
+			}
+			
+			// @fix
+			// https://github.com/prominic/Moonshine-IDE/issues/26
+			// We've found js/bin/mxmlc compiletion do not produce
+			// valid swf with prior 0.8 version; we shall need following
+			// executable for version less than 0.8
+			if (!isFlexJSAfter7) mxmlcFile = fileLocation.resolvePath(JS_SDK_COMPILER_OLD + compilerExtension);
+			if (mxmlcFile.exists)
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		private function isFlex():Boolean
+		{
+			var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+			var fcshFile:File = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
+			if (!fcshFile.exists)
+			{
+				return true;
+			}
+			
+			return false;
+		}
     }
 }
