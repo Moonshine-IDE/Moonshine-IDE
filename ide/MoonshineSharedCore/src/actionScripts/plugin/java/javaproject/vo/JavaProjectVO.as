@@ -27,6 +27,12 @@ package actionScripts.plugin.java.javaproject.vo
 			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 		}
 
+		public function hasPom():Boolean
+		{
+			var pomFile:FileLocation = new FileLocation(mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
+			return pomFile.fileBridge.exists;
+		}
+
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
 			var settings:Vector.<SettingsWrapper> = getJavaSettings();
@@ -47,18 +53,24 @@ package actionScripts.plugin.java.javaproject.vo
 
 		private function getJavaSettings():Vector.<SettingsWrapper>
 		{
-			return Vector.<SettingsWrapper>([
+			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 				new SettingsWrapper("Paths",
 						Vector.<ISetting>([
 							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
 						])
-				),
-				new SettingsWrapper("Maven Build", Vector.<ISetting>([
+				)
+			]);
+
+			if (hasPom())
+			{
+				settings.push(new SettingsWrapper("Maven Build", Vector.<ISetting>([
 					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
-				]))
-			]);
+				])));
+			}
+
+			return settings;
 		}
 	}
 }

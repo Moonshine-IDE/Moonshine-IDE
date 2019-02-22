@@ -469,7 +469,7 @@ package actionScripts.plugins.startup
 		/**
 		 * On Moonshine App Store Helper request from top menu
 		 */
-		private function onMoonshineHelperDownloadRequest(event:StartupHelperEvent):void
+		private function onMoonshineHelperDownloadRequest(event:Event):void
 		{
 			triggerSDKNotificationView(true, false);
 		}

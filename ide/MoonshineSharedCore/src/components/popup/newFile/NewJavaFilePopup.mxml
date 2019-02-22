@@ -20,7 +20,7 @@
             if (SimpleValidator.validate(validateArr))
             {
                 var attributes:AS3ClassAttributes = new AS3ClassAttributes();
-                attributes.modifierA = String(rgModifiersA.selectedValue);
+                attributes.modifierA = "public";
                 attributes.extendsClassInterface = txtSuperclass.text;
                 attributes.implementsInterface = txtInterfaces.text;
                 attributes.modifierB = "";
@@ -44,6 +44,7 @@
         {
             super.onNewFileCreationComplete(event);
 
+            hasInternalClasses = false;
             cbDynamic.visible = cbDynamic.includeInLayout = false;
             title = isInterfaceDialog ? "New Interface Class" : "New Java Class";
             createdFileExtension = ".java";

@@ -23,19 +23,24 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>[source path] MoonshineHelperSharedCore-src</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/MoonshineHelperSharedCore/src</locationURI>
+		</link>
+		<link>
+			<name>[source path] MoonshineSharedCore-src</name>
+			<type>2</type>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src</location>
+		</link>
+		<link>
 			<name>[source path] en_US</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src/locale/en_US</location>
 		</link>
 		<link>
 			<name>[source path] ja_JP</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</locationURI>
-		</link>
-		<link>
-			<name>[source path] src</name>
-			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src/locale/ja_JP</location>
 		</link>
 	</linkedResources>
 </projectDescription>

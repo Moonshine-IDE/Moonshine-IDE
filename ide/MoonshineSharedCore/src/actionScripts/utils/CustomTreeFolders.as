@@ -23,7 +23,7 @@ package actionScripts.utils {
 	
 	import mx.controls.Tree;
 	
-	public class CustomTreeFoldersOnly extends Tree 
+	public class CustomTreeFolders extends Tree
 	{
 		public var keyNav:Boolean = true;
 		
@@ -31,7 +31,7 @@ package actionScripts.utils {
 		 * This class made specifically to show 
 		 * folder items only in it's collective nodes
 		 */
-		public function CustomTreeFoldersOnly()
+		public function CustomTreeFolders()
 		{
 			super();
 			super.dataDescriptor = new DataDescriptorForCustomTree();

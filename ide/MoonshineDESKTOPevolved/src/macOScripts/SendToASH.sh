@@ -1,8 +1,11 @@
 #!/bin/bash
 # checks if bundle-id exists
-if ! [ -x "$(mdfind 'net.prominic.MoonshineAppStoreHelper')" ]; then
+HELPER_PATH=$(mdfind kMDItemCFBundleIdentifier = 'net.prominic.MoonshineAppStoreHelper' | head -n 1) 
+#echo "Helper path:  '$HELPER_PATH'"
+
+if [ -x "${HELPER_PATH}" ]; then
   open -b "net.prominic.MoonshineAppStoreHelper"
   exit 1
 else
-  open http://moonshine-ide.com/moonshine-app-store-helper-utility/
+  open https://moonshine-ide.com/moonshine-app-store-helper-2/
 fi
