@@ -36,17 +36,17 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 
 			var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
-
-			var pomFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("pom.xml");
-			var gradleFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("build.gradle");
-
 			var sourceDirectory:String = null;
-			if (pomFile.fileBridge.exists)
+
+			if (javaProject.hasPom())
 			{
+				var separator:String = javaProject.projectFolder.file.fileBridge.separator;
+				var pomFile:FileLocation = new FileLocation(javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
 				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
 			}
-			else if (gradleFile.fileBridge.exists)
+			else if (javaProject.hasGradleBuild())
 			{
+				var gradleFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("build.gradle");
 				sourceDirectory = GradleBuildUtil.getProjectSourceDirectory(gradleFile);
 			}
 			
