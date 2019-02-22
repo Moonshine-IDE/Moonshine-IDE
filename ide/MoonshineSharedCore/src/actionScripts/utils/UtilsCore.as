@@ -51,6 +51,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.ModifiedFileListPopup;
@@ -242,9 +243,9 @@ package actionScripts.utils
 			return path;
 		}
 		
-		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):ProjectReferenceVO
+		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):SDKReferenceVO
 		{
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i[searchByField] == searchByValue)
 				{
@@ -484,7 +485,7 @@ package actionScripts.utils
 			
 			var path:String;
 			var bestVersionValue:int = 0;
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				var sdkName:String = i.name;
 				if (sdkName.indexOf(FLEXJS_NAME_PREFIX) != -1)
@@ -539,7 +540,7 @@ package actionScripts.utils
 			// to ensure addition of new compiler argument '-compiler.targets' 
 			// which do not works with SDK < 0.8.0
 			var sdkFullName:String;
-			for each (var project:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var project:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (sdkPath == project.path)
 				{

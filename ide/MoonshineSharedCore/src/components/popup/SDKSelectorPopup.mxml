@@ -28,7 +28,7 @@
 										   creationComplete="onCreateionCompletes()" >
 	<fx:Script>
 		<![CDATA[
-		import mx.controls.Alert;
+			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
@@ -37,7 +37,7 @@
 			import actionScripts.events.ProjectEvent;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.SDKUtils;
-			import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.SDKReferenceVO;
 			
 			import components.renderers.GeneralListRenderer;
 
@@ -57,7 +57,7 @@
 					sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, true) as SDKDefinePopup;
 					sdkPathPopup.addEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
 					sdkPathPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-					if (!isNew) sdkPathPopup.editedSDKPath = dgSDKs.selectedItem as ProjectReferenceVO;
+					if (!isNew) sdkPathPopup.editedSDKPath = dgSDKs.selectedItem as SDKReferenceVO;
 					PopUpManager.centerPopUp(sdkPathPopup);
 				}
 				else
@@ -78,7 +78,7 @@
 				onSDKPathPopupClosed(null);
 				
 				// detects been new or edit situation
-				if (event.anObject is ProjectReferenceVO)
+				if (event.anObject is SDKReferenceVO)
 				{
 					// edit sdk
 					model.userSavedSDKs.refresh();
@@ -88,7 +88,7 @@
 				{
 					// add sdk
 					// don't add if said sdk already added
-					var tmp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved(event.anObject);
+					var tmp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(event.anObject);
 					if (tmp)
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));

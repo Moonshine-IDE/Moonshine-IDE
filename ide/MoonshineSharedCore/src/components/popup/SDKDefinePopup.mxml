@@ -38,10 +38,10 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.SDKUtils;
 			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.SDKReferenceVO;
 			import actionScripts.valueObjects.SdkDescriptionVO;
 
-		public var editedSDKPath:ProjectReferenceVO;
+		public var editedSDKPath:SDKReferenceVO;
 		private var file:FileLocation;
 
 		/**

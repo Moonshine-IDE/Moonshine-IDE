@@ -69,8 +69,8 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
     import actionScripts.valueObjects.SdkDescriptionVO;
     import actionScripts.valueObjects.Settings;
     
@@ -136,7 +136,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else
 			{
-				for each (var i:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+				for each (var i:SDKReferenceVO in IDEModel.getInstance().userSavedSDKs)
 				{
 					if (i.path == value)
 					{
@@ -291,7 +291,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// @note
 			// basically requires to listen to update in
 			// Flex SDKs window
-			var tmpRef:ProjectReferenceVO = event.anObject as ProjectReferenceVO;
+			var tmpRef:SDKReferenceVO = event.anObject as SDKReferenceVO;
 			if (!tmpRef) return;
 			defaultFlexSDK = tmpRef.path;
 			

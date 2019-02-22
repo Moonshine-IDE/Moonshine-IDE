@@ -28,17 +28,16 @@
 		 height="100%" creationComplete="initThis()">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.valueObjects.SdkDescriptionVO;
-
-		import mx.controls.Alert;
-
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.ui.tabview.CloseTabEvent;
-		import actionScripts.utils.NoSDKNotifier;
-		import actionScripts.utils.SDKUtils;
-		import actionScripts.valueObjects.ProjectReferenceVO;
+			import mx.controls.Alert;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.SDKReferenceVO;
+			import actionScripts.valueObjects.SdkDescriptionVO;
 
 		public var selectedSDKDir:File;
 		public var requestedSDKDownloadVersion:String;
@@ -123,7 +122,7 @@
 			}
 
 			// check if already added in saved SDKs list
-			var projectRefTemp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({
+			var projectRefTemp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved({
 				label: sdkDescription.name,
 				path: sdkDescription.sdkPath
 			});

@@ -32,31 +32,31 @@
 		removedFromStage="onRemovedFromStage(event)">
 	<fx:Script>
 		<![CDATA[
-		import mx.collections.ArrayCollection;
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.FlexEvent;
-		import mx.managers.PopUpManager;
-		import mx.utils.ObjectUtil;
-
-		import spark.events.IndexChangeEvent;
-
-		import actionScripts.events.AddTabEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.settings.vo.AbstractSetting;
-		import actionScripts.plugin.settings.vo.PathSetting;
-		import actionScripts.ui.IContentWindow;
-		import actionScripts.ui.tabview.CloseTabEvent;
-		import actionScripts.utils.SDKUtils;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.ProjectReferenceVO;
-
-		import components.popup.SDKDefinePopup;
-		import components.popup.SDKSelectorPopup;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.events.AddTabEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.vo.AbstractSetting;
+			import actionScripts.plugin.settings.vo.PathSetting;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.SDKReferenceVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
 
 		[Bindable]
 		public var setting:PathSetting;
@@ -163,7 +163,7 @@
 		{
 			if (model.userSavedTempSDKPath)
 			{
-				var sdkVO:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(model.userSavedTempSDKPath, "path");
+				var sdkVO:SDKReferenceVO = UtilsCore.getUserDefinedSDK(model.userSavedTempSDKPath, "path");
 				setting.stringValue = sdkVO.path;
 				lblValue.text = sdkVO.name;
 				hideDefineSDKLink(setting.stringValue);
@@ -207,7 +207,7 @@
 			if (isSDKPath && setting.stringValue)
 			{
 				// check if sdk is available to the user
-				var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(setting.stringValue, "path");
+				var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(setting.stringValue, "path");
 				if (!isFound)
 				{
 					hgUndefinedSDK.visible = hgUndefinedSDK.includeInLayout = true;
@@ -291,10 +291,10 @@
 			onSDKPathPopupClosed(null);
 			// add sdk
 			// don't add if said sdk already added
-			var isAlreadyAdded:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(event.anObject.path, "path");
+			var isAlreadyAdded:SDKReferenceVO = UtilsCore.getUserDefinedSDK(event.anObject.path, "path");
 			if (!isAlreadyAdded)
 			{
-				var tmp:ProjectReferenceVO = new ProjectReferenceVO();
+				var tmp:SDKReferenceVO = new SDKReferenceVO();
 				tmp.name = event.anObject.label;
 				tmp.path = event.anObject.path;
 				model.userSavedSDKs.addItem(tmp);

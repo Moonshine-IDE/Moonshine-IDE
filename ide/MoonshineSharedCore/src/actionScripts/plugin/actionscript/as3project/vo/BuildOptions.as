@@ -18,14 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.utils.SerializeUtil;
-
     import mx.utils.StringUtil;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.MobileDeviceVO;
-	import actionScripts.valueObjects.ProjectReferenceVO;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.MobileDeviceVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
 
 	public class BuildOptions 
 	{
@@ -105,7 +104,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{ 
 			if (customSDKPath) 
 			{
-				var sdkReference:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(customSDKPath, "path");
+				var sdkReference:SDKReferenceVO = UtilsCore.getUserDefinedSDK(customSDKPath, "path");
 				if (sdkReference)
 				{
 					var tmpSDK:FileLocation = new FileLocation(sdkReference.path);

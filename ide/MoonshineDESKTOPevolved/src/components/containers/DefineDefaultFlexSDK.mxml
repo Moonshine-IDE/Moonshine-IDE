@@ -33,25 +33,24 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.valueObjects.SdkDescriptionVO;
-
-		import mx.controls.Alert;
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.FlexEvent;
-		import mx.managers.PopUpManager;
-
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.plugin.settings.vo.PluginSetting;
-		import actionScripts.ui.tabview.CloseTabEvent;
-		import actionScripts.utils.NoSDKNotifier;
-		import actionScripts.utils.SDKUtils;
-		import actionScripts.valueObjects.ProjectReferenceVO;
-
-		import components.popup.SDKDefinePopup;
-		import components.popup.SDKSelectorPopup;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.SDKReferenceVO;
+			import actionScripts.valueObjects.SdkDescriptionVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
 
 		private var sdkPopup:SDKSelectorPopup;
 		private var sdkPathPopup:SDKDefinePopup;
@@ -133,7 +132,7 @@
 			}
 
 			// check if already added in saved SDKs list
-			var projectRefTemp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({
+			var projectRefTemp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved({
 				label: sdkDescription.name,
 				path: sdkDescription.sdkPath
 			});

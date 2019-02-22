@@ -42,6 +42,7 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectReferenceVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
     
     import components.views.project.TreeView;
 
@@ -184,7 +185,7 @@ package actionScripts.plugin.recentlyOpened
 			{
 				for each (object in cookie.data.userSDKs)
 				{
-					model.userSavedSDKs.addItem(ObjectTranslator.objectToInstance(object, ProjectReferenceVO));
+					model.userSavedSDKs.addItem(ObjectTranslator.objectToInstance(object, SDKReferenceVO));
 				}
 			}
 			
@@ -318,7 +319,7 @@ package actionScripts.plugin.recentlyOpened
 			// wants any bundled SDKs to be saved in 
 			// the saved list
 			var tmpArr:Array = [];
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i.status != SDKUtils.BUNDLED) tmpArr.push(i);
 			}

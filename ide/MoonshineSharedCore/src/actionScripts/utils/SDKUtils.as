@@ -34,8 +34,8 @@ package actionScripts.utils
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.help.HelpPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.RoyaleOutputTarget;
+    import actionScripts.valueObjects.SDKReferenceVO;
     import actionScripts.valueObjects.SdkDescriptionVO;
 	
 	public class SDKUtils extends EventDispatcher
@@ -201,7 +201,7 @@ package actionScripts.utils
 				 */
 				function addSDKDirectory(value:SdkDescriptionVO):void
 				{
-					var tmpPR:ProjectReferenceVO = new ProjectReferenceVO();
+					var tmpPR:SDKReferenceVO = new SDKReferenceVO();
 					tmpPR.name = String(value.name);
 					tmpPR.path = value.sdkPath;
 					tmpPR.status = BUNDLED;
@@ -281,13 +281,13 @@ package actionScripts.utils
 			return null;
 		}
 		
-		public static function isSDKAlreadySaved(sdkObject:Object):ProjectReferenceVO
+		public static function isSDKAlreadySaved(sdkObject:Object):SDKReferenceVO
 		{
 			// add sdk
 			// don't add if said sdk already added
 			var isAlreadyAdded:Boolean;
 			var model:IDEModel = IDEModel.getInstance();
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i.path == sdkObject.path) 
 				{
@@ -298,7 +298,7 @@ package actionScripts.utils
 			
 			if (!isAlreadyAdded)
 			{
-				var tmp:ProjectReferenceVO = new ProjectReferenceVO();
+				var tmp:SDKReferenceVO = new SDKReferenceVO();
 				tmp.name = sdkObject.label;
 				tmp.path = sdkObject.path;
 				model.userSavedSDKs.addItem(tmp);
@@ -309,10 +309,10 @@ package actionScripts.utils
 			return null;
 		}
 		
-		public static function getSDKFromSavedList(byPath:String):ProjectReferenceVO
+		public static function getSDKFromSavedList(byPath:String):SDKReferenceVO
 		{
 			var model:IDEModel = IDEModel.getInstance();
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i.path == byPath) 
 				{
@@ -343,7 +343,7 @@ package actionScripts.utils
             var sdk:FileLocation;
             if (sdkPath)
             {
-                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
                 if (isFound) sdk = new FileLocation(isFound.path);
             }
             else
@@ -380,7 +380,7 @@ package actionScripts.utils
             var sdk:FileLocation;
             if (sdkPath)
             {
-                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
                 if (isFound) sdk = new FileLocation(isFound.path);
             }
             else
