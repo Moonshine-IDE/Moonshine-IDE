@@ -29,7 +29,7 @@ package actionScripts.plugins.startup
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.impls.IDetectionUtilCumHelperImp;
+    import actionScripts.impls.IHelperMoonshineBridgeImp;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -58,7 +58,7 @@ package actionScripts.plugins.startup
 		private static const CC_ANT:String = "CC_ANT";
 		private static const CC_MAVEN:String = "CC_MAVEN";
 		
-		private var dependencyCheckUtil:IDetectionUtilCumHelperImp = new IDetectionUtilCumHelperImp();
+		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
 		private var gettingStartedPopup:GettingStartedPopup;

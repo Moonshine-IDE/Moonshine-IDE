@@ -918,6 +918,11 @@ package actionScripts.utils
 
         public static function getMavenBinPath():String
         {
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				return null;
+			}
+			
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
             var mavenBin:String = "bin/";
 
@@ -929,7 +934,50 @@ package actionScripts.utils
             {
                 return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
             }
+			
+			return null;
         }
+		
+		public static function isDefaultSDKAvailable():Boolean
+		{
+			if (!model.defaultSDK)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isJavaForTypeaheadAvailable():Boolean
+		{
+			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
+			if (!model.javaPathForTypeAhead || !isJavaPathExists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isAntAvailable():Boolean
+		{
+			if (model.antHomePath)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isSVNPresent():Boolean
+		{
+			return false;
+		}
+		
+		public static function isGitPresent():Boolean
+		{
+			return false;
+		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {

@@ -36,7 +36,6 @@ package actionScripts.utils
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.RoyaleOutputTarget;
     import actionScripts.valueObjects.SDKReferenceVO;
-    import actionScripts.valueObjects.SdkDescriptionVO;
 	
 	public class SDKUtils extends EventDispatcher
 	{
@@ -157,7 +156,7 @@ package actionScripts.utils
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:SdkDescriptionVO = getSdkDescription(targetDir);
+					var bundledFlexSDK:SdkDescriptionVO = getSDKReference(targetDir);
 					if (bundledFlexSDK)
 					{
 						addSDKDirectory(bundledFlexSDK);
@@ -170,7 +169,7 @@ package actionScripts.utils
 						{
 							if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
 							{
-								bundledFlexSDK = getSdkDescription(new FileLocation(j.nativePath));
+								bundledFlexSDK = getSDKReference(new FileLocation(j.nativePath));
 								if (bundledFlexSDK)
 								{
 									addSDKDirectory(bundledFlexSDK);
@@ -240,7 +239,7 @@ package actionScripts.utils
 			model.defaultSDK = new FileLocation(model.userSavedSDKs[0].path);
 		}
 		
-		public static function getSdkDescription(location:FileLocation):SdkDescriptionVO
+		public static function getSDKReference(location:FileLocation):SDKReferenceVO
 		{
 			if (!location) return null;
 
@@ -272,9 +271,15 @@ package actionScripts.utils
 				{
                     displayName += " " + tmpXML.version;
 				}
-
-				return new SdkDescriptionVO(description.fileBridge.parent.fileBridge.nativePath,
-                        displayName, tmpXML.version, tmpXML.build, outputTargets);
+				
+				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
+				tmpSDK.path = description.fileBridge.parent.fileBridge.nativePath;
+				tmpSDK.name = displayName;
+				tmpSDK.version = String(tmpXML.version);
+				tmpSDK.build = String(tmpXML.build);
+				tmpSDK.outputTargets = outputTargets;
+				
+				return tmpSDK;
 			}
 			
 			// non-sdk case
@@ -291,12 +296,11 @@ package actionScripts.utils
 			{
 				if (i.path == sdkObject.path) 
 				{
-					isAlreadyAdded = true;
-					break;
+					return i;
 				}
 			}
 			
-			if (!isAlreadyAdded)
+			if (!(sdkObject is SDKReferenceVO) && !isAlreadyAdded)
 			{
 				var tmp:SDKReferenceVO = new SDKReferenceVO();
 				tmp.name = sdkObject.label;
@@ -304,6 +308,12 @@ package actionScripts.utils
 				model.userSavedSDKs.addItem(tmp);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, tmp));
 				return tmp;
+			}
+			else if (!isAlreadyAdded)
+			{
+				model.userSavedSDKs.addItem(sdkObject);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, sdkObject));
+				return (sdkObject as SDKReferenceVO);
 			}
 			
 			return null;
@@ -405,7 +415,7 @@ package actionScripts.utils
 
             return currentSdkMinorVersion;
         }
-
+		
 		private static function onExtractionFailed(event:Event):void
 		{
 			isSDKExtractionFailed = true;

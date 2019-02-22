@@ -71,7 +71,6 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.SDKReferenceVO;
-    import actionScripts.valueObjects.SdkDescriptionVO;
     import actionScripts.valueObjects.Settings;
     
     import components.popup.SelectOpenedFlexProject;
@@ -454,8 +453,8 @@ package actionScripts.plugins.as3project.mxmlc
 				if (as3Pvo.isRoyale)
 				{
                     var tmpSDKLocation:FileLocation = UtilsCore.getCurrentSDK(as3Pvo as AS3ProjectVO);
-					var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(tmpSDKLocation);
-					if (sdkDescription && sdkDescription.isJSOnlySdk)
+					var sdkVO:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
+					if (sdkVO && sdkVO.isJSOnlySdk)
 					{
 						error("This SDK only supports JavaScript Builds.");
 						return;

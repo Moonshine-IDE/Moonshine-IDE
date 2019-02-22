@@ -124,7 +124,7 @@
 		private function onSave(event:MouseEvent):void
 		{
 			// check if valid SDK directory
-			var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(new FileLocation(txtsdkPath.text));
+			var sdkDescription:SdkDescriptionVO = SDKUtils.getSDKReference(new FileLocation(txtsdkPath.text));
 			if (!sdkDescription)
 			{
 				Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
@@ -132,10 +132,7 @@
 			}
 
 			// check if already added in saved SDKs list
-			var projectRefTemp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved({
-				label: sdkDescription.name,
-				path: sdkDescription.sdkPath
-			});
+			var projectRefTemp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(sdkDescription);
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE,
 							projectRefTemp ? projectRefTemp : SDKUtils.getSDKFromSavedList(sdkDescription.sdkPath)));
