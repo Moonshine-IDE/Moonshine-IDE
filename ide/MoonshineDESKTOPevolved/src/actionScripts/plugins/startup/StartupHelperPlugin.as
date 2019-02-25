@@ -367,6 +367,7 @@ package actionScripts.plugins.startup
 			if (!gettingStartedPopup)
 			{
 				gettingStartedPopup = new GettingStartedPopup;
+				gettingStartedPopup.dependencyCheckUtil = dependencyCheckUtil;
 				gettingStartedPopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
 			}
 			

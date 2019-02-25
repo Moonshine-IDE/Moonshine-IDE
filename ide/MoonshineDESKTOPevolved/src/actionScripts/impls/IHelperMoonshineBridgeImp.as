@@ -20,13 +20,35 @@
 package actionScripts.impls
 {
 	import actionScripts.interfaces.IHelperMoonshineBridge;
+	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.SDKTypes;
 
 	public class IHelperMoonshineBridgeImp implements IHelperMoonshineBridge
 	{
 		public function isDefaultSDKPresent():Boolean
 		{
 			return UtilsCore.isDefaultSDKAvailable();
+		}
+		
+		public function isFlexSDKAvailable():Boolean
+		{
+			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+		}
+		
+		public function isFlexJSSDKAvailable():Boolean
+		{
+			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEXJS);
+		}
+		
+		public function isRoyaleSDKAvailable():Boolean
+		{
+			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
+		}
+		
+		public function isFeathersSDKAvailable():Boolean
+		{
+			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
 		}
 		
 		public function isJavaPresent():Boolean

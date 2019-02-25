@@ -5,8 +5,6 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.utils.GradleBuildUtil;
 	import actionScripts.utils.MavenPomUtil;
 
-	import flash.filesystem.File;
-
 	public class JavaImporter
 	{
 		public static function test(file:Object):FileLocation
@@ -36,12 +34,17 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 
 			var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
 			var sourceDirectory:String = null;
 
 			if (javaProject.hasPom())
 			{
-				var separator:String = javaProject.projectFolder.file.fileBridge.separator;
 				var pomFile:FileLocation = new FileLocation(javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
+
+				var fileContent:Object = pomFile.fileBridge.read();
+				var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
+				javaProject.mavenBuildOptions.parse(new XML(fileContent).xsiNamespace::properties);
+
 				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
 			}
 			else if (javaProject.hasGradleBuild())
@@ -49,8 +52,7 @@ package actionScripts.plugin.java.javaproject.importer
 				var gradleFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("build.gradle");
 				sourceDirectory = GradleBuildUtil.getProjectSourceDirectory(gradleFile);
 			}
-			
-			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
+
 			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
 
 			if (!sourceDirectory)
@@ -67,16 +69,6 @@ package actionScripts.plugin.java.javaproject.importer
 			javaProject.classpaths.push(javaProject.sourceFolder);
 
 			return javaProject;
-		}
-
-		private static function parsePom(pomFile:FileLocation, javaProject:JavaProjectVO):void
-		{
-
-		}
-
-		private static function parseGradle(gradleFile:FileLocation, javaProject:JavaProjectVO):void
-		{
-
 		}
 	}
 }

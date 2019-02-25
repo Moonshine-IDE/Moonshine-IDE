@@ -44,7 +44,9 @@ package actionScripts.valueObjects
 			if (_path != value)
 			{
 				_path = value;
-				findType();
+				
+				// set the type once
+				type = getType();
 			}
 		}
 		public function get path():String
@@ -134,33 +136,41 @@ package actionScripts.valueObjects
             return providedName;
         }
 		
-		private function findType():void
+		private function getType():String
 		{
-			var isTypeFound:Boolean = isFlex();
-			if (isTypeFound) 
-			{
-				type = SDKTypes.FLEX;
-				return;
-			}
-			
-			isTypeFound = isFlexJS();
-			if (isTypeFound) 
-			{
-				type = SDKTypes.FLEXJS;
-				return;
-			}
-		}
-		
-		private function isFlexJS():Boolean
-		{
-			// determine if the sdk version is lower than 0.8.0 or not
-			var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-			
+			// flex
 			var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
-			var mxmlcFile:File = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
-			if (!mxmlcFile.exists)
+			var compilerFile:FileLocation = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
+			if (compilerFile.fileBridge.exists)
 			{
-				return true;
+				if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists) return SDKTypes.FLEX;
+			}
+			
+			// royale
+			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+			compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
+			if (compilerFile.fileBridge.exists)
+			{
+				if (fileLocation.resolvePath("frameworks/royale-config.xml").fileBridge.exists) return SDKTypes.ROYALE;
+			}
+			
+			// feathers
+			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+			compilerFile = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
+			if (compilerFile.fileBridge.exists)
+			{
+				if (fileLocation.resolvePath("frameworks/libs/feathers.swc").fileBridge.exists) return SDKTypes.FEATHERS;
+			}
+			
+			// flexjs
+			// determine if the sdk version is lower than 0.8.0 or not
+			var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, this.path);
+			
+			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+			compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
+			if (compilerFile.fileBridge.exists)
+			{
+				if (name.toLowerCase().indexOf("flexjs") != -1) return SDKTypes.FLEXJS;
 			}
 			
 			// @fix
@@ -168,25 +178,13 @@ package actionScripts.valueObjects
 			// We've found js/bin/mxmlc compiletion do not produce
 			// valid swf with prior 0.8 version; we shall need following
 			// executable for version less than 0.8
-			if (!isFlexJSAfter7) mxmlcFile = fileLocation.resolvePath(JS_SDK_COMPILER_OLD + compilerExtension);
-			if (mxmlcFile.exists)
+			if (!isFlexJSAfter7) compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_OLD + compilerExtension);
+			if (compilerFile.fileBridge.exists)
 			{
-				return true;
+				if (name.toLowerCase().indexOf("flexjs") != -1) return SDKTypes.FLEXJS;
 			}
 			
-			return false;
-		}
-		
-		private function isFlex():Boolean
-		{
-			var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
-			var fcshFile:File = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
-			if (!fcshFile.exists)
-			{
-				return true;
-			}
-			
-			return false;
+			return null;
 		}
     }
 }

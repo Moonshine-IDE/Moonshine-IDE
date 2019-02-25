@@ -25,13 +25,17 @@
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
 			   implements="actionScripts.ui.IContentWindow"
 			   width="100%" height="100%"
-			   creationComplete="onCreationCompletes()" xmlns:components="components.*">
+			   initialize="onInitialized(event)" creationComplete="onCreationCompletes()"
+			   xmlns:components="components.*">
 	<fx:Script>
 		<![CDATA[
+			import mx.events.FlexEvent;
+			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.HelperEvent;
 			import actionScripts.events.SettingsEvent;
 			import actionScripts.factory.FileLocation;
+			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.ui.IContentWindow;
@@ -39,6 +43,8 @@
 			import actionScripts.valueObjects.FileWrapper;
 			
 			private static const LABEL:String = "Getting Started";
+			
+			public var dependencyCheckUtil:IHelperMoonshineBridge;
 			
 			private var model:IDEModel = IDEModel.getInstance();
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -79,6 +85,11 @@
 			//  PRIVATE API
 			//
 			//--------------------------------------------------------------------------
+			
+			private function onInitialized(event:FlexEvent):void
+			{
+				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
+			}
 			
 			protected function onCreationCompletes():void
 			{
@@ -122,6 +133,11 @@
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS));
 			}
 			
+			private function onAnyComponentDownloaded(event:HelperEvent):void
+			{
+				// autoset moonshine internal fields as appropriate
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -141,6 +157,7 @@
 							   width="100%" height="100%"
 							   isRunningInsideMoonshine="true"
 							   DOWNLOAD_COMPONENT="runAppStoreHelper(event)"
-							   OPEN_MOON_SETTINGS="onOpenSettings(event)"/>
+							   OPEN_MOON_SETTINGS="onOpenSettings(event)"
+							   COMPONENT_DOWNLOADED="onAnyComponentDownloaded(event)"/>
 	</s:VGroup>
 </s:Group>

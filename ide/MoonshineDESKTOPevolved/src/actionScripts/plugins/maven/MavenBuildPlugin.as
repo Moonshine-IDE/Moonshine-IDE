@@ -5,12 +5,12 @@ package actionScripts.plugins.maven
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
     import flash.events.Event;
@@ -111,10 +111,10 @@ package actionScripts.plugins.maven
             print("Maven build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
 
-            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-            if (as3Project)
+            var project:ProjectVO = model.activeProject;
+            if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, as3Project.projectName, "Building "));
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
                 dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
             }
         }
@@ -139,14 +139,14 @@ package actionScripts.plugins.maven
             if (!buildDirectory || !buildDirectory.fileBridge.exists)
             {
                 warning("Maven build directory has not been specified or is invalid.");
-                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject as AS3ProjectVO, "Maven Build"));
+                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Maven Build"));
                 return;
             }
 
             if (arguments.length == 0)
             {
                 warning("Specify Maven commands (Ex. clean install)");
-                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject as AS3ProjectVO, "Maven Build"));
+                dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Maven Build"));
                 return;
             }
 
@@ -326,10 +326,10 @@ package actionScripts.plugins.maven
                 return mavenBuildEvent.commands;
             }
 
-            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-            if (as3Project)
+            var project:ProjectVO = model.activeProject;
+            if (project)
             {
-                return as3Project.mavenBuildOptions.getCommandLine();
+                return project["mavenBuildOptions"].getCommandLine();
             }
 
             return [];
@@ -343,12 +343,12 @@ package actionScripts.plugins.maven
                 return new FileLocation(mavenBuildEvent.buildDirectory);
             }
 
-            var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-            if (as3Project)
+            var project:ProjectVO = model.activeProject;
+            if (project)
             {
-                if (as3Project.mavenBuildOptions.mavenBuildPath)
+                if (project["mavenBuildOptions"].mavenBuildPath)
                 {
-                    return new FileLocation(as3Project.mavenBuildOptions.mavenBuildPath);
+                    return new FileLocation(project["mavenBuildOptions"].mavenBuildPath);
                 }
             }
 

@@ -20,9 +20,14 @@ package actionScripts.valueObjects
 {
     public class SDKTypes
     {
-        public static const FEATHERS:String = "Feathers";
-        public static const ROYALE:String = "Royale";
-		public static const FLEX:String = "Flex";
-        public static const FLEXJS:String = "FlexJS";
+        public static const FEATHERS:String = "feathers";
+        public static const ROYALE:String = "royale";
+		public static const FLEX:String = "flex";
+        public static const FLEXJS:String = "flexjs";
+		public static const ANT:String = "ant";
+		public static const SVN:String = "svn";
+		public static const GIT:String = "git";
+		public static const MAVEN:String = "maven";
+		public static const OPENJAVA:String = "openjava";
     }
 }

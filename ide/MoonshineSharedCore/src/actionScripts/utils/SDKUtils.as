@@ -416,6 +416,17 @@ package actionScripts.utils
             return currentSdkMinorVersion;
         }
 		
+		public static function checkSDKTypeInSDKList(type:String):Boolean
+		{
+			var model:IDEModel = IDEModel.getInstance();
+			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
+			{
+				if (sdk.type == type) return true;
+			}
+			
+			return false;
+		}
+		
 		private static function onExtractionFailed(event:Event):void
 		{
 			isSDKExtractionFailed = true;

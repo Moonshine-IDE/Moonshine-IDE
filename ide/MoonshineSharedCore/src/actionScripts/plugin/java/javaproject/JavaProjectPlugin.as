@@ -22,8 +22,6 @@ package actionScripts.plugin.java.javaproject
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.settings.SettingsView;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	
 	public class JavaProjectPlugin extends PluginBase
 	{	
