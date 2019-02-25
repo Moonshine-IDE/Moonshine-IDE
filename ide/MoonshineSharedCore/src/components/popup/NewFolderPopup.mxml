@@ -94,7 +94,7 @@
 				minHeight = height;
 				if (wrapperOfFolderLocation) 
 				{
-					txtFolderPath.text = UtilsCore.getPackageReferenceByProjectPath(wrapperBelongToProject.folderPath, wrapperOfFolderLocation.nativePath);
+					txtFolderPath.text = UtilsCore.getPackageReferenceByProjectPath(Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]), wrapperOfFolderLocation.nativePath);
 				}
 				
 				tree.callLater(parseFolders);
@@ -151,7 +151,9 @@
 			
 			protected function onTreeItemClicked(event:ListEvent):void
 			{
-				txtFolderPath.text = UtilsCore.getPackageReferenceByProjectPath(tree.selectedItem.projectReference.path, tree.selectedItem.nativePath);
+				txtFolderPath.text = UtilsCore.getPackageReferenceByProjectPath(
+						Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+						tree.selectedItem.nativePath);
 				
 				// re-validate upon folder location change
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;

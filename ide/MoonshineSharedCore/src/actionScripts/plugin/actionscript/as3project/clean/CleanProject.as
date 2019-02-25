@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.clean
 {
-	import flash.display.DisplayObject;
+    import actionScripts.factory.FileLocation;
+
+    import flash.display.DisplayObject;
 	import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.utils.clearTimeout;
@@ -181,7 +183,12 @@ package actionScripts.plugin.actionscript.as3project.clean
 				
 				if (as3Provo.isFlexJS || as3Provo.isRoyale)
 				{
-					var binFolder:FileLocation = as3Provo.folderLocation.fileBridge.resolvePath("bin");
+					var binFolder:FileLocation = as3Provo.folderLocation.resolvePath(as3Provo.jsOutputPath).resolvePath("bin");
+					if (!binFolder.fileBridge.exists)
+					{
+						binFolder = as3Provo.folderLocation.fileBridge.resolvePath("bin");
+					}
+
 					if (binFolder.fileBridge.exists)
 					{
 						var timeoutValue:uint = setTimeout(function():void

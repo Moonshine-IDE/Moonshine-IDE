@@ -3,71 +3,84 @@
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 xmlns:codecompletionlist="actionScripts.ui.codeCompletionList.*" maxWidth="650"
                 addedToStage="onItemAddedToStage(event)" removedFromStage="onItemRemovedFromStage(event)">
-
-    <codecompletionlist:CodeIconIndicator left="2" verticalCenter="0" data="{data}"/>
-    <s:Label id="labelDisplay" color="0x101010" verticalCenter="0" fontSize="12"
-             textAlign="left" showTruncationTip="true" maxDisplayedLines="1" left="25" maxWidth="410"/>
-    <s:HGroup id="detailsGroup" left="{labelDisplay.width + 28}" right="4" verticalCenter="0" gap="2"
-              verticalAlign="middle" horizontalAlign="right">
-        <s:Label color="0x606060" textAlign="right" fontSize="12" maxWidth="220"
-                 showTruncationTip="true" maxDisplayedLines="1" text="{data.displayType}"/>
+    <s:HGroup id="labelDisplayGroup" gap="2" horizontalAlign="left" verticalAlign="middle"
+              left="2" right="{detailsGroup.width + 10}" verticalCenter="0">
+        <codecompletionlist:CodeIconIndicator id="codeIconIndicator" data="{data}"/>
+        <s:Label id="labelDisplay" color="0x101010" verticalCenter="0" fontSize="12"
+                 textAlign="left" showTruncationTip="true" maxDisplayedLines="1" maxWidth="250"/>
+        <s:Label id="details" fontSize="10" textAlign="left" showTruncationTip="true"
+                 maxDisplayedLines="1" maxWidth="310" color="0x606060"
+                 visible="{data.kind == CompletionItemKind.CLASS}" includeInLayout="{data.kind == CompletionItemKind.CLASS}"/>
+    </s:HGroup>
+    <s:HGroup id="detailsGroup" right="4" verticalCenter="0" gap="2"
+              verticalAlign="middle" horizontalAlign="right" maxWidth="220">
+        <s:Label id="displayType" color="0x606060" textAlign="right" fontSize="12"
+                 showTruncationTip="true" maxDisplayedLines="1"/>
         <codecompletionlist:CodeIconIndicator id="infoIndicator" currentState="info" data="{data}"
                                               click="onCodeIconIndicatorClick(event)" width="20"/>
     </s:HGroup>
     <fx:Script><![CDATA[
         import actionScripts.events.GlobalEventDispatcher;
         import actionScripts.ui.codeCompletionList.ToolTipPopupWithTimer;
+        import actionScripts.valueObjects.CompletionItemKind;
+
         import mx.managers.PopUpManager;
 
         private var signatureToolTip:ToolTipPopupWithTimer;
         private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
-        override protected function set hovered(value:Boolean):void
-        {
-            if (selected && data)
-            {
-                this.toolTip = null;
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (value) {
+                if (displayType) {
+                    displayType.text = getDisplayType(value.detail);
+                }
+
+                if (codeIconIndicator) {
+                    codeIconIndicator.currentState = getDisplayKind(data.kind);
+                }
+
+                if (details && data.kind == CompletionItemKind.CLASS && data.detail) {
+                    details.text = getShortDetails(data.detail);
+                }
             }
-            else if (data)
-            {
+        }
+
+        override protected function set hovered(value:Boolean):void {
+            if (selected && data) {
+                this.toolTip = null;
+            } else if (data) {
                 this.toolTip = data.detail;
             }
 
             super.hovered = value;
         }
 
-        override public function set selected(value:Boolean):void
-        {
+        override public function set selected(value:Boolean):void {
             super.selected = value;
-            if (signatureToolTip && !selected)
-            {
+            if (signatureToolTip && !selected) {
                 signatureToolTip.close();
             }
         }
 
-        private function onCodeIconIndicatorClick(event:MouseEvent):void
-        {
+        private function onCodeIconIndicatorClick(event:MouseEvent):void {
             dispatcher.dispatchEvent(new Event("showDocumentation"));
         }
 
-        private function showSignatureToolTip():void
-        {
+        private function showSignatureToolTip():void {
             if (!signatureToolTip) return;
 
-            if (!selected)
-            {
+            if (!selected) {
                 signatureToolTip.close();
             }
 
-            if (selected && data)
-            {
+            if (selected && data) {
                 callLater(refreshSignatureToolTip);
                 PopUpManager.addPopUp(signatureToolTip, this);
             }
         }
 
-        private function refreshSignatureToolTip():void
-        {
+        private function refreshSignatureToolTip():void {
             if (!signatureToolTip) return;
 
             var toolTipPosition:Point = localToGlobal(new Point(labelDisplay.x, labelDisplay.y + labelDisplay.height));
@@ -76,19 +89,15 @@
             signatureToolTip.y = toolTipPosition.y;
         }
 
-        private function onItemAddedToStage(event:Event):void
-        {
-            if (!signatureToolTip)
-            {
+        private function onItemAddedToStage(event:Event):void {
+            if (!signatureToolTip) {
                 signatureToolTip = new ToolTipPopupWithTimer();
             }
             dispatcher.addEventListener("showDocumentation", onItemShowDocumentation);
         }
 
-        private function onItemRemovedFromStage(event:Event):void
-        {
-            if (signatureToolTip)
-            {
+        private function onItemRemovedFromStage(event:Event):void {
+            if (signatureToolTip) {
                 signatureToolTip.close();
                 signatureToolTip = null;
             }
@@ -96,9 +105,111 @@
             dispatcher.removeEventListener("showDocumentation", onItemShowDocumentation);
         }
 
-        private function onItemShowDocumentation(event:Event):void
-        {
+        private function onItemShowDocumentation(event:Event):void {
             showSignatureToolTip();
+        }
+
+        public function getDisplayKind(kind:int):String {
+            switch (kind) {
+                case CompletionItemKind.CLASS: {
+                    return "Class";
+                }
+                case CompletionItemKind.COLOR: {
+                    return "Color";
+                }
+                case CompletionItemKind.CONSTANT: {
+                    return "Constant";
+                }
+                case CompletionItemKind.CONSTRUCTOR: {
+                    return "Constructor";
+                }
+                case CompletionItemKind.ENUM: {
+                    return "Enum";
+                }
+                case CompletionItemKind.ENUM_MEMBER: {
+                    return "EnumMember";
+                }
+                case CompletionItemKind.EVENT: {
+                    return "Event";
+                }
+                case CompletionItemKind.FIELD: {
+                    return "Field";
+                }
+                case CompletionItemKind.FILE: {
+                    return "File";
+                }
+                case CompletionItemKind.FOLDER: {
+                    return "Folder";
+                }
+                case CompletionItemKind.FUNCTION: {
+                    return "Function";
+                }
+                case CompletionItemKind.INTERFACE: {
+                    return "Interface";
+                }
+                case CompletionItemKind.KEYWORD: {
+                    return "Keyword";
+                }
+                case CompletionItemKind.METHOD: {
+                    return "Method";
+                }
+                case CompletionItemKind.MODULE: {
+                    return "Module";
+                }
+                case CompletionItemKind.OPERATOR: {
+                    return "Operator";
+                }
+                case CompletionItemKind.PROPERTY: {
+                    return "Property";
+                }
+                case CompletionItemKind.REFERENCE: {
+                    return "Reference";
+                }
+                case CompletionItemKind.SNIPPET: {
+                    return "Snippet";
+                }
+                case CompletionItemKind.STRUCT: {
+                    return "Struct";
+                }
+                case CompletionItemKind.TEXT: {
+                    return "Text";
+                }
+                case CompletionItemKind.TYPE_PARAMETER: {
+                    return "TypeParameter";
+                }
+                case CompletionItemKind.UNIT: {
+                    return "Unit";
+                }
+                case CompletionItemKind.VALUE: {
+                    return "Value";
+                }
+                case CompletionItemKind.VARIABLE: {
+                    return "Variable";
+                }
+            }
+            return null;
+        }
+
+        public function getDisplayType(detail:String):String {
+            if (detail && (data.kind == CompletionItemKind.METHOD
+                    || data.kind == CompletionItemKind.PROPERTY
+                    || data.kind == CompletionItemKind.VARIABLE)) {
+                var lastColonIndex:int = detail.lastIndexOf(":");
+                return detail.substring(lastColonIndex + 1);
+            } else {
+                return this.getDisplayKind(data.kind);
+            }
+        }
+
+        private function getShortDetails(detail:String):String
+        {
+            var firstSpaceIndex:int = detail.indexOf(" ");
+            if (firstSpaceIndex > -1)
+            {
+                return detail.substr(firstSpaceIndex + 1, detail.length);
+            }
+
+            return detail;
         }
         ]]></fx:Script>
 </s:ItemRenderer>

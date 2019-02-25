@@ -1,12 +1,12 @@
 package actionScripts.plugin.java.javaproject.importer
 {
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import flash.filesystem.File;
 
 	public class JavaImporter
 	{
-		public static function test(file:File):FileLocation
+		public static function test(file:Object):FileLocation
 		{
 			if (!file.exists)
 			{
@@ -19,7 +19,7 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 			
 			var listing:Array = file.getDirectoryListing();
-			for each (var i:File in listing)
+			for each (var i:Object in listing)
 			{
 				if (i.name == "pom.xml") {
 					return (new FileLocation(i.nativePath));
@@ -36,7 +36,7 @@ package actionScripts.plugin.java.javaproject.importer
 		{
 			if(!projectName)
 			{
-				var airFile:File = File(file.fileBridge.getFile);
+				var airFile:Object = file.fileBridge.getFile;
 				projectName = airFile.name;
 			}
 			return new JavaProjectVO(file, projectName);

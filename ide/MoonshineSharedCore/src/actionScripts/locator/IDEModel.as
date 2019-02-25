@@ -39,7 +39,7 @@ package actionScripts.locator
 	[Bindable] public class IDEModel
 	{
 		private static var instance:IDEModel;
-		
+
 		public static function getInstance():IDEModel 
 		{	
 			if (!instance) instance = new IDEModel();
@@ -50,7 +50,7 @@ package actionScripts.locator
 		public var contextMenuCore: IContextMenuBridge;
 		public var flexCore: IFlexCoreBridge;
 		public var aboutCore: IAboutBridge;
-		public var clipboardCore: IClipboardBridge;
+        public var clipboardCore: IClipboardBridge;
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;
 		public var groovyCore:IGroovyBridge;
@@ -70,10 +70,12 @@ package actionScripts.locator
 		public var noSDKNotifier:NoSDKNotifier = NoSDKNotifier.getInstance();
 		public var sdkInstallerView:IFlexDisplayObject;
 		public var antHomePath:FileLocation;
-		public var antScriptFile:FileLocation; 
+		public var antScriptFile:FileLocation;
+		public var mavenPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var isCodeCompletionJavaPresent:Boolean;
-		
+		public var payaraServerLocation:FileLocation;
+
 		public var recentlyOpenedFiles:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjectOpenedOption:ArrayCollection = new ArrayCollection();

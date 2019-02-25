@@ -25,7 +25,6 @@ package actionScripts.interfaces
 	{
 		function getNewAbout(closeListener:Function):IFlexDisplayObject;
 		function open(about:IFlexDisplayObject):void;
-		function orderToFront(about:IFlexDisplayObject):void;
 		function setFocus(about:IFlexDisplayObject):void;
 	}
 }

@@ -144,5 +144,5 @@ package actionScripts.factory
 			var tmpClass: Object = ApplicationDomain.currentDomain.getDefinition(className);
 			return tmpClass;
 		}
-	}
+    }
 }

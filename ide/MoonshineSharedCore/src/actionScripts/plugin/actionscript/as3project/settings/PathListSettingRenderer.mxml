@@ -19,16 +19,10 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:VGroup 
-	xmlns:fx="http://ns.adobe.com/mxml/2009"
-  	xmlns:s="library://ns.adobe.com/flex/spark"
-  	width="100%"
-  	gap="0"
-  	paddingTop="15"
-  	paddingBottom="5"
-  	paddingLeft="15"
-  	paddingRight="15" xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*" xmlns:mx="library://ns.adobe.com/flex/mx"
-	creationComplete="onCreationCompletes(event)">
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*"
+		  width="100%" gap="0" paddingTop="15" paddingBottom="5" paddingLeft="15" paddingRight="15"
+		  creationComplete="onCreationCompletes(event)">
 	
 	<fx:Script>
 		<![CDATA[
@@ -71,7 +65,10 @@
 				var file:FileLocation = fileBrowsing.file;
 				
 				// {locale} check
-				if (file.fileBridge.nativePath.indexOf("{locale}") != -1) isPresentFileBrowseIsLocale = (OSXBookmarkerNotifiers.isValidLocalePath(file) != null) ? true : false;
+				if (file.fileBridge.nativePath.indexOf("{locale}") != -1)
+				{
+					isPresentFileBrowseIsLocale = (OSXBookmarkerNotifiers.isValidLocalePath(file) != null) ? true : false;
+				}
 				
 				model.fileCore.browseForDirectory(setting.label, dirSelect, dirCancel, file.fileBridge.nativePath);
 			}
@@ -83,10 +80,10 @@
 				// filebrowsing.label = setting.getlabelFor(dir)
 				// thus a new label initiation and then submission
 				var tmpLabel: String = setting.getLabelFor(dir);
-				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? IDEModel.getInstance().fileCore.separator +"{locale}" : "");
+				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? model.fileCore.separator +"{locale}" : "");
 				
 				var finalPath: String = dir.nativePath;
-				if (isPresentFileBrowseIsLocale) finalPath += IDEModel.getInstance().fileCore.separator +"{locale}";
+				if (isPresentFileBrowseIsLocale) finalPath += model.fileCore.separator +"{locale}";
 				
 				fileBrowsing.file.fileBridge.nativePath = finalPath;
 				isPresentFileBrowseIsLocale = false;
@@ -129,13 +126,13 @@
 				var pattern:RegExp = new RegExp(/(\)/g);
 				var itemPath:String = event.target.path.text.replace(pattern, "\\");
 				
-				fileBrowsing.file.fileBridge.nativePath = IDEModel.getInstance().fileCore.resolvePath(itemPath, setting.relativeRoot.fileBridge.nativePath).fileBridge.nativePath;
+				fileBrowsing.file.fileBridge.nativePath = model.fileCore.resolvePath(itemPath, setting.relativeRoot.fileBridge.nativePath).fileBridge.nativePath;
 				fileBrowsing.label = event.target.path.text;
 			}
 			
 			protected function removeItem(event:Event):void
 			{
-				var idx:int = setting.paths.getItemIndex(event.target.data)
+				var idx:int = setting.paths.getItemIndex(event.target.data);
 				setting.paths.removeItemAt(idx);
 			}
 			
@@ -167,23 +164,21 @@
 		]]>
 	</fx:Script>
 	
-	<s:Label 
-		text="{setting.label}"
-		styleName="uiTextSettingsLabel"/>
+	<s:Label text="{setting.label}"
+			 styleName="uiTextSettingsLabel"/>
 		
 	<s:DataGroup id="pathList"
-		width="100%"
-		creationComplete="init()">
+				 width="100%"
+				creationComplete="init()">
 		<s:layout>
 			<s:VerticalLayout gap="5" />
 		</s:layout>
 	</s:DataGroup>
 	
-	<settings:PathRenderer id="addNew"
-		width="100%"
-		alpha="0.7"
-		showRemove="false"
-		click="addItem()"
-		/>
+	<settings:PathRenderer id="pathRenderer"
+							width="100%"
+							alpha="0.7"
+							showRemove="false"
+							click="addItem()"/>
 	
 </s:VGroup>

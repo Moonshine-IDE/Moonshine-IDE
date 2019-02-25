@@ -270,7 +270,7 @@
 				var tmpFL:FileLocation = new FileLocation(tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.fileReference : tmpSelectedItem.file.nativePath);
 				if (tmpFL.fileBridge.isDirectory) return;
 				
-				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, tmpFL, tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0].startLineIndex : -1);
+				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, [tmpFL], tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0].startLineIndex : -1);
 				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
 				
 				// this needs some timeout to get the tab open first

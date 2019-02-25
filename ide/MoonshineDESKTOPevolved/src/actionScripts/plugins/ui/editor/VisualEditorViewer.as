@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
+    import actionScripts.factory.FileLocation;
+    import actionScripts.utils.MavenPomUtil;
+
     import flash.events.Event;
     
     import mx.events.CollectionEvent;
@@ -179,7 +182,39 @@ package actionScripts.plugins.ui.editor
 			hasChangedProperties = false;
 			
 			super.save();
+
+			refreshFileForPreview();
 		}
+
+        private function refreshFileForPreview():void
+        {
+			if (visualEditorProject.isPrimeFacesVisualEditorProject)
+			{
+				var separator:String = file.fileBridge.separator;
+				var mavenBuildPath:String = visualEditorProject.mavenBuildOptions.mavenBuildPath;
+				var mavenPomPath:String = mavenBuildPath.concat(separator, "pom.xml");
+				var targetPath:String = mavenBuildPath.concat(separator, "target");
+
+				var pomLocation:FileLocation = new FileLocation(mavenPomPath);
+				var targetLocation:FileLocation = new FileLocation(targetPath);
+
+				if (pomLocation.fileBridge.exists && targetLocation.fileBridge.exists)
+                {
+                    var projectName:String = MavenPomUtil.getProjectId(pomLocation);
+                    var projectVersion:String = MavenPomUtil.getProjectVersion(pomLocation);
+					var destinationFolderLocation:FileLocation = new FileLocation(targetPath.concat(separator, projectName, "-", projectVersion));
+					if (destinationFolderLocation.fileBridge.exists)
+					{
+						var srcFolderLocation:FileLocation = visualEditorProject.sourceFolder;
+						var relativePath:String = currentFile.fileBridge.nativePath.replace(srcFolderLocation.fileBridge.nativePath, "");
+						var destinationFilePath:String = destinationFolderLocation.fileBridge.nativePath.concat(relativePath);
+						var destinationFile:FileLocation = destinationFolderLocation.resolvePath(destinationFilePath);
+
+						currentFile.fileBridge.copyTo(destinationFile, true);
+					}
+                }
+			}
+        }
 		
 		override protected function openHandler(event:Event):void
 		{

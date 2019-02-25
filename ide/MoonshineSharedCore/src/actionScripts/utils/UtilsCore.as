@@ -213,57 +213,7 @@ package actionScripts.utils
 			var newP : Point = FlexGlobals.topLevelApplication.globalToContent( thisHolderPoint );
 			return newP;
 		}
-		
-		/**
-		 * Deserializes True and False strings to true and false Boolean values.
-		 */
-		public static function deserializeBoolean(o:Object):Boolean {
-			var str:String = o.toString();
-			return str.toLowerCase() == "true";
-		}
-		/**
-		 * Serializes a Boolean value into True or False strings.
-		 */
-		public static function serializeBoolean(b:Boolean):String {
-			return b ? "True" : "False";
-		}
-		
-		/**
-		 * Deserialize a String value so it's null when empty
-		 */
-		public static function deserializeString(o:Object):String {
-			var str:String = o.toString();
-			if (str.length == 0) return null;
-			if (str == "null") return null;
-			return str;
-		}
-		
-		/**
-		 * Serialize a String value so it's empty when null
-		 */
-		public static function serializeString(str:String):String {
-			return str ? str : "";
-		}
-		
-		/**
-		 * Serialize key-value pairs to FD-like XML elements using a template element
-		 *  Example:
-		 *		<option accessible="True" />
-		 *		<option allowSourcePathOverlap="True" />
-		 *		<option benchmark="True" />
-		 *		<option es="True" />
-		 *		<option locale="" />
-		 */
-		public static function serializePairs(pairs:Object, template:XML):XMLList {
-			var list:XML = <xml/>;
-			for (var key:String in pairs) {
-				var node:XML = template.copy();
-				node.@[key] = pairs[key];
-				list.appendChild(node);
-			}
-			return list.children();
-		}
-		
+
 		public static function fixSlashes(path:String):String
 		{
 			if (!path) return null;
@@ -346,15 +296,36 @@ package actionScripts.utils
 		 * Returns dotted package references
 		 * against a project path
 		 */
-		public static function getPackageReferenceByProjectPath(projectPath:String, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
-			if (fileWrapper) filePath = fileWrapper.nativePath;
-			else if (fileLocation) filePath = fileLocation.fileBridge.nativePath;
+			if (fileWrapper)
+			{
+				filePath = fileWrapper.nativePath;
+			}
+			else if (fileLocation)
+			{
+				filePath = fileLocation.fileBridge.nativePath;
+			}
 			
 			var separator:String = model.fileCore.separator;
-			var projectPathSplit:Array = projectPath.split(separator);
-			filePath = filePath.replace(projectPath, "");
-			if (appendProjectNameAsPrefix) return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+			var classPathCount:int = classPaths.length;
+			var projectPathSplit:Array = null;
+			for (var i:int = 0; i < classPathCount; i++)
+			{
+				var location:FileLocation = classPaths[i];
+				if (filePath.indexOf(location.fileBridge.nativePath) > -1)
+				{
+					projectPathSplit = location.fileBridge.nativePath.split(separator);
+					filePath = filePath.replace(location.fileBridge.nativePath, "");
+					break;
+				}
+			}
+			//var projectPathSplit:Array = projectPath.split(separator);
+			//filePath = filePath.replace(projectPath, "");
+			if (appendProjectNameAsPrefix && projectPathSplit)
+			{
+				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+			}
 			return filePath.split(separator).join(".");
 		}
 		
@@ -658,22 +629,29 @@ package actionScripts.utils
 		/**
 		 * Returns possible Java exeuctable in system
 		 */
-		public static function getJavaPath():FileLocation
+		public static function getExecutableJavaLocation():FileLocation
 		{
 			var executableFile:FileLocation;
-			
-			if (ConstantsCoreVO.IS_MACOS) executableFile = new FileLocation("/usr/bin/java");
+			var separator:String = model.fileCore.separator;
+
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+            }
 			else 
 			{
 				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists) 
 				{
-					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\bin\\javaw.exe");
-					if (!executableFile.fileBridge.exists) executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath +"\\javaw.exe"); // in case of user setup by 'javaPath/bin'
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "javaw.exe"));
+					if (!executableFile.fileBridge.exists)
+					{
+						executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "javaw.exe"));
+                    } // in case of user setup by 'javaPath/bin'
 				}
 				else
 				{
 					var javaFolder:String = Capabilities.supports64BitProcesses ? "Program Files (x86)" : "Program Files";
-					var tmpJavaLocation:FileLocation = new FileLocation("C:/"+ javaFolder +"/Java");
+					var tmpJavaLocation:FileLocation = new FileLocation("C:".concat(separator, javaFolder, separator, "Java"));
 					if (tmpJavaLocation.fileBridge.exists)
 					{
 						var javaFiles:Array = tmpJavaLocation.fileBridge.getDirectoryListing();
@@ -681,7 +659,7 @@ package actionScripts.utils
 						{
 							if (j.nativePath.indexOf("jre") != -1)
 							{
-								executableFile = new FileLocation(j.nativePath +"\\bin\\javaw.exe");
+								executableFile = new FileLocation(j.nativePath + separator + "bin" + separator + "javaw.exe");
 								break;
 							}
 						}
@@ -710,13 +688,20 @@ package actionScripts.utils
 			// any particular project (example usage in 'Close All' option in File menu)
 			if (projectOrWrapper)
 			{
-				if (projectOrWrapper is ProjectVO) projectReferencePath = (projectOrWrapper as ProjectVO).folderLocation.fileBridge.nativePath;
-				else if (projectOrWrapper is FileWrapper && (projectOrWrapper as FileWrapper).projectReference) projectReferencePath = (projectOrWrapper as FileWrapper).projectReference.path;
+				if (projectOrWrapper is ProjectVO)
+				{
+					projectReferencePath = (projectOrWrapper as ProjectVO).folderLocation.fileBridge.nativePath;
+                }
+				else if (projectOrWrapper is FileWrapper && (projectOrWrapper as FileWrapper).projectReference)
+				{
+					projectReferencePath = (projectOrWrapper as FileWrapper).projectReference.path;
+                }
 			}
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile && (!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
+				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile &&
+					(!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
 				{
                     var editor:BasicTextEditor = model.editors[i];
 					if (editor)
@@ -728,7 +713,8 @@ package actionScripts.utils
                         }
 					}
 				}
-				else if (model.editors[i] is SettingsView && model.editors[i].associatedData && (!projectReferencePath || AS3ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
+				else if (model.editors[i] is SettingsView && model.editors[i].associatedData &&
+						(!projectReferencePath || ProjectVO(model.editors[i].associatedData).folderLocation.fileBridge.nativePath == projectReferencePath))
 				{
 					editorsToClose.push(model.editors[i]);
 					if (!isSkipSaveConfirmation && model.editors[i].isChanged())
@@ -817,42 +803,7 @@ package actionScripts.utils
 				}
 			}
 		}
-		private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
-		{
-			if (!value) return;
-			
-			var extension:String = value.file.fileBridge.extension;
-			if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
-			{
-				collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
-				return;
-			}
-			
-			if ((value.children is Array) && (value.children as Array).length > 0)
-			{
-				for each (var c:FileWrapper in value.children)
-				{
-					extension = c.file.fileBridge.extension;
-					if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
-					{
-						collection.addItem(new ResourceVO(c.file.fileBridge.name, c));
-					}
-					else if (c.file.fileBridge.isDirectory)
-					{
-						parseChildrens(c, collection, readableExtensions);
-					}
-				}
-			}
-		}
-		private static function isAcceptableResource(extension:String, readableExtensions:Array=null):Boolean
-		{
-			readableExtensions ||= ConstantsCoreVO.READABLE_FILES;
-			return readableExtensions.some(
-				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
-					return item == extension;
-				});
-		}
-		
+
 		/**
 		 * Returns menu options on current
 		 * recent opened projects
@@ -948,5 +899,73 @@ package actionScripts.utils
 			
 			return tmpValue;
 		}
-	}
+
+		public static function getConsolePath():String
+		{
+			var separator:String = model.fileCore.separator;
+            if (Settings.os == "win")
+            {
+                // in windows
+                return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
+            }
+            else
+            {
+                // in mac
+                return separator.concat("bin", separator, "bash");
+            }
+		}
+
+        public static function getMavenBinPath():String
+        {
+            var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
+            var mavenBin:String = "bin/";
+
+            if (Settings.os == "win")
+            {
+                return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
+            }
+        }
+
+        private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
+        {
+            if (!value) return;
+
+            var extension:String = value.file.fileBridge.extension;
+            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+            {
+                collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
+                return;
+            }
+
+            if ((value.children is Array) && (value.children as Array).length > 0)
+            {
+                for each (var c:FileWrapper in value.children)
+                {
+                    extension = c.file.fileBridge.extension;
+                    if (!c.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
+                    {
+                        collection.addItem(new ResourceVO(c.file.fileBridge.name, c));
+                    }
+                    else if (c.file.fileBridge.isDirectory)
+                    {
+                        parseChildrens(c, collection, readableExtensions);
+                    }
+                }
+            }
+        }
+
+        private static function isAcceptableResource(extension:String, readableExtensions:Array=null):Boolean
+        {
+            readableExtensions ||= ConstantsCoreVO.READABLE_FILES;
+            return readableExtensions.some(
+                    function isValidExtension(item:Object, index:int, arr:Array):Boolean {
+                        return item == extension;
+                    });
+        }
+
+    }
 }

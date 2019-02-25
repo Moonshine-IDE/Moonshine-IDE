@@ -39,12 +39,14 @@ package actionScripts.ui.editor.text
 
     import spark.components.TitleWindow;
     import actionScripts.valueObjects.SymbolKind;
+    import actionScripts.valueObjects.DocumentSymbol;
 
     [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager
     {
         private static const CLASSES_LIST:String = "classesList";
         private static const INTERFACES_LIST:String = "interfacesList";
+        private static const NO_PACKAGE:String = "No Package";
 
         protected var dispatcher:EventDispatcher = GlobalEventDispatcher.getInstance();
 
@@ -194,10 +196,12 @@ package actionScripts.ui.editor.text
 
         private function completeItem(completionItem:CompletionItem):void
         {
+            var isDetailValid:Boolean = completionItem.detail && completionItem.detail.indexOf("No Package") == -1;
+
             if (this.completionListType == CLASSES_LIST)
             {
                 this.superClassName = completionItem.label;
-                if (completionItem.detail)
+                if (isDetailValid)
                 {
                     this._classesImports.push(completionItem.detail);
                 }
@@ -205,7 +209,7 @@ package actionScripts.ui.editor.text
             else if (this.completionListType == INTERFACES_LIST)
             {
                 this.interfaceName = completionItem.label;
-                if (completionItem.detail)
+                if (isDetailValid)
                 {
                     this._interfacesImports.push(completionItem.detail);
                 }
@@ -247,14 +251,34 @@ package actionScripts.ui.editor.text
             completionList.closeDocumentation();
         }
 
-        private function filterClasses(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
+        private function filterClasses(item:Object, index:int, vector:Array):Boolean
         {
-            return item.kind == SymbolKind.CLASS;
+            if(item is SymbolInformation)
+            {
+                var symbolInfo:SymbolInformation = SymbolInformation(item);
+                return symbolInfo.kind == SymbolKind.CLASS;
+            }
+            if(item is DocumentSymbol)
+            {
+                var documentSymbol:DocumentSymbol = DocumentSymbol(item);
+                return documentSymbol.kind == SymbolKind.CLASS;
+            }
+            return false;
         }
 
-        private function filterInterfaces(item:SymbolInformation, index:int, vector:Vector.<SymbolInformation>):Boolean
+        private function filterInterfaces(item:Object, index:int, vector:Array):Boolean
         {
-            return item.kind == SymbolKind.INTERFACE;
+            if(item is SymbolInformation)
+            {
+                var symbolInfo:SymbolInformation = SymbolInformation(item);
+                return symbolInfo.kind == SymbolKind.INTERFACE;
+            }
+            if(item is DocumentSymbol)
+            {
+                var documentSymbol:DocumentSymbol = DocumentSymbol(item);
+                return documentSymbol.kind == SymbolKind.INTERFACE;
+            }
+            return false;
         }
 
         private function getCompletionItemType(symbolKind:int):int

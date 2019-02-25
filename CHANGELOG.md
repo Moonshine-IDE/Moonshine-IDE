@@ -6,10 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [1.16.0]
 
 ### Added
+* Defined a [Privacy Policy](http://moonshine-ide.com/privacy-policy/) for Moonshine and moonshine-ide.com.  The page is linked in the **Help** menu.
 * Visual Editor: Added **Organizer** to allow users to view the structure of the mockup and change the order or nesting of the components.
 * Visual Editor PrimeFaces: Added components [calendar](https://www.primefaces.org/showcase/ui/input/calendar.xhtml), [textEditor](https://www.primefaces.org/showcase/ui/input/textEditor.xhtml), [selectOneRadio](https://www.primefaces.org/showcase/ui/input/oneRadio.xhtml), [selectOneMenu](https://www.primefaces.org/showcase/ui/input/oneMenu.xhtml) and [selectOneListbox](https://www.primefaces.org/showcase/ui/input/listbox.xhtml).
 * Visual Editor PrimeFaces: Added CDATA information to property panel if provided through component.
+* Visual Editor PrimeFaces: Added instant preview for project files in the browser.
 * File association support for known file types.
+* Copying of files and folders from inside or outside of Moonshine, to the project sidebar.
 * New File: Added code completion for Superclass and Interfaces.
 * Java: Initial support for Java language project types, including code intelligence features.
 * Code Generation: In ActionScript and MXML, generate a getter and setter, a local variable, a member variable, or a method. When a quick fix is available at the current position in the editor, a light bulb icon will appear.
@@ -17,10 +20,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Workspace Symbols: Classes and interfaces defined in SWC files now appear in search results.
 * Go to Type Definition: New menu command to go to the definition of a variable or property's type.
 * Project Run Settings:  Added new field in Project > Settings > Run to allow launching a browser project with a custom URL.  This allows the user to open a server URL instead of a file path.
-* Visual Editor PrimeFaces: Added Undo/Redo on Copy/Paste
+* Visual Editor PrimeFaces: Added Undo/Redo on Copy/Paste.
+* Added Apache Maven support.
+* Open projects in Moonshine by double clicking on the project files (.as3proj and .veditorproj).
+* Open/Import Moonshine projects from ZIP archives.
+* Project Tree:  Allow multiple files to be selected at once to support bulk copy or delete options
 
 ### Changed
-* Updated [as3mxml](https://as3mxml.com/) engine to version 0.15.0.
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.17.2.
 * Open file/folder dialog will retain the last opened location.
 
 ### Fixed
@@ -30,11 +37,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Fixed issue where selecting a PanelGrid cell did not display its content properly in Property Editor.
 * Visual Editor PrimeFaces: Fixed issue where Copy/Paste was failing in Grid.
 * Visual Editor PrimeFaces: Fixed issue where TabView label did not update after reopening the saved file.
+* Visual Editor PrimeFaces: Fixed issue where Calendar component wasn't updated due to changes in property panel.
 * Apache Royale: Fixed issue where Moonshine could not build [MX examples](https://github.com/apache/royale-asjs/tree/develop/examples/mxroyale).
-* Search: Fixed issue with the Backward option in Find/Replace.
 * Apache Royale: Fixed issue where user could not create MXML and AS files.
+* Search: Fixed issue with the Backward option in Find/Replace.
 * Language server: Fixed issue where Java instance continued running after application exit.
 * Code Editor: Fixed issue where to used variables in CDATA section through code intelligence were added closing parentheses, used in MXML.
+* Home Screen: Fixed issue when closing and re-opening of Home screen/tab do not opens items from recent opened lists (projects, files).
+* Problems: Fixed issue where problems were not cleared from the Problems view after closing a project.
+* Code Editor: Fixed issue where package name was incorrect after file creation.
+* Java Projects: Fixed issue where opening a Java project threw an error.
+* Java Projects: Fixed issue with importing and deleting Java Projects
+* Native Extension Usage: Fixed issue where compiling project with multiple Native Extension files used only one in the process
+* Flash Browser Project: Fixed issue where Flash browser project had no option to choose and run by a browser URL
+
 
 ## Moonshine IDE [1.15.0]
 

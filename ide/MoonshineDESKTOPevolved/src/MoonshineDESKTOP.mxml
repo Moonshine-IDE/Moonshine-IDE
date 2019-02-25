@@ -67,11 +67,11 @@
 			private static const NEEDED_FOR_COMPILATION3:IFlexCoreBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION4:INativeMenuItemBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION5:IAboutBridgeImp = null;
-	        private static const NEEDED_FOR_COMPILATION6: IVisualEditorProjectBridgeImpl = null;
-	        private static const NEEDED_FOR_COMPILATION7: IClipboardBridgeImp = null;
-	        private static const NEEDED_FOR_COMPILATION8: IJavaBridgeImpl = null;
-	        private static const NEEDED_FOR_COMPILATION9: ILanguageServerBridgeImp = null;
-	        private static const NEEDED_FOR_COMPILATION10: IGroovyBridgeImpl = null;
+	        private static const NEEDED_FOR_COMPILATION6:IVisualEditorProjectBridgeImpl = null;
+	        private static const NEEDED_FOR_COMPILATION7:IClipboardBridgeImp = null;
+	        private static const NEEDED_FOR_COMPILATION8:IJavaBridgeImpl = null;
+	        private static const NEEDED_FOR_COMPILATION9:ILanguageServerBridgeImp = null;
+	        private static const NEEDED_FOR_COMPILATION10:IGroovyBridgeImpl = null;
 			
 			//--------------------------------------------------------------------------
 			//

@@ -405,7 +405,7 @@ import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
 			// in case of OSX, top menu append with a new system level menu (i.e. Moonshine) at 0th index
 			// thus, menu index for Windows what could be 0, shall be 1 in OSX
 			noCodeCompletionOptionsToMenuMapping[2 + noSDKOptionsRootIndex] = [6, 7, 8];
-			noSDKOptionsToMenuMapping[3 + noSDKOptionsRootIndex] = [2, 3, 4, 5, 6, 8];
+			noSDKOptionsToMenuMapping[3 + noSDKOptionsRootIndex] = [3, 4, 5, 6, 7, 9];
 			noSDKOptionsToMenuMapping[4 + noSDKOptionsRootIndex] = [0, 2, 3, 4];
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}

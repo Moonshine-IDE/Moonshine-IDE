@@ -126,7 +126,7 @@
 				);
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent( 
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, file) 
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [file]) 
 				);
 			}
 			

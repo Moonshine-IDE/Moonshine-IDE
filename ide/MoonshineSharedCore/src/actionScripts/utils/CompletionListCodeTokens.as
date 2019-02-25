@@ -25,5 +25,6 @@ package actionScripts.utils
         public static const XML_SELF_CLOSE_TAG:String = "</";
         public static const CDATA_OPEN:String = "<![CDATA[";
         public static const CDATA_CLOSE:String = "]]>";
+        public static const PACKAGE:String = "package ";
     }
 }

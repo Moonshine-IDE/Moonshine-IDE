@@ -20,11 +20,4 @@
 		<nature>com.adobe.flexbuilder.project.apollonature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>bin-debug</name>
-			<type>2</type>
-			<location>E:/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src/elements/swf</location>
-		</link>
-	</linkedResources>
 </projectDescription>

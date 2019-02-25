@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%" paddingLeft="15" paddingTop="15"
+		  paddingRight="15" paddingBottom="15">
+	
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.plugin.build.vo.BuildActionVO;
+		import actionScripts.plugin.settings.vo.AbstractSetting;
+		import actionScripts.plugin.settings.vo.BuildActionsListSettings;
+		import actionScripts.plugin.settings.vo.StringSetting;
+
+		import components.popup.BuildActionsSelectorPopup;
+
+		import mx.collections.ArrayList;
+
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+
+		import mx.managers.PopUpManager;
+
+		import spark.events.TextOperationEvent;
+
+		[Bindable]
+		public var setting:BuildActionsListSettings;
+		private var buildActionsSelectorPopup:BuildActionsSelectorPopup;
+
+		public function setMessage(value:String, type:String):void
+		{
+			if (!lblMessage || !value)
+			{
+				return;
+			}
+
+			lblMessage.includeInLayout = lblMessage.visible = true;
+			switch(type)
+			{
+				case AbstractSetting.MESSAGE_CRITICAL:
+					lblMessage.setStyle("color", 0xff0000);
+					break;
+				case AbstractSetting.MESSAGE_IMPORTANT:
+					lblMessage.setStyle("color", 0x0099ff);
+					break;
+				default:
+					lblMessage.setStyle("color", 0x666666);
+					break;
+			}
+
+			lblMessage.text = value;
+		}
+
+
+		private function onTextChange(event:TextOperationEvent):void
+		{
+			setting.dispatchEvent(new Event(StringSetting.VALUE_UPDATED));
+		}
+
+		private function onBtnClearClick(event:MouseEvent):void
+		{
+			setting.stringValue = "";
+			lblMessage.text = "";
+		}
+
+		private function onBtnChangeClick(event:MouseEvent):void
+		{
+			buildActionsSelectorPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, BuildActionsSelectorPopup, true) as BuildActionsSelectorPopup;
+			buildActionsSelectorPopup.addEventListener("actionSelected", onBuildActionsSelectorPopupActionSelected);
+			buildActionsSelectorPopup.addEventListener(CloseEvent.CLOSE, onBuildActionsSelectorPopupClose);
+
+			buildActionsSelectorPopup.actions = new ArrayList(setting.buildActions);
+			buildActionsSelectorPopup.selectedItem = this.getCurrentItem();
+
+			PopUpManager.centerPopUp(buildActionsSelectorPopup);
+		}
+
+		private function onBuildActionsSelectorPopupActionSelected(event:Event):void
+		{
+			if (buildActionsSelectorPopup.selectedItem)
+			{
+				setting.stringValue = buildActionsSelectorPopup.selectedItem.action;
+			}
+		}
+
+		private function onBuildActionsSelectorPopupClose(event:CloseEvent):void
+		{
+			buildActionsSelectorPopup.removeEventListener("actionSelected", onBuildActionsSelectorPopupActionSelected);
+			buildActionsSelectorPopup.removeEventListener(CloseEvent.CLOSE, onBuildActionsSelectorPopupClose);
+			buildActionsSelectorPopup = null;
+		}
+
+		public function getCurrentItem():BuildActionVO
+		{
+			for each (var item:BuildActionVO in setting.buildActions)
+			{
+				if (item.action == selectedActionValue.text)
+				{
+					return item;
+				}
+			}
+
+			return null;
+		}
+		]]>
+	</fx:Script>
+
+	<s:HGroup width="100%">
+
+		<s:Label id="lbl"
+				 styleName="uiTextSettingsLabel"
+				 text="{setting.label}"/>
+
+		<mx:Spacer width="100%"/>
+
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"
+				  click="onBtnClearClick(event)" />
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"
+				  click="onBtnChangeClick(event)" />
+	</s:HGroup>
+	<s:TextInput id="selectedActionValue"
+				 styleName="uiTextSettingsValue"
+				 height="100%" width="100%"
+				 textAlign="left"
+				 borderVisible="false"
+				 contentBackgroundAlpha="1"
+				 unfocusedTextSelectionColor="#a8c6ee"
+				 focusAlpha="0"
+				 change="onTextChange(event)"
+				 contentBackgroundColor="#FFFFFF"
+				 text="@{setting.stringValue}"/>
+	<s:Label id="lblMessage"
+			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
+			 fontSize="12" includeInLayout="false" visible="false" paddingLeft="15"/>
+</s:VGroup>

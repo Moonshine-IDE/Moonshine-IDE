@@ -82,7 +82,7 @@ package actionScripts.plugins.swflauncher.launchers
 			if (!ConstantsCoreVO.IS_MACOS && windowsAutoJavaLocation) executableFile = windowsAutoJavaLocation;
 			else 
 			{
-				var tmpExecutableJava:FileLocation = UtilsCore.getJavaPath();
+				var tmpExecutableJava:FileLocation = UtilsCore.getExecutableJavaLocation();
 				if (tmpExecutableJava) executableFile = tmpExecutableJava.fileBridge.getFile as File;
 				if (!ConstantsCoreVO.IS_MACOS && !windowsAutoJavaLocation) windowsAutoJavaLocation = executableFile;
 			}

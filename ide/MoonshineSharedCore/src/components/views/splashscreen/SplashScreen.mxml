@@ -165,7 +165,7 @@
 					else
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(
-							new OpenFileEvent(OpenFileEvent.OPEN_FILE, recentOpenedProjectObject as FileLocation)
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, [recentOpenedProjectObject as FileLocation])
 						);
 					}
 				}

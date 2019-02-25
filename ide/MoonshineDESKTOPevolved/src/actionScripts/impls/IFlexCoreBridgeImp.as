@@ -19,6 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+    import actionScripts.events.MavenBuildEvent;
+    import actionScripts.events.PreviewPluginEvent;
+    import actionScripts.plugins.maven.MavenBuildPlugin;
+
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -29,13 +33,11 @@ package actionScripts.impls
     import mx.controls.HTML;
     import mx.core.FlexGlobals;
     import mx.core.IFlexDisplayObject;
-    import mx.core.IVisualElement;
     import mx.resources.IResourceManager;
     import mx.resources.ResourceManager;
     
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
-    import actionScripts.events.LanguageServerEvent;
     import actionScripts.events.LanguageServerMenuEvent;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
@@ -83,10 +85,12 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
-    import actionScripts.plugins.fileAssociation.FileAssociationPlugin;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
     import actionScripts.plugins.help.view.events.VisualEditorEvent;
+    import actionScripts.plugins.maven.MavenBuildPlugin;
+    import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
+    import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
@@ -105,14 +109,13 @@ package actionScripts.impls
     import actionScripts.utils.SoftwareVersionChecker;
     import actionScripts.utils.Untar;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.Settings;
     
     import components.containers.DownloadNewFlexSDK;
     import components.popup.DefineFolderAccessPopup;
-    import components.popup.SoftwareInformation;
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
+    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
@@ -169,7 +172,7 @@ package actionScripts.impls
 		{
 			return (new TourDeFlexContentsView);
 		}
-		
+
 		public function getTourDeEditor(swfSource:String):BasicTextEditor
 		{
 			return (new TourDeTextEditor(swfSource));
@@ -189,12 +192,15 @@ package actionScripts.impls
 				ConsolePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
+				MavenBuildPlugin,
+				PreviewPrimeFacesProjectPlugin,
 				SearchPlugin,
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
+				FilesCopyPlugin,
 				UncaughtErrorsPlugin
 			];
 		}
@@ -232,9 +238,9 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
+			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin];
+					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -321,6 +327,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
+					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
 						new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), null, [ProjectMenuTypes.VISUAL_EDITOR_FLEX], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX),
@@ -339,7 +346,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_RUN_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT),
 					new MenuItem(resourceManager.getString('resources','BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_RELEASE),
 					new MenuItem(resourceManager.getString('resources','CLEAN_PROJECT'), null,  [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CLEAN_PROJECT),
-					new MenuItem("Build with Apache Ant®", null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD)
+					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], AntBuildPlugin.SELECTED_PROJECT_ANTBUILD),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'STOP_PREVIEW'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,
@@ -355,9 +364,6 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.TERMINATE_EXECUTION,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
-				]),
-				new MenuItem(resourceManager.getString('resources','ANT'), [
-					new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
@@ -379,15 +385,14 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST)
 				]),
 				new MenuItem("Others", [
-					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER)
+					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER),
+                    new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
 				]),
-				new MenuItem("Help", Settings.os == "win"? [ 
-					new MenuItem('About', null, null, MenuPlugin.EVENT_ABOUT),
-					new MenuItem('Useful Links', null, null, HelpPlugin.EVENT_AS3DOCS),
-					new MenuItem('Tour De Flex', null, null, HelpPlugin.EVENT_TOURDEFLEX)]:
-					[new MenuItem('Useful Links', null, null, HelpPlugin.EVENT_AS3DOCS),
-						new MenuItem('Tour De Flex', null, null, HelpPlugin.EVENT_TOURDEFLEX)
-					])
+				new MenuItem(resourceManager.getString('resources', 'HELP'), [
+					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
+					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
+                    new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY)])
 			]);
 			
 			// adding in-projet search for desktop only
@@ -434,11 +439,6 @@ package actionScripts.impls
 		public function getSDKInstallerView():IFlexDisplayObject
 		{
 			return (new DownloadNewFlexSDK);
-		}
-		
-		public function getSoftwareInformationView():IVisualElement
-		{
-			return (new SoftwareInformation());
 		}
 		
 		public function getJavaPath(completionHandler:Function):void

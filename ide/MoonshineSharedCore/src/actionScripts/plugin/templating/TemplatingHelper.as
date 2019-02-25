@@ -77,11 +77,20 @@ package actionScripts.plugin.templating
 				{
 					template = (FileLocation(file).fileBridge.name.indexOf(".template") > -1);
 					
-					if (ConstantsCoreVO.IS_AIR) newFile = toDir.resolvePath(templatedFileName(file as FileLocation));
+					if (ConstantsCoreVO.IS_AIR)
+					{
+						newFile = toDir.resolvePath(templatedFileName(file as FileLocation));
+                    }
 					try
 					{
-						if (template) file.fileBridge.copyFileTemplate(newFile, templatingData);
-						else copyFileContents(file as FileLocation, newFile);
+						if (template)
+						{
+							file.fileBridge.copyFileTemplate(newFile, templatingData);
+                        }
+						else
+						{
+							copyFileContents(file as FileLocation, newFile);
+                        }
 					} catch(e:Error){}
 				}
 			}

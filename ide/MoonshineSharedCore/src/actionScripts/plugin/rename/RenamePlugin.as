@@ -46,10 +46,8 @@ package actionScripts.plugin.rename
 	import actionScripts.utils.CustomTree;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.utils.applyTextEditsToFile;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectReferenceVO;
-	import actionScripts.valueObjects.TextEdit;
 
 	import components.popup.RenamePopup;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
@@ -75,7 +73,6 @@ package actionScripts.plugin.rename
 		{
 			super.activate();
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
-			dispatcher.addEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.addEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 			dispatcher.addEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
@@ -84,7 +81,6 @@ package actionScripts.plugin.rename
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW, handleOpenRenameView);
-			dispatcher.removeEventListener(RenameEvent.EVENT_APPLY_RENAME, applyRenameHandler);
 			dispatcher.removeEventListener(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, handleOpenRenameFileView);
 			dispatcher.removeEventListener(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, handleOpenDuplicateFileView);
 		}
@@ -117,25 +113,6 @@ package actionScripts.plugin.rename
 			
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
 				this._startChar, this._line, this._endChar, this._line, renameView.newName));
-		}
-		
-		private function applyRenameHandler(event:RenameEvent):void
-		{
-			var changes:Object = event.changes;
-			var fileCount:int = 0;
-			for(var key:String in changes)
-			{
-				fileCount++;
-				//the key is the file path, the value is a list of TextEdits
-				var file:FileLocation = new FileLocation(key, true);
-				var changesInFile:Vector.<TextEdit> = changes[key] as Vector.<TextEdit>;
-				applyTextEditsToFile(file, changesInFile);
-			}
-			
-			if (fileCount === 0)
-			{
-				Alert.show("Could not rename symbol.", "Rename symbol", Alert.OK, renameView);
-			}
 		}
 		
 		private function handleOpenRenameFileView(event:RenameEvent):void
@@ -211,7 +188,7 @@ package actionScripts.plugin.rename
 				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(event.fileWrapper));
 				newFilePopup.wrapperOfFolderLocation = creatingItemIn;
 				newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
-				
+
 				PopUpManager.centerPopUp(newFilePopup);
 			}
 		}
@@ -279,28 +256,33 @@ package actionScripts.plugin.rename
 					// do not update package path if not inside source directory
 					if (isInsideSourceDirectory)
 					{
-						var tmpPackagePath:String = UtilsCore.getPackageReferenceByProjectPath(project.sourceFolder.fileBridge.nativePath, projectRef.nativePath, null, null, false);
-						if (tmpPackagePath.charAt(0) == ".") tmpPackagePath = tmpPackagePath.substr(1, tmpPackagePath.length);
+						var tmpPackagePath:String = UtilsCore.getPackageReferenceByProjectPath(Vector.<FileLocation>([project.sourceFolder]), projectRef.nativePath, null, null, false);
+						if (tmpPackagePath.charAt(0) == ".")
+						{
+							tmpPackagePath = tmpPackagePath.substr(1, tmpPackagePath.length);
+						}
 						
 						return "package "+ tmpPackagePath;
 					}
 				}
-				
-				if (!isClassDecFound && (classNameStartIndex = line.indexOf(" class "+ sourceFileName)) !== -1)
+
+                classNameStartIndex = line.indexOf(" class "+ sourceFileName);
+				if (!isClassDecFound && classNameStartIndex !== -1)
 				{
 					isClassDecFound = true;
 					return line.substr(0, classNameStartIndex + 7) + newFileName + line.substr(classNameStartIndex + 7 + sourceFileName.length, line.length);
 				}
-				
-				if (!isConstructorFound && (classNameStartIndex = line.indexOf(" function "+ sourceFileName +"(")) !== -1)
+
+                classNameStartIndex = line.indexOf(" function "+ sourceFileName +"(");
+				if (!isConstructorFound && classNameStartIndex !== -1)
 				{
 					isConstructorFound = true;
 					return line.substr(0, classNameStartIndex + 10) + newFileName + line.substr(classNameStartIndex + 10 + sourceFileName.length, line.length);
 				}
-				
+
 				return line;
 			});
-			
+
 			return sourceContentLines.join("\n");
 		}
 		

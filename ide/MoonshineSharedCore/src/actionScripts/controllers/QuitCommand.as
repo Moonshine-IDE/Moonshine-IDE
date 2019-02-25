@@ -19,6 +19,7 @@
 package actionScripts.controllers
 {
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.PreviewPluginEvent;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -96,8 +97,8 @@ package actionScripts.controllers
 
 		private function internalExecute(event:Event = null):void
 		{
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, null));
 			dispatcher.dispatchEvent(new ApplicationEvent(ApplicationEvent.APPLICATION_EXIT));
-			
             var editors:ArrayCollection = model.editors;
 
             var editorsToClose:Array = [];

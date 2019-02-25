@@ -19,12 +19,12 @@
 package actionScripts.plugin.help
 {
 	import flash.events.Event;
-	
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+
 	import mx.core.IFlexDisplayObject;
 	
 	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.help.view.AS3DocsView;
@@ -34,6 +34,8 @@ package actionScripts.plugin.help
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
+import mx.resources.ResourceManager;
+
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
 		public static const EVENT_TOURDEFLEX:String = "EVENT_TOURDEFLEX";
@@ -42,14 +44,13 @@ package actionScripts.plugin.help
 		public static const EVENT_CHECK_MINIMUM_SDK_REQUIREMENT:String = "EVENT_CHECK_MINIMUM_SDK_REQUIREMENT";
 		public static const EVENT_APACHE_SDK_DOWNLOADER_REQUEST:String = "EVENT_APACHE_SDK_DOWNLOADER_REQUEST";
 		public static const EVENT_ENSURE_JAVA_PATH:String = "EVENT_ENSURE_JAVA_PATH";
+		public static const EVENT_PRIVACY_POLICY:String = "EVENT_PRIVACY_POLICY";
 		
 		override public function get name():String			{ return "Help Plugin"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "Help Plugin. Esc exits."; }
-		
+
 		private var tourdeContentView: IPanelWindow;
-		private var idemodel:IDEModel = IDEModel.getInstance();
-		private var as3DocsPanel:IPanelWindow = new AS3DocsView();
 
 		override public function activate():void
 		{
@@ -57,23 +58,24 @@ package actionScripts.plugin.help
 			
 			if (ConstantsCoreVO.IS_AIR) dispatcher.addEventListener(EVENT_TOURDEFLEX, handleTourDeFlexConfigure);
 			
-			dispatcher.addEventListener(EVENT_ABOUT, handleAboutShow);
-			dispatcher.addEventListener(EVENT_AS3DOCS, handleAS3DocsShow);
-			dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleTreeRefresh);
+			dispatcher.addEventListener(EVENT_ABOUT, abouthShowHandler);
+			dispatcher.addEventListener(EVENT_AS3DOCS, as3DocHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, tabClosedHandler);
+			dispatcher.addEventListener(EVENT_PRIVACY_POLICY, privacyPolicyHandler);
 		}
-		
+
 		protected function handleTourDeFlexConfigure(event:Event):void
 		{
-			tourdeContentView = idemodel.flexCore.getTourDeView();
+            tourdeContentView = model.flexCore.getTourDeView();
 			LayoutModifier.addToSidebar(tourdeContentView, event);
 		}
 		
-		protected function handleAS3DocsShow(event:Event):void
+		protected function as3DocHandler(event:Event):void
 		{
-			LayoutModifier.addToSidebar(as3DocsPanel, event);
+			LayoutModifier.addToSidebar(new AS3DocsView(), event);
 		}
 		
-		protected function handleAboutShow(event:Event):void
+		protected function abouthShowHandler(event:Event):void
 		{
 			// Show About Panel in Tab
 			for each (var tab:IContentWindow in model.editors)
@@ -86,12 +88,10 @@ package actionScripts.plugin.help
 			}
 			
 			var aboutScreen: IFlexDisplayObject = model.aboutCore.getNewAbout(null);
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new AddTabEvent(aboutScreen as IContentWindow)
-			);
+			dispatcher.dispatchEvent(new AddTabEvent(aboutScreen as IContentWindow));
 		}
 		
-		private function handleTreeRefresh(event:Event):void
+		private function tabClosedHandler(event:Event):void
 		{
 			if (event is CloseTabEvent)
 			{
@@ -99,37 +99,11 @@ package actionScripts.plugin.help
 				if (!tmpEvent.tab || (tmpEvent.tab is IPanelWindow)) Object(tourdeContentView).refresh();
 			}
 		}
-		
-		/**
-		 * In case of Windows we'll open
-		 * integrated SDK Downloader view
-		 */
-		private function onApacheSDKDownloader(event:Event):void
+
+        private function privacyPolicyHandler(event:Event):void
 		{
-			if (!model.sdkInstallerView)
-			{
-				model.sdkInstallerView = model.flexCore.getSDKInstallerView();
-				Object(model.sdkInstallerView).requestedSDKDownloadVersion = ConstantsCoreVO.REQUIRED_FLEXJS_SDK_VERION_MINIMUM;
-				model.sdkInstallerView.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed, false, 0, true);
-			}
-			else
-			{
-				model.activeEditor = (model.sdkInstallerView as IContentWindow);
-				return;
-			}
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new AddTabEvent(model.sdkInstallerView as IContentWindow)
-			);
-		}
-		
-		/**
-		 * On SDK Downloader view closed
-		 */
-		private function onDefineSDKClosed(event:Event):void
-		{
-			model.sdkInstallerView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
-			model.sdkInstallerView = null;
-		}
+			var url:String = ResourceManager.getInstance().getString('resources', 'PRIVACY_POLICY_URL');
+			navigateToURL(new URLRequest(url));
+        }
 	}
 }

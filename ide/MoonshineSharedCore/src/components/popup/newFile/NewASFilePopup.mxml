@@ -92,13 +92,9 @@
 				var attributes:AS3ClassAttributes = new AS3ClassAttributes();
 				attributes.modifierA = String(rgModifiersA.selectedValue);
 				attributes.extendsClassInterface = txtSuperclass.text;
-
-				if (!isInterfaceDialog)
-				{
-					attributes.implementsInterface = txtInterfaces.text;
-					attributes.modifierB = cbDynamic.selected ? "dynamic" : "";
-					attributes.modifierC = cbFinal.selected ? "final" : "";
-				}
+				attributes.implementsInterface = txtInterfaces.text;
+				attributes.modifierB = cbDynamic.selected ? "dynamic" : "";
+				attributes.modifierC = cbFinal.selected ? "final" : "";
 
 				attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
 
@@ -161,7 +157,9 @@
 
 		protected function onTreeItemClicked(event:ListEvent):void
 		{
-			txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(tree.selectedItem.projectReference.path, tree.selectedItem.nativePath);
+			txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+					Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+					tree.selectedItem.nativePath);
 
 			// re-validate upon folder location change
 			wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
@@ -296,14 +294,14 @@
 						includeInLayout="{!isInterfaceDialog}" visible="{!isInterfaceDialog}"/>
 		</s:TileGroup>
 	</s:VGroup>
-	<s:VGroup width="100%">
-		<s:Label text="{isInterfaceDialog ? 'Interfaces:' : 'Superclass:'}"/>
+	<s:VGroup width="100%" visible="{!isInterfaceDialog}" includeInLayout="{!isInterfaceDialog}">
+		<s:Label text="Superclass:"/>
 		<view:PromptTextInput id="txtSuperclass"
-							  prompt="{isInterfaceDialog ? 'Interfaces to extend with' : 'Class to extend with'}"
+							  prompt="Class to extend with"
 							  width="100%" styleName="textInput" change="onTxtSuperClassChange(event)"
 							  text="{newAsFileCompletionManager.superClassName}"/>
 	</s:VGroup>
-	<s:VGroup width="100%" visible="{!isInterfaceDialog}" includeInLayout="{!isInterfaceDialog}">
+	<s:VGroup width="100%">
 		<s:Label text="Interfaces:"/>
 		<view:PromptTextInput id="txtInterfaces"
 							  prompt="Interface to extend with" width="100%" styleName="textInput"

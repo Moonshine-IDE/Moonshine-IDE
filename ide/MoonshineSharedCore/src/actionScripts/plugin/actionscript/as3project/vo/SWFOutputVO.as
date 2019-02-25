@@ -21,7 +21,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.utils.SDKUtils;
-	import actionScripts.utils.TextUtil;
+    import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 
 	public class SWFOutputVO 
@@ -58,7 +59,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function parse(output:XMLList, project:AS3ProjectVO):void 
 		{
 			var params:XMLList = output.movie;
-			disabled = UtilsCore.deserializeBoolean(params.@disabled);
+			disabled = SerializeUtil.deserializeBoolean(params.@disabled);
 			path = project.folderLocation.resolvePath(UtilsCore.fixSlashes(params.@path));
 			frameRate = Number(params.@fps);
 			width = int(params.@width);
@@ -104,7 +105,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (!pathStr) pathStr = path.fileBridge.nativePath;
 			
 			var outputPairs:Object = {
-				'disabled'	: 	UtilsCore.serializeBoolean(disabled),
+				'disabled'	: 	SerializeUtil.serializeBoolean(disabled),
 				'fps'		:	frameRate,
 				'path'		:	pathStr,
 				'width'		:	width,
@@ -115,7 +116,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				'platform'	:	platform
 			}
 			
-			output.appendChild(UtilsCore.serializePairs(outputPairs, <movie/>));
+			output.appendChild(SerializeUtil.serializePairs(outputPairs, <movie/>));
 				
 			return output;
 		}

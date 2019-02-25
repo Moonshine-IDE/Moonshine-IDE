@@ -287,11 +287,17 @@ package visualEditor.plugin
 
         private function copyPrimeFacesPom(destination:FileLocation):void
         {
-            var pomForCopy:FileLocation = destination.fileBridge.resolvePath("pom.xml");
-            if (pomForCopy.fileBridge.exists && _exportedProject.isExportedToExistingSource) return;
+            if (_exportedProject.isExportedToExistingSource) return;
 
             var currentFolder:FileLocation = _currentProject.folderLocation;
             var projectPom:FileLocation = currentFolder.fileBridge.resolvePath("pom.xml");
+            
+            var pomForCopy:FileLocation = destination.fileBridge.resolvePath("pom.xml");
+            if (!pomForCopy.fileBridge.exists)
+            {
+                projectPom.fileBridge.copyTo(pomForCopy, true);
+                return;
+            }
 
             XML.ignoreWhitespace = true;
             XML.ignoreComments = true;

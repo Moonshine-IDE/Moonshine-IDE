@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%"
+	paddingLeft="15"
+	paddingTop="15"
+	paddingRight="15"
+	paddingBottom="15"
+	creationComplete="onProjectDirectoryPathRendererCreationComplete(event)">
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
+
+		import mx.collections.ArrayCollection;
+		import mx.events.FlexEvent;
+		import mx.utils.ObjectUtil;
+
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.settings.vo.AbstractSetting;
+
+		[Bindable]
+		public var setting:ProjectDirectoryPathSetting;
+		[Bindable]
+		public var historyPaths:ArrayCollection;
+
+		[Bindable]
+		private var model:IDEModel = IDEModel.getInstance();
+
+		private var message:String;
+		private var messageType:String;
+
+		public function setMessage(value:String, type:String):void
+		{
+			this.message = value;
+			this.messageType = type;
+
+			if (!lblMessage || !this.message)
+			{
+				return;
+			}
+
+			lblMessage.includeInLayout = lblMessage.visible = true;
+			if (historyPaths && historyPaths.length == 0)
+			{
+				value = "Select path to continue";
+				type = AbstractSetting.MESSAGE_CRITICAL;
+			}
+
+			switch (type)
+			{
+				case AbstractSetting.MESSAGE_CRITICAL:
+					lblMessage.setStyle("color", 0xff0000);
+					break;
+				case AbstractSetting.MESSAGE_IMPORTANT:
+					lblMessage.setStyle("color", 0x0099ff);
+					break;
+				default:
+					lblMessage.setStyle("color", 0x666666);
+					break;
+			}
+
+			lblMessage.text = value;
+		}
+
+		private function onBrowserForDirectory(fileDir:Object):void
+		{
+			setting.stringValue = fileDir.nativePath;
+			historyPaths.addItem(setting.stringValue);
+
+			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+		}
+
+		private function onChangePathClick(event:MouseEvent):void
+		{
+			var startFromLocation:String = setting.provider[setting.name] ?
+					                       setting.provider[setting.name] :
+					                       setting.projectDirectoryPath;
+			model.fileCore.browseForDirectory("Select directory", onBrowserForDirectory, null, startFromLocation);
+		}
+
+		private function onClearPathClick(event:MouseEvent):void
+		{
+			setting.stringValue = "";
+			lblMessage.text = "";
+		}
+
+		private function onProjectDirectoryPathRendererCreationComplete(event:FlexEvent):void
+		{
+			historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0)
+			{
+				historyPaths.addItem(setting.provider[setting.name]);
+			}
+
+			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+
+			setMessage(this.message, this.messageType);
+		}
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="{setting.label}" />
+		
+		<mx:Spacer width="100%"/>
+		
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"
+				  click="onClearPathClick(event)" />
+		
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"
+				  click="onChangePathClick(event)" />
+	</s:HGroup>
+	<s:Label id="lblValue"
+			 styleName="uiTextSettingsValue"
+			 paddingTop="10" width="98%"
+			 text="{setting.stringValue? setting.stringValue : 'Not Set' }" />
+	<s:Label id="lblMessage" 
+			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
+			 fontSize="12" includeInLayout="false" visible="false"/>
+</s:VGroup>

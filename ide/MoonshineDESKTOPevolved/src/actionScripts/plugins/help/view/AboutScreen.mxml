@@ -32,7 +32,9 @@
 	</s:layout>
 	<fx:Script>
 		<![CDATA[
-			import mx.core.FlexGlobals;
+		import components.popup.SoftwareInformation;
+
+		import mx.core.FlexGlobals;
 			import mx.core.IVisualElement;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
@@ -72,7 +74,7 @@
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
 				vgVersionContainer.removeAllElements();
-				softwareInformation = IDEModel.getInstance().flexCore.getSoftwareInformationView();
+				softwareInformation = new SoftwareInformation();
 				softwareInformation.percentWidth = 94;
 				softwareInformation.horizontalCenter = 0;
 				vgVersionContainer.addElement(softwareInformation);
@@ -111,6 +113,6 @@
 	<s:VGroup id="vgVersionContainer" />
 	<s:Label text="About the background image"
 			 buttonMode="true"
-			 creationComplete="event.target.setStyle('textDecoration', 'underline')"
+			 textDecoration="underline"
 			 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
 </s:BorderContainer>

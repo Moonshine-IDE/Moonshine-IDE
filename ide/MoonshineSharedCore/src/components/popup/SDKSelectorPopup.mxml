@@ -126,9 +126,9 @@
 				rowHeight="28" doubleClick="onEntryDoubleClicked(event)" horizontalScrollPolicy="off">
 		<s:columns>
 			<s:ArrayList>
-				<s:GridColumn headerText="Description" dataField="name" minWidth="295"/>
-				<s:GridColumn headerText="Path" dataField="path" maxWidth="210"/>
-				<s:GridColumn headerText="" dataField="status" minWidth="60"/>
+				<s:GridColumn headerText="Description" dataField="name" dataTipField="name" minWidth="295"/>
+				<s:GridColumn headerText="Path" dataField="path" dataTipField="path" minWidth="200"/>
+				<s:GridColumn headerText="" dataField="status" dataTipField="status" minWidth="60"/>
 			</s:ArrayList>
 		</s:columns>
 	</s:DataGrid>

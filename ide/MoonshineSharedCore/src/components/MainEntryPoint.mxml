@@ -27,7 +27,7 @@
 		 preinitialize="onPreInit()" initialize="onInit()" addedToStage="onAddedToStage()">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+		import mx.events.FlexEvent;
 			
 			import actionScripts.factory.BridgeFactory;
 			import actionScripts.locator.IDEController;

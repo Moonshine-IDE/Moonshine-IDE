@@ -37,7 +37,7 @@
 	<!-- <description></description> -->
 
 	<!-- Copyright information. Optional -->
-	<copyright>Copyright 2018 Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0. No warranty of merchantability or fitness of any kind. Use this software at your own risk.</copyright>
+	<copyright>Copyright 2019 Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0. No warranty of merchantability or fitness of any kind. Use this software at your own risk.</copyright>
 
 	<!-- Publisher ID. Used if you're updating an application created prior to 1.5.3 -->
 	<!-- <publisherID></publisherID> -->
@@ -246,6 +246,18 @@
 			<description>Moonshine AwayBuilder File</description>
 			<contentType>application/octet-stream</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.1.File</name>
+			<extension>as3proj</extension>
+			<description>Moonshine Project Configuration File 1</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.2.File</name>
+			<extension>veditorproj</extension>
+			<description>Moonshine Project Configuration File 2</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
@@ -309,9 +321,9 @@
         <!-- Indicates if the app contains video or not. Necessary for ordering of video planes with graphics plane, especially in Jellybean - if you app does video this must be set to true - valid values are true or false -->
         <!-- <containsVideo></containsVideo> -->
     <!-- </android> -->
-	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file -->
+	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file
 
-	
+	-->
 	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>
 
 </application>

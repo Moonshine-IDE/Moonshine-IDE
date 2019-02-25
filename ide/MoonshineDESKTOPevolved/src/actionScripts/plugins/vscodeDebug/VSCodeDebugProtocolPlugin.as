@@ -95,6 +95,7 @@ package actionScripts.plugins.vscodeDebug
 		private static const EVENT_TERMINATED:String = "terminated";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const OUTPUT_CATEGORY_STDERR:String = "stderr";
+		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
 		
 		override public function get name():String 			{ return "VSCode Debug Protocol Plugin"; }
 		override public function get author():String 		{ return "Moonshine Project Team"; }
@@ -599,7 +600,7 @@ package actionScripts.plugins.vscodeDebug
 			var line:int = stackFrame.line - 1;
 			var character:int = stackFrame.column;
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.TRACE_LINE,
-				new FileLocation(filePath), line);
+				[new FileLocation(filePath)], line);
 			openEvent.atChar = character;
 			dispatcher.dispatchEvent(openEvent);
 			
@@ -939,7 +940,7 @@ package actionScripts.plugins.vscodeDebug
 			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
 			processArgs.push("-Dworkspace=" + _currentProject.folderLocation.fileBridge.nativePath);
 			processArgs.push("-cp");
-			var cp:String = File.applicationDirectory.resolvePath("elements/*").nativePath;
+			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
 			if (Settings.os == "win")
 			{
 				cp += ";"
