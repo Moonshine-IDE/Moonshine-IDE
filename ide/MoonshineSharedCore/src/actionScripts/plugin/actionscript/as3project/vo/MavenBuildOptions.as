@@ -7,8 +7,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 
     public class MavenBuildOptions
     {
-        public static var defaultOptions:MavenBuildOptions = new MavenBuildOptions(null);
-
         private var _defaultMavenBuildPath:String;
         private var _buildActions:Array;
 
