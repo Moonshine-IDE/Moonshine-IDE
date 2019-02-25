@@ -33,6 +33,12 @@ package actionScripts.plugin.java.javaproject.vo
 			return pomFile.fileBridge.exists;
 		}
 
+		public function hasGradleBuild():Boolean
+		{
+			var gradleFile:FileLocation = projectFolder.file.fileBridge.resolvePath("build.gradle");
+			return gradleFile.fileBridge.exists;
+		}
+
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
 			var settings:Vector.<SettingsWrapper> = getJavaSettings();
