@@ -19,10 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import actionScripts.events.MavenBuildEvent;
-    import actionScripts.events.PreviewPluginEvent;
-    import actionScripts.plugins.maven.MavenBuildPlugin;
-
     import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
@@ -39,7 +35,9 @@ package actionScripts.impls
     import actionScripts.events.ChangeLineEncodingEvent;
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.LanguageServerMenuEvent;
+    import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
@@ -97,6 +95,7 @@ package actionScripts.impls
     import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;
     import actionScripts.plugins.ui.editor.TourDeTextEditor;
+    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
     import actionScripts.ui.IPanelWindow;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -115,7 +114,6 @@ package actionScripts.impls
     
     import visualEditor.plugin.ExportToFlexPlugin;
     import visualEditor.plugin.ExportToPrimeFacesPlugin;
-    import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
@@ -290,7 +288,7 @@ package actionScripts.impls
 					])
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
-					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], FindReplacePlugin.EVENT_FIND_NEXT,
+					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
