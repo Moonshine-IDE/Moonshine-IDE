@@ -279,6 +279,8 @@ package actionScripts.plugins.visualEditor
 
         private function stopVisualEditorPreviewHandler(event:Event):void
         {
+            if (!currentProject) return;
+
             stop(true);
         }
 
