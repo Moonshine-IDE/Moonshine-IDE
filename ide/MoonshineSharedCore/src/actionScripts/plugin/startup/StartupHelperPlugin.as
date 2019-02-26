@@ -246,7 +246,7 @@ package actionScripts.plugin.startup
 			clearTimeout(javaSetupPathTimeout);
 			javaSetupPathTimeout = 0;
 			
-			ccNotificationView = new JavaPathSetupPopup;
+			ccNotificationView = new JavaPathSetupPopup();
 			ccNotificationView.showAsRequiresSDKNotification = showAsRequiresSDKNotif;
 			ccNotificationView.horizontalCenter = ccNotificationView.verticalCenter = 0;
 			ccNotificationView.addEventListener(Event.CLOSE, onJavaPromptClosed, false, 0, true);
