@@ -925,8 +925,9 @@ package actionScripts.utils
 			
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
             var mavenBin:String = "bin/";
-
-            if (Settings.os == "win")
+			
+			if (!mavenLocation.fileBridge.exists) return null;
+			else if (Settings.os == "win")
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
@@ -971,11 +972,21 @@ package actionScripts.utils
 		
 		public static function isSVNPresent():Boolean
 		{
+			if (model.svnPath)
+			{
+				return (new FileLocation(model.svnPath).fileBridge.exists);
+			}
+			
 			return false;
 		}
 		
 		public static function isGitPresent():Boolean
 		{
+			if (model.gitPath)
+			{
+				return (new FileLocation(model.gitPath).fileBridge.exists);
+			}
+			
 			return false;
 		}
 

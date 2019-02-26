@@ -68,12 +68,12 @@ package actionScripts.impls
 		
 		public function isSVNPresent():Boolean
 		{
-			return false;
+			return UtilsCore.isSVNPresent();
 		}
 		
 		public function isGitPresent():Boolean
 		{
-			return false;	
+			return UtilsCore.isGitPresent();	
 		}
 	}
 }
