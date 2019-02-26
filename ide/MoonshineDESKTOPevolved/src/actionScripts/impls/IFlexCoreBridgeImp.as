@@ -239,7 +239,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

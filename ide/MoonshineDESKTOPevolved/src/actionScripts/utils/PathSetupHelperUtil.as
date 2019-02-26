@@ -19,6 +19,7 @@
 package actionScripts.utils
 {
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
@@ -31,6 +32,35 @@ package actionScripts.utils
 	{
 		private static var model:IDEModel = IDEModel.getInstance();
 		private static var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		
+		public static function openSettingsViewFor(type:String):void
+		{
+			var pluginClass:String;
+			switch (type)
+			{
+				case SDKTypes.FLEX:
+				case SDKTypes.ROYALE:
+				case SDKTypes.FLEXJS:
+				case SDKTypes.FEATHERS:
+				case SDKTypes.OPENJAVA:
+					pluginClass = "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin";
+					break;
+				case SDKTypes.ANT:
+					pluginClass = "actionScripts.plugins.ant::AntBuildPlugin";
+					break;
+				case SDKTypes.GIT:
+					pluginClass = "actionScripts.plugins.git::GitHubPlugin";
+					break;
+				case SDKTypes.MAVEN:
+					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
+					break;
+				case SDKTypes.SVN:
+					pluginClass = "actionScripts.plugins.svn::SVNPlugin";
+					break;
+			}
+			
+			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
+		}
 		
 		public static function updateFieldPath(type:String, path:String):void
 		{

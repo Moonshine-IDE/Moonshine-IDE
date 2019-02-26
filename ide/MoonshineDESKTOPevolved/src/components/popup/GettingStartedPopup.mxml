@@ -33,7 +33,6 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.HelperEvent;
-			import actionScripts.events.SettingsEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
@@ -131,8 +130,8 @@
 			
 			private function onOpenSettings(event:HelperEvent):void
 			{
-				// TODO: need to open by section in future
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS));
+				var component:ComponentVO = event.value as ComponentVO;
+				PathSetupHelperUtil.openSettingsViewFor(component.type);
 			}
 			
 			private function onAnyComponentDownloaded(event:HelperEvent):void

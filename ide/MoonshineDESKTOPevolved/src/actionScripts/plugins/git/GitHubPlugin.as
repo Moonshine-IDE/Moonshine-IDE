@@ -168,7 +168,7 @@ package actionScripts.plugins.git
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'gitBinaryPathOSX', 'macOS Git Path', true, gitBinaryPathOSX, true)
+				new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', true, gitBinaryPathOSX, false)
 			]);
 		}
 		
