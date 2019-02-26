@@ -1,7 +1,5 @@
 package actionScripts.plugin.java.javaproject
 {
-	import actionScripts.utils.MavenPomUtil;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;

@@ -90,6 +90,7 @@ package actionScripts.languageServer
 		private static const FIELD_ID:String = "id";
 		private static const FIELD_COMMAND:String = "command";
 		private static const FIELD_CHANGES:String = "changes";
+		private static const FIELD_DOCUMENT_CHANGES:String = "documentChanges";
 		private static const FIELD_CONTENTS:String = "contents";
 		private static const FIELD_SIGNATURES:String = "signatures";
 		private static const FIELD_ITEMS:String = "items";
@@ -836,6 +837,10 @@ package actionScripts.languageServer
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
 					handleHoverResponse(result);
+				}
+				else if(result && FIELD_DOCUMENT_CHANGES in result) //rename
+				{
+					handleRenameResponse(result);
 				}
 				else if(result && FIELD_CHANGES in result) //rename
 				{

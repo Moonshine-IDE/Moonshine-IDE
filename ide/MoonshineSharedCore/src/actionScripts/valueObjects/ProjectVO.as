@@ -91,14 +91,25 @@ package actionScripts.valueObjects
 			}
 		}
 		
-		[Bindable] public function get projectFolder():FileWrapper
+		[Bindable(event="projectFolderChanged")]
+		public function get projectFolder():FileWrapper
 		{
-			if (ConstantsCoreVO.IS_AIR && (!_projectFolder || _projectFolder.file.fileBridge.nativePath != folderLocation.fileBridge.nativePath)) _projectFolder = new FileWrapper(folderLocation, true, projectReference, shallUpdateToTreeView);
+			if (ConstantsCoreVO.IS_AIR && (!_projectFolder ||
+				_projectFolder.file.fileBridge.nativePath != folderLocation.fileBridge.nativePath))
+			{
+				_projectFolder = new FileWrapper(folderLocation, true, projectReference, shallUpdateToTreeView);
+			}
+
 			return _projectFolder;
 		}
+
 		public function set projectFolder(value:FileWrapper):void
 		{
-			_projectFolder = value;
+			if (_projectFolder != value)
+			{
+				_projectFolder = value;
+				dispatchEvent(new Event("projectFolderChanged"));
+			}
 		}
 		
 		public function get name():String 

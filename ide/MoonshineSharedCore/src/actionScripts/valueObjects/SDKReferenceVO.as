@@ -143,7 +143,8 @@ package actionScripts.valueObjects
 			var compilerFile:FileLocation = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
 			if (compilerFile.fileBridge.exists)
 			{
-				if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists) return SDKTypes.FLEX;
+				if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists || 
+					fileLocation.resolvePath("frameworks/libs/flex.swc").fileBridge.exists) return SDKTypes.FLEX;
 			}
 			
 			// royale
