@@ -140,10 +140,8 @@
 	<property name="background_dir" value="../src/backgrounds"/>
     <property name="swfFilename" value="${debug_dir}/Moonshine.swf" />
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
-	<property name="LibraryHelperSharedCore" value="../../../../ProminicSVNBranch/MoonshineHelperSharedCore"/>
+	<property name="LibraryHelperSharedCore" value="../../../Moonshine-SDK-Installer/InstallerSharedCore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
-	<property name="LibraryApacheFlexSDK" value="../../ApacheFlexSDKInstaller/ApacheFlexSDKInstallerLib"/>
-	<property name="LibraryApacheFlexSDKHelperSourceA" value="../../ApacheFlexSDKInstaller/apache-flex-sdk-installer-3.2.0-src"/>
 	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
 	<property name="webMainSource" value="${applicationSourceDirectory}/MoonshineWEB.mxml" />
 	<property name="desktopApplicationDescriptor" value="${debug_dir}/MoonshineDESKTOP-app.xml" />

@@ -4,7 +4,7 @@
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/ide/MoonshineSharedCore/src/locale/{locale}"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-SDK-Installer/MoonshineHelperSharedCore/src"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-SDK-Installer/InstallerSharedCore/src"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
