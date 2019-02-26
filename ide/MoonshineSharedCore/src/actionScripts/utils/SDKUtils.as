@@ -156,7 +156,7 @@ package actionScripts.utils
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:SdkDescriptionVO = getSDKReference(targetDir);
+					var bundledFlexSDK:SDKReferenceVO = getSDKReference(targetDir);
 					if (bundledFlexSDK)
 					{
 						addSDKDirectory(bundledFlexSDK);
@@ -198,11 +198,11 @@ package actionScripts.utils
 				/**
 				 * @local
 				 */
-				function addSDKDirectory(value:SdkDescriptionVO):void
+				function addSDKDirectory(value:SDKReferenceVO):void
 				{
 					var tmpPR:SDKReferenceVO = new SDKReferenceVO();
 					tmpPR.name = String(value.name);
-					tmpPR.path = value.sdkPath;
+					tmpPR.path = value.path;
 					tmpPR.status = BUNDLED;
 					model.userSavedSDKs.addItemAt(tmpPR, 0);
 					isFound = true;

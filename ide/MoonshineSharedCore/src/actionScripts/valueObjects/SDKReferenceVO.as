@@ -35,19 +35,12 @@ package actionScripts.valueObjects
 		
         public var version:String;
         public var build:String;
-		public var type:String;
 		public var status:String;
 		
         private var _path:String;
 		public function set path(value:String):void
 		{
-			if (_path != value)
-			{
-				_path = value;
-				
-				// set the type once
-				type = getType();
-			}
+			_path = value;
 		}
 		public function get path():String
 		{
@@ -93,6 +86,13 @@ package actionScripts.valueObjects
 		{
 			if (!_fileLocation) _fileLocation = new FileLocation(path);
 			return _fileLocation;
+		}
+		
+		private var _type:String;
+		public function get type():String
+		{
+			if (!_type) _type = getType();
+			return _type;
 		}
 		
 		//--------------------------------------------------------------------------
@@ -169,7 +169,7 @@ package actionScripts.valueObjects
 			
 			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
 			compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
-			if (compilerFile.fileBridge.exists)
+			if (isFlexJSAfter7 && compilerFile.fileBridge.exists)
 			{
 				if (name.toLowerCase().indexOf("flexjs") != -1) return SDKTypes.FLEXJS;
 			}
@@ -179,10 +179,13 @@ package actionScripts.valueObjects
 			// We've found js/bin/mxmlc compiletion do not produce
 			// valid swf with prior 0.8 version; we shall need following
 			// executable for version less than 0.8
-			if (!isFlexJSAfter7) compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_OLD + compilerExtension);
-			if (compilerFile.fileBridge.exists)
+			else if (!isFlexJSAfter7) 
 			{
-				if (name.toLowerCase().indexOf("flexjs") != -1) return SDKTypes.FLEXJS;
+				compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_OLD + compilerExtension);
+				if (compilerFile.fileBridge.exists)
+				{
+					if (name.toLowerCase().indexOf("flexjs") != -1) return SDKTypes.FLEXJS;
+				}
 			}
 			
 			return null;

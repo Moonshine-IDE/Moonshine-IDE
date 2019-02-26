@@ -40,6 +40,8 @@
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.HelperUtils;
+			import actionScripts.utils.PathSetupHelperUtil;
+			import actionScripts.valueObjects.ComponentVO;
 			import actionScripts.valueObjects.FileWrapper;
 			
 			private static const LABEL:String = "Getting Started";
@@ -136,6 +138,8 @@
 			private function onAnyComponentDownloaded(event:HelperEvent):void
 			{
 				// autoset moonshine internal fields as appropriate
+				var component:ComponentVO = event.value as ComponentVO;
+				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 			}
 			
 		]]>

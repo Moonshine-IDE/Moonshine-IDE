@@ -548,7 +548,7 @@ package actionScripts.utils
 					break;
 				}
 			}
-
+			
             var flexJSPrefixName:String = "Apache Flex (FlexJS) ";
             var royalePrefixName:String = "Apache Royale ";
 
@@ -940,7 +940,7 @@ package actionScripts.utils
 		
 		public static function isDefaultSDKAvailable():Boolean
 		{
-			if (!model.defaultSDK)
+			if (!model.defaultSDK || !model.defaultSDK.fileBridge.exists)
 			{
 				return false;
 			}
@@ -961,7 +961,7 @@ package actionScripts.utils
 		
 		public static function isAntAvailable():Boolean
 		{
-			if (model.antHomePath)
+			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)
 			{
 				return false;
 			}

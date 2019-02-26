@@ -27,13 +27,13 @@ package actionScripts.locator
     import actionScripts.interfaces.IContextMenuBridge;
     import actionScripts.interfaces.IFileBridge;
     import actionScripts.interfaces.IFlexCoreBridge;
+    import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.MainView;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.interfaces.IJavaBridge;
-    import actionScripts.interfaces.ILanguageServerBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -71,6 +71,8 @@ package actionScripts.locator
 		public var antScriptFile:FileLocation;
 		public var mavenPath:String;
 		public var javaPathForTypeAhead:FileLocation;
+		public var svnPath:String;
+		public var gitPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;
 		public var payaraServerLocation:FileLocation;
 

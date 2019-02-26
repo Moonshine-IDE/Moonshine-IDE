@@ -73,7 +73,16 @@ package actionScripts.plugins.git
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "GitHub Plugin. Esc exits."; }
 		
-		public var gitBinaryPathOSX:String;
+		private var _gitBinaryPathOSX:String;
+		public function get gitBinaryPathOSX():String
+		{
+			return _gitBinaryPathOSX;
+		}
+		public function set gitBinaryPathOSX(value:String):void
+		{
+			model.gitPath = _gitBinaryPathOSX = value;
+		}
+		
 		public var modelAgainstProject:Dictionary = new Dictionary();
 		public var projectsNotAcceptedByUserToPermitAsGitOnMacOS:Dictionary = new Dictionary();
 		

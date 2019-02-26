@@ -84,6 +84,7 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.fullscreen.FullscreenPlugin;
     import actionScripts.plugin.settings.event.RequestSettingEvent;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PluginSetting;
     import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
@@ -464,8 +465,26 @@ package actionScripts.plugin.settings
 			if (!saveData.length()) return;
 			
 			var settingsFile:FileLocation = generateSettingsPath(event.name);
+			var className:String = event.name.split("::").pop();
 			use namespace moonshine_internal;
+			var plug:IPlugin = pluginManager.getPluginByClassName(className);
 			commitClassSettings(null, saveData, settingsFile);
+			saveToCurrentPlugin(plug, settingsList);
+		}
+		
+		private function saveToCurrentPlugin(plug:IPlugin, settingsList:Vector.<ISetting>):void
+		{
+			for each(var setting:AbstractSetting in settingsList)
+			{
+				if ((plug as Object).hasOwnProperty(setting.name))
+				{
+					// this is suppose to hold one field only 
+					for each (var i:Object in setting.provider)
+					{
+						(plug as Object)[setting.name] = i;
+					}
+				}
+			}
 		}
 
 		private function commitClassSettings(plug:IPlugin, saveData:XML, settingsFile:FileLocation):Boolean
