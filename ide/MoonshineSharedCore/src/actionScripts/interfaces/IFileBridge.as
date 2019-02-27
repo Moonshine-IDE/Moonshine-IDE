@@ -28,6 +28,7 @@ package actionScripts.interfaces
 			function getSSBInterface():IScopeBookmarkInterface;
 		}
 		function getDirectoryListing():Array;
+        function getDirectoryListingAsync():void;
 		function deleteFileOrDirectory():void;
 		function onSuccessDelete(value:Object, message:String=null):void;
 		function onFault(message:String=null):void;

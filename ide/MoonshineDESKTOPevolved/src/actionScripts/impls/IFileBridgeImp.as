@@ -41,12 +41,10 @@ package actionScripts.impls
 	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.interfaces.IScopeBookmarkInterface;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import flash.events.IOErrorEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import mx.controls.Alert;
 	import actionScripts.utils.FileUtils;
-	import flash.utils.ByteArray;
 	
 	/**
 	 * IFileBridgeImp
@@ -73,7 +71,14 @@ package actionScripts.impls
 			if (!checkFileExistenceAndReport()) return [];
 			return _file.getDirectoryListing();
 		}
-		
+
+        public function getDirectoryListingAsync():void
+        {
+            if (!checkFileExistenceAndReport()) return;
+
+            _file.getDirectoryListingAsync();
+        }
+
 		public function deleteFileOrDirectory():void
 		{
 		}

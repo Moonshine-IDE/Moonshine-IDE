@@ -21,7 +21,11 @@ package actionScripts.valueObjects
 	import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 
-    [Bindable]
+import flash.events.Event;
+
+import flash.events.FileListEvent;
+
+[Bindable]
     public dynamic class FileWrapper
 	{
 		public var projectReference: ProjectReferenceVO;
@@ -143,8 +147,14 @@ package actionScripts.valueObjects
 		
 		public function get children():Array
 		{
-			if (ConstantsCoreVO.IS_AIR && !_children && _shallUpdateChildren) updateChildren();
-			if (ConstantsCoreVO.IS_AIR && !file.fileBridge.isDirectory) _children = null;
+			if (ConstantsCoreVO.IS_AIR && !_children && _shallUpdateChildren)
+            {
+                updateChildren();
+            }
+			if (ConstantsCoreVO.IS_AIR && !file.fileBridge.isDirectory)
+            {
+                _children = null;
+            }
 				
 			return _children;
 		}
@@ -203,6 +213,8 @@ package actionScripts.valueObjects
 
         public function updateChildren():void
         {
+            if (isWorking) return;
+
             if (!ConstantsCoreVO.IS_AIR)
             {
                 return;
@@ -228,7 +240,23 @@ package actionScripts.valueObjects
                 return;
             }
 
-            var directoryListing:Array = file.fileBridge.getDirectoryListing();
+            isWorking = true;
+            file.fileBridge.getFile.addEventListener("directoryListing", onDirecotryListing);
+            file.fileBridge.getDirectoryListingAsync();
+        }
+
+        public function containsFile(file:FileLocation):Boolean
+        {
+            if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
+            return false;
+        }
+
+        private function onDirecotryListing(event:Event):void
+        {
+            isWorking = false;
+
+            event.currentTarget.removeEventListener("directoryListing", onDirecotryListing);
+            var directoryListing:Array = event["files"];
             if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
             {
                 _children = null;
@@ -246,17 +274,17 @@ package actionScripts.valueObjects
             {
                 var currentDirectory:Object = directoryListing[i];
 
-				if (currentDirectory.isHidden)
-				{
-					continue;
+                if (currentDirectory.isHidden)
+                {
+                    continue;
                 }
 
-				if (projectReference.showHiddenPaths)
-				{
-					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
-					fw.sourceController = _sourceController;
-					_children.push(fw);
-				}
+                if (projectReference.showHiddenPaths)
+                {
+                    fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+                    fw.sourceController = _sourceController;
+                    _children.push(fw);
+                }
                 else
                 {
                     var currentIsHidden:Boolean = projectReference && projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
@@ -264,7 +292,7 @@ package actionScripts.valueObjects
                         return currentDirectory.nativePath == item.fileBridge.nativePath;
                     });
 
-					if (!currentIsHidden)
+                    if (!currentIsHidden)
                     {
                         fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
                         fw.sourceController = _sourceController;
@@ -272,12 +300,6 @@ package actionScripts.valueObjects
                     }
                 }
             }
-        }
-
-        public function containsFile(file:FileLocation):Boolean
-        {
-            if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
-            return false;
         }
     }
 }
