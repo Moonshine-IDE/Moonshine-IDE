@@ -148,7 +148,6 @@ package actionScripts.valueObjects
 			}
 			
 			// royale
-			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
 			compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
 			if (compilerFile.fileBridge.exists)
 			{
@@ -156,7 +155,6 @@ package actionScripts.valueObjects
 			}
 			
 			// feathers
-			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
 			compilerFile = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
 			if (compilerFile.fileBridge.exists)
 			{
@@ -167,7 +165,6 @@ package actionScripts.valueObjects
 			// determine if the sdk version is lower than 0.8.0 or not
 			var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, this.path);
 			
-			compilerExtension = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
 			compilerFile = fileLocation.resolvePath(JS_SDK_COMPILER_NEW + compilerExtension);
 			if (isFlexJSAfter7 && compilerFile.fileBridge.exists)
 			{
