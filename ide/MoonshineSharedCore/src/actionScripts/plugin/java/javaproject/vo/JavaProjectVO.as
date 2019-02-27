@@ -22,7 +22,7 @@ package actionScripts.plugin.java.javaproject.vo
 		{
 			super(folder, projectName, updateToTreeView);
 
-            projectReference.hiddenPaths = new <FileLocation>[];
+            projectReference.hiddenPaths.splice(0, projectReference.hiddenPaths.length);
 			mavenBuildOptions = new JavaMavenBuildOptions(projectFolder.nativePath);
 		}
 

@@ -72,14 +72,19 @@ package actionScripts.plugin.java.javaproject
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
-				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+                {
+                    lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+                }
 			}
 
-			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
+                    lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
 			var folderLocation:FileLocation = new FileLocation(tmpProjectSourcePath);
 
 			// Remove spaces from project name
-			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
+            var bracketIndex:int = event.templateDir.fileBridge.name.indexOf("(");
+			var projectName:String = (bracketIndex != -1) ? event.templateDir.fileBridge.name.substr(0, bracketIndex) : event.templateDir.fileBridge.name;
 			projectName = "New" + projectName.replace(/ /g, "");
 
 			project = new JavaProjectVO(folderLocation, projectName);
