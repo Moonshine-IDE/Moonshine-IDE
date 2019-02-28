@@ -37,8 +37,11 @@ package actionScripts.plugins.startup
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.EnvironmentUtils;
+    import actionScripts.utils.PathSetupHelperUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.SDKTypes;
     
     import components.popup.GettingStartedPopup;
     import components.popup.JavaPathSetupPopup;
@@ -62,6 +65,7 @@ package actionScripts.plugins.startup
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
 		private var gettingStartedPopup:GettingStartedPopup;
+		private var environmentUtil:EnvironmentUtils = new EnvironmentUtils();
 		private var sequences:Array;
 		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
@@ -117,6 +121,7 @@ package actionScripts.plugins.startup
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN];
 
 			// just a little delay to see things visually right
+			environmentUtil.readValues();
             startHelpingTimeout = setTimeout(startHelping, 1000);
 			copyToLocalStoragePayaraEmbededLauncher();
 		}
@@ -183,7 +188,18 @@ package actionScripts.plugins.startup
 			if (!isPresent && (!ConstantsCoreVO.IS_MACOS || (ConstantsCoreVO.IS_MACOS && (!ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS || forceShow))))
 			{
 				//triggerSDKNotificationView(false, false);
-				isAllDependenciesPresent = false;
+				
+				// check if env.variable has any FLEX_HOME found or not
+				if (environmentUtil.environments.FLEX_HOME)
+				{
+					// set as default SDK
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.FLEX, environmentUtil.environments.FLEX_HOME.path.nativePath);
+					startHelping();
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
 			}
 			else if (isPresent)
 			{
@@ -213,8 +229,17 @@ package actionScripts.plugins.startup
 			var isPresent:Boolean = dependencyCheckUtil.isJavaPresent();
 			if (!isPresent && !ccNotificationView)
 			{
-				isAllDependenciesPresent = false;
-				model.javaPathForTypeAhead = null;
+				// check if env.variable has JAVA_HOME with JDK setup
+				if (environmentUtil.environments.JAVA_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
+					startHelping();
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+					model.javaPathForTypeAhead = null;
+				}
                 //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 			}
 			else
@@ -235,7 +260,15 @@ package actionScripts.plugins.startup
 			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
 			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
 			{
-				isAllDependenciesPresent = false;
+				if (environmentUtil.environments.JAVA_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
+					startHelping();
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
                 //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
 			}
 			else if (!isPresent && isSDKSetupShowing)
@@ -274,7 +307,15 @@ package actionScripts.plugins.startup
 			var isPresent:Boolean = dependencyCheckUtil.isAntPresent();
 			if (!isPresent)
 			{
-				isAllDependenciesPresent = false;
+				if (environmentUtil.environments.ANT_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.ANT, environmentUtil.environments.ANT_HOME.nativePath);
+					startHelping();
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
 			}
 			else
 			{
@@ -292,7 +333,14 @@ package actionScripts.plugins.startup
 			var isPresent:Boolean = dependencyCheckUtil.isMavenPresent();
 			if (!model.mavenPath || model.mavenPath == "")
 			{
-				isAllDependenciesPresent = false;
+				if (environmentUtil.environments.MAVEN_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.MAVEN, environmentUtil.environments.MAVEN_HOME.nativePath);
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
 			}
 		}
 		
