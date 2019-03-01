@@ -637,7 +637,14 @@ package actionScripts.utils
 
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
+				{
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "java"));
+				}
+				else
+				{
+					executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+				}
             }
 			else 
 			{

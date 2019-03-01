@@ -65,7 +65,7 @@ package actionScripts.plugins.startup
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
 		private var gettingStartedPopup:GettingStartedPopup;
-		private var environmentUtil:EnvironmentUtils = new EnvironmentUtils();
+		private var environmentUtil:EnvironmentUtils;
 		private var sequences:Array;
 		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
@@ -119,9 +119,15 @@ package actionScripts.plugins.startup
 		private function preInitHelping():void
 		{
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN];
-
+			
+			// env.variable parsing only available for Windows
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				environmentUtil = new EnvironmentUtils();
+				environmentUtil.readValues();
+			}
+			
 			// just a little delay to see things visually right
-			environmentUtil.readValues();
             startHelpingTimeout = setTimeout(startHelping, 1000);
 			copyToLocalStoragePayaraEmbededLauncher();
 		}
@@ -190,7 +196,7 @@ package actionScripts.plugins.startup
 				//triggerSDKNotificationView(false, false);
 				
 				// check if env.variable has any FLEX_HOME found or not
-				if (environmentUtil.environments.FLEX_HOME)
+				if (environmentUtil && environmentUtil.environments.FLEX_HOME)
 				{
 					// set as default SDK
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.FLEX, environmentUtil.environments.FLEX_HOME.path.nativePath);
@@ -230,7 +236,7 @@ package actionScripts.plugins.startup
 			if (!isPresent && !ccNotificationView)
 			{
 				// check if env.variable has JAVA_HOME with JDK setup
-				if (environmentUtil.environments.JAVA_HOME)
+				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
 					startHelping();
@@ -260,7 +266,7 @@ package actionScripts.plugins.startup
 			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
 			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
 			{
-				if (environmentUtil.environments.JAVA_HOME)
+				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
 					startHelping();
@@ -307,7 +313,7 @@ package actionScripts.plugins.startup
 			var isPresent:Boolean = dependencyCheckUtil.isAntPresent();
 			if (!isPresent)
 			{
-				if (environmentUtil.environments.ANT_HOME)
+				if (environmentUtil && environmentUtil.environments.ANT_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.ANT, environmentUtil.environments.ANT_HOME.nativePath);
 					startHelping();
@@ -333,7 +339,7 @@ package actionScripts.plugins.startup
 			var isPresent:Boolean = dependencyCheckUtil.isMavenPresent();
 			if (!model.mavenPath || model.mavenPath == "")
 			{
-				if (environmentUtil.environments.MAVEN_HOME)
+				if (environmentUtil && environmentUtil.environments.MAVEN_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.MAVEN, environmentUtil.environments.MAVEN_HOME.nativePath);
 				}
