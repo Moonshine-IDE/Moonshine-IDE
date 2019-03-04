@@ -55,6 +55,8 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.utils.applyWorkspaceEdit;
+    import actionScripts.valueObjects.WorkspaceEdit;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -77,6 +79,7 @@ package actionScripts.languageServer
 
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
+		private static const COMMAND_JAVA_APPLY_WORKSPACE_EDIT:String = "java.apply.workspaceEdit";
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -358,6 +361,13 @@ package actionScripts.languageServer
 				{
 					event.preventDefault();
 					navigateToURL(new URLRequest("https://github.com/redhat-developer/vscode-java/wiki/%22Classpath-is-incomplete%22-warning"), "_blank");
+					break;
+				}
+				case COMMAND_JAVA_APPLY_WORKSPACE_EDIT:
+				{
+					event.preventDefault();
+					var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(event.arguments[0]);
+					applyWorkspaceEdit(workspaceEdit);
 					break;
 				}
 			}
