@@ -93,6 +93,7 @@ package actionScripts.languageServer
 		private static const FIELD_DOCUMENT_CHANGES:String = "documentChanges";
 		private static const FIELD_CONTENTS:String = "contents";
 		private static const FIELD_SIGNATURES:String = "signatures";
+		private static const FIELD_IS_INCOMPLETE:String = "isIncomplete";
 		private static const FIELD_ITEMS:String = "items";
 		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
 		private static const FIELD_EDIT:String = "edit";
@@ -1251,6 +1252,10 @@ package actionScripts.languageServer
             {
                 command = parseCommand(original.command);
             }
+			if(FIELD_IS_INCOMPLETE in original && original[FIELD_IS_INCOMPLETE])
+			{
+				trace("WARNING: Completion item is incomplete. Resolving a completion item is not supported yet. Item: " + original.label);
+			}
 			var additionalTextEdits:Vector.<TextEdit> = null;
 			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
 			{
