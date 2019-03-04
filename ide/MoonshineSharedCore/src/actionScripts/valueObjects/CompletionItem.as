@@ -16,7 +16,13 @@ package actionScripts.valueObjects
 		private static const FIELD_COMMAND:String = "command";
 		private static const FIELD_IS_INCOMPLETE:String = "isIncomplete";
 		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
+		private static const FIELD_LABEL:String = "label";
+		private static const FIELD_INSERT_TEXT:String = "insertText";
+		private static const FIELD_DOCUMENTATION:String = "documentation";
+		private static const FIELD_DETAIL:String = "detail";
+		private static const FIELD_DEPRECATED:String = "deprecated";
 		private static const FIELD_DATA:String = "data";
+		private static const FIELD_KIND:String = "kind";
 
 		private var _label:String;
 
@@ -101,15 +107,15 @@ package actionScripts.valueObjects
 		 * a completion and a completion resolve request.
 		 */
 		[Bindable("dataChange")]
-		public function get data():String
+		public function get data():*
 		{
 			return this._data;
 		}
 
-				public function CompletionItem(label:String = "", insertText:String = "",
-										 kind:int = -1, detail:String = "",
-										 documentation:String = "", command:Command = null, data:* = undefined,
-										 deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
+		public function CompletionItem(label:String = "", insertText:String = "",
+			kind:int = -1, detail:String = "",
+			documentation:String = "", command:Command = null, data:* = undefined,
+			deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
 		{
 			this._label = label;
 			this._sortLabel = label.toLowerCase();
@@ -123,41 +129,101 @@ package actionScripts.valueObjects
 			this._additionalTextEdits = additionalTextEdits;
 		}
 
-		public static function parse(original:Object):CompletionItem
+		public static function resolve(item:CompletionItem, resolvedFields:Object):CompletionItem
 		{
-			var command:Command = null;
-			if(FIELD_COMMAND in original)
+			if(FIELD_LABEL in resolvedFields)
 			{
-					command = Command.parse(original.command);
+				item._label = resolvedFields[FIELD_LABEL];
+				item._sortLabel = item.label.toLowerCase();
 			}
-			if(FIELD_IS_INCOMPLETE in original && original[FIELD_IS_INCOMPLETE])
+			if(FIELD_INSERT_TEXT in resolvedFields)
 			{
-				trace("WARNING: Completion item is incomplete. Resolving a completion item is not supported yet. Item: " + original.label);
+				item._insertText = resolvedFields[FIELD_INSERT_TEXT];
 			}
-			var additionalTextEdits:Vector.<TextEdit> = null;
-			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
+			if(FIELD_KIND in resolvedFields)
 			{
-				additionalTextEdits = new <TextEdit>[];
-				var jsonTextEdits:Array = original[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
+				item._kind = resolvedFields[FIELD_KIND];
+			}
+			if(FIELD_DETAIL in resolvedFields)
+			{
+				item._detail = resolvedFields[FIELD_DETAIL];
+			}
+			if(FIELD_DOCUMENTATION in resolvedFields)
+			{
+				item._documentation = resolvedFields[FIELD_DOCUMENTATION];
+			}
+			if(FIELD_DEPRECATED in resolvedFields)
+			{
+				item._deprecated = resolvedFields[FIELD_DEPRECATED];
+			}
+			if(FIELD_COMMAND in resolvedFields)
+			{
+				item._command = Command.parse(resolvedFields[FIELD_COMMAND]);
+			}
+			if(FIELD_IS_INCOMPLETE in resolvedFields && resolvedFields[FIELD_IS_INCOMPLETE])
+			{
+				trace("WARNING: Completion item is incomplete. Resolving a completion item is not supported yet. Item: " + item.label);
+			}
+			if(FIELD_ADDITIONAL_TEXT_EDITS in resolvedFields)
+			{
+				var additionalTextEdits:Vector.<TextEdit> = new <TextEdit>[];
+				var jsonTextEdits:Array = resolvedFields[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
 				var textEditCount:int = jsonTextEdits.length;
 				for(var i:int = 0; i < textEditCount; i++)
 				{
 					var jsonTextEdit:Object = jsonTextEdits[i];
 					additionalTextEdits[i] = TextEdit.parse(jsonTextEdit);
 				}
+				item._additionalTextEdits = additionalTextEdits;
 			}
 
-			//ideally, we'd just pass undefined as the argument, but the
-			//Apache Flex compiler produces a weird warning, for some reason
-			var data:* = undefined;
-			if(FIELD_DATA in original)
+			if(FIELD_DATA in resolvedFields)
 			{
-				data = original[FIELD_DATA];
+				item._data = resolvedFields[FIELD_DATA];
 			}
-			return new CompletionItem(original.label, original.insertText,
-					original.kind, original.detail,
-					original.documentation, command, data,
-					original.deprecated, additionalTextEdits);
+			return item;
+		}
+
+		public static function parse(original:Object):CompletionItem
+		{
+			var item:CompletionItem = new CompletionItem();
+			return resolve(item, original);
+		}
+
+		public function toJSON(key:String):*
+		{
+			var result:Object = {};
+			result.label = this._label;
+			result.kind = this._kind;
+			result.deprecated = this._deprecated;
+			if(this._detail)
+			{
+				result.detail = this._detail;
+			}
+			if(this._documentation)
+			{
+				result.documentation = this._documentation;
+			}
+			if(this._command)
+			{
+				result.command = this._command;
+			}
+			if(this._data)
+			{
+				result.data = this._data;
+			}
+			if(this._additionalTextEdits)
+			{
+				var additionalTextEdits:Array = [];
+				var length:int = this._additionalTextEdits.length;
+				for(var i:int = 0; i < length; i++)
+				{
+					var textEdit:TextEdit = this._additionalTextEdits[i];
+					additionalTextEdits[i] = textEdit;
+				}
+				result.additionalTextEdits = additionalTextEdits;
+			}
+			return result;
 		}
 	}
 }

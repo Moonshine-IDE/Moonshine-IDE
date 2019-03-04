@@ -23,6 +23,7 @@ package actionScripts.events
 	public class CompletionItemsEvent extends Event
 	{
 		public static const EVENT_SHOW_COMPLETION_LIST:String = "newShowCompletionList";
+		public static const EVENT_UPDATE_RESOLVED_COMPLETION_ITEM:String = "newUpdateResolvedCompletionItem";
 		
 		public var items:Array;
 		

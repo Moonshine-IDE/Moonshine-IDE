@@ -218,6 +218,7 @@ package actionScripts.languageServer
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _codeActionLookup:Dictionary = new Dictionary();
+		private var _resolveCompletionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
@@ -834,6 +835,12 @@ package actionScripts.languageServer
 				{
 					trace("Error in language server. Code: " + object.error.code + ", Message: " + object.error.message);
 				}
+				else if(requestID in _resolveCompletionLookup) //resolve completion
+				{
+					var original:CompletionItem = CompletionItem(_resolveCompletionLookup[requestID]);
+					delete _resolveCompletionLookup[requestID];
+					handleCompletionResolveResponse(original, result);
+				}
 				else if(result && FIELD_ITEMS in result) //completion
 				{
 					handleCompletionResponse(result);
@@ -988,6 +995,12 @@ package actionScripts.languageServer
 				eventCompletionItems[i] = CompletionItem.parse(resultItem);
 			}
 			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
+		}
+
+		private function handleCompletionResolveResponse(original:CompletionItem, result:Object):void
+		{
+			CompletionItem.resolve(original, result);
+			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, [original]));
 		}
 
 		private function handleSignatureHelpResponse(result:Object):void
@@ -1450,7 +1463,8 @@ package actionScripts.languageServer
 				return;
 			}
 			
-			this.sendRequest(METHOD_COMPLETION_ITEM__RESOLVE, event.item);
+			var id:int = this.sendRequest(METHOD_COMPLETION_ITEM__RESOLVE, event.item);
+			_resolveCompletionLookup[id] = event.item;
 		}
 
 		private function signatureHelpHandler(event:LanguageServerEvent):void
