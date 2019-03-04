@@ -50,5 +50,75 @@ package actionScripts.valueObjects
 		{
 			
 		}
+
+		public static function parse(original:Object):WorkspaceEdit
+		{
+			var workspaceEdit:WorkspaceEdit = new WorkspaceEdit;
+			var jsonChanges:Object = original.changes;
+			if(jsonChanges)
+			{
+				var changes:Object = {};
+				for(var uri:String in jsonChanges)
+				{
+					//the key is the file path, the value is a list of TextEdits
+					var resultChanges:Array = jsonChanges[uri];
+					var resultChangesCount:int = resultChanges.length;
+					var textEdits:Vector.<TextEdit> = new <TextEdit>[];
+					for(var i:int = 0; i < resultChangesCount; i++)
+					{
+						var resultChange:Object = resultChanges[i];
+						var textEdit:TextEdit = TextEdit.parse(resultChange);
+						textEdits[i] = textEdit;
+					}
+					changes[uri] = textEdits;
+				}
+				workspaceEdit.changes = changes;
+			}
+			var jsonDocumentChanges:Array = original.documentChanges;
+			if(jsonDocumentChanges)
+			{
+				var documentChanges:Array = [];
+				var changesCount:int = jsonDocumentChanges.length;
+				for(i = 0; i < changesCount; i++)
+				{
+					var documentChange:Object = jsonDocumentChanges[i];
+					if("kind" in documentChange)
+					{
+						switch(documentChange.kind)
+						{
+							case RenameFile.KIND:
+							{
+								var renameFile:RenameFile = RenameFile.parse(documentChange);
+								documentChanges.push(renameFile);
+								break;
+							}
+							case CreateFile.KIND:
+							{
+								var createFile:CreateFile = CreateFile.parse(documentChange);
+								documentChanges.push(createFile);
+								break;
+							}
+							case DeleteFile.KIND:
+							{
+								var deleteFile:DeleteFile = DeleteFile.parse(documentChange);
+								documentChanges.push(deleteFile);
+								break;
+							}
+							default:
+							{
+								trace("parseWorkspaceEdit: Unknown document change:", documentChange.kind);
+							}
+						}
+					}
+					else
+					{
+						var textDocumentEdit:TextDocumentEdit = TextDocumentEdit.parse(documentChange);
+						documentChanges.push(textDocumentEdit);
+					}
+				}
+				workspaceEdit.documentChanges = documentChanges;
+			}
+			return workspaceEdit;
+		}
 	}
 }

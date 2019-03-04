@@ -41,5 +41,13 @@ package actionScripts.valueObjects
 		public function TextEdit()
 		{
 		}
+
+		public static function parse(original:Object):TextEdit
+		{
+			var vo:TextEdit = new TextEdit();
+			vo.range = Range.parse(original.range);
+			vo.newText = original.newText;
+			return vo;
+		}
 	}
 }

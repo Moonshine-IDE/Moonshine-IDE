@@ -23,5 +23,13 @@ package actionScripts.valueObjects
 			this.line = line;
 			this.character = character;
 		}
+
+		public static function parse(original:Object):Position
+		{
+			var vo:Position = new Position();
+			vo.line = original.line;
+			vo.character = original.character;
+			return vo;
+		}
 	}
 }

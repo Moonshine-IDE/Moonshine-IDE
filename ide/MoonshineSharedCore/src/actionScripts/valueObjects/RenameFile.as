@@ -52,5 +52,13 @@ package actionScripts.valueObjects
 			this.oldUri = oldUri;
 			this.newUri = newUri;
 		}
+
+		public static function parse(original:Object):RenameFile
+		{
+			var vo:RenameFile = new RenameFile();
+			vo.oldUri = original.oldUri;
+			vo.newUri = original.newUri;
+			return vo;
+		}
 	}
 }

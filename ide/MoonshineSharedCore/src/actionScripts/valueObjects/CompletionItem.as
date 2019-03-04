@@ -13,6 +13,11 @@ package actionScripts.valueObjects
 	 */
 	public class CompletionItem extends EventDispatcher
 	{
+		private static const FIELD_COMMAND:String = "command";
+		private static const FIELD_IS_INCOMPLETE:String = "isIncomplete";
+		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
+		private static const FIELD_DATA:String = "data";
+
 		private var _label:String;
 
 		[Bindable("labelChange")]
@@ -101,10 +106,10 @@ package actionScripts.valueObjects
 			return this._data;
 		}
 
-        public function CompletionItem(label:String = "", insertText:String = "",
-									   kind:int = -1, detail:String = "",
-									   documentation:String = "", command:Command = null, data:* = undefined,
-									   deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
+				public function CompletionItem(label:String = "", insertText:String = "",
+										 kind:int = -1, detail:String = "",
+										 documentation:String = "", command:Command = null, data:* = undefined,
+										 deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
 		{
 			this._label = label;
 			this._sortLabel = label.toLowerCase();
@@ -117,5 +122,42 @@ package actionScripts.valueObjects
 			this._deprecated = deprecated;
 			this._additionalTextEdits = additionalTextEdits;
 		}
-    }
+
+		public static function parse(original:Object):CompletionItem
+		{
+			var command:Command = null;
+			if(FIELD_COMMAND in original)
+			{
+					command = Command.parse(original.command);
+			}
+			if(FIELD_IS_INCOMPLETE in original && original[FIELD_IS_INCOMPLETE])
+			{
+				trace("WARNING: Completion item is incomplete. Resolving a completion item is not supported yet. Item: " + original.label);
+			}
+			var additionalTextEdits:Vector.<TextEdit> = null;
+			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
+			{
+				additionalTextEdits = new <TextEdit>[];
+				var jsonTextEdits:Array = original[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
+				var textEditCount:int = jsonTextEdits.length;
+				for(var i:int = 0; i < textEditCount; i++)
+				{
+					var jsonTextEdit:Object = jsonTextEdits[i];
+					additionalTextEdits[i] = TextEdit.parse(jsonTextEdit);
+				}
+			}
+
+			//ideally, we'd just pass undefined as the argument, but the
+			//Apache Flex compiler produces a weird warning, for some reason
+			var data:* = undefined;
+			if(FIELD_DATA in original)
+			{
+				data = original[FIELD_DATA];
+			}
+			return new CompletionItem(original.label, original.insertText,
+					original.kind, original.detail,
+					original.documentation, command, data,
+					original.deprecated, additionalTextEdits);
+		}
+	}
 }

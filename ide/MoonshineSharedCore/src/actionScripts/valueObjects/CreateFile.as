@@ -46,5 +46,12 @@ package actionScripts.valueObjects
 		{
 			this.uri = uri;
 		}
+
+		public static function parse(original:Object):CreateFile
+		{
+			var vo:CreateFile = new CreateFile();
+			vo.uri = original.uri;
+			return vo;
+		}
 	}
 }
