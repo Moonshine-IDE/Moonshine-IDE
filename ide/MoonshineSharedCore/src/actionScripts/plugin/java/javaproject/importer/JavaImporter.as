@@ -37,6 +37,8 @@ package actionScripts.plugin.java.javaproject.importer
 			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
 			var sourceDirectory:String = null;
 
+			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
+
 			if (javaProject.hasPom())
 			{
 				var pomFile:FileLocation = new FileLocation(javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
@@ -46,6 +48,11 @@ package actionScripts.plugin.java.javaproject.importer
 				javaProject.mavenBuildOptions.parse(new XML(fileContent).xsiNamespace::properties);
 
 				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
+
+				if (!sourceDirectory)
+				{
+					sourceDirectory = defaultSourceFolderPath;
+				}
 			}
 			else if (javaProject.hasGradleBuild())
 			{
@@ -53,15 +60,12 @@ package actionScripts.plugin.java.javaproject.importer
 				sourceDirectory = GradleBuildUtil.getProjectSourceDirectory(gradleFile);
 			}
 
-			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
-
-			if (!sourceDirectory)
+			if (sourceDirectory)
 			{
-				sourceDirectory = defaultSourceFolderPath;
+				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
 			}
 
-			javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
-			if (!javaProject.sourceFolder.fileBridge.exists)
+			if (!sourceDirectory || !javaProject.sourceFolder.fileBridge.exists)
 			{
 				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
 			}
