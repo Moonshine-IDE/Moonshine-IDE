@@ -47,6 +47,7 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.SignatureHelp;
     import actionScripts.valueObjects.Command;
     import actionScripts.valueObjects.CodeAction;
+    import actionScripts.valueObjects.CompletionItem;
 
     /**
      *	Line-based text editor. Text rendering with Flash Text Engine.
@@ -808,6 +809,11 @@ package actionScripts.ui.editor.text
 		public function showCompletionList(items:Array):void
 		{
 			completionManager.showCompletionList(items);
+		}
+		
+		public function resolveCompletionItem(item:CompletionItem):void
+		{
+			completionManager.resolveCompletionItem(item);
 		}
 
 		public function showSignatureHelp(data:SignatureHelp):void

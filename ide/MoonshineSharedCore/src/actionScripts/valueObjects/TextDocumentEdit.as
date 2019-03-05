@@ -43,5 +43,21 @@ package actionScripts.valueObjects
 		public function TextDocumentEdit()
 		{
 		}
+
+		public static function parse(original:Object):TextDocumentEdit
+		{
+			var vo:TextDocumentEdit = new TextDocumentEdit();
+			vo.textDocument = TextDocumentIdentifier.parse(original.textDocument);
+			var originalEdits:Array = original.edits;
+			var edits:Vector.<TextEdit> = new <TextEdit>[];
+			var editsCount:int = originalEdits.length;
+			for(var i:int = 0; i < editsCount; i++)
+			{
+				var edit:TextEdit = TextEdit.parse(originalEdits[i]);
+				edits.push(edit);
+			}
+			vo.edits = edits;
+			return vo;
+		}
 	}
 }

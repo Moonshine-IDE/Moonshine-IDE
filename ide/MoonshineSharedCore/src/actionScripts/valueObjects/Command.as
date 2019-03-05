@@ -48,5 +48,14 @@ package actionScripts.valueObjects
 		public function Command()
 		{
 		}
+
+		public static function parse(original:Object):Command
+		{
+			var vo:Command = new Command();
+			vo.title = original.title;
+			vo.command = original.command;
+			vo.arguments = original.arguments;
+			return vo;
+		}
 	}
 }

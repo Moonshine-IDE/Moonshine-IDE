@@ -56,6 +56,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.RenameFile;
 	import actionScripts.valueObjects.DeleteFile;
 	import actionScripts.valueObjects.CreateFile;
+	import actionScripts.events.ResolveCompletionItemEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -88,15 +89,12 @@ package actionScripts.languageServer
 		private static const FIELD_RESULT:String = "result";
 		private static const FIELD_ERROR:String = "error";
 		private static const FIELD_ID:String = "id";
-		private static const FIELD_COMMAND:String = "command";
 		private static const FIELD_CHANGES:String = "changes";
 		private static const FIELD_DOCUMENT_CHANGES:String = "documentChanges";
 		private static const FIELD_CONTENTS:String = "contents";
 		private static const FIELD_SIGNATURES:String = "signatures";
 		private static const FIELD_ITEMS:String = "items";
-		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
-		private static const FIELD_EDIT:String = "edit";
-		private static const FIELD_DIAGNOSTICS:String = "diagnostics";
+		private static const FIELD_LOCATION:String = "location";
 		private static const JSON_RPC_VERSION:String = "2.0";
 		private static const METHOD_INITIALIZE:String = "initialize";
 		private static const METHOD_INITIALIZED:String = "initialized";
@@ -126,6 +124,7 @@ package actionScripts.languageServer
 		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 		private static const METHOD_TELEMETRY__EVENT:String = "telemetry/event";
+		private static const METHOD_COMPLETION_ITEM__RESOLVE:String = "completionItem/resolve";
 
 		public function LanguageClient(languageID:String, project:ProjectVO,
 			debugMode:Boolean, initializationOptions:Object,
@@ -165,6 +164,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
 			_globalDispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_RENAME, renameHandler);
+			_globalDispatcher.addEventListener(ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, resolveCompletionHandler);
 			//when adding new listeners, don't forget to remove them in stop()
 
 			sendInitialize();
@@ -218,12 +218,21 @@ package actionScripts.languageServer
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _codeActionLookup:Dictionary = new Dictionary();
+		private var _resolveCompletionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
 		private var _savedDiagnostics:Object = {};
 
+		private var _capabilities:Object = null;
+
+		public function get capabilities():Object
+		{
+			return this._capabilities;
+		}
+
 		private var supportsCompletion:Boolean = false;
+		private var resolveCompletion:Boolean = false;
 		private var supportsHover:Boolean = false;
 		private var supportsSignatureHelp:Boolean = false;
 		private var supportsGotoDefinition:Boolean = false;
@@ -826,6 +835,12 @@ package actionScripts.languageServer
 				{
 					trace("Error in language server. Code: " + object.error.code + ", Message: " + object.error.message);
 				}
+				else if(requestID in _resolveCompletionLookup) //resolve completion
+				{
+					var original:CompletionItem = CompletionItem(_resolveCompletionLookup[requestID]);
+					delete _resolveCompletionLookup[requestID];
+					handleCompletionResolveResponse(original, result);
+				}
 				else if(result && FIELD_ITEMS in result) //completion
 				{
 					handleCompletionResponse(result);
@@ -947,6 +962,9 @@ package actionScripts.languageServer
 		{
 			var capabilities:Object = result.capabilities;
 			this.supportsCompletion = capabilities && (capabilities.completionProvider !== undefined);
+			this.resolveCompletion = this.supportsCompletion &&
+				capabilities.completionProvider.hasOwnProperty("resolveProvider") &&
+				capabilities.completionProvider.resolveProvider;
 			this.supportsHover = capabilities && (capabilities.hoverProvider as Boolean);
 			this.supportsSignatureHelp = capabilities && (capabilities.signatureHelpProvider !== undefined);
 			this.supportsGotoDefinition = capabilities && (capabilities.definitionProvider as Boolean);
@@ -974,9 +992,15 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < completionItemCount; i++)
 			{
 				var resultItem:Object = resultCompletionItems[i];
-				eventCompletionItems[i] = parseCompletionItem(resultItem);
+				eventCompletionItems[i] = CompletionItem.parse(resultItem);
 			}
 			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
+		}
+
+		private function handleCompletionResolveResponse(original:CompletionItem, result:Object):void
+		{
+			CompletionItem.resolve(original, result);
+			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, [original]));
 		}
 
 		private function handleSignatureHelpResponse(result:Object):void
@@ -989,7 +1013,7 @@ package actionScripts.languageServer
 				for(var i:int = 0; i < resultSignaturesCount; i++)
 				{
 					var resultSignature:Object = resultSignatures[i];
-					eventSignatures[i] = parseSignatureInformation(resultSignature);
+					eventSignatures[i] = SignatureInformation.parse(resultSignature);
 				}
 				var signatureHelp:SignatureHelp = new SignatureHelp();
 				signatureHelp.signatures = eventSignatures;
@@ -1022,7 +1046,7 @@ package actionScripts.languageServer
 
 		private function handleRenameResponse(result:Object):void
 		{
-			var workspaceEdit:WorkspaceEdit = this.parseWorkspaceEdit(result);
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(result);
 			applyWorkspaceEdit(workspaceEdit);
 		}
 
@@ -1033,7 +1057,7 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultLocationsCount; i++)
 			{
 				var resultLocation:Object = result[i];
-				var eventLocation:Location = parseLocation(resultLocation);
+				var eventLocation:Location = Location.parse(resultLocation);
 				var uri:String = eventLocation.uri;
 				var schemeEndIndex:int = uri.indexOf(":");
 				var scheme:String = null;
@@ -1087,7 +1111,7 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultReferencesCount; i++)
 			{
 				var resultReference:Object = resultReferences[i];
-				eventReferences[i] = parseLocation(resultReference);
+				eventReferences[i] = Location.parse(resultReference);
 			}
 			_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, eventReferences));
 		}
@@ -1103,7 +1127,7 @@ package actionScripts.languageServer
 				if(resultCodeAction.command is String)
 				{
 					//this is a Command instead of a CodeAction
-					var command:Command = parseCommand(resultCodeAction);
+					var command:Command = Command.parse(resultCodeAction);
 					var codeAction:CodeAction = new CodeAction();
 					codeAction.title = command.title;
 					codeAction.command = command;
@@ -1111,7 +1135,7 @@ package actionScripts.languageServer
 				}
 				else
 				{
-					codeAction = parseCodeAction(resultCodeAction);
+					codeAction = CodeAction.parse(resultCodeAction);
 					eventCodeActions[i] = codeAction;
 				}
 			}
@@ -1128,15 +1152,15 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < resultSymbolInfosCount; i++)
 			{
 				var resultSymbolInfo:Object = resultSymbolInfos[i];
-				if("location" in resultSymbolInfo)
+				if(FIELD_LOCATION in resultSymbolInfo)
 				{
 					//if location is defined, it's a flat SymbolInformation
-					eventSymbolInfos[i] = parseSymbolInformation(resultSymbolInfo);
+					eventSymbolInfos[i] = SymbolInformation.parse(resultSymbolInfo);
 				}
 				else
 				{
 					//otherwise, it's a hierarchical DocumentSymbol
-					eventSymbolInfos[i] = parseDocumentSymbol(resultSymbolInfo);
+					eventSymbolInfos[i] = DocumentSymbol.parse(resultSymbolInfo);
 				}
 			}
 			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, eventSymbolInfos));
@@ -1163,170 +1187,6 @@ package actionScripts.languageServer
 			return true;
 		}
 
-		private function parseDocumentSymbol(original:Object):DocumentSymbol
-		{
-			var vo:DocumentSymbol = new DocumentSymbol();
-			vo.name = original.name;
-			vo.detail = original.detail;
-			vo.kind = original.kind;
-			vo.deprecated = original.deprecated;
-			vo.range = parseRange(original.range);
-			vo.selectionRange = parseRange(original.selectionRange);
-			if(original.children && original.children is Array)
-			{
-				var children:Vector.<DocumentSymbol> = new <DocumentSymbol>[];
-				var originalChildren:Array = original.children as Array;
-				var childCount:int = originalChildren.length;
-				for(var i:int = 0; i < childCount; i++)
-				{
-					var originalChild:Object = originalChildren[i];
-					var child:DocumentSymbol = parseDocumentSymbol(originalChild);
-					children[i] = child;
-				}
-				vo.children = children;
-			}
-			return vo;
-		}
-
-		private function parseSymbolInformation(original:Object):SymbolInformation
-		{
-			var vo:SymbolInformation = new SymbolInformation();
-			vo.name = original.name;
-			vo.kind = original.kind;
-			vo.containerName = original.containerName;
-			vo.deprecated = original.deprecated;
-			vo.location = parseLocation(original.location);
-			return vo;
-		}
-
-		private function parseDiagnostic(original:Object):Diagnostic
-		{
-			var vo:Diagnostic = new Diagnostic();
-			vo.message = original.message;
-			vo.code = original.code;
-			vo.range = parseRange(original.range);
-			vo.severity = original.severity;
-			return vo;
-		}
-
-		private function parseDiagnosticWithPath(path:String, original:Object):Diagnostic
-		{
-			var vo:Diagnostic = new Diagnostic();
-			vo.path = path;
-			vo.message = original.message;
-			vo.code = original.code;
-			vo.range = parseRange(original.range);
-			vo.severity = original.severity;
-			return vo;
-		}
-
-		private function parseLocation(original:Object):Location
-		{
-			var vo:Location = new Location();
-			vo.uri = original.uri;
-			vo.range = parseRange(original.range);
-			return vo;
-		}
-
-		private function parseRange(original:Object):Range
-		{
-			var vo:Range = new Range();
-			vo.start = parsePosition(original.start);
-			vo.end = parsePosition(original.end);
-			return vo;
-		}
-
-		private function parsePosition(original:Object):Position
-		{
-			var vo:Position = new Position();
-			vo.line = original.line;
-			vo.character = original.character;
-			return vo;
-		}
-
-		private function parseCompletionItem(original:Object):CompletionItem
-		{
-			var command:Command = null;
-            if(FIELD_COMMAND in original)
-            {
-                command = parseCommand(original.command);
-            }
-			var additionalTextEdits:Vector.<TextEdit> = null;
-			if(FIELD_ADDITIONAL_TEXT_EDITS in original)
-			{
-				additionalTextEdits = new <TextEdit>[];
-				var jsonTextEdits:Array = original[FIELD_ADDITIONAL_TEXT_EDITS] as Array;
-				var textEditCount:int = jsonTextEdits.length;
-				for(var i:int = 0; i < textEditCount; i++)
-				{
-					var jsonTextEdit:Object = jsonTextEdits[i];
-					additionalTextEdits[i] = parseTextEdit(jsonTextEdit);
-				}
-			}
-
-			//ideally, we'd just pass undefined as the argument, but the
-			//Apache Flex compiler produces a weird warning, for some reason
-			var data:* = undefined;
-			return new CompletionItem(original.label, original.insertText,
-                    original.kind, original.detail,
-					original.documentation, command, data,
-					original.deprecated, additionalTextEdits);
-		}
-
-		private function parseCodeAction(original:Object):CodeAction
-		{
-			var vo:CodeAction = new CodeAction();
-			vo.title = original.title;
-			vo.kind = original.kind;
-			if(FIELD_DIAGNOSTICS in original)
-			{
-				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
-				var jsonDiagnostics:Array = original.diagnostics;
-				var diagnosticCount:int = jsonDiagnostics.length;
-				for(var i:int = 0; i < diagnosticCount; i++)
-				{
-					diagnostics[i] = parseDiagnostic(jsonDiagnostics[i]);
-				}
-				vo.diagnostics = diagnostics;
-			}
-			if(FIELD_EDIT in original)
-			{
-				vo.edit = parseWorkspaceEdit(original.edit);
-			}
-			if(FIELD_COMMAND in original)
-			{
-				vo.command = parseCommand(original.command);
-			}
-			return vo;
-		}
-
-		private function parseCommand(original:Object):Command
-		{
-			var vo:Command = new Command();
-			vo.title = original.title;
-			vo.command = original.command;
-			vo.arguments = original.arguments;
-			return vo;
-		}
-
-		private function parseSignatureInformation(original:Object):SignatureInformation
-		{
-			var vo:SignatureInformation = new SignatureInformation();
-			vo.label = original.label;
-			var originalParameters:Array = original.parameters;
-			var parameters:Vector.<ParameterInformation> = new <ParameterInformation>[];
-			var originalParametersCount:int = originalParameters.length;
-			for(var i:int = 0; i < originalParametersCount; i++)
-			{
-				var resultParameter:Object = originalParameters;
-				var parameter:ParameterInformation = new ParameterInformation();
-				parameter.label = resultParameter[parameter];
-				parameters[i] = parameter;
-			}
-			vo.parameters = parameters;
-			return vo;
-		}
-
 		private function parseHover(original:Object):String
 		{
 			if(original === null)
@@ -1338,129 +1198,6 @@ package actionScripts.languageServer
 				return original as String;
 			}
 			return original.value;
-		}
-
-		private function parseWorkspaceEdit(original:Object):WorkspaceEdit
-		{
-			var workspaceEdit:WorkspaceEdit = new WorkspaceEdit;
-			var jsonChanges:Object = original.changes;
-			if(jsonChanges)
-			{
-				var changes:Object = {};
-				for(var uri:String in jsonChanges)
-				{
-					//the key is the file path, the value is a list of TextEdits
-					var resultChanges:Array = jsonChanges[uri];
-					var resultChangesCount:int = resultChanges.length;
-					var textEdits:Vector.<TextEdit> = new <TextEdit>[];
-					for(var i:int = 0; i < resultChangesCount; i++)
-					{
-						var resultChange:Object = resultChanges[i];
-						var textEdit:TextEdit = parseTextEdit(resultChange);
-						textEdits[i] = textEdit;
-					}
-					changes[uri] = textEdits;
-				}
-				workspaceEdit.changes = changes;
-			}
-			var jsonDocumentChanges:Array = original.documentChanges;
-			if(jsonDocumentChanges)
-			{
-				var documentChanges:Array = [];
-				var changesCount:int = jsonDocumentChanges.length;
-				for(i = 0; i < changesCount; i++)
-				{
-					var documentChange:Object = jsonDocumentChanges[i];
-					if("kind" in documentChange)
-					{
-						switch(documentChange.kind)
-						{
-							case RenameFile.KIND:
-							{
-								var renameFile:RenameFile = parseRenameFile(documentChange);
-								documentChanges.push(renameFile);
-								break;
-							}
-							case CreateFile.KIND:
-							{
-								var createFile:CreateFile = parseCreateFile(documentChange);
-								documentChanges.push(createFile);
-								break;
-							}
-							case DeleteFile.KIND:
-							{
-								var deleteFile:DeleteFile = parseDeleteFile(documentChange);
-								documentChanges.push(deleteFile);
-								break;
-							}
-							default:
-							{
-								trace("parseWorkspaceEdit: Unknown document change:", documentChange.kind);
-							}
-						}
-					}
-					else
-					{
-						var textDocumentEdit:TextDocumentEdit = parseTextDocumentEdit(documentChange);
-						documentChanges.push(textDocumentEdit);
-					}
-				}
-				workspaceEdit.documentChanges = documentChanges;
-			}
-			return workspaceEdit;
-		}
-
-		private function parseTextEdit(original:Object):TextEdit
-		{
-			var vo:TextEdit = new TextEdit();
-			vo.range = parseRange(original.range);
-			vo.newText = original.newText;
-			return vo;
-		}
-
-		private function parseTextDocument(original:Object):TextDocumentIdentifier
-		{
-			var vo:TextDocumentIdentifier = new TextDocumentIdentifier();
-			vo.uri = original.uri;
-			return vo;
-		}
-
-		private function parseTextDocumentEdit(original:Object):TextDocumentEdit
-		{
-			var vo:TextDocumentEdit = new TextDocumentEdit();
-			vo.textDocument = parseTextDocument(original.textDocument);
-			var originalEdits:Array = original.edits;
-			var edits:Vector.<TextEdit> = new <TextEdit>[];
-			var editsCount:int = originalEdits.length;
-			for(var i:int = 0; i < editsCount; i++)
-			{
-				var edit:TextEdit = parseTextEdit(originalEdits[i]);
-				edits.push(edit);
-			}
-			vo.edits = edits;
-			return vo;
-		}
-
-		private function parseCreateFile(original:Object):CreateFile
-		{
-			var vo:CreateFile = new CreateFile();
-			vo.uri = original.uri;
-			return vo;
-		}
-
-		private function parseDeleteFile(original:Object):DeleteFile
-		{
-			var vo:DeleteFile = new DeleteFile();
-			vo.uri = original.uri;
-			return vo;
-		}
-
-		private function parseRenameFile(original:Object):RenameFile
-		{
-			var vo:RenameFile = new RenameFile();
-			vo.oldUri = original.oldUri;
-			vo.newUri = original.newUri;
-			return vo;
 		}
 		
 		private function textDocument__publishDiagnostics(jsonObject:Object):void
@@ -1475,7 +1212,7 @@ package actionScripts.languageServer
 			for(var i:int = 0; i < diagnosticsCount; i++)
 			{
 				var resultDiagnostic:Object = resultDiagnostics[i];
-				diagnostics[i] = parseDiagnosticWithPath(path, resultDiagnostic);
+				diagnostics[i] = Diagnostic.parseWithPath(path, resultDiagnostic);
 			}
 			_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
 		}
@@ -1483,7 +1220,7 @@ package actionScripts.languageServer
 		private function workspace__applyEdit(jsonObject:Object):void
 		{
 			var applyEditParams:Object = jsonObject.params;
-			var workspaceEdit:WorkspaceEdit = parseWorkspaceEdit(applyEditParams.edit);
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(applyEditParams.edit);
 			applyWorkspaceEdit(workspaceEdit)
 		}
 
@@ -1708,6 +1445,26 @@ package actionScripts.languageServer
 			params.position = position;
 			
 			this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
+		}
+
+		private function resolveCompletionHandler(event:ResolveCompletionItemEvent):void
+		{
+			if(!_initialized || _stopped || _shutdownID != -1)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			{
+				return;
+			}
+			event.preventDefault();
+			if(!resolveCompletion)
+			{
+				return;
+			}
+			
+			var id:int = this.sendRequest(METHOD_COMPLETION_ITEM__RESOLVE, event.item);
+			_resolveCompletionLookup[id] = event.item;
 		}
 
 		private function signatureHelpHandler(event:LanguageServerEvent):void

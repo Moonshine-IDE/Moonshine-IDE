@@ -38,5 +38,13 @@ package actionScripts.valueObjects
 			this.uri = uri;
 			this.range = range;
 		}
+
+		public static function parse(original:Object):Location
+		{
+			var vo:Location = new Location();
+			vo.uri = original.uri;
+			vo.range = Range.parse(original.range);
+			return vo;
+		}
 	}
 }

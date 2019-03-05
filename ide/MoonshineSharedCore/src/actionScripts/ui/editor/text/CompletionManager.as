@@ -46,6 +46,7 @@ package actionScripts.ui.editor.text
     import actionScripts.locator.IDEModel;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.applyWorkspaceEdit;
+    import actionScripts.events.ResolveCompletionItemEvent;
 
     public class CompletionManager
 	{
@@ -126,9 +127,22 @@ package actionScripts.ui.editor.text
 			completionList.addEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
 			completionList.addEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
 			completionList.addEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
+			completionList.addEventListener(Event.CHANGE, onMenuChange);
 			rePositionMenu();
 
 			filterMenu();
+			
+			if(items.length > 0)
+			{
+				var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
+					ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, items[0]);
+				GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
+			}
+		}
+
+		public function resolveCompletionItem(resolvedItem:CompletionItem):void
+		{
+			menuCollection.itemUpdated(resolvedItem);
 		}
 
 		public function closeCompletionList():void
@@ -142,6 +156,7 @@ package actionScripts.ui.editor.text
 			completionList.removeEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
 			completionList.removeEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
 			completionList.removeEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
+			completionList.removeEventListener(Event.CHANGE, onMenuChange);
 			completionList.closeDocumentation();
 		}
 
@@ -236,6 +251,22 @@ package actionScripts.ui.editor.text
 		private function onMenuFocusOut(event:FocusEvent):void
 		{
 			this.closeCompletionList();
+		}
+
+		private function onMenuChange(event:Event):void
+		{
+			if(!isActive)
+			{
+				return;
+			}
+			var item:CompletionItem = completionList.selectedItem as CompletionItem;
+			if(!item)
+			{
+				return;
+			}
+			var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
+				ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, item);
+			GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
 		}
 
 		private function onMenuKey(e:KeyboardEvent):void

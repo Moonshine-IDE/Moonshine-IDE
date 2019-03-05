@@ -50,6 +50,7 @@ package actionScripts.ui.editor
 			dispatcher.addEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			dispatcher.addEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 		}
 
 		protected function removeGlobalListeners():void
@@ -58,6 +59,7 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 		}
 
 		protected function dispatchCompletionEvent():void
@@ -233,6 +235,16 @@ package actionScripts.ui.editor
 			}
 
 			editor.showCompletionList(event.items);
+		}
+
+		protected function updateResolvedCompletionItemHandler(event:CompletionItemsEvent):void
+		{
+			if (event.items.length == 0)
+			{
+				return;
+			}
+
+			editor.resolveCompletionItem(event.items[0]);
 		}
 
 		protected function showSignatureHelpHandler(event:SignatureHelpEvent):void

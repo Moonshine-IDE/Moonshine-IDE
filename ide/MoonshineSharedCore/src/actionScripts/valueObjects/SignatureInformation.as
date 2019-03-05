@@ -32,5 +32,23 @@ package actionScripts.valueObjects
 	{
 		public var label:String = "";
 		public var parameters:Vector.<ParameterInformation>;
+
+		public static function parse(original:Object):SignatureInformation
+		{
+			var vo:SignatureInformation = new SignatureInformation();
+			vo.label = original.label;
+			var originalParameters:Array = original.parameters;
+			var parameters:Vector.<ParameterInformation> = new <ParameterInformation>[];
+			var originalParametersCount:int = originalParameters.length;
+			for(var i:int = 0; i < originalParametersCount; i++)
+			{
+				var resultParameter:Object = originalParameters;
+				var parameter:ParameterInformation = new ParameterInformation();
+				parameter.label = resultParameter[parameter];
+				parameters[i] = parameter;
+			}
+			vo.parameters = parameters;
+			return vo;
+		}
 	}
 }
