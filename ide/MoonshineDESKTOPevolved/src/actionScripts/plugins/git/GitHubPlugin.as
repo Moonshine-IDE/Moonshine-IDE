@@ -245,11 +245,10 @@ package actionScripts.plugins.git
 			{
 				isGranted = true;
 				
-				var against:String = xCodePermissionWindow.xCodePathAgainst == ProjectMenuTypes.GIT_PROJECT ? "Git" : "SVN";
 				var svnBinaryPathOSX:String = xCodePermissionWindow.xCodePath + "/usr/bin/svn";
 				
 				gitBinaryPathOSX = xCodePermissionWindow.xCodePath + "/usr/bin/git";
-				Alert.show(against +" permission accepted. You can now use Moonshine "+ against +" functionalities.", "Success!");
+				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
 				
 				var thisSettings: Vector.<ISetting> = getSettingsList();
 				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;

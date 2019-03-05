@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import flash.events.Event;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
@@ -25,6 +27,8 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 
@@ -147,14 +151,21 @@ package actionScripts.utils
 			// or the existing ant path does not exists
 			if (!model.svnPath)
 			{
-				model.svnPath = path;
-				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({svnBinaryPath: path}, 'svnBinaryPath', 'SVN Binary', false)
-				]);
-				
-				// save as moonshine settings
-				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, "actionScripts.plugins.svn::SVNPlugin", settings));
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				}
+				else
+				{
+					model.svnPath = path;
+					var settings:Vector.<ISetting> = Vector.<ISetting>([
+						new PathSetting({svnBinaryPath: path}, 'svnBinaryPath', 'SVN Binary', false)
+					]);
+					
+					// save as moonshine settings
+					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, "actionScripts.plugins.svn::SVNPlugin", settings));
+				}
 			}
 		}
 		
@@ -164,14 +175,21 @@ package actionScripts.utils
 			// or the existing ant path does not exists
 			if (!model.gitPath)
 			{
-				model.gitPath = path;
-				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({gitBinaryPathOSX: path}, 'gitBinaryPathOSX', 'Git Path', true)
-				]);
-				
-				// save as moonshine settings
-				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, "actionScripts.plugins.git::GitHubPlugin", settings));
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				}
+				else
+				{
+					model.gitPath = path;
+					var settings:Vector.<ISetting> = Vector.<ISetting>([
+						new PathSetting({gitBinaryPathOSX: path}, 'gitBinaryPathOSX', 'Git Path', true)
+					]);
+					
+					// save as moonshine settings
+					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, "actionScripts.plugins.git::GitHubPlugin", settings));
+				}
 			}
 		}
 		
