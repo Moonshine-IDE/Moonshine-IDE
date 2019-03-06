@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 implements="actionScripts.ui.IContentWindow"
+				 width="100%" height="100%"
+				 backgroundColor="0x444444" creationComplete="onSettingsInfoViewCreationComplete(event)">
+	<s:layout>
+		<s:HorizontalLayout gap="0"/>
+	</s:layout>
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+
+			import spark.components.Button;
+
+			public static const EVENT_CLOSE:String = "closeSettingsEvent";
+
+			public var defaultCloseLabel:String = "Close";
+
+			private var _label:String = "Settings";
+	
+			public function set label(value:String):void
+			{
+				_label = value;
+			}
+	
+			public function get label():String
+			{
+				return _label;
+			}
+	
+			public function get longLabel():String
+			{
+				return "Settings";
+			}
+	
+			public function isChanged():Boolean
+			{
+				// Allow tab to be closed without asking to save
+				return false;
+			}
+	
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+
+			public function save():void
+			{
+
+			}
+
+			public function close(force:Boolean = false):void
+			{
+				dispatchEvent(new Event(EVENT_CLOSE));
+			}
+
+			private function handleCancelClicked(event:MouseEvent):void
+			{
+				close(true);
+			}
+
+		private function onSettingsInfoViewCreationComplete(event:FlexEvent):void
+		{
+			var close:Button = new Button();
+			close.label = defaultCloseLabel;
+			close.addEventListener(MouseEvent.CLICK, handleCancelClicked);
+			close.styleName = "darkButton";
+			buttonBar.addElement(close);
+		}
+		]]>
+	</fx:Script>
+	<!-- Settings list -->
+	<s:BorderContainer width="100%" height="100%" backgroundColor="#FFFFFF">
+		<s:Label text="Project configuration is currently managed by build.gradle only."
+				 fontSize="20" fontFamily="DejaVuSans" horizontalCenter="0" top="20"/>
+		<s:BorderContainer id="buttonBar"
+						   width="100%" height="41"
+						   bottom="0" backgroundColor="0x444444">
+			<s:layout>
+				<s:HorizontalLayout paddingRight="10" paddingTop="0"
+									horizontalAlign="right" verticalAlign="middle"/>
+			</s:layout>
+		</s:BorderContainer>
+	</s:BorderContainer>
+</s:BorderContainer>

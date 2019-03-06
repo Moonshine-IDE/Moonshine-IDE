@@ -24,15 +24,6 @@ package actionScripts.impls
     import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-    import actionScripts.plugin.settings.SettingsView;
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.plugin.settings.vo.SettingsWrapper;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import flash.events.Event;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import flash.display.DisplayObject;
     import actionScripts.plugin.java.javaproject.CreateJavaProject;
     import actionScripts.factory.FileLocation;
     import flash.filesystem.File;

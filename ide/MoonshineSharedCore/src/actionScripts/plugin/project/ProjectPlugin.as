@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.project
 {
-    import flash.events.Event;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.settings.SettingsInfoView;
+
+	import flash.events.Event;
     import flash.net.SharedObject;
     
     import __AS3__.vec.Vector;
@@ -146,11 +149,25 @@ package actionScripts.plugin.project
 					return;
 				}
 			}
-			
+
+			var settingsLabel:String = project.folderLocation.fileBridge.name + " settings";
+
+			if (project is JavaProjectVO)
+			{
+				var gradleProject:JavaProjectVO = project as JavaProjectVO;
+				if (gradleProject.hasGradleBuild())
+				{
+					var noSettingsInfo:SettingsInfoView = new SettingsInfoView();
+					noSettingsInfo.addEventListener(SettingsInfoView.EVENT_CLOSE, settingsInfoClose);
+
+					dispatcher.dispatchEvent(new AddTabEvent(noSettingsInfo));
+					return;
+				}
+			}
+
 			// Create settings view & fetch project settings
 			var settingsView:SettingsView = new SettingsView();
-			settingsView.Width = 230;	
-			var settingsLabel:String = project.folderLocation.fileBridge.name + " settings"; 
+			settingsView.Width = 230;
 			settingsView.addCategory(settingsLabel);
 			
 			var categories:Vector.<SettingsWrapper> = project.getSettings();
@@ -222,7 +239,17 @@ package actionScripts.plugin.project
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SAVE_PROJECT_SETTINGS, pvo));
 			}
 		}
-		
+
+		private function settingsInfoClose(event:Event):void
+		{
+			var settings:SettingsInfoView = event.target as SettingsInfoView;
+
+			// Close the tab
+			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settings));
+
+			settings.removeEventListener(SettingsView.EVENT_CLOSE, settingsInfoClose);
+		}
+
 		private function handleAddProject(event:ProjectEvent):void
 		{
 			showProjectPanel();
