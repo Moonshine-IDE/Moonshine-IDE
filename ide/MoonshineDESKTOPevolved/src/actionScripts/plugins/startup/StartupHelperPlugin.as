@@ -41,7 +41,10 @@ package actionScripts.plugins.startup
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.EnvironmentUtils;
+    import actionScripts.utils.HelperUtils;
     import actionScripts.utils.PathSetupHelperUtil;
+    import actionScripts.valueObjects.ComponentTypes;
+    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HelperConstants;
     import actionScripts.valueObjects.ProjectVO;
@@ -628,13 +631,23 @@ package actionScripts.plugins.startup
 			if (updateNotifierFile.fileBridge.exists)
 			{
 				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
-				if (!gettingStartedPopup)
+				var type:String = String(notifierValue.item.@type);
+				var path:String = String(notifierValue.item.path);
+				
+				if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
 				{
-					PathSetupHelperUtil.updateFieldPath(String(notifierValue.item.@type), String(notifierValue.item.path));
+					updateGitAndSVN(path);
 				}
 				else
 				{
-					gettingStartedPopup.onInvokeEvent(String(notifierValue.item.@id));
+					if (!gettingStartedPopup)
+					{
+						PathSetupHelperUtil.updateFieldPath(type, path);
+					}
+					else
+					{
+						gettingStartedPopup.onInvokeEvent(type);
+					}
 				}
 				
 				// delete the file
@@ -654,6 +667,25 @@ package actionScripts.plugins.startup
 			else
 			{
 				gettingStartedPopup.onWarningUpdate(event);
+			}
+		}
+		
+		/**
+		 * Multiple component update requirement
+		 */
+		private function updateGitAndSVN(path:String):void
+		{
+			var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+			var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+			if (!gettingStartedPopup)
+			{
+				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_GIT, path);
+				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_SVN, path);
+			}
+			else
+			{
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_GIT);
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN);
 			}
 		}
     }
