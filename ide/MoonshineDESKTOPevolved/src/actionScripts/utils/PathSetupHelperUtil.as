@@ -21,6 +21,7 @@ package actionScripts.utils
 	import flash.events.Event;
 	
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.HelperEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
@@ -28,7 +29,9 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 
@@ -151,9 +154,9 @@ package actionScripts.utils
 			// or the existing ant path does not exists
 			if (!model.svnPath)
 			{
-				if (ConstantsCoreVO.IS_MACOS)
+				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent())
 				{
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_SVN, message: "Feature available. Click on Configure to allow"}));
 				}
 				else
 				{
@@ -175,9 +178,9 @@ package actionScripts.utils
 			// or the existing ant path does not exists
 			if (!model.gitPath)
 			{
-				if (ConstantsCoreVO.IS_MACOS)
+				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 				{
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
 				}
 				else
 				{

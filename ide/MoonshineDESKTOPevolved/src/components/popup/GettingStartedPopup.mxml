@@ -37,11 +37,15 @@
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.HelperUtils;
 			import actionScripts.utils.PathSetupHelperUtil;
+			import actionScripts.valueObjects.ComponentTypes;
 			import actionScripts.valueObjects.ComponentVO;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.HelperConstants;
 			
 			private static const LABEL:String = "Getting Started";
 			
@@ -101,6 +105,7 @@
 			private function onInitialized(event:FlexEvent):void
 			{
 				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
+				dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			}
 			
 			protected function onCreationCompletes():void
@@ -142,7 +147,19 @@
 			private function onOpenSettings(event:HelperEvent):void
 			{
 				var component:ComponentVO = event.value as ComponentVO;
-				PathSetupHelperUtil.openSettingsViewFor(component.type);
+				if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) && 
+					ConstantsCoreVO.IS_MACOS)
+				{
+					var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+					var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+					
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					gitComponent.hasWarning = svnComponent.hasWarning = null;
+				}
+				else
+				{
+					PathSetupHelperUtil.openSettingsViewFor(component.type);
+				}
 			}
 			
 			private function onAnyComponentDownloaded(event:HelperEvent):void
@@ -150,6 +167,12 @@
 				// autoset moonshine internal fields as appropriate
 				var component:ComponentVO = event.value as ComponentVO;
 				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
+			}
+			
+			private function onWarningUpdated(event:HelperEvent):void
+			{
+				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
+				component.hasWarning = event.value.message;
 			}
 			
 		]]>

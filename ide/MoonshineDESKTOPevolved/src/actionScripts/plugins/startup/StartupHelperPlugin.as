@@ -63,6 +63,8 @@ package actionScripts.plugins.startup
 		private static const CC_SDK:String = "CC_SDK";
 		private static const CC_ANT:String = "CC_ANT";
 		private static const CC_MAVEN:String = "CC_MAVEN";
+		private static const CC_GIT:String = "CC_GIT";
+		private static const CC_SVN:String = "CC_SVN";
 		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
@@ -122,7 +124,7 @@ package actionScripts.plugins.startup
 		 */
 		private function preInitHelping():void
 		{
-			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN];
+			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
 			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
@@ -144,9 +146,14 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-
-			var tmpSequence:String = sequences[sequenceIndex];
 			
+			if (sequenceIndex >= sequences.length)
+			{
+				sequenceIndex = 0;
+				return;
+			}
+			
+			var tmpSequence:String = sequences[sequenceIndex];
 			switch(tmpSequence)
 			{
 				case SDK_XTENDED:
@@ -172,6 +179,16 @@ package actionScripts.plugins.startup
 				case CC_MAVEN:
 				{
 					checkMavenPathPresence();
+					break;
+				}
+				case CC_GIT:
+				{
+					checkGitPathPresence();
+					break;
+				}
+				case CC_SDK:
+				{
+					checkSVNPathPresence();
 					break;
 				}
 			}
@@ -314,8 +331,7 @@ package actionScripts.plugins.startup
 		{
 			sequenceIndex++;
 			
-			var isPresent:Boolean = dependencyCheckUtil.isAntPresent();
-			if (!isPresent)
+			if (!dependencyCheckUtil.isAntPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.ANT_HOME)
 				{
@@ -340,8 +356,7 @@ package actionScripts.plugins.startup
 		{
 			sequenceIndex++;
 			
-			var isPresent:Boolean = dependencyCheckUtil.isMavenPresent();
-			if (!model.mavenPath || model.mavenPath == "")
+			if (!dependencyCheckUtil.isMavenPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.MAVEN_HOME)
 				{
@@ -351,6 +366,58 @@ package actionScripts.plugins.startup
 				{
 					isAllDependenciesPresent = false;
 				}
+			}
+			else
+			{
+				startHelping();
+			}
+		}
+		
+		/**
+		 * Checks internal Git path
+		 */
+		private function checkGitPathPresence():void
+		{
+			sequenceIndex++;
+			
+			if (!dependencyCheckUtil.isGitPresent())
+			{
+				if (environmentUtil && environmentUtil.environments.GIT_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.GIT, environmentUtil.environments.GIT_HOME.nativePath);
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
+			}
+			else
+			{
+				startHelping();
+			}
+		}
+		
+		/**
+		 * Checks internal SVN path
+		 */
+		private function checkSVNPathPresence():void
+		{
+			sequenceIndex++;
+			
+			if (!dependencyCheckUtil.isSVNPresent())
+			{
+				if (environmentUtil && environmentUtil.environments.SVN_HOME)
+				{
+					PathSetupHelperUtil.updateFieldPath(SDKTypes.SVN, environmentUtil.environments.SVN_HOME.nativePath);
+				}
+				else
+				{
+					isAllDependenciesPresent = false;
+				}
+			}
+			else
+			{
+				startHelping();
 			}
 		}
 		
