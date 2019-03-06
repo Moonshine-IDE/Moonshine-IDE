@@ -96,6 +96,12 @@
 				viewHelper.updateComponentStatusAsDownloaded(componentId);
 			}
 			
+			public function onWarningUpdate(event:HelperEvent):void
+			{
+				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
+				component.hasWarning = event.value.message;
+			}
+			
 			//--------------------------------------------------------------------------
 			//
 			//  PRIVATE API
@@ -105,13 +111,11 @@
 			private function onInitialized(event:FlexEvent):void
 			{
 				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
-				dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			}
 			
 			protected function onCreationCompletes():void
 			{
 				updateUI();
-				//dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			}
 			
 			private function updateUI():void
@@ -125,19 +129,6 @@
 			//  PRIVATE LISTENERS
 			//
 			//--------------------------------------------------------------------------
-			
-			private function onInvokeEventFired(event:InvokeEvent):void
-			{
-				var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
-				if (updateNotifierFile.fileBridge.exists)
-				{
-					var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
-					viewHelper.updateComponentStatusAsDownloaded(String(notifierValue.item.@id));
-					
-					// delete the file
-					updateNotifierFile.fileBridge.deleteFile();
-				}
-			}
 			
 			private function runAppStoreHelper(event:HelperEvent):void
 			{
@@ -167,12 +158,6 @@
 				// autoset moonshine internal fields as appropriate
 				var component:ComponentVO = event.value as ComponentVO;
 				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
-			}
-			
-			private function onWarningUpdated(event:HelperEvent):void
-			{
-				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-				component.hasWarning = event.value.message;
 			}
 			
 		]]>

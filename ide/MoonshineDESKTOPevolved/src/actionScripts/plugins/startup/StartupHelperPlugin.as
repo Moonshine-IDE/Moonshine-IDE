@@ -27,6 +27,7 @@ package actionScripts.plugins.startup
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.HelperEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
@@ -35,12 +36,14 @@ package actionScripts.plugins.startup
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.EnvironmentUtils;
     import actionScripts.utils.PathSetupHelperUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.HelperConstants;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.SDKTypes;
     
@@ -108,6 +111,7 @@ package actionScripts.plugins.startup
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
+			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
@@ -635,6 +639,21 @@ package actionScripts.plugins.startup
 				
 				// delete the file
 				try { updateNotifierFile.fileBridge.deleteFile(); } catch (e:Error) { updateNotifierFile.fileBridge.deleteFileAsync(); }
+			}
+		}
+		
+		/**
+		 * When getting warning updates
+		 */
+		private function onWarningUpdated(event:HelperEvent):void
+		{
+			if (!gettingStartedPopup)
+			{
+				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+			}
+			else
+			{
+				gettingStartedPopup.onWarningUpdate(event);
 			}
 		}
     }
