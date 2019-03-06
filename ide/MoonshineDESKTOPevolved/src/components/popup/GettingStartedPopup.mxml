@@ -83,6 +83,17 @@
 			
 			//--------------------------------------------------------------------------
 			//
+			//  PUBLIC API
+			//
+			//--------------------------------------------------------------------------
+			
+			public function onInvokeEvent(componentId:String):void
+			{
+				viewHelper.updateComponentStatusAsDownloaded(componentId);
+			}
+			
+			//--------------------------------------------------------------------------
+			//
 			//  PRIVATE API
 			//
 			//--------------------------------------------------------------------------
@@ -95,7 +106,7 @@
 			protected function onCreationCompletes():void
 			{
 				updateUI();
-				dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
+				//dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			}
 			
 			private function updateUI():void

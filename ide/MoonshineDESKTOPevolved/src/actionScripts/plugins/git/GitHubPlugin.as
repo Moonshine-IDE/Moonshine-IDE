@@ -208,11 +208,13 @@ package actionScripts.plugins.git
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
+				print("sending to test xcode");
 				processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
 			{
+				print("got into else condition");
 				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
 			

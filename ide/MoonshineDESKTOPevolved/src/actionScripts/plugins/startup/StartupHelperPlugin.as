@@ -19,6 +19,7 @@
 package actionScripts.plugins.startup
 {
     import flash.events.Event;
+    import flash.events.InvokeEvent;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
@@ -42,6 +43,8 @@ package actionScripts.plugins.startup
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.SDKTypes;
+    
+    import avmplus.getQualifiedClassName;
     
     import components.popup.GettingStartedPopup;
     import components.popup.JavaPathSetupPopup;
@@ -102,6 +105,7 @@ package actionScripts.plugins.startup
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
@@ -543,5 +547,28 @@ package actionScripts.plugins.startup
 				warning("Problem with updating PayaraEmbeddedLauncher %s", e.message);
 			}
         }
+		
+		/**
+		 * To listen updates from SDK Installer
+		 */
+		private function onInvokeEventFired(event:InvokeEvent):void
+		{
+			var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
+			if (updateNotifierFile.fileBridge.exists)
+			{
+				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
+				if (!gettingStartedPopup)
+				{
+					PathSetupHelperUtil.updateFieldPath(String(notifierValue.item.@type), String(notifierValue.item.path));
+				}
+				else
+				{
+					gettingStartedPopup.onInvokeEvent(String(notifierValue.item.@id));
+				}
+				
+				// delete the file
+				try { updateNotifierFile.fileBridge.deleteFile(); } catch (e:Error) { updateNotifierFile.fileBridge.deleteFileAsync(); }
+			}
+		}
     }
 }

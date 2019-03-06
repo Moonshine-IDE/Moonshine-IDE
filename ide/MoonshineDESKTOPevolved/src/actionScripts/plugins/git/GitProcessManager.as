@@ -413,6 +413,17 @@ package actionScripts.plugins.git
 				setGitAvailable(false);
 			}
 			
+			switch (value.queue.processType)
+			{
+				case XCODE_PATH_DECTECTION:
+				{
+					if (onXCodePathDetection != null)
+					{
+						onXCodePathDetection(null, true, null);
+					}
+				}
+			}
+			
 			if (!match) error(value.output);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
