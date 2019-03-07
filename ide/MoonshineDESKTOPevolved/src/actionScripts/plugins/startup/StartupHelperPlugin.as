@@ -520,11 +520,14 @@ package actionScripts.plugins.startup
 				
 				// start polling only in case of Windows
 				if (!ConstantsCoreVO.IS_MACOS) SDKInstallerPolling.getInstance().startPolling();
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(gettingStartedPopup as IContentWindow)
+				);
 			}
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new AddTabEvent(gettingStartedPopup as IContentWindow)
-			);
+			else
+			{
+				model.activeEditor = gettingStartedPopup;
+			}
 		}
 		
 		/**
