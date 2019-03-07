@@ -185,12 +185,20 @@ package actionScripts.languageServer
 			//with an older version of the JDT language server was installed
 			//we don't want conflicts between JDT language server versions, so
 			//delete the entire directory and start fresh
-			if(storageFolder.exists)
+			var showStorageError:Boolean = false;
+			try
 			{
-				storageFolder.deleteDirectory(true);
+				if(storageFolder.exists)
+				{
+					storageFolder.deleteDirectory(true);
+				}
+				appFolder.copyTo(storageFolder);
 			}
-			appFolder.copyTo(storageFolder);
-			if(!storageFolder.exists || !jarFile.exists)
+			catch(error:Error)
+			{
+				showStorageError = true;
+			}
+			if(showStorageError || !storageFolder.exists || !jarFile.exists)
 			{
 				//something went wrong!
 				var message:String = "Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath;
