@@ -1,11 +1,11 @@
 package actionScripts.plugin.java.javaproject.importer
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.utils.GradleBuildUtil;
 	import actionScripts.utils.MavenPomUtil;
 
-	public class JavaImporter
+	public class JavaImporter extends FlashDevelopImporterBase
 	{
 		public static function test(file:Object):FileLocation
 		{
@@ -25,7 +25,7 @@ package actionScripts.plugin.java.javaproject.importer
 			return null;
 		}
 
-		public static function parse(projectFolder:FileLocation, projectName:String=null):JavaProjectVO
+		public static function parse(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):JavaProjectVO
 		{
 			if(!projectName)
 			{
@@ -33,31 +33,50 @@ package actionScripts.plugin.java.javaproject.importer
 				projectName = airFile.name;
 			}
 
-			var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+            if (!settingsFileLocation)
+            {
+                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + ".javaproj");
+            }
+
+            var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+
+            var sourceDirectory:String = null;
+			var settingsData:XML = null;
+			if (settingsFileLocation.fileBridge.exists)
+			{
+				settingsData = new XML(settingsFileLocation.fileBridge.read());
+                parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
+                javaProject.mainClassName = settingsData.build.option.@mainclass;
+
+                if (javaProject.classpaths.length > 0)
+                {
+                    sourceDirectory = javaProject.classpaths[0].fileBridge.nativePath;
+                }
+            }
+
 			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
-			var sourceDirectory:String = null;
 
 			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "java");
 
 			if (javaProject.hasPom())
 			{
-				var pomFile:FileLocation = new FileLocation(javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
-
-				var fileContent:Object = pomFile.fileBridge.read();
-				var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
-				javaProject.mavenBuildOptions.parse(new XML(fileContent).xsiNamespace::properties);
-
-				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
+				if (settingsData)
+				{
+					javaProject.mavenBuildOptions.parse(settingsData.mavenBuild);
+				}
 
 				if (!sourceDirectory)
 				{
-					sourceDirectory = defaultSourceFolderPath;
+					var pomFile:FileLocation = new FileLocation(
+							javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml")
+					);
+					sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
+
+					if (!sourceDirectory)
+					{
+						sourceDirectory = defaultSourceFolderPath;
+					}
 				}
-			}
-			else if (javaProject.hasGradleBuild())
-			{
-				var gradleFile:FileLocation = javaProject.projectFolder.file.fileBridge.resolvePath("build.gradle");
-				sourceDirectory = GradleBuildUtil.getProjectSourceDirectory(gradleFile);
 			}
 
 			if (sourceDirectory)
@@ -69,8 +88,6 @@ package actionScripts.plugin.java.javaproject.importer
 			{
 				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
 			}
-
-			javaProject.classpaths.push(javaProject.sourceFolder);
 
 			return javaProject;
 		}

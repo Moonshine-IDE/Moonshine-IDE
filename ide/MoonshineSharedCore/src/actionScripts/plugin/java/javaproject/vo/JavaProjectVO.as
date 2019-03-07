@@ -2,7 +2,7 @@ package actionScripts.plugin.java.javaproject.vo
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
-	import actionScripts.plugin.actionscript.as3project.vo.JavaMavenBuildOptions;
+	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -14,16 +14,18 @@ package actionScripts.plugin.java.javaproject.vo
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
-		public var mavenBuildOptions:JavaMavenBuildOptions;
+		public var mavenBuildOptions:MavenBuildOptions;
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var sourceFolder:FileLocation;
+
+		public var mainClassName:String;
 
 		public function JavaProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
 			super(folder, projectName, updateToTreeView);
 
             projectReference.hiddenPaths.splice(0, projectReference.hiddenPaths.length);
-			mavenBuildOptions = new JavaMavenBuildOptions(projectFolder.nativePath);
+			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 		}
 
 		public function hasPom():Boolean

@@ -61,8 +61,7 @@ package actionScripts.plugins.as3project.importer
 			project.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+project.projectName+"Config.xml").nativePath));
 			project.projectFolder.name = project.projectName;
 			
-			var stream:FileStream;
-			stream = new FileStream();
+			var stream:FileStream = new FileStream();
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
 			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
 			stream.close();
@@ -72,18 +71,18 @@ package actionScripts.plugins.as3project.importer
             project.resourcePaths.length = 0;
             project.targets.length = 0;
 
-            parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path", project.buildOptions.customSDKPath);
-            parsePaths(data.libraryPaths.element, project.libraries, project, "path", project.buildOptions.customSDKPath);
-            parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path", project.buildOptions.customSDKPath);
-            parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.includeLibraries.element, project.includeLibraries, project, "path");
+            parsePaths(data.libraryPaths.element, project.libraries, project, "path");
+            parsePaths(data.externalLibraryPaths.element, project.externalLibraries, project, "path");
+            parsePaths(data.rslPaths.element, project.runtimeSharedLibraries, project, "path");
 
             project.assetLibrary = data.library;
             parsePathString(data.intrinsics.element, project.intrinsicLibraries, project, "path");
-            parsePaths(data.compileTargets.compile, project.targets, project, "path", project.buildOptions.customSDKPath);
-            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path", project.buildOptions.customSDKPath);
+            parsePaths(data.compileTargets.compile, project.targets, project, "path");
+            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");
 			
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path", project.buildOptions.customSDKPath);
-			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path", project.buildOptions.customSDKPath);
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path");
 			parsePaths(data.moonshineNativeExtensionPaths["class"], project.nativeExtensions, project, "path");
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
