@@ -43,7 +43,6 @@ package actionScripts.plugins.startup
     import actionScripts.utils.EnvironmentUtils;
     import actionScripts.utils.HelperUtils;
     import actionScripts.utils.PathSetupHelperUtil;
-    import actionScripts.utils.SDKInstallerPolling;
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -115,16 +114,11 @@ package actionScripts.plugins.startup
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
-			
-			if (!ConstantsCoreVO.IS_MACOS) 
-			{
-				dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_INSTALLER_NOTIFIER_NOTIFICATION, onInstallerFileNotifierFound, false, 0, true);
-			}
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
 			{
-				dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
@@ -518,8 +512,6 @@ package actionScripts.plugins.startup
 				gettingStartedPopup.dependencyCheckUtil = dependencyCheckUtil;
 				gettingStartedPopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
 				
-				// start polling only in case of Windows
-				if (!ConstantsCoreVO.IS_MACOS) SDKInstallerPolling.getInstance().startPolling();
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new AddTabEvent(gettingStartedPopup as IContentWindow)
 				);
@@ -537,9 +529,6 @@ package actionScripts.plugins.startup
 		{
 			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
 			gettingStartedPopup = null;
-			
-			// polling only in case of Windows
-			if (!ConstantsCoreVO.IS_MACOS) SDKInstallerPolling.getInstance().stopPolling();
 		}
 		
 		/**
@@ -646,14 +635,6 @@ package actionScripts.plugins.startup
 				warning("Problem with updating PayaraEmbeddedLauncher %s", e.message);
 			}
         }
-		
-		/**
-		 * In case of polling only on Windows
-		 */
-		private function onInstallerFileNotifierFound(event:StartupHelperEvent):void
-		{
-			onInvokeEventFired(null);
-		}
 		
 		/**
 		 * To listen updates from SDK Installer
