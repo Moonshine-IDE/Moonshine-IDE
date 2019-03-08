@@ -660,7 +660,7 @@ package actionScripts.plugins.startup
 					}
 					else
 					{
-						gettingStartedPopup.onInvokeEvent(type);
+						gettingStartedPopup.onInvokeEvent(type, path);
 					}
 				}
 				
@@ -698,8 +698,8 @@ package actionScripts.plugins.startup
 			}
 			else
 			{
-				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_GIT);
-				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN);
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_GIT, path);
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN, path);
 			}
 		}
     }

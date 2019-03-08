@@ -95,6 +95,18 @@ package actionScripts.valueObjects
 			return _type;
 		}
 		
+		public static function getNewReference(value:Object):SDKReferenceVO
+		{
+			var tmpRef:SDKReferenceVO = new SDKReferenceVO();
+			if (value.hasOwnProperty("build")) tmpRef.build = value.build;
+			if (value.hasOwnProperty("name")) tmpRef.name = value.name;
+			if (value.hasOwnProperty("path")) tmpRef.path = value.path;
+			if (value.hasOwnProperty("status")) tmpRef.status = value.status;
+			if (value.hasOwnProperty("version")) tmpRef.version = value.version;
+			
+			return tmpRef;
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE API

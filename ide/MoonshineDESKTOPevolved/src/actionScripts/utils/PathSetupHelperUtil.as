@@ -199,7 +199,10 @@ package actionScripts.utils
 		public static function addProgramingSDK(path:String):void
 		{
 			var sdkPath:FileLocation = new FileLocation(path);
+			if (!sdkPath.fileBridge.exists) return;
+			
 			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath);
+			if (!tmpSDK) return;
 			SDKUtils.isSDKAlreadySaved(tmpSDK);
 			
 			// if only not already set

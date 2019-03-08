@@ -185,7 +185,7 @@ package actionScripts.plugin.recentlyOpened
 			{
 				for each (object in cookie.data.userSDKs)
 				{
-					model.userSavedSDKs.addItem(ObjectTranslator.objectToInstance(object, SDKReferenceVO));
+					model.userSavedSDKs.addItem(SDKReferenceVO.getNewReference(object));
 				}
 			}
 			

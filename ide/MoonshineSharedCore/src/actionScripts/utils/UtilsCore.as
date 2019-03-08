@@ -247,6 +247,7 @@ package actionScripts.utils
 		{
 			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
+				if (!ConstantsCoreVO.IS_MACOS) searchByValue = searchByValue.replace(/(\/)/g, "\\");
 				if (i[searchByField] == searchByValue)
 				{
 					return i;
@@ -548,6 +549,8 @@ package actionScripts.utils
 					break;
 				}
 			}
+			
+			if (!sdkFullName) return false;
 			
             var flexJSPrefixName:String = "Apache Flex (FlexJS) ";
             var royalePrefixName:String = "Apache Royale ";

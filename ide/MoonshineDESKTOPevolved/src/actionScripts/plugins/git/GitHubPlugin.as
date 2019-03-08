@@ -69,9 +69,9 @@ package actionScripts.plugins.git
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
-		override public function get name():String			{ return "GitHub"; }
+		override public function get name():String			{ return "Git"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
-		override public function get description():String	{ return "GitHub Plugin. Esc exits."; }
+		override public function get description():String	{ return "Git Plugin. Esc exits."; }
 		
 		private var _gitBinaryPathOSX:String;
 		public function get gitBinaryPathOSX():String
@@ -168,7 +168,7 @@ package actionScripts.plugins.git
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', true, gitBinaryPathOSX, false)
+				new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false)
 			]);
 		}
 		

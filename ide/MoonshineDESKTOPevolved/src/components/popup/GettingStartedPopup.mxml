@@ -91,9 +91,9 @@
 			//
 			//--------------------------------------------------------------------------
 			
-			public function onInvokeEvent(componentId:String):void
+			public function onInvokeEvent(componentId:String, path:String=null):void
 			{
-				viewHelper.updateComponentStatusAsDownloaded(componentId);
+				viewHelper.updateComponentStatusAsDownloaded(componentId, path);
 			}
 			
 			public function onWarningUpdate(event:HelperEvent):void

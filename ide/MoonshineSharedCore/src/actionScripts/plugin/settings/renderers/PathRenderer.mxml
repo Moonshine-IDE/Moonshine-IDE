@@ -45,6 +45,7 @@
 			import actionScripts.events.AddTabEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.AbstractSetting;
 			import actionScripts.plugin.settings.vo.PathSetting;
@@ -236,8 +237,17 @@
 			}
 
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
-
-			setMessage(this.message, this.messageType);
+			
+			// validate path
+			if (!isSDKPath && setting.stringValue && !isDropDown)
+			{
+				if (!(new FileLocation(setting.stringValue).fileBridge.exists))
+					setMessage("Path is not accessible.", AbstractSetting.MESSAGE_CRITICAL);
+			}
+			else
+			{
+				setMessage(this.message, this.messageType);
+			}
 		}
 
 		private function hideDefineSDKLink(withSDKName:String):void
@@ -362,10 +372,10 @@
 				  skinClass="{LinkButtonSkin}"
 				  click="selectPath()" />
 
-		<s:Button label="Download a New SDK"
+		<!--<s:Button label="Download a New SDK"
 				  skinClass="{LinkButtonSkin}"
 				  click="onDownloadNewSDK()"
-				  includeInLayout="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}" visible="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}"/>
+				  includeInLayout="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}" visible="{isSDKPath &amp;&amp; !ConstantsCoreVO.IS_MACOS}"/>-->
 	</s:HGroup>
 
 	<s:Label id="lblValue"
