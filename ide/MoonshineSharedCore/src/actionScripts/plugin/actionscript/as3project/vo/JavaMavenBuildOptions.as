@@ -14,10 +14,5 @@ package actionScripts.plugin.actionscript.as3project.vo
             var xsiNamespace:Namespace = new Namespace("", "http://maven.apache.org/POM/4.0.0");
             commandLine = SerializeUtil.deserializeString(build.xsiNamespace::projectbuildaction);
         }
-
-        override public function toXML():XML
-        {
-            return null;
-        }
     }
 }

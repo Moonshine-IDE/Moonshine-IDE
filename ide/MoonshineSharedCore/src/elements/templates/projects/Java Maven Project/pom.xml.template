@@ -8,10 +8,6 @@
   <artifactId>$ProjectName</artifactId>
   <name>$ProjectName</name>
   <version>0.1.0-SNAPSHOT</version>
-
-   <properties>
-   		<projectbuildaction>clean install</projectbuildaction>
-   </properties>
    <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>

@@ -33,10 +33,12 @@ package actionScripts.plugin.java.javaproject
 	{
 		public function CreateJavaProject(event:NewProjectEvent)
 		{
+			settingsFileLocation = event.settingsFile;
 			createJavaProject(event);
 		}
 
 		private var project:JavaProjectVO;
+		private var settingsFileLocation:FileLocation;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var isInvalidToSave:Boolean;
@@ -276,7 +278,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return JavaImporter.parse(targetFolder, projectName);
+			return JavaImporter.parse(targetFolder, projectName, settingsFileLocation);
 		}
 	}
 }

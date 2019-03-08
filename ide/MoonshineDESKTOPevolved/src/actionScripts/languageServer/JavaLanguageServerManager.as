@@ -65,7 +65,7 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.100.v20180611-1436.jar";
+		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.200.v20180922-1751.jar";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
@@ -185,12 +185,20 @@ package actionScripts.languageServer
 			//with an older version of the JDT language server was installed
 			//we don't want conflicts between JDT language server versions, so
 			//delete the entire directory and start fresh
-			if(storageFolder.exists)
+			var showStorageError:Boolean = false;
+			try
 			{
-				storageFolder.deleteDirectory(true);
+				if(storageFolder.exists)
+				{
+					storageFolder.deleteDirectory(true);
+				}
+				appFolder.copyTo(storageFolder);
 			}
-			appFolder.copyTo(storageFolder);
-			if(!storageFolder.exists || !jarFile.exists)
+			catch(error:Error)
+			{
+				showStorageError = true;
+			}
+			if(showStorageError || !storageFolder.exists || !jarFile.exists)
 			{
 				//something went wrong!
 				var message:String = "Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath;
