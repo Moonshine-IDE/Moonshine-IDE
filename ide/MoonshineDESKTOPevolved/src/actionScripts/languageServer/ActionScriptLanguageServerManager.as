@@ -46,6 +46,7 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.events.FilePluginEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -72,6 +73,8 @@ package actionScripts.languageServer
 		private var _shellInfo:NativeProcessStartupInfo;
 		private var _nativeProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
+		private var _previousJavaPath:String = null;
+		private var _previousSDKPath:String = null;
 
 		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
 		{
@@ -80,6 +83,7 @@ package actionScripts.languageServer
 			_project.addEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
@@ -173,6 +177,7 @@ package actionScripts.languageServer
 			_project.removeEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
+			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
 		}
 
 		protected function cleanupLanguageClient():void
@@ -190,32 +195,30 @@ package actionScripts.languageServer
 		{
 			if(_nativeProcess)
 			{
-				trace("Error: NativeProcess already started!");
+				trace("Error: AS3 & MXML language server process already exists!");
 				return;
 			}
-			if(!_model.javaPathForTypeAhead)
+			var jdkFolder:File = null;
+			if(_model.javaPathForTypeAhead)
 			{
-				return;
+				jdkFolder = _model.javaPathForTypeAhead.fileBridge.getFile as File;
 			}
-			var jdkFolder:File = _model.javaPathForTypeAhead.fileBridge.getFile as File;
-			if(!jdkFolder)
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			if(!jdkFolder || !sdkPath)
 			{
+				//we'll need to try again later if the settings change
+				_previousJavaPath = null;
+				_previousSDKPath = null;
 				return;
 			}
+			_previousJavaPath = jdkFolder.nativePath;
+			_previousSDKPath = sdkPath;
 
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
 			var cmdFile:File = jdkFolder.resolvePath(javaFileName);
 			if(!cmdFile.exists)
 			{
 				cmdFile = jdkFolder.resolvePath("bin/" + javaFileName);
-			}
-
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
-			{
-				//we can't start the process yet because we don't have an SDK
-				//for this project
-				return;
 			}
 
 			var frameworksPath:String = (new File(sdkPath)).resolvePath("frameworks").nativePath;
@@ -240,46 +243,25 @@ package actionScripts.languageServer
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
-			initShell();
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS, "ActionScript", "Starting ActionScript & MXML code intelligence..."
-			));
-		}
 
-		private function initShell():void
-		{
-			if (_nativeProcess)
-			{
-				_nativeProcess.exit();
-			}
-			else
-			{
-				startShell();
-			}
-		}
-
-		private function startShell():void
-		{
 			_nativeProcess = new NativeProcess();
 			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			_nativeProcess.start(_shellInfo);
 
-			initializeLanguageServer();
+			initializeLanguageServer(sdkPath);
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS, "ActionScript", "Starting ActionScript & MXML code intelligence..."
+			));
 		}
 		
-		private function initializeLanguageServer():void
+		private function initializeLanguageServer(sdkPath:String):void
 		{
 			if(_languageClient)
 			{
 				//we're already initializing or initialized...
-				return;
-			}
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
-			{
-				//we'll need to try again later if the SDK changes
+				trace("Error: AS3 & MXML language client already exists!");
 				return;
 			}
 
@@ -296,6 +278,11 @@ package actionScripts.languageServer
 
 		private function restartLanguageServer():void
 		{
+			if(_waitingToRestart)
+			{
+				//we'll just continue waiting
+				return;
+			}
 			_waitingToRestart = false;
 			if(_languageClient)
 			{
@@ -467,8 +454,35 @@ package actionScripts.languageServer
 
 		private function projectChangeCustomSDKHandler(event:Event):void
 		{
-			trace("Change AS3 & MXML project custom SDK:", _project.customSDKPath);
-			restartLanguageServer();
+			//restart only when the path has changed
+			if(getProjectSDKPath(_project, _model) != _previousSDKPath)
+			{
+				restartLanguageServer();
+			}
+		}
+
+		private function changeMenuSDKStateHandler(event:Event):void
+		{
+			//restart only when the path has changed
+			if(getProjectSDKPath(_project, _model) != _previousSDKPath)
+			{
+				restartLanguageServer();
+			}
+		}
+
+		private function javaPathSaveHandler(event:FilePluginEvent):void
+		{
+			var javaPath:String = null;
+			if(_model.javaPathForTypeAhead)
+			{
+				var javaFile:File = _model.javaPathForTypeAhead.fileBridge.getFile as File;
+				javaPath = javaFile.nativePath;
+			}
+			//restart only when the path has changed
+			if(javaPath != _previousJavaPath)
+			{
+				restartLanguageServer();
+			}
 		}
 		
 		private function saveProjectSettingsHandler(event:ProjectEvent):void
@@ -478,18 +492,6 @@ package actionScripts.languageServer
 				return;
 			}
 			sendProjectConfiguration();
-		}
-
-		private function changeMenuSDKStateHandler(event:Event):void
-		{
-			var defaultSDKPath:String = "None";
-			var defaultSDK:FileLocation = _model.defaultSDK;
-			if(defaultSDK)
-			{
-				defaultSDKPath = defaultSDK.fileBridge.nativePath;
-			}
-			trace("Change AS3 & MXML global SDK:", defaultSDKPath);
-			restartLanguageServer();
 		}
 	}
 }
