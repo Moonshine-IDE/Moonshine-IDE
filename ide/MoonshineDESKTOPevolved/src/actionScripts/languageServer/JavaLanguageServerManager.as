@@ -98,6 +98,7 @@ package actionScripts.languageServer
 		private var _nativeProcess:NativeProcess;
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
+		private var _previousJDKPath:String = null;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -220,10 +221,11 @@ package actionScripts.languageServer
 		{
 			if(_nativeProcess)
 			{
-				trace("Error: NativeProcess already started!");
+				trace("Error: Java language server process already exists!");
 				return;
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
+			_previousJDKPath = jdkPath;
 			if(!jdkPath)
 			{
 				return;
@@ -269,7 +271,13 @@ package actionScripts.languageServer
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
-			initShell();
+
+			_nativeProcess = new NativeProcess();
+			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			_nativeProcess.start(_shellInfo);
+
+			initializeLanguageServer(jdkPath);
 		}
 
 		private function getWorkspaceNativePath():String
@@ -287,40 +295,13 @@ package actionScripts.languageServer
 			var workspaceLocation:File = File.applicationStorageDirectory.resolvePath(PATH_WORKSPACE_STORAGE).resolvePath(digest);
 			return workspaceLocation.nativePath;
 		}
-
-		private function initShell():void
-		{
-			if (_nativeProcess)
-			{
-				_nativeProcess.exit();
-			}
-			else
-			{
-				startShell();
-			}
-		}
-
-		private function startShell():void
-		{
-			_nativeProcess = new NativeProcess();
-			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.start(_shellInfo);
-
-			initializeLanguageServer();
-		}
 		
-		private function initializeLanguageServer():void
+		private function initializeLanguageServer(sdkPath:String):void
 		{
 			if(_languageClient)
 			{
 				//we're already initializing or initialized...
-				return;
-			}
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
-			{
-				//we'll need to try again later if the SDK changes
+				trace("Error: Java language client already exists!");
 				return;
 			}
 
@@ -351,6 +332,11 @@ package actionScripts.languageServer
 
 		private function restartLanguageServer():void
 		{
+			if(_waitingToRestart)
+			{
+				//we'll just continue waiting
+				return;
+			}
 			_waitingToRestart = false;
 			if(_languageClient)
 			{
@@ -414,14 +400,11 @@ package actionScripts.languageServer
 
 		private function jdkPathSaveHandler(event:FilePluginEvent):void
 		{
-			var defaultSDKPath:String = "None";
-			var defaultSDK:FileLocation = _model.javaPathForTypeAhead;
-			if(defaultSDK)
+			//restart only when the path has changed
+			if(getProjectSDKPath(_project, _model) != _previousJDKPath)
 			{
-				defaultSDKPath = defaultSDK.fileBridge.nativePath;
+				restartLanguageServer();
 			}
-			trace("Change Java global SDK:", defaultSDKPath);
-			restartLanguageServer();
 		}
 
 		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
