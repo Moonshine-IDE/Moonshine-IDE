@@ -7,7 +7,6 @@ package actionScripts.interfaces
 	{
 		function get connectedProjectCount():int;
 
-		function start():void;
 		function hasLanguageServerForProject(project:ProjectVO):Boolean;
 
 		function hasCustomTextEditorForUri(uri:String, project:ProjectVO):Boolean;

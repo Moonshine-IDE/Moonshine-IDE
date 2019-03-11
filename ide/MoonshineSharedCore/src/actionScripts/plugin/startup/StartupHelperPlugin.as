@@ -210,20 +210,7 @@ package actionScripts.plugin.startup
 			else if (model.defaultSDK && model.javaPathForTypeAhead)
 			{
 				// starting server
-				model.languageServerCore.start();
 				dispatcher.addEventListener(EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
-				
-				// check if any projects already opened 
-				// so we can start servers against them as well
-				for each (var i:ProjectVO in model.projects)
-				{
-					// we don't run server on visual editor projects
-					var as3Project:AS3ProjectVO = i as AS3ProjectVO;
-					if (as3Project && !as3Project.isVisualEditorProject)
-					{
-						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, i));
-					}
-				}
 			}
 		}
 		
