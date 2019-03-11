@@ -20,18 +20,32 @@ package actionScripts.utils
 {
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
-	public function getProjectSDKPath(project:AS3ProjectVO, model:IDEModel):String
+	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
 	{
 		var sdkPath:String = null;
-		if(project.buildOptions.customSDK)
+		if(project is AS3ProjectVO)
 		{
-			sdkPath = project.buildOptions.customSDK.fileBridge.nativePath;
+			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+			if(as3Project.buildOptions.customSDK)
+			{
+				return as3Project.buildOptions.customSDK.fileBridge.nativePath;
+			}
+			else if(model.defaultSDK)
+			{
+				return model.defaultSDK.fileBridge.nativePath;
+			}
 		}
-		else if(model.defaultSDK)
+		else if(project is JavaProjectVO)
 		{
-			sdkPath = model.defaultSDK.fileBridge.nativePath;
+			var javaProject:JavaProjectVO = JavaProjectVO(project);
+			if(model.javaPathForTypeAhead)
+			{
+				return model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
 		}
-		return sdkPath;
+		return null;
 	}
 }

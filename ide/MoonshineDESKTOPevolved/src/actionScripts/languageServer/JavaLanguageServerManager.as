@@ -57,6 +57,9 @@ package actionScripts.languageServer
     import actionScripts.events.StatusBarEvent;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.valueObjects.WorkspaceEdit;
+    import actionScripts.events.FilePluginEvent;
+    import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.factory.FileLocation;
 
 	[Event(name="close",type="flash.events.Event")]
 
@@ -92,25 +95,16 @@ package actionScripts.languageServer
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _shellInfo:NativeProcessStartupInfo;
 		private var _nativeProcess:NativeProcess;
-		private var _cmdFile:File;
-		private var _javaPath:File;
 		private var _languageStatusDone:Boolean = false;
+		private var _waitingToRestart:Boolean = false;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
-			_javaPath = IDEModel.getInstance().javaPathForTypeAhead.fileBridge.getFile as File;
-
-			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			_cmdFile = _javaPath.resolvePath(javaFileName);
-			if(!_cmdFile.exists)
-			{
-				_cmdFile = _javaPath.resolvePath("bin/" + javaFileName);
-			}
-
 			_project = project;
 
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 
 			prepareApplicationStorage();
@@ -159,15 +153,23 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
+			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
-			if(_languageClient)
+			cleanupLanguageClient();
+		}
+
+		protected function cleanupLanguageClient():void
+		{
+			if(!_languageClient)
 			{
-				_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
-				_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
-				_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
-				_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
-				_languageClient = null;
+				return;
 			}
+			_languageStatusDone = false;
+			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
+			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
+			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient = null;
 		}
 
 		private function prepareApplicationStorage():void
@@ -210,6 +212,20 @@ package actionScripts.languageServer
 
 		private function startNativeProcess():void
 		{
+			if(_nativeProcess)
+			{
+				trace("Error: NativeProcess already started!");
+				return;
+			}
+			var javaPath:File = new File(getProjectSDKPath(_project, _model));
+
+			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
+			var cmdFile:File = javaPath.resolvePath(javaFileName);
+			if(!cmdFile.exists)
+			{
+				cmdFile = javaPath.resolvePath("bin/" + javaFileName);
+			}
+
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
@@ -239,7 +255,7 @@ package actionScripts.languageServer
 			//of the language server, which is based on Eclipse
 			processArgs.push(getWorkspaceNativePath());
 			_shellInfo.arguments = processArgs;
-			_shellInfo.executable = _cmdFile;
+			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 			initShell();
 		}
@@ -289,8 +305,15 @@ package actionScripts.languageServer
 				//we're already initializing or initialized...
 				return;
 			}
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			if(!sdkPath)
+			{
+				//we'll need to try again later if the SDK changes
+				return;
+			}
 
-			trace("Language server workspace root: " + project.folderPath);
+			trace("Java language server workspace root: " + project.folderPath);
+			trace("Java language Server JDK: " + sdkPath);
 
 			var initOptions:Object = 
 			{
@@ -342,12 +365,45 @@ package actionScripts.languageServer
 		{
 			if(_languageClient)
 			{
-				_languageClient.stop();
+				cleanupLanguageClient();
 			}
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			_nativeProcess.exit();
 			_nativeProcess = null;
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				startNativeProcess();
+			}
+		}
+
+		private function jdkPathSaveHandler(event:FilePluginEvent):void
+		{
+			var defaultSDKPath:String = "None";
+			var defaultSDK:FileLocation = _model.javaPathForTypeAhead;
+			if(defaultSDK)
+			{
+				defaultSDKPath = defaultSDK.fileBridge.nativePath;
+			}
+			trace("Change Java global SDK:", defaultSDKPath);
+			
+			_waitingToRestart = false;
+			if(_languageClient)
+			{
+				_waitingToRestart = true;
+				_languageClient.stop();
+			}
+			else if(_nativeProcess)
+			{
+				_waitingToRestart = true;
+				_nativeProcess.exit();
+			}
+
+			if(!_waitingToRestart)
+			{
+				startNativeProcess();
+			}
 		}
 
 		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
@@ -388,9 +444,17 @@ package actionScripts.languageServer
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			this.dispose();
-			
-			this.dispatchEvent(new Event(Event.CLOSE));
+			if(_waitingToRestart)
+			{
+				cleanupLanguageClient();
+				//the native process will automatically exit, so we continue
+				//waiting for that to complete
+			}
+			else
+			{
+				dispose();
+				this.dispatchEvent(new Event(Event.CLOSE));
+			}
 		}
 
 		private function language__status(message:Object):void
@@ -418,7 +482,7 @@ package actionScripts.languageServer
 				}
 				case "Started":
 				{
-					this._languageStatusDone = true;
+					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS
 					));
@@ -426,7 +490,7 @@ package actionScripts.languageServer
 				}
 				case "Error":
 				{
-					this._languageStatusDone = true;
+					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS
 					));
