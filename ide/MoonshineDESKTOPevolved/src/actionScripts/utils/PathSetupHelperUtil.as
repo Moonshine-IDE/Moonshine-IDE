@@ -253,7 +253,7 @@ package actionScripts.utils
 				setPathCommand += "%FLEX_HOME%;";
 			}
 			
-			setCommand += commandSeparator + setPathCommand +'%PATH%&& ant -version';
+			setCommand += commandSeparator + setPathCommand +'%PATH%';
 			
 			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			npInfo.executable = ConstantsCoreVO.IS_MACOS ? 
