@@ -243,6 +243,7 @@
 			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
 			  horizontalAlign="center">
 		<s:Button label="Download Third-party Software"
+				  styleName="greyButton"
 				  click="runAppStoreHelper(null)"/>
 		<s:Label text="{sdkInstallerInstallingMess}"
 				 includeInLayout="{sdkInstallerInstallingMess != null}" visible="{sdkInstallerInstallingMess != null}"

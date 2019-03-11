@@ -115,6 +115,16 @@
 	paddingLeft: 20px;
 	paddingRight: 20px;
 	fontSize: 12;
+	color: #666666;
+}
+
+.greyButton
+{
+	skinClass: ClassReference("elements.skins.GreyButtonSkin");
+	fontFamily: 'DejaVuSans';
+	paddingLeft: 20px;
+	paddingRight: 20px;
+	fontSize: 14;
 }
 
 .lightButtonTight
