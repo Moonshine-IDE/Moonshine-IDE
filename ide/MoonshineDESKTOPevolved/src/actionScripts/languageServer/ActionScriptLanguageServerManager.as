@@ -259,8 +259,8 @@ package actionScripts.languageServer
 				return;
 			}
 
-			trace("Language server workspace root: " + project.folderPath);
-			trace("Language Server framework SDK: " + sdkPath);
+			trace("AS3 & MXML language server workspace root: " + project.folderPath);
+			trace("AS3 & MXML language Server SDK: " + sdkPath);
 
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
@@ -406,8 +406,8 @@ package actionScripts.languageServer
 
 		private function projectChangeCustomSDKHandler(event:Event):void
 		{
-			trace("Change custom SDK Path:", _project.customSDKPath);
-			trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
+			trace("Change AS3 & MXML custom SDK:", _project.customSDKPath);
+			trace("AS3 & MXML language Server framework SDK: " + getProjectSDKPath(_project, _model));
 			if(_languageClient && _languageClient.initialized)
 			{
 				//we've already initialized the server
@@ -436,10 +436,10 @@ package actionScripts.languageServer
 			var defaultSDK:FileLocation = _model.defaultSDK;
 			if(defaultSDK)
 			{
-				defaultSDKPath = _model.defaultSDK.fileBridge.nativePath;
+				defaultSDKPath = defaultSDK.fileBridge.nativePath;
 			}
-			trace("change global SDK:", defaultSDKPath);
-			trace("Language Server framework SDK: " + getProjectSDKPath(_project, _model));
+			trace("Change AS3 & MXML global SDK:", defaultSDKPath);
+			trace("AS3 & MXML language Server framework SDK: " + getProjectSDKPath(_project, _model));
 			if(_languageClient && _languageClient.initialized)
 			{
 				//we've already initialized the server
