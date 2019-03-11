@@ -29,6 +29,7 @@
 			   xmlns:components="components.*">
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
 			import mx.events.FlexEvent;
 			
 			import actionScripts.events.GeneralEvent;
@@ -146,6 +147,7 @@
 			{
 				if (!ConstantsCoreVO.IS_MACOS && !msdkiDownloadUtil.is64BitSDKInstallerExists())
 				{
+					addRemoveInstallerDownloadEvents(true);
 					startMessageAnimateProcess();
 				}
 				
@@ -186,6 +188,7 @@
 			private function onSDKInstallerDownloadError(event:DownloadErrorEvent):void
 			{
 				addRemoveInstallerDownloadEvents(false);
+				Alert.show(event.text, "Error!");
 			}
 			
 			private function addRemoveInstallerDownloadEvents(add:Boolean):void
