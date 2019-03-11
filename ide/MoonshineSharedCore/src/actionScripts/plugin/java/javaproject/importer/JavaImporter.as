@@ -45,13 +45,6 @@ package actionScripts.plugin.java.javaproject.importer
 			if (settingsFileLocation.fileBridge.exists)
 			{
 				settingsData = new XML(settingsFileLocation.fileBridge.read());
-                parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
-                javaProject.mainClassName = settingsData.build.option.@mainclass;
-
-                if (javaProject.classpaths.length > 0)
-                {
-                    sourceDirectory = javaProject.classpaths[0].fileBridge.nativePath;
-                }
             }
 
 			var separator:String = javaProject.projectFolder.file.fileBridge.separator;
@@ -65,20 +58,44 @@ package actionScripts.plugin.java.javaproject.importer
 					javaProject.mavenBuildOptions.parse(settingsData.mavenBuild);
 				}
 
+				var pomFile:FileLocation = new FileLocation(
+						javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml")
+				);
+
+				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
 				if (!sourceDirectory)
 				{
-					var pomFile:FileLocation = new FileLocation(
-							javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml")
-					);
-					sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);
-
-					if (!sourceDirectory)
-					{
-						sourceDirectory = defaultSourceFolderPath;
-					}
+					sourceDirectory = defaultSourceFolderPath;
 				}
+
+				javaProject.mainClassName = MavenPomUtil.getMainClassName(pomFile);
+				addSourceDirectoryToProject(javaProject, sourceDirectory);
+
+				javaProject.classpaths.push(javaProject.sourceFolder);
+			}
+			else
+			{
+				parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
+				javaProject.mainClassName = settingsData.build.option.@mainclass;
+
+				if (javaProject.classpaths.length > 0)
+				{
+					sourceDirectory = javaProject.classpaths[0].fileBridge.nativePath;
+				}
+
+				addSourceDirectoryToProject(javaProject, sourceDirectory);
 			}
 
+			if (!javaProject.mainClassName)
+			{
+				javaProject.mainClassName = projectName;
+			}
+
+			return javaProject;
+		}
+
+		private static function addSourceDirectoryToProject(javaProject:JavaProjectVO, sourceDirectory:String):void
+		{
 			if (sourceDirectory)
 			{
 				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
@@ -88,8 +105,6 @@ package actionScripts.plugin.java.javaproject.importer
 			{
 				javaProject.sourceFolder = javaProject.projectFolder.file.fileBridge.resolvePath("src");
 			}
-
-			return javaProject;
 		}
 	}
 }
