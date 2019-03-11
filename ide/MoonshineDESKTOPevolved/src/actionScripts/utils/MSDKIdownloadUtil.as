@@ -44,6 +44,7 @@ package actionScripts.utils
 		private var downloadingFile:File;
 		private var fileStream:FileStream;
 		private var urlStream:URLStream;
+		private var isDownloading:Boolean;
 
 		private var _executableFile:File;
 		private function get executableFile():File
@@ -70,7 +71,12 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS) runAppStoreHelperOSX();
 			else
 			{
-				if (!executableFile.exists) initiate64BitDownloadProcess();
+				if (!executableFile.exists) 
+				{
+					// prevent multi-execution
+					if (isDownloading) return;
+					initiate64BitDownloadProcess();
+				}
 				else runAppStoreHelperWindows();
 			}
 		}
@@ -126,6 +132,7 @@ package actionScripts.utils
 			try
 			{
 				urlStream.load(new URLRequest(HelperConstants.WINDOWS_64BIT_DOWNLOAD_URL));
+				isDownloading = true;
 			}
 			catch(error:Error)
 			{
@@ -146,6 +153,7 @@ package actionScripts.utils
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
 			urlStream.close();
 			
+			isDownloading = false;
 			dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
 				"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
 		}
@@ -155,6 +163,7 @@ package actionScripts.utils
 			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
 			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
 			
+			isDownloading = false;
 			unzipDownloadedFile();
 		}
 		
@@ -178,8 +187,8 @@ package actionScripts.utils
 			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
 			urlStream.close();
-			
 			fileStream.close();
+			isDownloading = false;
 		}
 		
 		private function unzipDownloadedFile():void
