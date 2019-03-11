@@ -31,29 +31,35 @@
 		<![CDATA[
 			import mx.events.FlexEvent;
 			
+			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.HelperEvent;
-			import actionScripts.factory.FileLocation;
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.HelperUtils;
+			import actionScripts.utils.MSDKIdownloadUtil;
 			import actionScripts.utils.PathSetupHelperUtil;
 			import actionScripts.valueObjects.ComponentTypes;
 			import actionScripts.valueObjects.ComponentVO;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
-			import actionScripts.valueObjects.HelperConstants;
+			
+			import air.update.events.DownloadErrorEvent;
 			
 			private static const LABEL:String = "Getting Started";
 			
 			public var dependencyCheckUtil:IHelperMoonshineBridge;
 			
+			[Bindable] private var sdkInstallerInstallingMess:String;
+			
 			private var model:IDEModel = IDEModel.getInstance();
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
 			private var workspaceWrapper:FileWrapper;
+			private var progressTimer:Timer;
 			
 			//--------------------------------------------------------------------------
 			//
@@ -102,6 +108,12 @@
 				component.hasWarning = event.value.message;
 			}
 			
+			public function dispose():void
+			{
+				stopMessageAnimateProcess();
+				addRemoveInstallerDownloadEvents(false);
+			}
+			
 			//--------------------------------------------------------------------------
 			//
 			//  PRIVATE API
@@ -132,7 +144,12 @@
 			
 			private function runAppStoreHelper(event:HelperEvent):void
 			{
-				HelperUtils.runAppStoreHelper();
+				if (!ConstantsCoreVO.IS_MACOS && !msdkiDownloadUtil.is64BitSDKInstallerExists())
+				{
+					startMessageAnimateProcess();
+				}
+				
+				msdkiDownloadUtil.runOrDownloadSDKInstaller();
 			}
 			
 			private function onOpenSettings(event:HelperEvent):void
@@ -160,6 +177,58 @@
 				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 			}
 			
+			private function onUnzipCompleted(event:GeneralEvent):void
+			{
+				stopMessageAnimateProcess();
+				addRemoveInstallerDownloadEvents(false);
+			}
+			
+			private function onSDKInstallerDownloadError(event:DownloadErrorEvent):void
+			{
+				addRemoveInstallerDownloadEvents(false);
+			}
+			
+			private function addRemoveInstallerDownloadEvents(add:Boolean):void
+			{
+				if (add)
+				{
+					msdkiDownloadUtil.addEventListener(GeneralEvent.DONE, onUnzipCompleted, false, 0, true);
+					msdkiDownloadUtil.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError, false, 0, true);
+				}
+				else
+				{
+					msdkiDownloadUtil.removeEventListener(GeneralEvent.DONE, onUnzipCompleted);
+					msdkiDownloadUtil.removeEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError);
+				}
+			}
+			
+			private function stopMessageAnimateProcess():void
+			{
+				if (progressTimer) 
+				{
+					if (progressTimer.running) progressTimer.stop();
+					progressTimer.removeEventListener(TimerEvent.TIMER, onTimerTick);
+				}
+				sdkInstallerInstallingMess = null;
+				progressTimer = null;
+			}
+			
+			private function startMessageAnimateProcess():void
+			{
+				stopMessageAnimateProcess();
+				
+				sdkInstallerInstallingMess = "Moonshine SDK Installer is downloading. Please wait.";
+				progressTimer = new Timer(1000);
+				progressTimer.addEventListener(TimerEvent.TIMER, onTimerTick);
+				progressTimer.start();
+			}
+			
+			private function onTimerTick(event:TimerEvent):void
+			{
+				if (sdkInstallerInstallingMess.lastIndexOf("..") == -1) sdkInstallerInstallingMess += ".";
+				else sdkInstallerInstallingMess = sdkInstallerInstallingMess.replace("..", ".");
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -175,6 +244,9 @@
 			  horizontalAlign="center">
 		<s:Button label="Download Third-party Software"
 				  click="runAppStoreHelper(null)"/>
+		<s:Label text="{sdkInstallerInstallingMess}"
+				 includeInLayout="{sdkInstallerInstallingMess != null}" visible="{sdkInstallerInstallingMess != null}"
+				 styleName="smallText" paddingBottom="10"/>
 		<components:HelperView id="viewHelper" 
 							   width="100%" height="100%"
 							   isRunningInsideMoonshine="true"

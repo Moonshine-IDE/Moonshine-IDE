@@ -66,6 +66,7 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.utils.OSXBookmarkerNotifiers;
+    import actionScripts.utils.PathSetupHelperUtil;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -171,6 +172,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 			}
 			
+			if (model.defaultSDK) PathSetupHelperUtil.updateToCurrentEnvironmentVariable();
 			// state change of menus based upon default SDK presence
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 		}

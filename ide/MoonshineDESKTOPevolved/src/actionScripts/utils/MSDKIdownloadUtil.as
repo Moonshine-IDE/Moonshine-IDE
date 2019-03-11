@@ -41,10 +41,16 @@ package actionScripts.utils
 
 	public class MSDKIdownloadUtil extends EventDispatcher
 	{
-		private var executableFile:File = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("Moonshine SDK Installer.exe");
 		private var downloadingFile:File;
 		private var fileStream:FileStream;
 		private var urlStream:URLStream;
+
+		private var _executableFile:File;
+		private function get executableFile():File
+		{
+			if (!_executableFile) _executableFile = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("Moonshine SDK Installer.exe");
+			return _executableFile;
+		}
 		
 		private static var instance:MSDKIdownloadUtil;
 		

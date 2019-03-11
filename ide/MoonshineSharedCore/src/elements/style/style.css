@@ -127,6 +127,13 @@
 	fontSize: 12;
 }
 
+.smallText
+{
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+	color: #444444;
+}
+
 s|CheckBox
 {
 	/*	skinClass: ClassReference("elements.skins.CheckboxSkin");*/

@@ -115,11 +115,11 @@ package actionScripts.plugins.startup
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
 			{
-				dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
@@ -530,11 +530,11 @@ package actionScripts.plugins.startup
 		 */
 		private function onGettingStartedClosed(event:Event):void
 		{
-			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
-			gettingStartedPopup = null;
-			
 			// polling only in case of Windows
 			togglePolling(false);
+			
+			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
+			gettingStartedPopup = null;
 		}
 		
 		/**
@@ -553,6 +553,8 @@ package actionScripts.plugins.startup
 				{
 					dispatcher.removeEventListener(StartupHelperEvent.EVENT_SDK_INSTALLER_NOTIFIER_NOTIFICATION, onInstallerFileNotifierFound);
 					SDKInstallerPolling.getInstance().stopPolling();
+					
+					gettingStartedPopup.dispose();
 				}
 			}
 		}

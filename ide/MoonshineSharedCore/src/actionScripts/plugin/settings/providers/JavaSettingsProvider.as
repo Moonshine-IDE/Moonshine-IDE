@@ -82,6 +82,7 @@ package actionScripts.plugin.settings.providers
         private function setNewJavaPath():void
         {
             model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
+			model.flexCore.updateToCurrentEnvironmentVariable();
             GlobalEventDispatcher
                     .getInstance()
                     .dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));

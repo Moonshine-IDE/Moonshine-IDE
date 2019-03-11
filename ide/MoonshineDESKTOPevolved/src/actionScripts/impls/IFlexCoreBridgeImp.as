@@ -104,6 +104,7 @@ package actionScripts.impls
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.PathSetupHelperUtil;
     import actionScripts.utils.SHClassTest;
     import actionScripts.utils.SWFTrustPolicyModifier;
     import actionScripts.utils.SoftwareVersionChecker;
@@ -485,6 +486,11 @@ package actionScripts.impls
 			var appVersion:String = appDescriptor.ns::versionNumber;
 			
 			return appVersion;
+		}
+		
+		public function updateToCurrentEnvironmentVariable():void
+		{
+			PathSetupHelperUtil.updateToCurrentEnvironmentVariable();
 		}
 	}
 }

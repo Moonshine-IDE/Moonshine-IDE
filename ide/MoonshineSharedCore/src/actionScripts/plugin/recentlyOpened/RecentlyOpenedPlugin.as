@@ -185,7 +185,8 @@ package actionScripts.plugin.recentlyOpened
 			{
 				for each (object in cookie.data.userSDKs)
 				{
-					model.userSavedSDKs.addItem(SDKReferenceVO.getNewReference(object));
+					var tmpSDK:SDKReferenceVO = SDKReferenceVO.getNewReference(object);
+					if (new FileLocation(tmpSDK.path).fileBridge.exists) model.userSavedSDKs.addItem(tmpSDK);
 				}
 			}
 			

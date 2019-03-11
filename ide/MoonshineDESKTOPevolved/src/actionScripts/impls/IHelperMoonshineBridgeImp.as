@@ -20,6 +20,7 @@
 package actionScripts.impls
 {
 	import actionScripts.interfaces.IHelperMoonshineBridge;
+	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.SDKTypes;
@@ -74,6 +75,11 @@ package actionScripts.impls
 		public function isGitPresent():Boolean
 		{
 			return UtilsCore.isGitPresent();	
+		}
+		
+		public function runOrDownloadSDKInstaller():void
+		{
+			MSDKIdownloadUtil.getInstance().runOrDownloadSDKInstaller();
 		}
 	}
 }

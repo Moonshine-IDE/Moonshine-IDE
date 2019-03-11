@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import flash.events.Event;
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
@@ -28,7 +30,6 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
@@ -111,6 +112,9 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 					null, "actionScripts.plugins.ant::AntBuildPlugin", settings));
+				
+				// update local env.variable
+				updateToCurrentEnvironmentVariable();
 			}
 		}
 		
@@ -145,6 +149,9 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				
+				// update local env.variable
+				updateToCurrentEnvironmentVariable();
 			}
 		}
 		
@@ -217,7 +224,44 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				
+				// update local env.variable
+				updateToCurrentEnvironmentVariable();
 			}
+		}
+		
+		public static function updateToCurrentEnvironmentVariable():void
+		{
+			var commandSeparator:String = ConstantsCoreVO.IS_MACOS ? " && " : "&& ";
+			var setOrExport:String = ConstantsCoreVO.IS_MACOS ? "export " : "set ";
+			var setCommand:String = "";
+			var setPathCommand:String = setOrExport+ "PATH=";
+			
+			if (UtilsCore.isJavaForTypeaheadAvailable())
+			{
+				setCommand = setOrExport+ 'JAVA_HOME="'+ model.javaPathForTypeAhead.fileBridge.nativePath +'"';
+				setPathCommand += "%JAVA_HOME%/bin;";
+			}
+			if (UtilsCore.isAntAvailable())
+			{
+				setCommand += commandSeparator + setOrExport +'ANT_HOME="'+ model.antHomePath.fileBridge.nativePath +'"';
+				setPathCommand += "%ANT_HOME%/bin;";
+			}
+			if (UtilsCore.isDefaultSDKAvailable())
+			{
+				setCommand += commandSeparator + setOrExport +'FLEX_HOME="'+ model.defaultSDK.fileBridge.nativePath +'"';
+				setPathCommand += "%FLEX_HOME%;";
+			}
+			
+			setCommand += commandSeparator + setPathCommand +'%PATH%';
+			
+			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			npInfo.executable = ConstantsCoreVO.IS_MACOS ? 
+				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
+			
+			npInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", setCommand]);
+			var process:NativeProcess = new NativeProcess();
+			process.start(npInfo);
 		}
 	}
 }
