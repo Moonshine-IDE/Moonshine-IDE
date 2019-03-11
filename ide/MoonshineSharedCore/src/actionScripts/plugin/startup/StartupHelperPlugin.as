@@ -218,7 +218,8 @@ package actionScripts.plugin.startup
 				for each (var i:ProjectVO in model.projects)
 				{
 					// we don't run server on visual editor projects
-					if (!(i as AS3ProjectVO).isVisualEditorProject)
+					var as3Project:AS3ProjectVO = i as AS3ProjectVO;
+					if (as3Project && !as3Project.isVisualEditorProject)
 					{
 						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, i));
 					}
