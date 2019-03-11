@@ -239,21 +239,21 @@ package actionScripts.utils
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand = setOrExport+ 'JAVA_HOME="'+ model.javaPathForTypeAhead.fileBridge.nativePath +'"';
+				setCommand = setOrExport+ 'JAVA_HOME='+ model.javaPathForTypeAhead.fileBridge.nativePath;
 				setPathCommand += "%JAVA_HOME%/bin;";
 			}
 			if (UtilsCore.isAntAvailable())
 			{
-				setCommand += commandSeparator + setOrExport +'ANT_HOME="'+ model.antHomePath.fileBridge.nativePath +'"';
+				setCommand += commandSeparator + setOrExport +'ANT_HOME='+ model.antHomePath.fileBridge.nativePath;
 				setPathCommand += "%ANT_HOME%/bin;";
 			}
 			if (UtilsCore.isDefaultSDKAvailable())
 			{
-				setCommand += commandSeparator + setOrExport +'FLEX_HOME="'+ model.defaultSDK.fileBridge.nativePath +'"';
+				setCommand += commandSeparator + setOrExport +'FLEX_HOME='+ model.defaultSDK.fileBridge.nativePath;
 				setPathCommand += "%FLEX_HOME%;";
 			}
 			
-			setCommand += commandSeparator + setPathCommand +'%PATH%';
+			setCommand += commandSeparator + setPathCommand +'%PATH%&& ant -version';
 			
 			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			npInfo.executable = ConstantsCoreVO.IS_MACOS ? 
