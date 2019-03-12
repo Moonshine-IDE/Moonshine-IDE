@@ -18,45 +18,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
-    import flash.events.Event;
-    import flash.events.InvokeEvent;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
-    
-    import mx.core.FlexGlobals;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.HelperEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.StartupHelperEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.impls.IHelperMoonshineBridgeImp;
-    import actionScripts.plugin.IPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.settings.SettingsView;
-    import actionScripts.plugins.git.GitHubPlugin;
-    import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.menu.MenuPlugin;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.EnvironmentUtils;
-    import actionScripts.utils.HelperUtils;
-    import actionScripts.utils.PathSetupHelperUtil;
-    import actionScripts.utils.SDKInstallerPolling;
-    import actionScripts.valueObjects.ComponentTypes;
-    import actionScripts.valueObjects.ComponentVO;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.HelperConstants;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.SDKTypes;
-    
-    import avmplus.getQualifiedClassName;
-    
-    import components.popup.GettingStartedPopup;
-    import components.popup.JavaPathSetupPopup;
-    import components.popup.SDKUnzipConfirmPopup;
-
+	import flash.events.Event;
+	import flash.events.InvokeEvent;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
+	import mx.core.FlexGlobals;
+	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.HelperEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StartupHelperEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.impls.IHelperMoonshineBridgeImp;
+	import actionScripts.plugin.IPlugin;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.settings.SettingsView;
+	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.EnvironmentUtils;
+	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.PathSetupHelperUtil;
+	import actionScripts.utils.SDKInstallerPolling;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.HelperConstants;
+	import actionScripts.valueObjects.SDKTypes;
+	
+	import avmplus.getQualifiedClassName;
+	
+	import components.popup.GettingStartedPopup;
+	import components.popup.JavaPathSetupPopup;
+	import components.popup.SDKUnzipConfirmPopup;
+	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Startup Helper Plugin"; }
@@ -81,7 +79,7 @@ package actionScripts.plugins.startup
 		private var sequences:Array;
 		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
-
+		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
 		private var changeMenuSDKTimeout:uint;
@@ -119,12 +117,12 @@ package actionScripts.plugins.startup
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
-			{
-				dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
-				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
-			}
-			
-			preInitHelping();
+				{
+					dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
+					dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
+				}
+				
+				preInitHelping();
 		}
 		
 		/**
@@ -147,16 +145,16 @@ package actionScripts.plugins.startup
 			}
 			
 			/*
-			 * @local
-			 */
+			* @local
+			*/
 			function continueOnHelping(event:Event):void
 			{
 				// just a little delay to see things visually right
-	            startHelpingTimeout = setTimeout(startHelping, 1000);
+				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
 			}
 		}
-
+		
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -211,10 +209,10 @@ package actionScripts.plugins.startup
 					break;
 				}
 			}
-
+			
 			if (!didShowPreviouslyOpenedTabs)
 			{
-                didShowPreviouslyOpenedTabs = true;
+				didShowPreviouslyOpenedTabs = true;
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					clearTimeout(timeoutValue);
@@ -255,10 +253,10 @@ package actionScripts.plugins.startup
 			else if (!isPresent)
 			{
 				// lets show up the default sdk requirement strip at bottom
-                changeMenuSDKTimeout = setTimeout(function():void
+				changeMenuSDKTimeout = setTimeout(function():void
 				{
 					clearTimeout(changeMenuSDKTimeout);
-                    changeMenuSDKTimeout = 0;
+					changeMenuSDKTimeout = 0;
 					
 					dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 				}, 1000);
@@ -286,7 +284,7 @@ package actionScripts.plugins.startup
 					isAllDependenciesPresent = false;
 					model.javaPathForTypeAhead = null;
 				}
-                //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
+				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 			}
 			else
 			{
@@ -315,7 +313,7 @@ package actionScripts.plugins.startup
 				{
 					isAllDependenciesPresent = false;
 				}
-                //javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
+				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
 			}
 			else if (!isPresent && isSDKSetupShowing)
 			{
@@ -325,20 +323,7 @@ package actionScripts.plugins.startup
 			else if (isPresent && dependencyCheckUtil.isJavaPresent())
 			{
 				// starting server
-				model.languageServerCore.start();
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
-				
-				// check if any projects already opened 
-				// so we can start servers against them as well
-				for each (var i:ProjectVO in model.projects)
-				{
-					// we don't run server on visual editor projects
-					if (!(i as AS3ProjectVO).isVisualEditorProject)
-					{
-						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.START_LANGUAGE_SERVER_ON_OPENED_PROJECT, i));
-					}
-				}
-				
 				startHelping();
 			}
 		}
@@ -604,7 +589,7 @@ package actionScripts.plugins.startup
 				showNoSDKStripAndListenForDefaultSDK();
 			}
 		}
-
+		
 		/**
 		 * During code-completion server started and
 		 * required SDK removed from SDK list
@@ -648,21 +633,21 @@ package actionScripts.plugins.startup
 		{
 			triggerSDKNotificationView(true, false);
 		}
-
-        private function copyToLocalStoragePayaraEmbededLauncher():void
-        {
+		
+		private function copyToLocalStoragePayaraEmbededLauncher():void
+		{
 			var payaraLocation:String = "elements".concat(model.fileCore.separator, "projects", model.fileCore.separator, "PayaraEmbeddedLauncher");
-            var payaraAppPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
-            model.payaraServerLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
-            try
-            {
-                payaraAppPath.fileBridge.copyTo(model.payaraServerLocation, true);
-            }
+			var payaraAppPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(payaraLocation);
+			model.payaraServerLocation = model.fileCore.resolveApplicationStorageDirectoryPath("projects".concat(model.fileCore.separator, "PayaraEmbeddedLauncher"));
+			try
+			{
+				payaraAppPath.fileBridge.copyTo(model.payaraServerLocation, true);
+			}
 			catch (e:Error)
 			{
 				warning("Problem with updating PayaraEmbeddedLauncher %s", e.message);
 			}
-        }
+		}
 		
 		/**
 		 * In case of polling only on Windows
@@ -738,5 +723,5 @@ package actionScripts.plugins.startup
 				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN, path);
 			}
 		}
-    }
+	}
 }
