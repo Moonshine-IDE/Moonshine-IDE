@@ -24,10 +24,12 @@ package actionScripts.utils
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.valueObjects.ComponentTypes;
@@ -141,7 +143,9 @@ package actionScripts.utils
 			// or the existing ant path does not exists
 			if (!model.javaPathForTypeAhead || !model.javaPathForTypeAhead.fileBridge.exists)
 			{
-				model.javaPathForTypeAhead = new FileLocation(path);
+				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
+				javaSettingsProvider.currentJavaPath = path;
+				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Path', true, path)
 				]);
@@ -216,14 +220,7 @@ package actionScripts.utils
 			if (!model.defaultSDK || !model.defaultSDK.fileBridge.exists)
 			{
 				model.defaultSDK = sdkPath;
-				
-				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({defaultFlexSDK: path}, 'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true)
-				]);
-				
-				// save as moonshine settings
-				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, tmpSDK));
 				
 				// update local env.variable
 				updateToCurrentEnvironmentVariable();

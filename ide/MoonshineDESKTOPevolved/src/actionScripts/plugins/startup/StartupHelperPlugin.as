@@ -89,11 +89,6 @@ package actionScripts.plugins.startup
 		private function set isAllDependenciesPresent(value:Boolean):void
 		{
 			_isAllDependenciesPresent = value;
-			if (!_isAllDependenciesPresent)
-			{
-				// dispatch event to open Getting Started tab
-				onGettingStartedRequest(null);
-			}
 		}
 		private function get isAllDependenciesPresent():Boolean
 		{
@@ -125,11 +120,20 @@ package actionScripts.plugins.startup
 				preInitHelping();
 		}
 		
+		override public function resetSettings():void
+		{
+			if (gettingStartedPopup)
+			{
+				dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, gettingStartedPopup));
+			}
+		}
+		
 		/**
 		 * Pre-initialization helping process
 		 */
 		private function preInitHelping():void
 		{
+			clearTimeout(startHelpingTimeout);
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
 			
 			// env.variable parsing only available for Windows
@@ -150,6 +154,7 @@ package actionScripts.plugins.startup
 			function continueOnHelping(event:Event):void
 			{
 				// just a little delay to see things visually right
+				sequenceIndex = -1;
 				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
 			}
@@ -163,10 +168,13 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
+			sequenceIndex++;
 			
-			if (sequenceIndex >= sequences.length)
+			if (sequenceIndex == (sequences.length - 1))
 			{
-				sequenceIndex = 0;
+				// if we have a reason to open Getting Started tab
+				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
+				sequenceIndex = -1;
 				return;
 			}
 			
@@ -226,8 +234,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkDefaultSDK(forceShow:Boolean=false):void
 		{
-			sequenceIndex++;
-			
 			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
 			if (!isPresent && (!ConstantsCoreVO.IS_MACOS || (ConstantsCoreVO.IS_MACOS && (!ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS || forceShow))))
 			{
@@ -238,17 +244,11 @@ package actionScripts.plugins.startup
 				{
 					// set as default SDK
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.FLEX, environmentUtil.environments.FLEX_HOME.path.nativePath);
-					startHelping();
 				}
 				else
 				{
 					isAllDependenciesPresent = false;
 				}
-			}
-			else if (isPresent)
-			{
-				// restart rest of the checkings
-				startHelping();
 			}
 			else if (!isPresent)
 			{
@@ -261,6 +261,8 @@ package actionScripts.plugins.startup
 					dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 				}, 1000);
 			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -268,8 +270,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkJavaPathPresenceForTypeahead():void
 		{
-			sequenceIndex++;
-			
 			var isPresent:Boolean = dependencyCheckUtil.isJavaPresent();
 			if (!isPresent && !ccNotificationView)
 			{
@@ -277,7 +277,6 @@ package actionScripts.plugins.startup
 				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
-					startHelping();
 				}
 				else
 				{
@@ -286,11 +285,8 @@ package actionScripts.plugins.startup
 				}
 				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 			}
-			else
-			{
-				// restart rest of the checkings
-				startHelping();
-			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -298,8 +294,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkSDKPrsenceForTypeahead():void
 		{
-			sequenceIndex++;
-			
 			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
 			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
 			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
@@ -307,7 +301,6 @@ package actionScripts.plugins.startup
 				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
-					startHelping();
 				}
 				else
 				{
@@ -324,8 +317,9 @@ package actionScripts.plugins.startup
 			{
 				// starting server
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
-				startHelping();
 			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -333,24 +327,19 @@ package actionScripts.plugins.startup
 		 */
 		private function checkAntPathPresence():void
 		{
-			sequenceIndex++;
-			
 			if (!dependencyCheckUtil.isAntPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.ANT_HOME)
 				{
 					PathSetupHelperUtil.updateFieldPath(SDKTypes.ANT, environmentUtil.environments.ANT_HOME.nativePath);
-					startHelping();
 				}
 				else
 				{
 					isAllDependenciesPresent = false;
 				}
 			}
-			else
-			{
-				startHelping();
-			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -358,7 +347,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkMavenPathPresence():void
 		{
-			sequenceIndex++;
 			if (!dependencyCheckUtil.isMavenPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.MAVEN_HOME)
@@ -370,10 +358,8 @@ package actionScripts.plugins.startup
 					isAllDependenciesPresent = false;
 				}
 			}
-			else
-			{
-				startHelping();
-			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -381,8 +367,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkGitPathPresence():void
 		{
-			sequenceIndex++;
-			
 			if (!dependencyCheckUtil.isGitPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.GIT_HOME)
@@ -394,10 +378,8 @@ package actionScripts.plugins.startup
 					isAllDependenciesPresent = false;
 				}
 			}
-			else
-			{
-				startHelping();
-			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -405,8 +387,6 @@ package actionScripts.plugins.startup
 		 */
 		private function checkSVNPathPresence():void
 		{
-			sequenceIndex++;
-			
 			if (!dependencyCheckUtil.isSVNPresent())
 			{
 				if (environmentUtil && environmentUtil.environments.SVN_HOME)
@@ -418,10 +398,8 @@ package actionScripts.plugins.startup
 					isAllDependenciesPresent = false;
 				}
 			}
-			else
-			{
-				startHelping();
-			}
+			
+			startHelping();
 		}
 		
 		/**
@@ -480,7 +458,7 @@ package actionScripts.plugins.startup
 			sdkNotificationView = null;
 			ccNotificationView = null;
 			sequences = null;
-			sequenceIndex = 0;
+			sequenceIndex = -1;
 			isSDKSetupShowing = false;
 			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
 			
@@ -492,10 +470,20 @@ package actionScripts.plugins.startup
 		 */
 		private function onGettingStartedRequest(event:Event):void
 		{
+			openOrFocusGettingStarted();
+			startHelpingTimeout = setTimeout(preInitHelping, 300);
+		}
+		
+		/**
+		 * Opens or focus Getting Started tab
+		 */
+		private function openOrFocusGettingStarted():void
+		{
 			if (!gettingStartedPopup)
 			{
 				gettingStartedPopup = new GettingStartedPopup;
 				gettingStartedPopup.dependencyCheckUtil = dependencyCheckUtil;
+				gettingStartedPopup.environmentUtil = environmentUtil;
 				gettingStartedPopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
 				
 				// start polling only in case of Windows
@@ -622,7 +610,7 @@ package actionScripts.plugins.startup
 		 */
 		private function onSDKSetupRequest(event:StartupHelperEvent):void
 		{
-			sequenceIndex = 0;
+			sequenceIndex = -1;
 			checkDefaultSDK(true);
 		}
 		
@@ -665,28 +653,30 @@ package actionScripts.plugins.startup
 			var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
 			if (updateNotifierFile.fileBridge.exists)
 			{
+				var type:String;
+				var path:String;
 				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
-				var type:String = String(notifierValue.item.@type);
-				var path:String = String(notifierValue.item.path);
-				
-				if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
+				for each (var item:XML in notifierValue.items.item)
 				{
-					updateGitAndSVN(path);
-				}
-				else
-				{
-					if (!gettingStartedPopup)
+					type = String(item.@type);
+					path = String(item.path);
+					
+					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
 					{
-						PathSetupHelperUtil.updateFieldPath(type, path);
+						updateGitAndSVN(path);
 					}
 					else
 					{
-						gettingStartedPopup.onInvokeEvent(type, path);
+						if (!gettingStartedPopup)
+						{
+							PathSetupHelperUtil.updateFieldPath(type, path);
+						}
+						else
+						{
+							gettingStartedPopup.onInvokeEvent(type, path);
+						}
 					}
 				}
-				
-				// delete the file
-				try { updateNotifierFile.fileBridge.deleteFile(); } catch (e:Error) { updateNotifierFile.fileBridge.deleteFileAsync(); }
 			}
 		}
 		

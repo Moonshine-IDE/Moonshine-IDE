@@ -252,6 +252,11 @@ package actionScripts.plugins.as3project.mxmlc
 
 			defaultFlexSDK = "";
 			currentSDK = null;
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+			
+			// reset java path
+			model.javaPathForTypeAhead = null;
+			new JavaSettingsProvider();
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

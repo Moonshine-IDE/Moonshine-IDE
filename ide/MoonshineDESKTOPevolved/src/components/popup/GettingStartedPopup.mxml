@@ -40,6 +40,7 @@
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.ui.IContentWindow;
+			import actionScripts.utils.EnvironmentUtils;
 			import actionScripts.utils.HelperUtils;
 			import actionScripts.utils.MSDKIdownloadUtil;
 			import actionScripts.utils.PathSetupHelperUtil;
@@ -53,6 +54,7 @@
 			private static const LABEL:String = "Getting Started";
 			
 			public var dependencyCheckUtil:IHelperMoonshineBridge;
+			public var environmentUtil:EnvironmentUtils;
 			
 			[Bindable] private var sdkInstallerInstallingMess:String;
 			
@@ -124,6 +126,7 @@
 			private function onInitialized(event:FlexEvent):void
 			{
 				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
+				viewHelper.environmentUtil = environmentUtil;
 			}
 			
 			protected function onCreationCompletes():void
