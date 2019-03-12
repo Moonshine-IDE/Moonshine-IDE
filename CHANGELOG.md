@@ -6,15 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [2.0.0]
 
 ### Added
-* New **Getting Started** tab with lists of features available in IDE along with options how install missing one. 
+* Added **Getting Started** page to assist new users with setting up the external SDK and tool requirements for different Moonshine features.
 
 ### Changed
-* Java Project: Improvement to build with Maven.
+* Java Project: Improvements for building with Maven
 
 ### Fixed
 * Subversion: Fixed issue where subversion menu was not updated after granting permission.
-* Feathers: Fixed issue where build project failed with newest Adobe Air.
+* Feathers: Fixed issue where build project failed with newest Adobe AIR.
 * Java Project: Fixed issue where java project template was not populated when we create new class/interface.
+* Language Server:  Fixed dependencies so that language server can start without a default Flex SDK
+* Language Server:  Restart language server when Java Home path is updated in Settings.
 
 ## Moonshine IDE [1.16.0]
 
