@@ -53,8 +53,8 @@ package actionScripts.events
 		
 		public static const CHECK_GIT_PROJECT:String = "checkGitRepository";
 		public static const CHECK_SVN_PROJECT:String = "checkSVNRepository";
+		public static const LANGUAGE_SERVER_OPENED:String = "languageServerOpenedAgainstProject";
 		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
-		public static const START_LANGUAGE_SERVER_ON_OPENED_PROJECT:String = "startLanguageServerOnOpenedProject";
 		
 		public var project:ProjectVO;
 		public var anObject:Object;

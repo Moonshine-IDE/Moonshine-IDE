@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.0.0]
+
+### Added
+* New **Getting Started** tab with lists of features available in IDE along with options how install missing one. 
+
+### Changed
+* Java Project: Improvement to build with Maven.
+
+### Fixed
+* Subversion: Fixed issue where subversion menu was not updated after granting permission.
+* Feathers: Fixed issue where build project failed with newest Adobe Air.
+* Java Project: Fixed issue where java project template was not populated when we create new class/interface.
+
 ## Moonshine IDE [1.16.0]
 
 ### Added

@@ -2,9 +2,9 @@
 <actionScriptProperties analytics="false" mainApplicationPath="MoonshineDESKTOP.mxml" projectUUID="f5fd8f2e-4925-4bd4-b3a0-3ab29e996081" version="11">
   <compiler additionalCompilerArguments="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
     <compilerSourcePath>
-      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/{locale}"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/{locale}"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-SDK-Installer/InstallerSharedCore/src"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -17,8 +17,7 @@
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
       <libraryPathEntry kind="3" linkType="1" path="libs/ApacheFlexSDKInstallerLib.swc" useDefaultLinkType="false"/>
-      <libraryPathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/libs"/>
-      <libraryPathEntry kind="5" linkType="2" path="extensions/SSB.ane"/>
+      <libraryPathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/libs"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
