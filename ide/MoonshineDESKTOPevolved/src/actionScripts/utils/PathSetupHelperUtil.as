@@ -250,7 +250,7 @@ package actionScripts.utils
 				setPathCommand += "%FLEX_HOME%;";
 			}
 			
-			setCommand += commandSeparator + setPathCommand +'%PATH%';
+			setCommand += commandSeparator + setPathCommand +'%PATH%&& echo %JAVA_HOME%';
 			
 			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			npInfo.executable = ConstantsCoreVO.IS_MACOS ? 

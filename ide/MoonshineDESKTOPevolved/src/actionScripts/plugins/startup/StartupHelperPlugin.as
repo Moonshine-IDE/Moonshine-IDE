@@ -655,11 +655,18 @@ package actionScripts.plugins.startup
 			{
 				var type:String;
 				var path:String;
+				var pathValidation:String;
 				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
+				var tmpComponent:ComponentVO;
 				for each (var item:XML in notifierValue.items.item)
 				{
 					type = String(item.@type);
 					path = String(item.path);
+					pathValidation = String(item.pathValidation);
+					
+					// validate before set
+					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
+					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
 					
 					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
 					{

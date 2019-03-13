@@ -48,6 +48,7 @@
 			import actionScripts.valueObjects.ComponentVO;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.HelperConstants;
 			
 			import air.update.events.DownloadErrorEvent;
 			
@@ -148,10 +149,17 @@
 			
 			private function runAppStoreHelper(event:HelperEvent):void
 			{
-				if (!ConstantsCoreVO.IS_MACOS && !msdkiDownloadUtil.is64BitSDKInstallerExists())
+				if (!ConstantsCoreVO.IS_MACOS)
 				{
-					addRemoveInstallerDownloadEvents(true);
-					startMessageAnimateProcess();
+					if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
+					{
+						addRemoveInstallerDownloadEvents(true);
+						startMessageAnimateProcess();
+					}
+					else
+					{
+						sdkInstallerInstallingMess = "Moonshine SDK Installer requested. This may take a few seconds.";
+					}
 				}
 				
 				msdkiDownloadUtil.runOrDownloadSDKInstaller();
@@ -235,6 +243,11 @@
 				else sdkInstallerInstallingMess = sdkInstallerInstallingMess.replace("..", ".");
 			}
 			
+			protected function onRefreshRequest(event:MouseEvent):void
+			{
+				viewHelper.checkForUpdate();
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -261,4 +274,16 @@
 							   OPEN_MOON_SETTINGS="onOpenSettings(event)"
 							   COMPONENT_DOWNLOADED="onAnyComponentDownloaded(event)"/>
 	</s:VGroup>
+	
+	<s:HGroup verticalAlign="middle" horizontalAlign="right"
+			  top="10" right="10">
+		<s:Label text="Updating.."
+				 styleName="uiText"
+				 fontSize="12"
+				 visible="{HelperConstants.IS_DETECTION_IN_PROCESS}"/>
+		<s:Image source="@Embed('/assets/images/icoRefreshGettingStarted.png')"
+				 buttonMode="true" toolTip="Refresh List"
+				 enabled="{!HelperConstants.IS_DETECTION_IN_PROCESS}" alpha="{HelperConstants.IS_DETECTION_IN_PROCESS ? .6 : 1}"
+				 click="onRefreshRequest(event)"/>
+	</s:HGroup>
 </s:Group>
