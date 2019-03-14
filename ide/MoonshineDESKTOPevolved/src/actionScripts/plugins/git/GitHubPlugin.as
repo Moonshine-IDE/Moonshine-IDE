@@ -153,7 +153,10 @@ package actionScripts.plugins.git
 			}
 			
 			// following will enable/disable Moonshine top menus based on project
-			if (model.activeProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+			if (model.activeProject)
+			{
+				dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+			}
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -524,7 +527,7 @@ package actionScripts.plugins.git
 				!isGitAvailable) 
 			{
 				// following will enable/disable Moonshine top menus based on project
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
+				dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 				return;
 			}
 			

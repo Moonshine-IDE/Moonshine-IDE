@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
@@ -54,7 +57,11 @@ package actionScripts.ui.menu
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
-    // This class is a singleton
+	import mx.resources.IResourceManager;
+
+	import mx.resources.ResourceManager;
+
+	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
@@ -62,6 +69,7 @@ package actionScripts.ui.menu
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
 		public static const MENU_SAVE_AS_EVENT:String = "menuSaveAsEvent";
 		public static const EVENT_ABOUT:String = "EVENT_ABOUT";
+		public static const REFRESH_MENU_STATE:String = "refreshMenuState";
 		public static const CHANGE_MENU_MAC_DISABLE_STATE:String = "CHANGE_MENU_MAC_DISABLE_STATE"; // shows only Quit command with File menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
@@ -81,9 +89,16 @@ package actionScripts.ui.menu
 		private var isFileNewMenuIsEnabled:Boolean;
 		private var moonshineMenu:NativeMenuItem;
 
+		private var projectMenu:ProjectMenu;
+
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
+
+		public function MenuPlugin():void
+		{
+			projectMenu = new ProjectMenu();
+		}
 
 		public function getSettingsList():Vector.<ISetting>
 		{
@@ -192,14 +207,15 @@ package actionScripts.ui.menu
 				buildingNativeMenu = false;
 				createMenu();
 			}
-			
-			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
-			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
-			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
-			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
-			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
-			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
-			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList, false, 0, true);
+
+			dispatcher.addEventListener(MenuPlugin.REFRESH_MENU_STATE, refreshMenuStateHandler);
+			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, shortcutPreFiredHandler);
+			dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSdkStateHandler);
+			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, addedNewTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, removeTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, renameTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, recentProjectListUpdatedHandler, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, recentFilesListUpdatedHandler, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -210,8 +226,8 @@ package actionScripts.ui.menu
 				dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onMenusDisableStateChange);
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
 			
 			// disable File-New menu as default
 			isFileNewMenuIsEnabled = false;
@@ -219,11 +235,24 @@ package actionScripts.ui.menu
 			disableNewFileMenuOptions();
 		}
 
-        private function onMenusDisableStateChange(event:ProjectEvent):void
+		private function refreshMenuStateHandler(event:Event):void
+		{
+			disableNewFileMenuOptions();
+			disableMenuOptions();
+		}
+
+        private function addProjectHandler(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
 			disableMenuOptions();
         }
+
+		private function activeProjectChangedHandler(event:ProjectEvent):void
+		{
+			disableNewFileMenuOptions();
+			updateMenuOptionsInMenuProject(event.project);
+			disableMenuOptions();
+		}
 
 		private function disableNewFileMenuOptions():void
 		{
@@ -273,6 +302,38 @@ package actionScripts.ui.menu
 
                 }
             }
+		}
+
+		private function updateMenuOptionsInMenuProject(project:ProjectVO):void
+		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			var projectMenuItemName:String = resourceManager.getString('resources','PROJECT');
+			var menu:Object = getMenuObject();
+			var countMenuItems:int = menu.items.length;
+			var menuItem:Object;
+			for (var i:int = 0; i < countMenuItems; i++)
+			{
+				menuItem = menu.items[i];
+				if (menuItem.label == projectMenuItemName)
+				{
+					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
+					var subMenuItems:Vector.<ICustomMenuItem> = menuItem.submenu.items;
+					for (var j:int = 0; j < subMenuItems.length; j++)
+					{
+						if (subMenuItems[j] is ICustomMenuItem && subMenuItems[j].dynamicItem)
+						{
+							subMenuItems.removeAt(j);
+							j -= 1;
+						}
+					}
+
+					if (projectMenus)
+					{
+						addMenus(projectMenus, menuItem.submenu);
+					}
+					break;
+				}
+			}
 		}
 
 		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:ProjectVO):void
@@ -425,7 +486,7 @@ package actionScripts.ui.menu
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
 
-		private function onNewMenuAddRequest(event:TemplatingEvent):void
+		private function addedNewTemplateHandler(event:TemplatingEvent):void
 		{
 			var tmpMI:MenuItem = new MenuItem(event.label, null, null, event.listener);
 			var menuItem:* = createNewMenuItem(tmpMI);
@@ -452,7 +513,7 @@ package actionScripts.ui.menu
 			}
 		}
 		
-		private function onNewMenuRemoveRequest(event:TemplatingEvent):void
+		private function removeTemplateHandler(event:TemplatingEvent):void
 		{
 			var menu:Object = getMenuObject();
 			var subItemsInItemOfTopMenu:Object;
@@ -481,7 +542,7 @@ package actionScripts.ui.menu
 			}
 		}
 		
-		private function updateRecetProjectList(event:Event):void
+		private function recentProjectListUpdatedHandler(event:Event):void
 		{
 			var menu:Object = getMenuObject();
 			var subItemsLength:int = -1;
@@ -513,7 +574,7 @@ package actionScripts.ui.menu
 			}
 		}
 		
-		private function updateRecetFileList(event:Event):void
+		private function recentFilesListUpdatedHandler(event:Event):void
 		{
 			var menu:Object = getMenuObject();
 			var subItemsLength:int = -1;
@@ -545,7 +606,7 @@ package actionScripts.ui.menu
 			}
 		}
 		
-		private function onNewMenuRenameRequest(event:TemplatingEvent):void
+		private function renameTemplateHandler(event:TemplatingEvent):void
 		{
 			var menu:Object = getMenuObject();
 			var subItemsInItemOfTopMenu:Object;
@@ -626,7 +687,7 @@ package actionScripts.ui.menu
 			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
 		}
 		
-		private function onSDKStateChange(event:Event):void
+		private function changeMenuSdkStateHandler(event:Event):void
 		{
 			var isEnable:Boolean = model.defaultSDK ? true : false;
 			var menu:Object = getMenuObject();
@@ -753,10 +814,14 @@ package actionScripts.ui.menu
 				
 				if (item && item.items)
 				{
-					var newMenu:*;
-					newMenu = createNewMenu();
+					var newMenu:* = createNewMenu();
 					if (!newMenu)
 						continue;
+					if (newMenu is ICustomMenuItem)
+					{
+						(newMenu as ICustomMenuItem).dynamicItem = item.dynamicItem;
+					}
+
 					addMenus(item.items, newMenu);
 					parentMenu.addSubmenu(newMenu, item.label);
 				}
@@ -764,7 +829,13 @@ package actionScripts.ui.menu
 				{
 					var menuItem:* = createNewMenuItem(item);
 					if (menuItem)
+					{
+						if (menuItem is ICustomMenuItem)
+						{
+							(menuItem as ICustomMenuItem).dynamicItem = item.dynamicItem;
+						}
 						parentMenu.addItem((menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem);
+					}
 				}
 			}
 		}
@@ -839,7 +910,7 @@ package actionScripts.ui.menu
 			}
 		}
 		
-		protected function handleShortcutPreFired(e:ShortcutEvent):void
+		protected function shortcutPreFiredHandler(e:ShortcutEvent):void
 		{
 			if (!eventToMenuMapping[e.event])
 				return;

@@ -18,8 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git
 {
+	import actionScripts.ui.menu.MenuPlugin;
+
 	import com.adobe.utils.StringUtil;
-	
+
+	import flash.events.Event;
+
 	import flash.filesystem.File;
 	import flash.utils.Dictionary;
 	
@@ -513,7 +517,7 @@ package actionScripts.plugins.git
 							pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', tmpProject)); // store the remote URL
 							
 							// following will enable/disable Moonshine top menus based on project
-							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
+							dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 						}
 						
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
@@ -533,7 +537,10 @@ package actionScripts.plugins.git
 					}
 					
 					// following will enable/disable Moonshine top menus based on project
-					if (tmpProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
+					if (tmpProject)
+					{
+						dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+					}
 					return;
 				}
 				case GIT_REMOTE_ORIGIN_URL:
