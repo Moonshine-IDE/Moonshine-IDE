@@ -18,10 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.filesystem.File;
-	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
@@ -41,6 +37,7 @@ package actionScripts.utils
 	public class PathSetupHelperUtil
 	{
 		private static var model:IDEModel = IDEModel.getInstance();
+		private static var environmentSetupUtils:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private static var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		public static function openSettingsViewFor(type:String):void
@@ -116,7 +113,7 @@ package actionScripts.utils
 					null, "actionScripts.plugins.ant::AntBuildPlugin", settings));
 				
 				// update local env.variable
-				updateToCurrentEnvironmentVariable();
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
 			}
 		}
 		
@@ -155,7 +152,7 @@ package actionScripts.utils
 					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
 				
 				// update local env.variable
-				updateToCurrentEnvironmentVariable();
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
 			}
 		}
 		
@@ -223,42 +220,8 @@ package actionScripts.utils
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, tmpSDK));
 				
 				// update local env.variable
-				updateToCurrentEnvironmentVariable();
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
 			}
-		}
-		
-		public static function updateToCurrentEnvironmentVariable():void
-		{
-			var commandSeparator:String = ConstantsCoreVO.IS_MACOS ? " && " : "&& ";
-			var setOrExport:String = ConstantsCoreVO.IS_MACOS ? "export " : "set ";
-			var setCommand:String = "";
-			var setPathCommand:String = setOrExport+ "PATH=";
-			
-			if (UtilsCore.isJavaForTypeaheadAvailable())
-			{
-				setCommand = setOrExport+ 'JAVA_HOME='+ model.javaPathForTypeAhead.fileBridge.nativePath;
-				setPathCommand += "%JAVA_HOME%/bin;";
-			}
-			if (UtilsCore.isAntAvailable())
-			{
-				setCommand += commandSeparator + setOrExport +'ANT_HOME='+ model.antHomePath.fileBridge.nativePath;
-				setPathCommand += "%ANT_HOME%/bin;";
-			}
-			if (UtilsCore.isDefaultSDKAvailable())
-			{
-				setCommand += commandSeparator + setOrExport +'FLEX_HOME='+ model.defaultSDK.fileBridge.nativePath;
-				setPathCommand += "%FLEX_HOME%;";
-			}
-			
-			setCommand += commandSeparator + setPathCommand +'%PATH%&& echo %JAVA_HOME%';
-			
-			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			npInfo.executable = ConstantsCoreVO.IS_MACOS ? 
-				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
-			
-			npInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", setCommand]);
-			var process:NativeProcess = new NativeProcess();
-			process.start(npInfo);
 		}
 	}
 }

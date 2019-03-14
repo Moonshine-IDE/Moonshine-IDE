@@ -53,8 +53,8 @@ package actionScripts.plugins.ant
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.HtmlFormatter;
-    import actionScripts.utils.PathSetupHelperUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
@@ -135,7 +135,7 @@ package actionScripts.plugins.ant
             else
             {
                 model.antHomePath = new FileLocation(value);
-				PathSetupHelperUtil.updateToCurrentEnvironmentVariable();
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
             }
         }
 
