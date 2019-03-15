@@ -87,25 +87,25 @@ package actionScripts.utils
 		
 		private function executeWindows():void
 		{
-			var setCommand:String = "@echo off\n";
+			var setCommand:String = "@echo off\r\n";
 			var isValidToExecute:Boolean;
 			var setPathCommand:String = "set PATH=";
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand += "set JAVA_HOME="+ model.javaPathForTypeAhead.fileBridge.nativePath +"\n"; 
+				setCommand += "set JAVA_HOME="+ model.javaPathForTypeAhead.fileBridge.nativePath +"\r\n"; 
 				setPathCommand += "%JAVA_HOME%\\bin;";
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
-				setCommand += "set ANT_HOME="+ model.antHomePath.fileBridge.nativePath +"\n";
+				setCommand += "set ANT_HOME="+ model.antHomePath.fileBridge.nativePath +"\r\n";
 				setPathCommand += "%ANT_HOME%\\bin;";
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isDefaultSDKAvailable())
 			{
-				setCommand += "set FLEX_HOME="+ model.defaultSDK.fileBridge.nativePath +"\n";
+				setCommand += "set FLEX_HOME="+ model.defaultSDK.fileBridge.nativePath +"\r\n";
 				setPathCommand += "%FLEX_HOME%;";
 				isValidToExecute = true;
 			}
@@ -122,7 +122,7 @@ package actionScripts.utils
 			// TODO:: TEST LAST COMMAND to REMOVE
 			
 			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
-			FileUtils.writeToFileAsync(windowsBatchFile, setCommand + (executeWithCommands ? "\n"+ executeWithCommands.join("\n") : ''), onBatchFileWriteComplete, onBatchFileWriteError);
+			FileUtils.writeToFileAsync(windowsBatchFile, setCommand + (executeWithCommands ? "\r\n"+ executeWithCommands.join("\r\n") : ''), onBatchFileWriteComplete, onBatchFileWriteError);
 		}
 		
 		private function executeOSX():void
