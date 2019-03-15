@@ -40,7 +40,7 @@ package actionScripts.utils
 			if (watchTimer && watchTimer.running) return;
 			if (!watchTimer)
 			{
-				watchTimer = new Timer(1000, 1);
+				watchTimer = new Timer(3000, 1);
 				watchTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
 				watchTimer.start();
 			}
