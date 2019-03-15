@@ -14,7 +14,7 @@ package actionScripts.utils
 	
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
+	
 	public class EnvironmentSetupUtils
 	{
 		private static var instance:EnvironmentSetupUtils;
@@ -25,6 +25,7 @@ package actionScripts.utils
 		private var isErrorClose:Boolean;
 		private var watchTimer:Timer;
 		private var windowsBatchFile:File;
+		private var externalCallCompletionHandler:Function;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -44,8 +45,8 @@ package actionScripts.utils
 			}
 			
 			/*
-			 * @local
-			 */
+			* @local
+			*/
 			function onWatchTimerCompletes(event:TimerEvent):void
 			{
 				watchTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
@@ -55,36 +56,75 @@ package actionScripts.utils
 			}
 		}
 		
+		public function getCommandPreparedToOSXEnvironment(completion:Function):void
+		{
+			externalCallCompletionHandler = completion;
+			execute();
+		}
+		
+		public function getBatchFilePathToWindowsEnvironment(completion:Function):void
+		{
+			externalCallCompletionHandler = completion;
+			execute();
+		}
+		
 		private function execute():void
 		{
 			var commandSeparator:String = ConstantsCoreVO.IS_MACOS ? "; " : "& ";
 			var setOrExport:String = ConstantsCoreVO.IS_MACOS ? "export " : "set ";
 			var setCommand:String = "";
 			var setPathCommand:String = setOrExport+ "PATH=";
+			var isValidToExecute:Boolean;
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
 				setCommand = getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath) + commandSeparator;
 				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "!JAVA_HOME!\\bin;";
+				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath) + commandSeparator;
 				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "!ANT_HOME!\\bin;";
+				isValidToExecute = true;
 			}
 			if (UtilsCore.isDefaultSDKAvailable())
 			{
 				setCommand += getSetExportCommand("FLEX_HOME", model.defaultSDK.fileBridge.nativePath) + commandSeparator;
 				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$FLEX_HOME/bin:" : "!FLEX_HOME!;";
+				isValidToExecute = true;
 			}
 			
-			setCommand += setPathCommand + (ConstantsCoreVO.IS_MACOS ? "$PATH" : "!PATH!") + "& echo !JAVA_HOME!"; // TODO:: TEST LAST COMMAND to REMOVE
+			// do not proceed if no path to set
+			if (!isValidToExecute)
+			{
+				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				return;
+			}
+			
+			setCommand += setPathCommand + (ConstantsCoreVO.IS_MACOS ? "$PATH" : "!PATH!");
+			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
+			// TODO:: TEST LAST COMMAND to REMOVE
 			
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				setCommand = "cmd /V /C \""+ setCommand +"\"";
 				windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
 				FileUtils.writeToFileAsync(windowsBatchFile, "@echo off\n"+ setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
+			}
+			else
+			{
+				if (externalCallCompletionHandler != null)
+				{
+					// in case of macOS - instead of retuning any
+					// bash script file path return the full command
+					// to execute by caller's own nativeProcess process
+					externalCallCompletionHandler(setCommand);
+				}
+				else
+				{
+					onCommandLineExecutionWith(setCommand);
+				}
 			}
 		}
 		
@@ -96,11 +136,29 @@ package actionScripts.utils
 		
 		private function onBatchFileWriteComplete():void
 		{
+			if (externalCallCompletionHandler != null)
+			{
+				externalCallCompletionHandler(windowsBatchFile.nativePath);
+				return;
+			}
+			
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = ConstantsCoreVO.IS_MACOS ? 
 				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
 			
 			customInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", windowsBatchFile.nativePath]);
+			customProcess = new NativeProcess();
+			startShell(true);
+			customProcess.start(customInfo);
+		}
+		
+		private function onCommandLineExecutionWith(command:String):void
+		{
+			customInfo = new NativeProcessStartupInfo();
+			customInfo.executable = ConstantsCoreVO.IS_MACOS ? 
+				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
+			
+			customInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", command]);
 			customProcess = new NativeProcess();
 			startShell(true);
 			customProcess.start(customInfo);

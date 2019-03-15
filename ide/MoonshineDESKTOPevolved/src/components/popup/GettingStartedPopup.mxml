@@ -103,7 +103,10 @@
 			
 			public function onInvokeEvent(componentId:String, path:String=null):void
 			{
-				viewHelper.updateComponentStatusAsDownloaded(componentId, path);
+				if (viewHelper.isConfigurationLoaded)
+					viewHelper.updateComponentStatusAsDownloaded(componentId, path);
+				else
+					PathSetupHelperUtil.updateFieldPath(componentId, path);
 			}
 			
 			public function onWarningUpdate(event:HelperEvent):void
