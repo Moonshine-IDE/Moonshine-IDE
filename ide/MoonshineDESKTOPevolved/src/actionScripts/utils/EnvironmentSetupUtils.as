@@ -26,6 +26,7 @@ package actionScripts.utils
 		private var watchTimer:Timer;
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
+		private var executeWithCommands:Array;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -52,6 +53,8 @@ package actionScripts.utils
 				watchTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
 				watchTimer.stop();
 				watchTimer = null;
+				
+				cleanUp();
 				execute();
 			}
 		}
@@ -62,36 +65,48 @@ package actionScripts.utils
 			execute();
 		}
 		
-		public function getBatchFilePathToWindowsEnvironment(completion:Function):void
+		public function getBatchFilePathToWindowsEnvironment(completion:Function, withCommands:Array=null):void
 		{
+			cleanUp();
 			externalCallCompletionHandler = completion;
+			executeWithCommands = withCommands;
 			execute();
+		}
+		
+		private function cleanUp():void
+		{
+			externalCallCompletionHandler = null;
+			executeWithCommands = null;
 		}
 		
 		private function execute():void
 		{
-			var commandSeparator:String = ConstantsCoreVO.IS_MACOS ? "; " : "& ";
-			var setOrExport:String = ConstantsCoreVO.IS_MACOS ? "export " : "set ";
-			var setCommand:String = "";
-			var setPathCommand:String = setOrExport+ "PATH=";
+			if (ConstantsCoreVO.IS_MACOS) executeOSX();
+			else executeWindows();
+		}
+		
+		private function executeWindows():void
+		{
+			var setCommand:String = "@echo off\n";
 			var isValidToExecute:Boolean;
+			var setPathCommand:String = "set PATH=";
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand = getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath) + commandSeparator;
-				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "!JAVA_HOME!\\bin;";
+				setCommand += "set JAVA_HOME="+ model.javaPathForTypeAhead.fileBridge.nativePath +"\n"; 
+				setPathCommand += "%JAVA_HOME%\\bin;";
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
-				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath) + commandSeparator;
-				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "!ANT_HOME!\\bin;";
+				setCommand += "set ANT_HOME="+ model.antHomePath.fileBridge.nativePath +"\n";
+				setPathCommand += "%ANT_HOME%\\bin;";
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isDefaultSDKAvailable())
 			{
-				setCommand += getSetExportCommand("FLEX_HOME", model.defaultSDK.fileBridge.nativePath) + commandSeparator;
-				setPathCommand += ConstantsCoreVO.IS_MACOS ? "$FLEX_HOME/bin:" : "!FLEX_HOME!;";
+				setCommand += "set FLEX_HOME="+ model.defaultSDK.fileBridge.nativePath +"\n";
+				setPathCommand += "%FLEX_HOME%;";
 				isValidToExecute = true;
 			}
 			
@@ -102,29 +117,61 @@ package actionScripts.utils
 				return;
 			}
 			
-			setCommand += setPathCommand + (ConstantsCoreVO.IS_MACOS ? "$PATH" : "!PATH!");
+			setCommand += setPathCommand + "%PATH%";
 			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
 			// TODO:: TEST LAST COMMAND to REMOVE
 			
-			if (!ConstantsCoreVO.IS_MACOS)
+			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
+			FileUtils.writeToFileAsync(windowsBatchFile, setCommand + (executeWithCommands ? "\n"+ executeWithCommands.join("\n") : ''), onBatchFileWriteComplete, onBatchFileWriteError);
+		}
+		
+		private function executeOSX():void
+		{
+			var setCommand:String = "";
+			var setPathCommand:String = "export PATH=";
+			var isValidToExecute:Boolean;
+			
+			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand = "cmd /V /C \""+ setCommand +"\"";
-				windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
-				FileUtils.writeToFileAsync(windowsBatchFile, "@echo off\n"+ setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
+				setCommand = "export JAVA_HOME=\""+ model.javaPathForTypeAhead.fileBridge.nativePath +"\"; ";
+				setPathCommand += "$JAVA_HOME/bin:";
+				isValidToExecute = true;
+			}
+			if (UtilsCore.isAntAvailable())
+			{
+				setCommand = "export ANT_HOME=\""+ model.antHomePath.fileBridge.nativePath +"\"; ";
+				setPathCommand += "$ANT_HOME/bin:";
+				isValidToExecute = true;
+			}
+			if (UtilsCore.isDefaultSDKAvailable())
+			{
+				setCommand = "export FLEX_HOME=\""+ model.defaultSDK.fileBridge.nativePath +"\"; ";
+				setPathCommand += "$FLEX_HOME/bin:";
+				isValidToExecute = true;
+			}
+			
+			// do not proceed if no path to set
+			if (!isValidToExecute)
+			{
+				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				return;
+			}
+			
+			setCommand += setPathCommand +"$PATH";
+			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
+			// TODO:: TEST LAST COMMAND to REMOVE
+			
+			if (externalCallCompletionHandler != null)
+			{
+				// in case of macOS - instead of retuning any
+				// bash script file path return the full command
+				// to execute by caller's own nativeProcess process
+				externalCallCompletionHandler(setCommand);
+				cleanUp();
 			}
 			else
 			{
-				if (externalCallCompletionHandler != null)
-				{
-					// in case of macOS - instead of retuning any
-					// bash script file path return the full command
-					// to execute by caller's own nativeProcess process
-					externalCallCompletionHandler(setCommand);
-				}
-				else
-				{
-					onCommandLineExecutionWith(setCommand);
-				}
+				onCommandLineExecutionWith(setCommand);
 			}
 		}
 		
@@ -139,6 +186,7 @@ package actionScripts.utils
 			if (externalCallCompletionHandler != null)
 			{
 				externalCallCompletionHandler(windowsBatchFile.nativePath);
+				cleanUp();
 				return;
 			}
 			
@@ -217,10 +265,8 @@ package actionScripts.utils
 		
 		private function shellData(event:ProgressEvent):void 
 		{
-			var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
-			
-			Alert.show("Local environment set JAVA_HOME (Test)\n"+ data);
+			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);*/
 		}
 	}
 }
