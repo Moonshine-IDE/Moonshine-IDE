@@ -40,7 +40,7 @@ package actionScripts.utils
 			if (watchTimer && watchTimer.running) return;
 			if (!watchTimer)
 			{
-				watchTimer = new Timer(3000, 1);
+				watchTimer = new Timer(1000, 1);
 				watchTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
 				watchTimer.start();
 			}
@@ -106,7 +106,7 @@ package actionScripts.utils
 			if (UtilsCore.isDefaultSDKAvailable())
 			{
 				setCommand += "set FLEX_HOME="+ model.defaultSDK.fileBridge.nativePath +"\r\n";
-				setPathCommand += "%FLEX_HOME%;";
+				setPathCommand += "%FLEX_HOME%\\bin;";
 				isValidToExecute = true;
 			}
 			
@@ -250,7 +250,7 @@ package actionScripts.utils
 				var output:IDataInput = customProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 				
-				Alert.show("Local environment setup failed[2]!\n"+ data);
+				//Alert.show("Local environment setup failed[2]!\n"+ data);
 				startShell(false);
 			}
 		}
