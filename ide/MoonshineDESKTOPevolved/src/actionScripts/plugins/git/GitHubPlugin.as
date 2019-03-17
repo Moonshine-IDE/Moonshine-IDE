@@ -69,11 +69,20 @@ package actionScripts.plugins.git
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
-		override public function get name():String			{ return "GitHub"; }
+		override public function get name():String			{ return "Git"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }
-		override public function get description():String	{ return "GitHub Plugin. Esc exits."; }
+		override public function get description():String	{ return "Git Plugin. Esc exits."; }
 		
-		public var gitBinaryPathOSX:String;
+		private var _gitBinaryPathOSX:String;
+		public function get gitBinaryPathOSX():String
+		{
+			return _gitBinaryPathOSX;
+		}
+		public function set gitBinaryPathOSX(value:String):void
+		{
+			model.gitPath = _gitBinaryPathOSX = value;
+		}
+		
 		public var modelAgainstProject:Dictionary = new Dictionary();
 		public var projectsNotAcceptedByUserToPermitAsGitOnMacOS:Dictionary = new Dictionary();
 		
@@ -162,7 +171,7 @@ package actionScripts.plugins.git
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
-				new PathSetting(this,'gitBinaryPathOSX', 'macOS Git Path', true, gitBinaryPathOSX, true)
+				new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false)
 			]);
 		}
 		
@@ -239,11 +248,10 @@ package actionScripts.plugins.git
 			{
 				isGranted = true;
 				
-				var against:String = xCodePermissionWindow.xCodePathAgainst == ProjectMenuTypes.GIT_PROJECT ? "Git" : "SVN";
 				var svnBinaryPathOSX:String = xCodePermissionWindow.xCodePath + "/usr/bin/svn";
 				
 				gitBinaryPathOSX = xCodePermissionWindow.xCodePath + "/usr/bin/git";
-				Alert.show(against +" permission accepted. You can now use Moonshine "+ against +" functionalities.", "Success!");
+				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
 				
 				var thisSettings: Vector.<ISetting> = getSettingsList();
 				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;

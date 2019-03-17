@@ -28,17 +28,15 @@
 		 height="100%" creationComplete="initThis()">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.valueObjects.SdkDescriptionVO;
-
-		import mx.controls.Alert;
-
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.ui.tabview.CloseTabEvent;
-		import actionScripts.utils.NoSDKNotifier;
-		import actionScripts.utils.SDKUtils;
-		import actionScripts.valueObjects.ProjectReferenceVO;
+			import mx.controls.Alert;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.tabview.CloseTabEvent;
+			import actionScripts.utils.NoSDKNotifier;
+			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.SDKReferenceVO;
 
 		public var selectedSDKDir:File;
 		public var requestedSDKDownloadVersion:String;
@@ -115,7 +113,7 @@
 		private function doSave(event:Event):void
 		{
 			// check if valid SDK directory
-			var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(new FileLocation(selectedSDKDir.nativePath));
+			var sdkDescription:SDKReferenceVO = SDKUtils.getSDKReference(new FileLocation(selectedSDKDir.nativePath));
 			if (!sdkDescription)
 			{
 				Alert.show("Not a valid SDK directory or not able to read from the source.", "Error!");
@@ -123,11 +121,7 @@
 			}
 
 			// check if already added in saved SDKs list
-			var projectRefTemp:ProjectReferenceVO = SDKUtils.isSDKAlreadySaved({
-				label: sdkDescription.name,
-				path: sdkDescription.sdkPath
-			});
-			sdkDescription
+			var projectRefTemp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(sdkDescription);
 
 			if (!projectRefTemp)
 			{

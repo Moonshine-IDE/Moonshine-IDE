@@ -67,8 +67,6 @@ package actionScripts.plugin.settings
 	 *
 	 * */
 
-    import actionScripts.utils.SharedObjectConst;
-
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.net.SharedObject;
@@ -77,6 +75,7 @@ package actionScripts.plugin.settings
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
@@ -85,22 +84,23 @@ package actionScripts.plugin.settings
     import actionScripts.plugin.fullscreen.FullscreenPlugin;
     import actionScripts.plugin.settings.event.RequestSettingEvent;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PluginSetting;
     import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
     import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.plugin.syntax.AS3SyntaxPlugin;
     import actionScripts.plugin.syntax.CSSSyntaxPlugin;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
-    import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.JSSyntaxPlugin;
+    import actionScripts.plugin.syntax.JavaSyntaxPlugin;
     import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
     import actionScripts.plugin.syntax.XMLSyntaxPlugin;
     import actionScripts.plugin.visualEditor.VisualEditorProjectPlugin;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.moonshine_internal;
     import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -195,7 +195,7 @@ package actionScripts.plugin.settings
             cookie.flush();
 
 			// restarting all startup process again
-			dispatcher.dispatchEvent(new Event(StartupHelperPlugin.EVENT_RESTART_HELPING));
+			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_RESTART_HELPING));
 		}
 		
 		private function getClassName(instance:*):String
@@ -465,8 +465,26 @@ package actionScripts.plugin.settings
 			if (!saveData.length()) return;
 			
 			var settingsFile:FileLocation = generateSettingsPath(event.name);
+			var className:String = event.name.split("::").pop();
 			use namespace moonshine_internal;
+			var plug:IPlugin = pluginManager.getPluginByClassName(className);
 			commitClassSettings(null, saveData, settingsFile);
+			saveToCurrentPlugin(plug, settingsList);
+		}
+		
+		private function saveToCurrentPlugin(plug:IPlugin, settingsList:Vector.<ISetting>):void
+		{
+			for each(var setting:AbstractSetting in settingsList)
+			{
+				if ((plug as Object).hasOwnProperty(setting.name))
+				{
+					// this is suppose to hold one field only 
+					for each (var i:Object in setting.provider)
+					{
+						(plug as Object)[setting.name] = i;
+					}
+				}
+			}
 		}
 
 		private function commitClassSettings(plug:IPlugin, saveData:XML, settingsFile:FileLocation):Boolean

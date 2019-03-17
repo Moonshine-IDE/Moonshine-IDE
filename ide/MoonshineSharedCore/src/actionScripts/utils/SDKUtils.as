@@ -29,14 +29,13 @@ package actionScripts.utils
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.help.HelpPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.RoyaleOutputTarget;
-    import actionScripts.valueObjects.SdkDescriptionVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
 	
 	public class SDKUtils extends EventDispatcher
 	{
@@ -157,7 +156,7 @@ package actionScripts.utils
 				for (var i:String in SDKS)
 				{
 					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:SdkDescriptionVO = getSdkDescription(targetDir);
+					var bundledFlexSDK:SDKReferenceVO = getSDKReference(targetDir);
 					if (bundledFlexSDK)
 					{
 						addSDKDirectory(bundledFlexSDK);
@@ -170,7 +169,7 @@ package actionScripts.utils
 						{
 							if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
 							{
-								bundledFlexSDK = getSdkDescription(new FileLocation(j.nativePath));
+								bundledFlexSDK = getSDKReference(new FileLocation(j.nativePath));
 								if (bundledFlexSDK)
 								{
 									addSDKDirectory(bundledFlexSDK);
@@ -199,11 +198,11 @@ package actionScripts.utils
 				/**
 				 * @local
 				 */
-				function addSDKDirectory(value:SdkDescriptionVO):void
+				function addSDKDirectory(value:SDKReferenceVO):void
 				{
-					var tmpPR:ProjectReferenceVO = new ProjectReferenceVO();
+					var tmpPR:SDKReferenceVO = new SDKReferenceVO();
 					tmpPR.name = String(value.name);
-					tmpPR.path = value.sdkPath;
+					tmpPR.path = value.path;
 					tmpPR.status = BUNDLED;
 					model.userSavedSDKs.addItemAt(tmpPR, 0);
 					isFound = true;
@@ -222,11 +221,11 @@ package actionScripts.utils
 			// 3. user didn't choose to not show sdk extraction prompt again
 			if (ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT && ((IDEModel.getInstance().userSavedSDKs.length == 0) || (IDEModel.getInstance().userSavedSDKs[0].status != SDKUtils.BUNDLED)) && !ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS) 
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST));
 			}
 			else if (((IDEModel.getInstance().userSavedSDKs.length == 0) || (IDEModel.getInstance().userSavedSDKs[0].status != SDKUtils.BUNDLED)) && !ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS) 
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_SDK_SETUP_REQUEST));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST));
 			}
 			else 
 			{
@@ -240,7 +239,7 @@ package actionScripts.utils
 			model.defaultSDK = new FileLocation(model.userSavedSDKs[0].path);
 		}
 		
-		public static function getSdkDescription(location:FileLocation):SdkDescriptionVO
+		public static function getSDKReference(location:FileLocation):SDKReferenceVO
 		{
 			if (!location) return null;
 
@@ -272,47 +271,58 @@ package actionScripts.utils
 				{
                     displayName += " " + tmpXML.version;
 				}
-
-				return new SdkDescriptionVO(description.fileBridge.parent.fileBridge.nativePath,
-                        displayName, tmpXML.version, tmpXML.build, outputTargets);
+				
+				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
+				tmpSDK.path = description.fileBridge.parent.fileBridge.nativePath;
+				tmpSDK.name = displayName;
+				tmpSDK.version = String(tmpXML.version);
+				tmpSDK.build = String(tmpXML.build);
+				tmpSDK.outputTargets = outputTargets;
+				
+				return tmpSDK;
 			}
 			
 			// non-sdk case
 			return null;
 		}
 		
-		public static function isSDKAlreadySaved(sdkObject:Object):ProjectReferenceVO
+		public static function isSDKAlreadySaved(sdkObject:Object):SDKReferenceVO
 		{
 			// add sdk
 			// don't add if said sdk already added
 			var isAlreadyAdded:Boolean;
 			var model:IDEModel = IDEModel.getInstance();
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i.path == sdkObject.path) 
 				{
-					isAlreadyAdded = true;
-					break;
+					return i;
 				}
 			}
 			
-			if (!isAlreadyAdded)
+			if (!(sdkObject is SDKReferenceVO) && !isAlreadyAdded)
 			{
-				var tmp:ProjectReferenceVO = new ProjectReferenceVO();
+				var tmp:SDKReferenceVO = new SDKReferenceVO();
 				tmp.name = sdkObject.label;
 				tmp.path = sdkObject.path;
 				model.userSavedSDKs.addItem(tmp);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, tmp));
 				return tmp;
 			}
+			else if (!isAlreadyAdded)
+			{
+				model.userSavedSDKs.addItem(sdkObject);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, sdkObject));
+				return (sdkObject as SDKReferenceVO);
+			}
 			
 			return null;
 		}
 		
-		public static function getSDKFromSavedList(byPath:String):ProjectReferenceVO
+		public static function getSDKFromSavedList(byPath:String):SDKReferenceVO
 		{
 			var model:IDEModel = IDEModel.getInstance();
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (i.path == byPath) 
 				{
@@ -343,7 +353,7 @@ package actionScripts.utils
             var sdk:FileLocation;
             if (sdkPath)
             {
-                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
                 if (isFound) sdk = new FileLocation(isFound.path);
             }
             else
@@ -380,7 +390,7 @@ package actionScripts.utils
             var sdk:FileLocation;
             if (sdkPath)
             {
-                var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
                 if (isFound) sdk = new FileLocation(isFound.path);
             }
             else
@@ -405,7 +415,18 @@ package actionScripts.utils
 
             return currentSdkMinorVersion;
         }
-
+		
+		public static function checkSDKTypeInSDKList(type:String):Boolean
+		{
+			var model:IDEModel = IDEModel.getInstance();
+			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
+			{
+				if (sdk.type == type) return true;
+			}
+			
+			return false;
+		}
+		
 		private static function onExtractionFailed(event:Event):void
 		{
 			isSDKExtractionFailed = true;

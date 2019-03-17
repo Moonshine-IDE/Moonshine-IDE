@@ -424,6 +424,11 @@ package actionScripts.impls
 			return IDEModel.getInstance().version;
 		}
 		
+		public function updateToCurrentEnvironmentVariable():void
+		{
+			
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS

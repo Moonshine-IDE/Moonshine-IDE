@@ -5,7 +5,7 @@ Moonshine IDE is a free IDE built with Adobe AIR. You can create ActionScript 3,
 
 We want to provide a free IDE to our community for ActionScript projects. An IDE which is cross platform and provides Apache Flex®, Apache Royale®, Feathers and cloud support.
 
-## Installation
+## Installation 
 
 ### Prerequisites
 

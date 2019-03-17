@@ -38,6 +38,7 @@ package actionScripts.impls
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
@@ -61,7 +62,6 @@ package actionScripts.impls
     import actionScripts.plugin.search.SearchPlugin;
     import actionScripts.plugin.settings.SettingsPlugin;
     import actionScripts.plugin.splashscreen.SplashScreenPlugin;
-    import actionScripts.plugin.startup.StartupHelperPlugin;
     import actionScripts.plugin.syntax.AS3SyntaxPlugin;
     import actionScripts.plugin.syntax.CSSSyntaxPlugin;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
@@ -88,6 +88,7 @@ package actionScripts.impls
     import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
     import actionScripts.plugins.problems.ProblemsPlugin;
     import actionScripts.plugins.references.ReferencesPlugin;
+    import actionScripts.plugins.startup.StartupHelperPlugin;
     import actionScripts.plugins.svn.SVNPlugin;
     import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;
@@ -100,6 +101,7 @@ package actionScripts.impls
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.SHClassTest;
     import actionScripts.utils.SWFTrustPolicyModifier;
     import actionScripts.utils.SoftwareVersionChecker;
@@ -235,7 +237,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, GitHubPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -364,6 +366,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources', 'HELP'), [
 					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
+					new MenuItem("Getting Started", null, null, StartupHelperPlugin.EVENT_GETTING_STARTED),
 					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
 					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
                     new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY)])
@@ -389,7 +392,7 @@ package actionScripts.impls
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
 							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, null, ProjectEvent.ACCESS_MANAGER)));
-							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperPlugin.EVENT_SDK_UNZIP_REQUEST : StartupHelperPlugin.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
+							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST : StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
 							break;
 						}
 					}
@@ -459,6 +462,11 @@ package actionScripts.impls
 			var appVersion:String = appDescriptor.ns::versionNumber;
 			
 			return appVersion;
+		}
+		
+		public function updateToCurrentEnvironmentVariable():void
+		{
+			EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 		}
 	}
 }

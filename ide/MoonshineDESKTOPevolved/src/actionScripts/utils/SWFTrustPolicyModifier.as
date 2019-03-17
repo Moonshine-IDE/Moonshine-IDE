@@ -76,7 +76,7 @@ package actionScripts.utils
 			/*var trustFile: File = checkPolicyFileExistence();
 			if (trustFile.exists)
 			{
-				var file : File = File.applicationDirectory.resolvePath("appScripts/UpdaterSWFTrustContent.scpt");
+				var file : File = File.applicationDirectory.resolvePath("macOScripts/UpdaterSWFTrustContent.scpt");
 				var npInfo : NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				var arg:Vector.<String>;
 				

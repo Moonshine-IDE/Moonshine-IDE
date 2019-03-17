@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   implements="actionScripts.ui.IContentWindow"
+			   width="100%" height="100%"
+			   initialize="onInitialized(event)" creationComplete="onCreationCompletes()"
+			   xmlns:components="components.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.HelperEvent;
+			import actionScripts.interfaces.IHelperMoonshineBridge;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.plugins.git.GitHubPlugin;
+			import actionScripts.ui.IContentWindow;
+			import actionScripts.utils.EnvironmentUtils;
+			import actionScripts.utils.HelperUtils;
+			import actionScripts.utils.MSDKIdownloadUtil;
+			import actionScripts.utils.PathSetupHelperUtil;
+			import actionScripts.valueObjects.ComponentTypes;
+			import actionScripts.valueObjects.ComponentVO;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.HelperConstants;
+			
+			import air.update.events.DownloadErrorEvent;
+			
+			private static const LABEL:String = "Getting Started";
+			
+			public var dependencyCheckUtil:IHelperMoonshineBridge;
+			public var environmentUtil:EnvironmentUtils;
+			
+			[Bindable] private var sdkInstallerInstallingMess:String;
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
+			private var workspaceWrapper:FileWrapper;
+			private var progressTimer:Timer;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  INTERFACE API
+			//
+			//--------------------------------------------------------------------------
+			
+			public function get longLabel():String
+			{
+				return LABEL;
+			}
+			
+			public function get label():String
+			{
+				return LABEL;
+			}
+			
+			public function isChanged():Boolean
+			{
+				return false;
+			}
+			
+			public function isEmpty():Boolean
+			{
+				return false;
+			}
+			
+			public function save():void
+			{
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PUBLIC API
+			//
+			//--------------------------------------------------------------------------
+			
+			public function onInvokeEvent(componentId:String, path:String=null):void
+			{
+				if (viewHelper.isConfigurationLoaded)
+					viewHelper.updateComponentStatusAsDownloaded(componentId, path);
+				else
+					PathSetupHelperUtil.updateFieldPath(componentId, path);
+			}
+			
+			public function onWarningUpdate(event:HelperEvent):void
+			{
+				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
+				component.hasWarning = event.value.message;
+			}
+			
+			public function dispose():void
+			{
+				stopMessageAnimateProcess();
+				addRemoveInstallerDownloadEvents(false);
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE API
+			//
+			//--------------------------------------------------------------------------
+			
+			private function onInitialized(event:FlexEvent):void
+			{
+				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
+				viewHelper.environmentUtil = environmentUtil;
+			}
+			
+			protected function onCreationCompletes():void
+			{
+				updateUI();
+			}
+			
+			private function updateUI():void
+			{
+				var ps:PluginSetting = new PluginSetting("Moonshine IDE is Installed. What's Next?", "Moonshine Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				body.addElementAt(ps.renderer, 0);
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE LISTENERS
+			//
+			//--------------------------------------------------------------------------
+			
+			private function runAppStoreHelper(event:HelperEvent):void
+			{
+				if (!ConstantsCoreVO.IS_MACOS)
+				{
+					if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
+					{
+						addRemoveInstallerDownloadEvents(true);
+						startMessageAnimateProcess();
+					}
+					else
+					{
+						sdkInstallerInstallingMess = "Moonshine SDK Installer requested. This may take a few seconds.";
+					}
+				}
+				
+				msdkiDownloadUtil.runOrDownloadSDKInstaller();
+			}
+			
+			private function onOpenSettings(event:HelperEvent):void
+			{
+				var component:ComponentVO = event.value as ComponentVO;
+				if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) && 
+					ConstantsCoreVO.IS_MACOS)
+				{
+					var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+					var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+					
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					gitComponent.hasWarning = svnComponent.hasWarning = null;
+				}
+				else
+				{
+					PathSetupHelperUtil.openSettingsViewFor(component.type);
+				}
+			}
+			
+			private function onAnyComponentDownloaded(event:HelperEvent):void
+			{
+				// autoset moonshine internal fields as appropriate
+				var component:ComponentVO = event.value as ComponentVO;
+				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
+			}
+			
+			private function onUnzipCompleted(event:GeneralEvent):void
+			{
+				stopMessageAnimateProcess();
+				addRemoveInstallerDownloadEvents(false);
+			}
+			
+			private function onSDKInstallerDownloadError(event:DownloadErrorEvent):void
+			{
+				addRemoveInstallerDownloadEvents(false);
+				Alert.show(event.text, "Error!");
+			}
+			
+			private function addRemoveInstallerDownloadEvents(add:Boolean):void
+			{
+				if (add)
+				{
+					msdkiDownloadUtil.addEventListener(GeneralEvent.DONE, onUnzipCompleted, false, 0, true);
+					msdkiDownloadUtil.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError, false, 0, true);
+				}
+				else
+				{
+					msdkiDownloadUtil.removeEventListener(GeneralEvent.DONE, onUnzipCompleted);
+					msdkiDownloadUtil.removeEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError);
+				}
+			}
+			
+			private function stopMessageAnimateProcess():void
+			{
+				if (progressTimer) 
+				{
+					if (progressTimer.running) progressTimer.stop();
+					progressTimer.removeEventListener(TimerEvent.TIMER, onTimerTick);
+				}
+				sdkInstallerInstallingMess = null;
+				progressTimer = null;
+			}
+			
+			private function startMessageAnimateProcess():void
+			{
+				stopMessageAnimateProcess();
+				
+				sdkInstallerInstallingMess = "Moonshine SDK Installer is downloading. Please wait.";
+				progressTimer = new Timer(1000);
+				progressTimer.addEventListener(TimerEvent.TIMER, onTimerTick);
+				progressTimer.start();
+			}
+			
+			private function onTimerTick(event:TimerEvent):void
+			{
+				if (sdkInstallerInstallingMess.lastIndexOf("..") == -1) sdkInstallerInstallingMess += ".";
+				else sdkInstallerInstallingMess = sdkInstallerInstallingMess.replace("..", ".");
+			}
+			
+			protected function onRefreshRequest(event:MouseEvent):void
+			{
+				viewHelper.checkForUpdate();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xf5f5f5"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:VGroup id="body"
+			  width="100%" height="100%"
+			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
+			  horizontalAlign="center">
+		<s:Button label="Download Third-party Software"
+				  styleName="greyButton"
+				  click="runAppStoreHelper(null)"/>
+		<s:Label text="{sdkInstallerInstallingMess}"
+				 includeInLayout="{sdkInstallerInstallingMess != null}" visible="{sdkInstallerInstallingMess != null}"
+				 styleName="smallText" paddingBottom="10"/>
+		<components:HelperView id="viewHelper" 
+							   width="100%" height="100%"
+							   isRunningInsideMoonshine="true"
+							   DOWNLOAD_COMPONENT="runAppStoreHelper(event)"
+							   OPEN_MOON_SETTINGS="onOpenSettings(event)"
+							   COMPONENT_DOWNLOADED="onAnyComponentDownloaded(event)"/>
+	</s:VGroup>
+	
+	<s:HGroup verticalAlign="middle" horizontalAlign="right"
+			  top="10" right="10">
+		<s:Label text="Updating.."
+				 styleName="uiText"
+				 fontSize="12"
+				 visible="{HelperConstants.IS_DETECTION_IN_PROCESS}"/>
+		<s:Image source="@Embed('/assets/images/icoRefreshGettingStarted.png')"
+				 buttonMode="true" toolTip="Refresh List"
+				 enabled="{!HelperConstants.IS_DETECTION_IN_PROCESS}" alpha="{HelperConstants.IS_DETECTION_IN_PROCESS ? .6 : 1}"
+				 click="onRefreshRequest(event)"/>
+	</s:HGroup>
+</s:Group>

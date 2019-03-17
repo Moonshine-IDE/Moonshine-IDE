@@ -31,7 +31,7 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.SoftwareVersionChecker;
 			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ProjectReferenceVO;
+			import actionScripts.valueObjects.SDKReferenceVO;
 			
 			[Bindable] private var flexSDKPath:String = "- Not Installed -";
 			[Bindable] private var AntPath:String = "- Not Installed -";
@@ -44,7 +44,7 @@
 			public function onCreationCompletes():void
 			{
 				if (model.defaultSDK) {
-					var isFound:ProjectReferenceVO = UtilsCore.getUserDefinedSDK(model.defaultSDK.fileBridge.nativePath, "path");
+					var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(model.defaultSDK.fileBridge.nativePath, "path");
 					if (isFound) flexSDKPath = isFound.name;
 				}
 				if(model.antHomePath){

@@ -299,7 +299,6 @@ package actionScripts.ui.menu
                             recursiveDisableMenuOptionsByProject(menuItem.submenu.items, activeProject);
                         }
                     }
-
                 }
             }
 		}

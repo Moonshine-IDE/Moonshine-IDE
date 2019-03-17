@@ -19,6 +19,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.filesystem.FileMode;
+    import flash.filesystem.FileStream;
+    import flash.utils.ByteArray;
+    import flash.utils.IDataInput;
+    
+    import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.core.IFlexDisplayObject;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshTreeEvent;
@@ -34,32 +53,14 @@ package actionScripts.plugins.ant
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
-
+    
     import components.popup.SelectAntFile;
     import components.popup.SelectOpenedFlexProject;
-
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.filesystem.FileMode;
-    import flash.filesystem.FileStream;
-    import flash.utils.ByteArray;
-    import flash.utils.IDataInput;
-
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.core.IFlexDisplayObject;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
 
     public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
     {
@@ -134,6 +135,7 @@ package actionScripts.plugins.ant
             else
             {
                 model.antHomePath = new FileLocation(value);
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
             }
         }
 

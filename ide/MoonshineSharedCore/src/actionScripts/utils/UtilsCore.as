@@ -51,6 +51,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.ModifiedFileListPopup;
@@ -242,10 +243,11 @@ package actionScripts.utils
 			return path;
 		}
 		
-		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):ProjectReferenceVO
+		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):SDKReferenceVO
 		{
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
+				if (!ConstantsCoreVO.IS_MACOS) searchByValue = searchByValue.replace(/(\/)/g, "\\");
 				if (i[searchByField] == searchByValue)
 				{
 					return i;
@@ -484,7 +486,7 @@ package actionScripts.utils
 			
 			var path:String;
 			var bestVersionValue:int = 0;
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				var sdkName:String = i.name;
 				if (sdkName.indexOf(FLEXJS_NAME_PREFIX) != -1)
@@ -539,7 +541,7 @@ package actionScripts.utils
 			// to ensure addition of new compiler argument '-compiler.targets' 
 			// which do not works with SDK < 0.8.0
 			var sdkFullName:String;
-			for each (var project:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var project:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (sdkPath == project.path)
 				{
@@ -547,7 +549,9 @@ package actionScripts.utils
 					break;
 				}
 			}
-
+			
+			if (!sdkFullName) return false;
+			
             var flexJSPrefixName:String = "Apache Flex (FlexJS) ";
             var royalePrefixName:String = "Apache Royale ";
 
@@ -924,10 +928,16 @@ package actionScripts.utils
 
         public static function getMavenBinPath():String
         {
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				return null;
+			}
+			
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
             var mavenBin:String = "bin/";
-
-            if (Settings.os == "win")
+			
+			if (!mavenLocation.fileBridge.exists) return null;
+			else if (Settings.os == "win")
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
@@ -935,7 +945,60 @@ package actionScripts.utils
             {
                 return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
             }
+			
+			return null;
         }
+		
+		public static function isDefaultSDKAvailable():Boolean
+		{
+			if (!model.defaultSDK || !model.defaultSDK.fileBridge.exists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isJavaForTypeaheadAvailable():Boolean
+		{
+			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
+			if (!model.javaPathForTypeAhead || !isJavaPathExists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isAntAvailable():Boolean
+		{
+			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isSVNPresent():Boolean
+		{
+			if (model.svnPath)
+			{
+				return (new FileLocation(model.svnPath).fileBridge.exists);
+			}
+			
+			return false;
+		}
+		
+		public static function isGitPresent():Boolean
+		{
+			if (model.gitPath)
+			{
+				return (new FileLocation(model.gitPath).fileBridge.exists);
+			}
+			
+			return false;
+		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {

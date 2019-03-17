@@ -80,7 +80,7 @@ package actionScripts.utils
 			arg = new Vector.<String>();
 			
 			// for MacOS platform
-			var shFile : File = File.applicationDirectory.resolvePath("appScripts/openwithapplication.sh");
+			var shFile : File = File.applicationDirectory.resolvePath("macOScripts/openwithapplication.sh");
 			
 			// making proper case-sensitive to work in case-sensitive system like Linux
 			//shFile.canonicalize();

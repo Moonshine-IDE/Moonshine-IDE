@@ -71,6 +71,7 @@ package actionScripts.interfaces
 		function reAdjustApplicationSize(width:Number, height:Number):void;
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
+		function updateToCurrentEnvironmentVariable():void;
 
         /**
          *

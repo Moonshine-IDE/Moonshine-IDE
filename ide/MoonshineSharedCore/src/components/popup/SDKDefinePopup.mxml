@@ -38,10 +38,9 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.SDKUtils;
 			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.ProjectReferenceVO;
-			import actionScripts.valueObjects.SdkDescriptionVO;
+			import actionScripts.valueObjects.SDKReferenceVO;
 
-		public var editedSDKPath:ProjectReferenceVO;
+		public var editedSDKPath:SDKReferenceVO;
 		private var file:FileLocation;
 
 		/**
@@ -73,10 +72,10 @@
 			btnCreate.enabled = false;
 			file = new FileLocation(dir.nativePath);
 
-			var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(file);
+			var sdkDescription:SDKReferenceVO = SDKUtils.getSDKReference(file);
 			if (sdkDescription)
 			{
-				txtPath.text = sdkDescription.sdkPath;
+				txtPath.text = sdkDescription.path;
 				txtLabel.text = sdkDescription.name;
 				btnCreate.enabled = true;
 			}

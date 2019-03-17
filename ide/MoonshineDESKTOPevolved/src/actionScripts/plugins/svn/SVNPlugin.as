@@ -61,7 +61,15 @@ package actionScripts.plugins.svn
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		
-		public var svnBinaryPath:String;
+		private var _svnBinaryPath:String;
+		public function get svnBinaryPath():String
+		{
+			return _svnBinaryPath;
+		}
+		public function set svnBinaryPath(value:String):void
+		{
+			model.svnPath = _svnBinaryPath = value;
+		}
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var gitAuthWindow:GitAuthenticationPopup;
