@@ -20,7 +20,7 @@ package actionScripts.plugin.core.compiler
 {
 	import flash.events.Event;
 
-	public class CompilerEventBase extends Event
+	public class ActionScriptBuildEvent extends Event
 	{
 		public static const BUILD_AND_RUN:String = "compilerBuildAndRun";
 		public static const BUILD_AND_RUN_JAVASCRIPT:String = "compilerBuildAndRunJavaScript";
@@ -39,7 +39,7 @@ package actionScripts.plugin.core.compiler
 		public static const CONTINUE_EXECUTION:String = "continueExecution";
 		public static const SAVE_BEFORE_BUILD:String = "saveBeforeBuild";
 		
-		public function CompilerEventBase(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
+		public function ActionScriptBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
 		}

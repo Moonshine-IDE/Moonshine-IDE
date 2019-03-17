@@ -36,7 +36,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
@@ -60,13 +60,13 @@ package actionScripts.plugin.actionscript.as3project.clean
 		override public function activate():void 
 		{
 			super.activate();
-			dispatcher.addEventListener(CompilerEventBase.CLEAN_PROJECT, cleanSelectedProject);
+			dispatcher.addEventListener(ActionScriptBuildEvent.CLEAN_PROJECT, cleanSelectedProject);
 		}
 		
 		override public function deactivate():void 
 		{
 			super.deactivate();
-			dispatcher.removeEventListener(CompilerEventBase.CLEAN_PROJECT, cleanSelectedProject);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.CLEAN_PROJECT, cleanSelectedProject);
 		}
 
 		private function cleanSelectedProject(e:Event):void

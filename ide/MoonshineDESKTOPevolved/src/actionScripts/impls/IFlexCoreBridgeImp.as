@@ -47,7 +47,7 @@ package actionScripts.impls
     import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsolePlugin;
-    import actionScripts.plugin.core.compiler.CompilerEventBase;
+    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.core.mouse.MouseManagerPlugin;
     import actionScripts.plugin.errors.UncaughtErrorsPlugin;
     import actionScripts.plugin.findResources.FindResourcesPlugin;
@@ -327,17 +327,17 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.BUILD_AND_DEBUG,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.DEBUG_STEPOVER,
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.DEBUG_STEPOVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.CONTINUE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.CONTINUE_EXECUTION,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], CompilerEventBase.TERMINATE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.TERMINATE_EXECUTION,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),

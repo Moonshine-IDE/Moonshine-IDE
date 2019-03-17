@@ -45,7 +45,7 @@ package actionScripts.plugins.vscodeDebug
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
 	import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
 	import actionScripts.plugins.vscodeDebug.view.VSCodeDebugProtocolView;
@@ -136,15 +136,15 @@ package actionScripts.plugins.vscodeDebug
 			this._debugPanel = new VSCodeDebugProtocolView();
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
-			dispatcher.addEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
-			///dispatcher.addEventListener(CompilerEventBase.PREBUILD, handleCompile);
+			dispatcher.addEventListener(ActionScriptBuildEvent.POSTBUILD, dispatcher_postBuildHandler);
+			///dispatcher.addEventListener(ActionScriptBuildEvent.PREBUILD, handleCompile);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			/*dispatcher.addEventListener(MenuPlugin.MENU_SAVE_EVENT, handleEditorSave);
 			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);*/
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
-			dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER, stepOverExecutionHandler);
-			dispatcher.addEventListener(CompilerEventBase.CONTINUE_EXECUTION, continueExecutionHandler);
-			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION, terminateExecutionHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER, stepOverExecutionHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION, continueExecutionHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, terminateExecutionHandler);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
 			
@@ -156,7 +156,7 @@ package actionScripts.plugins.vscodeDebug
 			super.deactivate();
 
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
-			dispatcher.removeEventListener(CompilerEventBase.POSTBUILD, dispatcher_postBuildHandler);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.POSTBUILD, dispatcher_postBuildHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);

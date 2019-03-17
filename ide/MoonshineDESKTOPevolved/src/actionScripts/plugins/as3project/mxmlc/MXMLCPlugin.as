@@ -51,7 +51,7 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-    import actionScripts.plugin.core.compiler.CompilerEventBase;
+    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
     import actionScripts.plugin.settings.providers.JavaSettingsProvider;
@@ -206,10 +206,10 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			super.activate();
 			
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_DEBUG, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD, build);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			tempObj = new Object();
@@ -310,7 +310,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function buildAndRun(e:Event):void
 		{
 			// re-check in case of debug call and its already running
-			if (e.type == CompilerEventBase.BUILD_AND_DEBUG && DebugHighlightManager.IS_DEBUGGER_CONNECTED)
+			if (e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG && DebugHighlightManager.IS_DEBUGGER_CONNECTED)
 			{
 				Alert.show("You are already debugging an application. Do you wish to terminate the existing debugging session and start a new session?", "Debug Warning", Alert.YES|Alert.CANCEL, FlexGlobals.topLevelApplication as Sprite, reDebugConfirmClickHandler);	
 			}
@@ -324,7 +324,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				if (event.detail == Alert.YES)
 				{
-					dispatcher.dispatchEvent(new Event(CompilerEventBase.TERMINATE_EXECUTION));
+					dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 					setTimeout(function():void
 					{
 						dispatcher.dispatchEvent(e);
@@ -356,7 +356,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function build(e:Event, runAfterBuild:Boolean=false, release:Boolean=false):void 
 		{
-			if (e && e.type == CompilerEventBase.BUILD_AND_DEBUG)
+			if (e && e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG)
 			{
 				this.debugAfterBuild = true;
 				SWFLauncherPlugin.RUN_AS_DEBUGGER = true;
@@ -750,7 +750,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
 		{
             clearOutput();
-			dispatcher.dispatchEvent(new MXMLCPluginEvent(CompilerEventBase.PREBUILD, new FileLocation(currentSDK.nativePath)));
+			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
 			print("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
@@ -884,7 +884,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// stop running debug process for run/build if debug process in running
 			if (!debugAfterBuild)
 			{
-				dispatcher.dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG, false));
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG, false));
 			}
 
 			fcsh = new NativeProcess();
@@ -1030,14 +1030,14 @@ package actionScripts.plugins.as3project.mxmlc
 
             if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
             {
-                dispatcher.dispatchEvent(new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject));
+                dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
                 //install and launch on device
                 testMovie();
             }
 			else
 			{
                 projectBuildSuccessfully();
-                dispatcher.dispatchEvent(new ProjectEvent(CompilerEventBase.POSTBUILD, currentProject));
+                dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
 			}
 		}
 

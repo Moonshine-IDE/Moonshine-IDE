@@ -33,7 +33,7 @@ package actionScripts.plugin.actionscript.as3project.files
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ButtonSetting;
@@ -144,7 +144,7 @@ package actionScripts.plugin.actionscript.as3project.files
 		override public function activate():void 
 		{
 			super.activate();
-			dispatcher.addEventListener(CompilerEventBase.SAVE_BEFORE_BUILD, saveBeforeBuild);
+			dispatcher.addEventListener(ActionScriptBuildEvent.SAVE_BEFORE_BUILD, saveBeforeBuild);
 			//dispatcher.addEventListener(ProjectEvent.SET_WORKSPACE, setWorkspace);
 			dispatcher.addEventListener(ProjectEvent.ACCESS_MANAGER, openAccessManager);
 		}
@@ -152,7 +152,7 @@ package actionScripts.plugin.actionscript.as3project.files
 		override public function deactivate():void 
 		{
 			super.deactivate();
-			dispatcher.removeEventListener(CompilerEventBase.SAVE_BEFORE_BUILD, saveBeforeBuild);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.SAVE_BEFORE_BUILD, saveBeforeBuild);
 			//dispatcher.removeEventListener(ProjectEvent.SET_WORKSPACE, setWorkspace);
 			dispatcher.removeEventListener(ProjectEvent.ACCESS_MANAGER, openAccessManager);
 		}

@@ -27,7 +27,7 @@
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.plugin.core.compiler.CompilerEventBase;
+		import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 
 		import mx.managers.PopUpManager;
 
@@ -57,7 +57,7 @@
 
 		protected function onDoNotPromptClick(event:Event):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.SAVE_BEFORE_BUILD, false, true));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.SAVE_BEFORE_BUILD, false, true));
 		}
 		]]>
 	</fx:Script>

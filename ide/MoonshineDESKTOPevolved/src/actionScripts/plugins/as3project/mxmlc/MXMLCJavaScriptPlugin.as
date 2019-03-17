@@ -48,7 +48,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -134,8 +134,8 @@ package actionScripts.plugins.as3project.mxmlc
 			registerCommand('buildjs',tempObj);
 			
 			
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AS_JAVASCRIPT, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT, build);
 			reset();
 		}
 		
@@ -463,7 +463,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function compile(pvo:AS3ProjectVO):FileLocation 
 		{
 			clearConsoleBeforeRun();
-			dispatcher.dispatchEvent(new MXMLCPluginEvent(CompilerEventBase.PREBUILD, new FileLocation(currentSDK.nativePath)));
+			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
 			print("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
