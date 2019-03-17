@@ -32,7 +32,6 @@ package actionScripts.plugin.core.compiler
 		public static const PREBUILD:String = "compilerPrebuild";
 		public static const POSTBUILD:String = "compilerPostbuild";
 		public static const DEBUG_STEPOVER:String = "debugStepOVer";
-		public static const CLEAN_PROJECT:String = "cleanproject";
 		public static const TERMINATE_EXECUTION:String = "terminateExecution";
 		public static const STOP_DEBUG:String = "stopDebug";
 		public static const EXIT_FDB: String = "EXIT_FDB";
