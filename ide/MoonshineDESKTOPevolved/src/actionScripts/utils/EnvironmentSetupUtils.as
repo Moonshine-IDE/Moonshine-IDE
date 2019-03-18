@@ -45,6 +45,7 @@ package actionScripts.utils
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
+		private var customSDKPath:String;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -77,11 +78,12 @@ package actionScripts.utils
 			}
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
 		{
 			cleanUp();
 			externalCallCompletionHandler = completion;
 			executeWithCommands = withCommands;
+			customSDKPath = customSDK;
 			execute();
 		}
 		
@@ -90,6 +92,7 @@ package actionScripts.utils
 			externalCallCompletionHandler = null;
 			executeWithCommands = null;
 			windowsBatchFile = null;
+			customSDKPath = null;
 		}
 		
 		private function execute():void
@@ -143,6 +146,16 @@ package actionScripts.utils
 			var setCommand:String = ConstantsCoreVO.IS_MACOS ? "" : "@echo off\r\n";
 			var isValidToExecute:Boolean;
 			var setPathCommand:String = "set PATH=";
+			var defaultOrCustomSDKPath:String;
+			
+			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
+			{
+				defaultOrCustomSDKPath = customSDKPath;
+			}
+			else if (UtilsCore.isDefaultSDKAvailable())
+			{
+				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
+			}
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
@@ -156,9 +169,9 @@ package actionScripts.utils
 				setPathCommand += "%ANT_HOME%\\bin;";
 				isValidToExecute = true;
 			}
-			if (UtilsCore.isDefaultSDKAvailable())
+			if (defaultOrCustomSDKPath)
 			{
-				setCommand += getSetExportCommand("FLEX_HOME", model.defaultSDK.fileBridge.nativePath);
+				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
 				setPathCommand += "%FLEX_HOME%\\bin;";
 				isValidToExecute = true;
 			}
@@ -173,8 +186,8 @@ package actionScripts.utils
 			else
 			{
 				// need to set PATH under application shell
-				setCommand += setPathCommand + "%PATH%";
-				if (executeWithCommands) setCommand += "\r\n"+ executeWithCommands.join("\r\n");
+				setCommand += setPathCommand + "%PATH%\r\n";
+				if (executeWithCommands) setCommand += executeWithCommands.join("\r\n");
 			}
 			
 			return setCommand;
