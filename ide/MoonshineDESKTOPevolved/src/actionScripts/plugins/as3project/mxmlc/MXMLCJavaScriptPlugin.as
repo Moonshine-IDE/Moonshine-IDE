@@ -19,50 +19,50 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import actionScripts.plugin.project.ProjectType;
-
     import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.OutputProgressEvent;
-	import flash.events.ProgressEvent;
-	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.OutputProgressEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.filesystem.FileStream;
+    import flash.utils.IDataInput;
+    import flash.utils.IDataOutput;
     import flash.utils.setTimeout;
-
+    
     import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.managers.PopUpManager;
-	import mx.resources.ResourceManager;
-	
-	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.StatusBarEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.utils.NoSDKNotifier;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.Settings;
-	
-	import components.popup.SelectOpenedFlexProject;
-	import components.views.project.TreeView;
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.managers.PopUpManager;
+    import mx.resources.ResourceManager;
+    
+    import actionScripts.events.RefreshTreeEvent;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+    import actionScripts.plugin.core.compiler.CompilerEventBase;
+    import actionScripts.plugin.project.ProjectType;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.NoSDKNotifier;
+    import actionScripts.utils.OSXBookmarkerNotifiers;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
+    
+    import components.popup.SelectOpenedFlexProject;
+    import components.views.project.TreeView;
 
     public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -269,6 +269,8 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 			}
 			
+			var compileStr:String;
+			
 			if (!fcsh || activeProject.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
 				|| usingInvalidSDK(activeProject as AS3ProjectVO)) 
 			{
@@ -319,10 +321,8 @@ package actionScripts.plugins.as3project.mxmlc
 					// update build config file
 					as3Pvo.updateConfig();
 
-					shellInfo.arguments = getBuildArgs(as3Pvo);
-					shellInfo.executable = cmdFile;
-					shellInfo.workingDirectory = activeProject.folderLocation.fileBridge.getFile as File;
-					initShell();
+					compileStr = getBuildArgs(as3Pvo);
+					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, [compileStr]);
 				}
 				else
 				{
@@ -333,19 +333,50 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 			}
 			
-			debug("SDK path: %s", currentSDK.nativePath);
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
+				shellInfo = new NativeProcessStartupInfo();
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
+				shellInfo.executable = cmdFile;
+				shellInfo.workingDirectory = activeProject.folderLocation.fileBridge.getFile as File;
+				
+				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compileStr);
+				}
+			}
 		}
 
-		private function getBuildArgs(project:AS3ProjectVO):Vector.<String>
+		private function getBuildArgs(project:AS3ProjectVO):String
 		{
+			var compileStr:String = "";
+			
             // determine if the sdk version is lower than 0.8.0 or not
             var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-            var processArgs:Vector.<String> = new Vector.<String>();
 
-			var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+			var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
-			var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
-			var compilerArg:String = "&& " + fschstr;
+			var compilerPathHomeArg:String = "FALCON_HOME=\"" + SDKstr +"\"";
+			var compilerArg:String = "&& \"" + fschstr +"\"";
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
@@ -358,8 +389,8 @@ package actionScripts.plugins.as3project.mxmlc
                 if (project.isRoyale)
                 {
                     jsCompilationArg = " -compiler.targets=JSRoyale";
-					sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
-					compilerPathHomeArg = "ROYALE_COMPILER_HOME=" + SDKstr;
+					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
+					compilerPathHomeArg = "ROYALE_COMPILER_HOME=\"" + SDKstr +"\"";
                 }
 
 				jsCompilationArg += " -js-output=".concat(project.jsOutputPath);
@@ -367,20 +398,18 @@ package actionScripts.plugins.as3project.mxmlc
 
             if(Settings.os == "win")
             {
-                processArgs.push("/c");
-                processArgs.push("set ".concat(
-						sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
-				));
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg) : '', "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+				);
             }
             else
             {
-                processArgs.push("-c");
-                processArgs.push("export ".concat(
-                        sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
-                ));
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("export "+ sdkPathHomeArg) : '', " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+				);
             }
 
-			return processArgs;
+			return compileStr;
 		}
 
 		private function clearConsoleBeforeRun():void
