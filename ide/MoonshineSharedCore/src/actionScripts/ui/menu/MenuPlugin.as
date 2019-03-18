@@ -829,11 +829,22 @@ package actionScripts.ui.menu
 					var menuItem:* = createNewMenuItem(item);
 					if (menuItem)
 					{
-                        if (menuItem.hasOwnProperty("dynamicItem"))
+                        var nativeMenuItem:Object = null;
+                        if (menuItem is NativeMenuItemLocation)
+                        {
+                            nativeMenuItem = NativeMenuItemLocation(menuItem).item.getNativeMenuItem;
+                        }
+                        else
+                        {
+                            nativeMenuItem = menuItem;
+                        }
+
+                        if (nativeMenuItem.hasOwnProperty("dynamicItem"))
 						{
-							(menuItem as ICustomMenuItem).dynamicItem = item.dynamicItem;
+                            nativeMenuItem.dynamicItem = item.dynamicItem;
 						}
-						parentMenu.addItem((menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem);
+
+						parentMenu.addItem(nativeMenuItem);
 					}
 				}
             }
