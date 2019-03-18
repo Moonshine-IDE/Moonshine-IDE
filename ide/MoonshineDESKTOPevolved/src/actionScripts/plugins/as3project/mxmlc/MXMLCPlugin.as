@@ -827,7 +827,7 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				
-				var mxmlcStr:String = "mxmlc"
+				var mxmlcStr:String = '"'+ currentSDK.resolvePath(mxmlcPath).nativePath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs
 					+dbg

@@ -40,7 +40,7 @@ package actionScripts.utils
 			if (watchTimer && watchTimer.running) return;
 			if (!watchTimer)
 			{
-				watchTimer = new Timer(1000, 1);
+				watchTimer = new Timer(2000, 1);
 				watchTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
 				watchTimer.start();
 			}
@@ -121,7 +121,7 @@ package actionScripts.utils
 			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
 			// TODO:: TEST LAST COMMAND to REMOVE
 			
-			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
+			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
 			FileUtils.writeToFileAsync(windowsBatchFile, setCommand + (executeWithCommands ? "\r\n"+ executeWithCommands.join("\r\n") : ''), onBatchFileWriteComplete, onBatchFileWriteError);
 		}
 		
