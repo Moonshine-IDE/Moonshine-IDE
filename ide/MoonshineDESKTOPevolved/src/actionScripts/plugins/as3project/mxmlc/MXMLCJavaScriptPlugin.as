@@ -322,7 +322,7 @@ package actionScripts.plugins.as3project.mxmlc
 					as3Pvo.updateConfig();
 
 					compileStr = getBuildArgs(as3Pvo);
-					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, [compileStr]);
+					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
 				}
 				else
 				{
@@ -399,13 +399,13 @@ package actionScripts.plugins.as3project.mxmlc
             if(Settings.os == "win")
             {
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("set "+ sdkPathHomeArg) : '', "&& set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
 				);
             }
             else
             {
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("export "+ sdkPathHomeArg) : '', " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+" && " : '', "export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
 				);
             }
 
