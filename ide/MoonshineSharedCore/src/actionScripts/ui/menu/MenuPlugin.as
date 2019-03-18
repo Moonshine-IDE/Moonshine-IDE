@@ -815,10 +815,11 @@ package actionScripts.ui.menu
 					var newMenu:* = createNewMenu();
 					if (!newMenu)
 						continue;
-					if (newMenu is ICustomMenuItem)
-					{
-						(newMenu as ICustomMenuItem).dynamicItem = item.dynamicItem;
-					}
+
+                    if (newMenu.hasOwnProperty("dynamicItem"))
+                    {
+                        (newMenu as ICustomMenuItem).dynamicItem = item.dynamicItem;
+                    }
 
 					addMenus(item.items, newMenu);
 					parentMenu.addSubmenu(newMenu, item.label);
@@ -828,14 +829,14 @@ package actionScripts.ui.menu
 					var menuItem:* = createNewMenuItem(item);
 					if (menuItem)
 					{
-						if (menuItem is ICustomMenuItem)
+                        if (menuItem.hasOwnProperty("dynamicItem"))
 						{
 							(menuItem as ICustomMenuItem).dynamicItem = item.dynamicItem;
 						}
 						parentMenu.addItem((menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem);
 					}
 				}
-			}
+            }
 		}
 
         private function applyNewNativeMenu(menuItems:Vector.<MenuItem>):Object
