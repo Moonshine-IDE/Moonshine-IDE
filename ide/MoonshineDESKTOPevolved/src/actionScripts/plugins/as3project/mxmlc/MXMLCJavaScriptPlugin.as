@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import flash.desktop.NativeProcess;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+
+	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
     import flash.events.Event;
@@ -46,7 +48,6 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-    import actionScripts.plugin.core.compiler.CompilerEventBase;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.BooleanSetting;
