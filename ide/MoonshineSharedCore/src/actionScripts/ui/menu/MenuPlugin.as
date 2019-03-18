@@ -315,12 +315,12 @@ package actionScripts.ui.menu
 				if (menuItem.label == projectMenuItemName)
 				{
 					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
-					var subMenuItems:Vector.<ICustomMenuItem> = menuItem.submenu.items;
+					var subMenuItems:Object = menuItem.submenu.items;
 					for (var j:int = 0; j < subMenuItems.length; j++)
 					{
 						if (subMenuItems[j] is ICustomMenuItem && subMenuItems[j].dynamicItem)
 						{
-							subMenuItems.removeAt(j);
+							subMenuItems.splice(j, 1);
 							j -= 1;
 						}
 					}
