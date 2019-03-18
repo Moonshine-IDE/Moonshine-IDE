@@ -164,15 +164,16 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// update project-to-sdk references once again
-				for each (var j:AS3ProjectVO in model.projects)
+				for each (var project:ProjectVO in model.projects)
 				{
-					dispatcher.dispatchEvent(
-						new ProjectEvent(ProjectEvent.ADD_PROJECT, j)
-					);
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
 				}
 			}
 			
-			if (model.defaultSDK) EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
+			if (model.defaultSDK)
+			{
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
+			}
 			// state change of menus based upon default SDK presence
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 		}
