@@ -77,7 +77,7 @@ package actionScripts.plugins.startup
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
 		private var sequences:Array;
-		private var sequenceIndex:int = 0;
+		private var finishSequences:Array;
 		private var isSDKSetupShowing:Boolean;
 		
 		private var javaSetupPathTimeout:uint;
@@ -135,6 +135,7 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
+			finishSequences = [];
 			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
@@ -154,7 +155,6 @@ package actionScripts.plugins.startup
 			function continueOnHelping(event:Event):void
 			{
 				// just a little delay to see things visually right
-				sequenceIndex = -1;
 				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
 			}
@@ -168,17 +168,16 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-			sequenceIndex++;
 			
-			if (sequenceIndex == (sequences.length - 1))
+			if (sequences.length == 0)
 			{
 				// if we have a reason to open Getting Started tab
 				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
-				sequenceIndex = -1;
 				return;
 			}
 			
-			var tmpSequence:String = sequences[sequenceIndex];
+			var tmpSequence:String = sequences.shift();
+			finishSequences.push(tmpSequence);
 			switch(tmpSequence)
 			{
 				case SDK_XTENDED:
@@ -211,7 +210,7 @@ package actionScripts.plugins.startup
 					checkGitPathPresence();
 					break;
 				}
-				case CC_SDK:
+				case CC_SVN:
 				{
 					checkSVNPathPresence();
 					break;
@@ -440,7 +439,7 @@ package actionScripts.plugins.startup
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 			// in case of Windows, we open-up MXMLC Plugin section and shall
 			// wait for the user to add/download a default SDK
-			sequenceIndex --;
+			//sequenceIndex --;
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
 		}
 		
@@ -458,7 +457,7 @@ package actionScripts.plugins.startup
 			sdkNotificationView = null;
 			ccNotificationView = null;
 			sequences = null;
-			sequenceIndex = -1;
+			finishSequences = null;
 			isSDKSetupShowing = false;
 			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
 			
@@ -610,7 +609,7 @@ package actionScripts.plugins.startup
 		 */
 		private function onSDKSetupRequest(event:StartupHelperEvent):void
 		{
-			sequenceIndex = -1;
+			//sequenceIndex = -1;
 			checkDefaultSDK(true);
 		}
 		
