@@ -23,6 +23,7 @@ package actionScripts.plugins.startup
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.events.AddTabEvent;
@@ -77,7 +78,6 @@ package actionScripts.plugins.startup
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
 		private var sequences:Array;
-		private var finishSequences:Array;
 		private var isSDKSetupShowing:Boolean;
 		
 		private var javaSetupPathTimeout:uint;
@@ -135,13 +135,12 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
-			finishSequences = [];
 			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				environmentUtil = new EnvironmentUtils();
-				environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping, false, 0, true);
+				addRemoveListeners(true);
 				environmentUtil.readValues();
 			}
 			else
@@ -155,8 +154,31 @@ package actionScripts.plugins.startup
 			function continueOnHelping(event:Event):void
 			{
 				// just a little delay to see things visually right
+				addRemoveListeners(false);
 				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
+			}
+			function errorReadingEnvironment(event:Event):void
+			{
+				Alert.show("Unable to read from the environment", "Note!"); 
+				addRemoveListeners(false);
+				continueOnHelping(null);
+			}
+			function addRemoveListeners(add:Boolean):void
+			{
+				if (environmentUtil)
+				{
+					if (add)
+					{
+						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping, false, 0, true);
+						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment, false, 0, true);
+					}
+					else
+					{
+						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
+						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
+					}
+				}
 			}
 		}
 		
@@ -177,7 +199,6 @@ package actionScripts.plugins.startup
 			}
 			
 			var tmpSequence:String = sequences.shift();
-			finishSequences.push(tmpSequence);
 			switch(tmpSequence)
 			{
 				case SDK_XTENDED:
@@ -457,7 +478,6 @@ package actionScripts.plugins.startup
 			sdkNotificationView = null;
 			ccNotificationView = null;
 			sequences = null;
-			finishSequences = null;
 			isSDKSetupShowing = false;
 			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
 			
