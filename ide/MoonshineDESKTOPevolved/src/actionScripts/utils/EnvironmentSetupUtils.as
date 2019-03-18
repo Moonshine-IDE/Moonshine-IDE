@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
 	import flash.desktop.NativeProcess;
@@ -27,6 +45,7 @@ package actionScripts.utils
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
+		private var customSDKPath:String;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -40,7 +59,7 @@ package actionScripts.utils
 			if (watchTimer && watchTimer.running) return;
 			if (!watchTimer)
 			{
-				watchTimer = new Timer(1000, 1);
+				watchTimer = new Timer(2000, 1);
 				watchTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
 				watchTimer.start();
 			}
@@ -59,17 +78,12 @@ package actionScripts.utils
 			}
 		}
 		
-		public function getCommandPreparedToOSXEnvironment(completion:Function):void
-		{
-			externalCallCompletionHandler = completion;
-			execute();
-		}
-		
-		public function getBatchFilePathToWindowsEnvironment(completion:Function, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
 		{
 			cleanUp();
 			externalCallCompletionHandler = completion;
 			executeWithCommands = withCommands;
+			customSDKPath = customSDK;
 			execute();
 		}
 		
@@ -77,6 +91,8 @@ package actionScripts.utils
 		{
 			externalCallCompletionHandler = null;
 			executeWithCommands = null;
+			windowsBatchFile = null;
+			customSDKPath = null;
 		}
 		
 		private function execute():void
@@ -87,79 +103,29 @@ package actionScripts.utils
 		
 		private function executeWindows():void
 		{
-			var setCommand:String = "@echo off\r\n";
-			var isValidToExecute:Boolean;
-			var setPathCommand:String = "set PATH=";
-			
-			if (UtilsCore.isJavaForTypeaheadAvailable())
-			{
-				setCommand += "set JAVA_HOME="+ model.javaPathForTypeAhead.fileBridge.nativePath +"\r\n"; 
-				setPathCommand += "%JAVA_HOME%\\bin;";
-				isValidToExecute = true;
-			}
-			if (UtilsCore.isAntAvailable())
-			{
-				setCommand += "set ANT_HOME="+ model.antHomePath.fileBridge.nativePath +"\r\n";
-				setPathCommand += "%ANT_HOME%\\bin;";
-				isValidToExecute = true;
-			}
-			if (UtilsCore.isDefaultSDKAvailable())
-			{
-				setCommand += "set FLEX_HOME="+ model.defaultSDK.fileBridge.nativePath +"\r\n";
-				setPathCommand += "%FLEX_HOME%\\bin;";
-				isValidToExecute = true;
-			}
+			var setCommand:String = getPlatformCommand();
 			
 			// do not proceed if no path to set
-			if (!isValidToExecute)
+			if (!setCommand)
 			{
 				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
 				return;
 			}
 			
-			setCommand += setPathCommand + "%PATH%";
-			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
-			// TODO:: TEST LAST COMMAND to REMOVE
-			
-			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.bat");
-			FileUtils.writeToFileAsync(windowsBatchFile, setCommand + (executeWithCommands ? "\r\n"+ executeWithCommands.join("\r\n") : ''), onBatchFileWriteComplete, onBatchFileWriteError);
+			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
+			FileUtils.writeToFileAsync(windowsBatchFile, setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
 		}
 		
 		private function executeOSX():void
 		{
-			var setCommand:String = "";
-			var setPathCommand:String = "export PATH=";
-			var isValidToExecute:Boolean;
-			
-			if (UtilsCore.isJavaForTypeaheadAvailable())
-			{
-				setCommand = "export JAVA_HOME=\""+ model.javaPathForTypeAhead.fileBridge.nativePath +"\"; ";
-				setPathCommand += "$JAVA_HOME/bin:";
-				isValidToExecute = true;
-			}
-			if (UtilsCore.isAntAvailable())
-			{
-				setCommand = "export ANT_HOME=\""+ model.antHomePath.fileBridge.nativePath +"\"; ";
-				setPathCommand += "$ANT_HOME/bin:";
-				isValidToExecute = true;
-			}
-			if (UtilsCore.isDefaultSDKAvailable())
-			{
-				setCommand = "export FLEX_HOME=\""+ model.defaultSDK.fileBridge.nativePath +"\"; ";
-				setPathCommand += "$FLEX_HOME/bin:";
-				isValidToExecute = true;
-			}
+			var setCommand:String = getPlatformCommand();
 			
 			// do not proceed if no path to set
-			if (!isValidToExecute)
+			if (!setCommand)
 			{
 				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
 				return;
 			}
-			
-			setCommand += setPathCommand +"$PATH";
-			//  + (ConstantsCoreVO.IS_MACOS ? "; echo $JAVA_HOME" : "& echo !JAVA_HOME!")
-			// TODO:: TEST LAST COMMAND to REMOVE
 			
 			if (externalCallCompletionHandler != null)
 			{
@@ -175,10 +141,62 @@ package actionScripts.utils
 			}
 		}
 		
+		private function getPlatformCommand():String
+		{
+			var setCommand:String = ConstantsCoreVO.IS_MACOS ? "" : "@echo off\r\n";
+			var isValidToExecute:Boolean;
+			var setPathCommand:String = "set PATH=";
+			var defaultOrCustomSDKPath:String;
+			
+			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
+			{
+				defaultOrCustomSDKPath = customSDKPath;
+			}
+			else if (UtilsCore.isDefaultSDKAvailable())
+			{
+				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
+			}
+			
+			if (UtilsCore.isJavaForTypeaheadAvailable())
+			{
+				setCommand += getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
+				setPathCommand += "%JAVA_HOME%\\bin;";
+				isValidToExecute = true;
+			}
+			if (UtilsCore.isAntAvailable())
+			{
+				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath);
+				setPathCommand += "%ANT_HOME%\\bin;";
+				isValidToExecute = true;
+			}
+			if (defaultOrCustomSDKPath)
+			{
+				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
+				setPathCommand += "%FLEX_HOME%\\bin;";
+				isValidToExecute = true;
+			}
+			
+			// if nothing found in above three don't run
+			if (!isValidToExecute) return null;
+			
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				if (executeWithCommands) setCommand += executeWithCommands.join(";");
+			}
+			else
+			{
+				// need to set PATH under application shell
+				setCommand += setPathCommand + "%PATH%\r\n";
+				if (executeWithCommands) setCommand += executeWithCommands.join("\r\n");
+			}
+			
+			return setCommand;
+		}
+		
 		private function getSetExportCommand(field:String, path:String):String
 		{
-			if (ConstantsCoreVO.IS_MACOS) return "export "+ field +"=\""+ path +"\"";
-			return "set "+ field +"="+ path;
+			if (ConstantsCoreVO.IS_MACOS) return "export "+ field +"='"+ path +"';";
+			return "set "+ field +"="+ path +"\r\n";
 		}
 		
 		private function onBatchFileWriteComplete():void
@@ -190,14 +208,7 @@ package actionScripts.utils
 				return;
 			}
 			
-			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = ConstantsCoreVO.IS_MACOS ? 
-				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
-			
-			customInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", windowsBatchFile.nativePath]);
-			customProcess = new NativeProcess();
-			startShell(true);
-			customProcess.start(customInfo);
+			onCommandLineExecutionWith(windowsBatchFile.nativePath);
 		}
 		
 		private function onCommandLineExecutionWith(command:String):void
@@ -266,7 +277,8 @@ package actionScripts.utils
 		private function shellData(event:ProgressEvent):void 
 		{
 			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);*/
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			Alert.show(data, "shell Data");*/
 		}
 	}
 }

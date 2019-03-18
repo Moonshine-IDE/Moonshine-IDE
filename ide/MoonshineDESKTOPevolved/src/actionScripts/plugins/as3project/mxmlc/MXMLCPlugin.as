@@ -164,15 +164,16 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// update project-to-sdk references once again
-				for each (var j:AS3ProjectVO in model.projects)
+				for each (var project:ProjectVO in model.projects)
 				{
-					dispatcher.dispatchEvent(
-						new ProjectEvent(ProjectEvent.ADD_PROJECT, j)
-					);
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
 				}
 			}
 			
-			if (model.defaultSDK) EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
+			if (model.defaultSDK)
+			{
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
+			}
 			// state change of menus based upon default SDK presence
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 		}
@@ -500,6 +501,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function compileFlexJSApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
+			var compileStr:String;
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
 				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
 			{
@@ -553,27 +555,54 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
-
+				compileStr = getFlexJSBuildArgs(pvo as AS3ProjectVO);
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+			}
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
 				shellInfo = new NativeProcessStartupInfo();
-
-				shellInfo.arguments = getFlexJSBuildArgs(pvo as AS3ProjectVO);
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 				
 				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compileStr);
+				}
 			}
 		}
 
-        private function getFlexJSBuildArgs(project:AS3ProjectVO):Vector.<String>
+        private function getFlexJSBuildArgs(project:AS3ProjectVO):String
         {
+			var compileStr:String = "";
+			
             // determine if the sdk version is lower than 0.8.0 or not
             var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-            var processArgs:Vector.<String> = new Vector.<String>();
 
-            var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+            var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
             var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
-            var compilerArg:String = "&& " + fschstr;
+            var compilerArg:String = "&& \"" + fschstr +"\"";
 
             var configArg:String = compile(project as AS3ProjectVO, release);
             configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
@@ -591,20 +620,26 @@ package actionScripts.plugins.as3project.mxmlc
 
             if(Settings.os == "win")
             {
-                processArgs.push("/c");
-                processArgs.push("set ".concat(
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
+				);
+				
+                /*processArgs.push("set ".concat(
                         sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));
+                ));*/
             }
             else
             {
-                processArgs.push("-c");
-                processArgs.push("export ".concat(
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+";" : '', "export ", enLanguageArg, "; export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
+				);
+					
+                /*processArgs.push("export ".concat(
                         sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));
+                ));*/
             }
 
-            return processArgs;
+            return compileStr;
         }
 
 		private function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
@@ -652,14 +687,7 @@ package actionScripts.plugins.as3project.mxmlc
 				AS3ProjectVO(pvo).updateConfig();
 				compileStr = compile(pvo as AS3ProjectVO, release);
 				
-				if (Settings.os == "win")
-				{
-					EnvironmentSetupUtils.getInstance().getBatchFilePathToWindowsEnvironment(onEnvironmentPrepared, [compileStr]);
-				}
-				else
-				{
-					EnvironmentSetupUtils.getInstance().getCommandPreparedToOSXEnvironment(onEnvironmentPrepared);
-				}
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
 			}
 			
 			/*
@@ -677,16 +705,9 @@ package actionScripts.plugins.as3project.mxmlc
 				else
 				{
 					processArgs.push("-c");
-					processArgs.push("export FLEX_HOME=".concat(
-						SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", fschstr
-					));
-					
-					/*
-					// to-be testing
-					processArgs.push((value ? value +";" : "").concat(
-						'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compileStr
-					));*/
+					processArgs.push(value);
 				}
+				
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
@@ -721,30 +742,47 @@ package actionScripts.plugins.as3project.mxmlc
 			// update build config file
 			pvo.updateConfig();
 			
-			var compilerArg:String = fschstr +" -load-config+="+ pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
-			
-			var processArgs:Vector.<String> = new Vector.<String>;
-			shellInfo = new NativeProcessStartupInfo();
-			if (Settings.os == "win")
+			var compilerArg:String = "\""+ fschstr +"\" -load-config+="+ pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
+			if (ConstantsCoreVO.IS_MACOS)
 			{
-				processArgs.push("/c");
-				processArgs.push("set FLEX_HOME=".concat(
-					SDKstr, "&& ", compilerArg
-				));
+				compilerArg = "export ".concat(
+					'SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compilerArg
+				);
 			}
-			else
-			{
-				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME=".concat(
-					SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compilerArg
-				));
-			}
-			//var workingDirectory:File = currentSDK.resolvePath("bin/");
-			shellInfo.arguments = processArgs;
-			shellInfo.executable = cmdFile;
-			shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 			
-			initShell();
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compilerArg]);
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
+				shellInfo = new NativeProcessStartupInfo();
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
+				shellInfo.executable = cmdFile;
+				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
+				
+				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compilerArg);
+				}
+			}
 		}
 
 		private function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
@@ -827,7 +865,7 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				
-				var mxmlcStr:String = "mxmlc"
+				var mxmlcStr:String = '"'+ currentSDK.resolvePath(mxmlcPath).nativePath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs
 					+dbg
