@@ -816,11 +816,6 @@ package actionScripts.ui.menu
 					if (!newMenu)
 						continue;
 
-                    if (newMenu.hasOwnProperty("dynamicItem"))
-                    {
-                        (newMenu as ICustomMenuItem).dynamicItem = item.dynamicItem;
-                    }
-
 					addMenus(item.items, newMenu);
 					parentMenu.addSubmenu(newMenu, item.label);
 				}
