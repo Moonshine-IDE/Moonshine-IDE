@@ -48,6 +48,7 @@ package actionScripts.utils
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
 		private var customSDKPath:String;
+		private var isDelayRunInProcess:Boolean;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -210,11 +211,14 @@ package actionScripts.utils
 				return;
 			}
 			
+			if (isDelayRunInProcess) return;
+			else isDelayRunInProcess = true;
 			var timeoutValue:uint = setTimeout(function():void
 			{
 				clearTimeout(timeoutValue);
+				isDelayRunInProcess = false;
 				onCommandLineExecutionWith(windowsBatchFile.nativePath);
-			}, 5000);
+			}, 1000);
 		}
 		
 		private function onCommandLineExecutionWith(command:String):void
