@@ -27,6 +27,8 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	import flash.utils.Timer;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
 	
@@ -208,7 +210,11 @@ package actionScripts.utils
 				return;
 			}
 			
-			onCommandLineExecutionWith(windowsBatchFile.nativePath);
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				clearTimeout(timeoutValue);
+				onCommandLineExecutionWith(windowsBatchFile.nativePath);
+			}, 5000);
 		}
 		
 		private function onCommandLineExecutionWith(command:String):void
@@ -261,7 +267,7 @@ package actionScripts.utils
 				var output:IDataInput = customProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 				
-				//Alert.show("Local environment setup failed[2]!\n"+ data);
+				Alert.show("Local environment setup failed[2]!\n"+ data);
 				startShell(false);
 			}
 		}
@@ -276,9 +282,9 @@ package actionScripts.utils
 		
 		private function shellData(event:ProgressEvent):void 
 		{
-			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
+			var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			Alert.show(data, "shell Data");*/
+			Alert.show(data, "shell Data");
 		}
 	}
 }
