@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 
 	import flash.display.NativeMenu;

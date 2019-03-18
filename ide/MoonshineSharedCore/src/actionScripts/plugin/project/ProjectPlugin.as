@@ -20,6 +20,7 @@ package actionScripts.plugin.project
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsInfoView;
+	import actionScripts.ui.menu.MenuPlugin;
 
 	import flash.events.Event;
     import flash.net.SharedObject;
@@ -269,7 +270,7 @@ package actionScripts.plugin.project
 				
 				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
+					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 					lastActiveProjectMenuType = (event.project as AS3ProjectVO).menuType;
 				}
 			}
