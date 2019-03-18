@@ -318,7 +318,7 @@ package actionScripts.ui.menu
 					var subMenuItems:Object = menuItem.submenu.items;
 					for (var j:int = 0; j < subMenuItems.length; j++)
 					{
-						if (subMenuItems[j] is ICustomMenuItem && subMenuItems[j].dynamicItem)
+						if (subMenuItems[j].dynamicItem)
 						{
 							subMenuItems.splice(j, 1);
 							j -= 1;
