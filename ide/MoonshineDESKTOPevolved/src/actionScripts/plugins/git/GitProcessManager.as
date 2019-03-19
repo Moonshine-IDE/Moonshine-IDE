@@ -35,6 +35,8 @@ package actionScripts.plugins.git
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -82,6 +84,7 @@ package actionScripts.plugins.git
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var lastCloneURL:String;
+		private var lastCloneTarget:String;
 		private var isGitUserName:Boolean;
 		private var isGitUserEmail:Boolean;
 		
@@ -155,6 +158,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			lastCloneURL = url;
+			lastCloneTarget = target;
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url), false, GitHubPlugin.CLONE_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
@@ -449,6 +453,7 @@ package actionScripts.plugins.git
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
+					openClonedProjectBy(new File(lastCloneTarget).resolvePath(cloningProjectName));
 					break;
 				case GIT_PUSH:
 					success("...process completed");
@@ -769,6 +774,16 @@ package actionScripts.plugins.git
 		{
 			// refreshing project tree
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
+		}
+		
+		private function openClonedProjectBy(path:File):void
+		{
+			// validate first if root is a know project
+			var isKnownProject:FileLocation = FlashDevelopImporter.test(path);
+			if (!isKnownProject) isKnownProject = FlashBuilderImporter.test(path);
+			
+			if (isKnownProject)
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, path));
 		}
 	}
 }
