@@ -76,7 +76,7 @@ package actionScripts.ui.menu.vo
 			
 			this.enableTypes = enableTypes;
 
-			dynamicItem = dynamicItem;
+			this.dynamicItem = dynamicItem;
 		}
 	}
 }

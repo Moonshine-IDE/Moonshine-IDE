@@ -28,8 +28,13 @@ package actionScripts.ui.menu.vo
 	 */
 	public class CustomMenu implements ICustomMenu, IMenuEntity
 	{
+		public var dynamicItem:Boolean;
+
 		private var _items:Vector.<ICustomMenuItem> = new Vector.<ICustomMenuItem>();
-		public function get items():Vector.<ICustomMenuItem> { return _items; }
+		public function get items():Vector.<ICustomMenuItem>
+		{
+			return _items;
+		}
 
 		public function get numItems():int
 		{
@@ -37,7 +42,6 @@ package actionScripts.ui.menu.vo
 		}
 
 		private var _label:String;
-
 		public function get label():String
 		{
 			return _label;

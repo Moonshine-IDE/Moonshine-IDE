@@ -728,7 +728,7 @@ package actionScripts.ui.menu
 		
 		protected function createNewMenu():*
 		{
-			return buildingNativeMenu ? new NativeMenu() : new CustomMenu();
+			return buildingNativeMenu ? new CustomNativeMenu() : new CustomMenu();
 		}
 		
 		private function createNewMenuItem(item:MenuItem):*
@@ -817,7 +817,12 @@ package actionScripts.ui.menu
 						continue;
 
 					addMenus(item.items, newMenu);
-					parentMenu.addSubmenu(newMenu, item.label);
+					newMenu = parentMenu.addSubmenu(newMenu, item.label);
+
+					if (item.hasOwnProperty("dynamicItem"))
+					{
+						newMenu.dynamicItem = item.dynamicItem;
+					}
 				}
 				else if (item)
 				{
