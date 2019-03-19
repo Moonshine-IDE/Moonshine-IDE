@@ -23,6 +23,7 @@ package actionScripts.plugins.startup
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.events.AddTabEvent;
@@ -77,7 +78,6 @@ package actionScripts.plugins.startup
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
 		private var sequences:Array;
-		private var sequenceIndex:int = 0;
 		private var isSDKSetupShowing:Boolean;
 		
 		private var javaSetupPathTimeout:uint;
@@ -140,7 +140,7 @@ package actionScripts.plugins.startup
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				environmentUtil = new EnvironmentUtils();
-				environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping, false, 0, true);
+				addRemoveListeners(true);
 				environmentUtil.readValues();
 			}
 			else
@@ -154,9 +154,31 @@ package actionScripts.plugins.startup
 			function continueOnHelping(event:Event):void
 			{
 				// just a little delay to see things visually right
-				sequenceIndex = -1;
+				addRemoveListeners(false);
 				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
+			}
+			function errorReadingEnvironment(event:Event):void
+			{
+				Alert.show("Unable to read from the environment", "Note!"); 
+				addRemoveListeners(false);
+				continueOnHelping(null);
+			}
+			function addRemoveListeners(add:Boolean):void
+			{
+				if (environmentUtil)
+				{
+					if (add)
+					{
+						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping, false, 0, true);
+						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment, false, 0, true);
+					}
+					else
+					{
+						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
+						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
+					}
+				}
 			}
 		}
 		
@@ -168,17 +190,15 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-			sequenceIndex++;
 			
-			if (sequenceIndex == (sequences.length - 1))
+			if (sequences.length == 0)
 			{
 				// if we have a reason to open Getting Started tab
 				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
-				sequenceIndex = -1;
 				return;
 			}
 			
-			var tmpSequence:String = sequences[sequenceIndex];
+			var tmpSequence:String = sequences.shift();
 			switch(tmpSequence)
 			{
 				case SDK_XTENDED:
@@ -211,7 +231,7 @@ package actionScripts.plugins.startup
 					checkGitPathPresence();
 					break;
 				}
-				case CC_SDK:
+				case CC_SVN:
 				{
 					checkSVNPathPresence();
 					break;
@@ -440,7 +460,7 @@ package actionScripts.plugins.startup
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 			// in case of Windows, we open-up MXMLC Plugin section and shall
 			// wait for the user to add/download a default SDK
-			sequenceIndex --;
+			//sequenceIndex --;
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
 		}
 		
@@ -458,7 +478,6 @@ package actionScripts.plugins.startup
 			sdkNotificationView = null;
 			ccNotificationView = null;
 			sequences = null;
-			sequenceIndex = -1;
 			isSDKSetupShowing = false;
 			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
 			
@@ -610,7 +629,7 @@ package actionScripts.plugins.startup
 		 */
 		private function onSDKSetupRequest(event:StartupHelperEvent):void
 		{
-			sequenceIndex = -1;
+			//sequenceIndex = -1;
 			checkDefaultSDK(true);
 		}
 		

@@ -21,11 +21,11 @@ package actionScripts.utils
 		private var pendingQueue:Array = [];
 		private var isErrorClose:Boolean;
 		private var presentRunningQueue:Object;
+		private var currentWorkingDirectory:File;
 		
 		public function WorkerGitNativeProcess()
 		{
 		}
-		
 		public function runProcesses(processDescriptor:Object):void
 		{
 			if (customProcess && customProcess.running)
@@ -38,7 +38,7 @@ package actionScripts.utils
 			customInfo = renewProcessInfo();
 			
 			queue = processDescriptor.queue;
-			if (processDescriptor.workingDirectory != null) customInfo.workingDirectory = new File(processDescriptor.workingDirectory);
+			if (processDescriptor.workingDirectory != null) currentWorkingDirectory = new File(processDescriptor.workingDirectory);
 			
 			startShell(true);
 			flush();
@@ -74,6 +74,7 @@ package actionScripts.utils
 			if (!MoonshineWorker.IS_MACOS) tmpArr.unshift("/c");
 			else tmpArr.unshift("-c");
 			customInfo.arguments = Vector.<String>(tmpArr);
+			customInfo.workingDirectory = currentWorkingDirectory;
 			
 			presentRunningQueue = queue.shift(); /** type of NativeProcessQueueVO **/
 			worker.workerToMain.send({event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK, value:presentRunningQueue});

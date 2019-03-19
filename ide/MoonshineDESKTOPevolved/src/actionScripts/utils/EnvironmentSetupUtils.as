@@ -27,6 +27,8 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	import flash.utils.Timer;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
 	
@@ -46,6 +48,7 @@ package actionScripts.utils
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
 		private var customSDKPath:String;
+		private var isDelayRunInProcess:Boolean;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -169,6 +172,12 @@ package actionScripts.utils
 				setPathCommand += "%ANT_HOME%\\bin;";
 				isValidToExecute = true;
 			}
+			if (UtilsCore.isMavenAvailable())
+			{
+				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
+				setPathCommand += "%MAVEN_HOME%\\bin;";
+				isValidToExecute = true;
+			}
 			if (defaultOrCustomSDKPath)
 			{
 				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
@@ -201,14 +210,24 @@ package actionScripts.utils
 		
 		private function onBatchFileWriteComplete():void
 		{
-			if (externalCallCompletionHandler != null)
+			// following timeout is to overcome process-holding error
+			// in vagarant as reported by Joel at
+			// https://github.com/prominic/Moonshine-IDE/issues/449#issuecomment-473418675
+			var timeoutValue:uint = setTimeout(function():void
 			{
-				externalCallCompletionHandler(windowsBatchFile.nativePath);
-				cleanUp();
-				return;
-			}
-			
-			onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				clearTimeout(timeoutValue);
+				if (externalCallCompletionHandler != null)
+				{
+					// returns batch file path to be 
+					// executed by the caller's nativeProcess process
+					externalCallCompletionHandler(windowsBatchFile.nativePath);
+					cleanUp();
+				}
+				else
+				{
+					onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				}
+			}, 1000);
 		}
 		
 		private function onCommandLineExecutionWith(command:String):void
@@ -261,7 +280,7 @@ package actionScripts.utils
 				var output:IDataInput = customProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 				
-				//Alert.show("Local environment setup failed[2]!\n"+ data);
+				Alert.show("Local environment setup failed[2]!\n"+ data);
 				startShell(false);
 			}
 		}

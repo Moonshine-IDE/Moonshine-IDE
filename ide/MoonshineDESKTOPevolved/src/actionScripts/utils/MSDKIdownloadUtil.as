@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -41,8 +40,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.HelperConstants;
 	
 	import air.update.events.DownloadErrorEvent;
-	import air.update.events.StatusUpdateErrorEvent;
-	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
 
 	public class MSDKIdownloadUtil extends EventDispatcher
@@ -51,6 +48,7 @@ package actionScripts.utils
 		private var fileStream:FileStream;
 		private var urlStream:URLStream;
 		private var isDownloading:Boolean;
+		private var isUpdateChecking:Boolean;
 		private var isUpdateChecked:Boolean;
 		private var updateDescriptorLoader:URLLoader;
 
@@ -85,11 +83,15 @@ package actionScripts.utils
 					if (isDownloading) return;
 					initiate64BitDownloadProcess();
 				}
-				else 
+				else if (!isUpdateChecking && !isDownloading) 
 				{
 					// make sure we does this check once
 					// in an application lifecycle
-					if (!isUpdateChecked) checkForUpdates();
+					if (!isUpdateChecked)
+					{
+						isUpdateChecking = true;
+						checkForUpdates();
+					}
 					else runAppStoreHelperWindows();
 				}
 			}
@@ -267,6 +269,7 @@ package actionScripts.utils
 		protected function updateDescriptorLoader_completeHandler(event:Event):void
 		{
 			isUpdateChecked = true;
+			isUpdateChecking = false;
 			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
 			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
 			updateDescriptorLoader.close();
@@ -310,6 +313,7 @@ package actionScripts.utils
 			updateDescriptorLoader = null;
 			
 			isUpdateChecked = true;
+			isUpdateChecking = false;
 			Alert.show("Error downloading Installer updater file, try again later.\n"+ event.text, "Error!");
 		}
 	}

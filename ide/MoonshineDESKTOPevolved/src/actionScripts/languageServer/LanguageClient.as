@@ -219,6 +219,7 @@ package actionScripts.languageServer
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _codeActionLookup:Dictionary = new Dictionary();
 		private var _resolveCompletionLookup:Dictionary = new Dictionary();
+		private var _completionLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
@@ -841,8 +842,9 @@ package actionScripts.languageServer
 					delete _resolveCompletionLookup[requestID];
 					handleCompletionResolveResponse(original, result);
 				}
-				else if(result && FIELD_ITEMS in result) //completion
+				else if(result && FIELD_ITEMS in result) //completion (CompletionList)
 				{
+					delete _completionLookup[requestID];
 					handleCompletionResponse(result);
 				}
 				else if(result && FIELD_SIGNATURES in result) //signature help
@@ -861,9 +863,14 @@ package actionScripts.languageServer
 				{
 					handleRenameResponse(result);
 				}
-				else if(result && result is Array) //definitions
+				else if(result && result is Array)
 				{
-					if(requestID in _definitionLinkLookup)
+					if(requestID in _completionLookup) //completion (CompletionItem[])
+					{
+						delete _completionLookup[requestID];
+						handleCompletionResponse(result);
+					}
+					else if(requestID in _definitionLinkLookup)
 					{
 						var position:Position = _definitionLinkLookup[requestID] as Position;
 						delete _definitionLinkLookup[requestID];
@@ -982,7 +989,15 @@ package actionScripts.languageServer
 
 		private function handleCompletionResponse(result:Object):void
 		{
-			var resultCompletionItems:Array = result.items as Array;
+			var resultCompletionItems:Array = null;
+			if(result is Array)
+			{
+				resultCompletionItems = result as Array;
+			}
+			else
+			{
+				resultCompletionItems = result.items as Array;
+			}
 			if(!resultCompletionItems)
 			{
 				return;
@@ -1444,7 +1459,8 @@ package actionScripts.languageServer
 			params.textDocument = textDocument;
 			params.position = position;
 			
-			this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
+			_completionLookup[id] = true;
 		}
 
 		private function resolveCompletionHandler(event:ResolveCompletionItemEvent):void

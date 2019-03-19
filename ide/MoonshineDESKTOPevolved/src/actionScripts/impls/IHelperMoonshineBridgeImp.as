@@ -64,7 +64,7 @@ package actionScripts.impls
 		
 		public function isMavenPresent():Boolean
 		{
-			return (UtilsCore.getMavenBinPath() != null);
+			return UtilsCore.isMavenAvailable();
 		}
 		
 		public function isSVNPresent():Boolean

@@ -925,6 +925,17 @@ package actionScripts.utils
                 return separator.concat("bin", separator, "bash");
             }
 		}
+		
+		public static function isMavenAvailable():Boolean
+		{
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				return false;
+			}
+			
+			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
+			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
+		}
 
         public static function getMavenBinPath():String
         {
