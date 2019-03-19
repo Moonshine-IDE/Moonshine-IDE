@@ -714,6 +714,11 @@ package actionScripts.plugins.git
 				});
 				
 				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+				try {
+					tmpFile.deleteFile();
+				} catch (e:Error) {
+					tmpFile.deleteFileAsync();
+				}
 			}
 			
 			/*
