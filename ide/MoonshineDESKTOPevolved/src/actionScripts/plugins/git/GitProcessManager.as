@@ -778,13 +778,11 @@ package actionScripts.plugins.git
 		
 		private function openClonedProjectBy(path:File):void
 		{
-			print("Repository saved at:"+ path.nativePath);
 			// validate first if root is a know project
 			var isKnownProject:FileLocation = FlashDevelopImporter.test(path);
-			print("isFlashDeveloper Project: "+ (isKnownProject ? isKnownProject.fileBridge.nativePath : 'No'));
 			if (!isKnownProject) isKnownProject = FlashBuilderImporter.test(path);
-			print("isFlashBuilder Project: "+ (isKnownProject ? isKnownProject.fileBridge.nativePath : 'No'));
 			
+			print("Opening project from:"+ path.nativePath);
 			if (isKnownProject)
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, path));
 		}
