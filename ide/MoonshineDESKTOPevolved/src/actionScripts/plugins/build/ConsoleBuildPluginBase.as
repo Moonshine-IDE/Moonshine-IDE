@@ -1,16 +1,20 @@
 package actionScripts.plugins.build
 {
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.utils.UtilsCore;
-
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import flash.filesystem.File;
     import flash.utils.IDataInput;
+    
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.Settings;
 
     public class ConsoleBuildPluginBase extends PluginBase
     {
@@ -55,20 +59,52 @@ package actionScripts.plugins.build
                 warning("Build is running. Wait for finish...");
                 return;
             }
-            else if (nativeProcess.running)
-            {
-                removeNativeProcessEventListeners();
-                nativeProcess = new NativeProcess();
-            }
-
-            running = true;
-
-            addNativeProcessEventListeners();
-
-            nativeProcessStartupInfo.arguments = args;
-            nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
-
-            nativeProcess.start(nativeProcessStartupInfo);
+            
+			// remove -c or /c 
+			// we'll use them later
+			var firstArgument:String = args ? args[0].toLowerCase() : null;
+			if (firstArgument && 
+				(firstArgument == "/c" || firstArgument == "-c"))
+			{
+				args.shift();
+			}
+			
+			var newArray:Array = new Array().concat(args);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, newArray);
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				if (nativeProcess.running)
+				{
+					removeNativeProcessEventListeners();
+					nativeProcess = new NativeProcess();
+				}
+				
+				var processArgs:Vector.<String> = new Vector.<String>;
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				running = true;
+				
+				addNativeProcessEventListeners();
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				nativeProcessStartupInfo.arguments = processArgs;
+				nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
+				
+				nativeProcess.start(nativeProcessStartupInfo);
+			}
         }
 
         public function stop(forceStop:Boolean = false):void

@@ -172,6 +172,12 @@ package actionScripts.utils
 				setPathCommand += "%ANT_HOME%\\bin;";
 				isValidToExecute = true;
 			}
+			if (UtilsCore.isMavenAvailable())
+			{
+				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
+				setPathCommand += "%MAVEN_HOME%\\bin;";
+				isValidToExecute = true;
+			}
 			if (defaultOrCustomSDKPath)
 			{
 				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
@@ -204,20 +210,23 @@ package actionScripts.utils
 		
 		private function onBatchFileWriteComplete():void
 		{
-			if (externalCallCompletionHandler != null)
-			{
-				externalCallCompletionHandler(windowsBatchFile.nativePath);
-				cleanUp();
-				return;
-			}
-			
-			if (isDelayRunInProcess) return;
-			else isDelayRunInProcess = true;
+			// following timeout is to overcome process-holding error
+			// in vagarant as reported by Joel at
+			// https://github.com/prominic/Moonshine-IDE/issues/449#issuecomment-473418675
 			var timeoutValue:uint = setTimeout(function():void
 			{
 				clearTimeout(timeoutValue);
-				isDelayRunInProcess = false;
-				onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				if (externalCallCompletionHandler != null)
+				{
+					// returns batch file path to be 
+					// executed by the caller's nativeProcess process
+					externalCallCompletionHandler(windowsBatchFile.nativePath);
+					cleanUp();
+				}
+				else
+				{
+					onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				}
 			}, 1000);
 		}
 		
@@ -286,9 +295,9 @@ package actionScripts.utils
 		
 		private function shellData(event:ProgressEvent):void 
 		{
-			var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
+			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			Alert.show(data, "shell Data");
+			Alert.show(data, "shell Data");*/
 		}
 	}
 }
