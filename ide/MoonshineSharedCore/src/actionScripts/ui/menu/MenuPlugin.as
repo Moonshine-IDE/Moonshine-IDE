@@ -852,7 +852,7 @@ package actionScripts.ui.menu
 
         private function applyNewNativeMenu(menuItems:Vector.<MenuItem>):Object
         {
-            var mainMenu:Object = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
+            var mainMenu:Object = createNewMenu();
             addMenus(menuItems, mainMenu);
 
             // for mac only
