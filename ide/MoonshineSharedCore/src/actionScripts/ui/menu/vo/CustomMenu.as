@@ -38,7 +38,7 @@ package actionScripts.ui.menu.vo
 
 		public function get numItems():int
 		{
-			return _items.length;
+			return items.length;
 		}
 
 		private var _label:String;
@@ -61,8 +61,7 @@ package actionScripts.ui.menu.vo
 		public function addItem(item:ICustomMenuItem):ICustomMenuItem
 		{
 			// TODO : Check if item is bound to another ICustomMenu
-			//if(item.
-			_items.push(item);
+			items.push(item);
 			return item;
 		}
 
@@ -103,7 +102,7 @@ package actionScripts.ui.menu.vo
 		
 		public function getItemAt(index:int):ICustomMenuItem
 		{
-			if(index > _items.length || index <0)
+			if(index > items.length || index <0)
 			{
 				return null;
 			}
@@ -129,7 +128,7 @@ package actionScripts.ui.menu.vo
 
 		public function removeItemAt(index:int):ICustomMenuItem
 		{
-			if(index > _items.length || index <0)
+			if(index > items.length || index <0)
 			{
 				return null;
 			}
@@ -150,5 +149,4 @@ package actionScripts.ui.menu.vo
 			
 		}
 	}
-
 }

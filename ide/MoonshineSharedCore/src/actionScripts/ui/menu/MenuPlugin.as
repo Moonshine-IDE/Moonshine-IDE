@@ -315,7 +315,7 @@ package actionScripts.ui.menu
 				if (menuItem.label == projectMenuItemName)
 				{
 					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
-                    for (var j:int = 0; j < menuItem.submenu.numItems; j++)
+                    for (var j:int = menuItem.submenu.numItems - 1; j > 0; j--)
                     {
                         var removeItem:Boolean = false;
                         var item:Object = menuItem.submenu.getItemAt(j);
@@ -332,7 +332,6 @@ package actionScripts.ui.menu
                         if (removeItem)
                         {
                             menuItem.submenu.removeItemAt(j);
-                            j -= 1;
                         }
                     }
 
