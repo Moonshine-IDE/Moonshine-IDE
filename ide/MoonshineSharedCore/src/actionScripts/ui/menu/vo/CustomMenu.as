@@ -69,16 +69,16 @@ package actionScripts.ui.menu.vo
 		public function addItemAt(item:ICustomMenuItem, index:int):ICustomMenuItem
 		{
 			var pos:int = index;
-			if(index > _items.length)
-				pos = _items.length;
+			if(index > items.length)
+				pos = items.length;
 
 			var removeIndex:int = getItemIndex(item);
 			if(removeIndex ==-1)
 			{
-				_items.splice(removeIndex, 1);
+				items.splice(removeIndex, 1);
 			}
-			
-			_items.splice(pos,0,item);
+
+			items.splice(pos,0,item);
 
 			return item;
 		}
@@ -108,11 +108,12 @@ package actionScripts.ui.menu.vo
 				return null;
 			}
 
-			return _items[index];
+			return items[index];
 		}
+
 		public function getItemByName(name:String):ICustomMenuItem
 		{
-			for each(var entity:ICustomMenuItem in _items)
+			for each(var entity:ICustomMenuItem in items)
 			{
 				if(!entity) continue;
 				if(entity.label == name) return entity;
@@ -125,7 +126,20 @@ package actionScripts.ui.menu.vo
 			return _items.indexOf(item);
 			
 		}
-		
+
+		public function removeItemAt(index:int):ICustomMenuItem
+		{
+			if(index > _items.length || index <0)
+			{
+				return null;
+			}
+
+			var removedItem:ICustomMenuItem = this.getItemAt(index);
+			items.splice(index, 1);
+
+			return removedItem;
+		}
+
 		public function get menu():ICustomMenu
 		{
 			return null;

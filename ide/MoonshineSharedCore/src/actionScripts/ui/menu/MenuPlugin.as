@@ -315,15 +315,26 @@ package actionScripts.ui.menu
 				if (menuItem.label == projectMenuItemName)
 				{
 					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
-					var subMenuItems:Object = menuItem.submenu.items;
-					for (var j:int = 0; j < subMenuItems.length; j++)
-					{
-						if (subMenuItems[j].hasOwnProperty("dynamicItem") && subMenuItems[j].dynamicItem)
-						{
-							subMenuItems.splice(j, 1);
-							j -= 1;
-						}
-					}
+                    for (var j:int = 0; j < menuItem.submenu.numItems; j++)
+                    {
+                        var removeItem:Boolean = false;
+                        var item:Object = menuItem.submenu.getItemAt(j);
+
+                        if (item.hasOwnProperty("dynamicItem") && item.dynamicItem)
+                        {
+                            removeItem = true;
+                        }
+                        else if (item.data && item.data["dynamicItem"])
+                        {
+                            removeItem = true;
+                        }
+
+                        if (removeItem)
+                        {
+                            menuItem.submenu.removeItemAt(j);
+                            j -= 1;
+                        }
+                    }
 
 					if (projectMenus)
 					{
@@ -819,10 +830,17 @@ package actionScripts.ui.menu
 					addMenus(item.items, newMenu);
 					newMenu = parentMenu.addSubmenu(newMenu, item.label);
 
-					if (item.hasOwnProperty("dynamicItem"))
-					{
-						newMenu.dynamicItem = item.dynamicItem;
-					}
+                    if (item.hasOwnProperty("dynamicItem"))
+                    {
+                        if (newMenu.hasOwnProperty("dynamicItem"))
+                        {
+                            newMenu.dynamicItem = item.dynamicItem;
+                        }
+                        else
+                        {
+                            newMenu.data = {dynamicItem: item.dynamicItem};
+                        }
+                    }
 				}
 				else if (item)
 				{
