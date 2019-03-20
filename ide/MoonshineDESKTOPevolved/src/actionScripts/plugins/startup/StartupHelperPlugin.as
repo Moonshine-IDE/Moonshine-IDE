@@ -117,6 +117,7 @@ package actionScripts.plugins.startup
 					dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 				}
 				
+				print("TEST::482::0::Initiating dependency checks.");
 				preInitHelping();
 		}
 		
@@ -136,9 +137,12 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
 			
+			print("TEST::482::1::Dependency checks method called");
+			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
+				print("TEST::482::1-1::Going to parse system environments");
 				environmentUtil = new EnvironmentUtils();
 				addRemoveListeners(true);
 				environmentUtil.readValues();
@@ -153,14 +157,16 @@ package actionScripts.plugins.startup
 			*/
 			function continueOnHelping(event:Event):void
 			{
+				print("TEST::482::2::Going to call dependency check sequences");
 				// just a little delay to see things visually right
 				addRemoveListeners(false);
 				startHelpingTimeout = setTimeout(startHelping, 1000);
 				copyToLocalStoragePayaraEmbededLauncher();
 			}
-			function errorReadingEnvironment(event:Event):void
+			function errorReadingEnvironment(event:HelperEvent):void
 			{
 				Alert.show("Unable to read from the environment", "Note!"); 
+				print("TEST::482::????::Unable to read from the environment: "+ (event.value as String));
 				addRemoveListeners(false);
 				continueOnHelping(null);
 			}
@@ -191,6 +197,7 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
 			
+			print("TEST::482::###::Waiting dependency check count: "+ sequences.length);
 			if (sequences.length == 0)
 			{
 				print("TEST::482::###::Completed dependency sequence test; All present: "+ isAllDependenciesPresent);
