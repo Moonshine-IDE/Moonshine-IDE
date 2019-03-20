@@ -171,8 +171,8 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' status --porcelain > ') +
-				(ConstantsCoreVO.IS_MACOS ? "$'"+ UtilsCore.getEncodedForShell(File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath) +"'" : 
-				UtilsCore.getEncodedForShell(File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath)),
+				(ConstantsCoreVO.IS_MACOS ? "$'"+ File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath +"'" : 
+					File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath),
 				false, 
 				GIT_DIFF_CHECK));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
