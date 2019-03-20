@@ -158,6 +158,10 @@ package actionScripts.plugins.startup
 			function continueOnHelping(event:Event):void
 			{
 				print("TEST::482::2::Going to call dependency check sequences");
+				if (event && (event is HelperEvent))
+				{
+					print("Environment Read Output:\n"+ (event as HelperEvent).value);
+				}
 				// just a little delay to see things visually right
 				addRemoveListeners(false);
 				startHelpingTimeout = setTimeout(startHelping, 1000);
