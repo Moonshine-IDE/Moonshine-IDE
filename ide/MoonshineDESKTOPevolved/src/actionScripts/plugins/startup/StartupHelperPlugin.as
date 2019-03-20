@@ -193,6 +193,7 @@ package actionScripts.plugins.startup
 			
 			if (sequences.length == 0)
 			{
+				print("TEST::482::###::Completed dependency sequence test; All present: "+ isAllDependenciesPresent);
 				// if we have a reason to open Getting Started tab
 				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
 				return;
@@ -240,10 +241,12 @@ package actionScripts.plugins.startup
 			
 			if (!didShowPreviouslyOpenedTabs)
 			{
+				print("TEST::482::#1::Ready to read from cookie");
 				didShowPreviouslyOpenedTabs = true;
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					clearTimeout(timeoutValue);
+					print("TEST::482::#2::Dispatching event to read cookie");
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
 				}, 2000);
 			}
