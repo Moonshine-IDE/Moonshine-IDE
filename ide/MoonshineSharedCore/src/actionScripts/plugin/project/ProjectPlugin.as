@@ -342,6 +342,7 @@ package actionScripts.plugin.project
 
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void
         {
+			print("TEST::482::#3::Event catch by ProjectPlugin");
             openPreviouslyOpenedProject();
         }
 
@@ -387,11 +388,19 @@ package actionScripts.plugin.project
 
         private function openPreviouslyOpenedProject():void
         {
+			print("TEST::482::#4::Method called to parse from cookie; Removing listener");
             dispatcher.removeEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
 			
             var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projects");
-            if (!cookie) return;
+            if (!cookie) 
+			{
+				print("TEST::482::#5::No previously opened project found - terminating");
+				return;
+			}
+			
+			print("TEST::482::#5::Fetching previously opened projects from cookie");
             var projectsForOpen:Array = cookie.data["projects"];
+			print("TEST::482::#6::Found projects by length: "+ projectsForOpen.length);
             if (projectsForOpen && projectsForOpen.length > 0)
             {
                 var projectLocationInfo:Object = {};
@@ -434,11 +443,13 @@ package actionScripts.plugin.project
 
                     if (project)
                     {
+						print("TEST::482::#7::Project object created - sending to open: "+ project.folderLocation.fileBridge.nativePath);
                         dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
                         project = null;
                     }
 					else
 					{
+						print("TEST::482::#7::Project object could't able to create - removing from cookie: "+ projectLocationInfo.path);
 						var pr:Object = projectsForOpen[i];
 						SharedObjectUtil.removeProjectFromOpen(projectLocationInfo.path, projectLocationInfo.name);
 						SharedObjectUtil.removeProjectTreeItemFromOpenedItems(projectLocationInfo, "name", "path");
