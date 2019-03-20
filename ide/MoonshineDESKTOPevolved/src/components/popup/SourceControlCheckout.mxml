@@ -102,7 +102,7 @@
 				if (type == TYPE_GIT)
 				{
 					// expected format is https://github.com/{organization/author}/{project}
-					searchRegExp = new RegExp("(?:https?|git)\://.*/([^/]+)(?:\\.git)?", "i");
+					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/([^/]+)(?:\\.git)?", "i");
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
