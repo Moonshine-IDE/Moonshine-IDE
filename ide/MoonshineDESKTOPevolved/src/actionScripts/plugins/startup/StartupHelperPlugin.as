@@ -23,7 +23,6 @@ package actionScripts.plugins.startup
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.events.AddTabEvent;
@@ -117,7 +116,6 @@ package actionScripts.plugins.startup
 					dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 				}
 				
-				print("TEST::482::0::Initiating dependency checks.");
 				preInitHelping();
 		}
 		
@@ -137,12 +135,9 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
 			
-			print("TEST::482::1::Dependency checks method called");
-			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
-				print("TEST::482::1-1::Going to parse system environments");
 				environmentUtil = new EnvironmentUtils();
 				addRemoveListeners(true);
 				environmentUtil.readValues();
@@ -157,11 +152,6 @@ package actionScripts.plugins.startup
 			*/
 			function continueOnHelping(event:Event):void
 			{
-				print("TEST::482::2::Going to call dependency check sequences");
-				if (event && (event is HelperEvent))
-				{
-					print("Environment Read Output:\n"+ (event as HelperEvent).value);
-				}
 				// just a little delay to see things visually right
 				addRemoveListeners(false);
 				startHelpingTimeout = setTimeout(startHelping, 1000);
@@ -169,25 +159,21 @@ package actionScripts.plugins.startup
 			}
 			function errorReadingEnvironment(event:HelperEvent):void
 			{
-				Alert.show("Unable to read from the environment", "Note!"); 
-				print("TEST::482::????::Unable to read from the environment: "+ (event.value as String));
+				error("Unable to read from the environment: "+ (event.value as String));
 				addRemoveListeners(false);
 				continueOnHelping(null);
 			}
 			function addRemoveListeners(add:Boolean):void
 			{
-				if (environmentUtil)
+				if (add)
 				{
-					if (add)
-					{
-						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping, false, 0, true);
-						environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment, false, 0, true);
-					}
-					else
-					{
-						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
-						environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
-					}
+					environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
+					environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
+				}
+				else if (environmentUtil)
+				{
+					environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
+					environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
 				}
 			}
 		}
@@ -201,10 +187,8 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
 			
-			print("TEST::482::###::Waiting dependency check count: "+ sequences.length);
 			if (sequences.length == 0)
 			{
-				print("TEST::482::###::Completed dependency sequence test; All present: "+ isAllDependenciesPresent);
 				// if we have a reason to open Getting Started tab
 				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
 				return;
@@ -252,12 +236,10 @@ package actionScripts.plugins.startup
 			
 			if (!didShowPreviouslyOpenedTabs)
 			{
-				print("TEST::482::#1::Ready to read from cookie");
 				didShowPreviouslyOpenedTabs = true;
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					clearTimeout(timeoutValue);
-					print("TEST::482::#2::Dispatching event to read cookie");
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
 				}, 2000);
 			}
