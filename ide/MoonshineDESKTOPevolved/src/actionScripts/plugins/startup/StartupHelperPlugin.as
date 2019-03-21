@@ -48,9 +48,7 @@ package actionScripts.plugins.startup
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKTypes;
-	
-	import avmplus.getQualifiedClassName;
-	
+
 	import components.popup.GettingStartedPopup;
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
@@ -139,45 +137,15 @@ package actionScripts.plugins.startup
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				environmentUtil = new EnvironmentUtils();
-				addRemoveListeners(true);
+				addEventListenersToEnvironmentUtil();
 				environmentUtil.readValues();
 			}
 			else
 			{
-				continueOnHelping(null);
-			}
-			
-			/*
-			* @local
-			*/
-			function continueOnHelping(event:Event):void
-			{
-				// just a little delay to see things visually right
-				addRemoveListeners(false);
-				startHelpingTimeout = setTimeout(startHelping, 1000);
-				copyToLocalStoragePayaraEmbededLauncher();
-			}
-			function errorReadingEnvironment(event:HelperEvent):void
-			{
-				error("Unable to read from the environment: "+ (event.value as String));
-				addRemoveListeners(false);
-				continueOnHelping(null);
-			}
-			function addRemoveListeners(add:Boolean):void
-			{
-				if (add)
-				{
-					environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
-					environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
-				}
-				else if (environmentUtil)
-				{
-					environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, continueOnHelping);
-					environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, errorReadingEnvironment);
-				}
+				continueReadingEnvironmentVariables();
 			}
 		}
-		
+
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -459,13 +427,45 @@ package actionScripts.plugins.startup
 			//sequenceIndex --;
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
 		}
-		
+
+		private function continueReadingEnvironmentVariables():void
+		{
+			// just a little delay to see things visually right
+			removeEventListenersFromEnvironmentUtil();
+			startHelpingTimeout = setTimeout(startHelping, 1000);
+			copyToLocalStoragePayaraEmbededLauncher();
+		}
+
+		private function addEventListenersToEnvironmentUtil():void
+		{
+			environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, onEnvironmentVariableReadCompleted);
+			environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, onEnvironmentVariableReadError);
+		}
+
+		private function removeEventListenersFromEnvironmentUtil():void
+		{
+			if (!environmentUtil) return;
+
+			environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, onEnvironmentVariableReadCompleted);
+			environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, onEnvironmentVariableReadError);
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  LISTENERS API
 		//
 		//--------------------------------------------------------------------------
-		
+
+		private function onEnvironmentVariableReadError(event:HelperEvent):void
+		{
+			error("Unable to read environment variable: "+ (event.value as String));
+			continueReadingEnvironmentVariables();
+		}
+
+		private function onEnvironmentVariableReadCompleted(event:Event):void
+		{
+			continueReadingEnvironmentVariables();
+		}
+
 		/**
 		 * To restart helping process
 		 */
@@ -672,7 +672,6 @@ package actionScripts.plugins.startup
 				var path:String;
 				var pathValidation:String;
 				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
-				var tmpComponent:ComponentVO;
 				for each (var item:XML in notifierValue.items.item)
 				{
 					type = String(item.@type);
