@@ -70,7 +70,6 @@ package actionScripts.ui.menu
 		public static const CHANGE_MENU_MAC_DISABLE_STATE:String = "CHANGE_MENU_MAC_DISABLE_STATE"; // shows only Quit command with File menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
-		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
 		public static const CHANGE_GIT_CLONE_PERMISSION_LABEL:String = "CHANGE_GIT_CLONE_PERMISSION_LABEL";
 		public static const CHANGE_SVN_CHECKOUT_PERMISSION_LABEL:String = "CHANGE_SVN_CHECKOUT_PERMISSION_LABEL";
 		
