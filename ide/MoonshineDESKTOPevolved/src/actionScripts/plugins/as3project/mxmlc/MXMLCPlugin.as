@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import com.adobe.utils.StringUtil;
+	import actionScripts.events.SdkEvent;
+
+	import com.adobe.utils.StringUtil;
     
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
@@ -63,7 +65,6 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
     import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
     import actionScripts.ui.editor.text.DebugHighlightManager;
-    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -175,7 +176,7 @@ package actionScripts.plugins.as3project.mxmlc
 				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 			}
 			// state change of menus based upon default SDK presence
-			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
+			dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
 		}
 		
 		public function MXMLCPlugin() 

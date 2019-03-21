@@ -18,16 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import actionScripts.factory.FileLocation;
-	
 	import flash.events.Event;
 
-	public class ChangedUserSavedSDKsEvent extends Event
+	public class SdkEvent extends Event
 	{
-		public static const EVENT_CHANGESAVEDSDKS:String = "changeUserSavedSDKs";
-		public static const EVENT_NOTSHOWSDKMESSAGE:String = "EVENT_NOTSHOWSDKMESSAGE";
-		
-		public function ChangedUserSavedSDKsEvent(type:String)
+		public static const CHANGE_SDK:String = "changeSdk";
+
+		public function SdkEvent(type:String)
 		{
 			super(type, false, true);
 		}

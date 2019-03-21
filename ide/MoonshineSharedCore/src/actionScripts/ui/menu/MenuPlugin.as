@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import actionScripts.ui.menu.interfaces.ICustomMenuItem;
-
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
@@ -209,7 +207,6 @@ package actionScripts.ui.menu
 
 			dispatcher.addEventListener(MenuPlugin.REFRESH_MENU_STATE, refreshMenuStateHandler);
 			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, shortcutPreFiredHandler);
-			dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSdkStateHandler);
 			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, addedNewTemplateHandler, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, removeTemplateHandler, false, 0, true);
 			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, renameTemplateHandler, false, 0, true);
@@ -694,48 +691,7 @@ package actionScripts.ui.menu
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
 			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
 		}
-		
-		private function changeMenuSdkStateHandler(event:Event):void
-		{
-			var isEnable:Boolean = model.defaultSDK ? true : false;
-			var menu:Object = getMenuObject();
-			var itemsInTopMenu:Object;
-			// os == mac
-			if (buildingNativeMenu)
-			{
-				itemsInTopMenu = menu.items; // top-level menus, i.e. Moonshine, File etc.
-			}
-			else
-			{
-				itemsInTopMenu = menu.items;
-			}
-			
-			var tmpOptionsArr:Array;
-			var subItemsInTopMenu:Object;
-			for (var i:String in noSDKOptionsToMenuMapping)
-			{
-				tmpOptionsArr = noSDKOptionsToMenuMapping[i];
-				subItemsInTopMenu = itemsInTopMenu[int(i)].submenu.items;
-				for (var j:String in tmpOptionsArr)
-				{
-					subItemsInTopMenu[tmpOptionsArr[j]].enabled = isEnable;
-				}
-			}
-			
-			if (!model.isCodeCompletionJavaPresent || !model.javaPathForTypeAhead) isEnable = false;
-			else if (model.isCodeCompletionJavaPresent && model.javaPathForTypeAhead) isEnable = true;
-			else isEnable = false;
-			for (var k:String in noCodeCompletionOptionsToMenuMapping)
-			{
-				tmpOptionsArr = noCodeCompletionOptionsToMenuMapping[k];
-				subItemsInTopMenu = itemsInTopMenu[int(k)].submenu.items;
-				for (var l:String in tmpOptionsArr)
-				{
-					subItemsInTopMenu[tmpOptionsArr[l]].enabled = isEnable;
-				}
-			}
-		}
-		
+
 		protected function createNewMenu():*
 		{
 			return buildingNativeMenu ? new CustomNativeMenu() : new CustomMenu();

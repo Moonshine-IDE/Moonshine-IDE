@@ -348,8 +348,14 @@
 					projectFolders.removeItemAt(tmpFWIndex);
 					timeoutValue = setTimeout(function ():void
 					{
-						if(tree.isItemVisible(lastSelectedItem)) tree.selectedItem = lastSelectedItem;
-						else if(projectFolders.length != 0) tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
+						if(tree.isItemVisible(lastSelectedItem))
+                        {
+                            tree.selectedItem = lastSelectedItem;
+                        }
+						else if(projectFolders.length != 0)
+                        {
+                            tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
+                        }
 						clearTimeout(timeoutValue);
 						refreshActiveProject(tree.selectedItem as FileWrapper);
 					}, 100);

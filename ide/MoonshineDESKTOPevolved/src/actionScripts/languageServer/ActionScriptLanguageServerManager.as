@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import flash.desktop.NativeProcess;
+	import actionScripts.events.SdkEvent;
+
+	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.NativeProcessExitEvent;
@@ -29,12 +31,10 @@ package actionScripts.languageServer
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.ProjectEvent;
-    import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
     import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.Settings;
@@ -50,7 +50,6 @@ package actionScripts.languageServer
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
-
 	public class ActionScriptLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
@@ -82,7 +81,7 @@ package actionScripts.languageServer
 
 			_project.addEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.addEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler);
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
@@ -176,7 +175,7 @@ package actionScripts.languageServer
 			
 			_project.removeEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.removeEventListener(MenuPlugin.CHANGE_MENU_SDK_STATE, changeMenuSDKStateHandler);
+			_dispatcher.removeEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler);
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
 		}
 

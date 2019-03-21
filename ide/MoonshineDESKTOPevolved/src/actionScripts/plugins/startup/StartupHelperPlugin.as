@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
+	import actionScripts.events.SdkEvent;
+
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.utils.clearTimeout;
@@ -37,7 +39,6 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.HelperUtils;
@@ -242,7 +243,7 @@ package actionScripts.plugins.startup
 					clearTimeout(changeMenuSDKTimeout);
 					changeMenuSDKTimeout = 0;
 					
-					dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
+					dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
 				}, 1000);
 			}
 			
@@ -421,7 +422,7 @@ package actionScripts.plugins.startup
 		{
 			// lets show up the default sdk requirement strip at bottom
 			// at very end of startup prompt being shown
-			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
+			dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
 			// in case of Windows, we open-up MXMLC Plugin section and shall
 			// wait for the user to add/download a default SDK
 			//sequenceIndex --;
