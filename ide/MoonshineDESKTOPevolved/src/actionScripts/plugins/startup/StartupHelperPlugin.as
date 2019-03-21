@@ -142,7 +142,7 @@ package actionScripts.plugins.startup
 			}
 			else
 			{
-				continueReadingEnvironmentVariables();
+				continueOnHelping();
 			}
 		}
 
@@ -428,7 +428,7 @@ package actionScripts.plugins.startup
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
 		}
 
-		private function continueReadingEnvironmentVariables():void
+		private function continueOnHelping():void
 		{
 			// just a little delay to see things visually right
 			removeEventListenersFromEnvironmentUtil();
@@ -458,12 +458,12 @@ package actionScripts.plugins.startup
 		private function onEnvironmentVariableReadError(event:HelperEvent):void
 		{
 			error("Unable to read environment variable: "+ (event.value as String));
-			continueReadingEnvironmentVariables();
+			continueOnHelping();
 		}
 
 		private function onEnvironmentVariableReadCompleted(event:Event):void
 		{
-			continueReadingEnvironmentVariables();
+			continueOnHelping();
 		}
 
 		/**
