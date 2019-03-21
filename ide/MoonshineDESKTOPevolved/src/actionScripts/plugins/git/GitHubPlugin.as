@@ -362,7 +362,11 @@ package actionScripts.plugins.git
 		private function onGitDiffChecked(event:GeneralEvent):void
 		{
 			processManager.removeEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked);
-			if (gitCommitWindow) gitCommitWindow.commitDiffCollection = event.value as ArrayCollection;
+			if (gitCommitWindow) 
+			{
+				gitCommitWindow.isReadyToUse = true;
+				gitCommitWindow.commitDiffCollection = event.value as ArrayCollection;
+			}
 			
 			processManager.getGitAuthor(onGitAuthorDetection);
 		}
