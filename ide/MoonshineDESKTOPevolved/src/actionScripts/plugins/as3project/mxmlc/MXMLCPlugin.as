@@ -813,30 +813,59 @@ package actionScripts.plugins.as3project.mxmlc
 					// in case of project user wants to run it in a mobile simulator by adding certain
 					// commands in Additional Compiler Arguments, we need to make the swf launching
 					// behaves as a mobile or air
-					if (buildArgs.indexOf("+configname=air") == -1) pvo.isMobile = UtilsCore.isMobile(pvo);
-					else pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
-					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=airmobile";
-					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=air";
+					if (buildArgs.indexOf("+configname=air") == -1)
+					{
+						pvo.isMobile = UtilsCore.isMobile(pvo);
+					}
+					else
+					{
+						pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
+					}
+					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
+					{
+						buildArgs += " +configname=airmobile";
+					}
+					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
+					{
+						buildArgs += " +configname=air";
+					}
 				}
 				
 				pvo.buildOptions.optimize = optFlag;
 				
 				var dbg:String;
-				if (release) dbg = " -debug=false";
-				else dbg = " -debug=true";
-				if (buildArgs.indexOf(" -debug=") > -1) dbg = "";
+				if (release)
+				{
+					dbg = " -debug=false";
+				}
+				else
+				{
+					dbg = " -debug=true";
+				}
+
+				if (buildArgs.indexOf(" -debug=") > -1)
+				{
+					dbg = "";
+				}
 				
 				var outputFile:File;
 				if (release && pvo.swfOutput.path)
-					outputFile = pvo.folderLocation.resolvePath("bin-release/"+ pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
+				{
+					outputFile = pvo.folderLocation.resolvePath("bin-release/" + pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
+				}
 				else if (pvo.swfOutput.path)
-					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;	
-				
+				{
+					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
+				}
+
 				var output:String;
 				if (outputFile)
 				{
 					output = " -o " + pvo.folderLocation.fileBridge.getRelativePath(new FileLocation(outputFile.nativePath));
-					if (outputFile.exists == false) FileUtil.createFile(outputFile);
+					if (outputFile.exists == false)
+					{
+						FileUtil.createFile(outputFile);
+					}
 				}
 				
 				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
@@ -1246,9 +1275,16 @@ package actionScripts.plugins.as3project.mxmlc
 
 				//Build should be continued with there are only warnings
 				var warningMatch:Array = data.match(new RegExp("Warning:", "i"));
-				if (warningMatch && !generalMatch && !syntaxMatch)
+				if (warningMatch)
 				{
                     warning(data);
+					return;
+				}
+
+				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
+				if (javaToolsOptionsMatch)
+				{
+					print(data);
 					return;
 				}
 
