@@ -266,8 +266,7 @@ package actionScripts.plugin.project
 			if (model.projects.getItemIndex(event.project) == -1)
 			{
 				model.projects.addItemAt(event.project, 0);
-				model.activeProject = event.project;
-				
+
 				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
 				{
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
