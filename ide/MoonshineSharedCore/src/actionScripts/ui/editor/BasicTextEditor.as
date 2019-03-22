@@ -20,7 +20,6 @@ package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.utils.setTimeout;
     
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
@@ -364,7 +363,7 @@ package actionScripts.ui.editor
 					if (model.mainView.isProjectViewAdded)
 					{
 						var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-						var projectReference:AS3ProjectVO = tmpTreeView.getProjectBySelection();
+						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
 						if (projectReference)
 						{
 							saveAsPath(projectReference.folderPath);

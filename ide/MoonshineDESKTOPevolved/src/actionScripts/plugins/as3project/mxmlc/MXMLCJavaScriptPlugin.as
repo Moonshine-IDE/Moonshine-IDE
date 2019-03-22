@@ -203,10 +203,10 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:AS3ProjectVO = tmpTreeView.getProjectBySelection();
+					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
 					if (projectReference)
 					{
-						checkForUnsavedEdior(projectReference as ProjectVO);
+						checkForUnsavedEdior(projectReference);
 						return;
 					}
 				}

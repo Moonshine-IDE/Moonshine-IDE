@@ -761,7 +761,7 @@
 			}
 		}
 
-		public function getProjectBySelection(orByProjectPath:String = null):AS3ProjectVO
+		public function getProjectBySelection(orByProjectPath:String = null):ProjectVO
 		{
 			if(!tree.selectedItem && !orByProjectPath) return null;
 
