@@ -191,6 +191,24 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
 		}
 		
+		public function setGitAuthor(userObject:Object):void
+		{
+			if (!model.activeProject) return;
+			
+			isGitUserEmail = isGitUserName = false;
+			queue = new Vector.<Object>();
+			
+			addToQueue(new NativeProcessQueueVO(
+				ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" config user.name $'"+ userObject.userName +"'" : 
+				gitBinaryPathOSX +'&&config&&user.name&&'+ userObject.userName, 
+				false, GIT_QUERY_USER_NAME, model.activeProject.folderLocation.fileBridge.nativePath));
+			addToQueue(new NativeProcessQueueVO(
+				ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" config user.email $'"+ userObject.email +"'" : 
+				gitBinaryPathOSX +'&&config&&user.email&&'+ userObject.email, 
+				false, GIT_QUERY_USER_EMAIL, model.activeProject.folderLocation.fileBridge.nativePath));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+		}
+		
 		public function commit(files:ArrayCollection, withMessage:String):void
 		{
 			if (!model.activeProject) return;
@@ -607,8 +625,10 @@ package actionScripts.plugins.git
 					return;
 				}
 				case GIT_PUSH:
+				case GIT_COMMIT:
 				{
 					match = value.output.toLowerCase().match(/fatal.*username/);
+					if (!match) match = value.output.toLowerCase().match(/tell me who you are/);
 					if (match)
 					{
 						// we'll need user to authenticate
