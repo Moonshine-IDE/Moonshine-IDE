@@ -52,7 +52,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
@@ -226,7 +225,7 @@ package actionScripts.utils
 		
 		public static function convertString(path:String):String
 		{
-			if (Settings.os == "win")
+			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				path= path.split(" ").join("^ ");
 				path= path.split("(").join("^(");
@@ -914,7 +913,7 @@ package actionScripts.utils
 		public static function getConsolePath():String
 		{
 			var separator:String = model.fileCore.separator;
-            if (Settings.os == "win")
+            if (!ConstantsCoreVO.IS_MACOS)
             {
                 // in windows
                 return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
@@ -943,12 +942,20 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			
+
+			var separator:String = model.fileCore.separator;
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
-            var mavenBin:String = "bin/";
+            var mavenBin:String = "bin" + separator;
+			if (mavenLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				mavenBin = separator;
+			}
 			
-			if (!mavenLocation.fileBridge.exists) return null;
-			else if (Settings.os == "win")
+			if (!mavenLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
