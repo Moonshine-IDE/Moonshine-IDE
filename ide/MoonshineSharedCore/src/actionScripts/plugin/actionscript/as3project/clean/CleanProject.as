@@ -227,7 +227,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 							if (jsReleaseFolderExists)
 							{
-                                jsDebugFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+								jsReleaseFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
                                 jsReleaseFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onJSFolderCompleteHandler);
                                 jsReleaseFolder.fileBridge.deleteDirectoryAsync(true);
                             }
