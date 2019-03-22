@@ -52,7 +52,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
@@ -226,7 +225,7 @@ package actionScripts.utils
 		
 		public static function convertString(path:String):String
 		{
-			if (Settings.os == "win")
+			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				path= path.split(" ").join("^ ");
 				path= path.split("(").join("^(");
@@ -914,7 +913,7 @@ package actionScripts.utils
 		public static function getConsolePath():String
 		{
 			var separator:String = model.fileCore.separator;
-            if (Settings.os == "win")
+            if (!ConstantsCoreVO.IS_MACOS)
             {
                 // in windows
                 return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
@@ -956,7 +955,7 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			else if (Settings.os == "win")
+			else if (!ConstantsCoreVO.IS_MACOS)
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
