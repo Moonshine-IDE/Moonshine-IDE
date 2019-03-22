@@ -150,6 +150,7 @@ package actionScripts.utils
 			var isValidToExecute:Boolean;
 			var setPathCommand:String = "set PATH=";
 			var defaultOrCustomSDKPath:String;
+			var additionalCommandLines:String = "";
 			
 			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
 			{
@@ -178,6 +179,23 @@ package actionScripts.utils
 				setPathCommand += "%MAVEN_HOME%\\bin;";
 				isValidToExecute = true;
 			}
+			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
+			{
+				// moonshine stores gir path with 'bin\git.exe' format 
+				// we need to find probable sdk root instead
+				// next add command to set caFile 
+				var substrIndex:int = model.gitPath.indexOf(File.separator + "bin" + File.separator + "git.exe");
+				if (substrIndex != -1)
+				{
+					var gitRootPath:String = model.gitPath.substring(0, substrIndex);
+					if (FileUtils.isPathExists(gitRootPath + "\\mingw64\\ssl\\cert.pem"))
+					{
+						setCommand += getSetExportCommand("GIT_HOME", gitRootPath);
+						additionalCommandLines += "%GIT_HOME%\\bin\\git config --global http.sslCAInfo %GIT_HOME%\\mingw64\\ssl\\cert.pem\r\n";
+						isValidToExecute = true;
+					}
+				}
+			}
 			if (defaultOrCustomSDKPath)
 			{
 				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
@@ -190,12 +208,14 @@ package actionScripts.utils
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
+				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}
 			else
 			{
 				// need to set PATH under application shell
 				setCommand += setPathCommand + "%PATH%\r\n";
+				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join("\r\n");
 			}
 			
