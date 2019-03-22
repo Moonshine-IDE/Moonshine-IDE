@@ -627,7 +627,6 @@ package actionScripts.plugins.git
 				case GIT_PUSH:
 				{
 					match = value.output.toLowerCase().match(/fatal.*username/);
-					if (!match) match = value.output.toLowerCase().match(/tell me who you are/);
 					if (match)
 					{
 						// we'll need user to authenticate
