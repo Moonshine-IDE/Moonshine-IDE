@@ -200,6 +200,9 @@ package actionScripts.utils
 					// save as moonshine settings
 					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 						null, "actionScripts.plugins.git::GitHubPlugin", settings));
+					
+					// update local env.variable
+					environmentSetupUtils.updateToCurrentEnvironmentVariable();
 				}
 			}
 		}
