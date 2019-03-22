@@ -948,7 +948,7 @@ package actionScripts.utils
             var mavenBin:String = "bin" + separator;
 			if (mavenLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
 			{
-				mavenBin = separator;
+				mavenBin = "";
 			}
 			
 			if (!mavenLocation.fileBridge.exists)
