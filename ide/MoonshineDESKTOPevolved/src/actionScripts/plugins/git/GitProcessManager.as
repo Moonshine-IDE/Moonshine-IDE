@@ -625,7 +625,6 @@ package actionScripts.plugins.git
 					return;
 				}
 				case GIT_PUSH:
-				case GIT_COMMIT:
 				{
 					match = value.output.toLowerCase().match(/fatal.*username/);
 					if (!match) match = value.output.toLowerCase().match(/tell me who you are/);
