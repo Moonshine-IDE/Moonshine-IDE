@@ -943,11 +943,19 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			
+
+			var separator:String = model.fileCore.separator;
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
-            var mavenBin:String = "bin/";
+            var mavenBin:String = "bin" + separator;
+			if (mavenLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				mavenBin = separator;
+			}
 			
-			if (!mavenLocation.fileBridge.exists) return null;
+			if (!mavenLocation.fileBridge.exists)
+			{
+				return null;
+			}
 			else if (Settings.os == "win")
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
