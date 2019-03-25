@@ -297,10 +297,10 @@ package actionScripts.utils
 		{
 			if (customProcess)
 			{
-				var output:IDataInput = customProcess.standardError;
+				/*var output:IDataInput = customProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable).toLowerCase();
 				
-				Alert.show("Local environment setup failed[2]!\n"+ data);
+				Alert.show("Local environment setup failed[2]!\n"+ data);*/
 				startShell(false);
 			}
 		}

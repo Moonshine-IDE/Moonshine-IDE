@@ -7,5 +7,5 @@ if [ -x "${HELPER_PATH}" ]; then
   open -b "net.prominic.MoonshineAppStoreHelper"
   exit 1
 else
-  open https://moonshine-ide.com/moonshine-app-store-helper-2/
+  open https://moonshine-ide.com/moonshine-app-store-helper/
 fi

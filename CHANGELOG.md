@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Java Project: Fixed issue where java project template was not populated when we create new class/interface.
 * Language Server:  Fixed dependencies so that language server can start without a default Flex SDK
 * Language Server:  Restart language server when Java Home path is updated in Settings.
+* Git Integration:  Improved behavior when Git status information is slow to load.
+* Project Sidebar:  Fixed case where Project Sidebar did not load on Moonshine startup
 
 ## Moonshine IDE [1.16.0]
 
