@@ -34,7 +34,7 @@ package actionScripts.plugin.actionscript.mxmlc
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -86,10 +86,10 @@ package actionScripts.plugin.actionscript.mxmlc
 		{
 			super.activate();
 			
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_DEBUG, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD, build);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			
 			tempObj = new Object();
 			tempObj.callback = buildCommand;
@@ -215,7 +215,7 @@ package actionScripts.plugin.actionscript.mxmlc
 		private function compile(pvo:ProjectVO, release:Boolean=false):void 
 		{
 			//clearOutput();
-			dispatcher.dispatchEvent(new MXMLCPluginEvent(CompilerEventBase.PREBUILD, currentSDK));
+			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, currentSDK));
 			
 			currentProject = pvo;
 			if (!loader)

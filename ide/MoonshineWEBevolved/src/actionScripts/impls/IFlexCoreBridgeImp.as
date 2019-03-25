@@ -45,7 +45,8 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPlugin;
 	import actionScripts.plugin.console.ConsolePlugin;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.findResources.FindResourcesPlugin;
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.help.HelpPlugin;
@@ -370,10 +371,10 @@ package actionScripts.impls
 				new MenuItem("Project",[
 					new MenuItem("Open/Import Flex Project", null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
 					new MenuItem(null),
-					new MenuItem("Build Project", null, null, CompilerEventBase.BUILD,
+					new MenuItem("Build Project", null, null, ActionScriptBuildEvent.BUILD,
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
-					new MenuItem("Clean Project", null, null, CompilerEventBase.CLEAN_PROJECT)
+					new MenuItem("Clean Project", null, null, ProjectActionEvent.CLEAN_PROJECT)
 					
 				]),
 				new MenuItem("Help",[
