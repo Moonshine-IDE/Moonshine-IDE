@@ -163,7 +163,7 @@ package actionScripts.plugin.actionscript.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:AS3ProjectVO = tmpTreeView.getProjectBySelection();
+					var projectReference:AS3ProjectVO = tmpTreeView.getProjectBySelection() as AS3ProjectVO;
 					if (projectReference)
 					{
 						proceedWithBuild(projectReference as ProjectVO);
