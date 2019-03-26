@@ -29,7 +29,8 @@
 	<mx:Script>
 		<![CDATA[
 		import actionScripts.events.PreviewPluginEvent;
-		import actionScripts.events.RefreshVisualEditorSourcesEvent;
+		import actionScripts.plugin.core.compiler.ProjectActionEvent;
+		import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
@@ -349,13 +350,12 @@
 					timeoutValue = setTimeout(function ():void
 					{
 						if(tree.isItemVisible(lastSelectedItem))
-                        {
-                            tree.selectedItem = lastSelectedItem;
-                        }
-						else if(projectFolders.length != 0)
-                        {
-                            tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
-                        }
+						{
+							tree.selectedItem = lastSelectedItem;
+						} else if(projectFolders.length != 0)
+						{
+							tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
+						}
 						clearTimeout(timeoutValue);
 						refreshActiveProject(tree.selectedItem as FileWrapper);
 					}, 100);
@@ -511,7 +511,14 @@
 				}
 				case FTETreeItemRenderer.SET_AS_DEFAULT_APPLICATION:
 				{
-					TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(tree.getParentItem(fileWrapper)));
+					if(model.activeProject is AS3ProjectVO)
+					{
+						TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(tree.getParentItem(fileWrapper)));
+					}
+					else if (model.activeProject is JavaProjectVO)
+					{
+						dispatcher.dispatchEvent(new ProjectActionEvent(ProjectActionEvent.SET_DEFAULT_APPLICATION, fileWrapper.file));
+					}
 					break;
 				}
 				case FTETreeItemRenderer.REFRESH:

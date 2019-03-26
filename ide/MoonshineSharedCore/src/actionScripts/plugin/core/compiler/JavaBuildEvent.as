@@ -24,7 +24,6 @@ package actionScripts.plugin.core.compiler
 	{
 		public static const BUILD_AND_RUN:String = "javaBuildAndRun";
 		public static const BUILD:String = "javaBuild";
-		public static const BUILD_RELEASE:String = "javaBuildRelease";
 		
 		public function JavaBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{

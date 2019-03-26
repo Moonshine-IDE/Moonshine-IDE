@@ -220,6 +220,8 @@ package actionScripts.ui.renderers
 			var fw:FileWrapper = value as FileWrapper;
 			if (fw)
 			{
+				var fwExtension:String = fw.file.fileBridge.extension;
+
 				contextMenu = model.contextMenuCore.getContextMenu();
 
                 var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
@@ -286,7 +288,7 @@ package actionScripts.ui.renderers
                     }
 					
 					// avail only for .as and .mxml files
-					if (fw.file.fileBridge.extension == "as" || fw.file.fileBridge.extension == "mxml")
+					if (fwExtension == "as" || fwExtension == "mxml")
 					{
 						// make this option available for the files Only inside the source folder location
 						if (project && !project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
@@ -294,6 +296,10 @@ package actionScripts.ui.renderers
 							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
 								model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
 						}
+					}
+					else if (fwExtension == "java")
+					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
 					}
 					
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));

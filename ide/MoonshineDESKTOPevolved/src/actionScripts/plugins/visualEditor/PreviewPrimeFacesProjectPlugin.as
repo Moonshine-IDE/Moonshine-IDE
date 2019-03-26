@@ -25,7 +25,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.maven.MavenBuildPlugin;
-    import actionScripts.plugins.maven.MavenBuildStatus;
+    import actionScripts.plugin.build.MavenBuildStatus;
     import actionScripts.utils.MavenPomUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;

@@ -18,30 +18,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject
 {
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.project.ProjectType;
+	import actionScripts.events.MavenBuildEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.build.MavenBuildStatus;
+	import actionScripts.plugin.core.compiler.JavaBuildEvent;
+	import actionScripts.plugin.core.compiler.ProjectActionEvent;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.project.ProjectType;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.project.ProjectTemplateType;
-	
+
+	import flash.events.Event;
+
 	public class JavaProjectPlugin extends PluginBase
-	{	
+	{
 		public var activeType:uint = ProjectType.JAVA;
 		
 		override public function get name():String 			{ return "Java Project Plugin"; }
 		override public function get author():String 		{ return "Moonshine Project Team"; }
 		override public function get description():String 	{ return "Java project importing, exporting & scaffolding."; }
-		
+
+
+
 		override public function activate():void
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			
+			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
+			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
+
 			super.activate();
 		}
-		
+
 		override public function deactivate():void
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			
+			dispatcher.removeEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
+			dispatcher.removeEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
+
 			super.deactivate();
 		}
 		
@@ -55,7 +68,32 @@ package actionScripts.plugin.java.javaproject
 			model.javaCore.createProject(event);
 		}
 
-        private function canCreateProject(event:NewProjectEvent):Boolean
+		private function buildAndRunHandler(event:Event):void
+		{
+			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
+			if (javaProject)
+			{
+				/*var runningCommand:String = "exec:java -Dexec.mainClass=".concat('"');
+				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
+						MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, []))*/
+			}
+		}
+
+		private function setDefaultApplicationHandler(event:ProjectActionEvent):void
+		{
+			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
+			if (javaProject)
+			{
+				var nameWithoutExtension:String = event.defaultApplicationFile.fileBridge.nameWithoutExtension;
+				if (javaProject.mainClassName != nameWithoutExtension)
+				{
+					javaProject.mainClassName = nameWithoutExtension;
+					javaProject.saveSettings();
+				}
+			}
+		}
+
+		private function canCreateProject(event:NewProjectEvent):Boolean
         {
             var projectTemplateName:String = event.templateDir.fileBridge.name;
             return projectTemplateName.indexOf(ProjectTemplateType.JAVA) != -1;

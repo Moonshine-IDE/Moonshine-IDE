@@ -5,6 +5,7 @@ package actionScripts.plugins.maven
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.build.MavenBuildStatus;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;

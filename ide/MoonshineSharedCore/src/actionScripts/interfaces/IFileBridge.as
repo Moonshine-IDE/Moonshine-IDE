@@ -93,5 +93,7 @@ package actionScripts.interfaces
 		function set modificationDate(value:Date):void;
 		function get data():Object;
 		function set data(value:Object):void;
+
+		function get nameWithoutExtension():String;
 	}
 }

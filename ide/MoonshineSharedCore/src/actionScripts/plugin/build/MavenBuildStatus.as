@@ -1,4 +1,4 @@
-package actionScripts.plugins.maven
+package actionScripts.plugin.build
 {
     public class MavenBuildStatus
     {

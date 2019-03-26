@@ -18,16 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.compiler
 {
+	import actionScripts.factory.FileLocation;
+
 	import flash.events.Event;
 
 	public class ProjectActionEvent extends Event
 	{
 		public static const CLEAN_PROJECT:String = "cleanproject";
-		
-		public function ProjectActionEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
+		public static const SET_DEFAULT_APPLICATION:String = "setDefaultApplication";
+
+		public function ProjectActionEvent(type:String, defaultApplicationFile:FileLocation = null)
 		{
 			super(type, bubbles, cancelable);
+
+			_defaultApplicationFile = defaultApplicationFile;
 		}
-		
+
+		private var _defaultApplicationFile:FileLocation;
+		public function get defaultApplicationFile():FileLocation
+		{
+			return _defaultApplicationFile;
+		}
 	}
 }

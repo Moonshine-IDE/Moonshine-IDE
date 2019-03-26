@@ -635,7 +635,18 @@ package actionScripts.impls
 		public function set data(value:Object):void
 		{
 		}
-		
+
+		public function get nameWithoutExtension():String
+		{
+			var extensionIndex:int = this.name.lastIndexOf(extension);
+			if (extensionIndex > -1)
+			{
+				return this.name.substring(0, extensionIndex - 1);
+			}
+
+			return null;
+		}
+
 		public function checkFileExistenceAndReport():Boolean
 		{
 			// we want to keep this method separate from
