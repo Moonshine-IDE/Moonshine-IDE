@@ -51,13 +51,10 @@ package actionScripts.events
 			}
 			
 			this.atLine = atLine;
-			if (files.length > 1)
+			if (param && param.length > 0)
 			{
-				if (param && param.length > 0)
-				{
-					this.openAsTourDe = param[0];
-					if (this.openAsTourDe) this.tourDeSWFSource = param[1];
-				}
+				this.openAsTourDe = param[0];
+				if (this.openAsTourDe) this.tourDeSWFSource = param[1];
 			}
 			
 			super(type, false, true);
