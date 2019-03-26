@@ -114,13 +114,10 @@ package actionScripts.plugin.actionscript.as3project
 		
 		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
-			var p:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
-			p.projectFile = projectFile;
-			model.activeProject = p;
+			var project:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
+			project.projectFile = projectFile;
 			
-			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, p, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null)
-			);
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null));
 		}
 		
 		private function importProject(event:Event):void
