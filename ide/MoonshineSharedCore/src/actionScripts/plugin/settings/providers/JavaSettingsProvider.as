@@ -18,73 +18,74 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.providers
 {
-    import actionScripts.events.FilePluginEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.utils.SharedObjectConst;
-
-    import flash.net.SharedObject;
-
-    public class JavaSettingsProvider implements ISettingsProvider
-    {
-        private var model:IDEModel = IDEModel.getInstance();
-        private var _currentJavaPath:String;
-        
-        public function JavaSettingsProvider()
-        {
-            _currentJavaPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
-        }
-
-        public function getSettingsList():Vector.<ISetting>
-        {
-            return null;
-        }
-
-        public function get currentJavaPath():String
-        {
-            return _currentJavaPath;
-        }
-
-        public function set currentJavaPath(value:String):void
-        {
-            if (_currentJavaPath != value)
-            {
-                _currentJavaPath = value;
-
-                if (!value)
-                {
-                    resetJavaPath();
-                }
-                else
-                {
-                    setNewJavaPath();
-                }
-            }
-        }
-
-        private function resetJavaPath():void
-        {
-            if (!model.javaPathForTypeAhead) return;
-
-            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
-            if (model.activeEditor)
-            {
-                delete cookie.data["javaPathForTypeahead"];
-                model.javaPathForTypeAhead = null;
-
-                cookie.flush();
-            }
-        }
-
-        private function setNewJavaPath():void
-        {
-            model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
-            GlobalEventDispatcher
-                    .getInstance()
-                    .dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
-        }
-    }
+	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.utils.SharedObjectConst;
+	
+	import flash.net.SharedObject;
+	
+	public class JavaSettingsProvider implements ISettingsProvider
+	{
+		private var model:IDEModel = IDEModel.getInstance();
+		private var _currentJavaPath:String;
+		
+		public function JavaSettingsProvider()
+		{
+			_currentJavaPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
+		}
+		
+		public function getSettingsList():Vector.<ISetting>
+		{
+			return null;
+		}
+		
+		public function get currentJavaPath():String
+		{
+			return _currentJavaPath;
+		}
+		
+		public function set currentJavaPath(value:String):void
+		{
+			if (_currentJavaPath != value)
+			{
+				_currentJavaPath = value;
+				
+				if (!value)
+				{
+					resetJavaPath();
+				}
+				else
+				{
+					setNewJavaPath();
+				}
+				GlobalEventDispatcher
+				.getInstance()
+					.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
+			}
+		}
+		
+		private function resetJavaPath():void
+		{
+			if (!model.javaPathForTypeAhead) return;
+			
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			if (model.activeEditor)
+			{
+				delete cookie.data["javaPathForTypeahead"];
+				model.javaPathForTypeAhead = null;
+				
+				cookie.flush();
+			}
+		}
+		
+		private function setNewJavaPath():void
+		{
+			model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
+			model.flexCore.updateToCurrentEnvironmentVariable();
+		}
+	}
 }

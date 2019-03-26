@@ -2,8 +2,8 @@
 <actionScriptProperties analytics="false" mainApplicationPath="MoonshineWEB.mxml" projectUUID="e7c0ef16-3d55-4c7a-85b8-72469c5f4167" version="11">
   <compiler additionalCompilerArguments="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
     <compilerSourcePath>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/{locale}"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/{locale}"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">

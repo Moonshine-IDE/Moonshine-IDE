@@ -39,5 +39,16 @@ package actionScripts.valueObjects
 		public var kind:int;
 		public var deprecated:Boolean;
 		public var location:Location;
+
+		public static function parse(original:Object):SymbolInformation
+		{
+			var vo:SymbolInformation = new SymbolInformation();
+			vo.name = original.name;
+			vo.kind = original.kind;
+			vo.containerName = original.containerName;
+			vo.deprecated = original.deprecated;
+			vo.location = Location.parse(original.location);
+			return vo;
+		}
 	}
 }

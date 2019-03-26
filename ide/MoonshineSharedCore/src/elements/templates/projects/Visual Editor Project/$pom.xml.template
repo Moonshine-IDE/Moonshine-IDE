@@ -11,13 +11,12 @@
 
 	  <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
 
-		<servlet.version>3.1.0</servlet.version>
-		<jsf.version>2.2.15</jsf.version>
+		<servlet.version>4.0.1</servlet.version>
+		<jsf.version>2.2.18</jsf.version>
 		<primefaces.version>6.2</primefaces.version>
 
-		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 	</properties>
     
     <dependencies>
@@ -56,15 +55,11 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven-compiler-plugin.version}</version>
-				<configuration>
-				  <source>${java.version}</source>
-				  <target>${java.version}</target>
-				</configuration>
 			 </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>

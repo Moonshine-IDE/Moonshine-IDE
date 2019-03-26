@@ -21,41 +21,21 @@ package actionScripts.impls
 
 		public function ILanguageServerBridgeImp()
 		{
-			
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 		}
 
-		private var _started:Boolean = false;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
-		private var managersWaitingForClose:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
+		private var connectedManagers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 
 		public function get connectedProjectCount():int
 		{
-			if(!this._started)
-			{
-				return 0;
-			}
-			return managers.length + managersWaitingForClose.length;
-		}
-		
-		public function start():void
-		{
-			if(this._started)
-			{
-				return;
-			}
-			this._started = true;
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
-			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
-			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			return connectedManagers.length;
 		}
 		
 		public function hasLanguageServerForProject(project:ProjectVO):Boolean
 		{
-			if(!this._started)
-			{
-				return false;
-			}
 			var serverCount:int = managers.length;
 			for(var i:int = 0; i < serverCount; i++)
 			{
@@ -175,8 +155,9 @@ package actionScripts.impls
 				var manager:ILanguageServerManager = managers[i];
 				if(manager.project === project)
 				{
+					//don't remove from connectedManagers until
 					managers.splice(i, 1);
-					managersWaitingForClose.push(manager);
+					cleanupManager(manager);
 					break;
 				}
 			}
@@ -219,23 +200,43 @@ package actionScripts.impls
 				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(groovyProject);
 				manager = groovyManager;
 			}
-			manager.addEventListener(Event.CLOSE, manager_closeHandler);
 			managers.push(manager);
+			manager.addEventListener(Event.INIT, manager_initHandler);
+			manager.addEventListener(Event.CLOSE, manager_closeHandler);
+		}
+
+		private function cleanupManager(manager:ILanguageServerManager):void
+		{
+			var index:int = managers.indexOf(manager);
+			if(index != -1)
+			{
+				return;
+			}
+			var connectedIndex:int = connectedManagers.indexOf(manager);
+			if(connectedIndex != -1)
+			{
+				return;
+			}
+			manager.removeEventListener(Event.INIT, manager_initHandler);
+			manager.removeEventListener(Event.CLOSE, manager_closeHandler);
+		}
+
+		private function manager_initHandler(event:Event):void
+		{
+			var manager:ILanguageServerManager = ILanguageServerManager(event.currentTarget);
+			connectedManagers.push(manager);
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPENED, manager.project));
 		}
 
 		private function manager_closeHandler(event:Event):void
 		{
 			var manager:ILanguageServerManager = ILanguageServerManager(event.currentTarget);
-			var index:int = managers.indexOf(manager);
+			var index:int = connectedManagers.indexOf(manager);
 			if(index != -1)
 			{
-				managers.splice(index, 1);
+				connectedManagers.splice(index, 1);
 			}
-			else
-			{
-				index = managersWaitingForClose.indexOf(manager);
-				managersWaitingForClose.splice(index, 1);
-			}
+			cleanupManager(manager);
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_CLOSED, manager.project));
 		}
 	}

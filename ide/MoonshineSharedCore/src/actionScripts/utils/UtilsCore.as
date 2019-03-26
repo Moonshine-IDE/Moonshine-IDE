@@ -51,7 +51,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
-	import actionScripts.valueObjects.Settings;
+	import actionScripts.valueObjects.SDKReferenceVO;
 	
 	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
@@ -225,7 +225,7 @@ package actionScripts.utils
 		
 		public static function convertString(path:String):String
 		{
-			if (Settings.os == "win")
+			if (!ConstantsCoreVO.IS_MACOS)
 			{
 				path= path.split(" ").join("^ ");
 				path= path.split("(").join("^(");
@@ -242,10 +242,11 @@ package actionScripts.utils
 			return path;
 		}
 		
-		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):ProjectReferenceVO
+		public static function getUserDefinedSDK(searchByValue:String, searchByField:String):SDKReferenceVO
 		{
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
+				if (!ConstantsCoreVO.IS_MACOS) searchByValue = searchByValue.replace(/(\/)/g, "\\");
 				if (i[searchByField] == searchByValue)
 				{
 					return i;
@@ -430,9 +431,9 @@ package actionScripts.utils
 			else if (locationToCompare) pathToCompare = locationToCompare.fileBridge.nativePath + project.folderLocation.fileBridge.separator;
 			
 			// if no sourceFolder exists at all let add file anywhere
-			if (!(project as AS3ProjectVO).sourceFolder) return true;
+			if (!project["sourceFolder"]) return true;
 			
-			if (pathToCompare.indexOf((project as AS3ProjectVO).sourceFolder.fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
+			if (pathToCompare.indexOf(project["sourceFolder"].fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 			{
 				return false;
 			}
@@ -484,7 +485,7 @@ package actionScripts.utils
 			
 			var path:String;
 			var bestVersionValue:int = 0;
-			for each (var i:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
 				var sdkName:String = i.name;
 				if (sdkName.indexOf(FLEXJS_NAME_PREFIX) != -1)
@@ -539,7 +540,7 @@ package actionScripts.utils
 			// to ensure addition of new compiler argument '-compiler.targets' 
 			// which do not works with SDK < 0.8.0
 			var sdkFullName:String;
-			for each (var project:ProjectReferenceVO in model.userSavedSDKs)
+			for each (var project:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (sdkPath == project.path)
 				{
@@ -547,7 +548,9 @@ package actionScripts.utils
 					break;
 				}
 			}
-
+			
+			if (!sdkFullName) return false;
+			
             var flexJSPrefixName:String = "Apache Flex (FlexJS) ";
             var royalePrefixName:String = "Apache Royale ";
 
@@ -636,7 +639,14 @@ package actionScripts.utils
 
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
+				{
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "java"));
+				}
+				else
+				{
+					executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
+				}
             }
 			else 
 			{
@@ -903,7 +913,7 @@ package actionScripts.utils
 		public static function getConsolePath():String
 		{
 			var separator:String = model.fileCore.separator;
-            if (Settings.os == "win")
+            if (!ConstantsCoreVO.IS_MACOS)
             {
                 // in windows
                 return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
@@ -914,13 +924,38 @@ package actionScripts.utils
                 return separator.concat("bin", separator, "bash");
             }
 		}
+		
+		public static function isMavenAvailable():Boolean
+		{
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				return false;
+			}
+			
+			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
+			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
+		}
 
         public static function getMavenBinPath():String
         {
-            var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
-            var mavenBin:String = "bin/";
+			if (!model.mavenPath || model.mavenPath == "")
+			{
+				return null;
+			}
 
-            if (Settings.os == "win")
+			var separator:String = model.fileCore.separator;
+            var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
+            var mavenBin:String = "bin" + separator;
+			if (mavenLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				mavenBin = "";
+			}
+			
+			if (!mavenLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
             {
                 return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
             }
@@ -928,7 +963,60 @@ package actionScripts.utils
             {
                 return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
             }
+			
+			return null;
         }
+		
+		public static function isDefaultSDKAvailable():Boolean
+		{
+			if (!model.defaultSDK || !model.defaultSDK.fileBridge.exists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isJavaForTypeaheadAvailable():Boolean
+		{
+			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
+			if (!model.javaPathForTypeAhead || !isJavaPathExists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isAntAvailable():Boolean
+		{
+			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public static function isSVNPresent():Boolean
+		{
+			if (model.svnPath)
+			{
+				return (new FileLocation(model.svnPath).fileBridge.exists);
+			}
+			
+			return false;
+		}
+		
+		public static function isGitPresent():Boolean
+		{
+			if (model.gitPath)
+			{
+				return (new FileLocation(model.gitPath).fileBridge.exists);
+			}
+			
+			return false;
+		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {

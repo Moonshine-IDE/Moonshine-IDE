@@ -41,5 +41,30 @@ package actionScripts.valueObjects
 		public var range:Range;
 		public var selectionRange:Range;
 		public var children:Vector.<DocumentSymbol>;
+
+		public static function parse(original:Object):DocumentSymbol
+		{
+			var vo:DocumentSymbol = new DocumentSymbol();
+			vo.name = original.name;
+			vo.detail = original.detail;
+			vo.kind = original.kind;
+			vo.deprecated = original.deprecated;
+			vo.range = Range.parse(original.range);
+			vo.selectionRange = Range.parse(original.selectionRange);
+			if(original.children && original.children is Array)
+			{
+				var children:Vector.<DocumentSymbol> = new <DocumentSymbol>[];
+				var originalChildren:Array = original.children as Array;
+				var childCount:int = originalChildren.length;
+				for(var i:int = 0; i < childCount; i++)
+				{
+					var originalChild:Object = originalChildren[i];
+					var child:DocumentSymbol = DocumentSymbol.parse(originalChild);
+					children[i] = child;
+				}
+				vo.children = children;
+			}
+			return vo;
+		}
 	}
 }

@@ -41,6 +41,7 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
 
     public MoonshineProjectConfigStrategy(WorkspaceFolder workspaceFolder)
     {
+    	this.workspaceFolder = workspaceFolder;
         options = new ProjectOptions();
         options.type = ProjectType.APP;
         options.config = "flex";
@@ -55,7 +56,12 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
     public String getDefaultConfigurationProblemPath()
     {
         String uri = workspaceFolder.getUri();
-        return LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri).toString();
+        Path path = LanguageServerCompilerUtils.getPathFromLanguageServerURI(uri);
+        if(path == null)
+        {
+        	return null;
+        }
+        return path.toString();
     }
 
     public Path getConfigFilePath()

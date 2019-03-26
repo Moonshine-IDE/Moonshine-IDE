@@ -114,22 +114,22 @@
 			<s:Label text="Source Folder:"/>
 			<view:PromptTextInput id="txtDestination"
 								  prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
-			<utils:CustomTreeFoldersOnly id="tree"
-					 width="100%" height="100%"
-					 color="0xEEEEEE"
-					 contentBackgroundColor="0x0"
-					 rollOverColor="0x393939"
-					 selectionColor="0xc165b8"
-					 alternatingItemColors="[0x444444, 0x4d4c4c]"
-					 verticalScrollBarStyleName="black"
-					 borderVisible="false"
-					 rowHeight="18"
-					 useRollOver="true"
-					 labelField="name"
-					 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-					 itemClick="onTreeItemClicked(event)"
-					 doubleClickEnabled="true"
-					 doubleClick="onCreateButton(null)"/>
+			<utils:CustomTreeFolders id="tree"
+                                     width="100%" height="100%"
+                                     color="0xEEEEEE"
+                                     contentBackgroundColor="0x0"
+                                     rollOverColor="0x393939"
+                                     selectionColor="0xc165b8"
+                                     alternatingItemColors="[0x444444, 0x4d4c4c]"
+                                     verticalScrollBarStyleName="black"
+                                     borderVisible="false"
+                                     rowHeight="18"
+                                     useRollOver="true"
+                                     labelField="name"
+                                     itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+                                     itemClick="onTreeItemClicked(event)"
+                                     doubleClickEnabled="true"
+                                     doubleClick="onCreateButton(null)"/>
 		</s:VGroup>
 		<s:HGroup id="hgExistingWarning" 
 				  width="100%" verticalAlign="middle">

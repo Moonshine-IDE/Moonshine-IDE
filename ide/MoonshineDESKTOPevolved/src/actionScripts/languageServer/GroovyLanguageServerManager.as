@@ -97,6 +97,11 @@ package actionScripts.languageServer
 			return FILE_EXTENSIONS;
 		}
 
+		public function get active():Boolean
+		{
+			return _languageClient && _languageClient.initialized;
+		}
+
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
 		{
 			var colonIndex:int = uri.indexOf(":");

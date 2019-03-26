@@ -52,9 +52,14 @@
 
 		[Bindable]
 		public var isInterfaceDialog:Boolean;
+		[Bindable]
+		public var hasInternalClasses:Boolean = true;
 
 		[Bindable]
-		private var newAsFileCompletionManager:NewASFileCompletionManager;
+		protected var newAsFileCompletionManager:NewASFileCompletionManager;
+
+		[Bindable]
+		protected var createdFileExtension:String = ".as";
 
 		override protected function onBrowseButton(event:MouseEvent):void
 		{
@@ -101,6 +106,8 @@
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_AS3INTERFACE : ConstantsCoreVO.TEMPLATE_AS3CLASS, wrapperOfFolderLocation, attributes);
 				tmpEvent.fileName = txtFileName.text;
 				tmpEvent.ofProject = wrapperBelongToProject;
+                tmpEvent.fileExtension = this.createdFileExtension;
+
 				dispatchEvent(tmpEvent);
 
 				doBeforeExit();
@@ -143,12 +150,12 @@
 			// it shows only the origianl set text to PromptTextInput.text if
 			// binded to a label component, thus:
 			modifiedName = txtFileName.text;
-			if (isDestinationValid) warningMessage = modifiedName + ".as is already exists.";
+			if (isDestinationValid) warningMessage = modifiedName + createdFileExtension + " is already exists.";
 
 			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
 			else
 			{
-				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".as");
+				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + createdFileExtension);
 				targetFile.fileBridge.canonicalize();
 
 				btnCreate.enabled = !targetFile.fileBridge.exists;
@@ -252,22 +259,22 @@
 					  click="onBrowseButton(event)"
 					  enabled="{model.projects.length > 1}"/>
 		</s:HGroup>
-		<utils:CustomTreeFoldersOnly id="tree"
-				 width="100%" height="100%"
-				 dataProvider="{wrapperBelongToProject.projectFolder}"
-				 color="0xEEEEEE"
-				 contentBackgroundColor="0x0"
-				 rollOverColor="0x393939"
-				 selectionColor="0xc165b8"
-				 alternatingItemColors="[0x444444, 0x4d4c4c]"
-				 verticalScrollBarStyleName="black"
-				 borderVisible="false"
-				 rowHeight="18"
-				 useRollOver="true"
-				 doubleClickEnabled="true"
-				 labelField="name"
-				 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-				 itemClick="onTreeItemClicked(event)"/>
+		<utils:CustomTreeFolders id="tree"
+								 width="100%" height="100%"
+								 dataProvider="{wrapperBelongToProject.projectFolder}"
+								 color="0xEEEEEE"
+								 contentBackgroundColor="0x0"
+								 rollOverColor="0x393939"
+								 selectionColor="0xc165b8"
+								 alternatingItemColors="[0x444444, 0x4d4c4c]"
+								 verticalScrollBarStyleName="black"
+								 borderVisible="false"
+								 rowHeight="18"
+								 useRollOver="true"
+								 doubleClickEnabled="true"
+								 labelField="name"
+								 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+								 itemClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label text="Name:"/>
@@ -275,11 +282,11 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
 								  change="onNameChanged(event)" enter="onBtnCreateClick(null)" marginRight="50"/>
-			<s:Label text=".as" styleName="textInputLabel" textAlign="right"
+			<s:Label text="{createdFileExtension}" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
-		<s:Label text="Modifiers:"/>
-		<s:TileGroup width="220" columnWidth="100">
+		<s:Label text="Modifiers:" visible="{hasInternalClasses}" includeInLayout="{hasInternalClasses}"/>
+		<s:TileGroup width="220" columnWidth="100" visible="{hasInternalClasses}" includeInLayout="{hasInternalClasses}">
 			<s:RadioButton id="radio1"
 						   group="{rgModifiersA}"
 						   label="public" value="public" selected="true"/>

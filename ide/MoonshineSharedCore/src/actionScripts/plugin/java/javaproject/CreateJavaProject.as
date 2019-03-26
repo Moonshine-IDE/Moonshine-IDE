@@ -28,16 +28,17 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.TemplateVO;
 
 	public class CreateJavaProject
 	{
 		public function CreateJavaProject(event:NewProjectEvent)
 		{
+			settingsFileLocation = event.settingsFile;
 			createJavaProject(event);
 		}
 
 		private var project:JavaProjectVO;
+		private var settingsFileLocation:FileLocation;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var isInvalidToSave:Boolean;
@@ -73,14 +74,19 @@ package actionScripts.plugin.java.javaproject
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
-				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+                {
+                    lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+                }
 			}
 
-			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
+                    lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
 			var folderLocation:FileLocation = new FileLocation(tmpProjectSourcePath);
 
 			// Remove spaces from project name
-			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
+            var bracketIndex:int = event.templateDir.fileBridge.name.indexOf("(");
+			var projectName:String = (bracketIndex != -1) ? event.templateDir.fileBridge.name.substr(0, bracketIndex) : event.templateDir.fileBridge.name;
 			projectName = "New" + projectName.replace(/ /g, "");
 
 			project = new JavaProjectVO(folderLocation, projectName);
@@ -195,7 +201,6 @@ package actionScripts.plugin.java.javaproject
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:JavaProjectVO = view.associatedData as JavaProjectVO;
-			var targetFolder:FileLocation = project.folderLocation;
 
 			//save project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -213,8 +218,6 @@ package actionScripts.plugin.java.javaproject
             project = createFileSystemBeforeSave(project, view.exportProject as JavaProjectVO);
 			if (!project) return;
 
-            targetFolder = targetFolder.resolvePath(project.projectName);
-			
 			// Close settings view
 			createClose(event);
 			
@@ -275,7 +278,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return JavaImporter.parse(targetFolder, projectName);
+			return JavaImporter.parse(targetFolder, projectName, settingsFileLocation);
 		}
 	}
 }

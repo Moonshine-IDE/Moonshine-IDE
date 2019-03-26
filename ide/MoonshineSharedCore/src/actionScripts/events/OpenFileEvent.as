@@ -50,9 +50,9 @@ package actionScripts.events
 				trace("Error:: Unrecognized 'Open' object type.");
 			}
 			
+			this.atLine = atLine;
 			if (files.length > 1)
 			{
-				this.atLine = atLine;
 				if (param && param.length > 0)
 				{
 					this.openAsTourDe = param[0];

@@ -37,6 +37,7 @@ package actionScripts.events
 		
 		public var filePath:String;
 		public var fileName:String;
+		public var fileExtension:String;
 		public var fromTemplate:FileLocation;
 		public var insideLocation:FileWrapper;
 		public var extraParameters:Array;

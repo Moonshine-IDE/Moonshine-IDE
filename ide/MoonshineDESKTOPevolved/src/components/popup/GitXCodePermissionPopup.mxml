@@ -74,10 +74,9 @@
 				addElement(closeButtonUIC);
 				
 				var isCommandLineTools:Boolean = xCodePath.indexOf(".app") == -1;
-				var againstProcess:String = (xCodePathAgainst == ProjectMenuTypes.GIT_PROJECT) ? "Git" : "SVN";
 				
-				btnCancel.label = "I Don't Want "+ ((xCodePathAgainst == ProjectMenuTypes.GIT_PROJECT) ? "Git" : "SVN"); 
-				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use "+ againstProcess +" in Moonshine it needs XCode, due to Apple sandbox.<br/><br/>You can allow permission to access XCode by clicking on <span fontWeight='bold'>Allow Access</span> button below. In the opening window click on \"Open\".<br/><br/><span fontWeight='bold'>"+xCodePath+"</span></p>");
+				btnCancel.label = "I Don't Want Git or SVN";
+				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use Git and SVN, you must grant permission for Moonshine to access the XCode command line tools.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the folder show below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+xCodePath+"</span></p>");
 			}
 			
 			private function closeButtonClickedRequest(event:MouseEvent):void

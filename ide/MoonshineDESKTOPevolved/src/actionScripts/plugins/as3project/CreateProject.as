@@ -442,7 +442,10 @@ package actionScripts.plugins.as3project
 				isInvalidToSave = true;
 				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 			}
-			else isInvalidToSave = tmpFile ? true : false;
+			else
+			{
+				isInvalidToSave = tmpFile ? true : false;
+			}
 		}
 
 		//--------------------------------------------------------------------------

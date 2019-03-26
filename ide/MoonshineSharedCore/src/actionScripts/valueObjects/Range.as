@@ -23,5 +23,13 @@ package actionScripts.valueObjects
 			this.start = start;
 			this.end = end;
 		}
+
+		public static function parse(original:Object):Range
+		{
+			var vo:Range = new Range();
+			vo.start = Position.parse(original.start);
+			vo.end = Position.parse(original.end);
+			return vo;
+		}
 	}
 }

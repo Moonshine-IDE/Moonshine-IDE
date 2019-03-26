@@ -45,5 +45,26 @@ package actionScripts.valueObjects
 		public var range:Range;
 		public var severity:int;
 		public var code:String;
+
+		public static function parse(original:Object):Diagnostic
+		{
+			var vo:Diagnostic = new Diagnostic();
+			vo.message = original.message;
+			vo.code = original.code;
+			vo.range = Range.parse(original.range);
+			vo.severity = original.severity;
+			return vo;
+		}
+
+		public static function parseWithPath(path:String, original:Object):Diagnostic
+		{
+			var vo:Diagnostic = new Diagnostic();
+			vo.path = path;
+			vo.message = original.message;
+			vo.code = original.code;
+			vo.range = Range.parse(original.range);
+			vo.severity = original.severity;
+			return vo;
+		}
 	}
 }

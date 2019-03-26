@@ -46,5 +46,12 @@ package actionScripts.valueObjects
 		{
 			this.uri = uri;
 		}
+
+		public static function parse(original:Object):DeleteFile
+		{
+			var vo:DeleteFile = new DeleteFile();
+			vo.uri = original.uri;
+			return vo;
+		}
 	}
 }

@@ -180,22 +180,22 @@
 					  click="onBrowseButton(event)"
 					  enabled="{model.projects.length > 1}"/>
 		</s:HGroup>
-		<utils:CustomTreeFoldersOnly id="tree"
-				 width="100%" height="100%"
-				 dataProvider="{wrapperBelongToProject.projectFolder}"
-				 color="0xEEEEEE"
-				 contentBackgroundColor="0x0"
-				 rollOverColor="0x393939"
-				 selectionColor="0xc165b8"
-				 alternatingItemColors="[0x444444, 0x4d4c4c]"
-				 verticalScrollBarStyleName="black"
-				 borderVisible="false"
-				 rowHeight="18"
-				 useRollOver="true"
-				 doubleClickEnabled="true"
-				 labelField="name"
-				 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-				 itemClick="onTreeItemClicked(event)"/>
+		<utils:CustomTreeFolders id="tree"
+                                 width="100%" height="100%"
+                                 dataProvider="{wrapperBelongToProject.projectFolder}"
+                                 color="0xEEEEEE"
+                                 contentBackgroundColor="0x0"
+                                 rollOverColor="0x393939"
+                                 selectionColor="0xc165b8"
+                                 alternatingItemColors="[0x444444, 0x4d4c4c]"
+                                 verticalScrollBarStyleName="black"
+                                 borderVisible="false"
+                                 rowHeight="18"
+                                 useRollOver="true"
+                                 doubleClickEnabled="true"
+                                 labelField="name"
+                                 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+                                 itemClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label text="Name:"/>

@@ -19,6 +19,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.filesystem.FileMode;
+    import flash.filesystem.FileStream;
+    import flash.utils.ByteArray;
+    import flash.utils.IDataInput;
+    
+    import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.core.IFlexDisplayObject;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshTreeEvent;
@@ -34,32 +53,14 @@ package actionScripts.plugins.ant
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
-
+    
     import components.popup.SelectAntFile;
     import components.popup.SelectOpenedFlexProject;
-
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.filesystem.FileMode;
-    import flash.filesystem.FileStream;
-    import flash.utils.ByteArray;
-    import flash.utils.IDataInput;
-
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.core.IFlexDisplayObject;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
 
     public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
     {
@@ -134,6 +135,7 @@ package actionScripts.plugins.ant
             else
             {
                 model.antHomePath = new FileLocation(value);
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
             }
         }
 
@@ -454,13 +456,10 @@ package actionScripts.plugins.ant
 
         private function startAntProcess(buildDir:FileLocation):void
         {
-            var processArgs:Vector.<String> = new Vector.<String>;
             var antBatPath:String = getAntBatPath();
-            var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
+			var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
             var buildDirPath:String = buildDir.fileBridge.nativePath;
-
-            shellInfo = new NativeProcessStartupInfo();
-            shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
+			var compileStr:String = "";
 
             var isFlexJSProject:Boolean = currentSDK.resolvePath("js/bin/mxmlc").fileBridge.exists;
             var isApacheRoyaleSDK:Boolean = currentSDK.resolvePath("frameworks/royale-config.xml").fileBridge.exists;
@@ -481,29 +480,56 @@ package actionScripts.plugins.ant
                 isFlexJSAfter7Arg = " -DIS_FLEXJS_AFTER_7=true";
             }
 
-            sdkPath = "FLEX_HOME=" + sdkPath;
-
             if (Settings.os == "win")
             {
                 //Create file with following content:
                 var antBuildRunnerPath:String = prepareAntBuildRunnerFile(buildDirPath);
 
                 //Created file is being run
-                processArgs.push("/C");
-                processArgs.push("set " + sdkPath + "&& " + antBuildRunnerPath + isFlexJSAfter7Arg + isApacheRoyaleArg);
-
-                shellInfo.arguments = processArgs;
-                shellInfo.executable = cmdFile;
+				compileStr = compileStr.concat(
+					antBuildRunnerPath + isFlexJSAfter7Arg + isApacheRoyaleArg
+				);
             }
             else
             {
-                processArgs.push("-c");
-                processArgs.push("export " + sdkPath + "&&" + antBatPath + " -file " + UtilsCore.convertString(buildDirPath) + isFlexJSAfter7Arg + isApacheRoyaleArg);
-                shellInfo.arguments = processArgs;
-                shellInfo.executable = cmdFile;
+				compileStr = compileStr.concat(
+					antBatPath + " -file " + UtilsCore.convertString(buildDirPath) + isFlexJSAfter7Arg + isApacheRoyaleArg
+				);
             }
+			
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, sdkPath, [compileStr]);
 
-            initShell();
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
+				shellInfo = new NativeProcessStartupInfo();
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
+				shellInfo.executable = cmdFile;
+				shellInfo.workingDirectory = buildDir.fileBridge.parent.fileBridge.getFile as File;
+				
+				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.fileBridge.nativePath);
+					print(compileStr);
+				}
+			}
         }
 
         private function prepareAntBuildRunnerFile(buildDirPath:String):String

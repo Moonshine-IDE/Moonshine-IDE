@@ -64,14 +64,14 @@ package actionScripts.plugins.as3project.mxmlc
     import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.utils.OSXBookmarkerNotifiers;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.SdkDescriptionVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
     import actionScripts.valueObjects.Settings;
     
     import components.popup.SelectOpenedFlexProject;
@@ -136,7 +136,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else
 			{
-				for each (var i:ProjectReferenceVO in IDEModel.getInstance().userSavedSDKs)
+				for each (var i:SDKReferenceVO in IDEModel.getInstance().userSavedSDKs)
 				{
 					if (i.path == value)
 					{
@@ -164,14 +164,16 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// update project-to-sdk references once again
-				for each (var j:AS3ProjectVO in model.projects)
+				for each (var project:ProjectVO in model.projects)
 				{
-					dispatcher.dispatchEvent(
-						new ProjectEvent(ProjectEvent.ADD_PROJECT, j)
-					);
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
 				}
 			}
 			
+			if (model.defaultSDK)
+			{
+				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
+			}
 			// state change of menus based upon default SDK presence
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
 		}
@@ -251,6 +253,11 @@ package actionScripts.plugins.as3project.mxmlc
 
 			defaultFlexSDK = "";
 			currentSDK = null;
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+			
+			// reset java path
+			model.javaPathForTypeAhead = null;
+			new JavaSettingsProvider();
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -291,7 +298,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// @note
 			// basically requires to listen to update in
 			// Flex SDKs window
-			var tmpRef:ProjectReferenceVO = event.anObject as ProjectReferenceVO;
+			var tmpRef:SDKReferenceVO = event.anObject as SDKReferenceVO;
 			if (!tmpRef) return;
 			defaultFlexSDK = tmpRef.path;
 			
@@ -454,8 +461,8 @@ package actionScripts.plugins.as3project.mxmlc
 				if (as3Pvo.isRoyale)
 				{
                     var tmpSDKLocation:FileLocation = UtilsCore.getCurrentSDK(as3Pvo as AS3ProjectVO);
-					var sdkDescription:SdkDescriptionVO = SDKUtils.getSdkDescription(tmpSDKLocation);
-					if (sdkDescription && sdkDescription.isJSOnlySdk)
+					var sdkVO:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
+					if (sdkVO && sdkVO.isJSOnlySdk)
 					{
 						error("This SDK only supports JavaScript Builds.");
 						return;
@@ -494,6 +501,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function compileFlexJSApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
+			var compileStr:String;
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
 				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
 			{
@@ -547,27 +555,54 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
-
+				compileStr = getFlexJSBuildArgs(pvo as AS3ProjectVO);
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+			}
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
 				shellInfo = new NativeProcessStartupInfo();
-
-				shellInfo.arguments = getFlexJSBuildArgs(pvo as AS3ProjectVO);
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 				
 				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compileStr);
+				}
 			}
 		}
 
-        private function getFlexJSBuildArgs(project:AS3ProjectVO):Vector.<String>
+        private function getFlexJSBuildArgs(project:AS3ProjectVO):String
         {
+			var compileStr:String = "";
+			
             // determine if the sdk version is lower than 0.8.0 or not
             var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-            var processArgs:Vector.<String> = new Vector.<String>();
 
-            var sdkPathHomeArg:String = "FLEX_HOME=" + SDKstr;
+            var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
             var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
-            var compilerArg:String = "&& " + fschstr;
+            var compilerArg:String = "&& \"" + fschstr +"\"";
 
             var configArg:String = compile(project as AS3ProjectVO, release);
             configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
@@ -585,24 +620,31 @@ package actionScripts.plugins.as3project.mxmlc
 
             if(Settings.os == "win")
             {
-                processArgs.push("/c");
-                processArgs.push("set ".concat(
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
+				);
+				
+                /*processArgs.push("set ".concat(
                         sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));
+                ));*/
             }
             else
             {
-                processArgs.push("-c");
-                processArgs.push("export ".concat(
+				compileStr = compileStr.concat(
+					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+";" : '', "export ", enLanguageArg, "; export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
+				);
+					
+                /*processArgs.push("export ".concat(
                         sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));
+                ));*/
             }
 
-            return processArgs;
+            return compileStr;
         }
 
 		private function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
+			var compileStr:String;
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
 				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
 			{
@@ -643,32 +685,42 @@ package actionScripts.plugins.as3project.mxmlc
 				
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
+				compileStr = compile(pvo as AS3ProjectVO, release);
 				
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+			}
+			
+			/*
+			 * @local
+			 */
+			function onEnvironmentPrepared(value:String):void
+			{
 				var processArgs:Vector.<String> = new Vector.<String>;
 				shellInfo = new NativeProcessStartupInfo();
 				if (Settings.os == "win")
 				{
 					processArgs.push("/c");
-					processArgs.push("set FLEX_HOME="+SDKstr+"&& "+fschstr);
+					processArgs.push(value);
 				}
 				else
 				{
 					processArgs.push("-c");
-					processArgs.push("export FLEX_HOME=".concat(
-						SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", fschstr
-					));
+					processArgs.push(value);
 				}
+				
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				shellInfo.arguments = processArgs;
 				shellInfo.executable = cmdFile;
 				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 				
 				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compileStr);
+				}
 			}
-			
-			debug("SDK path: %s", currentSDK.nativePath);
-			var compileStr:String = compile(pvo as AS3ProjectVO, release);
-			send(compileStr);
 		}
 		
 		private function compileFlexLibrary(pvo:AS3ProjectVO):void
@@ -690,30 +742,47 @@ package actionScripts.plugins.as3project.mxmlc
 			// update build config file
 			pvo.updateConfig();
 			
-			var compilerArg:String = fschstr +" -load-config+="+ pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
-			
-			var processArgs:Vector.<String> = new Vector.<String>;
-			shellInfo = new NativeProcessStartupInfo();
-			if (Settings.os == "win")
+			var compilerArg:String = "\""+ fschstr +"\" -load-config+="+ pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
+			if (ConstantsCoreVO.IS_MACOS)
 			{
-				processArgs.push("/c");
-				processArgs.push("set FLEX_HOME=".concat(
-					SDKstr, "&& ", compilerArg
-				));
+				compilerArg = "export ".concat(
+					'SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compilerArg
+				);
 			}
-			else
-			{
-				processArgs.push("-c");
-				processArgs.push("export FLEX_HOME=".concat(
-					SDKstr, ";", 'export SETUP_SH_VMARGS="-Duser.language=en -Duser.region=en"', ";", compilerArg
-				));
-			}
-			//var workingDirectory:File = currentSDK.resolvePath("bin/");
-			shellInfo.arguments = processArgs;
-			shellInfo.executable = cmdFile;
-			shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
 			
-			initShell();
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compilerArg]);
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var processArgs:Vector.<String> = new Vector.<String>;
+				shellInfo = new NativeProcessStartupInfo();
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				//var workingDirectory:File = currentSDK.resolvePath("bin/");
+				shellInfo.arguments = processArgs;
+				shellInfo.executable = cmdFile;
+				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
+				
+				initShell();
+				
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					debug("SDK path: %s", currentSDK.nativePath);
+					send(compilerArg);
+				}
+			}
 		}
 
 		private function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
@@ -744,30 +813,59 @@ package actionScripts.plugins.as3project.mxmlc
 					// in case of project user wants to run it in a mobile simulator by adding certain
 					// commands in Additional Compiler Arguments, we need to make the swf launching
 					// behaves as a mobile or air
-					if (buildArgs.indexOf("+configname=air") == -1) pvo.isMobile = UtilsCore.isMobile(pvo);
-					else pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
-					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=airmobile";
-					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1) buildArgs += " +configname=air";
+					if (buildArgs.indexOf("+configname=air") == -1)
+					{
+						pvo.isMobile = UtilsCore.isMobile(pvo);
+					}
+					else
+					{
+						pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
+					}
+					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
+					{
+						buildArgs += " +configname=airmobile";
+					}
+					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
+					{
+						buildArgs += " +configname=air";
+					}
 				}
 				
 				pvo.buildOptions.optimize = optFlag;
 				
 				var dbg:String;
-				if (release) dbg = " -debug=false";
-				else dbg = " -debug=true";
-				if (buildArgs.indexOf(" -debug=") > -1) dbg = "";
+				if (release)
+				{
+					dbg = " -debug=false";
+				}
+				else
+				{
+					dbg = " -debug=true";
+				}
+
+				if (buildArgs.indexOf(" -debug=") > -1)
+				{
+					dbg = "";
+				}
 				
 				var outputFile:File;
 				if (release && pvo.swfOutput.path)
-					outputFile = pvo.folderLocation.resolvePath("bin-release/"+ pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
+				{
+					outputFile = pvo.folderLocation.resolvePath("bin-release/" + pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
+				}
 				else if (pvo.swfOutput.path)
-					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;	
-				
+				{
+					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
+				}
+
 				var output:String;
 				if (outputFile)
 				{
 					output = " -o " + pvo.folderLocation.fileBridge.getRelativePath(new FileLocation(outputFile.nativePath));
-					if (outputFile.exists == false) FileUtil.createFile(outputFile);
+					if (outputFile.exists == false)
+					{
+						FileUtil.createFile(outputFile);
+					}
 				}
 				
 				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
@@ -796,7 +894,7 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				
-				var mxmlcStr:String = "mxmlc"
+				var mxmlcStr:String = '"'+ currentSDK.resolvePath(mxmlcPath).nativePath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs
 					+dbg
@@ -1177,9 +1275,16 @@ package actionScripts.plugins.as3project.mxmlc
 
 				//Build should be continued with there are only warnings
 				var warningMatch:Array = data.match(new RegExp("Warning:", "i"));
-				if (warningMatch && !generalMatch && !syntaxMatch)
+				if (warningMatch)
 				{
                     warning(data);
+					return;
+				}
+
+				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
+				if (javaToolsOptionsMatch)
+				{
+					print(data);
 					return;
 				}
 

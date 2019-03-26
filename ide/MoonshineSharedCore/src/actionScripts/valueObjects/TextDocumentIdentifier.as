@@ -39,5 +39,12 @@ package actionScripts.valueObjects
 		{
 			this.uri = uri;
 		}
+
+		public static function parse(original:Object):TextDocumentIdentifier
+		{
+			var vo:TextDocumentIdentifier = new TextDocumentIdentifier();
+			vo.uri = original.uri;
+			return vo;
+		}
 	}
 }

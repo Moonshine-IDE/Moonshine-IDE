@@ -62,6 +62,10 @@ package actionScripts.plugins.nativeFiles
 			{
 				openFilesByPath(event.arguments);
 			}
+			
+			// to rail the event in other parts of the applciation
+			// where it may needed
+			dispatcher.dispatchEvent(event);
 		}
 		
 		private function onNativeItemDragEnter(event:NativeDragEvent):void

@@ -33,7 +33,7 @@ package actionScripts.plugin.core.importer
 			super(target);
 		}
 		
-		protected static function parsePaths(paths:XMLList, v:Vector.<FileLocation>, p:ProjectVO, attrName:String="path", customSDKPath:String=null):void 
+		protected static function parsePaths(paths:XMLList, v:Vector.<FileLocation>, p:ProjectVO, attrName:String="path"):void
 		{
 			for each (var pathXML:XML in paths)
 			{

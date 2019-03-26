@@ -7,20 +7,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 
     public class MavenBuildOptions
     {
-        public static var defaultOptions:MavenBuildOptions = new MavenBuildOptions(null);
-
         private var _defaultMavenBuildPath:String;
         private var _buildActions:Array;
 
         public function MavenBuildOptions(defaultMavenBuildPath:String)
         {
             _defaultMavenBuildPath = defaultMavenBuildPath;
-            _buildActions = [
-                new BuildActionVO("Build", "install"),
-                new BuildActionVO("Clean", "clean"),
-                new BuildActionVO("Clean and Build", "clean install"),
-                new BuildActionVO("Exploded", "war:exploded")
-            ];
         }
 
         public var commandLine:String;
@@ -39,6 +31,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         public function get buildActions():Array
         {
+            if (!_buildActions)
+            {
+                _buildActions = [
+                    new BuildActionVO("Build", "install"),
+                    new BuildActionVO("Clean and package", "clean package"),
+                    new BuildActionVO("Clean", "clean"),
+                    new BuildActionVO("Clean and Build", "clean install"),
+                    new BuildActionVO("Exploded", "war:exploded")
+                ];
+            }
+
             return _buildActions;
         }
 
@@ -117,12 +120,12 @@ package actionScripts.plugin.actionscript.as3project.vo
         {
             if (actions.length() > 0)
             {
-                _buildActions.splice(0, _buildActions.length);
+                buildActions.splice(0, _buildActions.length);
                 for (var i:int = 0; i < actions.length(); i++)
                 {
                     if (actions[i])
                     {
-                        _buildActions.push(new BuildActionVO(actions[i].@actionName, actions[i].@action));
+                        buildActions.push(new BuildActionVO(actions[i].@actionName, actions[i].@action));
                     }
                 }
             }

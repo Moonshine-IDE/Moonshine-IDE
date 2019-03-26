@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <mavenBuild>
+      <option commandLine="clean package"/>
+    </mavenBuild>
+  <classpaths>
+    <class path="src/main/java"/>
+  </classpaths>
+  <build>
+    <option mainclass="$ProjectName"/>
+  </build>
+  <options>
+  </options>
+</project>
