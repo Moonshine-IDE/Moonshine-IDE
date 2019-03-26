@@ -148,7 +148,7 @@ package actionScripts.utils
 		{
 			var setCommand:String = ConstantsCoreVO.IS_MACOS ? "" : "@echo off\r\n";
 			var isValidToExecute:Boolean;
-			var setPathCommand:String = "set PATH=";
+			var setPathCommand:String = ConstantsCoreVO.IS_MACOS ? "export PATH=" : "set PATH=";
 			var defaultOrCustomSDKPath:String;
 			var additionalCommandLines:String = "";
 			
@@ -164,19 +164,19 @@ package actionScripts.utils
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
 				setCommand += getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
-				setPathCommand += "%JAVA_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath);
-				setPathCommand += "%ANT_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "%ANT_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isMavenAvailable())
 			{
 				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
-				setPathCommand += "%MAVEN_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$MAVEN_HOME/bin:" : "%MAVEN_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
@@ -199,7 +199,7 @@ package actionScripts.utils
 			if (defaultOrCustomSDKPath)
 			{
 				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
-				setPathCommand += "%FLEX_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$FLEX_HOME/bin:" : "%FLEX_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			
@@ -208,6 +208,7 @@ package actionScripts.utils
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
+				setCommand += setPathCommand + "$PATH;";
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}
