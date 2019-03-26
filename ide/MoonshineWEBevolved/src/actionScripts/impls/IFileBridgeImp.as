@@ -369,6 +369,11 @@ package actionScripts.impls
 			_file.data = value;
 		}
 		
+		public function get nameWithoutExtension():String
+		{
+			return null;
+		}
+		
 		public function checkFileExistenceAndReport():Boolean
 		{
 			// this method has different importance and
