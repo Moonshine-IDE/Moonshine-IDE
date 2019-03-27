@@ -210,6 +210,7 @@ package actionScripts.valueObjects
 		public static var IS_HELPER_DOWNLOADED_ANT_PRESENT	: Object;
 		public static var IS_BUNDLED_SDK_PROMPT_DNS			: Boolean;
 		public static var IS_SDK_HELPER_PROMPT_DNS			: Boolean;
+		public static var IS_GETTING_STARTED_DNS			: Boolean;
 		public static var IS_OSX_CODECOMPLETION_PROMPT		: Boolean;
 		public static var IS_OSX_JAVA_SDK_PROMPT			: Boolean;
 		public static var IS_CONSOLE_CLEARED_ONCE			: Boolean;

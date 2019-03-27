@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
-	import actionScripts.events.SdkEvent;
-
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.utils.clearTimeout;
@@ -31,9 +29,11 @@ package actionScripts.plugins.startup
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SdkEvent;
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.impls.IHelperMoonshineBridgeImp;
+	import actionScripts.managers.InstallerItemsManager;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
@@ -49,7 +49,7 @@ package actionScripts.plugins.startup
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKTypes;
-
+	
 	import components.popup.GettingStartedPopup;
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
@@ -62,15 +62,16 @@ package actionScripts.plugins.startup
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		
-		private static const SDK_XTENDED:String = "SDK_XTENDED";
 		private static const CC_JAVA:String = "CC_JAVA";
 		private static const CC_SDK:String = "CC_SDK";
 		private static const CC_ANT:String = "CC_ANT";
 		private static const CC_MAVEN:String = "CC_MAVEN";
 		private static const CC_GIT:String = "CC_GIT";
 		private static const CC_SVN:String = "CC_SVN";
+		private static const CC_OTHER:String = "CC_OTHER";
 		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
+		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
 		private var gettingStartedPopup:GettingStartedPopup;
@@ -132,7 +133,7 @@ package actionScripts.plugins.startup
 		private function preInitHelping():void
 		{
 			clearTimeout(startHelpingTimeout);
-			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
+			sequences = [CC_SDK, CC_JAVA, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN, CC_OTHER];
 			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
@@ -159,14 +160,15 @@ package actionScripts.plugins.startup
 			if (sequences.length == 0)
 			{
 				// if we have a reason to open Getting Started tab
-				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
+				if (!isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS) 
+					openOrFocusGettingStarted();
 				return;
 			}
 			
 			var tmpSequence:String = sequences.shift();
 			switch(tmpSequence)
 			{
-				case SDK_XTENDED:
+				case CC_SDK:
 				{
 					checkDefaultSDK();
 					break;
@@ -174,11 +176,6 @@ package actionScripts.plugins.startup
 				case CC_JAVA:
 				{
 					checkJavaPathPresenceForTypeahead();
-					break;
-				}
-				case CC_SDK:
-				{
-					checkSDKPrsenceForTypeahead();
 					break;
 				}
 				case CC_ANT:
@@ -200,6 +197,11 @@ package actionScripts.plugins.startup
 				{
 					checkSVNPathPresence();
 					break;
+				}
+				case CC_OTHER:
+				{
+					checkOtherPendingItems();
+					break;	
 				}
 			}
 			
@@ -241,9 +243,8 @@ package actionScripts.plugins.startup
 				changeMenuSDKTimeout = setTimeout(function():void
 				{
 					clearTimeout(changeMenuSDKTimeout);
-					changeMenuSDKTimeout = 0;
-					
-					dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
+					isAllDependenciesPresent = false;
+					showNoSDKStripAndListenForDefaultSDK();
 				}, 1000);
 			}
 			
@@ -256,7 +257,7 @@ package actionScripts.plugins.startup
 		private function checkJavaPathPresenceForTypeahead():void
 		{
 			var isPresent:Boolean = dependencyCheckUtil.isJavaPresent();
-			if (!isPresent && !ccNotificationView)
+			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
 			{
 				// check if env.variable has JAVA_HOME with JDK setup
 				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
@@ -269,34 +270,6 @@ package actionScripts.plugins.startup
 					model.javaPathForTypeAhead = null;
 				}
 				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
-			}
-			
-			startHelping();
-		}
-		
-		/**
-		 * Checks code-completion sdk requisites
-		 */
-		private function checkSDKPrsenceForTypeahead():void
-		{
-			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
-			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
-			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
-			{
-				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
-			}
-			else if (!isPresent && isSDKSetupShowing)
-			{
-				isAllDependenciesPresent = false;
-				showNoSDKStripAndListenForDefaultSDK();
 			}
 			else if (isPresent && dependencyCheckUtil.isJavaPresent())
 			{
@@ -385,6 +358,69 @@ package actionScripts.plugins.startup
 			}
 			
 			startHelping();
+		}
+		
+		/**
+		 * Checks if any other items are pending from install
+		 * in SDK Installer list
+		 */
+		private function checkOtherPendingItems():void
+		{
+			// if something already found not installed
+			// do not run this - not installed items will anyway
+			// display when getting started tab;
+			// also do not execute when user choose not to
+			// see getting started information
+			if (isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS)
+			{
+				toggleListenersInstallerItemsManager(true);
+				
+				HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
+				installerItemsManager.dependencyCheckUtil = dependencyCheckUtil;
+				installerItemsManager.environmentUtil = environmentUtil;
+				
+				installerItemsManager.loadItemsAndDetect();
+			}
+			else
+			{
+				startHelping();
+			}
+		}
+		
+		/**
+		 * On any items found not installed by the installer
+		 */
+		private function onComponentNotDownloadedEvent(event:HelperEvent):void
+		{
+			toggleListenersInstallerItemsManager(false);
+			isAllDependenciesPresent = false;
+			startHelping();
+		}
+		
+		/**
+		 * When all the items complete testing by the installer
+		 */
+		private function onAllComponentTestedEvent(event:HelperEvent):void
+		{
+			toggleListenersInstallerItemsManager(false);
+			startHelping();
+		}
+		
+		/**
+		 * Add or remove listeners from itemsManager
+		 */
+		private function toggleListenersInstallerItemsManager(toggle:Boolean):void
+		{
+			if (toggle)
+			{
+				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
+				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
+			}
+			else
+			{
+				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
+				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
+			}
 		}
 		
 		/**

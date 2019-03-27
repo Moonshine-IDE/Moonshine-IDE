@@ -28,6 +28,7 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
@@ -73,6 +74,7 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
 			dispatcher.addEventListener(SDKUtils.EVENT_SDK_PROMPT_DNS, onSDKExtractDNSUpdated);
+			dispatcher.addEventListener(StartupHelperEvent.EVENT_DNS_GETTING_STARTED, onGettingStartedDNSUpdated);
 			dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, onJavaPathForTypeaheadSave);
 			dispatcher.addEventListener(LayoutModifier.SAVE_LAYOUT_CHANGE_EVENT, onSaveLayoutChangeEvent);
 			dispatcher.addEventListener(GeneralEvent.DEVICE_UPDATED, onDeviceListUpdated, false, 0, true);
@@ -194,6 +196,7 @@ package actionScripts.plugin.recentlyOpened
 			if (cookie.data.hasOwnProperty('isWorkspaceAcknowledged')) OSXBookmarkerNotifiers.isWorkspaceAcknowledged = (cookie.data["isWorkspaceAcknowledged"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS')) ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
+			if (cookie.data.hasOwnProperty('isGettingStartedDNS')) ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
 			if (cookie.data.hasOwnProperty('devicesAndroid'))
 			{
@@ -340,6 +343,12 @@ package actionScripts.plugin.recentlyOpened
 		{
 			cookie.data["isBundledSDKpromptDNS"] = ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS.toString();
 			cookie.data["isSDKhelperPromptDNS"] = ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS.toString();
+			cookie.flush();
+		}
+		
+		private function onGettingStartedDNSUpdated(event:Event):void
+		{
+			cookie.data["isGettingStartedDNS"] = ConstantsCoreVO.IS_GETTING_STARTED_DNS.toString();
 			cookie.flush();
 		}
 		
