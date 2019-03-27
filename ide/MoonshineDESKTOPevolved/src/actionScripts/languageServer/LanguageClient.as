@@ -225,6 +225,8 @@ package actionScripts.languageServer
 		private var _schemes:Vector.<String> = new <String>[]
 		private var _savedDiagnostics:Object = {};
 
+		protected var _notificationListeners:Object = {};
+
 		private var _capabilities:Object = null;
 
 		public function get capabilities():Object
@@ -274,6 +276,7 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
+
 			_shutdownID = sendRequest(METHOD_SHUTDOWN, null);
 		}
 
@@ -312,7 +315,17 @@ package actionScripts.languageServer
 				trace(">>> (NOTIFICATION)", contentJSON);
 			}
 			
-			_output.writeUTFBytes(message);
+			try
+			{
+				_output.writeUTFBytes(message);
+			}
+			catch(error:Error)
+			{
+				//if there's something wrong with the IDataOutput, we can't
+				//send a final shutdown request
+				stop();
+				return;
+			}
 			if(_outputFlushCallback != null)
 			{
 				_outputFlushCallback();
@@ -352,7 +365,29 @@ package actionScripts.languageServer
 				trace(">>> (REQUEST)", contentJSON);
 			}
 			
-			_output.writeUTFBytes(message);
+			try
+			{
+				_output.writeUTFBytes(message);
+			}
+			catch(error:Error)
+			{
+				//if we're already trying to shut down, don't do it again
+				if(method != METHOD_SHUTDOWN)
+				{
+					//if there's something wrong with the IDataOutput, we can't
+					//send a final shutdown request
+					stop();
+				}
+				else
+				{
+					//something went wrong while sending the shutdown request
+					//there's nothing that we can do about that, so notify
+					//any listeners that we've stopped
+					_stopped = true;
+					dispatchEvent(new Event(Event.CLOSE));
+				}
+				return id;
+			}
 			if(_outputFlushCallback != null)
 			{
 				_outputFlushCallback();
@@ -360,8 +395,6 @@ package actionScripts.languageServer
 
 			return id;
 		}
-
-		protected var _notificationListeners:Object = {};
 
 		public function addNotificationListener(method:String, listener:Function):void
 		{
@@ -429,7 +462,17 @@ package actionScripts.languageServer
 				trace(">>> (RESPONSE)", contentJSON);
 			}
 			
-			_output.writeUTFBytes(message);
+			try
+			{
+				_output.writeUTFBytes(message);
+			}
+			catch(error:Error)
+			{
+				//if there's something wrong with the IDataOutput, we can't
+				//send a final shutdown request
+				stop();
+				return;
+			}
 			if(_outputFlushCallback != null)
 			{
 				_outputFlushCallback();
