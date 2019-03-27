@@ -370,9 +370,9 @@ public class $fileName
 
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
-			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/Royale Project...";
+			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open/Import Project...";
 			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png";
-			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open an ActionScript or Apache® Flex Project in Moonshine.";
+			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open Project in Moonshine IDE.";
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
