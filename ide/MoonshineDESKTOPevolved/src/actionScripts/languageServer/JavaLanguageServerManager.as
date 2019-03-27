@@ -383,9 +383,13 @@ package actionScripts.languageServer
 		{
 			if(_languageClient)
 			{
-				//this should have already happened, but we should clean it up
-				//just to be safe
-				cleanupLanguageClient();
+				//this should have already happened, but if the process exits
+				//abnormally, it might not have
+				_languageClient.stop();
+				
+				ConsoleOutputter.formatOutput(
+					"Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
+					"warning");
 			}
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
