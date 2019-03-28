@@ -40,7 +40,10 @@ package actionScripts.languageServer
     import flash.utils.IDataInput;
 
     import no.doomsday.console.ConsoleUtil;
+    import actionScripts.events.FilePluginEvent;
+    import actionScripts.utils.getProjectSDKPath;
 
+	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
 
 	public class GroovyLanguageServerManager extends EventDispatcher implements ILanguageServerManager
@@ -62,22 +65,16 @@ package actionScripts.languageServer
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _shellInfo:NativeProcessStartupInfo;
 		private var _nativeProcess:NativeProcess;
-		private var _cmdFile:File;
-		private var _javaPath:File;
-		private var _languageStatusDone:Boolean = false;
+		private var _waitingToRestart:Boolean = false;
+		private var _previousJDKPath:String = null;
 
 		public function GroovyLanguageServerManager(project:GroovyProjectVO)
 		{
-			_javaPath = IDEModel.getInstance().javaPathForTypeAhead.fileBridge.getFile as File;
-
-			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			_cmdFile = _javaPath.resolvePath(javaFileName);
-			if(!_cmdFile.exists)
-			{
-				_cmdFile = _javaPath.resolvePath("bin/" + javaFileName);
-			}
-
 			_project = project;
+
+			//when adding new listeners, don't forget to also remove them in
+			//dispose()
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 
 			startNativeProcess();
 		}
@@ -129,16 +126,44 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
-			if(_languageClient)
+			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
+			cleanupLanguageClient();
+		}
+
+		protected function cleanupLanguageClient():void
+		{
+			if(!_languageClient)
 			{
-				_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
-				_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
-				_languageClient = null;
+				return;
 			}
+			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
+			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient = null;
 		}
 
 		private function startNativeProcess():void
 		{
+			if(_nativeProcess)
+			{
+				trace("Error: Java language server process already exists!");
+				return;
+			}
+			var jdkPath:String = getProjectSDKPath(_project, _model);
+			_previousJDKPath = jdkPath;
+			if(!jdkPath)
+			{
+				return;
+			}
+
+			var jdkFolder:File = new File(jdkPath);
+
+			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
+			var cmdFile:File = jdkFolder.resolvePath(javaFileName);
+			if(!cmdFile.exists)
+			{
+				cmdFile = jdkFolder.resolvePath("bin/" + javaFileName);
+			}
+
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
@@ -146,49 +171,59 @@ package actionScripts.languageServer
 			processArgs.push(jarFile.nativePath);
 			processArgs.push("net.prominic.groovyls.GroovyLanguageServer");
 			_shellInfo.arguments = processArgs;
-			_shellInfo.executable = _cmdFile;
+			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
-			initShell();
-		}
 
-		private function initShell():void
-		{
-			if (_nativeProcess)
-			{
-				_nativeProcess.exit();
-			}
-			else
-			{
-				startShell();
-			}
-		}
-
-		private function startShell():void
-		{
 			_nativeProcess = new NativeProcess();
 			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			_nativeProcess.start(_shellInfo);
 
-			initializeLanguageServer();
+			initializeLanguageServer(jdkPath);
 		}
 		
-		private function initializeLanguageServer():void
+		private function initializeLanguageServer(sdkPath:String):void
 		{
 			if(_languageClient)
 			{
 				//we're already initializing or initialized...
+				trace("Error: Groovy language client already exists!");
 				return;
 			}
 
-			trace("Language server workspace root: " + project.folderPath);
+			trace("Groovy language server workspace root: " + project.folderPath);
+			trace("Groovy language Server JDK: " + sdkPath);
 
-			_languageStatusDone = false;
 			var debugMode:Boolean = true;//false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_GROOVY, _project, debugMode, {},
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
+		}
+
+		private function restartLanguageServer():void
+		{
+			if(_waitingToRestart)
+			{
+				//we'll just continue waiting
+				return;
+			}
+			_waitingToRestart = false;
+			if(_languageClient)
+			{
+				_waitingToRestart = true;
+				_languageClient.stop();
+			}
+			else if(_nativeProcess)
+			{
+				_waitingToRestart = true;
+				_nativeProcess.exit();
+			}
+
+			if(!_waitingToRestart)
+			{
+				startNativeProcess();
+			}
 		}
 
 		private function shellError(e:ProgressEvent):void
@@ -204,22 +239,51 @@ package actionScripts.languageServer
 		{
 			if(_languageClient)
 			{
+				//this should have already happened, but if the process exits
+				//abnormally, it might not have
 				_languageClient.stop();
+				
+				ConsoleOutputter.formatOutput(
+					"Groovy language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
+					"warning");
 			}
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			_nativeProcess.exit();
 			_nativeProcess = null;
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				startNativeProcess();
+			}
+		}
+
+		private function jdkPathSaveHandler(event:FilePluginEvent):void
+		{
+			//restart only when the path has changed
+			if(getProjectSDKPath(_project, _model) != _previousJDKPath)
+			{
+				restartLanguageServer();
+			}
 		}
 
 		private function languageClient_initHandler(event:Event):void
 		{
-
+			this.dispatchEvent(new Event(Event.INIT));
 		}
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			this.dispose();
+			if(_waitingToRestart)
+			{
+				cleanupLanguageClient();
+				//the native process will automatically exit, so we continue
+				//waiting for that to complete
+			}
+			else
+			{
+				dispose();
+			}
 			
 			this.dispatchEvent(new Event(Event.CLOSE));
 		}
