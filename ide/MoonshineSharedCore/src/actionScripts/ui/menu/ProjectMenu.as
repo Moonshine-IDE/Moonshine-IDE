@@ -162,9 +162,9 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD,
                             'b', [Keyboard.COMMAND],
                             'b', [Keyboard.CONTROL]),
-                    /*new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.JAVA], JavaBuildEvent.BUILD_AND_RUN,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.JAVA], JavaBuildEvent.BUILD_AND_RUN,
                             "\n", [Keyboard.COMMAND],
-                            "\n", [Keyboard.CONTROL]),*/
+                            "\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.JAVA], ProjectActionEvent.CLEAN_PROJECT)
                 ]);
                 javaMenu.forEach(makeDynamic);

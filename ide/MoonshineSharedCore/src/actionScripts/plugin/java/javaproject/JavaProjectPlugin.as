@@ -73,9 +73,16 @@ package actionScripts.plugin.java.javaproject
 			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
 			if (javaProject)
 			{
-				/*var runningCommand:String = "exec:java -Dexec.mainClass=".concat('"');
-				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
-						MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, []))*/
+				if (!javaProject.mainClassName)
+				{
+					warning("Select main application class");
+				}
+				else
+				{
+					var runningCommand:String = "exec:java -Dexec.mainClass=".concat('"', javaProject.mainClassName, '"');
+					dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
+							MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, [runningCommand]));
+				}
 			}
 		}
 
