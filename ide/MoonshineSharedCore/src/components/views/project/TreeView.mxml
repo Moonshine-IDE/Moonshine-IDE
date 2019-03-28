@@ -530,8 +530,12 @@
 				{
 					// Right-clicking a directory creates the file in the dir,
 					// otherwise create in same dir as clicked file
-					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory || !fileWrapper.file.fileBridge.exists) ? fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
-					if(!creatingItemIn.file.fileBridge.checkFileExistenceAndReport()) return;
+					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory || !fileWrapper.file.fileBridge.exists) ?
+							fileWrapper : FileWrapper(tree.getParentItem(fileWrapper));
+					if(!creatingItemIn.file.fileBridge.checkFileExistenceAndReport())
+					{
+						return;
+					}
 
 					// for new file type creation
 					if(event.extra != FTETreeItemRenderer.NEW_FOLDER)
@@ -540,7 +544,8 @@
 						newFileEvent.ofProject = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 
 						dispatcher.dispatchEvent(newFileEvent);
-					} else
+					}
+					else
 					{
 						if(!newFolderWindow)
 						{

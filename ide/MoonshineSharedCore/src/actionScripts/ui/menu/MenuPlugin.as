@@ -666,7 +666,8 @@ package actionScripts.ui.menu
 		private function onMacEnableStateChange(event:Event):void
 		{
 			applyNewNativeMenu(windowMenus);
-			
+			updateMenuOptionsInMenuProject(lastSelectedProjectBeforeMacDisableStateChange);
+
 			// update menus for VE project
 			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);
 		}
