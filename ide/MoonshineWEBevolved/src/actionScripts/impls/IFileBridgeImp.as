@@ -48,6 +48,11 @@ package actionScripts.impls
 			}
 		}
 		
+		public function isPathExists(value:String):Boolean
+		{
+			return false;
+		}
+		
 		public function getDirectoryListing():Array
 		{
 			return _file.getDirectoryListing();

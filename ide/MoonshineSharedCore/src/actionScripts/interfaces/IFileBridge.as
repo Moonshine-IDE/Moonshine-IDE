@@ -27,6 +27,7 @@ package actionScripts.interfaces
 		{
 			function getSSBInterface():IScopeBookmarkInterface;
 		}
+		function isPathExists(value:String):Boolean;
 		function getDirectoryListing():Array;
 		function deleteFileOrDirectory():void;
 		function onSuccessDelete(value:Object, message:String=null):void;

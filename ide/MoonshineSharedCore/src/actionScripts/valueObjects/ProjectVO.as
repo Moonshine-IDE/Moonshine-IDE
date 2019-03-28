@@ -20,8 +20,8 @@ package actionScripts.valueObjects
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;

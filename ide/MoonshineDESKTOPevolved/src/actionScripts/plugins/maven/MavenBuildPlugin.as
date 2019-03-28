@@ -25,6 +25,7 @@ package actionScripts.plugins.maven
         protected var stopWithoutMessage:Boolean;
 
         protected var buildId:String;
+		private var isProjectHasInvalidPaths:Boolean;
 
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
@@ -86,6 +87,15 @@ package actionScripts.plugins.maven
             dispatcher.removeEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.removeEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
+		
+		override protected function onProjectPathsValidated(paths:Array):void
+		{
+			if (paths)
+			{
+				isProjectHasInvalidPaths = true;
+				error("Following path(s) are invalid or does not exists:\n"+ paths.join("\n"));
+			}
+		}
 
         override public function start(args:Vector.<String>, buildDirectory:*):void
         {
@@ -150,6 +160,12 @@ package actionScripts.plugins.maven
                 dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Maven Build"));
                 return;
             }
+			
+			checkProjectForInvalidPaths(model.activeProject); 
+			if (isProjectHasInvalidPaths)
+			{
+				return;
+			}
 
             var args:Vector.<String> = this.getConstantArguments();
             if (arguments.length > 0)
@@ -170,6 +186,7 @@ package actionScripts.plugins.maven
         {
             super.startConsoleBuildHandler(event);
 
+			this.isProjectHasInvalidPaths = false;
             this.status = 0;
             this.buildId = this.getBuildId(event);
             var preArguments:Array = this.getPreCommandLine(event);

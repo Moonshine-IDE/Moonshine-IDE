@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
-    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import flash.events.Event;
     import flash.events.MouseEvent;
     
@@ -35,12 +33,14 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
     import actionScripts.plugin.run.RunMobileSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
     import actionScripts.plugin.settings.vo.ColorSetting;
+    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.IntSetting;
-    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;

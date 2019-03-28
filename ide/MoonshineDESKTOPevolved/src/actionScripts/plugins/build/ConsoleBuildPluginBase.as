@@ -16,7 +16,7 @@ package actionScripts.plugins.build
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
 
-    public class ConsoleBuildPluginBase extends PluginBase
+    public class ConsoleBuildPluginBase extends CompilerPluginBase
     {
         protected var nativeProcess:NativeProcess;
         private var nativeProcessStartupInfo:NativeProcessStartupInfo;

@@ -19,53 +19,53 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
-
 	import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.OutputProgressEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.filesystem.FileStream;
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
-    import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.managers.PopUpManager;
-    import mx.resources.ResourceManager;
-    
-    import actionScripts.events.RefreshTreeEvent;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-    import actionScripts.plugin.project.ProjectType;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.BooleanSetting;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.PathSetting;
-    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-    import actionScripts.utils.EnvironmentSetupUtils;
-    import actionScripts.utils.NoSDKNotifier;
-    import actionScripts.utils.OSXBookmarkerNotifiers;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
-    
-    import components.popup.SelectOpenedFlexProject;
-    import components.views.project.TreeView;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.OutputProgressEvent;
+	import flash.events.ProgressEvent;
+	import flash.filesystem.File;
+	import flash.filesystem.FileStream;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.managers.PopUpManager;
+	import mx.resources.ResourceManager;
+	
+	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.IPlugin;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.project.ProjectType;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.BooleanSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.NoSDKNotifier;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Settings;
+	
+	import components.popup.SelectOpenedFlexProject;
+	import components.views.project.TreeView;
 
-    public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
+    public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "MXMLC Java Script Compiler Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
@@ -104,6 +104,7 @@ package actionScripts.plugins.as3project.mxmlc
 		protected var runAfterBuild:Boolean;
 
 		private var successMessage:String;
+		private var isProjectHasInvalidPaths:Boolean;
 
 		public function MXMLCJavaScriptPlugin() 
 		{
@@ -147,6 +148,15 @@ package actionScripts.plugins.as3project.mxmlc
 			shellInfo = null;
 		}
 		
+		override protected function onProjectPathsValidated(paths:Array):void
+		{
+			if (paths)
+			{
+				isProjectHasInvalidPaths = true;
+				error("Following path(s) are invalid or does not exists:\n"+ paths.join("\n"));
+			}
+		}
+		
 		public function getSettingsList():Vector.<ISetting>
 		{
 			return Vector.<ISetting>([
@@ -179,6 +189,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function build(e:Event, runAfterBuild:Boolean=false):void
 		{
+			this.isProjectHasInvalidPaths = false;
 			this.runAfterBuild = runAfterBuild;
 			checkProjectCount();
 		}
@@ -255,6 +266,12 @@ package actionScripts.plugins.as3project.mxmlc
 			if (AS3ProjectVO(activeProject).isLibraryProject)
 			{
 				Alert.show("Use 'Build' instead to build library project.", "Error!");
+				return;
+			}
+			
+			checkProjectForInvalidPaths(activeProject); 
+			if (isProjectHasInvalidPaths)
+			{
 				return;
 			}
 			
