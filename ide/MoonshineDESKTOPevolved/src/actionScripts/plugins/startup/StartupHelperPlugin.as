@@ -271,7 +271,7 @@ package actionScripts.plugins.startup
 				}
 				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
 			}
-			else if (isPresent && dependencyCheckUtil.isJavaPresent())
+			else if (isPresent)
 			{
 				// starting server
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
@@ -413,8 +413,8 @@ package actionScripts.plugins.startup
 		{
 			if (toggle)
 			{
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
-				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
+				installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
+				installerItemsManager.addEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 			else
 			{
