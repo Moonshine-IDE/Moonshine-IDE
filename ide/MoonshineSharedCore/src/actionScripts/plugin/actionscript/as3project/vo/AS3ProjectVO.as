@@ -421,15 +421,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 				// also we shall take .as3proj file if exists to project opening,
 				// even there's an .actionScriptProperties file exists
 
-				/*if (isFlashBuilderProject)
-				{
-				settingsFile = folderLocation.resolvePath(".actionScriptProperties");
-				// Write settings
-				IDEModel.getInstance().flexCore.exportFlashBuilder(this, settingsFile);
-				}
-				else
-				{*/
-
                 var projectFileName:String = this.isVisualEditorProject ? projectName+".veditorproj" : projectName+".as3proj";
                 var settingsFile:FileLocation = folderLocation.resolvePath(projectFileName);
 				// Write settings

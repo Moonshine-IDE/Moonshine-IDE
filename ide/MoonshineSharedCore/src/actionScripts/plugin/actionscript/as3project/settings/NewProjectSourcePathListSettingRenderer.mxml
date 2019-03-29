@@ -31,104 +31,112 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.core.FlexGlobals;
-			import mx.events.CloseEvent;
-			import mx.managers.PopUpManager;
-			
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.factory.FileLocation;
-			
-			import components.popup.NewProjectFilePathPopup;
-			import components.popup.NewProjectSourcePathPopup;
-		
-			[Bindable] public var setting:NewProjectSourcePathListSetting;
-			
-			private var fileBrowsing:PathListItemVO;
-			private var isPresentFileBrowseIsLocale:Boolean = false;
-			private var newProjectSourcePathPopup:NewProjectSourcePathPopup;
-			private var newProjectFilePathPopup:NewProjectFilePathPopup;
-			private var sourceFolderLocation:FileLocation;
-			private var sourceFileLocation:FileLocation;
-			
-			public function resetAllProjectPaths():void
+		import actionScripts.valueObjects.FileWrapper;
+
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.managers.PopUpManager;
+
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.factory.FileLocation;
+
+		import components.popup.NewProjectFilePathPopup;
+		import components.popup.NewProjectSourcePathPopup;
+
+		[Bindable]
+		public var setting:NewProjectSourcePathListSetting;
+
+		private var newProjectSourcePathPopup:NewProjectSourcePathPopup;
+		private var newProjectFilePathPopup:NewProjectFilePathPopup;
+		private var sourceFolderWrapper:FileWrapper;
+		private var sourceFolderLocation:FileLocation;
+		private var sourceFileLocation:FileLocation;
+
+		public function resetAllProjectPaths():void
+		{
+			sourceFolderLocation = sourceFileLocation = null;
+			pathFolder.text = pathFile.text = "";
+			setting.stringValue = "";
+		}
+
+		protected function onBrowseSourceDir():void
+		{
+			if(!newProjectSourcePathPopup)
 			{
-				sourceFolderLocation = sourceFileLocation = null;
-				pathFolder.text = pathFile.text = "";
-				setting.stringValue = "";
+				newProjectSourcePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectSourcePathPopup, true) as NewProjectSourcePathPopup;
+				newProjectSourcePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
+				newProjectSourcePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
+
+				newProjectSourcePathPopup.wrapperBelongToProject = setting.project;
+				PopUpManager.centerPopUp(newProjectSourcePathPopup);
 			}
-			
-			protected function onBrowseSourceDir():void
+		}
+
+		protected function handleSourceFolderPopupClose(event:CloseEvent):void
+		{
+			newProjectSourcePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
+			newProjectSourcePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
+			newProjectSourcePathPopup = null;
+		}
+
+
+		protected function onSourceFolderSelected(event:NewFileEvent):void
+		{
+			pathFolder.text = getLabelFor(event.insideLocation.file);
+			sourceFolderWrapper = event.insideLocation;
+			sourceFolderLocation = event.insideLocation.file;
+
+			updateToSettings();
+		}
+
+		private function getLabelFor(file:Object):String
+		{
+			var tmpFL:FileLocation = (file is FileLocation) ? file as FileLocation : new FileLocation(file.nativePath);
+			var lbl:String = setting.project.folderLocation.fileBridge.getRelativePath(tmpFL, true);
+
+			return lbl;
+		}
+
+		protected function onBrowseSourceFile():void
+		{
+			if(!newProjectFilePathPopup)
 			{
-				if (!newProjectSourcePathPopup)
-				{
-					newProjectSourcePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectSourcePathPopup, true) as NewProjectSourcePathPopup;
-					newProjectSourcePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
-					newProjectSourcePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
-					
-					newProjectSourcePathPopup.wrapperBelongToProject = setting.project;
-					PopUpManager.centerPopUp(newProjectSourcePathPopup);
-				}
+				newProjectFilePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectFilePathPopup, true) as NewProjectFilePathPopup;
+				newProjectFilePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
+				newProjectFilePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
+
+				newProjectFilePathPopup.folderWrapper = sourceFolderWrapper;
+				PopUpManager.centerPopUp(newProjectFilePathPopup);
 			}
-			
-			protected function handleSourceFolderPopupClose(event:CloseEvent):void
-			{
-				newProjectSourcePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFolderPopupClose);
-				newProjectSourcePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFolderSelected);
-				newProjectSourcePathPopup = null;
-			}
-			
-			
-			protected function onSourceFolderSelected(event:NewFileEvent):void
-			{
-				pathFolder.text = getLabelFor(event.insideLocation.file);
-				sourceFolderLocation = event.insideLocation.file;
-				
-				updateToSettings();
-			}
-			
-			private function getLabelFor(file:Object):String
-			{
-				var tmpFL: FileLocation = (file is FileLocation) ? file as FileLocation : new FileLocation(file.nativePath);
-				var lbl:String = setting.project.folderLocation.fileBridge.getRelativePath(tmpFL, true);
-				
-				return lbl;
-			}    
-			
-			protected function onBrowseSourceFile():void
-			{
-				if (!newProjectFilePathPopup)
-				{
-					newProjectFilePathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewProjectFilePathPopup, true) as NewProjectFilePathPopup;
-					newProjectFilePathPopup.addEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
-					newProjectFilePathPopup.addEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
-					
-					newProjectFilePathPopup.folderLocation = sourceFolderLocation;
-					PopUpManager.centerPopUp(newProjectFilePathPopup);
-				}
-			}
-			
-			protected function handleSourceFilePopupClose(event:CloseEvent):void
-			{
-				newProjectFilePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
-				newProjectFilePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
-				newProjectFilePathPopup = null;
-			}
-			
-			
-			protected function onSourceFileSelected(event:NewFileEvent):void
-			{
-				pathFile.text = event.filePath.split(sourceFolderLocation.fileBridge.separator).pop();
-				sourceFileLocation = new FileLocation(event.filePath);
-				
-				updateToSettings();
-			}
-			
-			private function updateToSettings():void
-			{
-				if (!setting.project.isLibraryProject && sourceFolderLocation && sourceFileLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath +","+ sourceFileLocation.fileBridge.nativePath;
-				else if (setting.project.isLibraryProject && sourceFolderLocation) setting.stringValue = sourceFolderLocation.fileBridge.nativePath;
-			}
-			
+		}
+
+		protected function handleSourceFilePopupClose(event:CloseEvent):void
+		{
+			newProjectFilePathPopup.removeEventListener(CloseEvent.CLOSE, handleSourceFilePopupClose);
+			newProjectFilePathPopup.removeEventListener(NewFileEvent.EVENT_FILE_SELECTED, onSourceFileSelected);
+			newProjectFilePathPopup = null;
+		}
+
+
+		protected function onSourceFileSelected(event:NewFileEvent):void
+		{
+			pathFile.text = event.filePath.split(sourceFolderLocation.fileBridge.separator).pop();
+			sourceFileLocation = new FileLocation(event.filePath);
+
+			updateToSettings();
+		}
+
+		private function updateToSettings():void
+		{
+            if (!setting.project.isLibraryProject && sourceFolderLocation && sourceFileLocation)
+            {
+                setting.stringValue = sourceFolderLocation.fileBridge.nativePath +","+ sourceFileLocation.fileBridge.nativePath;
+            }
+            else if (setting.project.isLibraryProject && sourceFolderLocation)
+            {
+                setting.stringValue = sourceFolderLocation.fileBridge.nativePath;
+            }
+		}
 		]]>
 	</fx:Script>
 	

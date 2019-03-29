@@ -629,29 +629,6 @@ package actionScripts.plugins.as3project
 			}
 
 			var targetFolder:FileLocation = pvo.folderLocation;
-			
-			if (_isProjectFromExistingSource && !isLibraryProject)
-			{
-				sourceFileWithExtension = pvo.projectWithExistingSourcePaths[1].fileBridge.name;
-			}
-			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
-			{
-				sourceFileWithExtension = pvo.projectName + ".as";
-			}
-			else if (isLibraryProject)
-			{
-				// we creates library project without any default created file inside
-				sourceFileWithExtension = null;
-			}
-			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
-			{
-				sourceFileWithExtension = pvo.projectName + ".xhtml";
-			}
-			else
-			{
-				sourceFileWithExtension = pvo.projectName + ".mxml";
-			}
-
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
@@ -673,16 +650,42 @@ package actionScripts.plugins.as3project
 				targetFolder = targetFolder.resolvePath(projectName);
 				targetFolder.fileBridge.createDirectory();
 			}
-			
-			// Time to do the templating thing!
+
 			var th:TemplatingHelper = new TemplatingHelper();
+
+			if (_isProjectFromExistingSource && !isLibraryProject)
+			{
+				th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
+			}
+			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
+			{
+				sourceFileWithExtension = pvo.projectName + ".as";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isLibraryProject)
+			{
+				// we creates library project without any default created file inside
+				sourceFileWithExtension = null;
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+			{
+				sourceFileWithExtension = pvo.projectName + ".xhtml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else
+			{
+				sourceFileWithExtension = pvo.projectName + ".mxml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+
+			// Time to do the templating thing!
 			th.isProjectFromExistingSource = _isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
 			th.templatingData["$SourcePath"] = sourcePath;
-			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 			th.templatingData["$SourceNameOnly"] = sourceFile;
 			th.templatingData["$ProjectSWF"] = sourceFile +".swf";
 			th.templatingData["$ProjectSWC"] = sourceFile +".swc";

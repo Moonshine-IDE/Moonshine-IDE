@@ -167,12 +167,6 @@ package actionScripts.plugins.as3project.importer
 			
 			p.sourceFolder = p.folderLocation.fileBridge.resolvePath(data.compiler.@sourceFolderPath);
 			p.isMobile = UtilsCore.isMobile(p);
-			
-			// add output folder path to flash trust content list
-			if (!p.air && !p.isMobile)
-			{
-				//IDEModel.getInstance().flexCore.updateFlashPlayerTrustContent(p.folderLocation.resolvePath("bin-debug"));
-			}
 		}
 		
 		protected static function updateAppConfigXML(file:File, p:AS3ProjectVO):void

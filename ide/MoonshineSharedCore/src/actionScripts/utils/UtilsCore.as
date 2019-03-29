@@ -257,7 +257,7 @@ package actionScripts.utils
 		}
 		
 		/**
-		 * Returns project based on its folderLocation
+		 * Returns project based on its folderWrapper
 		 */
 		public static function getProjectByPath(value:String):ProjectVO
 		{

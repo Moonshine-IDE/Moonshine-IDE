@@ -66,7 +66,6 @@ package actionScripts.valueObjects
 
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
-			//if (ConstantsCoreVO.IS_AIR && !folderLocation) folder = folder.getDirectoryListing();
 			classFilesInProject = new ArrayCollection();
 
 			folderLocation = folder;
