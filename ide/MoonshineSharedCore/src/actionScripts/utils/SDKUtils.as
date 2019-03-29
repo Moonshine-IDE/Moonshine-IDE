@@ -416,15 +416,15 @@ package actionScripts.utils
             return currentSdkMinorVersion;
         }
 		
-		public static function checkSDKTypeInSDKList(type:String):Boolean
+		public static function checkSDKTypeInSDKList(type:String):SDKReferenceVO
 		{
 			var model:IDEModel = IDEModel.getInstance();
 			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
 			{
-				if (sdk.type == type) return true;
+				if (sdk.type == type) return sdk;
 			}
 			
-			return false;
+			return null;
 		}
 		
 		private static function onExtractionFailed(event:Event):void
