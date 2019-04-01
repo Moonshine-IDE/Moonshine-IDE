@@ -14,7 +14,7 @@
 
 		<servlet.version>4.0.1</servlet.version>
 		<jsf.version>2.2.18</jsf.version>
-		<primefaces.version>6.2</primefaces.version>
+		<primefaces.version>7.0</primefaces.version>
 
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 	</properties>
