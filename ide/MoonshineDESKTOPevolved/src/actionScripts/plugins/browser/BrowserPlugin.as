@@ -117,9 +117,9 @@ package actionScripts.plugins.browser
 		{
 			for each (var tab:IContentWindow in model.editors)
 			{
-				if (tab is SettingsView)
+				/*if (tab is SettingsView)
 				{
-				}
+				}*/
 			}
 		}
 		
