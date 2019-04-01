@@ -38,6 +38,7 @@ package actionScripts.impls
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
@@ -78,7 +79,6 @@ package actionScripts.impls
     import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
     import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
     import actionScripts.plugins.away3d.Away3DPlugin;
-    import actionScripts.plugins.browser.BrowserPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
     import actionScripts.plugins.git.GitHubPlugin;
     import actionScripts.plugins.help.view.TourDeFlexContentsView;
