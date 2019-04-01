@@ -626,7 +626,7 @@
 					</then>
 				</if>
 				<replace file="${desktopApplicationDescriptor}">
-				    <replacetoken><![CDATA[<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>]]></replacetoken>  
+				    <replacetoken><![CDATA[<extensionID>karar.santanu.SecurityScopeBookmark</extensionID>]]></replacetoken>  
 				    <replacevalue><![CDATA[]]></replacevalue>
 				</replace>
 				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.exe" />
