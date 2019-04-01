@@ -80,7 +80,7 @@ package actionScripts.plugins.visualEditor
         {
             super.activate();
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, previewVisualEditorFileHandler);
             dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler);
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
@@ -89,7 +89,7 @@ package actionScripts.plugins.visualEditor
         {
             super.deactivate();
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, previewVisualEditorFileHandler);
         }
 
         override public function complete():void
@@ -98,6 +98,8 @@ package actionScripts.plugins.visualEditor
 
             status = MavenBuildStatus.COMPLETE;
             startPreview();
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_COMPLETE, null, currentProject));
         }
 
         override public function stop(forceStop:Boolean = false):void
@@ -117,6 +119,8 @@ package actionScripts.plugins.visualEditor
             else
             {
                 super.stop(forceStop);
+
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
             }
         }
 
@@ -219,6 +223,8 @@ package actionScripts.plugins.visualEditor
                 payaraShutdownSocket.close();
                 payaraShutdownSocket = null;
             }
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
         }
 
         private function onPayaraShutdownSocketConnect(event:Event):void
@@ -231,12 +237,26 @@ package actionScripts.plugins.visualEditor
 
             payaraShutdownSocket.close();
             payaraShutdownSocket = null;
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
         }
 
         private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
         {
-            var newProject:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
-            if (!newProject) return;
+            var newProject:AS3ProjectVO = null;
+            if (event.fileWrapper is FileWrapper)
+            {
+                newProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
+            }
+            else
+            {
+                newProject = event.project;
+            }
+
+            if (!newProject)
+            {
+                return;
+            }
 
             if (currentProject && currentProject != newProject)
             {
@@ -265,7 +285,15 @@ package actionScripts.plugins.visualEditor
             this.newProject = null;
             this.newFilePreview = null;
 
-            filePreview = event.fileWrapper.file;
+            if (event.fileWrapper is FileWrapper)
+            {
+                filePreview = event.fileWrapper.file;
+            }
+            else
+            {
+                filePreview = event.fileWrapper as FileLocation;
+            }
+
             currentProject = newProject;
 
             if (status == MavenBuildStatus.COMPLETE && status != MavenBuildStatus.STOPPED)

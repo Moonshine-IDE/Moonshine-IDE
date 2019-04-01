@@ -18,12 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-    import actionScripts.factory.FileLocation;
+	import actionScripts.events.PreviewPluginEvent;
+	import actionScripts.factory.FileLocation;
     import actionScripts.utils.MavenPomUtil;
 
     import flash.events.Event;
-    
-    import mx.events.CollectionEvent;
+	import flash.events.MouseEvent;
+
+	import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.FlexEvent;
     
@@ -81,8 +83,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView = new VisualEditorView();
 			
 			visualEditorProject.isPrimeFacesVisualEditorProject ?
-				visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
-				visualEditorView.visualEditorType = VisualEditorType.FLEX;
+				visualEditorView.currentState = "primeFacesVisualEditor" :
+				visualEditorView.currentState = "flexVisualEditor";
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -104,6 +106,9 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, onPreviewStartComplete);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, onPreviewStopped);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, onPreviewStartFailed);
 			
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 		}
@@ -145,9 +150,25 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
             visualEditorView.visualEditor.addEventListener("saveCode", onVisualEditorSaveCode);
+			visualEditorView.startStopPreview.addEventListener(MouseEvent.CLICK, onStartStopPreview);
 
 			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+		}
+
+		private function onPreviewStartComplete(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesPreviewStop";
+		}
+
+		private function onPreviewStopped(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesVisualEditor";
+		}
+
+		private function onPreviewStartFailed(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesVisualEditor";
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -297,7 +318,20 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			}
 		}
-		
+
+		private function onStartStopPreview(event:MouseEvent):void
+		{
+			if (visualEditorView.currentState == "primeFacesPreviewStop")
+			{
+				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, file, visualEditorProject));
+			}
+			else if (visualEditorView.currentState == "primeFacesVisualEditor")
+			{
+				visualEditorView.currentState = "primeFacesPreviewStarting";
+				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, file, visualEditorProject));
+			}
+		}
+
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();
