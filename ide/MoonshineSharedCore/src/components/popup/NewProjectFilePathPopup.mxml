@@ -34,6 +34,7 @@
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.valueObjects.FileWrapper;
+
 		import mx.events.FlexEvent;
 
 		import actionScripts.events.NewFileEvent;
@@ -44,12 +45,14 @@
 		[Bindable]
 		private var model:IDEModel = IDEModel.getInstance();
 
-		protected function onCreateButton(event:MouseEvent):void
+		protected function onProjectCreateButton(event:MouseEvent):void
 		{
-			var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_SELECTED, tree.selectedItem.nativePath);
-			dispatchEvent(tmpEvent);
+			selectMainProjectFile();
+		}
 
-			super.closeThis();
+		private function onFileSelectedDoubleClick(event:MouseEvent):void
+		{
+			selectMainProjectFile();
 		}
 
 		protected function onNewProjectFilePathCreationComplete(event:FlexEvent):void
@@ -68,6 +71,19 @@
 			{
 				hgExistingWarning.visible = true;
 			}
+		}
+
+		private function getIconForFile(object:Object):Class
+		{
+			return null;
+		}
+
+		private function selectMainProjectFile():void
+		{
+			var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_SELECTED, tree.selectedItem.nativePath);
+			dispatchEvent(tmpEvent);
+
+			super.closeThis();
 		}
 		]]>
 	</fx:Script>
@@ -91,9 +107,10 @@
 								 rowHeight="18"
 								 useRollOver="true"
 								 labelField="name"
+						  		 iconFunction="{getIconForFile}"
 								 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
 								 doubleClickEnabled="true"
-								 doubleClick="onCreateButton(null)"/>
+								 doubleClick="onFileSelectedDoubleClick(event)"/>
 		<s:HGroup id="hgExistingWarning" 
 				  width="100%" verticalAlign="middle" visible="false">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
@@ -104,6 +121,6 @@
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCreate" label="Select"
 				  styleName="darkButton"
-				  click="onCreateButton(event)" enabled="{tree.selectedIndex != -1}"/>
+				  click="onProjectCreateButton(event)" enabled="{tree.selectedIndex != -1}"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
