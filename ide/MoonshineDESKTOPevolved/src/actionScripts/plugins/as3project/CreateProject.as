@@ -46,8 +46,8 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
-    import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.DropDownListSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
@@ -65,6 +65,8 @@ package actionScripts.plugins.as3project
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
+    import actionScripts.valueObjects.SDKTypes;
     import actionScripts.valueObjects.TemplateVO;
 	
     public class CreateProject
@@ -188,12 +190,10 @@ package actionScripts.plugins.as3project
 		
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			// Only template for those we can handle
-			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
-			
 			var lastSelectedProjectPath:String;
 
             setProjectType(event.templateDir.fileBridge.name);
+			setAutoSuggestSDKbyType();
 			
 			CONFIG::OSX
 				{
@@ -230,7 +230,6 @@ package actionScripts.plugins.as3project
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
 			
-			isFlexJSRoyalProject = event.templateDir.fileBridge.name.indexOf("Royale") != -1 || event.templateDir.fileBridge.name.indexOf("FlexJS") != -1;
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
@@ -902,6 +901,30 @@ package actionScripts.plugins.as3project
 
 			return pvo;
 		}
+		
+		private function setAutoSuggestSDKbyType():void
+		{
+			customFlexSDK = null;
+			
+			var sdkReference:SDKReferenceVO;
+			if (isFeathersProject)
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
+			}
+			else if (isFlexJSRoyalProject)
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
+			}
+			else
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+			}
+			
+			if (sdkReference)
+			{
+				customFlexSDK = sdkReference.path;
+			}
+		}
 
         private function setProjectType(templateName:String):void
         {
@@ -931,6 +954,10 @@ package actionScripts.plugins.as3project
 			else if (templateName.indexOf(ProjectTemplateType.AWAY3D) != -1)
 			{
 				isAway3DProject = true;
+			}
+			else if (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1)
+			{
+				isFlexJSRoyalProject = true;
 			}
             else
             {
