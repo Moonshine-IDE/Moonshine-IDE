@@ -27,7 +27,6 @@ package actionScripts.plugins.browser
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
 	
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.SettingsView;
@@ -64,29 +63,23 @@ package actionScripts.plugins.browser
 		public function set activeType(value:String):void
 		{
 			_activeType = value;
-			externalBrowserSettings.isEditable = (value == TYPE_EXTERNAL);
+			ConstantsCoreVO.IS_EXTERNAL_BROWSER = externalBrowserSettings.isEditable = (value == TYPE_EXTERNAL);
 		}
 		
 		override public function activate():void
 		{
 			super.activate();
-			
-			/*dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, handleFileSave);
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
-			dispatcher.addEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);*/
 		}
 		
 		override public function deactivate():void
 		{
 			super.deactivate();
-			
-			/*dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, handleFileSave);
-			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
-			dispatcher.removeEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);*/
 		}
 		
 		override public function resetSettings():void
 		{
+			ConstantsCoreVO.IS_EXTERNAL_BROWSER = false;
+			ConstantsCoreVO.EXTERNAL_BROWSER_PATH = null;
 		}
 		
 		public function getSettingsList():Vector.<ISetting>

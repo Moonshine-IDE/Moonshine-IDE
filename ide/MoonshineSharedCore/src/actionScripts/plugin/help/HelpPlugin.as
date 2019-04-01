@@ -21,8 +21,9 @@ package actionScripts.plugin.help
 	import flash.events.Event;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
-
+	
 	import mx.core.IFlexDisplayObject;
+	import mx.resources.ResourceManager;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.plugin.IPlugin;
@@ -33,8 +34,6 @@ package actionScripts.plugin.help
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
-import mx.resources.ResourceManager;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{

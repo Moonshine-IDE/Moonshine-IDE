@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 implements="actionScripts.ui.IContentWindow"
+		 creationComplete="onComplete(event)" addedToStage="onAddedToStage(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.tuarua.WebViewANE;
+			
+			import mx.events.FlexEvent;
+			
+			import actionScripts.plugins.browser.WebViewUtils;
+			import actionScripts.ui.IContentWindow;
+			
+			private static const LABEL:String = "Web View";
+			
+			public var loadURL:String;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  INTERFACE API
+			//
+			//--------------------------------------------------------------------------
+			
+			public function get longLabel():String {	return LABEL;	}
+			public function get label():String {	return LABEL;	}
+			public function isChanged():Boolean {	return false;	}
+			public function isEmpty():Boolean {	return false;	}
+			public function save():void {}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE API
+			//
+			//--------------------------------------------------------------------------
+			
+			private function onComplete(event:FlexEvent):void
+			{
+				
+			}
+			
+			protected function onAddedToStage(event:Event):void
+			{
+				var webview:WebViewANE = WebViewUtils.getInstance().getWebViewBySize(600, 500);
+				webview.load(new URLRequest(loadURL));
+				webview.visible = true;
+			}
+			
+		]]>
+	</fx:Script>
+	
+</s:Group>
