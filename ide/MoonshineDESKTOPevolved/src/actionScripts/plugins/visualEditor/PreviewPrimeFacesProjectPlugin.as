@@ -49,6 +49,7 @@ package actionScripts.plugins.visualEditor
     {
         private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
         private static const APP_FAILED:RegExp = /Failed to start, exiting/;
+        private static const APP_FAILED_TO_START:RegExp = /Server failed to start/;
         private static const CLOSED:RegExp = /\[CLOSED\]/;
 
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
@@ -183,7 +184,7 @@ package actionScripts.plugins.visualEditor
             var failed:Boolean = super.buildFailed(data);
             if (!failed)
             {
-                if (data.match(APP_FAILED))
+                if (data.match(APP_FAILED) || data.match(APP_FAILED_TO_START))
                 {
                     stop();
                     dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
