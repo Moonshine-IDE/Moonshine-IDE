@@ -231,7 +231,8 @@
 							change="cmbOption_changeHandler(event)" labelField="name" 
 							requireSelection="true" contentBackgroundColor="#FFFFFF"/>
 			<s:Button label="Configure"
-					  click="onConfigureDevices(event)"/>
+					  click="onConfigureDevices(event)"
+					  height="24"/>
 		</s:HGroup>
 		<s:Spacer height="3"/>
 	</s:VGroup>

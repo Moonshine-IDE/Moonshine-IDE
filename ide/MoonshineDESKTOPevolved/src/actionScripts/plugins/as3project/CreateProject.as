@@ -27,6 +27,7 @@ package actionScripts.plugins.as3project
     
     import mx.collections.ArrayCollection;
     import mx.controls.Alert;
+    import mx.utils.ObjectUtil;
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GeneralEvent;
@@ -95,6 +96,7 @@ package actionScripts.plugins.as3project
 		private var isFlexJSRoyalProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
+		private var historyPaths:ArrayCollection;
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
@@ -376,8 +378,12 @@ package actionScripts.plugins.as3project
 
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
+			historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0) historyPaths.addItem(project.folderPath);
+			
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+			newProjectPathSetting.dropdownListItems = historyPaths;
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
@@ -457,6 +463,11 @@ package actionScripts.plugins.as3project
 		{
 			if (makeNull) project.projectFolder = null;
 			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
+			if (historyPaths.getItemIndex(newProjectPathSetting.stringValue) == -1)
+			{
+				historyPaths.addItem(newProjectPathSetting.stringValue);
+			}
+			
 			if (_isProjectFromExistingSource)
 			{
 				project.projectName = newProjectNameSetting.stringValue;

@@ -38,7 +38,6 @@
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
-			import mx.utils.ObjectUtil;
 			
 			import spark.events.IndexChangeEvent;
 			
@@ -53,7 +52,6 @@
 			import actionScripts.ui.tabview.CloseTabEvent;
 			import actionScripts.utils.SDKUtils;
 			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.SDKReferenceVO;
 			
 			import components.popup.SDKDefinePopup;
@@ -66,7 +64,7 @@
 		[Bindable]
 		public var isDropDown:Boolean;
 		[Bindable]
-		public var historyPaths:ArrayCollection;
+		public var dropdownListItems:ArrayCollection;
 
 		[Bindable]
 		private var model:IDEModel = IDEModel.getInstance();
@@ -88,7 +86,7 @@
 			}
 
 			lblMessage.includeInLayout = lblMessage.visible = true;
-			if (isDropDown && historyPaths && historyPaths.length == 0)
+			if (isDropDown && dropdownListItems && dropdownListItems.length == 0)
 			{
 				value = "Select path to continue";
 				type = AbstractSetting.MESSAGE_CRITICAL;
@@ -196,14 +194,15 @@
 		{
 			//openFileCancelled(event);
 			setting.stringValue = fileDir.nativePath;
-			historyPaths.addItem(setting.stringValue);
-			cmbPath.selectedItem = setting.stringValue;
-
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+			
+			cmbPath.selectedItem = setting.stringValue;
 		}
 
 		protected function onCreationCompletes(event:FlexEvent):void
 		{
+			dropdownListItems = setting.dropdownListItems;
+			
 			// process this following only in case of project's custom SDK
 			if (isSDKPath && setting.stringValue)
 			{
@@ -220,18 +219,9 @@
 					if (isFound.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
 				}
 			}
-			else
-			{
-				historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
-				if (historyPaths.length == 0)
-				{
-					historyPaths.addItem(setting.provider[setting.name]);
-				}
-			}
 
 			if (isDropDown)
 			{
-				cmbPath.textInput.editable = false;
 				cmbPath.setStyle("contentBackgroundColor", "#FFFFFF");
 				cmbPath.selectedItem = setting.provider[setting.name];
 			}
@@ -382,10 +372,12 @@
 			 styleName="uiTextSettingsValue"
 			 paddingTop="10" width="98%"
 			 text="{setting.stringValue? setting.stringValue : 'Not Set' }" visible="{!isDropDown}" includeInLayout="{!isDropDown}"  />
-	<s:ComboBox  width="100%" dataProvider="{historyPaths}" id="cmbPath" visible="{isDropDown}"
-				 alternatingItemColors="[#FFFFFF, #FFFFFF]"  selectionColor="#cccccc" rollOverColor="#eeeeee"
-				 requireSelection="true"
-				 includeInLayout="{isDropDown}" change="cmbPath_changeHandler(event)"/>
+	<s:DropDownList id="cmbPath"
+					width="100%" height="24"
+					dataProvider="{dropdownListItems}"
+					visible="{isDropDown}" includeInLayout="{isDropDown}"
+					requireSelection="true"
+					change="cmbPath_changeHandler(event)"/>
 	<s:Label id="lblMessage"
 			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
 			 fontSize="12" includeInLayout="false" visible="false"/>

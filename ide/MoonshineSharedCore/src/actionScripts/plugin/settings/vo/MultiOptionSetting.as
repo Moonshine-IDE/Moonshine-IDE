@@ -24,6 +24,8 @@ package actionScripts.plugin.settings.vo
 
 	public class MultiOptionSetting extends StringSetting
 	{
+		public var isCommitOnChange:Boolean;
+		
 		private var _options:Vector.<NameValuePair>;
 
 		private var _isEditable:Boolean;
