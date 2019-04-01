@@ -56,8 +56,6 @@ package actionScripts.impls
 	 */
 	public class IFileBridgeImp implements IFileBridge
 	{
-		private static var pathCheckingFile:FileLocation;
-		
 		private var _file: File = File.desktopDirectory;
 		
 		CONFIG::OSX
@@ -70,22 +68,13 @@ package actionScripts.impls
 			}
 		}
 		
-		
 		/**
 		 * Creating new File instance everytime
 		 * to detect if exists could be expensive
 		 */
 		public function isPathExists(value:String):Boolean
 		{
-			if (!pathCheckingFile) pathCheckingFile = new FileLocation();
-			try {
-				pathCheckingFile.fileBridge.nativePath = value;
-			} catch (e:Error)
-			{
-				return false;
-			}
-			
-			return pathCheckingFile.fileBridge.exists;
+			return FileUtils.isPathExists(value);
 		}
 		
 		public function getDirectoryListing():Array
