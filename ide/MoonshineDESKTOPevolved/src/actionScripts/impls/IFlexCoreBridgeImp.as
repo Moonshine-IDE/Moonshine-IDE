@@ -229,6 +229,7 @@ package actionScripts.impls
 				RenamePlugin,
 				Away3DPlugin,
 				GitHubPlugin,
+				BrowserPlugin,
 				HiddenFilesPlugin
 			];
 		}

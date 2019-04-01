@@ -21,9 +21,13 @@ package actionScripts.plugins.browser
 {
 	import flash.events.Event;
 	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
+	import mx.collections.ArrayList;
 	
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.SettingsView;
@@ -34,6 +38,7 @@ package actionScripts.plugins.browser
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class BrowserPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -43,8 +48,9 @@ package actionScripts.plugins.browser
 		
 		private static const TYPE_INTERNAL:String = "typeInternal";
 		private static const TYPE_EXTERNAL:String = "typeExternal";
+		private static const DEFAULT_LABEL:String = "System Default";
 		
-		public var browserPath:String = "System Default";
+		public var browserPath:String = DEFAULT_LABEL;
 		
 		private var externalBrowserSettings:PathSetting;
 		private var browserList:ArrayCollection;
@@ -60,8 +66,6 @@ package actionScripts.plugins.browser
 			_activeType = value;
 			externalBrowserSettings.isEditable = (value == TYPE_EXTERNAL);
 		}
-		
-		private var isInternalBrowser:Boolean;
 		
 		override public function activate():void
 		{
@@ -92,7 +96,7 @@ package actionScripts.plugins.browser
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			if (cookie.data.hasOwnProperty('externalBrowsersPaths'))
 			{
-				browserList.source.concat(cookie.data.externalBrowsersPaths);
+				browserList.addAll(new ArrayList(cookie.data.externalBrowsersPaths));
 			}
 			
 			var nvps:Vector.<NameValuePair> = Vector.<NameValuePair>([
@@ -104,8 +108,14 @@ package actionScripts.plugins.browser
 			
 			externalBrowserSettings = new PathSetting(this, 'browserPath', 'Select or Decleare an External Browser', false, null, false, true);
 			externalBrowserSettings.dropdownListItems = browserList;
-			externalBrowserSettings.isEditable = false;
+			externalBrowserSettings.isEditable = (activeType != TYPE_INTERNAL);
 			externalBrowserSettings.addEventListener(AbstractSetting.PATH_SELECTED, onExternalPathChanged, false, 0, true);
+			
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				clearTimeout(timeoutValue);
+				listenToSettingsSave();
+			}, 1000);
 			
 			return Vector.<ISetting>([
 				typeSettings,
@@ -117,9 +127,11 @@ package actionScripts.plugins.browser
 		{
 			for each (var tab:IContentWindow in model.editors)
 			{
-				/*if (tab is SettingsView)
+				if ((tab is SettingsView) && (tab as SettingsView).label == "Settings")
 				{
-				}*/
+					tab.addEventListener(SettingsView.EVENT_SAVE, onSettingsSave);
+					tab.addEventListener(SettingsView.EVENT_CLOSE, onSettingsClose);
+				}
 			}
 		}
 		
@@ -132,8 +144,17 @@ package actionScripts.plugins.browser
 			}
 		}
 		
-		private function save():void
+		private function onSettingsClose(event:Event):void
 		{
+			event.target.removeEventListener(SettingsView.EVENT_SAVE, onSettingsSave);
+			event.target.removeEventListener(SettingsView.EVENT_CLOSE, onSettingsClose);
+		}
+		
+		private function onSettingsSave(event:Event):void
+		{
+			onSettingsClose(event);
+			ConstantsCoreVO.IS_EXTERNAL_BROWSER = (activeType == TYPE_EXTERNAL);
+			ConstantsCoreVO.EXTERNAL_BROWSER_PATH = browserPath;
 			if (browserList.length > 1)
 			{
 				browserList.removeItemAt(0);
