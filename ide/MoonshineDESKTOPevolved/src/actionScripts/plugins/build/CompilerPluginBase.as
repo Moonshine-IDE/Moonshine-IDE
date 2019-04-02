@@ -129,13 +129,17 @@ package actionScripts.plugins.build
 		private function checkPathString(value:String, type:String):void
 		{
 			if (!model.fileCore.isPathExists(value))
+			{
 				invalidPaths.push(type +": "+ value);
+			}
 		}
 		
 		private function checkPathFileLocation(value:FileLocation, type:String):void
 		{
 			if (!value.fileBridge.exists)
+			{
 				invalidPaths.push(type +": "+ value.fileBridge.nativePath);
+			}
 		}
 	}
 }
