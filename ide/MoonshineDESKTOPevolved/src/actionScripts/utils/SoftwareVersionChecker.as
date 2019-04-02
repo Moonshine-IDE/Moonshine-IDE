@@ -51,12 +51,14 @@ package actionScripts.utils
 		private var model:IDEModel = IDEModel.getInstance();
 		private var components:ArrayCollection;
 		private var lastOutput:String;
+		private var lineBreak:String;
 		
 		/**
 		 * CONSTRUCTOR
 		 */
 		public function SoftwareVersionChecker()
 		{
+			lineBreak = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS);
 			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
 		}
@@ -87,7 +89,7 @@ package actionScripts.utils
 							break;
 						case ComponentTypes.TYPE_ROYALE:
 							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/'+ executable +'&&--version'), false, QUERY_ROYALE_FJS_VERSION, index));
+							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/js/bin/'+ executable +'&&--version'), false, QUERY_ROYALE_FJS_VERSION, index));
 							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
 							break;
 						case ComponentTypes.TYPE_OPENJAVA:
@@ -222,10 +224,16 @@ package actionScripts.utils
 				{
 					case QUERY_FLEX_AIR_VERSION:
 					{
-						lastOutput = value.output.split("\r\n")[0];
+						lastOutput = value.output.split(lineBreak)[0];
 						break;
 					}
 					case QUERY_ROYALE_FJS_VERSION:
+						match = value.output.match(/Version /);
+						if (match)
+						{
+							components[int(tmpQueue.extraArguments[0])].version = value.output.split(lineBreak)[0];
+						}
+						break;
 					case QUERY_JDK_VERSION:
 					case QUERY_ANT_VERSION:
 					case QUERY_MAVEN_VERSION:
@@ -233,7 +241,7 @@ package actionScripts.utils
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = value.output.split("\r\n")[0];
+							components[int(tmpQueue.extraArguments[0])].version = value.output.split(lineBreak)[0];
 						}
 						break;
 					}
