@@ -110,6 +110,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
+		public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var isTrustServerCertificateSVN:Boolean;
 		public var visualEditorExportPath:String;

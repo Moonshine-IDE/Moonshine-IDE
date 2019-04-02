@@ -21,6 +21,7 @@ package actionScripts.plugin.visualEditor
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
+
     public class VisualEditorProjectPlugin extends PluginBase
     {
         override public function get name():String 	{return "Visual Editor Project";}

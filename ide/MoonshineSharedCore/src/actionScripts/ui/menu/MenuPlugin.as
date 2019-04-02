@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+	import actionScripts.events.PreviewPluginEvent;
+
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
@@ -234,6 +236,7 @@ package actionScripts.ui.menu
 		{
 			disableNewFileMenuOptions();
 			disableMenuOptions();
+			refreshMenuItems();
 		}
 
         private function addProjectHandler(event:ProjectEvent):void
@@ -296,6 +299,35 @@ package actionScripts.ui.menu
                     }
                 }
             }
+		}
+
+		private function refreshMenuItems():void
+		{
+			if (!model.activeProject) return;
+
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (as3Project)
+			{
+				if (as3Project.isPrimeFacesVisualEditorProject)
+				{
+					var resourceManager:IResourceManager = ResourceManager.getInstance();
+					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(model.activeProject);
+
+					var previewItem:MenuItem = projectMenus[projectMenus.length - 1];
+					if (as3Project.isPreviewRunning)
+					{
+						previewItem.label = resourceManager.getString('resources', 'STOP_PREVIEW');
+						previewItem.event = PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW;
+					}
+					else
+					{
+						previewItem.label = resourceManager.getString('resources', 'START_PREVIEW');
+						previewItem.event = PreviewPluginEvent.START_VISUALEDITOR_PREVIEW;
+					}
+
+					updateMenuOptionsInMenuProject(model.activeProject);
+				}
+			}
 		}
 
 		private function updateMenuOptionsInMenuProject(project:ProjectVO):void

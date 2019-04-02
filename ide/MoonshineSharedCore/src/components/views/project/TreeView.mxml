@@ -514,8 +514,7 @@
 					if(model.activeProject is AS3ProjectVO)
 					{
 						TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(tree.getParentItem(fileWrapper)));
-					}
-					else if (model.activeProject is JavaProjectVO)
+					} else if(model.activeProject is JavaProjectVO)
 					{
 						dispatcher.dispatchEvent(new ProjectActionEvent(ProjectActionEvent.SET_DEFAULT_APPLICATION, fileWrapper.file));
 					}
@@ -544,8 +543,7 @@
 						newFileEvent.ofProject = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 
 						dispatcher.dispatchEvent(newFileEvent);
-					}
-					else
+					} else
 					{
 						if(!newFolderWindow)
 						{
@@ -585,7 +583,7 @@
 					dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_HIDDEN, fileWrapper));
 					break;
 				case FTETreeItemRenderer.PREVIEW:
-					dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, fileWrapper));
+					dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, fileWrapper));
 					break;
 			}
 
