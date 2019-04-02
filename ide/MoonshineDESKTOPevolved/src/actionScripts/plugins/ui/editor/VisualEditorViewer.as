@@ -23,7 +23,6 @@ package actionScripts.plugins.ui.editor
     import actionScripts.utils.MavenPomUtil;
 
     import flash.events.Event;
-	import flash.events.MouseEvent;
 
 	import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
