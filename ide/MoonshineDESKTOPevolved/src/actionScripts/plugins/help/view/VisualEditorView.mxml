@@ -28,12 +28,14 @@
                                          skinClass="components.skins.EditorTabBarSkin"
                                          cornerRadius="1" closeButtonVisible="false"
                                          change="onTabBarChange(event)" left="0"/>
-        <s:ButtonBarButton id="startStopPreview"
-                  label.primeFacesVisualEditor="Start Preview" label.primeFacesPreviewStarting="Starting Preview"
+        <s:ButtonBarButton
+                  label.primeFacesVisualEditor="{resourceManager.getString('resources', 'START_PREVIEW')}"
+                  label.primeFacesPreviewStarting="{resourceManager.getString('resources', 'STARTING_PREVIEW')}"
                   enabled.primeFacesPreviewStarting="false" selected.primeFacesVisualEditor="false"
                   selected.primeFacesPreviewStarting="true"
                   right="0" buttonMode="true" includeIn="primeFaces"
-                  skinClass="components.skins.StartStopButtonSkin"/>
+                  skinClass="components.skins.StartStopButtonSkin"
+                  click="onStartPreviewClick(event)"/>
     </s:Group>
     <fx:Script><![CDATA[
 		import mx.events.FlexEvent;
@@ -74,9 +76,15 @@
 				visualEditor.editingSurface.setResizerVisible(true);
 			}
         }
+
+        private function onStartPreviewClick(event:MouseEvent):void
+        {
+            dispatchEvent(new Event("startPreview"));
+        }
 		
 	]]></fx:Script>
     <fx:Metadata>
         [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
+        [Event(name="startPreview", type="flash.events.Event")]
     </fx:Metadata>
 </s:VGroup>

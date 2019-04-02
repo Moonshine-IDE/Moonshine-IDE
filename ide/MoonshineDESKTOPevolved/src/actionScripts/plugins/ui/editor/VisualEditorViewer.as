@@ -153,7 +153,7 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
             visualEditorView.visualEditor.addEventListener("saveCode", onVisualEditorSaveCode);
-			visualEditorView.startStopPreview.addEventListener(MouseEvent.CLICK, onStartStopPreview);
+			visualEditorView.addEventListener("startPreview", onStartPreview);
 
 			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
@@ -327,7 +327,7 @@ package actionScripts.plugins.ui.editor
 			}
 		}
 
-		private function onStartStopPreview(event:MouseEvent):void
+		private function onStartPreview(event:MouseEvent):void
 		{
 			if (visualEditorView.currentState == "primeFacesVisualEditor")
 			{

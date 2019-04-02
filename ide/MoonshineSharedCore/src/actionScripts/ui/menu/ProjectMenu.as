@@ -22,11 +22,16 @@ package actionScripts.ui.menu
         private var actionScriptMenu:Vector.<MenuItem>;
         private var libraryMenu:Vector.<MenuItem>;
         private var royaleMenu:Vector.<MenuItem>;
-        private var veMenu:Vector.<MenuItem>;
+        private var vePrimeFaces:Vector.<MenuItem>;
+        private var veFlex:Vector.<MenuItem>;
         private var javaMenu:Vector.<MenuItem>;
+
+        private var currentProject:ProjectVO;
 
         public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
         {
+            currentProject = project;
+
             var as3Project:AS3ProjectVO = project as AS3ProjectVO;
             if (as3Project)
             {
@@ -40,7 +45,12 @@ package actionScripts.ui.menu
                 }
                 else if (as3Project.isVisualEditorProject)
                 {
-                    return getVisualEditorMenuItems();
+                    if (as3Project.isPrimeFacesVisualEditorProject)
+                    {
+                        return getVisualEditorMenuPrimeFacesItems();
+                    }
+
+                    return getVisualEditorMenuFlexItems();
                 }
                 else
                 {
@@ -130,12 +140,33 @@ package actionScripts.ui.menu
             return royaleMenu;
         }
 
-        private function getVisualEditorMenuItems():Vector.<MenuItem>
+        private function getVisualEditorMenuFlexItems():Vector.<MenuItem>
         {
-            if (veMenu == null)
+            if (veFlex == null)
             {
                 var resourceManager:IResourceManager = ResourceManager.getInstance();
-                veMenu = Vector.<MenuItem>([
+                veFlex = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), null, [ProjectMenuTypes.VISUAL_EDITOR_FLEX], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
+                                null, null, null, null, null, null, null, true),
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES,
+                                null, null, null, null, null, null, null, true)
+                    ])
+                ]);
+
+                veFlex.forEach(makeDynamic);
+            }
+
+            return veFlex;
+        }
+
+        private function getVisualEditorMenuPrimeFacesItems():Vector.<MenuItem>
+        {
+            if (vePrimeFaces == null)
+            {
+                var resourceManager:IResourceManager = ResourceManager.getInstance();
+                vePrimeFaces = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
                         new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), null, [ProjectMenuTypes.VISUAL_EDITOR_FLEX], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
@@ -144,12 +175,26 @@ package actionScripts.ui.menu
                                     null, null, null, null, null, null, null, true)
                     ]),
                     new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'STOP_PREVIEW'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW)
+                    new MenuItem(resourceManager.getString('resources', 'START_PREVIEW'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], PreviewPluginEvent.START_VISUALEDITOR_PREVIEW)
                 ]);
-                veMenu.forEach(makeDynamic);
+
+                var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
+                var veMenuItem:MenuItem = vePrimeFaces[vePrimeFaces.length - 1];
+                if (as3Project.isPreviewRunning)
+                {
+                    veMenuItem.label = resourceManager.getString('resources', 'STOP_PREVIEW');
+                    veMenuItem.event = PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW;
+                }
+                else
+                {
+                    veMenuItem.label = resourceManager.getString('resources', 'START_PREVIEW');
+                    veMenuItem.event = PreviewPluginEvent.START_VISUALEDITOR_PREVIEW;
+                }
+
+                vePrimeFaces.forEach(makeDynamic);
             }
 
-            return veMenu;
+            return vePrimeFaces;
         }
 
         private function getJavaMenuItems():Vector.<MenuItem>
