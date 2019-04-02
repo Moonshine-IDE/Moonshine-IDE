@@ -317,6 +317,13 @@ mx|ScrollBar.black
 	thumb-hline2: #777777;
 }
 
+s|DataGrid
+{
+	alternatingRowColors:#EEEEEE,#FFFFFF;
+	rollOverColor: #e4e4e4;
+	selectionColor: #CCCCCC;
+}
+
 .debugStopButton
 {
 	skinClass: ClassReference("elements.skins.DarkIconButtonSkin");

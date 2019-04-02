@@ -421,7 +421,7 @@ package actionScripts.impls
 		public function getJavaPath(completionHandler:Function):void
 		{
 			var versionChecker: SoftwareVersionChecker = new SoftwareVersionChecker();
-			versionChecker.getJavaPath(completionHandler);
+			//versionChecker.getJavaPath(completionHandler);
 		}
 		
 		public function reAdjustApplicationSize(width:Number, height:Number):void

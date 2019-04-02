@@ -25,17 +25,11 @@
 		   implements="actionScripts.ui.IContentWindow"
 		   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
 		   backgroundColor="#FFFFFF" fontFamily="DejaVuSans" color="#686868" fontSize="14"
-		   creationComplete="onAboutScreenCreationComplete(event)">
-	<s:layout>
-		<s:VerticalLayout paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
-						  verticalAlign="middle" horizontalAlign="center" />
-	</s:layout>
+		   creationComplete="onAboutScreenCreationComplete(event)" xmlns:popup="components.popup.*">
 	<fx:Script>
 		<![CDATA[
-		import components.popup.SoftwareInformation;
 
-		import mx.core.FlexGlobals;
-			import mx.core.IVisualElement;
+			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -44,7 +38,6 @@
 			
 			import components.popup.InfoBackgroundPopup;
 	
-			private var softwareInformation:IVisualElement;
 			private var infoBackground:InfoBackgroundPopup;
 	
 			public function get longLabel():String
@@ -73,12 +66,6 @@
 	
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
-				vgVersionContainer.removeAllElements();
-				softwareInformation = new SoftwareInformation();
-				softwareInformation.percentWidth = 94;
-				softwareInformation.horizontalCenter = 0;
-				vgVersionContainer.addElement(softwareInformation);
-	
 				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
 			}
 			
@@ -106,13 +93,23 @@
 			
 		]]>
 	</fx:Script>
-	<s:Label text="Moonshine IDE" color="0x8a2a2a"/>
-	<s:Label id="version" />
-	<mx:HRule width="50%"/>
-	<mx:Spacer/>
-	<s:VGroup id="vgVersionContainer" />
-	<s:Label text="About the background image"
-			 buttonMode="true"
-			 textDecoration="underline"
-			 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
+						  verticalAlign="middle" horizontalAlign="center"/>
+	</s:layout>
+	
+	<s:VGroup id="vgBody" 
+			  width="80%" autoLayout="true">
+		<s:Label text="Moonshine IDE" color="0x8a2a2a"
+				 paddingLeft="8"/>
+		<s:Label id="version"
+				 paddingLeft="8"/>
+		<mx:HRule width="100%"/>
+		<mx:Spacer/>
+		<popup:SoftwareInformation width="100%"/>
+		<s:Label text="About the background image"
+				 buttonMode="true" width="100%" textAlign="right"
+				 textDecoration="underline"
+				 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
+	</s:VGroup>
 </s:BorderContainer>
