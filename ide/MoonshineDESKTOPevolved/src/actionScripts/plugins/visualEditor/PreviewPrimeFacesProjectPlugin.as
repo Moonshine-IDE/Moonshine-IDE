@@ -26,6 +26,7 @@ package actionScripts.plugins.visualEditor
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.maven.MavenBuildPlugin;
     import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.MavenPomUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -85,6 +86,15 @@ package actionScripts.plugins.visualEditor
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
         }
 
+        override protected function set running(value:Boolean):void
+        {
+            super.running = value;
+            if (currentProject)
+            {
+                currentProject.isPreviewRunning = value;
+            }
+        }
+
         override public function deactivate():void
         {
             super.deactivate();
@@ -119,6 +129,7 @@ package actionScripts.plugins.visualEditor
                 super.stop(forceStop);
 
                 dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
+                dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
             }
         }
 
@@ -223,6 +234,7 @@ package actionScripts.plugins.visualEditor
             }
 
             dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function onPayaraShutdownSocketConnect(event:Event):void
@@ -237,18 +249,38 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket = null;
 
             dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
-        private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
+        private function previewVisualEditorFileHandler(event:Event):void
         {
             var newProject:AS3ProjectVO = null;
-            if (event.fileWrapper is FileWrapper)
+            var fileWrapper:Object = null;
+            var previewPluginEvent:PreviewPluginEvent = event as PreviewPluginEvent;
+
+            if (previewPluginEvent)
             {
-                newProject = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
+                if(previewPluginEvent.fileWrapper is FileWrapper)
+                {
+                    newProject = UtilsCore.getProjectFromProjectFolder(previewPluginEvent.fileWrapper as FileWrapper) as AS3ProjectVO;
+                }
+                else if(previewPluginEvent.project)
+                {
+                    newProject = previewPluginEvent.project;
+                    fileWrapper = previewPluginEvent.fileWrapper;
+                }
             }
-            else
+            else if (model.activeProject)
             {
-                newProject = event.project;
+                newProject = model.activeProject as AS3ProjectVO;
+                if (!newProject.isPrimeFacesVisualEditorProject)
+                {
+                    newProject = null;
+                }
+                else
+                {
+                    fileWrapper = newProject.folderLocation;
+                }
             }
 
             if (!newProject)
@@ -259,7 +291,7 @@ package actionScripts.plugins.visualEditor
             if (currentProject && currentProject != newProject)
             {
                 this.newProject = newProject;
-                this.newFilePreview = event.fileWrapper.file;
+                this.newFilePreview = fileWrapper as FileLocation;
 
                 stop(true);
                 return;
@@ -283,13 +315,13 @@ package actionScripts.plugins.visualEditor
             this.newProject = null;
             this.newFilePreview = null;
 
-            if (event.fileWrapper is FileWrapper)
+            if (previewPluginEvent && previewPluginEvent.fileWrapper is FileWrapper)
             {
-                filePreview = event.fileWrapper.file;
+                filePreview = previewPluginEvent.fileWrapper.file;
             }
             else
             {
-                filePreview = event.fileWrapper as FileLocation;
+                filePreview = fileWrapper as FileLocation;
             }
 
             currentProject = newProject;
@@ -342,6 +374,7 @@ package actionScripts.plugins.visualEditor
             running = false;
 
             dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_FAILED, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function prepareProjectForPreviewing():void
@@ -388,6 +421,7 @@ package actionScripts.plugins.visualEditor
             navigateToURL(urlReq);
 
             dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_COMPLETE, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function getPreRunPreviewServerCommands():Array

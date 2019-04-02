@@ -21,11 +21,20 @@ package actionScripts.plugins.build
         protected var nativeProcess:NativeProcess;
         private var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
-        protected var running:Boolean;
-
         public function ConsoleBuildPluginBase()
         {
             super();
+        }
+
+        private var _running:Boolean;
+        protected function get running():Boolean
+        {
+            return _running;
+        }
+
+        protected function set running(value:Boolean):void
+        {
+            _running = value;
         }
 
         override public function activate():void
@@ -54,7 +63,7 @@ package actionScripts.plugins.build
 
         public function start(args:Vector.<String>, buildDirectory:*):void
         {
-            if (nativeProcess.running && running)
+            if (nativeProcess.running && _running)
             {
                 warning("Build is running. Wait for finish...");
                 return;

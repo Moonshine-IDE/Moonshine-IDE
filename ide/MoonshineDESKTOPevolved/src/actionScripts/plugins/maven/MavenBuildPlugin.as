@@ -30,6 +30,7 @@ package actionScripts.plugins.maven
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
+        private static const BUILD_FAILURE:RegExp = /BUILD FAILURE/;
         private static const ERROR:RegExp = /\[ERROR\]/;
 
         public function MavenBuildPlugin()
@@ -279,7 +280,7 @@ package actionScripts.plugins.maven
 
         protected function buildFailed(data:String):Boolean
         {
-            if (data.match(BUILD_FAILED))
+            if (data.match(BUILD_FAILED) || data.match(BUILD_FAILURE))
             {
                 stop();
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
