@@ -7,7 +7,6 @@
         <s:State name="flexVisualEditor"/>
         <s:State name="primeFacesVisualEditor" stateGroups="primeFaces"/>
         <s:State name="primeFacesPreviewStarting" stateGroups="primeFaces"/>
-        <s:State name="primeFacesPreviewStop" stateGroups="primeFaces"/>
     </s:states>
     <containers:Navigator id="viewStack" width="100%" height="100%" creationPolicy="all">
         <s:NavigatorContent label="Visual">
@@ -30,10 +29,11 @@
                                          cornerRadius="1" closeButtonVisible="false"
                                          change="onTabBarChange(event)" left="0"/>
         <s:ButtonBarButton id="startStopPreview"
-                  label.primeFacesVisualEditor="Start Preview" label.primeFacesPreviewStop="Stop Preview"
-                  label.primeFacesPreviewStarting="Starting Preview"
-                  skinClass="components.skins.StartStopButtonSkin" right="0" buttonMode="true"
-                  includeIn="primeFaces" enabled.primeFacesPreviewStarting="false"/>
+                  label.primeFacesVisualEditor="Start Preview" label.primeFacesPreviewStarting="Starting Preview"
+                  enabled.primeFacesPreviewStarting="false" selected.primeFacesVisualEditor="false"
+                  selected.primeFacesPreviewStarting="true"
+                  right="0" buttonMode="true" includeIn="primeFaces"
+                  skinClass="components.skins.StartStopButtonSkin"/>
     </s:Group>
     <fx:Script><![CDATA[
 		import mx.events.FlexEvent;

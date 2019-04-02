@@ -42,9 +42,7 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
-    
-    import utils.VisualEditorType;
-    
+
     import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
@@ -109,10 +107,11 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, onPreviewStartComplete);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, onPreviewStopped);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, onPreviewStartFailed);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STARTING, onPreviewStarting);
 			
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 		}
-		
+
 		protected function handleEditorCollectionChange(event:CollectionEvent):void
 		{
 			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
@@ -134,7 +133,11 @@ package actionScripts.plugins.ui.editor
 				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
 				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
 				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
-				
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, onPreviewStartComplete);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STOPPED, onPreviewStopped);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, onPreviewStartFailed);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STARTING, onPreviewStarting);
+
 				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 				undoManager.dispose();
 			}
@@ -158,7 +161,12 @@ package actionScripts.plugins.ui.editor
 
 		private function onPreviewStartComplete(event:PreviewPluginEvent):void
 		{
-			visualEditorView.currentState = "primeFacesPreviewStop";
+			visualEditorView.currentState = "primeFacesVisualEditor";
+		}
+
+		private function onPreviewStarting(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesPreviewStarting";
 		}
 
 		private function onPreviewStopped(event:PreviewPluginEvent):void
@@ -321,13 +329,8 @@ package actionScripts.plugins.ui.editor
 
 		private function onStartStopPreview(event:MouseEvent):void
 		{
-			if (visualEditorView.currentState == "primeFacesPreviewStop")
+			if (visualEditorView.currentState == "primeFacesVisualEditor")
 			{
-				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, file, visualEditorProject));
-			}
-			else if (visualEditorView.currentState == "primeFacesVisualEditor")
-			{
-				visualEditorView.currentState = "primeFacesPreviewStarting";
 				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, file, visualEditorProject));
 			}
 		}

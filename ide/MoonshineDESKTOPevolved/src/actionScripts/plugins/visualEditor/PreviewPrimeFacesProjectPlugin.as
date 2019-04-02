@@ -98,8 +98,6 @@ package actionScripts.plugins.visualEditor
 
             status = MavenBuildStatus.COMPLETE;
             startPreview();
-
-            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_COMPLETE, null, currentProject));
         }
 
         override public function stop(forceStop:Boolean = false):void
@@ -120,7 +118,7 @@ package actionScripts.plugins.visualEditor
             {
                 super.stop(forceStop);
 
-                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
             }
         }
 
@@ -224,7 +222,7 @@ package actionScripts.plugins.visualEditor
                 payaraShutdownSocket = null;
             }
 
-            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
         }
 
         private function onPayaraShutdownSocketConnect(event:Event):void
@@ -238,7 +236,7 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket.close();
             payaraShutdownSocket = null;
 
-            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, null, currentProject));
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
         }
 
         private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
@@ -298,10 +296,12 @@ package actionScripts.plugins.visualEditor
 
             if (status == MavenBuildStatus.COMPLETE && status != MavenBuildStatus.STOPPED)
             {
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STARTING, filePreview, currentProject));
                 startPreview();
             }
             else
             {
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STARTING, filePreview, currentProject));
                 prepareProjectForPreviewing();
             }
         }
@@ -340,6 +340,8 @@ package actionScripts.plugins.visualEditor
             dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
             running = false;
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_FAILED, filePreview, currentProject));
         }
 
         private function prepareProjectForPreviewing():void
@@ -384,6 +386,8 @@ package actionScripts.plugins.visualEditor
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
             navigateToURL(urlReq);
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_COMPLETE, filePreview, currentProject));
         }
 
         private function getPreRunPreviewServerCommands():Array

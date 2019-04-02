@@ -1,7 +1,6 @@
 package actionScripts.events
 {
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.valueObjects.FileWrapper;
 
     import flash.events.Event;
 
@@ -11,6 +10,7 @@ package actionScripts.events
         public static const STOP_VISUALEDITOR_PREVIEW:String = "stopVisualEditorPreview";
 
         public static const PREVIEW_START_COMPLETE:String = "previewStartComplete";
+        public static const PREVIEW_STARTING:String = "previewStarting";
         public static const PREVIEW_START_FAILED:String = "previewStartFailed";
         public static const PREVIEW_STOPPED:String = "previewStopped";
 
