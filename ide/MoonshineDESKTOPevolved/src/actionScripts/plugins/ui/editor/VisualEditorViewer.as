@@ -327,7 +327,7 @@ package actionScripts.plugins.ui.editor
 			}
 		}
 
-		private function onStartPreview(event:MouseEvent):void
+		private function onStartPreview(event:Event):void
 		{
 			if (visualEditorView.currentState == "primeFacesVisualEditor")
 			{
