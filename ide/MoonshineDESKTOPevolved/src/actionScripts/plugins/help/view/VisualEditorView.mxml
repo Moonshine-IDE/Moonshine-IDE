@@ -29,7 +29,7 @@
                                          cornerRadius="1" closeButtonVisible="false"
                                          change="onTabBarChange(event)" left="0"/>
         <s:ButtonBarButton
-                  label.primeFacesVisualEditor="{resourceManager.getString('resources', 'START_PREVIEW')}"
+                  label.primeFacesVisualEditor="{resourceManager.getString('resources', 'VE_PREVIEW')}"
                   label.primeFacesPreviewStarting="{resourceManager.getString('resources', 'STARTING_PREVIEW')}"
                   enabled.primeFacesPreviewStarting="false" selected.primeFacesVisualEditor="false"
                   selected.primeFacesPreviewStarting="true"

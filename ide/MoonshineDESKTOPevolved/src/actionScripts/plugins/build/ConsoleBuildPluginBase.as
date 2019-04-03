@@ -6,14 +6,11 @@ package actionScripts.plugins.build
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
-    import flash.filesystem.File;
     import flash.utils.IDataInput;
     
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.PluginBase;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
 
     public class ConsoleBuildPluginBase extends CompilerPluginBase
