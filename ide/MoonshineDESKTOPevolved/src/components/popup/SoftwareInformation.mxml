@@ -58,8 +58,12 @@
 				
 				var tmpAddition:ComponentVO = new ComponentVO();
 				tmpAddition.title = "Default SDK";
-				tmpAddition.type = ComponentTypes.TYPE_FLEX;
-				if (model.defaultSDK) tmpAddition.installToPath = model.defaultSDK.fileBridge.nativePath;
+				if (model.defaultSDK && model.defaultSDK.fileBridge.exists) 
+				{
+					var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(model.defaultSDK.fileBridge.nativePath);
+					tmpAddition.type = sdkReference.type;
+					tmpAddition.installToPath = sdkReference.path;
+				}
 				components.addItemAt(tmpAddition, 0);
 				
 				versionChecker.retrieveAboutInformation(components);
@@ -113,7 +117,7 @@
 	<s:Label text="Configured SDKs in Moonshine:" color="0x333333"
 			 paddingLeft="8"/>
 	<s:DataGrid id="dgComponents"
-				width="100%"
+				width="100%" height="100%"
 				sortableColumns="false" variableRowHeight="true"
 				dataProvider="{components}" requestedMaxRowCount="{components.length}"
 				initialize="dgComponents.columnHeaderGroup.visible =

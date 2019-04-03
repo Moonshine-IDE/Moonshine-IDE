@@ -189,6 +189,9 @@ package actionScripts.utils
 						if (!components[tmpIndex].version) components[tmpIndex].version = lastOutput;
 						else components[tmpIndex].version += ", "+ lastOutput;
 						break;
+					case QUERY_MAVEN_VERSION:
+						components[tmpIndex].version = lastOutput.split(lineBreak)[0];
+						break;
 				}
 			}
 			
@@ -236,7 +239,6 @@ package actionScripts.utils
 						break;
 					case QUERY_JDK_VERSION:
 					case QUERY_ANT_VERSION:
-					case QUERY_MAVEN_VERSION:
 					case QUERY_SVN_GIT_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
@@ -245,6 +247,15 @@ package actionScripts.utils
 						}
 						break;
 					}
+					case QUERY_MAVEN_VERSION:
+						// in case of 'mvn -version' on OSX the process
+						// returns the full information in many shell-data
+						// so we need to prepare the full output first
+						// (unlike others) and extract the first line
+						// from it
+						if (!lastOutput) lastOutput = value.output;
+						else lastOutput += value.output;
+						break;
 				}
 			}
 			
