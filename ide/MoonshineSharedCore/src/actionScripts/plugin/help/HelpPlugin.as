@@ -21,8 +21,9 @@ package actionScripts.plugin.help
 	import flash.events.Event;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
-
+	
 	import mx.core.IFlexDisplayObject;
+	import mx.resources.ResourceManager;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.plugin.IPlugin;
@@ -34,8 +35,6 @@ package actionScripts.plugin.help
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
-import mx.resources.ResourceManager;
-
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
 		public static const EVENT_TOURDEFLEX:String = "EVENT_TOURDEFLEX";
@@ -45,6 +44,8 @@ import mx.resources.ResourceManager;
 		public static const EVENT_APACHE_SDK_DOWNLOADER_REQUEST:String = "EVENT_APACHE_SDK_DOWNLOADER_REQUEST";
 		public static const EVENT_ENSURE_JAVA_PATH:String = "EVENT_ENSURE_JAVA_PATH";
 		public static const EVENT_PRIVACY_POLICY:String = "EVENT_PRIVACY_POLICY";
+		
+		public static var ABOUT_SUBSCRIBE_ID_TO_WORKER:String;
 		
 		override public function get name():String			{ return "Help Plugin"; }
 		override public function get author():String		{ return "Moonshine Project Team"; }

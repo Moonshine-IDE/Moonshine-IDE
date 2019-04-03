@@ -11,9 +11,10 @@ package actionScripts.utils
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
-	public class WorkerGitNativeProcess
+	public class WorkerListOfNativeProcess
 	{
 		public var worker:MoonshineWorker;
+		public var subscriberUdid:String;
 		
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
@@ -23,7 +24,7 @@ package actionScripts.utils
 		private var presentRunningQueue:Object;
 		private var currentWorkingDirectory:File;
 		
-		public function WorkerGitNativeProcess()
+		public function WorkerListOfNativeProcess()
 		{
 		}
 		public function runProcesses(processDescriptor:Object):void
@@ -57,7 +58,11 @@ package actionScripts.utils
 			if (queue.length == 0)
 			{
 				startShell(false);
-				worker.workerToMain.send({event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, value:null});
+				worker.workerToMain.send({
+					event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, 
+					value:null, 
+					subscriberUdid:subscriberUdid
+				});
 				
 				if (pendingQueue.length != 0)
 				{
@@ -67,7 +72,11 @@ package actionScripts.utils
 			}
 			
 			if (queue[0].showInConsole) 
-				worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:"Sending to command: "+ queue[0].com});
+				worker.workerToMain.send({
+					event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, 
+					value:"Sending to command: "+ queue[0].com, 
+					subscriberUdid:subscriberUdid
+				});
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			
@@ -77,7 +86,11 @@ package actionScripts.utils
 			customInfo.workingDirectory = currentWorkingDirectory;
 			
 			presentRunningQueue = queue.shift(); /** type of NativeProcessQueueVO **/
-			worker.workerToMain.send({event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK, value:presentRunningQueue});
+			worker.workerToMain.send({
+				event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK, 
+				value:presentRunningQueue, 
+				subscriberUdid:subscriberUdid
+			});
 			customProcess.start(customInfo);
 		}
 		
@@ -139,11 +152,19 @@ package actionScripts.utils
 					pathStr = generalMatch[1];
 					errorStr  = generalMatch[2];
 					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, data)});
+					worker.workerToMain.send({
+						event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+						value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, data), 
+						subscriberUdid:subscriberUdid
+					});
 					hideDebug = true;
 				}
 				
-				if (!hideDebug) worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, data)});
+				if (!hideDebug) worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, data), 
+					subscriberUdid:subscriberUdid
+				});
 				isErrorClose = true;
 				startShell(false);
 			}
@@ -155,7 +176,11 @@ package actionScripts.utils
 			{
 				if (!isErrorClose) 
 				{
-					worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue)});
+					worker.workerToMain.send({
+						event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+						value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue), 
+						subscriberUdid:subscriberUdid
+					});
 					flush();
 				}
 			}
@@ -172,7 +197,11 @@ package actionScripts.utils
 			if (match)
 			{
 				isFatal = true;
-				worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue)});
+				worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue), 
+					subscriberUdid:subscriberUdid
+				});
 			}
 			
 			if (!match) match = data.toLowerCase().match(/(.*?)error: (.*).*/);
@@ -180,15 +209,23 @@ package actionScripts.utils
 			
 			if (match)
 			{
-				if (!isFatal) worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, presentRunningQueue)});
+				if (!isFatal) worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, presentRunningQueue), 
+					subscriberUdid:subscriberUdid
+				});
 				isErrorClose = true;
 				startShell(false);
 				return;
 			}
 			
 			isErrorClose = false;
-			if (!isFatal) worker.workerToMain.send({event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue)});
-			//worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:data});
+			if (!isFatal) worker.workerToMain.send({
+				event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
+				value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue), 
+				subscriberUdid:subscriberUdid
+			});
+			//worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:data, subscriberUdid:subscriberUdid});
 		}
 	}
 }

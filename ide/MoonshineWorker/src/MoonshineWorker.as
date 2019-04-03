@@ -28,13 +28,14 @@ package
 	import flash.geom.Point;
 	import flash.system.MessageChannel;
 	import flash.system.Worker;
+	import flash.utils.Dictionary;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
 	import mx.utils.StringUtil;
 	
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.utils.WorkerGitNativeProcess;
+	import actionScripts.utils.WorkerListOfNativeProcess;
 	import actionScripts.valueObjects.WorkerFileWrapper;
 	
 	public class MoonshineWorker extends Sprite
@@ -56,21 +57,10 @@ package
 		private var isCustomFilePatterns:Boolean;
 		private var isStorePathsForProbableReplace:Boolean;
 		private var storedPathsForProbableReplace:Array;
+		private var gitListProcessClasses:Dictionary = new Dictionary();
 		
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
-		
-		private var _gitProcess:WorkerGitNativeProcess;
-		private function get gitProcess():WorkerGitNativeProcess
-		{
-			if (!_gitProcess)
-			{
-				_gitProcess = new WorkerGitNativeProcess();
-				_gitProcess.worker = this;
-			}
-			
-			return _gitProcess;
-		}
 		
 		public function MoonshineWorker()
 		{
@@ -110,9 +100,23 @@ package
 					storedPathsForProbableReplace = incomingObject.value as Array;
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS:
-					gitProcess.runProcesses(incomingObject.value);
+					// the list of np must have a non-null sub-id
+					if (incomingObject.subscriberUdid) 
+						getListProcessClass(incomingObject.subscriberUdid).runProcesses(incomingObject.value);
 					break;
 			}
+		}
+		
+		private function getListProcessClass(udid:String):WorkerListOfNativeProcess
+		{
+			if (gitListProcessClasses[udid] != undefined) return gitListProcessClasses[udid];
+			
+			// in case of non-existence
+			var gitProcess:WorkerListOfNativeProcess = new WorkerListOfNativeProcess();
+			gitProcess.worker = this;
+			gitProcess.subscriberUdid = udid;
+			gitListProcessClasses[udid] = gitProcess;
+			return gitProcess;
 		}
 		
 		private function parseProjectsTree():void
