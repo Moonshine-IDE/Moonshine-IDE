@@ -48,6 +48,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.GitAuthenticationPopup;
 	import components.popup.GitBranchSelectionPopup;
@@ -290,7 +291,7 @@ package actionScripts.plugins.git
 				
 				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
-				checkoutWindow.type = SourceControlCheckout.TYPE_GIT;
+				checkoutWindow.type = VersionControlTypes.GIT;
 				checkoutWindow.isGitAvailable = isGitAvailable;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				PopUpManager.centerPopUp(checkoutWindow);
@@ -596,7 +597,7 @@ package actionScripts.plugins.git
 				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
-				gitAuthWindow.type = GitAuthenticationPopup.TYPE_GIT;
+				gitAuthWindow.type = VersionControlTypes.GIT;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);

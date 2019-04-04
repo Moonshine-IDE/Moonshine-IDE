@@ -93,6 +93,8 @@ package actionScripts.impls
     import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
     import actionScripts.plugins.symbols.SymbolsPlugin;
     import actionScripts.plugins.ui.editor.TourDeTextEditor;
+    import actionScripts.plugins.versionControl.VersionControlPlugin;
+    import actionScripts.plugins.versionControl.event.VersionControlEvent;
     import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
     import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
     import actionScripts.ui.IPanelWindow;
@@ -219,6 +221,7 @@ package actionScripts.impls
 				OrganizeImportsPlugin,
 				SplashScreenPlugin,
 				CleanProject,
+				VersionControlPlugin,
 				SVNPlugin,
 				VSCodeDebugProtocolPlugin,
 				SaveFilesPlugin,
@@ -237,7 +240,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -342,7 +345,7 @@ package actionScripts.impls
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','CHECKOUT'), null, null, SVNPlugin.CHECKOUT_REQUEST),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_SVN_OSX_AVAILABLE) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)

@@ -48,6 +48,7 @@ package actionScripts.valueObjects
 		public var projectName:String;
 		public var fileNamesOnly:Vector.<String>;
 		public var classFilesInProject: ArrayCollection;
+		public var hasVersionControlType:String; // of VersionControlTypes
 		
 		private var _projectFolder: FileWrapper;
 		

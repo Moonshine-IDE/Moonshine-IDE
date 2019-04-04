@@ -18,13 +18,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+    import flash.net.SharedObject;
+    
+    import mx.collections.ArrayCollection;
+    
     import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
-
-    import flash.net.SharedObject;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.locator.IDEModel;
+    import actionScripts.valueObjects.RepositoryVO;
 
     public class SharedObjectUtil
 	{
@@ -58,6 +61,35 @@ package actionScripts.utils
 
             cookie.flush();
         }
+		
+		public static function getRepositoriesFromSO():ArrayCollection
+		{
+			var tmpCollection:ArrayCollection = new ArrayCollection();
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			if (cookie.data.hasOwnProperty('savedRepositories'))
+			{
+				for each (var item:Object in cookie.data.savedRepositories)
+				{
+					tmpCollection.addItem(ObjectTranslator.objectToInstance(item, RepositoryVO));
+				}
+			}
+			
+			return tmpCollection;
+		}
+		
+		public static function saveRepositoriesToSO(collection:ArrayCollection):void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			cookie.data['savedRepositories'] = collection;
+			cookie.flush();
+		}
+		
+		public static function resetRepositoriesSO():void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			cookie.clear();
+			cookie.flush();
+		}
 
 		public static function saveProjectTreeItemForOpen(item:Object, propertyNameKey:String,
                                                           propertyNameKeyValue:String):void

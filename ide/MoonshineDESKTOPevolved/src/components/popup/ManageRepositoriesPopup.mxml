@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:other="components.views.other.*"
+										   backgroundColor="0xf5f5f5" 
+										   minHeight="300" minWidth="300"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onComplete(event)" xmlns:containers="components.containers.*">
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="6" paddingTop="9"
+						  horizontalAlign="left" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.events.GridEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.utils.SharedObjectUtil;
+			import actionScripts.valueObjects.RepositoryVO;
+	
+			[Bindable] public var repositories:ArrayCollection;
+	
+			private var model:IDEModel = IDEModel.getInstance();
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			
+			private function onComplete(event:FlexEvent):void
+			{
+			}
+	
+			private function getResourceName(item:Object):String
+			{
+				return item.name + " - " + item.resourcePath;
+			}
+
+			protected function onItemDoubleClicked(event:GridEvent):void
+			{
+				// let's open item-edit window
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OPEN_ADD_REPOSITORY, dgRepositories.selectedItem));
+			}
+			
+			protected function onNewRepositoryRequest(event:MouseEvent):void
+			{
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OPEN_ADD_REPOSITORY));
+			}
+			
+			protected function onRepositoryDelete(event:MouseEvent):void
+			{
+				repositories.removeItem(dgRepositories.selectedItem);
+				SharedObjectUtil.saveRepositoriesToSO(repositories);
+			}
+			
+			protected function onBrowseRepository(selectedRepository:RepositoryVO):void
+			{
+				currentState = "browse";
+				this.title = "Browse";
+			}
+			
+			protected function onBack(event:MouseEvent):void
+			{
+				currentState = "default";
+				this.title = "Manage Repositories";
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<resizableTitleWindow:states>
+		<s:State name="default"/>
+		<s:State name="browse"/>
+	</resizableTitleWindow:states>
+	
+	<s:VGroup width="100%" height="100%"
+			  gap="10" includeIn="default">
+		<s:Label text="Add a repository or select one to manage:"/>
+		<s:DataGrid id="dgRepositories"
+					width="100%" height="100%"
+					sortableColumns="false" variableRowHeight="true"
+					dataProvider="{repositories}"
+					doubleClickMode="row" doubleClickEnabled="true"
+					gridDoubleClick="onItemDoubleClicked(event)"
+					rowHeight="24">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="url" headerText="Repository"/>
+					<s:GridColumn dataField="userName" headerText="User" width="200"/>
+					<s:GridColumn dataField="notes" headerText="Notes"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:VGroup>
+	
+	<containers:RepositoryBrowser id="repoBrowser" 
+								  width="100%" height="100%"
+								  includeIn="browse"/>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="default">
+			<s:Button label="+"
+					  styleName="darkButton"
+					  click="onNewRepositoryRequest(event)"/>
+			<s:Button label="-"
+					  enabled="{dgRepositories.selectedItem}"
+					  styleName="darkButton"
+					  click="onRepositoryDelete(event)"/>
+			<s:Button label="Edit"
+					  enabled="{dgRepositories.selectedItem}" 
+					  styleName="darkButton"/>
+			<s:Button label="Browse"
+					  enabled="{dgRepositories.selectedItem}" 
+					  styleName="darkButton"
+					  click="onBrowseRepository(dgRepositories.selectedItem as RepositoryVO)"/>
+			<s:Spacer width="100%"/>
+			<s:Button label="Browse All"
+					  styleName="darkButton"/>
+		</s:HGroup>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="browse">
+			<s:Button label="Back"
+					  styleName="darkButton"
+					  click="onBack(event)"/>
+			<s:Spacer width="100%"/>
+			<s:Button label="Clone/Checkout"
+					  styleName="darkButton"
+					  enabled="{repoBrowser.selectedItem}"/>
+		</s:HGroup>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

@@ -40,6 +40,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SVNStatus;
 	import actionScripts.valueObjects.GenericSelectableObject;
+	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.GitCommitSelectionPopup;
 
@@ -132,7 +133,7 @@ package actionScripts.plugins.svn.commands
 				svnCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				svnCommitWindow.title = "Commit";
 				svnCommitWindow.commitDiffCollection = affectedFiles;
-				svnCommitWindow.windowType = GitCommitSelectionPopup.TYPE_SVN;
+				svnCommitWindow.windowType = VersionControlTypes.SVN;
 				svnCommitWindow.addEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
 				PopUpManager.centerPopUp(svnCommitWindow);
 			}

@@ -26,28 +26,26 @@
 										   width="500" minWidth="400" minHeight="100" autoLayout="true"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
-	<fx:Metadata>
-		[Event(name="name", type="flash.events.Event")]
-	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.svn.event.SVNEvent;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.RepositoryVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
-			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var type:String;
 			
-			public var submitObject:Object;
-			public var isTrustServerCertificate:Boolean;
+			public var editingRepository:RepositoryVO;
 			
 			[Bindable] private var isValidURL:Boolean;
-			[Bindable] private var isPathMapped:Boolean;
 			
 			private var mappedPath:String
 			private var model:IDEModel = IDEModel.getInstance();
@@ -58,39 +56,33 @@
 				btnSubmit.enabled = true;
 			}
 			
-			private function onCheckoutRequest():void
+			private function onAddRequest():void
 			{
 				if (type == VersionControlTypes.SVN && cbLogin.selected)
 				{
-					var tmpArr : Array = new Array(eValidator, pValidator);
+					var tmpArr : Array = new Array(eValidator);
 					if (Validator.validateAll(tmpArr).length != 0)
 					{
 						return;
 					}
 				}
 				
-				submitObject = (type == VersionControlTypes.GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text, trustCertificate:isTrustServerCertificate};
+				var isEditing:Boolean;
+				if (!editingRepository) editingRepository = new RepositoryVO();
+				else isEditing = true;
 				
-				// do not close if SVN
-				if (type != VersionControlTypes.SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				else 
-				{
-					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
-					btnSubmit.enabled = false;
-				}
-			}
-			
-			private function browse():void
-			{
-				model.fileCore.browseForDirectory("Git checkout target", onDirectorySelected);
-			}
-			
-			private function onDirectorySelected(fileObj:Object):void
-			{
-				mappedPath = (fileObj as File).nativePath;
+				editingRepository.url = txtSource.text;
+				editingRepository.notes = StringUtil.trim(txtNotes.text).length != 0 ? txtNotes.text : null;
+				editingRepository.isRequireAuthentication = cbLogin.selected;
+				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
+				editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
+				editingRepository.type = rgType.selectedValue.toString();
 				
-				isPathMapped = true;
-				updatePossiblePath();
+				dispatchEvent(new VersionControlEvent(
+					VersionControlEvent.ADD_EDIT_REPOSITORY, 
+					editingRepository
+				));
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
 			private function updatePossiblePath():void
@@ -105,18 +97,10 @@
 					if (results != null)
 					{
 						isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
-							"..." + model.fileCore.separator + results[0].split("/").pop();
 					}
-					else if (isPathMapped)
+					else
 					{
 						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
 					}
 				}
 				else
@@ -125,83 +109,106 @@
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
-						isGitAvailable = isValidURL = true;
-						if (isPathMapped)
-						{
-							txtTarget.text = mappedPath + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
-						else
-						{
-							txtTarget.text = "..." + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
+						isValidURL = true;
 					}
-					else if (isPathMapped)
+					else
 					{
 						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
 					}
 				}
 			}
 			
 			protected function onCreationCompletes():void
 			{
+				// if in edit mode
+				if (editingRepository)
+				{
+					rgType.selectedValue = editingRepository.type;
+					txtSource.text = editingRepository.url;
+					txtNotes.text = editingRepository.notes;
+					cbLogin.selected = editingRepository.isRequireAuthentication;
+					cbTrustCert.selected = editingRepository.isTrustCertificate;
+					txtLogin.text = editingRepository.userName;
+				}
+				
 				txtSource.setFocus();
+				onTypeChanged(null);
+			}
+			
+			private function onTypeChanged(event:Event):void
+			{
+				lblNoPath.visible = lblNoPath.includeInLayout = false;
+				if (rgType.selectedValue == VersionControlTypes.SVN)
+				{
+					type = VersionControlTypes.SVN;
+					if (UtilsCore.isSVNPresent()) displayNoPathMessageFor("SVN");
+				}
+				else if (rgType.selectedValue == VersionControlTypes.GIT)
+				{
+					type = VersionControlTypes.GIT;
+					if (UtilsCore.isGitPresent()) displayNoPathMessageFor("Git");
+				}
+				
+				// update if already inserted path
+				if (StringUtil.trim(txtSource.text).length != 0) updatePossiblePath();
+				
+				/*
+				 * @local
+				 */
+				function displayNoPathMessageFor(pathType:String):void
+				{
+					lblNoPath.text = "You need "+ pathType +" installed on your system.";
+					lblNoPath.visible = lblNoPath.includeInLayout = true;
+				}
 			}
 			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
 		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
-		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
+		<s:RadioButtonGroup id="rgType" change="onTypeChanged(event)"/>
 	</fx:Declarations>
 	
 	<s:VGroup height="100%" width="100%" 
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+		<s:HGroup width="100%">
+			<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
+						   selected="true"/>
+			<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"/>	
+		</s:HGroup>
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
 							  prompt="Repository URL" change="updatePossiblePath()"/>
-		<s:HGroup verticalAlign="middle" width="100%">
-			<view:PromptTextInput id="txtTarget" 
-								  prompt="Where to download" width="100%" styleName="textInput"
-								  editable="false" tabIndex="2"/>
-			<s:Button width="60" label="Browse" 
-					  styleName="lightButtonTight" 
-					  click="browse()" />
-		</s:HGroup>
-		<s:Label text="You need Git installed on your system to continue."
+		<s:VGroup width="100%">
+			<s:Label text="Notes (optional):"/>
+			<view:PromptTextInput id="txtNotes" 
+								  prompt="Repostory notes.." width="100%" styleName="textInput"/>
+		</s:VGroup>
+		<s:Label id="lblNoPath" 
 				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
-		<s:HGroup width="100%" verticalAlign="middle"
-				  includeInLayout="{type == VersionControlTypes.SVN}" visible="{type == VersionControlTypes.SVN}">
+				 includeInLayout="false" visible="false"/>
+		<s:HGroup width="100%" verticalAlign="middle">
 			<s:CheckBox id="cbLogin"
 						label="Need Authentication" selected="false"/>
-			<s:CheckBox label="Trust Server Certificate"
-						change="isTrustServerCertificate=event.target.selected"/>
+			<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
+						enabled="{type == VersionControlTypes.SVN}"/>
 		</s:HGroup>
 		<s:VGroup width="100%"
-				  visible="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}">
+				  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
 			<view:PromptTextInput
 				id="txtLogin" 
 				prompt="User Name"
 				width="100%"
 				styleName="textInput"/>
-			<view:PromptTextInput
-				id="txtPassword" 
-				prompt="Password" change="txtPassword.displayAsPassword=true"
-				width="100%"
-				styleName="textInput"/>
+			<s:Label text="Password will be prompted when needed by version control software"
+					 color="0x444444"/>
 		</s:VGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
-				  label="{(type == VersionControlTypes.GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
-				  click="onCheckoutRequest()"/>
+				  label="Save" styleName="darkButton" enabled="{isValidURL}"
+				  click="onAddRequest()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
+		  gap="10">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			
+			public function get selectedItem():Object
+			{
+				return treeRepositories.selectedItem;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label text="Select any repository to checkout/clone:"/>
+	
+	<utils:CustomTreeFolders id="treeRepositories"
+							 width="100%" height="100%"
+							 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+							 rollOverColor="0xe4e4e4"
+							 selectionColor="0xCCCCCC"
+							 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
+							 rowHeight="24"/>
+</s:VGroup>

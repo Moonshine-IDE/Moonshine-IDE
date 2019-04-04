@@ -48,6 +48,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
 	
@@ -553,6 +554,7 @@ package actionScripts.plugins.git
 						if (tmpProject)
 						{
 							(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+							(tmpProject as AS3ProjectVO).hasVersionControlType = VersionControlTypes.GIT;
 							if (plugin.modelAgainstProject[tmpProject] == undefined) 
 							{
 								value.output = value.output.replace("\n", "");

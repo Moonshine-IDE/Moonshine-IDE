@@ -252,6 +252,14 @@ s|HScrollBar
 	skin-class: ClassReference('elements.skins.SparkHScrollBarSkin');
 }
 
+
+s|DataGrid
+{
+	alternatingRowColors:#EEEEEE,#FFFFFF;
+	rollOverColor: #e4e4e4;
+	selectionColor: #CCCCCC;
+}
+
 /*s|List
 {
 	contentBackgroundColor: #000000;
@@ -315,13 +323,6 @@ mx|ScrollBar.black
 	thumb-left-side-line: #3A3A3A;
 	thumb-hline1: #444444;
 	thumb-hline2: #777777;
-}
-
-s|DataGrid
-{
-	alternatingRowColors:#EEEEEE,#FFFFFF;
-	rollOverColor: #e4e4e4;
-	selectionColor: #CCCCCC;
 }
 
 .debugStopButton

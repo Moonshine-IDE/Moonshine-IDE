@@ -878,10 +878,14 @@ package actionScripts.utils
 			
 			if (value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
 			
-			// git check
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
-			// svn check
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, value));
+			// version-control check
+			if (!value.hasVersionControlType)
+			{
+				// git check
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
+				// svn check
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, value));
+			}
 		}
 		
 		/**
