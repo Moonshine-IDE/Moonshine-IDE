@@ -15,7 +15,7 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
-
+import java.lang.System;
 
 /**
  *
@@ -46,10 +46,14 @@ public class PayaraEmbeddedLauncher {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     if (inputLine.equals("shutdown")) {
-                        glassfish.stop();
+                        deployer.undeploy("app");
                         glassfish.dispose();
 
+                        runtime.shutdown();
+
                         System.out.println("[CLOSED] Bye Bye");
+
+                        System.exit(0);
                         break;
                     }
                 }
