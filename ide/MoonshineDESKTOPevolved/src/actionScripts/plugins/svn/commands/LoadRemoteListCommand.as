@@ -128,26 +128,29 @@ package actionScripts.plugins.svn.commands
 		{
 			var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
+			var isAuthError:Boolean;
 			
-			var match:Array = data.toLowerCase().match(/error validating server certificate for/);
+			/*var match:Array = data.toLowerCase().match(/error validating server certificate for/);
 			if (!match) match = data.toLowerCase().match(/issuer is not trusted/);
 			if (match) 
 			{
 				//serverCertificatePrompt(data);
-				onCancelAuthentication();
-			}
+			}*/
 			
-			match = data.toLowerCase().match(/authentication failed/);
+			var match:Array = data.toLowerCase().match(/authentication failed/);
 			if (match)
 			{
 				lastKnownMethod = new MethodDescriptor(this, "loadList", lastEvent, onCompletion);
 				openAuthentication();
+				isAuthError = true;
 			}
 	
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
 			startShell(false);
+			
+			if (!isAuthError) onCancelAuthentication();
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
