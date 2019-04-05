@@ -3,7 +3,9 @@ package actionScripts.plugin.java.javaproject
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
-	
+
+	import mx.collections.ArrayCollection;
+
 	import mx.controls.Alert;
 	
 	import actionScripts.events.AddTabEvent;
@@ -28,6 +30,8 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import mx.utils.ObjectUtil;
 
 	public class CreateJavaProject
 	{
@@ -96,7 +100,7 @@ package actionScripts.plugin.java.javaproject
 			settingsView.Width = 150;
 			settingsView.defaultSaveLabel = event.isExport ? "Export" : "Create";
 			settingsView.isNewProjectSettings = true;
-			
+
 			settingsView.addCategory("");
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
@@ -118,8 +122,16 @@ package actionScripts.plugin.java.javaproject
 
 		private function getProjectSettings(project:JavaProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
-            newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
+			var historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0)
+			{
+				historyPaths.addItem(project.folderPath);
+			}
+
+			newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+			newProjectPathSetting.dropdownListItems = historyPaths;
+
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
@@ -143,20 +155,29 @@ package actionScripts.plugin.java.javaproject
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
 			var tmpFile:FileLocation = JavaImporter.test(value.fileBridge.getFile);
-			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
+			if (!tmpFile && value.fileBridge.exists)
+			{
+				tmpFile = value;
+			}
 			
 			if (tmpFile) 
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
-			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			else
+			{
+				newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			}
 			
 			if (newProjectPathSetting.stringValue == "") 
 			{
 				isInvalidToSave = true;
 				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 			}
-			else isInvalidToSave = tmpFile ? true : false;
+			else
+			{
+				isInvalidToSave = tmpFile ? true : false;
+			}
 		}
 		
 		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void
