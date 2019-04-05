@@ -84,6 +84,7 @@ package actionScripts.plugins.svn.commands
 				args.push(password);
 			}
 			args.push(event.repository.url);
+			args.push("--non-interactive");
 			if (lastEventServerCertificateState) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
