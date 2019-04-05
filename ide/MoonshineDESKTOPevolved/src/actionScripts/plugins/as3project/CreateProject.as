@@ -96,7 +96,6 @@ package actionScripts.plugins.as3project
 		private var isFlexJSRoyalProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
-		private var historyPaths:ArrayCollection;
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
@@ -378,8 +377,11 @@ package actionScripts.plugins.as3project
 
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
-			historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
-			if (historyPaths.length == 0) historyPaths.addItem(project.folderPath);
+			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0)
+			{
+				historyPaths.addItem(project.folderPath);
+			}
 			
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
@@ -463,11 +465,6 @@ package actionScripts.plugins.as3project
 		{
 			if (makeNull) project.projectFolder = null;
 			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-			if (historyPaths.getItemIndex(newProjectPathSetting.stringValue) == -1)
-			{
-				historyPaths.addItem(newProjectPathSetting.stringValue);
-			}
-			
 			if (_isProjectFromExistingSource)
 			{
 				project.projectName = newProjectNameSetting.stringValue;
