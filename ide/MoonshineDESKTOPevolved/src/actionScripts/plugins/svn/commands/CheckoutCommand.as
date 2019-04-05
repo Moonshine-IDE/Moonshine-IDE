@@ -68,8 +68,6 @@ package actionScripts.plugins.svn.commands
 			var username:String;
 			var password:String;
 			args.push("checkout");
-			args.push("--non-interactive");
-			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			if (event.repository && event.repository.userName && event.repository.userPassword)
 			{
 				username = event.repository.userName;
@@ -89,6 +87,8 @@ package actionScripts.plugins.svn.commands
 			}
 			args.push(event.url);
 			args.push(targetFolder);
+			args.push("--non-interactive");
+			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			customInfo.workingDirectory = event.file;
@@ -130,8 +130,8 @@ package actionScripts.plugins.svn.commands
 			var match:Array = data.toLowerCase().match(/Error validating server certificate for/);
 			if (match) 
 			{
-				serverCertificatePrompt(data);
-				return;
+				//serverCertificatePrompt(data);
+				//return;
 			}
 			
 			match = data.toLowerCase().match(/authentication failed/);

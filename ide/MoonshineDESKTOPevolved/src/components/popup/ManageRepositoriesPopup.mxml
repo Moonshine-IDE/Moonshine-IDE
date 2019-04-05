@@ -89,6 +89,7 @@
 			
 			protected function onBack(event:MouseEvent):void
 			{
+				repoBrowser.onBackEvent();
 				currentState = "default";
 				this.title = "Manage Repositories";
 			}
@@ -96,6 +97,11 @@
 			protected function onCheckoutRequest(event:MouseEvent):void
 			{
 				dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repoBrowser.selectedItem));
+			}
+			
+			protected function onItemDoubleClicked(event:GridEvent):void
+			{
+				onBrowseRepository(dgRepositories.selectedItem as RepositoryItemVO);
 			}
 			
 		]]>
@@ -114,7 +120,7 @@
 					sortableColumns="false" variableRowHeight="true"
 					dataProvider="{repositories}"
 					doubleClickMode="row" doubleClickEnabled="true"
-					gridDoubleClick="onItemEdit()"
+					gridDoubleClick="onItemDoubleClicked(event)"
 					rowHeight="24">
 			<s:columns>
 				<s:ArrayList>

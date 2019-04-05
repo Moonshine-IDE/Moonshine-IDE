@@ -176,7 +176,7 @@
 			<s:Label id="lblSeparator"/>
 			<view:PromptTextInput id="txtFolderName"
 								  prompt="Target folder name"
-								  styleName="textInput"/>
+								  styleName="textInput" restrict="0-9A-Za-z_"/>
 		</s:HGroup>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"

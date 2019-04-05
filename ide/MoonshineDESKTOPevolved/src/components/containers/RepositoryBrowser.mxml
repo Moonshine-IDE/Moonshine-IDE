@@ -24,6 +24,11 @@
 				repositories = new ArrayCollection(value);
 			}
 			
+			public function onBackEvent():void
+			{
+				removeBusyIndicator();
+			}
+			
 			protected function onTreeItemOpen(event:TreeEvent):void
 			{
 				if (busyIndicator)
@@ -53,11 +58,7 @@
 			
 			private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
 			{
-				if (busyIndicator) 
-				{
-					this.removeElement(busyIndicator);
-					busyIndicator = null;
-				}
+				removeBusyIndicator();
 				
 				// in case of auth cancel situation
 				if (!success)
@@ -77,6 +78,15 @@
 					treeRepositories.verticalScrollPosition = lastScrollPosition;
 					treeRepositories.selectedItem = lastSelectedItem;
 				});
+			}
+			
+			private function removeBusyIndicator():void
+			{
+				if (busyIndicator) 
+				{
+					this.removeElement(busyIndicator);
+					busyIndicator = null;
+				}
 			}
 			
 		]]>

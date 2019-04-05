@@ -248,7 +248,7 @@ package actionScripts.plugins.svn
 				
 				var provider:SubversionProvider = new SubversionProvider();
 				provider.executable = new File(svnBinaryPath);
-				provider.checkout(newEvent, submitObject.targetFolder, submitObject.trustCertificate);
+				provider.checkout(newEvent, submitObject.targetFolder, (submitObject.repository as RepositoryItemVO).isTrustCertificate);
 			}
 		}
 		

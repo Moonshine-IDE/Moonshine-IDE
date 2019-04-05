@@ -721,7 +721,7 @@ package actionScripts.ui.menu
 
 			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
-			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Manage Repositories" : "Grant Permission";
 		}
 
 		protected function createNewMenu():*

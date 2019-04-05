@@ -77,7 +77,7 @@
 				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
 				editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
 				editingRepository.type = rgType.selectedValue.toString();
-				editingRepository.children = [];
+				editingRepository.children = editingRepository.children ? editingRepository.children : [];
 				editingRepository.isRoot = true;
 				
 				dispatchEvent(new VersionControlEvent(

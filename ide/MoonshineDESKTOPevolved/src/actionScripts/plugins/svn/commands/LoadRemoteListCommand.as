@@ -28,6 +28,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class LoadRemoteListCommand extends SVNCommandBase
@@ -48,6 +49,8 @@ package actionScripts.plugins.svn.commands
 			onCompletion = null;
 			remoteOutput = null;
 			lastKnownMethod = null;
+			lastEvent = null;
+			
 			lastEvent = event;
 			onCompletion = completion;
 			lastEventServerCertificateState = event.repository.isTrustCertificate;
@@ -125,11 +128,12 @@ package actionScripts.plugins.svn.commands
 			var output:IDataInput = customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
-			var match:Array = data.toLowerCase().match(/Error validating server certificate for/);
+			var match:Array = data.toLowerCase().match(/error validating server certificate for/);
+			if (!match) match = data.toLowerCase().match(/issuer is not trusted/);
 			if (match) 
 			{
-				serverCertificatePrompt(data);
-				return;
+				//serverCertificatePrompt(data);
+				onCancelAuthentication();
 			}
 			
 			match = data.toLowerCase().match(/authentication failed/);
@@ -174,7 +178,7 @@ package actionScripts.plugins.svn.commands
 		{
 			if (remoteOutput)
 			{
-				var lines:Array = remoteOutput.split("\r\n");
+				var lines:Array = remoteOutput.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 				var tmpRepoItem:RepositoryItemVO;
 				for each (var line:String in lines)
 				{
