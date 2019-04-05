@@ -55,7 +55,6 @@ package actionScripts.plugin.java.javaproject
 		private var _currentCauseToBeInvalid:String;
 		
 		private var _projectTemplateType:String;
-		private var historyPaths:ArrayCollection;
 		
 		public function set projectTemplateType(value:String):void
 		{
