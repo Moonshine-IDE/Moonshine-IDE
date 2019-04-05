@@ -38,11 +38,13 @@
 			
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.svn.event.SVNEvent;
+			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var type:String;
 			
+			public var editingRepository:RepositoryItemVO;
 			public var submitObject:Object;
 			public var isTrustServerCertificate:Boolean;
 			
@@ -60,23 +62,23 @@
 			
 			private function onCheckoutRequest():void
 			{
-				if (type == VersionControlTypes.SVN && cbLogin.selected)
+				var tmpArr:Array = new Array(fnValidator);
+				if (Validator.validateAll(tmpArr).length != 0)
 				{
-					var tmpArr : Array = new Array(eValidator, pValidator);
-					if (Validator.validateAll(tmpArr).length != 0)
-					{
-						return;
-					}
+					return;
 				}
 				
-				submitObject = (type == VersionControlTypes.GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text, trustCertificate:isTrustServerCertificate};
+				submitObject = new Object();
+				submitObject.url = txtSource.text;
+				submitObject.target = mappedPath;
+				submitObject.targetFolder = txtFolderName.text;
+				submitObject.repository = editingRepository;
 				
-				// do not close if SVN
 				if (type != VersionControlTypes.SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				else 
 				{
 					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
-					btnSubmit.enabled = false;
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
 			}
 			
@@ -105,8 +107,8 @@
 					if (results != null)
 					{
 						isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
-							"..." + model.fileCore.separator + results[0].split("/").pop();
+						txtTarget.text = (isPathMapped) ? mappedPath : "...";
+						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : results[0].split("/").pop();
 					}
 					else if (isPathMapped)
 					{
@@ -126,14 +128,8 @@
 					if (results != null)
 					{
 						isGitAvailable = isValidURL = true;
-						if (isPathMapped)
-						{
-							txtTarget.text = mappedPath + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
-						else
-						{
-							txtTarget.text = "..." + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
+						txtTarget.text = (isPathMapped) ? mappedPath : "...";
+						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
 					}
 					else if (isPathMapped)
 					{
@@ -150,12 +146,20 @@
 			
 			protected function onCreationCompletes():void
 			{
+				if (editingRepository) 
+				{
+					txtSource.text = editingRepository.url;
+					updatePossiblePath();
+				}
+				
+				lblSeparator.text = File.separator;
 				txtSource.setFocus();
 			}
 			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
+		<mx:StringValidator id="fnValidator" source="{txtFolderName}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 	</fx:Declarations>
@@ -169,15 +173,16 @@
 			<view:PromptTextInput id="txtTarget" 
 								  prompt="Where to download" width="100%" styleName="textInput"
 								  editable="false" tabIndex="2"/>
-			<s:Button width="60" label="Browse" 
-					  styleName="lightButtonTight" 
-					  click="browse()" />
+			<s:Label id="lblSeparator"/>
+			<view:PromptTextInput id="txtFolderName"
+								  prompt="Target folder name"
+								  styleName="textInput"/>
 		</s:HGroup>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
 		<s:HGroup width="100%" verticalAlign="middle"
-				  includeInLayout="{type == VersionControlTypes.SVN}" visible="{type == VersionControlTypes.SVN}">
+				  includeInLayout="false" visible="false">
 			<s:CheckBox id="cbLogin"
 						label="Need Authentication" selected="false"/>
 			<s:CheckBox label="Trust Server Certificate"
@@ -199,6 +204,9 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
+		<s:Button label="Choose Parent Directory"
+				  styleName="darkButton"
+				  click="browse()"/>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
 				  label="{(type == VersionControlTypes.GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"

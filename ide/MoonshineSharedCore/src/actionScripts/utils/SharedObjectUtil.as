@@ -27,7 +27,7 @@ package actionScripts.utils
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.RepositoryVO;
+    import actionScripts.valueObjects.RepositoryItemVO;
 
     public class SharedObjectUtil
 	{
@@ -70,7 +70,7 @@ package actionScripts.utils
 			{
 				for each (var item:Object in cookie.data.savedRepositories)
 				{
-					tmpCollection.addItem(ObjectTranslator.objectToInstance(item, RepositoryVO));
+					tmpCollection.addItem(ObjectTranslator.objectToInstance(item, RepositoryItemVO));
 				}
 			}
 			

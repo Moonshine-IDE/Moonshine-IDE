@@ -19,17 +19,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-    [Bindable] public class RepositoryVO
+    [Bindable] public class RepositoryItemVO
 	{
 		public var type:String; // VersionControlTypes
+		public var isRoot:Boolean;
 		
-		public function RepositoryVO()
+		public function RepositoryItemVO()
 		{
 		}
 		
 		private var _url:String;
-		public function get url():String 								{ return _url; }
+		public function get url():String								{ return _url; }
 		public function set url(value:String):void						{ _url = value; }
+		
+		private var _label:String;
+		public function get label():String								{ return _label; }
+		public function set label(value:String):void					{ _label = value; }
 		
 		private var _notes:String;
 		public function get notes():String								{ return _notes; }
@@ -51,8 +56,8 @@ package actionScripts.valueObjects
 		public function get isTrustCertificate():Boolean				{ return _isTrustCertificate; }
 		public function set isTrustCertificate(value:Boolean):void		{ _isTrustCertificate = value; }
 		
-		private var _dependentRepoitories:Array;
-		public function get dependentRepoitories():Array				{ return _dependentRepoitories; }
-		public function set dependentRepoitories(value:Array):void		{ _dependentRepoitories = value; }
+		private var _children:Array;
+		public function get children():Array							{ return _children; }
+		public function set children(value:Array):void					{ _children = value; }
 	}
 }

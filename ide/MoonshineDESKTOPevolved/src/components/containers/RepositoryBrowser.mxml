@@ -1,27 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
-		  gap="10">
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*">
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.ui.renderers.FTETreeItemRenderer;
+			import mx.collections.ArrayCollection;
+			import mx.events.TreeEvent;
 			
-			public function get selectedItem():Object
+			import spark.components.BusyIndicator;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.valueObjects.RepositoryItemVO;
+			
+			[Bindable] public var selectedItem:Object;
+			[Bindable] private var repositories:ArrayCollection;
+			
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var busyIndicator:BusyIndicator;
+			
+			public function setRepositories(value:Array):void
 			{
-				return treeRepositories.selectedItem;
+				repositories = new ArrayCollection(value);
+			}
+			
+			protected function onTreeItemOpen(event:TreeEvent):void
+			{
+				if (busyIndicator)
+				{
+					treeRepositories.expandItem(event.item, false);
+					return;
+				}
+				
+				var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
+				// load against folder without item only
+				if (tmpRepo.children && tmpRepo.children.length == 0)
+				{
+					busyIndicator = new BusyIndicator();
+					busyIndicator.setStyle("symbolColor", 0xffffff);
+					busyIndicator.right = 0;
+					this.addElement(busyIndicator);
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
+						{repository: tmpRepo, onCompletion: onCallListingCompleted}));
+				}
+			}
+			
+			private function repositoryLabelFunction(item:RepositoryItemVO):String
+			{
+				if (item.isRoot) return item.url;
+				return item.label;
+			}
+			
+			private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
+			{
+				if (busyIndicator) 
+				{
+					this.removeElement(busyIndicator);
+					busyIndicator = null;
+				}
+				
+				// in case of auth cancel situation
+				if (!success)
+				{
+					treeRepositories.expandItem(againstNodeItem, false);
+					return;
+				}
+				
+				var lastScrollPosition:Number = treeRepositories.verticalScrollPosition;
+				var lastSelectedItem:Object = treeRepositories.selectedItem;
+				var openItems:Object = treeRepositories.openItems;
+				treeRepositories.openItems = openItems;
+				treeRepositories.invalidateList();
+				
+				treeRepositories.callLater(function():void
+				{
+					treeRepositories.verticalScrollPosition = lastScrollPosition;
+					treeRepositories.selectedItem = lastSelectedItem;
+				});
 			}
 			
 		]]>
 	</fx:Script>
 	
-	<s:Label text="Select any repository to checkout/clone:"/>
-	
-	<utils:CustomTreeFolders id="treeRepositories"
-							 width="100%" height="100%"
-							 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-							 rollOverColor="0xe4e4e4"
-							 selectionColor="0xCCCCCC"
-							 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
-							 rowHeight="24"/>
-</s:VGroup>
+	<s:VGroup id="hgHeader" 
+			  width="100%" height="100%"
+			  verticalAlign="middle" gap="10">
+		<s:Label text="Select any repository to checkout/clone:"/>
+		<mx:Tree id="treeRepositories" 
+				 width="100%" height="100%"
+				 labelFunction="repositoryLabelFunction"
+				 itemRenderer="actionScripts.ui.renderers.RepositoryTreeItemRenderer"
+				 dataProvider="{repositories}"
+				 rollOverColor="0xe4e4e4"
+				 selectionColor="0xCCCCCC"
+				 color="0x000"
+				 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
+				 itemOpen="onTreeItemOpen(event)"
+				 itemClick="selectedItem = treeRepositories.selectedItem"/>
+	</s:VGroup>
+</s:Group>

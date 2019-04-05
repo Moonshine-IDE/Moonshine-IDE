@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
-	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.NativeProcessExitEvent;
@@ -26,50 +25,44 @@ package actionScripts.plugins.svn.commands
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 	
-	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	
-	public class CheckoutCommand extends SVNCommandBase
+	public class LoadRemoteListCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
 		private var isEventReported:Boolean;
-		private var targetFolder:String;
+		private var remoteOutput:String;
+		private var onCompletion:Function;
 		private var lastEventServerCertificateState:Boolean;
 		
-		public function CheckoutCommand(executable:File, root:File)
+		public function LoadRemoteListCommand(executable:File, root:File)
 		{
 			super(executable, root);
-			//cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 		}
 		
-		public function checkout(event:SVNEvent, folder:String, isTrustServerCertificateSVN:Boolean):void
+		public function loadList(event:SVNEvent, completion:Function):void
 		{
-			if (runningForFile)
-			{
-				error("Currently running, try again later.");
-				return;
-			}
-			
+			onCompletion = null;
+			remoteOutput = null;
 			lastKnownMethod = null;
 			lastEvent = event;
-			targetFolder = folder;
-			lastEventServerCertificateState = isTrustServerCertificateSVN;
-			notice("Trying to check out %s. May take a while.", event.url);
+			onCompletion = completion;
+			lastEventServerCertificateState = event.repository.isTrustCertificate;
+			notice("Remote data requested. This may take a while.", event.repository.url);
 			
 			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
-			//customInfo.executable = cmdFile; 
 			
-			// http://stackoverflow.com/questions/1625406/using-tortoisesvn-via-the-command-line
 			var args:Vector.<String> = new Vector.<String>();
 			var username:String;
 			var password:String;
-			args.push("checkout");
-			args.push("--non-interactive");
-			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
+			args.push("ls");
+			args.push("--depth");
+			args.push("immediates");
 			if (event.repository && event.repository.userName && event.repository.userPassword)
 			{
 				username = event.repository.userName;
@@ -87,17 +80,23 @@ package actionScripts.plugins.svn.commands
 				args.push("--password");
 				args.push(password);
 			}
-			args.push(event.url);
-			args.push(targetFolder);
+			args.push(event.repository.url);
+			if (lastEventServerCertificateState) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
-			customInfo.workingDirectory = event.file;
-			
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
 			startShell(true);
 			customProcess.start(customInfo);
-			runningForFile = event.file;
+		}
+		
+		override protected function onCancelAuthentication():void
+		{
+			// notify to the caller
+			if (onCompletion != null) 
+			{
+				onCompletion(lastEvent.repository, false);
+				onCompletion = null;
+			}
 		}
 		
 		private function startShell(start:Boolean):void
@@ -118,7 +117,6 @@ package actionScripts.plugins.svn.commands
 				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
 				customProcess = null;
 				customInfo = null;
-				runningForFile = null;
 			}
 		}
 		
@@ -137,7 +135,7 @@ package actionScripts.plugins.svn.commands
 			match = data.toLowerCase().match(/authentication failed/);
 			if (match)
 			{
-				lastKnownMethod = new MethodDescriptor(this, "checkout", lastEvent, targetFolder, lastEventServerCertificateState);
+				lastKnownMethod = new MethodDescriptor(this, "loadList", lastEvent, onCompletion);
 				openAuthentication();
 			}
 	
@@ -158,28 +156,57 @@ package actionScripts.plugins.svn.commands
 			var output:IDataInput = customProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
-			notice("%s", data);
+			if (!remoteOutput) remoteOutput = data;
+			else remoteOutput += data;
 		}
 		
 		protected function svnExit(event:NativeProcessExitEvent):void
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(runningForFile.nativePath + File.separator + targetFolder)));
-				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
-				dispatcher.dispatchEvent(
-					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
-				);*/
-			}
-			else
-			{
-				// Checkout failed
+				parseRemoteOutput();
 			}
 			
-			/*runningForFile = null;
-			customProcess = null;*/
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			startShell(false);
+		}
+		
+		protected function parseRemoteOutput():void
+		{
+			if (remoteOutput)
+			{
+				var lines:Array = remoteOutput.split("\r\n");
+				var tmpRepoItem:RepositoryItemVO;
+				for each (var line:String in lines)
+				{
+					if (line != "")
+					{
+						tmpRepoItem = new RepositoryItemVO();
+						if (line.charAt(line.length-1) == "/")
+						{
+							// consider a folder
+							tmpRepoItem.children = [];
+							line = line.replace("/", "");
+							tmpRepoItem.url = lastEvent.repository.url +"/"+ line;
+						}
+						
+						tmpRepoItem.label = line;
+						
+						// we also want to keep few information from
+						// top level for later retreival
+						tmpRepoItem.isRequireAuthentication = lastEvent.repository.isRequireAuthentication;
+						tmpRepoItem.isTrustCertificate = lastEvent.repository.isTrustCertificate;
+						
+						lastEvent.repository.children.push(tmpRepoItem);
+					}
+				}
+				
+				// notify to the caller
+				if (onCompletion != null) 
+				{
+					onCompletion(lastEvent.repository, true);
+					onCompletion = null;
+				}
+			}
 		}
 	}
 }

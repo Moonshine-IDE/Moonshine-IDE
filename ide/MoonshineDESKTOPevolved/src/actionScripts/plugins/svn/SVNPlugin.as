@@ -41,10 +41,12 @@ package actionScripts.plugins.svn
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SubversionProvider;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.GitAuthenticationPopup;
@@ -88,6 +90,7 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.addEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.addEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
+			dispatcher.addEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
 		override public function deactivate():void
@@ -101,6 +104,7 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.removeEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.removeEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
+			dispatcher.removeEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
 		override public function resetSettings():void
@@ -180,6 +184,19 @@ package actionScripts.plugins.svn
 			}
 		}
 		
+		protected function onLoadRemoteSVNList(event:VersionControlEvent):void
+		{
+			//git: submitObject.url, submitObject.target
+			//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
+			var newEvent:SVNEvent = new SVNEvent(
+				SVNEvent.SVN_REMOTE_LIST, null);
+			newEvent.repository = event.value.repository;
+			
+			var provider:SubversionProvider = new SubversionProvider();
+			provider.executable = new File(svnBinaryPath);
+			provider.loadRemoteList(newEvent, event.value.onCompletion);
+		}
+		
 		protected function handleCheckoutRequest(event:Event):void
 		{
 			// Check if we have a SVN binary
@@ -201,9 +218,10 @@ package actionScripts.plugins.svn
 			
 			if (!checkoutWindow)
 			{
-				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
+				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, true) as SourceControlCheckout;
 				checkoutWindow.title = "Checkout Repository";
 				checkoutWindow.type = VersionControlTypes.SVN;
+				if (event is VersionControlEvent) checkoutWindow.editingRepository = (event as VersionControlEvent).value as RepositoryItemVO;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				checkoutWindow.addEventListener(SVNEvent.EVENT_CHECKOUT, onCheckoutWindowSubmitted);
 				
@@ -225,9 +243,12 @@ package actionScripts.plugins.svn
 			{
 				//git: submitObject.url, submitObject.target
 				//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
+				var newEvent:SVNEvent = new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null);
+				newEvent.repository = submitObject.repository;
+				
 				var provider:SubversionProvider = new SubversionProvider();
 				provider.executable = new File(svnBinaryPath);
-				provider.checkout(new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null), submitObject.trustCertificate);
+				provider.checkout(newEvent, submitObject.targetFolder, submitObject.trustCertificate);
 			}
 		}
 		
@@ -285,7 +306,7 @@ package actionScripts.plugins.svn
 				gitAuthWindow.title = "SVN Needs Authentication";
 				gitAuthWindow.type = VersionControlTypes.SVN;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			
@@ -295,7 +316,7 @@ package actionScripts.plugins.svn
 			function onGitAuthWindowClosed(event:CloseEvent):void
 			{
 				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
 				PopUpManager.removePopUp(gitAuthWindow);
 				gitAuthWindow = null;
 			}

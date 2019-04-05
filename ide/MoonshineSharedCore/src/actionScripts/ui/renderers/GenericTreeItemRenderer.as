@@ -183,7 +183,7 @@ package actionScripts.ui.renderers
 	        	sourceControlText.visible = false;
 	        	sourceControlBackground.visible = false;
 	        	
-	        	if (data.sourceController)
+	        	if (data.hasOwnProperty("sourceController") && data.sourceController)
 	        	{
 	        		if (data.isRoot)
 	        		{

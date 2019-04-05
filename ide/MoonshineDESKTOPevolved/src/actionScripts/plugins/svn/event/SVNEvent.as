@@ -22,6 +22,7 @@ package actionScripts.plugins.svn.event
 	import flash.filesystem.File;
 	
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 
 	public class SVNEvent extends Event
 	{
@@ -30,12 +31,14 @@ package actionScripts.plugins.svn.event
 		public static const SVN_AUTH_REQUIRED:String = "svnAuthRequired";
 		public static const SVN_ERROR:String = "svnError";
 		public static const SVN_RESULT:String = "svnResult";
+		public static const SVN_REMOTE_LIST:String = "svnRemoteList";
 		
 		public var file:File;
 		public var url:String;
 		public var project:ProjectVO;
 		public var authObject: Object; // [username, password]
 		public var extras:Array;
+		public var repository:RepositoryItemVO;
 		 
 		public function SVNEvent(type:String, file:File, url:String=null, project:ProjectVO=null, authObject:Object=null, ...param)
 		{
@@ -46,6 +49,5 @@ package actionScripts.plugins.svn.event
 			this.extras = param;
 			super(type, false, true);
 		}
-		
 	}
 }

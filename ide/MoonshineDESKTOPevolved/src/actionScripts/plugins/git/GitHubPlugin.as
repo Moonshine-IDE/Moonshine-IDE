@@ -310,7 +310,7 @@ package actionScripts.plugins.git
 			PopUpManager.removePopUp(checkoutWindow);
 			checkoutWindow = null;
 			
-			if (submitObject) processManager.clone(submitObject.url, submitObject.target);
+			if (submitObject) processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder);
 		}
 		
 		private function onCheckoutRequest(event:Event):void
@@ -599,7 +599,7 @@ package actionScripts.plugins.git
 				gitAuthWindow.isGitAvailable = isGitAvailable;
 				gitAuthWindow.type = VersionControlTypes.GIT;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			
@@ -609,7 +609,7 @@ package actionScripts.plugins.git
 			function onGitAuthWindowClosed(event:CloseEvent):void
 			{
 				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToPush);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.removePopUp(gitAuthWindow);
 				gitAuthWindow = null;
 			}

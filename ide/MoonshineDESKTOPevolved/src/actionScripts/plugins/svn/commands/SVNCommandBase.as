@@ -24,15 +24,24 @@ package actionScripts.plugins.svn.commands
 	import flash.utils.IDataOutput;
 	
 	import mx.core.FlexGlobals;
+	import mx.core.IFlexDisplayObject;
+	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.core.ExternalCommandBase;
+	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
+	import actionScripts.valueObjects.VersionControlTypes;
+	
+	import components.popup.GitAuthenticationPopup;
 	
 	public class SVNCommandBase extends ExternalCommandBase
 	{
 		override public function get name():String { return "Subversion Plugin"; }
+		
+		protected var lastEvent:SVNEvent;
+		protected var lastKnownMethod:MethodDescriptor;
 		
 		public function SVNCommandBase(executable:File, root:File)
 		{
@@ -92,5 +101,50 @@ package actionScripts.plugins.svn.commands
 			d.removeEventListener(ServerCertificateDialog.EVENT_CANCEL, dontAccept);
 		}
 		
+		protected function openAuthentication():void
+		{
+			var authWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+			authWindow.title = "Needs Authentication";
+			authWindow.type = VersionControlTypes.SVN;
+			
+			if (lastEvent.repository && lastEvent.repository.userName) authWindow.userName = lastEvent.repository.userName;
+			
+			authWindow.addEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
+			authWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.centerPopUp(authWindow);
+		}
+		
+		protected function onAuthWindowClosed(event:CloseEvent):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			if (!target.userObject) onCancelAuthentication();
+			
+			target.removeEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
+			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.removePopUp(target as IFlexDisplayObject);
+		}
+		
+		protected function onAuthSubmitted(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			if (target.userObject)
+			{
+				if (target.userObject.save && lastEvent.repository) 
+				{
+					lastEvent.repository.userName = target.userObject.userName;
+					lastEvent.repository.userPassword = target.userObject.password;
+				}
+				else
+				{
+					lastEvent.authObject = {username:target.userObject.userName, password:target.userObject.password};
+				}
+				
+				lastKnownMethod.callMethod();
+			}
+		}
+		
+		protected function onCancelAuthentication():void
+		{
+		}
 	}
 }

@@ -159,13 +159,13 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
-		public function clone(url:String, target:String):void
+		public function clone(url:String, target:String, targetFolder:String):void
 		{
 			queue = new Vector.<Object>();
 			
 			lastCloneURL = url;
 			lastCloneTarget = target;
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url), false, GitHubPlugin.CLONE_REQUEST));
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);

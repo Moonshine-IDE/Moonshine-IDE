@@ -38,12 +38,12 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.RepositoryVO;
+			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
 			[Bindable] public var type:String;
 			
-			public var editingRepository:RepositoryVO;
+			public var editingRepository:RepositoryItemVO;
 			
 			[Bindable] private var isValidURL:Boolean;
 			
@@ -68,7 +68,7 @@
 				}
 				
 				var isEditing:Boolean;
-				if (!editingRepository) editingRepository = new RepositoryVO();
+				if (!editingRepository) editingRepository = new RepositoryItemVO();
 				else isEditing = true;
 				
 				editingRepository.url = txtSource.text;
@@ -77,6 +77,8 @@
 				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
 				editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
 				editingRepository.type = rgType.selectedValue.toString();
+				editingRepository.children = [];
+				editingRepository.isRoot = true;
 				
 				dispatchEvent(new VersionControlEvent(
 					VersionControlEvent.ADD_EDIT_REPOSITORY, 
@@ -141,12 +143,12 @@
 				if (rgType.selectedValue == VersionControlTypes.SVN)
 				{
 					type = VersionControlTypes.SVN;
-					if (UtilsCore.isSVNPresent()) displayNoPathMessageFor("SVN");
+					if (!UtilsCore.isSVNPresent()) displayNoPathMessageFor("SVN");
 				}
 				else if (rgType.selectedValue == VersionControlTypes.GIT)
 				{
 					type = VersionControlTypes.GIT;
-					if (UtilsCore.isGitPresent()) displayNoPathMessageFor("Git");
+					if (!UtilsCore.isGitPresent()) displayNoPathMessageFor("Git");
 				}
 				
 				// update if already inserted path
@@ -174,7 +176,8 @@
 		<s:HGroup width="100%">
 			<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
 						   selected="true"/>
-			<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"/>	
+			<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
+						   enabled="false"/>	
 		</s:HGroup>
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"

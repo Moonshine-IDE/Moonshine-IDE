@@ -40,11 +40,13 @@
 			
 			import spark.events.GridEvent;
 			
+			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.svn.SVNPlugin;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.SharedObjectUtil;
-			import actionScripts.valueObjects.RepositoryVO;
+			import actionScripts.valueObjects.RepositoryItemVO;
 	
 			[Bindable] public var repositories:ArrayCollection;
 	
@@ -60,7 +62,7 @@
 				return item.name + " - " + item.resourcePath;
 			}
 
-			protected function onItemDoubleClicked(event:GridEvent):void
+			protected function onItemEdit():void
 			{
 				// let's open item-edit window
 				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OPEN_ADD_REPOSITORY, dgRepositories.selectedItem));
@@ -77,16 +79,23 @@
 				SharedObjectUtil.saveRepositoriesToSO(repositories);
 			}
 			
-			protected function onBrowseRepository(selectedRepository:RepositoryVO):void
+			protected function onBrowseRepository(selectedRepository:RepositoryItemVO=null):void
 			{
 				currentState = "browse";
 				this.title = "Browse";
+				
+				repoBrowser.setRepositories(selectedRepository ? [selectedRepository] : repositories.source);
 			}
 			
 			protected function onBack(event:MouseEvent):void
 			{
 				currentState = "default";
 				this.title = "Manage Repositories";
+			}
+			
+			protected function onCheckoutRequest(event:MouseEvent):void
+			{
+				dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repoBrowser.selectedItem));
 			}
 			
 		]]>
@@ -105,7 +114,7 @@
 					sortableColumns="false" variableRowHeight="true"
 					dataProvider="{repositories}"
 					doubleClickMode="row" doubleClickEnabled="true"
-					gridDoubleClick="onItemDoubleClicked(event)"
+					gridDoubleClick="onItemEdit()"
 					rowHeight="24">
 			<s:columns>
 				<s:ArrayList>
@@ -133,14 +142,16 @@
 					  click="onRepositoryDelete(event)"/>
 			<s:Button label="Edit"
 					  enabled="{dgRepositories.selectedItem}" 
-					  styleName="darkButton"/>
+					  styleName="darkButton"
+					  click="onItemEdit()"/>
 			<s:Button label="Browse"
 					  enabled="{dgRepositories.selectedItem}" 
 					  styleName="darkButton"
-					  click="onBrowseRepository(dgRepositories.selectedItem as RepositoryVO)"/>
+					  click="onBrowseRepository(dgRepositories.selectedItem as RepositoryItemVO)"/>
 			<s:Spacer width="100%"/>
 			<s:Button label="Browse All"
-					  styleName="darkButton"/>
+					  styleName="darkButton"
+					  click="onBrowseRepository()"/>
 		</s:HGroup>
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeIn="browse">
@@ -148,9 +159,10 @@
 					  styleName="darkButton"
 					  click="onBack(event)"/>
 			<s:Spacer width="100%"/>
-			<s:Button label="Clone/Checkout"
+			<s:Button label="Checkout"
 					  styleName="darkButton"
-					  enabled="{repoBrowser.selectedItem}"/>
+					  enabled="{repoBrowser.selectedItem &amp;&amp; repoBrowser.selectedItem.children}"
+					  click="onCheckoutRequest(event)"/>
 		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

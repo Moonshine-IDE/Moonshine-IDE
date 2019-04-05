@@ -26,6 +26,7 @@ package actionScripts.plugins.svn.provider
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.svn.commands.CheckoutCommand;
 	import actionScripts.plugins.svn.commands.CommitCommand;
+	import actionScripts.plugins.svn.commands.LoadRemoteListCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	
@@ -61,10 +62,16 @@ package actionScripts.plugins.svn.provider
 			updateCommand.update(file, user, password, isTrustServerCertificateSVN);
 		}
 		
-		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
+		public function checkout(event:SVNEvent, targetFolder:String, isTrustServerCertificateSVN:Boolean):void
 		{
 			var checkoutCommand:CheckoutCommand = new CheckoutCommand(executable, root);
-			checkoutCommand.checkout(event, isTrustServerCertificateSVN);
+			checkoutCommand.checkout(event, targetFolder, isTrustServerCertificateSVN);
+		}
+		
+		public function loadRemoteList(event:SVNEvent, onCompletion:Function):void
+		{
+			var remoteListCommand:LoadRemoteListCommand = new LoadRemoteListCommand(executable, root);
+			remoteListCommand.loadList(event, onCompletion);
 		}
 	}
 }

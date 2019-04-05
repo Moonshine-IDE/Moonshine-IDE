@@ -35,7 +35,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.RepositoryVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.AddRepositoryPopup;
@@ -84,6 +84,8 @@ package actionScripts.plugins.versionControl
 		
 		protected function handleOpenManageRepositories(event:Event):void
 		{
+			if (!continueIfSVNSupported()) return;
+			
 			openManageRepoWindow();
 		}
 		
@@ -122,12 +124,12 @@ package actionScripts.plugins.versionControl
 		{
 			openAddEditRepositoryWindow(
 				((event is VersionControlEvent) && (event as VersionControlEvent).value) ? 
-				((event as VersionControlEvent).value as RepositoryVO) : 
+				((event as VersionControlEvent).value as RepositoryItemVO) : 
 				null
 			);
 		}
 		
-		protected function openAddEditRepositoryWindow(editItem:RepositoryVO=null):void
+		protected function openAddEditRepositoryWindow(editItem:RepositoryItemVO=null):void
 		{
 			if (!addRepositoryWindow)
 			{
@@ -200,7 +202,7 @@ package actionScripts.plugins.versionControl
 				gitAuthWindow.title = "SVN Needs Authentication";
 				gitAuthWindow.type = VersionControlTypes.SVN;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			
@@ -210,7 +212,7 @@ package actionScripts.plugins.versionControl
 			function onGitAuthWindowClosed(event:CloseEvent):void
 			{
 				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.GIT_AUTH_COMPLETED, onAuthSuccessToSVN);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
 				PopUpManager.removePopUp(gitAuthWindow);
 				gitAuthWindow = null;
 			}
