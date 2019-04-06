@@ -595,6 +595,8 @@ package actionScripts.utils
 		 */
 		public static function checkIfRoyaleApplication(project:AS3ProjectVO):void
 		{
+			if (project.isRoyale) return;
+
             // probable termination
             if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
 

@@ -327,7 +327,7 @@ package actionScripts.plugins.as3project.mxmlc
 				var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 				
 				UtilsCore.checkIfRoyaleApplication(as3Pvo);
-				if (as3Pvo.isFlexJS)
+				if (as3Pvo.isFlexJS || as3Pvo.isRoyale)
 				{
 					// FlexJS Application
 					shellInfo = new NativeProcessStartupInfo();

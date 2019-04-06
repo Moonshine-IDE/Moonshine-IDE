@@ -835,7 +835,7 @@ package actionScripts.plugins.as3project
                     null;
 
             // Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
+			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
 			pvo.projectName = projectName;
 			pvo.isLibraryProject = isLibraryProject;
 			if (pvo.isLibraryProject)
@@ -882,11 +882,11 @@ package actionScripts.plugins.as3project
                         ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
                         allProjectTemplates;
 
-                for each (var i:TemplateVO in projectsTemplates)
+                for each (var template:TemplateVO in projectsTemplates)
                 {
-                    if (i.title == projectTemplateType)
+                    if (template.title == projectTemplateType)
                     {
-                        setProjectType(i.title);
+                        setProjectType(template.title);
 
                         var templateSettingsName:String = isVisualEditorProject && !exportProject ?
                                 "$Settings.veditorproj.template" :
@@ -896,8 +896,8 @@ package actionScripts.plugins.as3project
                         var tmpName:String = pvo.projectName;
                         var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
                         var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
-                        templateLookup[pvo] = i.file;
-                        pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
+                        templateLookup[pvo] = template.file;
+                        pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
                         pvo.folderLocation = tmpLocation;
                         pvo.projectName = tmpName;
                         pvo.projectWithExistingSourcePaths = tmpExistingSource;
