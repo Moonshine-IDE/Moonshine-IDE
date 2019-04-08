@@ -138,7 +138,7 @@ package actionScripts.plugins.svn
 		{
 			for each (var i:ProjectVO in model.projects)
 			{
-				(i as AS3ProjectVO).menuType = (i as AS3ProjectVO).menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
+				i.menuType = i.menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
 			}
 			
 			// following will enable/disable Moonshine top menus based on project
@@ -172,11 +172,11 @@ package actionScripts.plugins.svn
 			if (!svnBinaryPath || svnBinaryPath == "") return;
 			
 			// don't go for a check if already decided as svn project
-			if ((event.project as AS3ProjectVO).menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1) 
+			if (event.project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1) 
 			{
 				if (isVersioned(event.project.folderLocation))
 				{
-					(event.project as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
+					event.project.menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
 					(event.project as AS3ProjectVO).hasVersionControlType = VersionControlTypes.SVN;
 					// following will enable/disable Moonshine top menus based on project
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));

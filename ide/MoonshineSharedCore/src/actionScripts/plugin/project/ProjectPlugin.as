@@ -220,10 +220,10 @@ package actionScripts.plugin.project
 					model.projects.addItem(pvo);
                     model.activeProject = pvo;
 					
-					if (lastActiveProjectMenuType != (pvo as AS3ProjectVO).menuType)
+					if (lastActiveProjectMenuType != pvo.menuType)
 					{
 	                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
-						lastActiveProjectMenuType = (pvo as AS3ProjectVO).menuType;
+						lastActiveProjectMenuType = pvo.menuType;
 					}
 
 					showProjectPanel();
@@ -267,10 +267,10 @@ package actionScripts.plugin.project
 			{
 				model.projects.addItemAt(event.project, 0);
 
-				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
+				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != event.project.menuType)
 				{
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
-					lastActiveProjectMenuType = (event.project as AS3ProjectVO).menuType;
+					lastActiveProjectMenuType = event.project.menuType;
 				}
 			}
 
@@ -302,7 +302,7 @@ package actionScripts.plugin.project
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 					if(model.activeProject is AS3ProjectVO)
 					{
-						lastActiveProjectMenuType = model.activeProject ? (model.activeProject as AS3ProjectVO).menuType : null;
+						lastActiveProjectMenuType = model.activeProject ? model.activeProject.menuType : null;
 					}
 					else
 					{
