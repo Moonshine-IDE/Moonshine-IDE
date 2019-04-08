@@ -19,32 +19,30 @@
 package actionScripts.plugin.java.javaproject
 {
 	import actionScripts.events.MavenBuildEvent;
+	import actionScripts.events.RunJavaProjectEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.build.MavenBuildStatus;
 	import actionScripts.plugin.core.compiler.JavaBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.project.ProjectType;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.utils.UtilsCore;
 
 	import flash.events.Event;
 
 	public class JavaProjectPlugin extends PluginBase
 	{
-		public var activeType:uint = ProjectType.JAVA;
-		
 		override public function get name():String 			{ return "Java Project Plugin"; }
 		override public function get author():String 		{ return "Moonshine Project Team"; }
 		override public function get description():String 	{ return "Java project importing, exporting & scaffolding."; }
-
-
 
 		override public function activate():void
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
 			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
 			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
+			dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
 
 			super.activate();
 		}
@@ -79,10 +77,18 @@ package actionScripts.plugin.java.javaproject
 				}
 				else
 				{
-					var runningCommand:String = "exec:java -Dexec.mainClass=".concat('"', javaProject.mainClassName, '"');
 					dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
-							MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, [runningCommand]));
+							MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, javaProject.mavenBuildOptions.getCommandLine()));
 				}
+			}
+		}
+
+		private function mavenBuildCompleteHandler(event:MavenBuildEvent):void
+		{
+			var project:JavaProjectVO = UtilsCore.getProjectByName(event.buildId) as JavaProjectVO;
+			if (project && project.projectName == event.buildId)
+			{
+				dispatcher.dispatchEvent(new RunJavaProjectEvent(RunJavaProjectEvent.RUN_JAVA_PROJECT, project));
 			}
 		}
 

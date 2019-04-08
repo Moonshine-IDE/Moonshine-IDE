@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-    import flash.desktop.NativeApplication;
+	import actionScripts.plugins.run.RunJavaProject;
+
+	import flash.desktop.NativeApplication;
     import flash.display.DisplayObject;
     import flash.display.Screen;
     import flash.display.Stage;
@@ -192,6 +194,7 @@ package actionScripts.impls
 				FullscreenPlugin,
 				AntBuildPlugin,
 				MavenBuildPlugin,
+				RunJavaProject,
 				PreviewPrimeFacesProjectPlugin,
 				SearchPlugin,
 				MouseManagerPlugin,
@@ -240,7 +243,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
 					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

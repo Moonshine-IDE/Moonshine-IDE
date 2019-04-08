@@ -257,18 +257,37 @@ package actionScripts.utils
 		}
 		
 		/**
-		 * Returns project based on its folderWrapper
+		 * Returns project based on its path
 		 */
 		public static function getProjectByPath(value:String):ProjectVO
 		{
-			for each (var i:ProjectVO in model.projects)
+			for each (var project:ProjectVO in model.projects)
 			{
-				if (i.folderLocation.fileBridge.nativePath == value) return i;
+				if (project.folderLocation.fileBridge.nativePath == value)
+				{
+					return project;
+				}
 			}
 			
 			return null;
 		}
-		
+
+		/**
+		 * Returns project based on its name
+		 */
+		public static function getProjectByName(projectName:String):ProjectVO
+		{
+			for each (var project:ProjectVO in model.projects)
+			{
+				if (project.projectName == projectName)
+				{
+					return project;
+				}
+			}
+
+			return null;
+		}
+
 		/**
 		 * Returns projectVO against fileWrapper
 		 */
