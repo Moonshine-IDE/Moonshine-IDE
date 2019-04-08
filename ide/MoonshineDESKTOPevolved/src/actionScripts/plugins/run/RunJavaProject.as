@@ -6,6 +6,7 @@ package actionScripts.plugins.run
     import actionScripts.utils.MavenPomUtil;
 
     import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
 
     public class RunJavaProject extends ConsoleBuildPluginBase
     {
@@ -68,6 +69,17 @@ package actionScripts.plugins.run
                 {
                     error("Project .jar file does not exist: " + jarLocation.fileBridge.nativePath);
                 }
+            }
+        }
+
+        override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+        {
+            super.onNativeProcessExit(event);
+
+            if (!isNaN(event.exitCode))
+            {
+                var info:String = "Application has been closed with code: " + event.exitCode;
+                warning(info);
             }
         }
     }
