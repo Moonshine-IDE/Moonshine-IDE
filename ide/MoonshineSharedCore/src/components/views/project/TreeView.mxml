@@ -466,6 +466,7 @@
 				case FTETreeItemRenderer.CLOSE:
 				{
 					onFileDeletedOnServer([fileWrapper], event.menuLabel);
+					refreshActiveProject(fileWrapper);
 					break;
 				}
 				case FTETreeItemRenderer.DELETE:
@@ -812,7 +813,10 @@
 
 							// in case of Close project we shall need to close the lang-server here
 							// in case of Delete project this handles by the command class
-							if(removalType == FTETreeItemRenderer.CLOSE) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
+							if(removalType == FTETreeItemRenderer.CLOSE)
+							{
+								dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
+							}
 							break;
 						}
 					}
@@ -937,31 +941,6 @@
 						new AddFolderEvent(AddFolderEvent.ADD_NEW_FOLDER, tmpCurrentEditWrapper, creatingItemIn)
 				);
 			}
-
-			/*var newFile:File = creatingItemIn.fileBridge.resolvePath(event.menuLabel);
-            if (newFile.exists)
-            {
-            // Can't create file here
-            creatingItemIn.updateChildren();
-            return;
-            }
-
-            if (templateToCreate)
-            {
-            // Dispatch event to create the file
-            var e:TemplateEvent = new TemplateEvent(TemplateEvent.CREATE_NEW_FILE, templateToCreate, newFile);
-            GlobalEventDispatcher.getInstance().dispatchEvent(e);
-            }
-            else
-            {
-            // Create directory
-            FileUtil.createFile(newFile, true);
-            }
-
-            // Display it
-            creatingItemIn.updateChildren();
-
-            cleanupAfterCreate();*/
 		}
 
 		private function cleanupAfterCreate():void

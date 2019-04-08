@@ -288,11 +288,7 @@ package actionScripts.plugin.project
 			
 			if (model.activeProject == event.project)
 			{
-				if (model.projects.length)
-				{
-					model.activeProject = model.projects[0];
-                }
-				else
+				if (model.projects.length == 0)
 				{
 					model.activeProject = null;
                 }
