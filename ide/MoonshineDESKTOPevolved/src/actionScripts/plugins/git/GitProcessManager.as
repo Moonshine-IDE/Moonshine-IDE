@@ -553,7 +553,7 @@ package actionScripts.plugins.git
 					{
 						if (tmpProject)
 						{
-							(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+							tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
 							(tmpProject as AS3ProjectVO).hasVersionControlType = VersionControlTypes.GIT;
 							if (plugin.modelAgainstProject[tmpProject] == undefined) 
 							{

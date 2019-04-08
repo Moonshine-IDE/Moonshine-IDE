@@ -115,8 +115,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isTrustServerCertificateSVN:Boolean;
 		public var visualEditorExportPath:String;
 
-		public var menuType:String = "";
-
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
 		private var customHTMLFilePath:StringSetting;
