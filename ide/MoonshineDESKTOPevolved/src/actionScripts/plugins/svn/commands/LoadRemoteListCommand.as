@@ -207,13 +207,13 @@ package actionScripts.plugins.svn.commands
 						lastEvent.repository.children.push(tmpRepoItem);
 					}
 				}
-				
-				// notify to the caller
-				if (onCompletion != null) 
-				{
-					onCompletion(lastEvent.repository, true);
-					onCompletion = null;
-				}
+			}
+			
+			// notify to the caller
+			if (onCompletion != null) 
+			{
+				onCompletion(lastEvent.repository, true);
+				onCompletion = null;
 			}
 		}
 	}

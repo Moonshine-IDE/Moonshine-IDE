@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*">
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
+		  gap="10"
+		  creationComplete="onComplete(event)">
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
 			import mx.events.TreeEvent;
 			
-			import spark.components.BusyIndicator;
-			
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.TreeMenuItemEvent;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			
 			[Bindable] public var selectedItem:Object;
 			[Bindable] private var repositories:ArrayCollection;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			private var busyIndicator:BusyIndicator;
+			private var remoteReuestedObject:RepositoryItemVO;
+			
+			//--------------------------------------------------------------------------
+			//
+			//  PUBLIC API
+			//
+			//--------------------------------------------------------------------------
 			
 			public function setRepositories(value:Array):void
 			{
@@ -26,27 +35,37 @@
 			
 			public function onBackEvent():void
 			{
-				removeBusyIndicator();
+				if (remoteReuestedObject) 
+				{
+					remoteReuestedObject.isUpdating = false;
+					remoteReuestedObject = null;
+				}
 			}
 			
-			protected function onTreeItemOpen(event:TreeEvent):void
+			//--------------------------------------------------------------------------
+			//
+			//  PRIVATE/PROTECTED API
+			//
+			//--------------------------------------------------------------------------
+			
+			protected function onComplete(event:FlexEvent):void
 			{
-				if (busyIndicator)
-				{
-					treeRepositories.expandItem(event.item, false);
-					return;
-				}
+				treeRepositories.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleContextMenuItemClick, false, 0, true);
+			}
+			
+			private function handleContextMenuItemClick(event:TreeMenuItemEvent):void
+			{
+				var rendererData:RepositoryItemVO = event.extra;
+				if (rendererData.isUpdating) return;
 				
-				var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
-				// load against folder without item only
-				if (tmpRepo.children && tmpRepo.children.length == 0)
+				switch (event.menuLabel)
 				{
-					busyIndicator = new BusyIndicator();
-					busyIndicator.setStyle("symbolColor", 0xffffff);
-					busyIndicator.right = 0;
-					this.addElement(busyIndicator);
-					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
-						{repository: tmpRepo, onCompletion: onCallListingCompleted}));
+					case RepositoryTreeItemRenderer.REFRESH:
+						onTreeItemOpen(new TreeEvent(TreeEvent.ITEM_OPEN, false, false, rendererData), true);
+						break;
+					case RepositoryTreeItemRenderer.COLLAPSE_ALL:
+						collapseAllItems();
+						break;
 				}
 			}
 			
@@ -56,9 +75,50 @@
 				return item.label;
 			}
 			
+			private function collapseAllItems():void
+			{
+				for each (var item:Object in repositories)
+				{
+					treeRepositories.expandChildrenOf(item, false);
+				}
+			}
+			
+			//--------------------------------------------------------------------------
+			//
+			//  DATA-FETCH UI API
+			//
+			//--------------------------------------------------------------------------
+			
+			protected function onTreeItemOpen(event:TreeEvent, onRefresh:Boolean=false):void
+			{
+				if (remoteReuestedObject)
+				{
+					treeRepositories.expandItem(event.item, false);
+					return;
+				}
+				
+				var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
+				
+				// condition1:: if no children, request data
+				// condition2:: if has children from previous load, do not request
+				// condition3:: if a refresh call, ignore #2 and request data
+				if (tmpRepo.children && (tmpRepo.children.length == 0 || onRefresh))
+				{
+					// in case of refresh call
+					// remove any previous items first
+					if (onRefresh) tmpRepo.children = [];
+					
+					remoteReuestedObject = tmpRepo;
+					tmpRepo.isUpdating = true;
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
+						{repository: tmpRepo, onCompletion: onCallListingCompleted}));
+				}
+			}
+			
 			private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
 			{
-				removeBusyIndicator();
+				againstNodeItem.isUpdating = false;
+				remoteReuestedObject = null;
 				
 				// in case of auth cancel situation
 				if (!success)
@@ -77,35 +137,27 @@
 				{
 					treeRepositories.verticalScrollPosition = lastScrollPosition;
 					treeRepositories.selectedItem = lastSelectedItem;
+					if (!treeRepositories.isItemOpen(againstNodeItem))
+					{
+						treeRepositories.expandItem(againstNodeItem, true);
+					}
 				});
-			}
-			
-			private function removeBusyIndicator():void
-			{
-				if (busyIndicator) 
-				{
-					this.removeElement(busyIndicator);
-					busyIndicator = null;
-				}
 			}
 			
 		]]>
 	</fx:Script>
 	
-	<s:VGroup id="hgHeader" 
-			  width="100%" height="100%"
-			  verticalAlign="middle" gap="10">
-		<s:Label text="Select any repository to checkout/clone:"/>
-		<mx:Tree id="treeRepositories" 
-				 width="100%" height="100%"
-				 labelFunction="repositoryLabelFunction"
-				 itemRenderer="actionScripts.ui.renderers.RepositoryTreeItemRenderer"
-				 dataProvider="{repositories}"
-				 rollOverColor="0xe4e4e4"
-				 selectionColor="0xCCCCCC"
-				 color="0x000"
-				 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
-				 itemOpen="onTreeItemOpen(event)"
-				 itemClick="selectedItem = treeRepositories.selectedItem"/>
-	</s:VGroup>
-</s:Group>
+	<s:Label text="Select any repository to checkout/clone:"/>
+	
+	<mx:Tree id="treeRepositories" 
+			 width="100%" height="100%"
+			 labelFunction="repositoryLabelFunction"
+			 itemRenderer="actionScripts.ui.renderers.RepositoryTreeItemRenderer"
+			 dataProvider="{repositories}"
+			 rollOverColor="0xe4e4e4"
+			 selectionColor="0xCCCCCC"
+			 color="0x000"
+			 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
+			 itemOpen="onTreeItemOpen(event)"
+			 itemClick="selectedItem = treeRepositories.selectedItem"/>
+</s:VGroup>

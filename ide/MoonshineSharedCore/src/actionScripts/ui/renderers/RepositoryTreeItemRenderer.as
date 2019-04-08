@@ -20,27 +20,30 @@ package actionScripts.ui.renderers
 {
     import flash.display.Sprite;
     import flash.events.Event;
+    import flash.ui.ContextMenuItem;
     
     import mx.binding.utils.ChangeWatcher;
     import mx.controls.treeClasses.TreeItemRenderer;
-    import mx.core.UIComponent;
     import mx.core.mx_internal;
-    import mx.events.ToolTipEvent;
     
+    import spark.components.BusyIndicator;
     import spark.components.Label;
     
+    import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.locator.IDEModel;
-    import actionScripts.utils.UtilsCore;
 
 	use namespace mx_internal;
 	
 	public class RepositoryTreeItemRenderer extends TreeItemRenderer
 	{
+		public static const REFRESH:String = "Refresh";
+		public static const COLLAPSE_ALL:String = "Collapse All";
+		
 		private var label2:Label;
 		
 		private var model:IDEModel;
 		private var hitareaSprite:Sprite;
-		private var isTooltipListenerAdded:Boolean;
+		private var busyIndicator:BusyIndicator;
 
 		public function RepositoryTreeItemRenderer()
 		{
@@ -58,11 +61,24 @@ package actionScripts.ui.renderers
 		{
 			super.data = value;
 			
-			if (!isTooltipListenerAdded)
+			contextMenu = model.contextMenuCore.getContextMenu();
+			if (data.children)
 			{
-				addEventListener(ToolTipEvent.TOOL_TIP_CREATE, UtilsCore.createCustomToolTip, false, 0, true);
-				addEventListener(ToolTipEvent.TOOL_TIP_SHOW, UtilsCore.positionTip, false, 0, true);
-				isTooltipListenerAdded = true;
+				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
+			}
+			
+			// collapse-all in all cases
+			model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COLLAPSE_ALL, redispatch, Event.SELECT));
+			
+			if (data.isUpdating && !busyIndicator) 
+			{
+				busyIndicator = new BusyIndicator();
+				addChild(busyIndicator);
+			}
+			else if (!data.isUpdating && busyIndicator)
+			{
+				removeChild(busyIndicator);
+				busyIndicator = null;
 			}
 		}
 		
@@ -79,7 +95,7 @@ package actionScripts.ui.renderers
 	    {
 	        super.createLabel(childIndex);
 	        label.visible = false;
-	        
+			
 	        if (!label2)
 			{	
 				label2 = new Label();
@@ -126,6 +142,21 @@ package actionScripts.ui.renderers
         	label2.text = label.text;
         	
         	if (label) label.visible = false;
+			if (busyIndicator)
+			{
+				busyIndicator.width = busyIndicator.height = 20;
+				busyIndicator.x = unscaledWidth - 30;
+				busyIndicator.y = 0;
+			}
+		}
+		
+		private function redispatch(event:Event):void
+		{
+			var type:String = (event.target is ContextMenuItem) ? event.target.caption : event.target.label;
+			var e:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, type, null);
+			e.extra = data;
+			
+			dispatchEvent(e);
 		}
 	}
 }

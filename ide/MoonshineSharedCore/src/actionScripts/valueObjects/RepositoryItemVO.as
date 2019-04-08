@@ -59,5 +59,9 @@ package actionScripts.valueObjects
 		private var _children:Array;
 		public function get children():Array							{ return _children; }
 		public function set children(value:Array):void					{ _children = value; }
+		
+		private var _isUpdating:Boolean;
+		public function get isUpdating():Boolean						{ return _isUpdating; }
+		public function set isUpdating(value:Boolean):void				{ _isUpdating = value; }
 	}
 }
