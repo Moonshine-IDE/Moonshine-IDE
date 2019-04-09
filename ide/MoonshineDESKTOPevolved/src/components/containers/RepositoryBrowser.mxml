@@ -3,7 +3,7 @@
 		  xmlns:s="library://ns.adobe.com/flex/spark" 
 		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
 		  gap="10"
-		  creationComplete="onComplete(event)">
+		  creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
@@ -48,7 +48,7 @@
 			//
 			//--------------------------------------------------------------------------
 			
-			protected function onComplete(event:FlexEvent):void
+			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				treeRepositories.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleContextMenuItemClick, false, 0, true);
 			}
@@ -61,7 +61,9 @@
 				switch (event.menuLabel)
 				{
 					case RepositoryTreeItemRenderer.REFRESH:
-						onTreeItemOpen(new TreeEvent(TreeEvent.ITEM_OPEN, false, false, rendererData), true);
+						// remove any previous items first
+						rendererData.children = [];
+						requestRemoteSvnList(rendererData);
 						break;
 					case RepositoryTreeItemRenderer.COLLAPSE_ALL:
 						collapseAllItems();
@@ -89,7 +91,7 @@
 			//
 			//--------------------------------------------------------------------------
 			
-			protected function onTreeItemOpen(event:TreeEvent, onRefresh:Boolean=false):void
+			protected function onTreeItemOpen(event:TreeEvent):void
 			{
 				if (remoteReuestedObject)
 				{
@@ -97,21 +99,19 @@
 					return;
 				}
 				
-				var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
-				
+				requestRemoteSvnList(event.item as RepositoryItemVO);
+			}
+			
+			protected function requestRemoteSvnList(repoItem:RepositoryItemVO):void
+			{
 				// condition1:: if no children, request data
 				// condition2:: if has children from previous load, do not request
-				// condition3:: if a refresh call, ignore #2 and request data
-				if (tmpRepo.children && (tmpRepo.children.length == 0 || onRefresh))
+				if (repoItem.children && (repoItem.children.length == 0))
 				{
-					// in case of refresh call
-					// remove any previous items first
-					if (onRefresh) tmpRepo.children = [];
-					
-					remoteReuestedObject = tmpRepo;
-					tmpRepo.isUpdating = true;
+					remoteReuestedObject = repoItem;
+					repoItem.isUpdating = true;
 					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
-						{repository: tmpRepo, onCompletion: onCallListingCompleted}));
+						{repository: repoItem, onCompletion: onCallListingCompleted}));
 				}
 			}
 			

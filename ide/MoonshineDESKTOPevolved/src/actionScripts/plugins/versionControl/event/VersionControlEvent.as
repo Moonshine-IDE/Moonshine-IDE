@@ -29,10 +29,10 @@ package actionScripts.plugins.versionControl.event
 		
 		public var value:Object;
 		
-		public function VersionControlEvent(type:String, value:Object=null, _bubble:Boolean=false, _cancelable:Boolean=true)
+		public function VersionControlEvent(type:String, value:Object=null, bubble:Boolean=false, cancelable:Boolean=true)
 		{
 			this.value = value;
-			super(type, _bubble, _cancelable);
+			super(type, bubble, cancelable);
 		}
 	}
 }

@@ -171,41 +171,42 @@
 		<s:RadioButtonGroup id="rgType" change="onTypeChanged(event)"/>
 	</fx:Declarations>
 	
-	<s:VGroup height="100%" width="100%" 
-			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
-		<s:HGroup width="100%">
-			<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
-						   selected="true"/>
-			<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
-						   enabled="false"/>	
-		</s:HGroup>
-		<view:PromptTextInput id="txtSource"
-							  width="100%" styleName="textInput"
-							  prompt="Repository URL" change="updatePossiblePath()"/>
-		<s:VGroup width="100%">
-			<s:Label text="Notes (optional):"/>
-			<view:PromptTextInput id="txtNotes" 
-								  prompt="Repostory notes.." width="100%" styleName="textInput"/>
-		</s:VGroup>
-		<s:Label id="lblNoPath" 
-				 width="100%" textAlign="center" color="0xff0000"
-				 includeInLayout="false" visible="false"/>
-		<s:HGroup width="100%" verticalAlign="middle">
-			<s:CheckBox id="cbLogin"
-						label="Need Authentication" selected="false"/>
-			<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
-						enabled="{type == VersionControlTypes.SVN}"/>
-		</s:HGroup>
-		<s:VGroup width="100%"
-				  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
-			<view:PromptTextInput
-				id="txtLogin" 
-				prompt="User Name"
-				width="100%"
-				styleName="textInput"/>
-			<s:Label text="Password will be prompted when needed by version control software"
-					 color="0x444444"/>
-		</s:VGroup>
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+	
+	<s:HGroup width="100%">
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
+					   selected="true"/>
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
+					   enabled="false"/>	
+	</s:HGroup>
+	<view:PromptTextInput id="txtSource"
+						  width="100%" styleName="textInput"
+						  prompt="Repository URL" change="updatePossiblePath()"/>
+	<s:VGroup width="100%">
+		<s:Label text="Notes (optional):"/>
+		<view:PromptTextInput id="txtNotes" 
+							  prompt="Repostory notes.." width="100%" styleName="textInput"/>
+	</s:VGroup>
+	<s:Label id="lblNoPath" 
+			 width="100%" textAlign="center" color="0xff0000"
+			 includeInLayout="false" visible="false"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:CheckBox id="cbLogin"
+					label="Need Authentication" selected="false"/>
+		<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
+					enabled="{type == VersionControlTypes.SVN}"/>
+	</s:HGroup>
+	<s:VGroup width="100%"
+			  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
+		<view:PromptTextInput
+			id="txtLogin" 
+			prompt="User Name"
+			width="100%"
+			styleName="textInput"/>
+		<s:Label text="Password will be prompted when needed by version control software"
+				 color="0x444444"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

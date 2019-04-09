@@ -175,8 +175,14 @@ package actionScripts.plugins.versionControl
 			// check if svn path exists
 			if (!model.svnPath || model.svnPath == "")
 			{
-				if (ConstantsCoreVO.IS_MACOS) dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-				else dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+				if (ConstantsCoreVO.IS_MACOS) 
+				{
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				}
+				else 
+				{
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+				}
 				return false;
 			}
 			
