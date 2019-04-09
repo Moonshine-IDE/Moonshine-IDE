@@ -22,13 +22,11 @@
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 										   xmlns:s="library://ns.adobe.com/flex/spark"
-										   xmlns:view="actionScripts.plugin.findreplace.view.*"
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-										   xmlns:other="components.views.other.*"
 										   backgroundColor="0xf5f5f5" 
 										   minHeight="300" minWidth="300"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
-										   creationComplete="onComplete(event)" xmlns:containers="components.containers.*">
+										   xmlns:containers="components.containers.*">
 	<resizableTitleWindow:layout>
 		<s:VerticalLayout paddingLeft="12" paddingBottom="6" paddingTop="9"
 						  horizontalAlign="left" paddingRight="12"/>
@@ -36,31 +34,18 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
 			
 			import spark.events.GridEvent;
-			
-			import actionScripts.events.GeneralEvent;
+
 			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.svn.SVNPlugin;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.valueObjects.RepositoryItemVO;
 	
 			[Bindable] public var repositories:ArrayCollection;
-	
-			private var model:IDEModel = IDEModel.getInstance();
+
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			
-			private function onComplete(event:FlexEvent):void
-			{
-			}
-	
-			private function getResourceName(item:Object):String
-			{
-				return item.name + " - " + item.resourcePath;
-			}
 
 			protected function onItemEdit():void
 			{
