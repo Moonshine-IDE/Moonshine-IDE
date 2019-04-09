@@ -1,149 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
 		  gap="10"
 		  creationComplete="onComplete(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
-			import mx.events.TreeEvent;
-			
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.TreeMenuItemEvent;
-			import actionScripts.plugins.versionControl.event.VersionControlEvent;
-			import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
-			import actionScripts.valueObjects.RepositoryItemVO;
-			
-			[Bindable] public var selectedItem:Object;
-			[Bindable] private var repositories:ArrayCollection;
-			
-			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			private var remoteReuestedObject:RepositoryItemVO;
-			
-			//--------------------------------------------------------------------------
-			//
-			//  PUBLIC API
-			//
-			//--------------------------------------------------------------------------
-			
-			public function setRepositories(value:Array):void
+		import mx.collections.ArrayCollection;
+		import mx.events.FlexEvent;
+		import mx.events.TreeEvent;
+
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.TreeMenuItemEvent;
+		import actionScripts.plugins.versionControl.event.VersionControlEvent;
+		import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
+		import actionScripts.valueObjects.RepositoryItemVO;
+
+		[Bindable]
+		public var selectedItem:Object;
+		[Bindable]
+		private var repositories:ArrayCollection;
+
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var remoteRequestedObject:RepositoryItemVO;
+
+		//--------------------------------------------------------------------------
+		//
+		//  PUBLIC API
+		//
+		//--------------------------------------------------------------------------
+
+		public function setRepositories(value:Array):void
+		{
+			repositories = new ArrayCollection(value);
+		}
+
+		public function onBackEvent():void
+		{
+			if(remoteRequestedObject)
 			{
-				repositories = new ArrayCollection(value);
+				remoteRequestedObject.isUpdating = false;
+				remoteRequestedObject = null;
 			}
-			
-			public function onBackEvent():void
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE/PROTECTED API
+		//
+		//--------------------------------------------------------------------------
+
+		protected function onComplete(event:FlexEvent):void
+		{
+			treeRepositories.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleContextMenuItemClick, false, 0, true);
+		}
+
+		private function handleContextMenuItemClick(event:TreeMenuItemEvent):void
+		{
+			var rendererData:RepositoryItemVO = event.extra;
+			if(rendererData.isUpdating) return;
+
+			switch (event.menuLabel)
 			{
-				if (remoteReuestedObject) 
-				{
-					remoteReuestedObject.isUpdating = false;
-					remoteReuestedObject = null;
-				}
+				case RepositoryTreeItemRenderer.REFRESH:
+					onTreeItemOpen(new TreeEvent(TreeEvent.ITEM_OPEN, false, false, rendererData), true);
+					break;
+				case RepositoryTreeItemRenderer.COLLAPSE_ALL:
+					collapseAllItems();
+					break;
 			}
-			
-			//--------------------------------------------------------------------------
-			//
-			//  PRIVATE/PROTECTED API
-			//
-			//--------------------------------------------------------------------------
-			
-			protected function onComplete(event:FlexEvent):void
+		}
+
+		private function repositoryLabelFunction(item:RepositoryItemVO):String
+		{
+			if(item.isRoot) return item.url;
+			return item.label;
+		}
+
+		private function collapseAllItems():void
+		{
+			for each (var item:Object in repositories)
 			{
-				treeRepositories.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleContextMenuItemClick, false, 0, true);
+				treeRepositories.expandChildrenOf(item, false);
 			}
-			
-			private function handleContextMenuItemClick(event:TreeMenuItemEvent):void
+		}
+
+		//--------------------------------------------------------------------------
+		//
+		//  DATA-FETCH UI API
+		//
+		//--------------------------------------------------------------------------
+
+		protected function onTreeItemOpen(event:TreeEvent, onRefresh:Boolean = false):void
+		{
+			if(remoteRequestedObject)
 			{
-				var rendererData:RepositoryItemVO = event.extra;
-				if (rendererData.isUpdating) return;
-				
-				switch (event.menuLabel)
-				{
-					case RepositoryTreeItemRenderer.REFRESH:
-						onTreeItemOpen(new TreeEvent(TreeEvent.ITEM_OPEN, false, false, rendererData), true);
-						break;
-					case RepositoryTreeItemRenderer.COLLAPSE_ALL:
-						collapseAllItems();
-						break;
-				}
+				treeRepositories.expandItem(event.item, false);
+				return;
 			}
-			
-			private function repositoryLabelFunction(item:RepositoryItemVO):String
+
+			var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
+
+			// condition1:: if no children, request data
+			// condition2:: if has children from previous load, do not request
+			// condition3:: if a refresh call, ignore #2 and request data
+			if(tmpRepo.children && (tmpRepo.children.length == 0 || onRefresh))
 			{
-				if (item.isRoot) return item.url;
-				return item.label;
-			}
-			
-			private function collapseAllItems():void
-			{
-				for each (var item:Object in repositories)
-				{
-					treeRepositories.expandChildrenOf(item, false);
-				}
-			}
-			
-			//--------------------------------------------------------------------------
-			//
-			//  DATA-FETCH UI API
-			//
-			//--------------------------------------------------------------------------
-			
-			protected function onTreeItemOpen(event:TreeEvent, onRefresh:Boolean=false):void
-			{
-				if (remoteReuestedObject)
-				{
-					treeRepositories.expandItem(event.item, false);
-					return;
-				}
-				
-				var tmpRepo:RepositoryItemVO = event.item as RepositoryItemVO;
-				
-				// condition1:: if no children, request data
-				// condition2:: if has children from previous load, do not request
-				// condition3:: if a refresh call, ignore #2 and request data
-				if (tmpRepo.children && (tmpRepo.children.length == 0 || onRefresh))
-				{
-					// in case of refresh call
-					// remove any previous items first
-					if (onRefresh) tmpRepo.children = [];
-					
-					remoteReuestedObject = tmpRepo;
-					tmpRepo.isUpdating = true;
-					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
+				// in case of refresh call
+				// remove any previous items first
+				if(onRefresh) tmpRepo.children = [];
+
+				remoteRequestedObject = tmpRepo;
+				tmpRepo.isUpdating = true;
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
 						{repository: tmpRepo, onCompletion: onCallListingCompleted}));
-				}
 			}
-			
-			private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
+		}
+
+		private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
+		{
+			againstNodeItem.isUpdating = false;
+			remoteRequestedObject = null;
+
+			// in case of auth cancel situation
+			if(!success)
 			{
-				againstNodeItem.isUpdating = false;
-				remoteReuestedObject = null;
-				
-				// in case of auth cancel situation
-				if (!success)
-				{
-					treeRepositories.expandItem(againstNodeItem, false);
-					return;
-				}
-				
-				var lastScrollPosition:Number = treeRepositories.verticalScrollPosition;
-				var lastSelectedItem:Object = treeRepositories.selectedItem;
-				var openItems:Object = treeRepositories.openItems;
-				treeRepositories.openItems = openItems;
-				treeRepositories.invalidateList();
-				
-				treeRepositories.callLater(function():void
-				{
-					treeRepositories.verticalScrollPosition = lastScrollPosition;
-					treeRepositories.selectedItem = lastSelectedItem;
-					if (!treeRepositories.isItemOpen(againstNodeItem))
-					{
-						treeRepositories.expandItem(againstNodeItem, true);
-					}
-				});
+				treeRepositories.expandItem(againstNodeItem, false);
+				return;
 			}
-			
+
+			var lastScrollPosition:Number = treeRepositories.verticalScrollPosition;
+			var lastSelectedItem:Object = treeRepositories.selectedItem;
+			var openItems:Object = treeRepositories.openItems;
+			treeRepositories.openItems = openItems;
+			treeRepositories.invalidateList();
+
+			treeRepositories.callLater(function ():void
+			{
+				treeRepositories.verticalScrollPosition = lastScrollPosition;
+				treeRepositories.selectedItem = lastSelectedItem;
+				if(!treeRepositories.isItemOpen(againstNodeItem))
+				{
+					treeRepositories.expandItem(againstNodeItem, true);
+				}
+			});
+		}
 		]]>
 	</fx:Script>
 	

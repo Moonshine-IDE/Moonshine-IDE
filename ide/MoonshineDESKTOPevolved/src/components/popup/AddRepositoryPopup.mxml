@@ -32,10 +32,8 @@
 			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
-			import mx.events.FlexEvent;
 			import mx.validators.Validator;
-			
-			import actionScripts.locator.IDEModel;
+
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.RepositoryItemVO;
@@ -46,10 +44,7 @@
 			public var editingRepository:RepositoryItemVO;
 			
 			[Bindable] private var isValidURL:Boolean;
-			
-			private var mappedPath:String
-			private var model:IDEModel = IDEModel.getInstance();
-			
+
 			public function notifySVNCheckoutError():void
 			{
 				Alert.show("Oops! There is something wrong!\nPlease check console for details.", "Error!");
