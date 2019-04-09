@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Menu Project: Improvement to displaying items in menu. Displayed items depends on type of the selected project in side bar. 
 * Home Tab: Exclude **Tour De Flex** files from **RECENT**.
 * Preselect SDK during project creation. 
+* Project with existing sources allows now choose main classes outside source folder. 
 
 ### Fixed
 * Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
