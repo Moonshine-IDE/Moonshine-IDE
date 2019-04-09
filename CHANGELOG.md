@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.1.0]
+
+### Added
+* Visual Editor PrimeFaces: Add **Preview** button for opened file.
+
+### Changed
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
+* Visual Editor: Update Payara server to [5.191](https://github.com/payara/Payara/releases/tag/payara-server-5.191) for preview 
+* Menu Project: Improvement to displaying items in menu. Displayed items depends on type of the selected project in side bar. 
+* Home Tab: Exclude **Tour De Flex** files from **RECENT**.
+* Preselect SDK during project creation. 
+
+### Fixed
+* Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
+
+
 ## Moonshine IDE [2.0.0]
 
 ### Added
