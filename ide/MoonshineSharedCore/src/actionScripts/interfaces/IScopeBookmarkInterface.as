@@ -28,7 +28,6 @@ package actionScripts.interfaces
 		function addNewPath(relativeTo:String="", isDirectory:Boolean=false, strictToFileTypes:String=""):String;
 		function restoreAccessedPaths():String;
 		function closeAccessedPath(value:String):String;
-		function runSSHFile(value:String):String;
 		function closeAllPaths():String;
 		function disposeKeys():String;
 	}

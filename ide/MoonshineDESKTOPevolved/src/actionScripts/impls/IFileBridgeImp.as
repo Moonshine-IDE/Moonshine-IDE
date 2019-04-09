@@ -41,12 +41,10 @@ package actionScripts.impls
 	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.interfaces.IScopeBookmarkInterface;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import flash.events.IOErrorEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import mx.controls.Alert;
 	import actionScripts.utils.FileUtils;
-	import flash.utils.ByteArray;
 	
 	/**
 	 * IFileBridgeImp
@@ -121,8 +119,8 @@ package actionScripts.impls
 					// update the path to bookmarked list
 					var tmpArr:Array = OSXBookmarkerNotifiers.availableBookmarkedPaths.split(",");
 					if (tmpArr.indexOf(selectedPathValue) == -1) OSXBookmarkerNotifiers.availableBookmarkedPaths += ","+ selectedPathValue;
-					_file.nativePath = selectedPathValue;
 					
+					_file.nativePath = selectedPathValue;
 					selectListner(new File(selectedPathValue));
 				}
 				else if (cancelListener != null) cancelListener();

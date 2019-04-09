@@ -3,10 +3,10 @@ package actionScripts.plugin.java.javaproject
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
-
+	
 	import mx.collections.ArrayCollection;
-
 	import mx.controls.Alert;
+	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -19,8 +19,8 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -30,8 +30,6 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
-	import mx.utils.ObjectUtil;
 
 	public class CreateJavaProject
 	{
@@ -122,7 +120,7 @@ package actionScripts.plugin.java.javaproject
 
 		private function getProjectSettings(project:JavaProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
-			var historyPaths = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
 			if (historyPaths.length == 0)
 			{
 				historyPaths.addItem(project.folderPath);
