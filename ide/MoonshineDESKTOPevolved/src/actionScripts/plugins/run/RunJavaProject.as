@@ -78,7 +78,7 @@ package actionScripts.plugins.run
 
             if (!isNaN(event.exitCode))
             {
-                var info:String = "Application has been closed with code: " + event.exitCode;
+                var info:String = "Application exited with code: " + event.exitCode;
                 warning(info);
             }
         }
