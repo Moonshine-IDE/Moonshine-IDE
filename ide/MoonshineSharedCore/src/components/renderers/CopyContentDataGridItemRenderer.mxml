@@ -51,7 +51,7 @@
                     var range:Range = data.range;
                     var start:Position = range.start;
                     var shortPath:String = new FileLocation(data.path).name;
-                    return shortPath + " (" + start.line + ", " + start.character + ")";
+                    return shortPath + " (" + (start.line + 1) + ", " + (start.character + 1) + ")";
                 }
                 else
                 {
