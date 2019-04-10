@@ -79,10 +79,16 @@ package actionScripts.plugin.syntax
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "xml")
+			if (isExpectedType(event.fileExtension))
 			{
 				event.editor.setParserAndStyles(new XMLContextSwitchLineParser(), formats);
 			}
+		}
+		
+		private function isExpectedType(type:String):Boolean
+		{
+			return (type == "xml" || type == "as3proj" || 
+				type == "veditorproj" || type == "javaproj");
 		}
 		
 	}
