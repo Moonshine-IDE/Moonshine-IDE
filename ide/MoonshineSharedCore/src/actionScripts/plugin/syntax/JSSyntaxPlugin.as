@@ -80,7 +80,7 @@ package actionScripts.plugin.syntax
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "js")
+			if (event.fileExtension == "js" || event.fileExtension == "json")
 			{
 				event.editor.setParserAndStyles(new AS3LineParser(), formats);
 			}
