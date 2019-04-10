@@ -29,7 +29,6 @@ package actionScripts.utils
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.RepositoryItemVO;
-    import actionScripts.valueObjects.VersionControlTypes;
 
     public class SharedObjectUtil
 	{
@@ -91,6 +90,10 @@ package actionScripts.utils
 				{
 					repo.children = [];
 				}
+				
+				// also don't store any password if asked to
+				// save for current session
+				repo.userPassword = null;
 			}
 			
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
