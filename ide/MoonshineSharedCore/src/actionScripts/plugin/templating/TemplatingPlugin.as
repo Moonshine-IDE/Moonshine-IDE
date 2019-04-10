@@ -73,6 +73,7 @@ package actionScripts.plugin.templating
     import components.popup.newFile.NewFilePopup;
     import components.popup.newFile.NewMXMLFilePopup;
     import components.popup.newFile.NewVisualEditorFilePopup;
+    import components.popup.newFile.NewGroovyFilePopup;
 
     import mx.utils.StringUtil;
 
@@ -103,6 +104,7 @@ package actionScripts.plugin.templating
 		protected var newMXMLComponentPopup:NewMXMLFilePopup;
 		protected var newAS3ComponentPopup:NewASFilePopup;
 		protected var newJavaComponentPopup:NewJavaFilePopup;
+		protected var newGroovyComponentPopup:NewGroovyFilePopup;
 		protected var newCSSComponentPopup:NewCSSFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newFilePopup:NewFilePopup;
@@ -225,6 +227,10 @@ package actionScripts.plugin.templating
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_JAVACLASS = files;
 			
+			files = templatesDir.resolvePath("files/Groovy Class.groovy.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_GROOVYCLASS = files;
+			
 			// Just to generate a divider in relevant UI
 			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			
@@ -292,6 +298,7 @@ package actionScripts.plugin.templating
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
+			var groovyProjectTemplates:ArrayCollection = new ArrayCollection();
 
             for each (var file:FileLocation in projectTemplates)
             {
@@ -338,6 +345,11 @@ package actionScripts.plugin.templating
 					{
                         javaProjectTemplates.addItem(template);
 					}
+
+					if (template.title.indexOf("Groovy") != -1)
+					{
+                        groovyProjectTemplates.addItem(template);
+					}
                 }
             }
 
@@ -346,6 +358,7 @@ package actionScripts.plugin.templating
 			royaleProjectTemplates.source = royaleProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_GROOVY = groovyProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	
@@ -817,6 +830,9 @@ package actionScripts.plugin.templating
 					case "Java Class":
 						openJavaTypeChoose(event, false);
 						break;
+					case "Groovy Class":
+						openGroovyTypeChoose(event, false);
+						break;
 					default:
 						for (i = 0; i < fileTemplates.length; i++)
 						{
@@ -1098,6 +1114,13 @@ package actionScripts.plugin.templating
 			newJavaComponentPopup = null;
 		}
 
+		protected function handleGroovyPopupClose(event:CloseEvent):void
+		{
+			newGroovyComponentPopup.removeEventListener(CloseEvent.CLOSE, handleGroovyPopupClose);
+			newGroovyComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newGroovyComponentPopup = null;
+		}
+
 		protected function openJavaTypeChoose(event:Event, isInterfaceDialog:Boolean):void
 		{
 			if (!newJavaComponentPopup)
@@ -1133,6 +1156,41 @@ package actionScripts.plugin.templating
 			}
 		}
 
+		protected function openGroovyTypeChoose(event:Event, isInterfaceDialog:Boolean):void
+		{
+			if (!newGroovyComponentPopup)
+			{
+				newGroovyComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewGroovyFilePopup, true) as NewGroovyFilePopup;
+				newGroovyComponentPopup.addEventListener(CloseEvent.CLOSE, handleGroovyPopupClose);
+				newGroovyComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+				newGroovyComponentPopup.isInterfaceDialog = isInterfaceDialog;
+
+				// newFileEvent sends by TreeView when right-clicked
+				// context menu
+				if (event is NewFileEvent)
+				{
+					newGroovyComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newGroovyComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newGroovyComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newGroovyComponentPopup.folderLocation = creatingItemIn.file;
+						newGroovyComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newGroovyComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+
+				PopUpManager.centerPopUp(newGroovyComponentPopup);
+			}
+		}
+
 		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
 		{
 			if (event.fromTemplate.fileBridge.exists)
@@ -1154,6 +1212,10 @@ package actionScripts.plugin.templating
 					{
 						content = content.replace("package", "");
 						content = content.replace(";", "");
+					}
+					if (event.fileExtension == ".groovy")
+					{
+						content = content.replace("package", "");
 					}
 				}
 

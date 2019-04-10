@@ -71,11 +71,13 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
 		public static var TEMPLATE_JAVACLASS: FileLocation;
+		public static var TEMPLATE_GROOVYCLASS: FileLocation;
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ROYALE:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_JAVA:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_GROOVY:ArrayCollection;
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_FLEXJS_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_ROYALE_COMPONENTS:ArrayCollection = new ArrayCollection();
@@ -322,6 +324,16 @@ public class $fileName
 {
 }]]></root>;
 
+			TEMPLATE_GROOVYCLASS = new FileLocation("TEMPLATE");
+			TEMPLATE_GROOVYCLASS.fileBridge.name = "Groovy Class.groovy";
+			TEMPLATE_GROOVYCLASS.fileBridge.isDirectory = false;
+			TEMPLATE_GROOVYCLASS.fileBridge.extension = "groovy";
+			TEMPLATE_GROOVYCLASS.fileBridge.data = <root><![CDATA[package $packageName;
+
+public class $fileName
+{
+}]]></root>;
+
 			ACTIONSCRIPT_PROJECT = new FileLocation("ActionScript Project (SWF, Desktop)");
 			ACTIONSCRIPT_PROJECT.fileBridge.name = "ActionScript Project (SWF, Desktop)";
 			ACTIONSCRIPT_PROJECT.fileBridge.isDirectory = true;
@@ -375,7 +387,7 @@ public class $fileName
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
 			
 			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = ["PrimeFaces Project"];

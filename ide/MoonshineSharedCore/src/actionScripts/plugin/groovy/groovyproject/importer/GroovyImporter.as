@@ -36,7 +36,43 @@ package actionScripts.plugin.groovy.groovyproject.importer
 				var airFile:File = File(file.fileBridge.getFile);
 				projectName = airFile.name;
 			}
-			return new GroovyProjectVO(file, projectName);
+
+			var groovyProject:GroovyProjectVO = new GroovyProjectVO(file, projectName);
+
+            var sourceDirectory:String = null;
+
+			var separator:String = groovyProject.projectFolder.file.fileBridge.separator;
+
+			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "groovy");
+			if (!sourceDirectory)
+			{
+				sourceDirectory = defaultSourceFolderPath;
+			}
+
+			var f:FileLocation = groovyProject.folderLocation.resolvePath(sourceDirectory);
+			groovyProject.classpaths.push(f);
+
+			if (groovyProject.classpaths.length > 0)
+			{
+				sourceDirectory = groovyProject.classpaths[0].fileBridge.nativePath;
+			}
+
+			addSourceDirectoryToProject(groovyProject, sourceDirectory);
+
+			return groovyProject;
+		}
+
+		private static function addSourceDirectoryToProject(groovyProject:GroovyProjectVO, sourceDirectory:String):void
+		{
+			if (sourceDirectory)
+			{
+				groovyProject.sourceFolder = groovyProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
+			}
+
+			if (!sourceDirectory || !groovyProject.sourceFolder.fileBridge.exists)
+			{
+				groovyProject.sourceFolder = groovyProject.projectFolder.file.fileBridge.resolvePath("src");
+			}
 		}
 	}
 }
