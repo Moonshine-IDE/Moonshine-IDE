@@ -21,6 +21,7 @@ package actionScripts.utils
     import flash.net.SharedObject;
     
     import mx.collections.ArrayCollection;
+    import mx.utils.ObjectUtil;
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
@@ -28,6 +29,7 @@ package actionScripts.utils
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.RepositoryItemVO;
+    import actionScripts.valueObjects.VersionControlTypes;
 
     public class SharedObjectUtil
 	{
@@ -79,8 +81,20 @@ package actionScripts.utils
 		
 		public static function saveRepositoriesToSO(collection:ArrayCollection):void
 		{
+			var duplicate:ArrayCollection = ObjectUtil.copy(collection) as ArrayCollection;
+			
+			// we don't want to store children data
+			for each (var repo:Object in duplicate)
+			{
+				if (repo.children && 
+					repo.children.length > 0)
+				{
+					repo.children = [];
+				}
+			}
+			
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
-			cookie.data['savedRepositories'] = collection;
+			cookie.data['savedRepositories'] = duplicate;
 			cookie.flush();
 		}
 		
