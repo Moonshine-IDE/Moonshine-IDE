@@ -23,94 +23,96 @@
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark"
 		  autoLayout="true"
-		  creationComplete="onCreationCompletes()">
+		  creationComplete="onSoftwareInfoCreationComplete(event)">
 	<fx:Script>
 		<![CDATA[
-			import flash.net.registerClassAlias;
-			
-			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
-			import mx.utils.ObjectUtil;
-			
-			import actionScripts.locator.HelperModel;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.utils.FileUtils;
-			import actionScripts.utils.SDKUtils;
-			import actionScripts.utils.SoftwareVersionChecker;
-			import actionScripts.valueObjects.ComponentTypes;
-			import actionScripts.valueObjects.ComponentVO;
-			import actionScripts.valueObjects.SDKReferenceVO;
-			
-			[Bindable] private var flexSDKPath:String = "- Not Installed -";
-			[Bindable] private var AntPath:String = "- Not Installed -";
-			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			[Bindable] private var components:ArrayCollection;
-			
-			private var versionChecker: SoftwareVersionChecker = new SoftwareVersionChecker();
-			/**
-			 * On creation completes
-			 */
-			public function onCreationCompletes():void
+		import mx.collections.ArrayCollection;
+		import mx.events.FlexEvent;
+		import mx.utils.ObjectUtil;
+
+		import actionScripts.locator.HelperModel;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.utils.FileUtils;
+		import actionScripts.utils.SDKUtils;
+		import actionScripts.utils.SoftwareVersionChecker;
+		import actionScripts.valueObjects.ComponentTypes;
+		import actionScripts.valueObjects.ComponentVO;
+		import actionScripts.valueObjects.SDKReferenceVO;
+
+		[Bindable]
+		private var flexSDKPath:String = "- Not Installed -";
+		[Bindable]
+		private var AntPath:String = "- Not Installed -";
+		[Bindable]
+		private var model:IDEModel = IDEModel.getInstance();
+		[Bindable]
+		private var components:ArrayCollection;
+
+		private var versionChecker:SoftwareVersionChecker = new SoftwareVersionChecker();
+
+		/**
+		 * On creation completes
+		 */
+		public function onSoftwareInfoCreationComplete(event:FlexEvent):void
+		{
+			registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
+			components = ObjectUtil.copy(HelperModel.getInstance().components) as ArrayCollection;
+			updateWithMoonshinePaths();
+
+			var tmpAddition:ComponentVO = new ComponentVO();
+			tmpAddition.title = "Default SDK";
+			if(model.defaultSDK && model.defaultSDK.fileBridge.exists)
 			{
-				registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
-				components = ObjectUtil.copy(HelperModel.getInstance().components) as ArrayCollection;
-				updateWithMoonshinePaths();
-				
-				var tmpAddition:ComponentVO = new ComponentVO();
-				tmpAddition.title = "Default SDK";
-				if (model.defaultSDK && model.defaultSDK.fileBridge.exists) 
-				{
-					var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(model.defaultSDK.fileBridge.nativePath);
-					tmpAddition.type = sdkReference.type;
-					tmpAddition.installToPath = sdkReference.path;
-				}
-				components.addItemAt(tmpAddition, 0);
-				
-				versionChecker.retrieveAboutInformation(components);
+				var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(model.defaultSDK.fileBridge.nativePath);
+				tmpAddition.type = sdkReference.type;
+				tmpAddition.installToPath = sdkReference.path;
 			}
-			
-			private function updateWithMoonshinePaths():void
+			components.addItemAt(tmpAddition, 0);
+
+			versionChecker.retrieveAboutInformation(components);
+		}
+
+		private function updateWithMoonshinePaths():void
+		{
+			var sdkReference:SDKReferenceVO;
+			for each (var component:ComponentVO in components)
 			{
-				var sdkReference:SDKReferenceVO;
-				for each (var i:ComponentVO in components)
+				sdkReference = null;
+				component.installToPath = null;
+				switch (component.type)
 				{
-					sdkReference = null;
-					i.installToPath = null;
-					switch(i.type)
-					{
-						case ComponentTypes.TYPE_FLEX:
-						case ComponentTypes.TYPE_FEATHERS:
-						case ComponentTypes.TYPE_ROYALE:
-						case ComponentTypes.TYPE_FLEXJS:
-							sdkReference = SDKUtils.checkSDKTypeInSDKList(i.type);
-							i.installToPath = sdkReference ? sdkReference.path : null;
-							break;
-						case ComponentTypes.TYPE_OPENJAVA:
-							if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
-								i.installToPath = model.javaPathForTypeAhead.fileBridge.nativePath;
-							break;
-						case ComponentTypes.TYPE_GIT:
-							if (model.gitPath && FileUtils.isPathExists(model.gitPath))
-								i.installToPath = model.gitPath;
-							break;
-						case ComponentTypes.TYPE_MAVEN:
-							if (model.mavenPath && FileUtils.isPathExists(model.mavenPath))
-								i.installToPath = model.mavenPath;
-							break;
-						case ComponentTypes.TYPE_SVN:
-							if (model.svnPath && FileUtils.isPathExists(model.svnPath))
-								i.installToPath = model.svnPath;
-							break;
-						case ComponentTypes.TYPE_ANT:
-							if (model.antHomePath && model.antHomePath.fileBridge.exists)
-								i.installToPath = model.antHomePath.fileBridge.nativePath;
-							break;
-					}
-					
-					i.version = null;
+					case ComponentTypes.TYPE_FLEX:
+					case ComponentTypes.TYPE_FEATHERS:
+					case ComponentTypes.TYPE_ROYALE:
+					case ComponentTypes.TYPE_FLEXJS:
+						sdkReference = SDKUtils.checkSDKTypeInSDKList(component.type);
+						component.installToPath = sdkReference ? sdkReference.path : null;
+						break;
+					case ComponentTypes.TYPE_OPENJAVA:
+						if(model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
+							component.installToPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+						break;
+					case ComponentTypes.TYPE_GIT:
+						if(model.gitPath && FileUtils.isPathExists(model.gitPath))
+							component.installToPath = model.gitPath;
+						break;
+					case ComponentTypes.TYPE_MAVEN:
+						if(model.mavenPath && FileUtils.isPathExists(model.mavenPath))
+							component.installToPath = model.mavenPath;
+						break;
+					case ComponentTypes.TYPE_SVN:
+						if(model.svnPath && FileUtils.isPathExists(model.svnPath))
+							component.installToPath = model.svnPath;
+						break;
+					case ComponentTypes.TYPE_ANT:
+						if(model.antHomePath && model.antHomePath.fileBridge.exists)
+							component.installToPath = model.antHomePath.fileBridge.nativePath;
+						break;
 				}
+
+				component.version = null;
 			}
-			
+		}
 		]]>
 	</fx:Script>
 	
