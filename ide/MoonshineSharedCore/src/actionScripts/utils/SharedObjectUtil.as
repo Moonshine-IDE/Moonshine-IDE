@@ -67,11 +67,14 @@ package actionScripts.utils
 		{
 			var tmpCollection:ArrayCollection = new ArrayCollection();
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			var tmpRepository:RepositoryItemVO;
 			if (cookie.data.hasOwnProperty('savedRepositories'))
 			{
 				for each (var item:Object in cookie.data.savedRepositories)
 				{
-					tmpCollection.addItem(ObjectTranslator.objectToInstance(item, RepositoryItemVO));
+					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
+					if (tmpRepository.children) tmpRepository.children = [];
+					tmpCollection.addItem(tmpRepository);
 				}
 			}
 			
