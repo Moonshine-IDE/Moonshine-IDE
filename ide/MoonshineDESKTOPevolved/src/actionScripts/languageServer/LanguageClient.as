@@ -1204,7 +1204,11 @@ package actionScripts.languageServer
 					eventCodeActions[i] = codeAction;
 				}
 			}
-			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
+			var editor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
+			if(!editor)
+			{
+				return;
+			}
 			var path:String = editor.currentFile.fileBridge.nativePath;
 			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, eventCodeActions));
 		}
