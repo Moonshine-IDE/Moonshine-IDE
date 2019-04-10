@@ -252,28 +252,7 @@ package actionScripts.languageServer
 				return;
 			}
 
-			//clear any remaining diagnostics
-			for(var uri:String in this._savedDiagnostics)
-			{
-				var path:String = (new File(uri)).nativePath;
-				delete this._savedDiagnostics[uri];
-				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
-				_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
-			}
-
-			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
-			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
-			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
-			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
+			this.cleanup();
 			_shutdownID = sendRequest(METHOD_SHUTDOWN, null);
 		}
 
@@ -284,7 +263,7 @@ package actionScripts.languageServer
 
 		public function sendNotification(method:String, params:Object):void
 		{
-			if(!_initialized && method != METHOD_INITIALIZE)
+			if(!_initialized && method != METHOD_INITIALIZE && method != METHOD_EXIT)
 			{
 				throw new IllegalOperationError("Notification failed. Language server is not initialized. Unexpected method: " + method);
 			}
@@ -317,6 +296,32 @@ package actionScripts.languageServer
 			{
 				_outputFlushCallback();
 			}
+		}
+
+		private function cleanup():void
+		{
+			//clear any remaining diagnostics
+			for(var uri:String in this._savedDiagnostics)
+			{
+				var path:String = (new File(uri)).nativePath;
+				delete this._savedDiagnostics[uri];
+				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
+				_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
+			}
+
+			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_COMPLETION, completionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_SIGNATURE_HELP, signatureHelpHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_HOVER, hoverHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 		}
 
 		private function sendRequest(method:String, params:Object):int
@@ -822,7 +827,10 @@ package actionScripts.languageServer
 					_initializeID = -1;
 					if(FIELD_ERROR in object)
 					{
-						trace("Error in language server. Initialize failed.");
+						trace("Error in language server. Initialize failed. Code: " + object.error.code + ", Message: " + object.error.message);
+						cleanup();
+						sendExit();
+						return;
 					}
 					handleInitializeResponse(result);
 					sendInitialized();
