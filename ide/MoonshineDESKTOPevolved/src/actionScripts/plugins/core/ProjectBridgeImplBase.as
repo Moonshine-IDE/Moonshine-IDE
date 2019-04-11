@@ -34,7 +34,6 @@ package actionScripts.plugins.core
     public class ProjectBridgeImplBase
     {
         protected var executeCreateProject:CreateProject;
-		protected var executeImportArchiveProject:ImportArchiveProject;
 		
 		private var filesToBeDeleted:Array;
 		private var deletableProjectWrapper:FileWrapper;
@@ -47,7 +46,7 @@ package actionScripts.plugins.core
 		
 		public function importArchiveProject():void
 		{
-			executeImportArchiveProject = new ImportArchiveProject();
+			new ImportArchiveProject();
 		}
 
         public function deleteProject(projectWrapper:FileWrapper, finishHandler:Function, isDeleteRoot:Boolean=false):void

@@ -171,7 +171,7 @@
 		private function openFile(fileDir:Object):void
 		{
 			setting.stringValue = fileDir.nativePath;
-			dropdownListItems.addItem(fileDir.nativePath);
+			if (isDropDown) dropdownListItems.addItem(fileDir.nativePath);
 
 			cmbPath.selectedItem = setting.stringValue;
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
