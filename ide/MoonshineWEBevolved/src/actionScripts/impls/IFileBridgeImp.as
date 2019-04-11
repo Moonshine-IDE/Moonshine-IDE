@@ -379,7 +379,7 @@ package actionScripts.impls
 			return null;
 		}
 		
-		public function checkFileExistenceAndReport():Boolean
+		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{
 			// this method has different importance and
 			// working in desktop project

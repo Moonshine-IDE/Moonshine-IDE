@@ -59,7 +59,7 @@ package actionScripts.interfaces
 		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void;
 		function moveToTrashAsync():void;
 		function openWithDefaultApplication():void;
-		function checkFileExistenceAndReport():Boolean;
+		function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean;
 		
 		function get url():String;
 		function set url(value:String):void

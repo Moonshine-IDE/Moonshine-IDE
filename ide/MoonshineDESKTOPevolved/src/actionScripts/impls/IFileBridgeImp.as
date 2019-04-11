@@ -581,7 +581,18 @@ package actionScripts.impls
 		{
 			try
 			{
-				if (checkFileExistenceAndReport()) _file.nativePath = value;
+				if (checkFileExistenceAndReport(false)) 
+				{
+					_file.nativePath = value;
+				}
+				else if (FileUtils.isPathExists(value))
+				{
+					_file = new File(value);
+				}
+				else
+				{
+					Alert.show(value +" does not exist on the filesystem.\nOperation canceled.", "Error!");
+				}
 			}
 			catch (e:Error)
 			{
@@ -674,7 +685,7 @@ package actionScripts.impls
 			return null;
 		}
 
-		public function checkFileExistenceAndReport():Boolean
+		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{
 			// we want to keep this method separate from
 			// 'exists' and not add these alerts to the
@@ -682,8 +693,11 @@ package actionScripts.impls
 			// internal checks which are not intentional to throw an alert
 			if (!_file.exists)
 			{
-				Alert.show(_file.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
-				reportPathAccessError(_file.isDirectory, false);
+				if (showAlert) 
+				{
+					Alert.show(_file.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
+					reportPathAccessError(_file.isDirectory, false);
+				}
 				return false;
 			}
 			
