@@ -22,6 +22,7 @@ package actionScripts.utils
     
     import mx.collections.ArrayCollection;
     import mx.utils.ObjectUtil;
+    import mx.utils.UIDUtil;
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
@@ -73,6 +74,7 @@ package actionScripts.utils
 				for each (var item:Object in cookie.data.savedRepositories)
 				{
 					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
+					tmpRepository.udid = UIDUtil.createUID();
 					if (tmpRepository.children) tmpRepository.children = [];
 					tmpCollection.addItem(tmpRepository);
 				}

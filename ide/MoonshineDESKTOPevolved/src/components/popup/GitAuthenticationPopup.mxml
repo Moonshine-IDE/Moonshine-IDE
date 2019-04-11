@@ -25,7 +25,7 @@
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
 					userObject = {userName:txtUser.text, password:txtPassword.text};
-					if (type == VersionControlTypes.GIT) userObject.save = cbSaveAuth.selected;
+					userObject.save = cbSaveAuth.selected;
 					
 					dispatchEvent(new Event(AUTH_SUBMITTED));
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
@@ -48,7 +48,7 @@
 							  prompt="Password" width="100%" styleName="textInput"
 							  displayAsPassword="true" enter="onSubmit()"/>
 		<s:CheckBox id="cbSaveAuth"
-					label="Save for this project's session"/>
+					label="Save until Moonshine exits"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 includeInLayout="{type==VersionControlTypes.GIT &amp;&amp; !isGitAvailable}" visible="{type==VersionControlTypes.GIT &amp;&amp; !isGitAvailable}"/>

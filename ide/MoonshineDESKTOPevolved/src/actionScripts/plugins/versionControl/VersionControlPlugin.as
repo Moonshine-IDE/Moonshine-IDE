@@ -31,7 +31,6 @@ package actionScripts.plugins.versionControl
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -53,11 +52,10 @@ package actionScripts.plugins.versionControl
 		private var manageRepoWindow:ManageRepositoriesPopup;
 		private var failedMethodObjectBeforeAuth:Array;
 		
-		private var _repositories:ArrayCollection;
 		public function get repositories():ArrayCollection
 		{
-			if (!_repositories) _repositories = SharedObjectUtil.getRepositoriesFromSO();
-			return _repositories;
+			if (!VersionControlUtils.REPOSITORIES) VersionControlUtils.REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO();
+			return VersionControlUtils.REPOSITORIES;
 		}
 		
 		override public function activate():void
@@ -192,52 +190,6 @@ package actionScripts.plugins.versionControl
 		protected function isVersioned(folder:FileLocation):Boolean
 		{
 			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
-		}
-		
-		private function onSVNAuthRequires(event:SVNEvent):void
-		{
-			failedMethodObjectBeforeAuth = event.extras;
-			openAuthentication();
-		}
-		
-		private function openAuthentication():void
-		{
-			if (!gitAuthWindow)
-			{
-				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
-				gitAuthWindow.title = "SVN Needs Authentication";
-				gitAuthWindow.type = VersionControlTypes.SVN;
-				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
-				PopUpManager.centerPopUp(gitAuthWindow);
-			}
-			
-			/*
-			* @local
-			*/
-			function onGitAuthWindowClosed(event:CloseEvent):void
-			{
-				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
-				PopUpManager.removePopUp(gitAuthWindow);
-				gitAuthWindow = null;
-			}
-		}
-		
-		private function onAuthSuccessToSVN(event:Event):void
-		{
-			if (gitAuthWindow.userObject && failedMethodObjectBeforeAuth) 
-			{
-				switch (failedMethodObjectBeforeAuth[0])
-				{
-					case "update":
-						//handleUpdateRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password);
-						break;
-					case "commit":
-						//handleCommitRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password, {files:failedMethodObjectBeforeAuth[1], message:failedMethodObjectBeforeAuth[2], runningForFile:failedMethodObjectBeforeAuth[3]});
-						break;
-				}
-			}
 		}
 	}
 }

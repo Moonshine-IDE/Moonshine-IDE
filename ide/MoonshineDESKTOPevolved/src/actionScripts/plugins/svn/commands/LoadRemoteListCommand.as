@@ -28,6 +28,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	
@@ -137,19 +138,18 @@ package actionScripts.plugins.svn.commands
 				//serverCertificatePrompt(data);
 			}*/
 			
+			error("%s", data);
+			startShell(false);
+			
 			var match:Array = data.toLowerCase().match(/authentication failed/);
 			if (match)
 			{
-				lastKnownMethod = new MethodDescriptor(this, "loadList", lastEvent, onCompletion);
-				openAuthentication();
+				askOrReconnectWithAuthentication();
 				isAuthError = true;
 			}
 	
-			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
-			startShell(false);
-			
 			if (!isAuthError) onCancelAuthentication();
 		}
 		
@@ -203,6 +203,7 @@ package actionScripts.plugins.svn.commands
 						// top level for later retreival
 						tmpRepoItem.isRequireAuthentication = lastEvent.repository.isRequireAuthentication;
 						tmpRepoItem.isTrustCertificate = lastEvent.repository.isTrustCertificate;
+						tmpRepoItem.udid = lastEvent.repository.udid;
 						
 						lastEvent.repository.children.push(tmpRepoItem);
 					}
@@ -214,6 +215,24 @@ package actionScripts.plugins.svn.commands
 			{
 				onCompletion(lastEvent.repository, true);
 				onCompletion = null;
+			}
+		}
+		
+		private function askOrReconnectWithAuthentication():void
+		{
+			var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
+			if (tmpTopLevel && tmpTopLevel.userName && tmpTopLevel.userPassword)
+			{
+				// in case user choose to save auth for the Moonshine session
+				lastEvent.authObject = {username: tmpTopLevel.userName, password: tmpTopLevel.userPassword};
+				this.loadList(lastEvent, onCompletion);
+				notice("Trying to authenticate with temporary saved information");
+			}
+			else
+			{
+				// in case we requires to prompt to auth
+				lastKnownMethod = new MethodDescriptor(this, "loadList", lastEvent, onCompletion);
+				openAuthentication();
 			}
 		}
 	}

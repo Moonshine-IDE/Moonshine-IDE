@@ -32,6 +32,9 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.utils.SharedObjectUtil;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.GitAuthenticationPopup;
@@ -107,7 +110,11 @@ package actionScripts.plugins.svn.commands
 			authWindow.title = "Needs Authentication";
 			authWindow.type = VersionControlTypes.SVN;
 			
-			if (lastEvent.repository && lastEvent.repository.userName) authWindow.userName = lastEvent.repository.userName;
+			if (lastEvent.repository) 
+			{
+				var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
+				if (tmpTopLevel && tmpTopLevel.userName) authWindow.userName = tmpTopLevel.userName;
+			}
 			
 			authWindow.addEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
 			authWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
@@ -131,8 +138,13 @@ package actionScripts.plugins.svn.commands
 			{
 				if (target.userObject.save && lastEvent.repository) 
 				{
-					lastEvent.repository.userName = target.userObject.userName;
-					lastEvent.repository.userPassword = target.userObject.password;
+					if (lastEvent.repository) 
+					{
+						var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
+						tmpTopLevel.userName = target.userObject.userName;
+						tmpTopLevel.userPassword = target.userObject.password;
+						SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+					}
 				}
 				else
 				{

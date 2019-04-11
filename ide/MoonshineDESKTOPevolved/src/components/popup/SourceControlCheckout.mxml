@@ -84,7 +84,7 @@
 			
 			private function browse():void
 			{
-				model.fileCore.browseForDirectory("Git checkout target", onDirectorySelected);
+				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected);
 			}
 			
 			private function onDirectorySelected(fileObj:Object):void

@@ -33,7 +33,7 @@
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
-
+			
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.RepositoryItemVO;
@@ -70,10 +70,17 @@
 				editingRepository.notes = StringUtil.trim(txtNotes.text).length != 0 ? txtNotes.text : null;
 				editingRepository.isRequireAuthentication = cbLogin.selected;
 				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
-				editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
 				editingRepository.type = rgType.selectedValue.toString();
 				editingRepository.children = editingRepository.children ? editingRepository.children : [];
 				editingRepository.isRoot = true;
+				if (editingRepository.isRequireAuthentication)
+				{
+					editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
+				}
+				else
+				{
+					editingRepository.userName = null;
+				}
 				
 				dispatchEvent(new VersionControlEvent(
 					VersionControlEvent.ADD_EDIT_REPOSITORY, 

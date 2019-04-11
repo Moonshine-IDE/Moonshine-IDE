@@ -19,10 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
-    [Bindable] public class RepositoryItemVO
+    [Bindable] public dynamic class RepositoryItemVO
 	{
 		public var type:String; // VersionControlTypes
 		public var isRoot:Boolean;
+		
+		// this will help access to top level object from anywhere deep 
+		// in-tree objects to gain top level properties
+		// ideally to get/update user authentication
+		public var udid:String;
 		
 		public function RepositoryItemVO()
 		{
