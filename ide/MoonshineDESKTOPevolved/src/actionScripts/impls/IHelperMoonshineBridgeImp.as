@@ -76,10 +76,21 @@ package actionScripts.impls
 		{
 			return UtilsCore.isGitPresent();	
 		}
-		
+
 		public function runOrDownloadSDKInstaller():void
 		{
 			MSDKIdownloadUtil.getInstance().runOrDownloadSDKInstaller();
+		}
+
+		private var _playerglobalExists:Boolean;
+		public function get playerglobalExists():Boolean
+		{
+			return _playerglobalExists;
+		}
+
+		public function set playerglobalExists(value:Boolean):void
+		{
+			_playerglobalExists = value;
 		}
 	}
 }

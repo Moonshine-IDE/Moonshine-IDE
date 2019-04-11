@@ -73,7 +73,6 @@ package actionScripts.plugins.startup
 		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
-		private var changeMenuSDKTimeout:uint;
 		private var didShowPreviouslyOpenedTabs:Boolean;
 		
 		private var _isAllDependenciesPresent:Boolean = true;

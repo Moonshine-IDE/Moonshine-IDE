@@ -42,8 +42,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;

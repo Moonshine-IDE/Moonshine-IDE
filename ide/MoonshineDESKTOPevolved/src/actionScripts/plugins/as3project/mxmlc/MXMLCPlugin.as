@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
+	import actionScripts.locator.HelperModel;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.utils.EnvironmentUtils;
+
 	import com.adobe.utils.StringUtil;
 	
 	import flash.desktop.NativeProcess;
@@ -34,7 +38,13 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.utils.IDataOutput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-	
+
+	import flashx.textLayout.elements.LinkElement;
+
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
@@ -48,8 +58,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
@@ -485,6 +493,12 @@ package actionScripts.plugins.as3project.mxmlc
 						error("This SDK only supports JavaScript Builds.");
 						return;
 					}
+
+					if (!sdkVO.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists)
+					{
+						displayPlayerGlobalError();
+						return;
+					}
 				}
 
 				// terminate if it's a debug call against FlexJS
@@ -502,6 +516,28 @@ package actionScripts.plugins.as3project.mxmlc
 				//Regular application
 				compileRegularFlexApplication(activeProject, release);
 			}
+		}
+
+		private function displayPlayerGlobalError():void
+		{
+			var p:ParagraphElement = new ParagraphElement();
+			var spanText:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+
+			p.color = 0xFA8072;
+			spanText.text = ":\n: This SDK does not contains playerglobal.swc in 'frameworks\libs\player\{version}\playerglobal.swc'." +
+					     " Download playerglobal ";
+			link.href = "https://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html";
+			link.linkNormalFormat = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
+
+			var spanLink:SpanElement = new SpanElement();
+			spanLink.text = "here";
+			link.addChild(spanLink);
+
+			p.addChild(spanText);
+			p.addChild(link);
+
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
 		}
 		
 		/**

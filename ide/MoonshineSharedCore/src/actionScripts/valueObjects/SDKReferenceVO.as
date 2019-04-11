@@ -26,7 +26,7 @@ package actionScripts.valueObjects
 		private static const JS_SDK_COMPILER_NEW:String = "js/bin/mxmlc";
 		private static const JS_SDK_COMPILER_OLD:String = "bin/mxmlc";
 		private static const FLEX_SDK_COMPILER:String = "bin/fcsh";
-		
+
 		//--------------------------------------------------------------------------
 		//
 		//  PUBLIC VARIABLES
@@ -72,19 +72,22 @@ package actionScripts.valueObjects
 		
         public function get isJSOnlySdk():Boolean
         {
-            var hasJSOutput:Boolean;
-            for each (var outputTarget:RoyaleOutputTarget in outputTargets)
-            {
-                hasJSOutput = outputTarget.name == "js";
-            }
+			if (outputTargets && outputTargets.length == 1)
+			{
+				return outputTargets[0].name == "js";
+			}
             
-            return hasJSOutput;
+            return false;
         }
 		
 		private var _fileLocation:FileLocation;
 		public function get fileLocation():FileLocation
 		{
-			if (!_fileLocation) _fileLocation = new FileLocation(path);
+			if (!_fileLocation)
+			{
+				_fileLocation = new FileLocation(path);
+			}
+
 			return _fileLocation;
 		}
 		
@@ -94,7 +97,23 @@ package actionScripts.valueObjects
 			if (!_type) _type = getType();
 			return _type;
 		}
-		
+
+		public function get hasPlayerglobal():Boolean
+		{
+			if (type == SDKTypes.ROYALE && !isJSOnlySdk)
+			{
+				var separator:String = fileLocation.fileBridge.separator;
+				var playerGlobalVersion:String = getPlayerGlobalVersion();
+				var playerGlobalLocation:FileLocation = fileLocation.resolvePath(separator.concat(
+						"frameworks", separator, "libs", separator, "player",
+						separator, playerGlobalVersion, separator, "playerglobal.swc"));
+
+				return playerGlobalLocation.fileBridge.exists;
+			}
+
+			return type == SDKTypes.FLEX || type == SDKTypes.FEATHERS;
+		}
+
 		public static function getNewReference(value:Object):SDKReferenceVO
 		{
 			var tmpRef:SDKReferenceVO = new SDKReferenceVO();
@@ -197,6 +216,19 @@ package actionScripts.valueObjects
 				}
 			}
 			
+			return null;
+		}
+
+		private function getPlayerGlobalVersion():String
+		{
+			for each (var target:RoyaleOutputTarget in outputTargets)
+			{
+				if (target.flashVersion)
+				{
+					return target.flashVersion;
+				}
+			}
+
 			return null;
 		}
     }

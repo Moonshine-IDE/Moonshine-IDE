@@ -23,8 +23,7 @@ package actionScripts.plugin.errors
 	
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
-	
-	import actionScripts.events.GlobalEventDispatcher;
+
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
@@ -122,7 +121,7 @@ package actionScripts.plugin.errors
 			p.addChild(span1);
 			p.addChild(link);
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
 		}
 		
 		private function reportBugFromConsole(event:ConsoleEvent):void 
