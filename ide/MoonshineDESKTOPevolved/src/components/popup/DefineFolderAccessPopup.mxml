@@ -41,6 +41,7 @@
 			
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.settings.vo.ISetting;
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -209,14 +210,15 @@
 				}
 				
 				// update application properties file
-				if (renderer.setting.project.air)
+				if ((renderer.setting.project is AS3ProjectVO) && 
+					(renderer.setting.project as AS3ProjectVO).air)
 				{
-					if (renderer.setting.project.isFlashBuilderProject) 
+					if ((renderer.setting.project as AS3ProjectVO).isFlashBuilderProject) 
 					{
 						var settingsFile:File = (renderer.setting.project.folderLocation.fileBridge.getFile as File).resolvePath(".actionScriptProperties");
-						FlashBuilderExporter.export(renderer.setting.project, settingsFile);
+						FlashBuilderExporter.export(renderer.setting.project as AS3ProjectVO, settingsFile);
 					}
-					else FlashDevelopExporter.export(renderer.setting.project, renderer.setting.project.projectFile);
+					else FlashDevelopExporter.export(renderer.setting.project as AS3ProjectVO, renderer.setting.project.projectFile);
 				}
 				
 				// we need to show a re-build button in the interface if all 

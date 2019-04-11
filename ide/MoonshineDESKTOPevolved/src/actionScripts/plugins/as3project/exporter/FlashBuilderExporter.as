@@ -24,8 +24,6 @@ package actionScripts.plugins.as3project.exporter
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
-	import mx.collections.XMLListCollection;
-	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	
