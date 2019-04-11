@@ -19,7 +19,6 @@
 package actionScripts.plugin.settings.vo
 {
 	import mx.collections.ArrayCollection;
-	import mx.collections.ArrayList;
 	import mx.core.IVisualElement;
 	
 	import actionScripts.plugin.settings.renderers.PathRenderer;

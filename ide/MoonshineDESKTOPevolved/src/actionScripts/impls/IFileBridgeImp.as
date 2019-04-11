@@ -120,10 +120,20 @@ package actionScripts.impls
 					var tmpArr:Array = OSXBookmarkerNotifiers.availableBookmarkedPaths.split(",");
 					if (tmpArr.indexOf(selectedPathValue) == -1) OSXBookmarkerNotifiers.availableBookmarkedPaths += ","+ selectedPathValue;
 					
-					_file.nativePath = selectedPathValue;
-					selectListner(new File(selectedPathValue));
+					if (isValidFilePath(selectedPathValue))
+					{
+						_file.nativePath = selectedPathValue;
+						selectListner(new File(selectedPathValue));
+					}
+					else if (cancelListener != null)
+					{
+						cancelListener();
+					}
 				}
-				else if (cancelListener != null) cancelListener();
+				else if (cancelListener != null) 
+				{
+					cancelListener();
+				}
 			}
 			else
 			{
@@ -441,10 +451,20 @@ package actionScripts.impls
 						return;
 					}
 					
-					_file.nativePath = selectedPathValue;
-					selectListner(new File(selectedPathValue));
+					if (isValidFilePath(selectedPathValue))
+					{
+						_file.nativePath = selectedPathValue;
+						selectListner(new File(selectedPathValue));
+					}
+					else if (cancelListener != null) 
+					{
+						cancelListener();
+					}
 				}
-				else if (cancelListener != null) cancelListener();
+				else if (cancelListener != null) 
+				{
+					cancelListener();
+				}
 			}
 			else
 			{
@@ -692,6 +712,17 @@ package actionScripts.impls
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
+		}
+		
+		private function isValidFilePath(value:String):Boolean
+		{
+			if (value.indexOf("Error Domain=NSCocoaErrorDomain") != -1)
+			{
+				Alert.show(value, "Error!");
+				return false;
+			}
+			
+			return true;
 		}
 		
 		private function setFileInternalPath(startFromLocation:String):void
