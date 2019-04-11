@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Home Tab: Exclude **Tour De Flex** files from **RECENT**.
 * Preselect SDK during project creation. 
 * Project with existing sources allows now choose main classes outside source folder. 
+* Problems View has been moved to bottom with Console and Debug views.
 
 ### Fixed
 * Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
