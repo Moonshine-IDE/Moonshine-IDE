@@ -50,7 +50,6 @@ package actionScripts.plugins.svn.commands
 		// Files we need to add before commiting
 		protected var toAdd:Array;
 		protected var affectedFiles:ArrayCollection;
-		protected var isTrustServerCertificateSVN:Boolean;
 		
 		public var status:Object;
 		
@@ -64,6 +63,7 @@ package actionScripts.plugins.svn.commands
 		
 		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
+			this.root = file.fileBridge.getFile as File;
 			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
 			if (user && password)
 			{
@@ -84,7 +84,7 @@ package actionScripts.plugins.svn.commands
 			var statusCommand:UpdateStatusCommand = new UpdateStatusCommand(executable, root, status);
 			statusCommand.addEventListener(Event.COMPLETE, handleCommitStatusUpdateComplete);
 			statusCommand.addEventListener(Event.CANCEL, handleCommitStatusUpdateCancel);
-			statusCommand.update(file.fileBridge.getFile as File, this.isTrustServerCertificateSVN);
+			statusCommand.update(this.root, this.isTrustServerCertificateSVN);
 			
 			print("Updating status before commit");
 		}
@@ -136,6 +136,7 @@ package actionScripts.plugins.svn.commands
 				svnCommitWindow.windowType = VersionControlTypes.SVN;
 				svnCommitWindow.addEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
 				PopUpManager.centerPopUp(svnCommitWindow);
+				svnCommitWindow.isReadyToUse = true;
 			}
 			else
 			{
@@ -156,12 +157,27 @@ package actionScripts.plugins.svn.commands
 			if (svnCommitWindow.isSubmit) 
 			{
 				this.message = svnCommitWindow.commitMessage;
-				initiateProcess();
+				
+				// get repository infor to check authentication (if requires
+				// and if exists) from repositoryItemVo
+				this.getRepositoryInfo();
 			}
 			
 			svnCommitWindow.removeEventListener(CloseEvent.CLOSE, onSVNCommitWindowClosed);
 			PopUpManager.removePopUp(svnCommitWindow);
 			svnCommitWindow = null;
+		}
+		
+		override protected function handleInfoUpdateComplete(event:Event):void
+		{
+			super.handleInfoUpdateComplete(event);
+			initiateProcess();
+		}
+		
+		private function releaseListenersFromInfoCommand(event:Event):void
+		{
+			event.target.removeEventListener(Event.COMPLETE, handleInfoUpdateComplete);
+			event.target.removeEventListener(Event.CANCEL, handleInfoUpdateCancel);
 		}
 		
 		protected function initiateProcess():void
@@ -184,7 +200,14 @@ package actionScripts.plugins.svn.commands
 		{
 			if (toAdd.length == 0)
 			{
-				doCommit();
+				if (repositoryItem && repositoryItem.userName && repositoryItem.userPassword)
+				{
+					doCommit(repositoryItem.userName, repositoryItem.userPassword);
+				}
+				else
+				{
+					doCommit();
+				}
 			}
 			else
 			{

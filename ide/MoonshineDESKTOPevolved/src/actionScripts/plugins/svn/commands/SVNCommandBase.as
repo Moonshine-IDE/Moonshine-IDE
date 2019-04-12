@@ -43,8 +43,10 @@ package actionScripts.plugins.svn.commands
 	{
 		override public function get name():String { return "Subversion Plugin"; }
 		
+		protected var isTrustServerCertificateSVN:Boolean;
 		protected var lastEvent:SVNEvent;
 		protected var lastKnownMethod:MethodDescriptor;
+		protected var repositoryItem:RepositoryItemVO;
 		
 		public function SVNCommandBase(executable:File, root:File)
 		{
@@ -157,6 +159,50 @@ package actionScripts.plugins.svn.commands
 		
 		protected function onCancelAuthentication():void
 		{
+		}
+		
+		protected function getRepositoryInfo():void
+		{
+			var infoCommand:InfoCommand = new InfoCommand(executable, root);
+			infoCommand.addEventListener(Event.COMPLETE, handleInfoUpdateComplete);
+			infoCommand.addEventListener(Event.CANCEL, handleInfoUpdateCancel);
+			infoCommand.request(this.root, this.isTrustServerCertificateSVN);
+		}
+		
+		protected function handleInfoUpdateComplete(event:Event):void
+		{
+			releaseListenersFromInfoCommand(event);
+			
+			var infoLines:Array = (event.target as InfoCommand).infoLines;
+			var searchCriteria:String = "Repository Root: ";
+			for each (var line:String in infoLines)
+			{
+				if (line.indexOf(searchCriteria) != -1)
+				{
+					searchCriteria = line.substr(searchCriteria.length, line.length);
+					// find out relevant repository item associate to the url
+					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					{
+						if (repo.url == searchCriteria)
+						{
+							this.repositoryItem = repo;
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+		
+		protected function handleInfoUpdateCancel(event:Event):void
+		{
+			releaseListenersFromInfoCommand(event);
+		}
+		
+		private function releaseListenersFromInfoCommand(event:Event):void
+		{
+			event.target.removeEventListener(Event.COMPLETE, handleInfoUpdateComplete);
+			event.target.removeEventListener(Event.CANCEL, handleInfoUpdateCancel);
 		}
 	}
 }

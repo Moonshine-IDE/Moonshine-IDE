@@ -30,10 +30,12 @@
 		<![CDATA[
 			import com.adobe.utils.StringUtil;
 			
+			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
+			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.RepositoryItemVO;
@@ -62,11 +64,29 @@
 					}
 				}
 				
+				// do not let keep any trailing slash (necessary for svn)
+				var tmpRepositoryUrl:String = (txtSource.text.charAt(txtSource.text.length - 1) == "/") ? 
+					txtSource.text.substr(0, txtSource.text.length - 1) : 
+					txtSource.text;
+				
+				// ensure duplicate url entry
+				if (VersionControlUtils.REPOSITORIES)
+				{
+					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					{
+						if (repo.url == tmpRepositoryUrl)
+						{
+							Alert.show("Duplicate repository entry is not permitted.", "Error!");
+							return;
+						}
+					}
+				}
+				
 				var isEditing:Boolean;
 				if (!editingRepository) editingRepository = new RepositoryItemVO();
 				else isEditing = true;
 				
-				editingRepository.url = txtSource.text;
+				editingRepository.url = tmpRepositoryUrl;
 				editingRepository.notes = StringUtil.trim(txtNotes.text).length != 0 ? txtNotes.text : null;
 				editingRepository.isRequireAuthentication = cbLogin.selected;
 				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
@@ -109,7 +129,7 @@
 				}
 				else
 				{
-					searchRegExp = new RegExp(".*://.*/.*.$", "i");
+					searchRegExp = new RegExp("\\w*://\\S*/\\S+$", "i");
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{

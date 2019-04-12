@@ -21,11 +21,17 @@ package actionScripts.plugins.versionControl
 {
 	import mx.collections.ArrayCollection;
 	
+	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.RepositoryItemVO;
 
 	public class VersionControlUtils
 	{
-		public static var REPOSITORIES:ArrayCollection;
+		private static var _REPOSITORIES:ArrayCollection;
+		public static function get REPOSITORIES():ArrayCollection
+		{
+			if (!_REPOSITORIES) _REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO();
+			return _REPOSITORIES;
+		}
 		
 		public static function getRepositoryItemByUdid(value:String):RepositoryItemVO
 		{

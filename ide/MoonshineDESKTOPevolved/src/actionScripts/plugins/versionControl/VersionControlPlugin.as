@@ -22,7 +22,6 @@ package actionScripts.plugins.versionControl
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -51,12 +50,6 @@ package actionScripts.plugins.versionControl
 		private var gitAuthWindow:GitAuthenticationPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
 		private var failedMethodObjectBeforeAuth:Array;
-		
-		public function get repositories():ArrayCollection
-		{
-			if (!VersionControlUtils.REPOSITORIES) VersionControlUtils.REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO();
-			return VersionControlUtils.REPOSITORIES;
-		}
 		
 		override public function activate():void
 		{
@@ -93,7 +86,7 @@ package actionScripts.plugins.versionControl
 			{
 				manageRepoWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ManageRepositoriesPopup, false) as ManageRepositoriesPopup;
 				manageRepoWindow.title = "Manage Repositories";
-				manageRepoWindow.repositories = repositories;
+				manageRepoWindow.repositories = VersionControlUtils.REPOSITORIES;
 				manageRepoWindow.width = FlexGlobals.topLevelApplication.stage.nativeWindow.width * .8;
 				manageRepoWindow.height = FlexGlobals.topLevelApplication.stage.nativeWindow.height * .5;
 				manageRepoWindow.addEventListener(CloseEvent.CLOSE, onManageRepoWindowClosed);
@@ -149,8 +142,8 @@ package actionScripts.plugins.versionControl
 		protected function onAddEditRepository(event:VersionControlEvent):void
 		{
 			// check if new repository or old
-			if (repositories.getItemIndex(event.value) == -1) repositories.addItem(event.value);
-			SharedObjectUtil.saveRepositoriesToSO(repositories);
+			if (VersionControlUtils.REPOSITORIES.getItemIndex(event.value) == -1) VersionControlUtils.REPOSITORIES.addItem(event.value);
+			SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
 		}
 		
 		protected function onAddRepoWindowClosed(event:CloseEvent):void
