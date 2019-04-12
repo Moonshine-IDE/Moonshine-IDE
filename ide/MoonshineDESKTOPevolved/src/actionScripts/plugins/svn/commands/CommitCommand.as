@@ -165,6 +165,7 @@ package actionScripts.plugins.svn.commands
 		override protected function handleInfoUpdateComplete(event:Event):void
 		{
 			super.handleInfoUpdateComplete(event);
+			if (this.repositoryItem) this.isTrustServerCertificateSVN = this.repositoryItem.isTrustCertificate;
 			initiateProcess();
 		}
 		
