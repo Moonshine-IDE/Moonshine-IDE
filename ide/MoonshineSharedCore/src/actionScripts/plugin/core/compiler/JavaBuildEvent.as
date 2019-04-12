@@ -23,7 +23,7 @@ package actionScripts.plugin.core.compiler
 	public class JavaBuildEvent extends Event
 	{
 		public static const BUILD_AND_RUN:String = "javaBuildAndRun";
-		public static const BUILD:String = "javaBuild";
+		public static const JAVA_BUILD:String = "javaBuild";
 		
 		public function JavaBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
