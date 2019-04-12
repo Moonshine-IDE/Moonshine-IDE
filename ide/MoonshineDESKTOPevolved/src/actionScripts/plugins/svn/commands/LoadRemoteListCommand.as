@@ -137,8 +137,7 @@ package actionScripts.plugins.svn.commands
 			error("%s", data);
 			startShell(false);
 			
-			var match:Array = data.toLowerCase().match(/authentication failed/);
-			if (match)
+			if (VersionControlUtils.hasAuthenticationFailError(data))
 			{
 				askOrReconnectWithAuthentication();
 				isAuthError = true;

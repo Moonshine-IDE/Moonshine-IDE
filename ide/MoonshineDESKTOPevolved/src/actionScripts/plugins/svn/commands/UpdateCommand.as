@@ -28,6 +28,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 
 	public class UpdateCommand extends SVNCommandBase
 	{
@@ -145,8 +146,7 @@ package actionScripts.plugins.svn.commands
 			{
 				// Refresh failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				var match:Array = err.toLowerCase().match(/authentication failed/);
-				if (match)
+				if (VersionControlUtils.hasAuthenticationFailError(err))
 				{
 					openAuthentication();
 				}

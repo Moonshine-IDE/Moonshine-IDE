@@ -38,6 +38,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.plugins.svn.provider.SVNStatus;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
@@ -323,8 +324,7 @@ package actionScripts.plugins.svn.commands
 			{
 				// Commit failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				var match:Array = err.toLowerCase().match(/authentication failed/);
-				if (match)
+				if (VersionControlUtils.hasAuthenticationFailError(err))
 				{
 					openAuthentication();
 				}

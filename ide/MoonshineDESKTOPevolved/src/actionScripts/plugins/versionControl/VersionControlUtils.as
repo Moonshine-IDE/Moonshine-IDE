@@ -42,5 +42,13 @@ package actionScripts.plugins.versionControl
 			
 			return null;
 		}
+		
+		public static function hasAuthenticationFailError(value:String):Boolean
+		{
+			var match:Array = value.toLowerCase().match(/authentication failed/);
+			if (!match) match = value.toLowerCase().match(/authorization failed/);
+			
+			return (match != null);
+		}
 	}
 }

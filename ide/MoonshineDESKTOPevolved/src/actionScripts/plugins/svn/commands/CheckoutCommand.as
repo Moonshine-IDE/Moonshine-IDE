@@ -28,6 +28,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class CheckoutCommand extends SVNCommandBase
@@ -127,8 +128,7 @@ package actionScripts.plugins.svn.commands
 				//return;
 			}
 			
-			match = data.toLowerCase().match(/authentication failed/);
-			if (match)
+			if (VersionControlUtils.hasAuthenticationFailError(data))
 			{
 				openAuthentication();
 			}
