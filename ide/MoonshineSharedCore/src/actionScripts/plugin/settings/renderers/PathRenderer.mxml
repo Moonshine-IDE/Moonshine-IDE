@@ -28,8 +28,8 @@
 		paddingTop="15"
 		paddingRight="15"
 		paddingBottom="15"
-		creationComplete="onCreationCompletes(event)"
-		removedFromStage="onRemovedFromStage(event)">
+		creationComplete="onPathRendererCreationComplete(event)"
+		removedFromStage="onPathRendererRemovedFromStage(event)">
 	<fx:Script>
 		<![CDATA[
 		import mx.collections.ArrayCollection;
@@ -171,14 +171,14 @@
 		private function openFile(fileDir:Object):void
 		{
 			setting.stringValue = fileDir.nativePath;
-			if (isDropDown) dropdownListItems.addItem(fileDir.nativePath);
+			if(isDropDown) dropdownListItems.addItem(fileDir.nativePath);
 
 			cmbPath.selectedItem = setting.stringValue;
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 
 		}
 
-		protected function onCreationCompletes(event:FlexEvent):void
+		protected function onPathRendererCreationComplete(event:FlexEvent):void
 		{
 			dropdownListItems = setting.dropdownListItems;
 
@@ -315,7 +315,7 @@
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 		}
 
-		protected function onRemovedFromStage(event:Event):void
+		protected function onPathRendererRemovedFromStage(event:Event):void
 		{
 			// in case of MXMLC Compiler Plugin
 			onSDKPathPopupClosed(null);

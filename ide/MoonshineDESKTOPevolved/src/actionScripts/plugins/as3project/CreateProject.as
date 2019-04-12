@@ -115,7 +115,10 @@ package actionScripts.plugins.as3project
 			
 			// determine if a given project is custom or Moonshine default
 			var customTemplateDirectory:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("templates/projects");
-			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1) isCustomTemplateProject = true;
+			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1)
+			{
+				isCustomTemplateProject = true;
+			}
 			
 			if (isCustomTemplateProject)
 			{
