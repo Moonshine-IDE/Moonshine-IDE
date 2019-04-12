@@ -29,6 +29,7 @@ package actionScripts.plugins.svn.provider
 	import actionScripts.plugins.svn.commands.LoadRemoteListCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class SubversionProvider extends ConsoleOutputter
 	{
@@ -53,25 +54,25 @@ package actionScripts.plugins.svn.provider
 		
 		protected function handleUpdate(event:Event):void
 		{
-			update(FileLocation(event.target.data));
+			update(FileLocation(event.target.data).fileBridge.getFile as File);
 		}
 		
-		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
 			updateCommand.update(file, user, password, isTrustServerCertificateSVN);
 		}
 		
-		public function checkout(event:SVNEvent, targetFolder:String, isTrustServerCertificateSVN:Boolean):void
+		public function checkout(url:String, rootDirectory:File, targetFolder:String, isTrustServerCertificateSVN:Boolean, repository:RepositoryItemVO, userName:String=null, userPassword:String=null):void
 		{
 			var checkoutCommand:CheckoutCommand = new CheckoutCommand(executable, root);
-			checkoutCommand.checkout(event, targetFolder, isTrustServerCertificateSVN);
+			checkoutCommand.checkout(url, rootDirectory, targetFolder, isTrustServerCertificateSVN, repository, userName, userPassword);
 		}
 		
-		public function loadRemoteList(event:SVNEvent, onCompletion:Function):void
+		public function loadRemoteList(repository:RepositoryItemVO, completion:Function, userName:String=null, userPassword:String=null):void
 		{
 			var remoteListCommand:LoadRemoteListCommand = new LoadRemoteListCommand(executable, root);
-			remoteListCommand.loadList(event, onCompletion);
+			remoteListCommand.loadList(repository, completion, userName, userPassword);
 		}
 	}
 }

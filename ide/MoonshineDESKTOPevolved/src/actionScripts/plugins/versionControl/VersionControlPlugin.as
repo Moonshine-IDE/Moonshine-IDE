@@ -37,7 +37,6 @@ package actionScripts.plugins.versionControl
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.AddRepositoryPopup;
-	import components.popup.GitAuthenticationPopup;
 	import components.popup.ManageRepositoriesPopup;
 
 	public class VersionControlPlugin extends PluginBase
@@ -47,9 +46,7 @@ package actionScripts.plugins.versionControl
 		override public function get description():String	{ return "Version Controls' Manager Plugin"; }
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
-		private var gitAuthWindow:GitAuthenticationPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
-		private var failedMethodObjectBeforeAuth:Array;
 		
 		override public function activate():void
 		{

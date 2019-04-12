@@ -28,7 +28,6 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugins.svn.event.SVNEvent;
 
 	public class UpdateCommand extends SVNCommandBase
 	{
@@ -37,7 +36,7 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function update(file:FileLocation, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
 		{
 			if (customProcess && customProcess.running)
 			{
@@ -45,7 +44,7 @@ package actionScripts.plugins.svn.commands
 			}
 			
 			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
-			root = file.fileBridge.getFile as File;
+			root = file;
 			
 			// check repository info first
 			this.getRepositoryInfo();
@@ -145,16 +144,21 @@ package actionScripts.plugins.svn.commands
 			{
 				// Refresh failed
 				var err:String = customProcess.standardError.readUTFBytes(customProcess.standardError.bytesAvailable);
-				var match:Array = err.match(/Authentication failed/);
+				var match:Array = err.toLowerCase().match(/authentication failed/);
 				if (match)
 				{
-					dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_AUTH_REQUIRED, root, null, null, null, "update"));
+					openAuthentication();
 				}
 				else error(err);
 			}
 			
 			startShell(false);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			this.doUpdate(username, password);
 		}
 	}
 }

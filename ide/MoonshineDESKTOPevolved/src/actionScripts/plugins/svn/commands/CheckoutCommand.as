@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
-	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.NativeProcessExitEvent;
@@ -28,35 +27,30 @@ package actionScripts.plugins.svn.commands
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class CheckoutCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
 		private var isEventReported:Boolean;
+		private var url:String;
 		private var targetFolder:String;
-		private var lastEventServerCertificateState:Boolean;
 		
 		public function CheckoutCommand(executable:File, root:File)
 		{
 			super(executable, root);
 			//cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 		}
-		
-		public function checkout(event:SVNEvent, folder:String, isTrustServerCertificateSVN:Boolean):void
+		// url, folder, user, password, istrust
+		public function checkout(url:String, rootDirectory:File, targetFolder:String, isTrustServerCertificateSVN:Boolean, repository:RepositoryItemVO, userName:String=null, userPassword:String=null):void
 		{
-			if (runningForFile)
-			{
-				error("Currently running, try again later.");
-				return;
-			}
-			
-			lastKnownMethod = null;
-			lastEvent = event;
-			targetFolder = folder;
-			lastEventServerCertificateState = isTrustServerCertificateSVN;
-			notice("Trying to check out %s. May take a while.", event.url);
+			this.repositoryItem = repository;
+			this.root = rootDirectory;
+			this.url = url;
+			this.targetFolder = targetFolder;
+			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
+			notice("Trying to check out %s. May take a while.", url);
 			
 			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
@@ -68,15 +62,15 @@ package actionScripts.plugins.svn.commands
 			var username:String;
 			var password:String;
 			args.push("checkout");
-			if (event.repository && event.repository.userName && event.repository.userPassword)
+			if (repositoryItem && repositoryItem.userName && repositoryItem.userPassword)
 			{
-				username = event.repository.userName;
-				password = event.repository.userPassword;
+				username = repositoryItem.userName;
+				password = repositoryItem.userPassword;
 			}
-			else if (event.authObject != null)
+			else if (userName && userPassword)
 			{
-				username = event.authObject.username;
-				password = event.authObject.password;
+				username = userName;
+				password = userPassword;
 			}
 			if (username != null && password != null)
 			{
@@ -85,19 +79,18 @@ package actionScripts.plugins.svn.commands
 				args.push("--password");
 				args.push(password);
 			}
-			args.push(event.url);
+			args.push(url);
 			args.push(targetFolder);
 			args.push("--non-interactive");
 			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
-			customInfo.workingDirectory = event.file;
+			customInfo.workingDirectory = this.root;
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
 			startShell(true);
 			customProcess.start(customInfo);
-			runningForFile = event.file;
 		}
 		
 		private function startShell(start:Boolean):void
@@ -137,7 +130,6 @@ package actionScripts.plugins.svn.commands
 			match = data.toLowerCase().match(/authentication failed/);
 			if (match)
 			{
-				lastKnownMethod = new MethodDescriptor(this, "checkout", lastEvent, targetFolder, lastEventServerCertificateState);
 				openAuthentication();
 			}
 	
@@ -145,6 +137,11 @@ package actionScripts.plugins.svn.commands
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
 			startShell(false);
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			this.checkout(this.url, this.root, this.targetFolder, this.isTrustServerCertificateSVN, this.repositoryItem, username, password);
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
@@ -165,7 +162,7 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(runningForFile.nativePath + File.separator + targetFolder)));
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(this.root.nativePath + File.separator + targetFolder)));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)

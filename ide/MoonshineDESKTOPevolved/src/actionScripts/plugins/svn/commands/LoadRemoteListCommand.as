@@ -26,7 +26,6 @@ package actionScripts.plugins.svn.commands
 	import flash.utils.IDataInput;
 	
 	import actionScripts.events.StatusBarEvent;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -38,24 +37,21 @@ package actionScripts.plugins.svn.commands
 		private var isEventReported:Boolean;
 		private var remoteOutput:String;
 		private var onCompletion:Function;
-		private var lastEventServerCertificateState:Boolean;
 		
 		public function LoadRemoteListCommand(executable:File, root:File)
 		{
 			super(executable, root);
 		}
 		
-		public function loadList(event:SVNEvent, completion:Function):void
+		public function loadList(repository:RepositoryItemVO, completion:Function, userName:String=null, userPassword:String=null):void
 		{
 			onCompletion = null;
 			remoteOutput = null;
-			lastKnownMethod = null;
-			lastEvent = null;
 			
-			lastEvent = event;
 			onCompletion = completion;
-			lastEventServerCertificateState = event.repository.isTrustCertificate;
-			notice("Remote data requested. This may take a while.", event.repository.url);
+			this.repositoryItem = repository;
+			this.isTrustServerCertificateSVN = this.repositoryItem.isTrustCertificate;
+			notice("Remote data requested. This may take a while.", this.repositoryItem.url);
 			
 			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
@@ -67,15 +63,15 @@ package actionScripts.plugins.svn.commands
 			args.push("ls");
 			args.push("--depth");
 			args.push("immediates");
-			if (event.repository && event.repository.userName && event.repository.userPassword)
+			if (this.repositoryItem && this.repositoryItem.userName && this.repositoryItem.userPassword)
 			{
-				username = event.repository.userName;
-				password = event.repository.userPassword;
+				username = this.repositoryItem.userName;
+				password = this.repositoryItem.userPassword;
 			}
-			else if (event.authObject != null)
+			else if (userName && userPassword)
 			{
-				username = event.authObject.username;
-				password = event.authObject.password;
+				username = userName;
+				password = userPassword;
 			}
 			if (username != null && password != null)
 			{
@@ -84,9 +80,9 @@ package actionScripts.plugins.svn.commands
 				args.push("--password");
 				args.push(password);
 			}
-			args.push(event.repository.url);
+			args.push(this.repositoryItem.url);
 			args.push("--non-interactive");
-			if (lastEventServerCertificateState) args.push("--trust-server-cert");
+			if (this.isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
 			
@@ -99,7 +95,7 @@ package actionScripts.plugins.svn.commands
 			// notify to the caller
 			if (onCompletion != null) 
 			{
-				onCompletion(lastEvent.repository, false);
+				onCompletion(this.repositoryItem, false);
 				onCompletion = null;
 			}
 		}
@@ -194,18 +190,18 @@ package actionScripts.plugins.svn.commands
 							// consider a folder
 							tmpRepoItem.children = [];
 							line = line.replace("/", "");
-							tmpRepoItem.url = lastEvent.repository.url +"/"+ line;
+							tmpRepoItem.url = this.repositoryItem.url +"/"+ line;
 						}
 						
 						tmpRepoItem.label = line;
 						
 						// we also want to keep few information from
 						// top level for later retreival
-						tmpRepoItem.isRequireAuthentication = lastEvent.repository.isRequireAuthentication;
-						tmpRepoItem.isTrustCertificate = lastEvent.repository.isTrustCertificate;
-						tmpRepoItem.udid = lastEvent.repository.udid;
+						tmpRepoItem.isRequireAuthentication = this.repositoryItem.isRequireAuthentication;
+						tmpRepoItem.isTrustCertificate = this.repositoryItem.isTrustCertificate;
+						tmpRepoItem.udid = this.repositoryItem.udid;
 						
-						lastEvent.repository.children.push(tmpRepoItem);
+						this.repositoryItem.children.push(tmpRepoItem);
 					}
 				}
 			}
@@ -213,27 +209,30 @@ package actionScripts.plugins.svn.commands
 			// notify to the caller
 			if (onCompletion != null) 
 			{
-				onCompletion(lastEvent.repository, true);
+				onCompletion(this.repositoryItem, true);
 				onCompletion = null;
 			}
 		}
 		
 		private function askOrReconnectWithAuthentication():void
 		{
-			var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
+			var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(this.repositoryItem.udid);
 			if (tmpTopLevel && tmpTopLevel.userName && tmpTopLevel.userPassword)
 			{
 				// in case user choose to save auth for the Moonshine session
-				lastEvent.authObject = {username: tmpTopLevel.userName, password: tmpTopLevel.userPassword};
-				this.loadList(lastEvent, onCompletion);
-				notice("Trying to authenticate with temporary saved information");
+				onAuthenticationSuccess(tmpTopLevel.userName, tmpTopLevel.userPassword);
 			}
 			else
 			{
 				// in case we requires to prompt to auth
-				lastKnownMethod = new MethodDescriptor(this, "loadList", lastEvent, onCompletion);
 				openAuthentication();
 			}
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			this.loadList(this.repositoryItem, onCompletion, username, password);
+			notice("Trying to authenticate with temporary saved information");
 		}
 	}
 }

@@ -49,7 +49,6 @@ package actionScripts.plugins.svn
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
-	import components.popup.GitAuthenticationPopup;
 	import components.popup.SourceControlCheckout;
 
 	public class SVNPlugin extends PluginBase implements ISettingsProvider
@@ -82,7 +81,6 @@ package actionScripts.plugins.svn
 		}
 		
 		private var checkoutWindow:SourceControlCheckout;
-		private var gitAuthWindow:GitAuthenticationPopup;
 		private var failedMethodObjectBeforeAuth:Array;
 		
 		override public function activate():void
@@ -95,7 +93,6 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.addEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
-			dispatcher.addEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
 			dispatcher.addEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -109,7 +106,6 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.removeEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
-			dispatcher.removeEventListener(SVNEvent.SVN_AUTH_REQUIRED, onSVNAuthRequires);
 			dispatcher.removeEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -192,15 +188,9 @@ package actionScripts.plugins.svn
 		
 		protected function onLoadRemoteSVNList(event:VersionControlEvent):void
 		{
-			//git: submitObject.url, submitObject.target
-			//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
-			var newEvent:SVNEvent = new SVNEvent(
-				SVNEvent.SVN_REMOTE_LIST, null);
-			newEvent.repository = event.value.repository;
-			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.loadRemoteList(newEvent, event.value.onCompletion);
+			provider.loadRemoteList(event.value.repository, event.value.onCompletion);
 		}
 		
 		protected function handleCheckoutRequest(event:Event):void
@@ -247,14 +237,16 @@ package actionScripts.plugins.svn
 			var submitObject:Object = checkoutWindow.submitObject;
 			if (submitObject)
 			{
-				//git: submitObject.url, submitObject.target
-				//svn: submitObject.url, submitObject.target, submitObject.user, submitObject.password
-				var newEvent:SVNEvent = new SVNEvent(SVNEvent.EVENT_CHECKOUT, new File(submitObject.target), submitObject.url, null, submitObject.user ? {username:submitObject.user, password:submitObject.password} : null);
-				newEvent.repository = submitObject.repository;
-				
 				var provider:SubversionProvider = new SubversionProvider();
 				provider.executable = new File(svnBinaryPath);
-				provider.checkout(newEvent, submitObject.targetFolder, (submitObject.repository as RepositoryItemVO).isTrustCertificate);
+				provider.checkout(
+					submitObject.url, 
+					new File(submitObject.target), 
+					submitObject.targetFolder, 
+					(submitObject.repository as RepositoryItemVO).isTrustCertificate, 
+					submitObject.repository, 
+					submitObject.user ? submitObject.user : null, 
+					submitObject.user ? submitObject.password : null);
 			}
 		}
 		
@@ -290,58 +282,12 @@ package actionScripts.plugins.svn
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.update(model.activeProject.folderLocation, user, password, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
+			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean
 		{
 			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
-		}
-		
-		private function onSVNAuthRequires(event:SVNEvent):void
-		{
-			failedMethodObjectBeforeAuth = event.extras;
-			openAuthentication();
-		}
-		
-		private function openAuthentication():void
-		{
-			if (!gitAuthWindow)
-			{
-				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
-				gitAuthWindow.title = "SVN Needs Authentication";
-				gitAuthWindow.type = VersionControlTypes.SVN;
-				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
-				PopUpManager.centerPopUp(gitAuthWindow);
-			}
-			
-			/*
-			* @local
-			*/
-			function onGitAuthWindowClosed(event:CloseEvent):void
-			{
-				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToSVN);
-				PopUpManager.removePopUp(gitAuthWindow);
-				gitAuthWindow = null;
-			}
-		}
-		
-		private function onAuthSuccessToSVN(event:Event):void
-		{
-			if (gitAuthWindow.userObject && failedMethodObjectBeforeAuth) 
-			{
-				switch (failedMethodObjectBeforeAuth[0])
-				{
-					case "update":
-						handleUpdateRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password);
-						break;
-					case "commit":
-						handleCommitRequest(null, gitAuthWindow.userObject.userName, gitAuthWindow.userObject.password, {files:failedMethodObjectBeforeAuth[1], message:failedMethodObjectBeforeAuth[2], runningForFile:failedMethodObjectBeforeAuth[3]});
-						break;
-				}
-			}
 		}
 	}
 }

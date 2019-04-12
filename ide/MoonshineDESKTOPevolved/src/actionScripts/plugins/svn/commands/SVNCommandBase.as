@@ -29,8 +29,6 @@ package actionScripts.plugins.svn.commands
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.plugins.core.ExternalCommandBase;
-	import actionScripts.plugins.git.model.MethodDescriptor;
-	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.utils.SharedObjectUtil;
@@ -43,10 +41,8 @@ package actionScripts.plugins.svn.commands
 	{
 		override public function get name():String { return "Subversion Plugin"; }
 		
-		protected var isTrustServerCertificateSVN:Boolean;
-		protected var lastEvent:SVNEvent;
-		protected var lastKnownMethod:MethodDescriptor;
 		protected var repositoryItem:RepositoryItemVO;
+		protected var isTrustServerCertificateSVN:Boolean;
 		
 		public function SVNCommandBase(executable:File, root:File)
 		{
@@ -112,9 +108,9 @@ package actionScripts.plugins.svn.commands
 			authWindow.title = "Needs Authentication";
 			authWindow.type = VersionControlTypes.SVN;
 			
-			if (lastEvent.repository) 
+			if (repositoryItem) 
 			{
-				var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
+				var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
 				if (tmpTopLevel && tmpTopLevel.userName) authWindow.userName = tmpTopLevel.userName;
 			}
 			
@@ -138,23 +134,20 @@ package actionScripts.plugins.svn.commands
 			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
 			if (target.userObject)
 			{
-				if (target.userObject.save && lastEvent.repository) 
+				if (target.userObject.save && repositoryItem)
 				{
-					if (lastEvent.repository) 
-					{
-						var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(lastEvent.repository.udid);
-						tmpTopLevel.userName = target.userObject.userName;
-						tmpTopLevel.userPassword = target.userObject.password;
-						SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
-					}
-				}
-				else
-				{
-					lastEvent.authObject = {username:target.userObject.userName, password:target.userObject.password};
+					var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
+					tmpTopLevel.userName = target.userObject.userName;
+					tmpTopLevel.userPassword = target.userObject.password;
+					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
 				}
 				
-				lastKnownMethod.callMethod();
+				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
+		}
+		
+		protected function onAuthenticationSuccess(username:String, password:String):void
+		{
 		}
 		
 		protected function onCancelAuthentication():void
