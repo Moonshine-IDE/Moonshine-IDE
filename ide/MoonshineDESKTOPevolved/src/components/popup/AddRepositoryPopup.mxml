@@ -30,7 +30,6 @@
 		<![CDATA[
 			import com.adobe.utils.StringUtil;
 			
-			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
@@ -129,7 +128,7 @@
 				}
 				else
 				{
-					searchRegExp = new RegExp("\\w*://\\S*/\\S+$", "i");
+					searchRegExp = new RegExp("\\w*://.*/.+$", "i");
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
