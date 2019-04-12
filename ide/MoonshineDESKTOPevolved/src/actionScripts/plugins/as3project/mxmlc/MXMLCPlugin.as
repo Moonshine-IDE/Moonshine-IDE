@@ -487,16 +487,16 @@ package actionScripts.plugins.as3project.mxmlc
 				if (as3Pvo.isRoyale)
 				{
                     var tmpSDKLocation:FileLocation = UtilsCore.getCurrentSDK(as3Pvo as AS3ProjectVO);
-					var sdkVO:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
-					if (sdkVO && sdkVO.isJSOnlySdk)
+					var sdkReference:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
+					if (sdkReference && sdkReference.isJSOnlySdk)
 					{
 						error("This SDK only supports JavaScript Builds.");
 						return;
 					}
 
-					if (!sdkVO.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists)
+					if (!sdkReference.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists)
 					{
-						displayPlayerGlobalError();
+						displayPlayerGlobalError(sdkReference);
 						return;
 					}
 				}
@@ -518,15 +518,23 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 
-		private function displayPlayerGlobalError():void
+		private function displayPlayerGlobalError(sdkReference:SDKReferenceVO):void
 		{
+			var separator:String = model.fileCore.separator;
+			var playerVersion:String = sdkReference.getPlayerGlobalVersion();
 			var p:ParagraphElement = new ParagraphElement();
 			var spanText:SpanElement = new SpanElement();
 			var link:LinkElement = new LinkElement();
 
+			if (!playerVersion)
+			{
+				playerVersion = "{version}";
+			}
+
 			p.color = 0xFA8072;
-			spanText.text = ":\n: This SDK does not contains playerglobal.swc in 'frameworks\libs\player\{version}\playerglobal.swc'." +
-					     " Download playerglobal ";
+			spanText.text = ":\n: This SDK does not contains playerglobal.swc in frameworks".concat(
+						 separator, "libs", separator, "player", separator, playerVersion, separator, "playerglobal.swc", ".",
+					     " Download playerglobal ");
 			link.href = "https://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html";
 			link.linkNormalFormat = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
 

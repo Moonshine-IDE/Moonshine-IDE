@@ -219,7 +219,7 @@ package actionScripts.valueObjects
 			return null;
 		}
 
-		private function getPlayerGlobalVersion():String
+		public function getPlayerGlobalVersion():String
 		{
 			for each (var target:RoyaleOutputTarget in outputTargets)
 			{
