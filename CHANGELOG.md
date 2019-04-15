@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Visual Editor PrimeFaces: Add **Preview** button for opened file.
 * Java Maven Project: Added **Build & Run** option in menu **Project**.
+* Add syntax highlighting for IDE project files.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
@@ -20,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 * Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
+* Java Project: Fixed issue where new project dialog slow.
 
 
 ## Moonshine IDE [2.0.0]
