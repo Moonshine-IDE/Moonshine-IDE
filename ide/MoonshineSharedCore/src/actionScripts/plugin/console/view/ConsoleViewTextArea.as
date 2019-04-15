@@ -131,6 +131,7 @@ package actionScripts.plugin.console.view
 			else if (text is ParagraphElement)
 			{
 				this.textFlow.addChild(text);
+				callLater(setScroll);
 			}
 			
 			// Remove initial empty line (first time anything is outputted)
