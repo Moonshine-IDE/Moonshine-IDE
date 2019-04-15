@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 * Visual Editor PrimeFaces: Add **Preview** button for opened file.
+* Java Maven Project: Added **Build & Run** option in menu **Project**.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
