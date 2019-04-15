@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import flash.events.Event;
+	
 	import mx.collections.ArrayCollection;
 	import mx.utils.UIDUtil;
 	
@@ -30,6 +32,7 @@ package actionScripts.utils
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
@@ -51,10 +54,12 @@ package actionScripts.utils
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var model:IDEModel = IDEModel.getInstance();
+		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private var components:ArrayCollection;
 		private var lastOutput:String;
 		private var lineBreak:String;
 		private var subscribeIdToWorker:String;
+		private var itemUnderCursorIndex:int;
 		
 		/**
 		 * CONSTRUCTOR
@@ -75,62 +80,77 @@ package actionScripts.utils
 		 */
 		public function retrieveAboutInformation(items:ArrayCollection):void
 		{
-			var executable:String;
 			components = items;
-			for (var index:int=0; index < components.length; index++)
+			startRequestProcess();
+		}
+		
+		private function startRequestProcess():void
+		{
+			var itemTypeUnderCursor:String;
+			if (itemUnderCursorIndex <= (components.length - 1))
 			{
-				if (components[index].installToPath != null)
+				var executable:String;
+				var itemUnderCursor:ComponentVO = components.getItemAt(itemUnderCursorIndex) as ComponentVO;
+				if (itemUnderCursor.installToPath != null)
 				{
+					var commands:String;
 					queue = new Vector.<Object>();
-					switch (components[index].type)
+					switch (itemUnderCursor.type)
 					{
 						case ComponentTypes.TYPE_FLEX:
 						case ComponentTypes.TYPE_FEATHERS:
 						case ComponentTypes.TYPE_FLEXJS:
 							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/'+ executable +'&&--version'), false, QUERY_FLEX_AIR_VERSION, index));
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version' + (ConstantsCoreVO.IS_MACOS ? ';' : '&& ');
 							executable = ConstantsCoreVO.IS_MACOS ? "adt" : "adt.bat";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/'+ executable +'&&-version'), false, QUERY_FLEX_AIR_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands += '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							itemTypeUnderCursor = QUERY_FLEX_AIR_VERSION;
 							break;
 						case ComponentTypes.TYPE_ROYALE:
 							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/js/bin/'+ executable +'&&--version'), false, QUERY_ROYALE_FJS_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands = '"'+ itemUnderCursor.installToPath+'/js/bin/'+ executable +'" --version';
+							itemTypeUnderCursor = QUERY_ROYALE_FJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_OPENJAVA:
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/java&&-version'), false, QUERY_JDK_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/java" -version';
+							itemTypeUnderCursor = QUERY_JDK_VERSION;
 							break;
 						case ComponentTypes.TYPE_ANT:
 							executable = ConstantsCoreVO.IS_MACOS ? "ant" : "ant.bat";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/'+ executable +'&&-version'), false, QUERY_ANT_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							itemTypeUnderCursor = QUERY_ANT_VERSION;
 							break;
 						case ComponentTypes.TYPE_MAVEN:
 							executable = ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd";
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'/bin/'+ executable +'&&-version'), false, QUERY_MAVEN_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							itemTypeUnderCursor = QUERY_MAVEN_VERSION;
 							break;
 						case ComponentTypes.TYPE_SVN:
 						case ComponentTypes.TYPE_GIT:
-							addToQueue(new NativeProcessQueueVO(getPlatformMessage(components[index].installToPath+'&&--version'), false, QUERY_SVN_GIT_VERSION, index));
-							worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+							commands = '"'+ itemUnderCursor.installToPath+'" --version';
+							itemTypeUnderCursor = QUERY_SVN_GIT_VERSION;
 							break;
 					}
+					
+					environmentSetup.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [commands]);
+				}
+				else
+				{
+					itemUnderCursorIndex++;
+					startRequestProcess();
 				}
 			}
-		}
-		
-		private function getPlatformMessage(value:String):String
-		{
-			if (ConstantsCoreVO.IS_MACOS)
+			else
 			{
-				value = value.replace(/(&&)/g, " ");
-				return value;
+				dispatchEvent(new Event(Event.COMPLETE));
 			}
 			
-			return value;
+			function onEnvironmentPrepared(value:String):void
+			{
+				addToQueue(new NativeProcessQueueVO(value, false, itemTypeUnderCursor, itemUnderCursorIndex));
+				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+				itemUnderCursorIndex++;
+			}
 		}
 		
 		public function onWorkerValueIncoming(value:Object):void
@@ -173,9 +193,11 @@ package actionScripts.utils
 			switch (processType)
 			{
 				case QUERY_FLEX_AIR_VERSION:
-					//success("...process completed");
+					//success("...Flex Process completed");
 					break;
 			}
+			
+			startRequestProcess();
 		}
 		
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -192,8 +214,7 @@ package actionScripts.utils
 				switch (tmpQueue.processType)
 				{
 					case QUERY_FLEX_AIR_VERSION:
-						if (!components[tmpIndex].version) components[tmpIndex].version = lastOutput;
-						else components[tmpIndex].version += ", "+ lastOutput;
+						components[tmpIndex].version = lastOutput;
 						break;
 					case QUERY_MAVEN_VERSION:
 						components[tmpIndex].version = lastOutput.split(lineBreak)[0];
@@ -233,7 +254,8 @@ package actionScripts.utils
 				{
 					case QUERY_FLEX_AIR_VERSION:
 					{
-						lastOutput = value.output.split(lineBreak)[0];
+						if (!lastOutput) lastOutput = value.output.split(lineBreak)[0];
+						else lastOutput += ", "+ value.output.split(lineBreak)[0];
 						break;
 					}
 					case QUERY_ROYALE_FJS_VERSION:
