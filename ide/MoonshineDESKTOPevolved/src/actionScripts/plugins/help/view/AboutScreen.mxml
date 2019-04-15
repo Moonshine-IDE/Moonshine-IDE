@@ -28,13 +28,13 @@
 		   creationComplete="onAboutScreenCreationComplete(event)" xmlns:popup="components.popup.*">
 	<fx:Script>
 		<![CDATA[
-
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
 			
 			import actionScripts.locator.IDEModel;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			import components.popup.InfoBackgroundPopup;
 	
@@ -100,7 +100,7 @@
 	
 	<s:VGroup id="vgBody" 
 			  width="80%" height="80%">
-		<s:Label text="Moonshine IDE" color="0x8a2a2a"
+		<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL}" color="0x8a2a2a"
 				 paddingLeft="8"/>
 		<s:Label id="version"
 				 paddingLeft="8"/>

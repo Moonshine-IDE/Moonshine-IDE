@@ -48,6 +48,7 @@ package actionScripts.valueObjects
 		public static const REQUIRED_FLEXJS_SDK_VERION_MINIMUM:String = "0.7.0";
 		public static const EVENT_PROBLEMS:String = "EVENT_PROBLEMS";
 		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
+		public static const MOONSHINE_IDE_LABEL:String = "Moonshine IDE ™";
 		
 		[Embed(source='/elements/swf/loading.swf')]
 		public static var loaderIcon: Class;
@@ -372,7 +373,7 @@ public class $fileName
 			var openTemplateProject:FileLocation = new FileLocation("");
 			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open/Import Project...";
 			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png";
-			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open Project in Moonshine IDE.";
+			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open Project in "+ ConstantsCoreVO.MOONSHINE_IDE_LABEL;
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
