@@ -19,6 +19,7 @@
 package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.UtilsCore;
 
     [Bindable] public class SDKReferenceVO
@@ -104,7 +105,7 @@ package actionScripts.valueObjects
 			{
 				var separator:String = fileLocation.fileBridge.separator;
 				var playerGlobalVersion:String = getPlayerGlobalVersion();
-				var playerGlobalLocation:FileLocation = fileLocation.resolvePath(separator.concat(
+				var playerGlobalLocation:FileLocation = new FileLocation(fileLocation.fileBridge.nativePath.concat(separator,
 						"frameworks", separator, "libs", separator, "player",
 						separator, playerGlobalVersion, separator, "playerglobal.swc"));
 
