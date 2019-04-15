@@ -201,16 +201,18 @@ package actionScripts.ui.menu
         {
             if (javaMenu == null)
             {
+                var enabledTypes:Array = (currentProject as JavaProjectVO).hasGradleBuild() ? [] : [ProjectMenuTypes.JAVA];
                 var resourceManager:IResourceManager = ResourceManager.getInstance();
+
                 javaMenu = Vector.<MenuItem>([
                     new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.JAVA], JavaBuildEvent.JAVA_BUILD,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
                             'b', [Keyboard.COMMAND],
                             'b', [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.JAVA], JavaBuildEvent.BUILD_AND_RUN,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
                             "\n", [Keyboard.COMMAND],
                             "\n", [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.JAVA], ProjectActionEvent.CLEAN_PROJECT)
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
                 ]);
                 javaMenu.forEach(makeDynamic);
             }
