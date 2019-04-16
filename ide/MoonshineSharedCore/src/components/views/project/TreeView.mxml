@@ -179,6 +179,11 @@
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 					sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
 				}
+                else if (project is JavaProjectVO)
+                {
+                    var javaProject:JavaProjectVO = JavaProjectVO(project);
+                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
+                }
 				if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 			}
 		}
@@ -368,8 +373,14 @@
 					var sourceWrapper:FileWrapper = null;
 					if(project is AS3ProjectVO)
 					{
-						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
+                        var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
 					}
+                    else if (project is JavaProjectVO)
+                    {
+                        var javaProject:JavaProjectVO = JavaProjectVO(project);
+                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
+                    }
 					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
 					projectFolders.addItemAt(project.projectFolder, 0);
