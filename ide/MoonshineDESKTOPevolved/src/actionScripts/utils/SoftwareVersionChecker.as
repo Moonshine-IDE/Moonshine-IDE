@@ -217,7 +217,7 @@ package actionScripts.utils
 						components[tmpIndex].version = lastOutput;
 						break;
 					case QUERY_MAVEN_VERSION:
-						components[tmpIndex].version = lastOutput.split(lineBreak)[0];
+						components[tmpIndex].version = getVersionNumberedTypeLine(lastOutput);
 						break;
 				}
 			}
@@ -254,15 +254,15 @@ package actionScripts.utils
 				{
 					case QUERY_FLEX_AIR_VERSION:
 					{
-						if (!lastOutput) lastOutput = value.output.split(lineBreak)[0];
-						else lastOutput += ", "+ value.output.split(lineBreak)[0];
+						if (!lastOutput) lastOutput = getVersionNumberedTypeLine(value.output);
+						else lastOutput += ", "+ getVersionNumberedTypeLine(value.output);
 						break;
 					}
 					case QUERY_ROYALE_FJS_VERSION:
 						match = value.output.match(/Version /);
 						if (match)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = value.output.split(lineBreak)[0];
+							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
 						break;
 					case QUERY_JDK_VERSION:
@@ -271,7 +271,7 @@ package actionScripts.utils
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = value.output.split(lineBreak)[0];
+							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
 						break;
 					}
@@ -296,6 +296,17 @@ package actionScripts.utils
 			{
 				//notice(value.output);
 			}
+		}
+		
+		private function getVersionNumberedTypeLine(value:String):String
+		{
+			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
+			for each (var line:String in lines)
+			{
+				if (line.match(/\d+.\d+.\d+/)) return line;
+			}
+			
+			return null;
 		}
 		
 		/**

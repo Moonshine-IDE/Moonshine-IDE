@@ -241,10 +241,10 @@ package actionScripts.utils
 				{
 					// returns batch file path to be 
 					// executed by the caller's nativeProcess process
-					externalCallCompletionHandler(windowsBatchFile.nativePath);
+					if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
 					cleanUp();
 				}
-				else
+				else if (windowsBatchFile)
 				{
 					onCommandLineExecutionWith(windowsBatchFile.nativePath);
 				}
