@@ -19,14 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.clean
 {
-	import actionScripts.plugin.core.compiler.ProjectActionEvent;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.events.IOErrorEvent;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
@@ -37,6 +34,8 @@ package actionScripts.plugin.actionscript.as3project.clean
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.core.compiler.ProjectActionEvent;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
@@ -53,7 +52,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 		private var currentProjectName:String;
 
 		override public function get name():String { return "Clean Project"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Clean swf file from output dir."; }
 		
 		public function CleanProject()

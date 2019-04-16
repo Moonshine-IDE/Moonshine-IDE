@@ -63,7 +63,7 @@ package actionScripts.plugin.actionscript.as3project
 		private var aneMessagePopup:NativeExtensionMessagePopup;
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "AS3 project importing, exporting & scaffolding.";}
 		
 		public function AS3ProjectPlugin()

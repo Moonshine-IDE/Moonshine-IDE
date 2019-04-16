@@ -18,11 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.organizeImports
 {
+	import flash.events.Event;
+	
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
-	import flash.events.Event;
-	import actionScripts.events.LanguageServerMenuEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class OrganizeImportsPlugin extends PluginBase
 	{
@@ -31,7 +33,7 @@ package actionScripts.plugin.organizeImports
 		public function OrganizeImportsPlugin() {	}
 
 		override public function get name():String { return "Organize Imports Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Organize imports in a file."; }
 
 		override public function activate():void

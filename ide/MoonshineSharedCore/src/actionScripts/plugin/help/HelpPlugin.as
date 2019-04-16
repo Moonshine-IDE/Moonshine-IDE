@@ -48,7 +48,7 @@ package actionScripts.plugin.help
 		public static var ABOUT_SUBSCRIBE_ID_TO_WORKER:String;
 		
 		override public function get name():String			{ return "Help Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Help Plugin. Esc exits."; }
 
 		private var tourdeContentView: IPanelWindow;

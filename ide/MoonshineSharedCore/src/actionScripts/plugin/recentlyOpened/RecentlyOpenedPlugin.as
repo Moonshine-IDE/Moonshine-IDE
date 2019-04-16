@@ -53,7 +53,7 @@ package actionScripts.plugin.recentlyOpened
 		public static const RECENT_FILES_LIST_UPDATED:String = "RECENT_FILES_LIST_UPDATED";
 		
 		override public function get name():String			{ return "Recently Opened Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Stores the last opened file paths."; }
 		
 		private var cookie:SharedObject;

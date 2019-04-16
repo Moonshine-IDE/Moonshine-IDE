@@ -26,15 +26,16 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.valueObjects.Settings;
 	import actionScripts.ui.parser.GroovyLineParser;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.Settings;
 	
 	public class GroovySyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
 	{
 		private var formats:Object = {};
 
 		override public function get name():String 			{return "Groovy Syntax Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Groovy.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 		

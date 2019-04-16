@@ -41,11 +41,12 @@ package actionScripts.plugin.actionscript.as3project.files
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class SaveFilesPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
 		override public function get name():String { return "General"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "General options to Moonshine"; }
 		
 		public var resetLabel:String = "Reset to Default";
@@ -171,7 +172,7 @@ package actionScripts.plugin.actionscript.as3project.files
 			if (OSXBookmarkerNotifiers.workspaceLocation && OSXBookmarkerNotifiers.workspaceLocation.fileBridge.exists) workspacePath = OSXBookmarkerNotifiers.workspaceLocation.fileBridge.nativePath;
 			
 			return Vector.<ISetting>([
-				new PathSetting(this, "workspacePath", "Moonshine Workspace", true),
+				new PathSetting(this, "workspacePath", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Workspace", true),
 				new BooleanSetting(this, "isSaveFiles", "Save automatically before Build"),
 				new BooleanSetting(this, "showHiddenPaths", "Show hidden files/folders"),
 				new BooleanSetting(this, "confirmApplicationExit", "Confirm application exit"),

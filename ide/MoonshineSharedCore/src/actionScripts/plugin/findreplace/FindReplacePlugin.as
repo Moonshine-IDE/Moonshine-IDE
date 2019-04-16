@@ -34,6 +34,7 @@ package actionScripts.plugin.findreplace
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.utils.TextUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FindReplacePlugin extends PluginBase
 	{
@@ -55,7 +56,7 @@ package actionScripts.plugin.findreplace
 			super();
 		}
 		
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Provides Find/Replace"; }
 		override public function get name():String { return "Find & Replace"; }
 		

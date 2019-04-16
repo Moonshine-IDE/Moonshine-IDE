@@ -44,7 +44,7 @@ package actionScripts.plugin.splashscreen
 	public class SplashScreenPlugin extends PluginBase implements IMenuPlugin, ISettingsProvider
 	{
 		override public function get name():String			{ return "Splash Screen Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Shows artsy splashscreen"; }
 		
 		public static const EVENT_SHOW_SPLASH:String = "showSplashEvent";

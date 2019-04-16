@@ -1,5 +1,16 @@
 package actionScripts.plugin.projectPanel
 {
+    import flash.events.MouseEvent;
+    
+    import mx.containers.dividedBoxClasses.BoxDivider;
+    import mx.core.UIComponent;
+    import mx.events.DividerEvent;
+    import mx.events.FlexEvent;
+    import mx.managers.CursorManager;
+    import mx.managers.CursorManagerPriority;
+    
+    import spark.components.NavigatorContent;
+    
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
@@ -7,23 +18,12 @@ package actionScripts.plugin.projectPanel
     import actionScripts.ui.divider.IDEVDividedBox;
     import actionScripts.ui.tabNavigator.TabNavigatorWithOrientation;
     import actionScripts.ui.tabNavigator.event.TabNavigatorEvent;
-
-    import flash.events.MouseEvent;
-
-    import mx.containers.dividedBoxClasses.BoxDivider;
-    import mx.core.UIComponent;
-
-    import mx.events.DividerEvent;
-    import mx.events.FlexEvent;
-    import mx.managers.CursorManager;
-    import mx.managers.CursorManagerPriority;
-
-    import spark.components.NavigatorContent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
     public class ProjectPanelPlugin extends PluginBase implements IPlugin
     {
         override public function get name():String { return "ProjectPanel"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 
         [Embed("/elements/images/Divider_collapse.png")]
         private const customDividerSkinCollapse:Class;

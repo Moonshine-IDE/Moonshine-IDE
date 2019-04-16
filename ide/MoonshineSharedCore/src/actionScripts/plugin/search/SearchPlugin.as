@@ -34,10 +34,11 @@ package actionScripts.plugin.search
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
     
     import components.popup.SearchInProjectPopup;
     import components.views.other.SearchInProjectView;
-    import actionScripts.valueObjects.ProjectVO;
 
     public class SearchPlugin extends PluginBase
     {
@@ -59,7 +60,7 @@ package actionScripts.plugin.search
 		private var isCollectionChangeListenerAdded:Boolean;
 		
         override public function get name():String 	{return "Search in Projects";}
-        override public function get author():String {return "Moonshine Project Team";}
+        override public function get author():String {return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
         override public function get description():String 	{return "Search string in one or multiple project files.";}
 
         public function SearchPlugin()

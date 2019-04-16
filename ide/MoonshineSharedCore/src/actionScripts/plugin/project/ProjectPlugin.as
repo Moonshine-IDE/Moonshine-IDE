@@ -58,7 +58,7 @@ package actionScripts.plugin.project
 		public static const EVENT_SHOW_OPEN_RESOURCE:String = "showOpenResource";
 		
 		override public function get name():String 	{return "Project Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
 		
 		private var treeView:TreeView;

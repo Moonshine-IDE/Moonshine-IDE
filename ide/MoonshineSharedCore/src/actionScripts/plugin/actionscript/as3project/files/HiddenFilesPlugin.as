@@ -7,12 +7,13 @@ package actionScripts.plugin.actionscript.as3project.files
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
 
     public class HiddenFilesPlugin extends PluginBase implements IPlugin
     {
         override public function get name():String { return "Hidden Files"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Handle hide/show operations on folders in Project Tree"; }
 
         public function HiddenFilesPlugin()

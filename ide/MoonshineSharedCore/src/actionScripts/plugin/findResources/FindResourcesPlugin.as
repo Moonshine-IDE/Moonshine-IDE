@@ -18,17 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findResources
 {
-	import actionScripts.plugin.PluginBase;
-	import components.popup.FindResourcesPopup;
-	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-
-    import mx.collections.ArrayCollection;
-
-    import mx.core.FlexGlobals;
+	
+	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
+	
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.popup.FindResourcesPopup;
 
 	public class FindResourcesPlugin extends PluginBase
 	{
@@ -43,7 +44,7 @@ package actionScripts.plugin.findResources
 			super();
 		}
 		
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Find Resources"; }
 		override public function get name():String { return "Find Resources"; }
 		

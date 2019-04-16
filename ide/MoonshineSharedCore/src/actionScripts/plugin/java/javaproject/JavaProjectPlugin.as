@@ -18,23 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject
 {
+	import flash.events.Event;
+	
 	import actionScripts.events.MavenBuildEvent;
+	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.RunJavaProjectEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.build.MavenBuildStatus;
 	import actionScripts.plugin.core.compiler.JavaBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.plugin.project.ProjectTemplateType;
 	import actionScripts.utils.UtilsCore;
-
-	import flash.events.Event;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class JavaProjectPlugin extends PluginBase
 	{
 		override public function get name():String 			{ return "Java Project Plugin"; }
-		override public function get author():String 		{ return "Moonshine Project Team"; }
+		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String 	{ return "Java project importing, exporting & scaffolding."; }
 
 		override public function activate():void

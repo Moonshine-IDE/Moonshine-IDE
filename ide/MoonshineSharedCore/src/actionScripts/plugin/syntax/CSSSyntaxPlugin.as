@@ -27,6 +27,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.ui.parser.CSSContextSwitchLineParser;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
 	public class CSSSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
@@ -34,7 +35,7 @@ package actionScripts.plugin.syntax
 		private var formats:Object = {};
 		
 		override public function get name():String 			{return "CSS Syntax Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for CSS.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 		
