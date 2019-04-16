@@ -57,7 +57,6 @@ package actionScripts.utils
 		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private var components:ArrayCollection;
 		private var lastOutput:String;
-		private var lineBreak:String;
 		private var subscribeIdToWorker:String;
 		private var itemUnderCursorIndex:int;
 		
@@ -69,7 +68,6 @@ package actionScripts.utils
 			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER) subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
 			else subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
 			
-			lineBreak = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}

@@ -1042,6 +1042,11 @@ package actionScripts.utils
 			
 			return false;
 		}
+		
+		public static function getLineBreakEncoding():String
+		{
+			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {

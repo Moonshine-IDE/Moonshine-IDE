@@ -75,6 +75,14 @@ package actionScripts.locator
 			individualSubscriptions[udid] = anyClass;
 		}
 		
+		public function unSubscribeComponent(udid:String):void
+		{
+			if (individualSubscriptions[udid] != undefined) 
+			{
+				delete individualSubscriptions[udid];
+			}
+		}
+		
 		public function sendToWorker(type:String, value:Object, subscriberUdid:String=null):void
 		{
 			mainToWorker.send({event: type, value: value, subscriberUdid: subscriberUdid});
