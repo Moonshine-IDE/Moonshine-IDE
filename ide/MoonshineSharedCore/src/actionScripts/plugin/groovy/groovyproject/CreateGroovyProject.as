@@ -26,6 +26,7 @@ package actionScripts.plugin.groovy.groovyproject
 	import flash.net.SharedObject;
 
 	import mx.controls.Alert;
+	import actionScripts.plugin.groovy.groovyproject.exporter.GroovyExporter;
 
 	public class CreateGroovyProject
 	{
@@ -256,12 +257,20 @@ package actionScripts.plugin.groovy.groovyproject
 			th.templatingData["$Settings"] = projectName;
 			th.templatingData["$SourcePath"] = sourcePath;
 			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			th.templatingData["$ProjectJAR"] = sourceFile + ".jar";
 
             th.projectTemplate(templateDir, targetFolder);
 
 			var projectSettingsFileName:String = projectName + ".gvyproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
-			return GroovyImporter.parse(settingsFile, projectName);
+			pvo = GroovyImporter.parse(settingsFile, projectName);
+
+			var folderToCreate:FileLocation = pvo.jarOutput.path.fileBridge.parent;
+			if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
+
+			GroovyExporter.export(pvo);
+
+			return pvo;
 		}
 	}
 }

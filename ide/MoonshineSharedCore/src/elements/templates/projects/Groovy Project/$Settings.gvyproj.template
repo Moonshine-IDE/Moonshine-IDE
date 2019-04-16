@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
+  <output>
+    <option path="build/libs/$ProjectJAR" />
+  </output>
   <classpaths>
     <class path="$SourcePath"/>
   </classpaths>

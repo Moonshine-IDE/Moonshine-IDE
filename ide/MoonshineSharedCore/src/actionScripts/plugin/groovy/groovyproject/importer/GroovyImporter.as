@@ -79,6 +79,8 @@ package actionScripts.plugin.groovy.groovyproject.importer
 				// if yet not decided from above approach
 				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
 			}
+			
+			project.jarOutput.parse(data.output, project);
 
 			return project;
 		}
