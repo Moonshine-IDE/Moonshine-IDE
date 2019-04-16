@@ -74,7 +74,7 @@ package actionScripts.plugins.visualEditor
         }
 
         override public function get name():String { return "Start Preview of PrimeFaces project"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Preview PrimeFaces project."; }
 
         override public function activate():void

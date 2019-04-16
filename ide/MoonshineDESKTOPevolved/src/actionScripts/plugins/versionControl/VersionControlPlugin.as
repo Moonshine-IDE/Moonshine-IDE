@@ -42,7 +42,7 @@ package actionScripts.plugins.versionControl
 	public class VersionControlPlugin extends PluginBase
 	{
 		override public function get name():String			{ return "Version Control"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Version Controls' Manager Plugin"; }
 		
 		private var addRepositoryWindow:AddRepositoryPopup;

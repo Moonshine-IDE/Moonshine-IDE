@@ -59,7 +59,7 @@ package actionScripts.plugins.svn
 		public static const SVN_TEST_COMPLETED:String = "svnTestCompleted";
 		
 		override public function get name():String			{ return "Subversion"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
 		
 		private var _svnBinaryPath:String;

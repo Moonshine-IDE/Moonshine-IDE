@@ -18,52 +18,52 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vscodeDebug
 {
-    import actionScripts.events.ApplicationEvent;
-    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
-
     import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.MouseEvent;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
-	import flash.events.SecurityErrorEvent;
-	import flash.filesystem.File;
-	import flash.net.Socket;
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
-	import flash.utils.IDataInput;
-	import flash.utils.setTimeout;
-	
-	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
-	
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
-	import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
-	import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
-	import actionScripts.plugins.vscodeDebug.view.VSCodeDebugProtocolView;
-	import actionScripts.plugins.vscodeDebug.vo.BaseVariablesReference;
-	import actionScripts.plugins.vscodeDebug.vo.Scope;
-	import actionScripts.plugins.vscodeDebug.vo.Source;
-	import actionScripts.plugins.vscodeDebug.vo.StackFrame;
-	import actionScripts.plugins.vscodeDebug.vo.Variable;
-	import actionScripts.plugins.vscodeDebug.vo.VariablesReferenceHierarchicalData;
-	import actionScripts.ui.LayoutModifier;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
-	import actionScripts.ui.editor.text.events.DebugLineEvent;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.findAndCopyApplicationDescriptor;
-	import actionScripts.utils.findOpenPort;
-	import actionScripts.utils.getProjectSDKPath;
-	import actionScripts.valueObjects.Settings;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.MouseEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.events.SecurityErrorEvent;
+    import flash.filesystem.File;
+    import flash.net.Socket;
+    import flash.utils.ByteArray;
+    import flash.utils.Dictionary;
+    import flash.utils.IDataInput;
+    import flash.utils.setTimeout;
+    
+    import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
+    
+    import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.OpenFileEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+    import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
+    import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
+    import actionScripts.plugins.vscodeDebug.view.VSCodeDebugProtocolView;
+    import actionScripts.plugins.vscodeDebug.vo.BaseVariablesReference;
+    import actionScripts.plugins.vscodeDebug.vo.Scope;
+    import actionScripts.plugins.vscodeDebug.vo.Source;
+    import actionScripts.plugins.vscodeDebug.vo.StackFrame;
+    import actionScripts.plugins.vscodeDebug.vo.Variable;
+    import actionScripts.plugins.vscodeDebug.vo.VariablesReferenceHierarchicalData;
+    import actionScripts.ui.LayoutModifier;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.DebugHighlightManager;
+    import actionScripts.ui.editor.text.events.DebugLineEvent;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.findAndCopyApplicationDescriptor;
+    import actionScripts.utils.findOpenPort;
+    import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.Settings;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -98,7 +98,7 @@ package actionScripts.plugins.vscodeDebug
 		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
 		
 		override public function get name():String 			{ return "VSCode Debug Protocol Plugin"; }
-		override public function get author():String 		{ return "Moonshine Project Team"; }
+		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String 	{ return "Debugs ActionScript and MXML projects with the Visual Studio Code Debug Protocol."; }
 		
 		private var _breakpoints:Object = {};

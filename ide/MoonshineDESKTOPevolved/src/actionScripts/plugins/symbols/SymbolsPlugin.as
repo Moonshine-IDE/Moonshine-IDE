@@ -18,24 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.symbols
 {
-	import actionScripts.events.SymbolsEvent;
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	
+	import mx.collections.ArrayCollection;
+	import mx.core.UIComponent;
+	import mx.managers.PopUpManager;
+	
 	import actionScripts.events.LanguageServerEvent;
+	import actionScripts.events.SymbolsEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.symbols.view.SymbolsView;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
-	import actionScripts.valueObjects.SymbolInformation;
-
-	import flash.display.DisplayObject;
-
-	import flash.events.Event;
-
-	import mx.collections.ArrayCollection;
-
-	import mx.core.UIComponent;
-
-	import mx.managers.PopUpManager;
-	import actionScripts.valueObjects.DocumentSymbol;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.valueObjects.SymbolInformation;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -50,7 +48,7 @@ package actionScripts.plugins.symbols
 		}
 
 		override public function get name():String { return "Symbols Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays symbols in current document or entire workspace."; }
 
 		private var symbolsView:SymbolsView = new SymbolsView();

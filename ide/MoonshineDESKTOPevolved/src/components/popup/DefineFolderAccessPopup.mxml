@@ -50,6 +50,7 @@
 			import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 			
 			private var _requisitePaths:Vector.<ISetting>;
@@ -79,7 +80,7 @@
 			
 			private function updateUI():void
 			{
-				var ps:PluginSetting = new PluginSetting("Accessible Paths", "Moonshine Project Team", "Moonshine currently has access to the following directories. You may add more access as desired.", false);
+				var ps:PluginSetting = new PluginSetting("Accessible Paths", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine currently has access to the following directories. You may add more access as desired.", false);
 				vgContents1.addElementAt(ps.renderer, 0);
 				
 				ps = new PluginSetting("Unaccessible Dependencies", "", bigMessage, false);

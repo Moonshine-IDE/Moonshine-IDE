@@ -49,7 +49,7 @@ package actionScripts.plugins.swflauncher
 		public static var RUN_AS_DEBUGGER: Boolean = false;
 		
 		override public function get name():String			{ return "SWF Launcher Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Opens .swf files externally. Handles AIR launching via ADL."; }
 		
 		private var customProcess:NativeProcess;

@@ -143,7 +143,7 @@
 			{
 				cbDNS.selected = ConstantsCoreVO.IS_GETTING_STARTED_DNS;
 				
-				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", "Moonshine Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
 				body.addElementAt(ps.renderer, 0);
 			}
 			

@@ -1,12 +1,13 @@
 package actionScripts.plugins.run
 {
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    
     import actionScripts.events.RunJavaProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.MavenPomUtil;
-
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
     public class RunJavaProject extends ConsoleBuildPluginBase
     {
@@ -22,7 +23,7 @@ package actionScripts.plugins.run
 
         override public function get author():String
         {
-            return "Moonshine Project Team";
+            return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";
         }
 
         override public function get description():String
