@@ -324,7 +324,7 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 
-				if (!sdkReference.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists)
+				if (!sdkReference.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists && !sdkReference.isJSOnlySdk)
 				{
 					displayPlayerGlobalError(sdkReference);
 					return;
