@@ -74,6 +74,7 @@
         import actionScripts.valueObjects.URLDescriptorVO;
 
         import components.popup.NewFolderPopup;
+        import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
 
         private var newFolderWindow:NewFolderPopup;
 
@@ -179,6 +180,11 @@
                 {
                     var as3Project:AS3ProjectVO = AS3ProjectVO(project);
                     sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+                }
+                else if (project is GroovyProjectVO)
+                {
+                    var gvyProject:GroovyProjectVO = GroovyProjectVO(project);
+                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, gvyProject.sourceFolder);
                 }
                 if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
             }
@@ -369,7 +375,13 @@
                     var sourceWrapper:FileWrapper = null;
                     if (project is AS3ProjectVO)
                     {
-                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, AS3ProjectVO(project).sourceFolder);
+                        var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+                    }
+                    else if (project is GroovyProjectVO)
+                    {
+                        var gvyProject:GroovyProjectVO = GroovyProjectVO(project);
+                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, gvyProject.sourceFolder);
                     }
                     if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
