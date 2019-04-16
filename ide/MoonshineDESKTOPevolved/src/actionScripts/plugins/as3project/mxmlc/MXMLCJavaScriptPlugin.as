@@ -19,6 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
+	import actionScripts.locator.HelperModel;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.utils.SDKUtils;
+	import actionScripts.valueObjects.SDKReferenceVO;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -32,7 +37,13 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	import flash.utils.setTimeout;
-	
+
+	import flashx.textLayout.elements.LinkElement;
+
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
@@ -292,6 +303,8 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				currentProject = activeProject;
 				var tempCurrentSDK:FileLocation = UtilsCore.getCurrentSDK(activeProject as AS3ProjectVO);
+				var sdkReference:SDKReferenceVO = SDKUtils.getSDKReference(tempCurrentSDK);
+
 				currentSDK = null;
 				if (!tempCurrentSDK)
 				{
@@ -310,7 +323,13 @@ package actionScripts.plugins.as3project.mxmlc
 					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
 					return;
 				}
-				
+
+				if (!sdkReference.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists)
+				{
+					displayPlayerGlobalError(sdkReference);
+					return;
+				}
+
 				var targetFile:FileLocation = compile(activeProject as AS3ProjectVO);
 				if(!targetFile)
 				{
@@ -801,6 +820,36 @@ package actionScripts.plugins.as3project.mxmlc
             }
 
             print("%s", data);
+		}
+
+		private function displayPlayerGlobalError(sdkReference:SDKReferenceVO):void
+		{
+			var separator:String = model.fileCore.separator;
+			var playerVersion:String = sdkReference.getPlayerGlobalVersion();
+			var p:ParagraphElement = new ParagraphElement();
+			var spanText:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+
+			if (!playerVersion)
+			{
+				playerVersion = "{version}";
+			}
+
+			p.color = 0xFA8072;
+			spanText.text = ":\n: This SDK does not contains playerglobal.swc in frameworks".concat(
+					separator, "libs", separator, "player", separator, playerVersion, separator, "playerglobal.swc", ".",
+					" Download playerglobal ");
+			link.href = "https://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html";
+			link.linkNormalFormat = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
+
+			var spanLink:SpanElement = new SpanElement();
+			spanLink.text = "here";
+			link.addChild(spanLink);
+
+			p.addChild(spanText);
+			p.addChild(link);
+
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
 		}
 	}
 }
