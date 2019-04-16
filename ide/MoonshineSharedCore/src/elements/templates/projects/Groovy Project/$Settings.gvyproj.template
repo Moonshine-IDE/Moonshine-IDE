@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <classpaths>
+    <class path="$SourcePath"/>
+  </classpaths>
+  <compileTargets>
+    <compile path="$SourceFile" />
+  </compileTargets>
+</project>

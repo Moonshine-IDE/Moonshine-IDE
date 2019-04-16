@@ -3,26 +3,27 @@ package actionScripts.plugin.groovy.groovyproject.importer
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
 	import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+	import flash.filesystem.FileStream;
+	import flash.filesystem.FileMode;
+	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 
-	public class GroovyImporter
+	public class GroovyImporter extends FlashDevelopImporterBase
 	{
+		private static const FILE_EXTENSION_GVYPROJ:String = "gvyproj";
+
 		public static function test(file:File):FileLocation
 		{
 			if (!file.exists)
 			{
 				return null;
 			}
-			var srcMainGroovy:File = file.resolvePath("src/main/groovy");
-			if (!srcMainGroovy.exists || !srcMainGroovy.isDirectory)
-			{
-				return null;
-			}
-			
+
 			var listing:Array = file.getDirectoryListing();
-			for each (var i:File in listing)
+			for each (var i:Object in listing)
 			{
-				if (i.name == "build.gradle") {
-					return (new FileLocation(i.nativePath));
+				if (i.extension == FILE_EXTENSION_GVYPROJ)
+				{
+					return new FileLocation(i.nativePath);
 				}
 			}
 			
@@ -31,48 +32,55 @@ package actionScripts.plugin.groovy.groovyproject.importer
 
 		public static function parse(file:FileLocation, projectName:String=null):GroovyProjectVO
 		{
-			if(!projectName)
+			var folder:File = (file.fileBridge.getFile as File).parent;
+
+			var project:GroovyProjectVO = new GroovyProjectVO(new FileLocation(folder.nativePath), projectName);
+
+			project.projectFile = file;
+
+			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
+
+			var stream:FileStream = new FileStream();
+			stream.open(file.fileBridge.getFile as File, FileMode.READ);
+			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
+			stream.close();
+			
+            project.classpaths.length = 0;
+            project.targets.length = 0;
+			
+            parsePaths(data.compileTargets.compile, project.targets, project, "path");
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+
+			if (project.targets.length > 0)
 			{
-				var airFile:File = File(file.fileBridge.getFile);
-				projectName = airFile.name;
+				var target:FileLocation = project.targets[0];
+				
+				// determine source folder path
+				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + File.separator, "");
+				var pathSplit:Array = substrPath.split(File.separator);
+				// remove the last class file name
+				pathSplit.pop();
+				var finalPath:String = project.folderLocation.fileBridge.nativePath;
+				// loop through array if source folder level is
+				// deeper more than 1 level
+				for (var j:int=0; j < pathSplit.length; j++)
+				{
+					finalPath += File.separator + pathSplit[j];
+				}
+				
+				// even before deciding, go for some more checks -
+				// which needs in case user used 'set as default application'
+				// to a file exists in different path
+				for each (var i:FileLocation in project.classpaths)
+				{
+					if ((finalPath + File.separator).indexOf(i.fileBridge.nativePath + File.separator) != -1) project.sourceFolder = i;
+				}
+				
+				// if yet not decided from above approach
+				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
 			}
 
-			var groovyProject:GroovyProjectVO = new GroovyProjectVO(file, projectName);
-
-            var sourceDirectory:String = null;
-
-			var separator:String = groovyProject.projectFolder.file.fileBridge.separator;
-
-			const defaultSourceFolderPath:String = "src".concat(separator, "main", separator, "groovy");
-			if (!sourceDirectory)
-			{
-				sourceDirectory = defaultSourceFolderPath;
-			}
-
-			var f:FileLocation = groovyProject.folderLocation.resolvePath(sourceDirectory);
-			groovyProject.classpaths.push(f);
-
-			if (groovyProject.classpaths.length > 0)
-			{
-				sourceDirectory = groovyProject.classpaths[0].fileBridge.nativePath;
-			}
-
-			addSourceDirectoryToProject(groovyProject, sourceDirectory);
-
-			return groovyProject;
-		}
-
-		private static function addSourceDirectoryToProject(groovyProject:GroovyProjectVO, sourceDirectory:String):void
-		{
-			if (sourceDirectory)
-			{
-				groovyProject.sourceFolder = groovyProject.projectFolder.file.fileBridge.resolvePath(sourceDirectory);
-			}
-
-			if (!sourceDirectory || !groovyProject.sourceFolder.fileBridge.exists)
-			{
-				groovyProject.sourceFolder = groovyProject.projectFolder.file.fileBridge.resolvePath("src");
-			}
+			return project;
 		}
 	}
 }

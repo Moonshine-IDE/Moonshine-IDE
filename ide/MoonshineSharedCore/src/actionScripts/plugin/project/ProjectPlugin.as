@@ -440,7 +440,7 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.groovyCore.testGroovy(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.groovyCore.parseGroovy(projectLocation);
+	                        project = model.groovyCore.parseGroovy(projectFileLocation);
 	                    }
 					}
 

@@ -322,7 +322,7 @@
 					projectFileLocation = model.groovyCore.testGroovy(projectFile);
 					if (projectFileLocation)
 					{
-						return model.groovyCore.parseGroovy(recentOpenedProjectObject as FileLocation);
+						return model.groovyCore.parseGroovy(projectFileLocation);
 					}
 				}
 

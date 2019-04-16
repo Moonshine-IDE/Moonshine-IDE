@@ -51,6 +51,7 @@
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";
@@ -145,6 +146,10 @@
 				{
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 					projectPath += as3Project.isVisualEditorProject ? ".veditorproj" : ".as3proj";
+				}
+				else if(project is GroovyProjectVO)
+				{
+					projectPath += ".gvyproj";
 				}
 				var projectFile:FileLocation = new FileLocation(projectPath);
 				if (projectFile.fileBridge.exists)

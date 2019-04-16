@@ -224,12 +224,11 @@ package actionScripts.plugin.groovy.groovyproject
 
 		private function createFileSystemBeforeSave(pvo:GroovyProjectVO, exportProject:GroovyProjectVO = null):GroovyProjectVO
 		{	
-			// in case of create new project through Open Project option
-			// we'll need to get the template project directory by it's name
-			//pvo = getProjectWithTemplate(pvo, exportProject);
-
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
+			var sourceFile:String = pvo.projectName;
+			var sourceFileWithExtension:String = pvo.projectName + ".groovy";
+			var sourcePath:String = "src" + File.separator + "main" + File.separator + "groovy";
 
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
@@ -255,10 +254,14 @@ package actionScripts.plugin.groovy.groovyproject
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
 			th.templatingData["$Settings"] = projectName;
+			th.templatingData["$SourcePath"] = sourcePath;
+			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return GroovyImporter.parse(targetFolder, projectName);
+			var projectSettingsFileName:String = projectName + ".gvyproj";
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
+			return GroovyImporter.parse(settingsFile, projectName);
 		}
 	}
 }

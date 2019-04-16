@@ -814,12 +814,12 @@ package actionScripts.plugins.as3project
 				descriptorFileLocation.fileBridge.save(stringOutput);
 			}
 
-			var projectSettingsFile:String = isVisualEditorProject && !exportProject ?
+			var projectSettingsFileName:String = isVisualEditorProject && !exportProject ?
                     projectName+".veditorproj" :
                     projectName+".as3proj";
 
 			// Figure out which one is the settings file
-			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
             var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
