@@ -105,16 +105,15 @@
 			
 		]]>
 	</fx:Script>
-	<s:layout>
-		<s:VerticalLayout paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
-						  verticalAlign="middle" horizontalAlign="center"/>
-	</s:layout>
 	
 	<s:VGroup id="vgBody" 
-			  width="80%" height="80%">
+			  width="80%" height="80%"
+			  paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
+			  horizontalCenter="0" verticalCenter="-12">
 		<s:HGroup id="hgTitle" 
 				  width="100%"
 				  verticalAlign="middle">
+			<s:Image source="elements/moonshine_logo/logo_48.png"/>
 			<s:VGroup autoLayout="true">
 				<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL}" color="0x8a2a2a"
 						 paddingLeft="8"/>
@@ -128,9 +127,16 @@
 		<popup:SoftwareInformation width="100%" height="100%" 
 								   paddingTop="10"
 								   complete="onSoftwareInformationRetreived(event)"/>
+	</s:VGroup>
+	
+	<s:VGroup width="100%" height="20%"
+			  verticalAlign="bottom" horizontalAlign="center" 
+			  bottom="0" paddingBottom="10">
 		<s:Label text="About the background image"
-				 buttonMode="true" width="100%" textAlign="right"
-				 textDecoration="underline"
+				 buttonMode="true"
+				 textDecoration="underline" fontSize="12"
 				 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
+		<s:Label text="Copyright © Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0."
+				 fontSize="12"/>
 	</s:VGroup>
 </s:BorderContainer>
