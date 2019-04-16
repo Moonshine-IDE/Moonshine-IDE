@@ -34,6 +34,8 @@ package actionScripts.utils
 	
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
+	import actionScripts.valueObjects.SDKTypes;
 	
 	public class EnvironmentSetupUtils
 	{
@@ -151,6 +153,8 @@ package actionScripts.utils
 			var setPathCommand:String = ConstantsCoreVO.IS_MACOS ? "export PATH=" : "set PATH=";
 			var defaultOrCustomSDKPath:String;
 			var additionalCommandLines:String = "";
+			var defaultSDKtype:String;
+			var defaultSDKreferenceVo:SDKReferenceVO;
 			
 			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
 			{
@@ -160,6 +164,9 @@ package actionScripts.utils
 			{
 				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
 			}
+			
+			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
+			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
@@ -198,7 +205,7 @@ package actionScripts.utils
 			}
 			if (defaultOrCustomSDKPath)
 			{
-				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
+				setCommand += getSetExportCommand((defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME", defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$FLEX_HOME/bin:" : "%FLEX_HOME%\\bin;");
 				isValidToExecute = true;
 			}

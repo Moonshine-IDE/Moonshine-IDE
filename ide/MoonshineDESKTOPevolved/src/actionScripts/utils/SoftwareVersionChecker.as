@@ -89,6 +89,7 @@ package actionScripts.utils
 			{
 				var executable:String;
 				var itemUnderCursor:ComponentVO = components.getItemAt(itemUnderCursorIndex) as ComponentVO;
+				var executableFullPath:String;
 				if (itemUnderCursor.installToPath != null)
 				{
 					var commands:String;
@@ -120,7 +121,12 @@ package actionScripts.utils
 							break;
 						case ComponentTypes.TYPE_MAVEN:
 							executable = ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd";
-							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							executableFullPath = itemUnderCursor.installToPath+'/bin/'+ executable;
+							if (!FileUtils.isPathExists(executableFullPath))
+							{
+								executableFullPath = itemUnderCursor.installToPath+'/'+ executable;
+							}
+							commands = '"'+ executableFullPath +'" -version';
 							itemTypeUnderCursor = QUERY_MAVEN_VERSION;
 							break;
 						case ComponentTypes.TYPE_SVN:
