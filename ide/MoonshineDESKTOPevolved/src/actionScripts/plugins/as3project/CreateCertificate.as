@@ -32,6 +32,7 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.utils.HtmlFormatter;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
 	public class CreateCertificate extends PluginBase
@@ -47,7 +48,7 @@ package actionScripts.plugins.as3project
 						end run]]></root>
 		
 		override public function get name():String			{ return "Ant Build Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Ant Build Plugin. Esc exits."; }
 		
 		public var certificateName:String;

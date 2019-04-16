@@ -32,12 +32,13 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.events.FileCopyPasteEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
 	
 	public class FilesCopyPlugin extends PluginBase
 	{
 		override public function get name():String			{ return "FilesCopyPlugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Files Copy/Paste Plugin. Esc exits."; }
 		
 		private var filesToBeCopied:Array;

@@ -34,11 +34,12 @@ package actionScripts.plugins.browser
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class BrowserPlugin extends PluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "Browser"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Browser Preference Plugin."; }
 		
 		private static const TYPE_INTERNAL:String = "typeInternal";

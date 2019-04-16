@@ -18,63 +18,61 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-	import components.popup.newFile.NewJavaFilePopup;
-
 	import flash.display.DisplayObject;
-    import flash.events.Event;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
-    import mx.resources.ResourceManager;
-    
-    import __AS3__.vec.Vector;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.ExportVisualEditorProjectEvent;
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.NewFileEvent;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.RenameApplicationEvent;
-    import actionScripts.events.TemplatingEvent;
-    import actionScripts.events.TreeMenuItemEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IMenuPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.StaticLabelSetting;
-    import actionScripts.plugin.templating.event.TemplateEvent;
-    import actionScripts.plugin.templating.settings.NewTemplateSetting;
-    import actionScripts.plugin.templating.settings.TemplateSetting;
-    import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
-    import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
-    import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.ui.renderers.FTETreeItemRenderer;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.TextUtil;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.AS3ClassAttributes;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.TemplateVO;
-    
-    import components.popup.newFile.NewASFilePopup;
-    import components.popup.newFile.NewCSSFilePopup;
-    import components.popup.newFile.NewFilePopup;
-    import components.popup.newFile.NewMXMLFilePopup;
-    import components.popup.newFile.NewVisualEditorFilePopup;
-
-    import mx.utils.StringUtil;
+	import flash.events.Event;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	import mx.resources.ResourceManager;
+	import mx.utils.StringUtil;
+	
+	import __AS3__.vec.Vector;
+	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.ExportVisualEditorProjectEvent;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.NewFileEvent;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.RenameApplicationEvent;
+	import actionScripts.events.TemplatingEvent;
+	import actionScripts.events.TreeMenuItemEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.IMenuPlugin;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.StaticLabelSetting;
+	import actionScripts.plugin.templating.event.TemplateEvent;
+	import actionScripts.plugin.templating.settings.NewTemplateSetting;
+	import actionScripts.plugin.templating.settings.TemplateSetting;
+	import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
+	import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.TextUtil;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.AS3ClassAttributes;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.TemplateVO;
+	
+	import components.popup.newFile.NewASFilePopup;
+	import components.popup.newFile.NewCSSFilePopup;
+	import components.popup.newFile.NewFilePopup;
+	import components.popup.newFile.NewJavaFilePopup;
+	import components.popup.newFile.NewMXMLFilePopup;
+	import components.popup.newFile.NewVisualEditorFilePopup;
 
     /*
     Templating plugin
@@ -88,7 +86,7 @@ package actionScripts.plugin.templating
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
 	{
 		override public function get name():String 			{return "Templating";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return ResourceManager.getInstance().getString('resources','plugin.desc.templating');}
 		
 		public static var fileTemplates:Array = [];

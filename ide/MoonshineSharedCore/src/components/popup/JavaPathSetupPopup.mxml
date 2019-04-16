@@ -29,16 +29,16 @@
 		<![CDATA[
 		import mx.core.UIComponent;
 		import mx.events.FlexEvent;
-
+		
 		import spark.utils.TextFlowUtil;
-
+		
 		import actionScripts.events.FilePluginEvent;
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.valueObjects.ConstantsCoreVO;
-
+		
 		import flashx.textLayout.elements.TextFlow;
 
 		[Bindable]
@@ -258,7 +258,7 @@
 				</s:VGroup>
 				<s:VGroup width="100%" autoLayout="true" paddingRight="20"
 						  includeIn="permissionRequestOSX">
-					<s:Label text="Moonshine optionally supports code completion for ActionScript(.as) files. Would you like to enable this now?"
+					<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL} optionally supports code completion for ActionScript(.as) files. Would you like to enable this now?"
 							 maxDisplayedLines="5" width="100%" fontSize="13"/>
 				</s:VGroup>
 			</s:HGroup>

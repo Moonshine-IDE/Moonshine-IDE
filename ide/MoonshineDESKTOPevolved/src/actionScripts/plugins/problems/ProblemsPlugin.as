@@ -30,11 +30,12 @@ package actionScripts.plugins.problems
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.plugins.problems.view.ProblemsView;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.LayoutModifier;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 
 	public class ProblemsPlugin extends PluginBase
 	{
@@ -45,7 +46,7 @@ package actionScripts.plugins.problems
 		}
 
 		override public function get name():String { return "Problems Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays problems in source files."; }
 
 		private var problemsPanel:ProblemsView = new ProblemsView();

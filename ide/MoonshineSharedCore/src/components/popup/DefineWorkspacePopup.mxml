@@ -35,9 +35,10 @@
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			[Bindable] private var isPathDefined:Boolean;
-			[Bindable] private var bigMessage:String = "Generally in Mac OS system, to read and write files from user's system, Moonshine needs user's approval to specific folder access to do an uninterrupted file system access to project files. You can locate or set any folder in your system as Moonshine Workspace, and therefore it's encouraged that you keep all your Moonshine project folders/files inside that workspace area to avoid any unexpected fail behavior that might caused by file system access protection in Mac OS.\n\nInside a defined Moonshine Workspace, you can keep all your project files in whichever way you wants. You can keep the projects in folder or it's sub-folders. An example given as below:";
+			[Bindable] private var bigMessage:String = "Generally in Mac OS system, to read and write files from user's system, "+ ConstantsCoreVO.MOONSHINE_IDE_LABEL +" needs user's approval to specific folder access to do an uninterrupted file system access to project files. You can locate or set any folder in your system as Moonshine Workspace, and therefore it's encouraged that you keep all your Moonshine project folders/files inside that workspace area to avoid any unexpected fail behavior that might caused by file system access protection in Mac OS.\n\nInside a defined Moonshine Workspace, you can keep all your project files in whichever way you wants. You can keep the projects in folder or it's sub-folders. An example given as below:";
 
 			private var model:IDEModel = IDEModel.getInstance();
 

@@ -1,5 +1,10 @@
 package actionScripts.plugins.maven
 {
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
@@ -11,13 +16,9 @@ package actionScripts.plugins.maven
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
-
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -45,7 +46,7 @@ package actionScripts.plugins.maven
 
         override public function get author():String
         {
-            return "Moonshine Project Team";
+            return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";
         }
 
         override public function get description():String

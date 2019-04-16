@@ -71,7 +71,7 @@ package actionScripts.plugins.git
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
 		override public function get name():String			{ return "Git"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Git Plugin. Esc exits."; }
 		
 		private var _gitBinaryPathOSX:String;

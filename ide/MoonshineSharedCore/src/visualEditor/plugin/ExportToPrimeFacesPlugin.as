@@ -35,6 +35,7 @@ package visualEditor.plugin
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
     public class ExportToPrimeFacesPlugin extends PluginBase
     {
@@ -53,7 +54,7 @@ package visualEditor.plugin
         }
 
         override public function get name():String { return "Export Visual Editor Project to PrimeFaces Plugin"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Exports Visual Editor project to PrimeFaces."; }
 
         override public function activate():void
