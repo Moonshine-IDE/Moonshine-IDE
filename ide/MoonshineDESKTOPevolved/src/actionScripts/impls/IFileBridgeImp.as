@@ -43,7 +43,6 @@ package actionScripts.impls
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import mx.controls.Alert;
 	import actionScripts.utils.FileUtils;
 	
 	/**
@@ -380,7 +379,7 @@ package actionScripts.impls
 			}
 			function onReadIO(value:String):void
 			{
-				//Alert.show(event.toString());
+
 			}
 		}
 		
@@ -591,7 +590,9 @@ package actionScripts.impls
 				}
 				else
 				{
-					Alert.show(value +" does not exist on the filesystem.\nOperation canceled.", "Error!");
+					var errorMessage:String = value +" does not exist on the filesystem.\nOperation canceled.";
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
 				}
 			}
 			catch (e:Error)
@@ -695,7 +696,6 @@ package actionScripts.impls
 			{
 				if (showAlert) 
 				{
-					Alert.show(_file.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
 					reportPathAccessError(_file.isDirectory, false);
 				}
 				return false;
@@ -732,7 +732,8 @@ package actionScripts.impls
 		{
 			if (value.indexOf("Error Domain=NSCocoaErrorDomain") != -1)
 			{
-				Alert.show(value, "Error!");
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value, false, false, ConsoleOutputEvent.TYPE_ERROR));
 				return false;
 			}
 			
