@@ -450,14 +450,8 @@ package actionScripts.plugins.startup
 		 */
 		private function onWarningUpdated(event:HelperEvent):void
 		{
-			if (!gettingStartedPopup)
-			{
-				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-			}
-			else
-			{
-				gettingStartedPopup.onWarningUpdate(event);
-			}
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
+			tmpComponent.hasWarning = event.value.message;
 		}
 		
 		/**

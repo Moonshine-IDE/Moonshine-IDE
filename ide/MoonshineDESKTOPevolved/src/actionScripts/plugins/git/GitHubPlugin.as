@@ -46,6 +46,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
@@ -226,11 +227,17 @@ package actionScripts.plugins.git
 				processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
+			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
+			{
+				processManager.getOSXCodePath(onXCodePathDetection, against);
+				return false;
+			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
 			{
 				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
 			
+			isStartupTest = false;
 			return true;
 		}
 		

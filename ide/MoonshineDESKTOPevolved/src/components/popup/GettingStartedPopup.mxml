@@ -110,12 +110,6 @@
 					PathSetupHelperUtil.updateFieldPath(componentId, path);
 			}
 			
-			public function onWarningUpdate(event:HelperEvent):void
-			{
-				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-				component.hasWarning = event.value.message;
-			}
-			
 			public function dispose():void
 			{
 				stopMessageAnimateProcess();

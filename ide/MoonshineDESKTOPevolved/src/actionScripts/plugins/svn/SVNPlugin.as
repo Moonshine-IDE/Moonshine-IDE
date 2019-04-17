@@ -44,6 +44,7 @@ package actionScripts.plugins.svn
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
@@ -80,6 +81,7 @@ package actionScripts.plugins.svn
 				else 
 				{
 					removeIfAlreadyVersioned();
+					PathSetupHelperUtil.updateSVNPath(null);
 				}
 			}
 		}
