@@ -136,7 +136,7 @@
 				 buttonMode="true"
 				 textDecoration="underline" fontSize="12"
 				 color="0x8a2a2a" paddingTop="20" click="onInfoBackground(event)"/>
-		<s:Label text="Copyright © Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0."
+		<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_COPYRIGHT_LABEL}"
 				 fontSize="12"/>
 	</s:VGroup>
 </s:BorderContainer>

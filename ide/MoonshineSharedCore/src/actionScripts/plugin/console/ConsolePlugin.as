@@ -224,6 +224,7 @@ package actionScripts.plugin.console
 		public function aboutCommand(args:Array):void
 		{
 			var ntc:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +" "+ model.flexCore.version +"\n";
+			ntc += ConstantsCoreVO.MOONSHINE_IDE_COPYRIGHT_LABEL +"\n";
 			ntc += "Source code is under Apache License, Version 2.0\n";
 			ntc += "https://github.com/prominic/Moonshine-IDE\n";
 			ntc += "Uses as3abc (LGPL), as3swf (MIT), fzip (ZLIB), asblocks (Apache License 2.0), NativeApplicationUpdater (LGPL)\n";
