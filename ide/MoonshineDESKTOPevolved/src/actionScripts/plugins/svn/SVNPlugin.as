@@ -121,7 +121,10 @@ package actionScripts.plugins.svn
 		public function getSettingsList():Vector.<ISetting>
 		{
 			var binaryPath:PathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false);
-			binaryPath.setMessage("SVN binary needs to be command-line compliant", AbstractSetting.MESSAGE_IMPORTANT);
+			var svnMessage:String = "SVN binary needs to be command-line compliant";
+			if (ConstantsCoreVO.IS_MACOS) svnMessage += "\nFor most users, it will be easier to set this with \"Subversion > Grant Permission\"";
+			
+			binaryPath.setMessage(svnMessage, AbstractSetting.MESSAGE_IMPORTANT);
 			
 			return Vector.<ISetting>([
 				binaryPath

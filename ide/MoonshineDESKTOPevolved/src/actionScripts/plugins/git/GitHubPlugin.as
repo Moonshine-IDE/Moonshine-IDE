@@ -38,6 +38,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.model.GitProjectVO;
@@ -171,8 +172,14 @@ package actionScripts.plugins.git
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
+			var tmpPathSetting:PathSetting = new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false);
+			if (ConstantsCoreVO.IS_MACOS) 
+			{
+				tmpPathSetting.setMessage("For most users, it will be easier to set this with \"Git > Grant Permission\"", AbstractSetting.MESSAGE_IMPORTANT);
+			}
+			
 			return Vector.<ISetting>([
-				new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false)
+				tmpPathSetting
 			]);
 		}
 		
