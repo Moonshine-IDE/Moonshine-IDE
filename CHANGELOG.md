@@ -6,35 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [2.1.0]
 
 ### Added
+* Added repository browser for SVN to allow users to browse the files inside of a repository before checking out a directory.
 * Visual Editor PrimeFaces: Add **Preview** button for opened file.
 * Java Maven Project: Added **Build & Run** option in menu **Project**.
-* Add syntax highlighting for IDE project files.
-* Local environment variables management for better functionality handling on a fresh computer.
-* Suggested pre-selection of appropriate SDK in project creation dialog.
-* About screen now advise on Moonshine-configured SDKs' version.
-* Remote SVN repository browsing added and checkout process enhancement.
+* Added syntax highlighting for IDE project files.
+* Improved handling of environment variables for build (and other) actions from Moonshine
+* Automatically select an appropriate SDK for a new project based on the project type.
+* About screen shows the versions of all configured SDKs.  This may take a few seconds to populate.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
-* Visual Editor: Update Payara server to [5.191](https://github.com/payara/Payara/releases/tag/payara-server-5.191) for preview 
-* Menu Project: Improvement to displaying items in menu. Displayed items depends on type of the selected project in side bar. 
-* Home Tab: Exclude **Tour De Flex** files from **RECENT**.
-* Preselect SDK during project creation. 
-* Project with existing sources allows now choose main classes outside source folder. 
-* Problems View has been moved to bottom with Console and Debug views.
-* Getting Started now notifies against any pending SDK/framework download.
-* Tour de Flex: Opened article link will not be included in Recently Open section anymore.
+* Visual Editor: Updated Payara server to [5.191](https://github.com/payara/Payara/releases/tag/payara-server-5.191) for PrimeFaces preview 
+* Menu Project: Improved logic for displaying items in menu. The displayed items depend on the type of the currently selected project. 
+* Home Tab: Excluded **Tour De Flex** files from the **RECENT** list.
+* Import Project:  Added greater flexibility for selecting the main application file when importing a project.
+* Problems View has been moved to bottom of the interface with the Console and Debug views.
+* The Getting Started page will display if any of the SDKs are not installed.  This behavior can be disabled with the "Do not show" checkbox - the tab can still be opened from Help > Getting Started.
 
 ### Fixed
-* Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
-* Java Project: Fixed issue where new project dialog slow.
-* Fixed issue where updating project dependency path throws error when the earlier path is invalid.
-* Access Manager: Throws error when a Java type of project opened to sidebar.
-* Syntax Highlighting: XML type of project configuration files do not highlight syntax in editor.
-* Visual Editor: Selected component in mockup builder doesn't highlight in 'Code' tab.
+* Tour De Flex: Fixed issue where files were opened in wrong editor
+* Java Project:  Fixed issue that caused New Project menua to be very slow
+* Fixed issue where updating a project dependency path threw an error when the earlier path was invalid.
+* Access Manager: Fixed issue where Moonshine threw an error when a Java of project was opened
+* Visual Editor: Fixed issue preventing the selected element in the visual editor from highlighting in the Code tab
 * Find: Fixed issue where searching was disabled for Java projects.
-* Git: Throws error in certain circumstance when Moonshine starts with Git project opened.
-* Tour de Flex: Opening wrong type of editor when a Visual Editor project is opened to sidebar.
+* Git:  Fixed issue where Git project triggered error on Moonshine startup
 
 
 ## Moonshine IDE [2.0.0]
