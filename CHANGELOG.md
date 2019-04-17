@@ -9,10 +9,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Visual Editor PrimeFaces: Add **Preview** button for opened file.
 * Java Maven Project: Added **Build & Run** option in menu **Project**.
 * Add syntax highlighting for IDE project files.
-* Local environment variables management for better functionality handling on a fresh computer
-* Suggested pre-selection of appropriate SDK in project creation dialog
-* About screen now advise on Moonshine-configured SDKs' version
-* Remote SVN repository browsing added and checkout process enhancement
+* Local environment variables management for better functionality handling on a fresh computer.
+* Suggested pre-selection of appropriate SDK in project creation dialog.
+* About screen now advise on Moonshine-configured SDKs' version.
+* Remote SVN repository browsing added and checkout process enhancement.
 
 ### Changed
 * Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
@@ -22,19 +22,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Preselect SDK during project creation. 
 * Project with existing sources allows now choose main classes outside source folder. 
 * Problems View has been moved to bottom with Console and Debug views.
-* Getting Started now notifies against any pending SDK/framework download
-* Tour de Flex: Opened article link will not be included in Recently Open section anymore
+* Getting Started now notifies against any pending SDK/framework download.
+* Tour de Flex: Opened article link will not be included in Recently Open section anymore.
 
 ### Fixed
 * Tour De Flex: Fixed issue where clicking on files wrong type of editor was opened.
 * Java Project: Fixed issue where new project dialog slow.
-* Fix: Updating project dependency path throws error when the earlier path is invalid
-* Access Manager: Throws error when a Java type of project opened to sidebar
-* Syntax Highlighting: XML type of project configuration files do not highlight syntax in editor
-* Visual Editor: Selected component in mockup builder doesn't highlight in 'Code' tab
-* Find: Disable in Java project editor
-* Git: Throws error in certain circumstance when Moonshine starts with Git project opened
-* Tour de Flex: Opening wrong type of editor when a Visual Editor project is opened to sidebar
+* Fixed issue where updating project dependency path throws error when the earlier path is invalid.
+* Access Manager: Throws error when a Java type of project opened to sidebar.
+* Syntax Highlighting: XML type of project configuration files do not highlight syntax in editor.
+* Visual Editor: Selected component in mockup builder doesn't highlight in 'Code' tab.
+* Find: Fixed issue where searching was disabled for Java projects.
+* Git: Throws error in certain circumstance when Moonshine starts with Git project opened.
+* Tour de Flex: Opening wrong type of editor when a Visual Editor project is opened to sidebar.
 
 
 ## Moonshine IDE [2.0.0]
