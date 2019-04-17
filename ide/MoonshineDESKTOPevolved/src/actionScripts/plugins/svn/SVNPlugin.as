@@ -69,14 +69,18 @@ package actionScripts.plugins.svn
 		}
 		public function set svnBinaryPath(value:String):void
 		{
-			model.svnPath = _svnBinaryPath = value;
-			if (value != "") 
+			if (_svnBinaryPath != value)
 			{
-				checkOpenedProjectsIfVersioned();
-			}
-			else 
-			{
-				removeIfAlreadyVersioned();
+				model.svnPath = _svnBinaryPath = value;
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
+				if (value != "") 
+				{
+					checkOpenedProjectsIfVersioned();
+				}
+				else 
+				{
+					removeIfAlreadyVersioned();
+				}
 			}
 		}
 		

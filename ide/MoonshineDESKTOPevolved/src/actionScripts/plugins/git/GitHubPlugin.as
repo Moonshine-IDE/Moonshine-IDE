@@ -82,7 +82,11 @@ package actionScripts.plugins.git
 		}
 		public function set gitBinaryPathOSX(value:String):void
 		{
-			model.gitPath = _gitBinaryPathOSX = value;
+			if (_gitBinaryPathOSX != value)
+			{
+				model.gitPath = _gitBinaryPathOSX = value;
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+			}
 		}
 		
 		public var modelAgainstProject:Dictionary = new Dictionary();

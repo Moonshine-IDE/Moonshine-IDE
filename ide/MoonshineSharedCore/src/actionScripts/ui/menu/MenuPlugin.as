@@ -18,17 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import actionScripts.events.PreviewPluginEvent;
-
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
-
+	
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	import mx.events.MenuEvent;
-
+	import mx.resources.IResourceManager;
+	import mx.resources.ResourceManager;
+	
+	import actionScripts.events.PreviewPluginEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.ShortcutEvent;
 	import actionScripts.events.TemplatingEvent;
@@ -37,6 +38,7 @@ package actionScripts.ui.menu
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -47,18 +49,13 @@ package actionScripts.ui.menu
 	import actionScripts.ui.menu.vo.CustomMenu;
 	import actionScripts.ui.menu.vo.CustomMenuItem;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.KeyboardShortcutManager;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
-	import actionScripts.valueObjects.Settings;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.ui.menu.vo.ProjectMenuTypes;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-
-	import mx.resources.IResourceManager;
-
-	import mx.resources.ResourceManager;
+	import actionScripts.valueObjects.Settings;
 
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -711,7 +708,7 @@ package actionScripts.ui.menu
 
 			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
-			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE ? "Clone" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Clone" : "Grant Permission";
 		}
 		
 		private function onSVNCheckoutPermissionChange(event:Event):void
@@ -721,7 +718,7 @@ package actionScripts.ui.menu
 
 			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
-			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Manage Repositories" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = UtilsCore.isSVNPresent() ? "Manage Repositories" : "Grant Permission";
 		}
 
 		protected function createNewMenu():*
