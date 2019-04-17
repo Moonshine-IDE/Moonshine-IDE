@@ -85,17 +85,6 @@ package actionScripts.plugins.build
 				checkPathFileLocation(tmpLocation, "Shared Library");
 			}
 			
-			if (project.mavenBuildOptions.mavenBuildPath && 
-				project.mavenBuildOptions.mavenBuildPath != "")
-			{
-				checkPathString(project.mavenBuildOptions.mavenBuildPath, "Maven Build Path");
-			}
-			if (project.mavenBuildOptions.settingsFilePath && 
-				project.mavenBuildOptions.settingsFilePath != "")
-			{
-				checkPathString(project.mavenBuildOptions.settingsFilePath, "Maven Settings");
-			}
-			
 			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
 		}
 		
@@ -110,17 +99,6 @@ package actionScripts.plugins.build
 			for each (tmpLocation in project.classpaths)
 			{
 				checkPathFileLocation(tmpLocation, "Classpath");
-			}
-			
-			if (project.mavenBuildOptions.mavenBuildPath && 
-				project.mavenBuildOptions.mavenBuildPath != "")
-			{
-				checkPathString(project.mavenBuildOptions.mavenBuildPath, "Maven Build Path");
-			}
-			if (project.mavenBuildOptions.settingsFilePath && 
-				project.mavenBuildOptions.settingsFilePath != "")
-			{
-				checkPathString(project.mavenBuildOptions.settingsFilePath, "Maven Settings");
 			}
 			
 			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
