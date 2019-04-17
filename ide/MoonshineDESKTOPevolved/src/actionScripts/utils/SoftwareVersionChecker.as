@@ -247,6 +247,7 @@ package actionScripts.utils
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
 			var tmpProject:ProjectVO;
+			var versionNumberString:String;
 			
 			match = value.output.match(/fatal: .*/);
 			if (match) isFatal = true;
@@ -258,8 +259,9 @@ package actionScripts.utils
 				{
 					case QUERY_FLEX_AIR_VERSION:
 					{
-						if (!lastOutput) lastOutput = getVersionNumberedTypeLine(value.output);
-						else lastOutput += ", "+ getVersionNumberedTypeLine(value.output);
+						versionNumberString = getVersionNumberedTypeLine(value.output);
+						if (!lastOutput && versionNumberString) lastOutput = versionNumberString;
+						else if (versionNumberString) lastOutput += ", "+ versionNumberString;
 						break;
 					}
 					case QUERY_ROYALE_FJS_VERSION:
@@ -275,7 +277,8 @@ package actionScripts.utils
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
+							versionNumberString = getVersionNumberedTypeLine(value.output);
+							if (versionNumberString) components[int(tmpQueue.extraArguments[0])].version = versionNumberString;
 						}
 						break;
 					}

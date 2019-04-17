@@ -205,8 +205,9 @@ package actionScripts.utils
 			}
 			if (defaultOrCustomSDKPath)
 			{
-				setCommand += getSetExportCommand((defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME", defaultOrCustomSDKPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$FLEX_HOME/bin:" : "%FLEX_HOME%\\bin;");
+				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
+				setCommand += getSetExportCommand(flexRoyaleHomeType, defaultOrCustomSDKPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
 				isValidToExecute = true;
 			}
 			
