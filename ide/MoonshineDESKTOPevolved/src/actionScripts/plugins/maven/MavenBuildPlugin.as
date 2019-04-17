@@ -20,6 +20,10 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
+    import flash.utils.clearTimeout;
+
+    import flash.utils.setTimeout;
+
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
         protected var status:int;
@@ -163,7 +167,7 @@ package actionScripts.plugins.maven
                 return;
             }
 			
-			checkProjectForInvalidPaths(model.activeProject); 
+			checkProjectForInvalidPaths(model.activeProject);
 			if (isProjectHasInvalidPaths)
 			{
 				return;
@@ -281,15 +285,21 @@ package actionScripts.plugins.maven
 
         protected function buildFailed(data:String):Boolean
         {
-            if (data.match(BUILD_FAILED) || data.match(BUILD_FAILURE))
+            var hasBuildFailed:Boolean = false;
+
+            if (data.match(BUILD_FAILURE))
+            {
+                deferredStop();
+                hasBuildFailed = true;
+            }
+            else if (data.match(BUILD_FAILED))
             {
                 stop();
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
-
-                return true;
+                hasBuildFailed = true;
             }
 
-            return false;
+            return hasBuildFailed;
         }
 
         protected function buildSuccess(data:String):void
@@ -373,6 +383,15 @@ package actionScripts.plugins.maven
             }
 
             return null;
+        }
+
+        private function deferredStop():void
+        {
+            var stopDelay:uint = setTimeout(function():void {
+                stop();
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
+                clearTimeout(stopDelay);
+            }, 800);
         }
     }
 }
