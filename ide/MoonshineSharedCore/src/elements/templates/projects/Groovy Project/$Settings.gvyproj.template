@@ -6,6 +6,19 @@
   <classpaths>
     <class path="$SourcePath"/>
   </classpaths>
+  <build>
+    <option encoding="UTF-8" />
+    <option temp="" />
+    <option destdir="build/classes" />
+    <option targetBytecode="1.8" />
+    <option stacktrace="False" />
+    <option indy="False" />
+    <option scriptBaseClass="" />
+    <option configscript="" />
+    <option parameters="False" />
+    <option verbose="False" />
+    <option additional="" />
+  </build>
   <compileTargets>
     <compile path="$SourceFile" />
   </compileTargets>

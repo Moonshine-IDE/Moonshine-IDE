@@ -80,6 +80,7 @@ package actionScripts.plugin.groovy.groovyproject.importer
 				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
 			}
 			
+            project.buildOptions.parse(data.build);
 			project.jarOutput.parse(data.output, project);
 
 			return project;

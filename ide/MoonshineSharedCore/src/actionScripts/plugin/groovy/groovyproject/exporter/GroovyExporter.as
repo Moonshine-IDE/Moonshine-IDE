@@ -42,6 +42,9 @@ package actionScripts.plugin.groovy.groovyproject.exporter
 
 			var outputXML:XML = project.jarOutput.toXML(project.folderLocation);
 			projectXML.appendChild(outputXML);
+
+			var buildXML:XML = project.buildOptions.toXML();
+			projectXML.appendChild(buildXML);
 			
 			projectXML.appendChild(exportPaths(project.classpaths, <classpaths />, <class />, project));
 
