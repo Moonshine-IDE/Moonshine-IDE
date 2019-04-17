@@ -48,9 +48,7 @@ package actionScripts.languageServer
 
 	public class GroovyLanguageServerManager extends EventDispatcher implements ILanguageServerManager
 	{
-		//when updating the Groovy language server, the name of this JAR file
-		//will change
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "elements/groovy-language-server/groovy-language-server-all.jar";
+		private static const LANGUAGE_SERVER_CLASS_PATH:String = "elements/groovy-language-server";
 		
 		private static const LANGUAGE_ID_GROOVY:String = "groovy";
 		
@@ -166,10 +164,11 @@ package actionScripts.languageServer
 
 			var processArgs:Vector.<String> = new <String>[];
 			_shellInfo = new NativeProcessStartupInfo();
-			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
 			processArgs.push("-cp");
-			processArgs.push(jarFile.nativePath);
-			processArgs.push("net.prominic.groovyls.GroovyLanguageServer");
+			processArgs.push(jarFile.nativePath + "/*");
+			trace(jarFile.nativePath + "/*");
+			processArgs.push("moonshine.groovylc.Main");
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
