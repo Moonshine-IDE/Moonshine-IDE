@@ -32,7 +32,7 @@ package actionScripts.plugin.groovy.groovyproject.vo
 		
 		public var encoding:String = "UTF-8";
 		public var temp:String = null;
-		public var stacktrace:Boolean = false;
+		public var exception:Boolean = false;
 		public var destdir:String = null;
 		public var indy:Boolean = false;
 		public var configscript:String = null;
@@ -70,7 +70,7 @@ package actionScripts.plugin.groovy.groovyproject.vo
 			
 			encoding							= SerializeUtil.deserializeString(options.@encoding);
 			temp								= SerializeUtil.deserializeString(options.@temp);
-			stacktrace							= SerializeUtil.deserializeBoolean(options.@stacktrace);
+			exception							= SerializeUtil.deserializeBoolean(options.@exception);
 			indy								= SerializeUtil.deserializeBoolean(options.@indy);
 			configscript						= SerializeUtil.deserializeString(options.@configscript);
 			scriptBaseClass						= SerializeUtil.deserializeString(options.@scriptBaseClass);
@@ -88,7 +88,7 @@ package actionScripts.plugin.groovy.groovyproject.vo
 			var pairs:Object = {
 				encoding						:	SerializeUtil.serializeString(encoding),
 				temp							:	SerializeUtil.serializeString(temp),
-				stacktrace						:	SerializeUtil.serializeBoolean(stacktrace),
+				exception						:	SerializeUtil.serializeBoolean(exception),
 				indy							:	SerializeUtil.serializeBoolean(indy),
 				configscript					:	SerializeUtil.serializeString(configscript),
 				scriptBaseClass					:	SerializeUtil.serializeString(scriptBaseClass),
@@ -121,7 +121,7 @@ package actionScripts.plugin.groovy.groovyproject.vo
             return {
                 "encoding"							:	encoding,
                 "temp"								:	temp,
-                "stacktrace"						:	stacktrace,
+                "exception"							:	exception,
                 "indy"								:	indy,
                 "configscript"						:	configscript,
                 "scriptBaseClass"					:	scriptBaseClass,

@@ -167,8 +167,7 @@ package actionScripts.languageServer
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
 			processArgs.push("-cp");
 			processArgs.push(jarFile.nativePath + "/*");
-			trace(jarFile.nativePath + "/*");
-			processArgs.push("moonshine.groovylc.Main");
+			processArgs.push("moonshine.groovyls.Main");
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);

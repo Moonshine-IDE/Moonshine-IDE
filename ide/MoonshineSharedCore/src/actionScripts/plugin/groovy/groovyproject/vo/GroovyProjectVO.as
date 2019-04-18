@@ -79,7 +79,7 @@ package actionScripts.plugin.groovy.groovyproject.vo
                             new StringSetting(buildOptions, "temp",						"Compiler temp directory"),
                             new StringSetting(buildOptions, "encoding",					"Source file encoding"),
                             new PathSetting(buildOptions, "destdir",					"Generated class files destination", true, buildOptions.destdir),
-                            new BooleanSetting(buildOptions, "stacktrace",				"Display stack trace of errors"),
+                            new BooleanSetting(buildOptions, "exception",				"Display stack trace of exceptions"),
                             new StringSetting(buildOptions, "scriptBaseClass",			"Script base class name"),
                             new BooleanSetting(buildOptions, "indy",					"Enable invokedynamic"),
                             new PathSetting(buildOptions, "configscript",				"Compiler configuration script", false, buildOptions.configscript),

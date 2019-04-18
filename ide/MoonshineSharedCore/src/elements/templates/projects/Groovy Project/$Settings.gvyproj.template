@@ -13,6 +13,7 @@
     <option targetBytecode="1.8" />
     <option stacktrace="False" />
     <option indy="False" />
+    <option jointCompilation="False" />
     <option scriptBaseClass="" />
     <option configscript="" />
     <option parameters="False" />
