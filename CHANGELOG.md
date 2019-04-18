@@ -25,7 +25,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 * Tour De Flex: Fixed issue where files were opened in wrong editor
-* Java Project:  Fixed issue that caused New Project menua to be very slow
+* Java Project: Fixed issue that caused New Project menua to be very slow
+* Java Project: Fixed issue when Java project do not deletes fully
 * Fixed issue where updating a project dependency path threw an error when the earlier path was invalid.
 * Access Manager: Fixed issue where Moonshine threw an error when a Java of project was opened
 * Visual Editor: Fixed issue preventing the selected element in the visual editor from highlighting in the Code tab
