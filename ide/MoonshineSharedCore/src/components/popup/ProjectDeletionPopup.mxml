@@ -118,7 +118,7 @@
 						project.folderLocation.fileBridge.resolvePath(".gradle"), project.folderLocation.fileBridge.resolvePath(".settings"),
 						project.folderLocation.fileBridge.resolvePath(".classpath"), project.folderLocation.fileBridge.resolvePath(".project"),
 						project.folderLocation.fileBridge.resolvePath(project.name +".javaproj"), 
-						project.folderLocation.fileBridge.resolvePath("target"));
+						project.folderLocation.fileBridge.resolvePath("target"), project.folderLocation.fileBridge.resolvePath("build"));
 					filesList.concat(project.projectFolder.projectReference.hiddenPaths);
 				}
 				
