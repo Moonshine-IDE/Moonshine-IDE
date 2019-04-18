@@ -151,7 +151,6 @@ package actionScripts.plugins.visualEditor
             if (status == MavenBuildStatus.COMPLETE)
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-                running = false;
             }
         }
 
@@ -184,6 +183,8 @@ package actionScripts.plugins.visualEditor
                 currentProject = this.newProject;
                 filePreview = this.newFilePreview;
                 prepareProjectForPreviewing();
+
+                dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
                 return;
             }
             else
@@ -249,7 +250,6 @@ package actionScripts.plugins.visualEditor
             payaraShutdownSocket = null;
 
             dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
-            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function previewVisualEditorFileHandler(event:Event):void
