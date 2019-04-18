@@ -113,8 +113,12 @@
 				}
 				else if (project is JavaProjectVO)
 				{
-					filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"), project.folderLocation.fileBridge.resolvePath("pom.xml"),
-						project.folderLocation.fileBridge.resolvePath("build.gradle"));
+					filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"), project.folderLocation.fileBridge.resolvePath("bin"), 
+						project.folderLocation.fileBridge.resolvePath("pom.xml"), project.folderLocation.fileBridge.resolvePath("build.gradle"), 
+						project.folderLocation.fileBridge.resolvePath(".gradle"), project.folderLocation.fileBridge.resolvePath(".settings"),
+						project.folderLocation.fileBridge.resolvePath(".classpath"), project.folderLocation.fileBridge.resolvePath(".project"),
+						project.folderLocation.fileBridge.resolvePath(project.name +".javaproj"), 
+						project.folderLocation.fileBridge.resolvePath("target"));
 					filesList.concat(project.projectFolder.projectReference.hiddenPaths);
 				}
 				
