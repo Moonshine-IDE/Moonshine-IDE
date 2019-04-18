@@ -64,6 +64,40 @@ package actionScripts.plugin.groovy.groovyproject.vo
 			return args;
 		}
 
+		public function getProcessArguments():Vector.<String>
+		{
+			var result:Vector.<String> = new <String>[];
+			var pairs:Object = getArgumentPairs();
+			var dpairs:Object = defaultOptions.getArgumentPairs();
+			for (var p:String in pairs) {
+				if (isArgumentExistsInAdditionalOptions(p))
+				{
+					continue;
+                }
+				
+				if (pairs[p] != dpairs[p]) {
+					if(p == "d")
+					{
+						result.push("-" + p);
+						result.push(pairs[p]);
+					}
+					else
+					{
+						result.push("-" + p + "=" + pairs[p]);
+					}
+				}
+			}
+			if (additional)
+			{
+				additional = StringUtil.trim(additional);
+				if(additional.length > 0)
+				{
+					result.push.apply(null, additional.split(" "));
+				}
+			}
+			return result;
+		}
+
 		public function parse(build:XMLList):void 
 		{
 			var options:XMLList = build.option;
@@ -124,11 +158,11 @@ package actionScripts.plugin.groovy.groovyproject.vo
                 "exception"							:	exception,
                 "indy"								:	indy,
                 "configscript"						:	configscript,
-                "scriptBaseClass"					:	scriptBaseClass,
+                "basescript"						:	scriptBaseClass,
                 "parameters"						:	parameters,
-                "destdir"							:	destdir,
-				"verbose"							:	verbose,
-				"targetBytecode"					:	targetBytecode
+                "d"									:	destdir,
+				"Dgroovy.output.verbose"			:	verbose,
+				"Dgroovy.target.bytecode"			:	targetBytecode
             }
         }
     }
