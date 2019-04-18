@@ -31,10 +31,14 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
 			
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.svn.event.SVNEvent;
@@ -52,6 +56,8 @@
 			[Bindable] private var isPathMapped:Boolean;
 			
 			private var mappedPath:String
+			private var isFolderNameManuallyChanged:Boolean;
+			private var isFolderNameManuallyEmpty:Boolean;
 			private var model:IDEModel = IDEModel.getInstance();
 			
 			public function notifySVNCheckoutError():void
@@ -97,28 +103,39 @@
 			
 			private function updatePossiblePath():void
 			{
+				validateURLInput();
+				if (!isValidURL && isPathMapped)
+				{
+					txtTarget.text = mappedPath + model.fileCore.separator + "...";
+				}
+				else if (!isValidURL && !isPathMapped)
+				{
+					txtTarget.text = "...";
+				}
+			}
+			
+			private function validateURLInput():void
+			{
+				var autoFolderName:String;
 				var searchRegExp:RegExp;
 				var results:Array;
 				if (type == VersionControlTypes.GIT)
 				{
 					// expected format is https://github.com/{organization/author}/{project}
-					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/([^/]+)(?:\\.git)?", "i");
+					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/.*/([^/]+)(?:\\.git)?", "i");
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
 						isValidURL = true;
 						txtTarget.text = (isPathMapped) ? mappedPath : "...";
-						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : results[0].split("/").pop();
-					}
-					else if (isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
+						autoFolderName = results[0].split("/").pop();
+						if (!isFolderNameManuallyChanged || isFolderNameManuallyEmpty)
+						{
+							txtFolderName.text = autoFolderName;
+							isFolderNameManuallyChanged = isFolderNameManuallyEmpty = false;
+						}
+						
+						return;
 					}
 				}
 				else
@@ -130,18 +147,13 @@
 						isGitAvailable = isValidURL = true;
 						txtTarget.text = (isPathMapped) ? mappedPath : "...";
 						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
-					}
-					else if (isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
+						
+						return;
 					}
 				}
+				
+				if (!results && !isFolderNameManuallyChanged) txtFolderName.text = "";
+				isValidURL = false;
 			}
 			
 			protected function onCreationCompletes():void
@@ -154,6 +166,22 @@
 				
 				lblSeparator.text = File.separator;
 				txtSource.setFocus();
+			}
+			
+			protected function onFolderNameChanged(event:TextOperationEvent):void
+			{
+				if (StringUtil.trim(txtFolderName.text).length == 0)
+				{
+					isValidURL = false;
+					isFolderNameManuallyEmpty = true;
+					isFolderNameManuallyChanged = false;
+				}
+				else
+				{
+					isFolderNameManuallyEmpty = false;
+					isFolderNameManuallyChanged = true;
+					updatePossiblePath();
+				}
 			}
 			
 		]]>
@@ -176,7 +204,8 @@
 			<s:Label id="lblSeparator"/>
 			<view:PromptTextInput id="txtFolderName"
 								  prompt="Target folder name"
-								  styleName="textInput" restrict="0-9A-Za-z_"/>
+								  styleName="textInput" restrict="0-9A-Za-z_"
+								  change="onFolderNameChanged(event)"/>
 		</s:HGroup>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
