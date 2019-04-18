@@ -25,8 +25,14 @@
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   width="500" autoLayout="true" minWidth="500"
 										   backgroundColor="0xf5f5f5" defaultButton="{findButton}"
-										   title="Find/Replace" skinClass="components.skins.ResizableTitleWindowSkin"
-                                           creationComplete="onSearchViewCreationComplete(event)">
+										   title.findAndReplace="Find/Replace" title.findOnly="Find"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+                                           creationComplete="onSearchViewCreationComplete(event)"
+										   currentState="findAndReplace">
+	<resizableTitleWindow:states>
+		<s:State name="findAndReplace"/>
+		<s:State name="findOnly"/>
+	</resizableTitleWindow:states>
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.plugin.findreplace.FindReplacePlugin;
@@ -93,7 +99,7 @@
 			width="100%"
 			styleName="textInput"
 			enter="replaceOne(true)"
-			tabIndex="2"/>
+			tabIndex="2" includeIn="findAndReplace"/>
 		<s:HGroup width="100%"
 				  verticalAlign="middle" gap="4">
 			<s:CheckBox
@@ -119,11 +125,11 @@
 		<s:Button
 				label="Replace/Find"
 				styleName="darkButton"
-				click="replaceOne(true)" />
+				click="replaceOne(true)" includeIn="findAndReplace"/>
 		<s:Button
 				label="Replace All"
 				styleName="darkButton"
-				click="replaceAll()" />
+				click="replaceAll()" includeIn="findAndReplace"/>
 		<s:Spacer width="100%"/>
 		<s:Button id="findButton"
 				  label="Find" fontFamily="DejaVuSans" fontSize="12"
