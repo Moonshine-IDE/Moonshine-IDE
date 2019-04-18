@@ -29,6 +29,7 @@ package actionScripts.impls
     import actionScripts.plugins.core.ProjectBridgeImplBase;
 
     import flash.filesystem.File;
+    import actionScripts.plugins.groovy.GroovyCPlugin;
 
     public class IGroovyBridgeImpl extends ProjectBridgeImplBase implements IGroovyBridge
     {
@@ -46,6 +47,7 @@ package actionScripts.impls
         public function getDefaultPlugins():Array
         {
             return [
+                GroovyCPlugin,
 				GroovySyntaxPlugin,
                 GroovyProjectPlugin,
             ];
@@ -54,6 +56,7 @@ package actionScripts.impls
         public function getPluginsNotToShowInSettings():Array
         {
             return [
+                GroovyCPlugin,
                 GroovyProjectPlugin,
             ];
         }
