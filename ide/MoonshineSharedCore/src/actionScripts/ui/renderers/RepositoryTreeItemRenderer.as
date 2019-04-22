@@ -63,39 +63,42 @@ package actionScripts.ui.renderers
 		
 		override public function set data(value:Object):void
 		{
-			super.data = value;
-			
-			contextMenu = model.contextMenuCore.getContextMenu();
-			if (data.children)
+			if (value)
 			{
-				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
-			}
-			
-			// collapse-all in all cases
-			model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COLLAPSE_ALL, redispatch, Event.SELECT));
-			
-			if (data.isUpdating && !busyIndicator) 
-			{
-				busyIndicator = new BusyIndicator();
-				addChild(busyIndicator);
-			}
-			else if (!data.isUpdating && busyIndicator)
-			{
-				removeChild(busyIndicator);
-				busyIndicator = null;
-			}
-			
-			// repository icon
-			if (repositoryIcon)
-			{
-				removeChild(repositoryIcon);
-				repositoryIcon = null;
-			}
-			if ((data.isRoot || data.type == VersionControlTypes.GIT) && !repositoryIcon)
-			{
-				repositoryIcon = new Image();
-				repositoryIcon.source = (data.type == VersionControlTypes.GIT) ? new ConstantsCoreVO.gitLabelIcon : new ConstantsCoreVO.svnLabelIcon;
-				addChild(repositoryIcon);
+				super.data = value;
+				
+				contextMenu = model.contextMenuCore.getContextMenu();
+				if (data.children)
+				{
+					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
+				}
+				
+				// collapse-all in all cases
+				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COLLAPSE_ALL, redispatch, Event.SELECT));
+				
+				if (data.isUpdating && !busyIndicator) 
+				{
+					busyIndicator = new BusyIndicator();
+					addChild(busyIndicator);
+				}
+				else if (!data.isUpdating && busyIndicator)
+				{
+					removeChild(busyIndicator);
+					busyIndicator = null;
+				}
+				
+				// repository icon
+				if (repositoryIcon)
+				{
+					removeChild(repositoryIcon);
+					repositoryIcon = null;
+				}
+				if ((data.isRoot || data.type == VersionControlTypes.GIT) && !repositoryIcon)
+				{
+					repositoryIcon = new Image();
+					repositoryIcon.source = (data.type == VersionControlTypes.GIT) ? new ConstantsCoreVO.gitLabelIcon : new ConstantsCoreVO.svnLabelIcon;
+					addChild(repositoryIcon);
+				}
 			}
 		}
 		
