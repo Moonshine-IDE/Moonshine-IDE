@@ -27,10 +27,13 @@ package actionScripts.ui.renderers
     import mx.core.mx_internal;
     
     import spark.components.BusyIndicator;
+    import spark.components.Image;
     import spark.components.Label;
     
     import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.locator.IDEModel;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.VersionControlTypes;
 
 	use namespace mx_internal;
 	
@@ -44,6 +47,7 @@ package actionScripts.ui.renderers
 		private var model:IDEModel;
 		private var hitareaSprite:Sprite;
 		private var busyIndicator:BusyIndicator;
+		private var repositoryIcon:Image;
 
 		public function RepositoryTreeItemRenderer()
 		{
@@ -79,6 +83,19 @@ package actionScripts.ui.renderers
 			{
 				removeChild(busyIndicator);
 				busyIndicator = null;
+			}
+			
+			// repository icon
+			if (repositoryIcon)
+			{
+				removeChild(repositoryIcon);
+				repositoryIcon = null;
+			}
+			if ((data.isRoot || data.type == VersionControlTypes.GIT) && !repositoryIcon)
+			{
+				repositoryIcon = new Image();
+				repositoryIcon.source = (data.type == VersionControlTypes.GIT) ? new ConstantsCoreVO.gitLabelIcon : new ConstantsCoreVO.svnLabelIcon;
+				addChild(repositoryIcon);
 			}
 		}
 		
@@ -147,6 +164,13 @@ package actionScripts.ui.renderers
 				busyIndicator.width = busyIndicator.height = 20;
 				busyIndicator.x = unscaledWidth - 30;
 				busyIndicator.y = 0;
+			}
+			if (repositoryIcon)
+			{
+				repositoryIcon.width = repositoryIcon.sourceWidth;
+				repositoryIcon.height = repositoryIcon.sourceHeight;
+				repositoryIcon.x = unscaledWidth - (data.type == VersionControlTypes.GIT ? 65 : 69);
+				repositoryIcon.y = (unscaledHeight - repositoryIcon.height) / 2;
 			}
 		}
 		

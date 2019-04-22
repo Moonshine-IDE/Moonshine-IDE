@@ -57,6 +57,10 @@ package actionScripts.valueObjects
 		public static var sourceFolderIcon: Class;
 		[Embed(source='/elements/images/icoTick.png')]
 		public static var menuTickIcon: Class;
+		[Embed(source='/elements/images/label_git.png')]
+		public static var gitLabelIcon: Class;
+		[Embed(source='/elements/images/label_svn.png')]
+		public static var svnLabelIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		[Embed("/elements/images/upArrow_menuScroll.png")]

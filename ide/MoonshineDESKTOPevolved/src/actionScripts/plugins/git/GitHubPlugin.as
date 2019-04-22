@@ -44,12 +44,14 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.GitAuthenticationPopup;
@@ -311,6 +313,7 @@ package actionScripts.plugins.git
 				checkoutWindow.title = "Clone Repository";
 				checkoutWindow.type = VersionControlTypes.GIT;
 				checkoutWindow.isGitAvailable = isGitAvailable;
+				if (event is VersionControlEvent) checkoutWindow.editingRepository = (event as VersionControlEvent).value as RepositoryItemVO;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				PopUpManager.centerPopUp(checkoutWindow);
 			}
@@ -328,7 +331,7 @@ package actionScripts.plugins.git
 			PopUpManager.removePopUp(checkoutWindow);
 			checkoutWindow = null;
 			
-			if (submitObject) processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder);
+			if (submitObject) processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
 		}
 		
 		private function onCheckoutRequest(event:Event):void

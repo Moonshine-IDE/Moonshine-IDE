@@ -36,12 +36,14 @@
 			import mx.collections.ArrayCollection;
 			
 			import spark.events.GridEvent;
-
+			
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.plugins.svn.SVNPlugin;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.valueObjects.RepositoryItemVO;
+			import actionScripts.valueObjects.VersionControlTypes;
 	
 			[Bindable] public var repositories:ArrayCollection;
 
@@ -81,7 +83,9 @@
 			
 			protected function onCheckoutRequest(event:MouseEvent):void
 			{
-				dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repoBrowser.selectedItem));
+				var repositoryItem:Object = (currentState == "default") ? dgRepositories.selectedItem : repoBrowser.selectedItem;
+				if (repositoryItem.type == VersionControlTypes.GIT) dispatcher.dispatchEvent(new VersionControlEvent(GitHubPlugin.CLONE_REQUEST, repositoryItem));
+				else dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repositoryItem));
 			}
 			
 			protected function onItemDoubleClicked(event:GridEvent):void
@@ -135,6 +139,11 @@
 					  enabled="{dgRepositories.selectedItem}" 
 					  styleName="darkButton"
 					  click="onItemEdit()"/>
+			<s:Button label="{(dgRepositories.selectedItem &amp;&amp; dgRepositories.selectedItem.type == VersionControlTypes.GIT) ? 
+					  'Clone' : 'Checkout'}"
+					  enabled="{dgRepositories.selectedItem}" 
+					  styleName="darkButton"
+					  click="onCheckoutRequest(event)"/>
 			<s:Button label="Browse"
 					  enabled="{dgRepositories.selectedItem}" 
 					  styleName="darkButton"
@@ -150,9 +159,10 @@
 					  styleName="darkButton"
 					  click="onBack(event)"/>
 			<s:Spacer width="100%"/>
-			<s:Button label="Checkout"
+			<s:Button label="{(repoBrowser.selectedItem &amp;&amp; repoBrowser.selectedItem.type == VersionControlTypes.GIT) ? 
+					  'Clone' : 'Checkout'}"
 					  styleName="darkButton"
-					  enabled="{repoBrowser.selectedItem &amp;&amp; repoBrowser.selectedItem.children}"
+					  enabled="{repoBrowser.selectedItem &amp;&amp; (repoBrowser.selectedItem.type == VersionControlTypes.GIT || repoBrowser.selectedItem.children)}"
 					  click="onCheckoutRequest(event)"/>
 		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>

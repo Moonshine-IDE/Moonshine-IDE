@@ -42,12 +42,14 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
@@ -86,6 +88,7 @@ package actionScripts.plugins.git
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
 		private var xCodePathDetectionType:String;
+		private var repositoryUnderCursor:RepositoryItemVO;
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var subscribeIdToWorker:String = UIDUtil.createUID();
@@ -159,10 +162,11 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
-		public function clone(url:String, target:String, targetFolder:String):void
+		public function clone(url:String, target:String, targetFolder:String, repository:RepositoryItemVO):void
 		{
 			queue = new Vector.<Object>();
 			
+			repositoryUnderCursor = repository;
 			lastCloneURL = url;
 			lastCloneTarget = target;
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
@@ -477,7 +481,7 @@ package actionScripts.plugins.git
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
-					openClonedProjectBy(new File(lastCloneTarget).resolvePath(cloningProjectName));
+					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
 					break;
 				case GIT_PUSH:
 					success("...process completed");
@@ -809,15 +813,21 @@ package actionScripts.plugins.git
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
 		}
 		
-		private function openClonedProjectBy(path:File):void
+		private function doPostCloneProcess(path:File):void
 		{
 			// validate first if root is a know project
-			var isKnownProject:FileLocation = FlashDevelopImporter.test(path);
-			if (!isKnownProject) isKnownProject = FlashBuilderImporter.test(path);
+			var hasProject:FileLocation = FlashDevelopImporter.test(path);
+			if (!hasProject) hasProject = FlashBuilderImporter.test(path);
 			
-			print("Opening project from:"+ path.nativePath);
-			if (isKnownProject)
+			if (hasProject)
+			{
+				print("Opening project from:"+ path.nativePath);
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, path));
+			}
+			else if (repositoryUnderCursor)
+			{
+				VersionControlUtils.parseGitDependencies(repositoryUnderCursor, path);
+			}
 		}
 	}
 }

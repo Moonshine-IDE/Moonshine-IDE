@@ -30,6 +30,7 @@ package actionScripts.utils
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.RepositoryItemVO;
+    import actionScripts.valueObjects.VersionControlTypes;
 
     public class SharedObjectUtil
 	{
@@ -75,7 +76,30 @@ package actionScripts.utils
 				{
 					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
 					tmpRepository.udid = UIDUtil.createUID();
-					if (tmpRepository.children) tmpRepository.children = [];
+					if (tmpRepository.children) 
+					{
+						if (tmpRepository.type == VersionControlTypes.GIT)
+						{
+							// only in the case of Git type
+							// we shall parse children to parse saved
+							// git-meta (#503)
+							var children:Array = tmpRepository.children;
+							var subRepository:RepositoryItemVO;
+							tmpRepository.children = [];
+							for each (var subItem:Object in children)
+							{
+								subRepository = ObjectTranslator.objectToInstance(subItem, RepositoryItemVO) as RepositoryItemVO;
+								subRepository.udid = UIDUtil.createUID();
+								tmpRepository.children.push(subRepository);
+							}
+						}
+						else
+						{
+							// in case of SVN we'll continue
+							// to update children at runtime only
+							tmpRepository.children = [];
+						}
+					}
 					tmpCollection.addItem(tmpRepository);
 				}
 			}
@@ -88,10 +112,14 @@ package actionScripts.utils
 			var duplicate:ArrayCollection = ObjectUtil.copy(collection) as ArrayCollection;
 			
 			// we don't want to store children data
+			// only in case of non-Git item type.
+			// continue to save children to save any
+			// already parsed git-meta (#503)
 			for each (var repo:Object in duplicate)
 			{
 				if (repo.children && 
-					repo.children.length > 0)
+					repo.children.length > 0 && 
+					repo.type == VersionControlTypes.SVN)
 				{
 					repo.children = [];
 				}

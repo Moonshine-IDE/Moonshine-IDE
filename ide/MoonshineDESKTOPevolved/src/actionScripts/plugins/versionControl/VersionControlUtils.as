@@ -19,10 +19,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.versionControl
 {
+	import flash.filesystem.File;
+	
 	import mx.collections.ArrayCollection;
 	
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 
 	public class VersionControlUtils
 	{
@@ -49,6 +53,38 @@ package actionScripts.plugins.versionControl
 			if (!match) match = value.toLowerCase().match(/authorization failed/);
 			
 			return (match != null);
+		}
+		
+		public static function parseGitDependencies(ofRepository:RepositoryItemVO, fromPath:File):Boolean
+		{
+			fromPath = fromPath.resolvePath("dependencies.xml")
+			if (fromPath.exists)
+			{
+				var readObject:Object = FileUtils.readFromFile(fromPath);
+				var dependencies:XML = new XML(readObject);
+				var tmpRepo:RepositoryItemVO;
+				for each (var repo:XML in dependencies..dependency)
+				{
+					// put this inside so we initialize only
+					// if the correct xml format found
+					if (!ofRepository.children) ofRepository.children = [];
+					
+					tmpRepo = new RepositoryItemVO();
+					tmpRepo.label = String(repo.label);
+					tmpRepo.url = String(repo.url);
+					tmpRepo.notes = String(repo.purpose);
+					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
+					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
+					tmpRepo.udid = ofRepository.udid;
+					tmpRepo.type = VersionControlTypes.GIT;
+					ofRepository.children.push(tmpRepo);
+				}
+				
+				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
+				return true;
+			}
+			
+			return false;
 		}
 	}
 }

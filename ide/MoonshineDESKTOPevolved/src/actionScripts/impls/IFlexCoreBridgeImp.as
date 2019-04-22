@@ -355,7 +355,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
-					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent()) ? "Grant Permission" : resourceManager.getString('resources','CLONE'), null, null, GitHubPlugin.CLONE_REQUEST),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES),
 					/*new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),

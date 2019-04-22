@@ -90,7 +90,7 @@
 				editingRepository.isRequireAuthentication = cbLogin.selected;
 				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
 				editingRepository.type = rgType.selectedValue.toString();
-				editingRepository.children = editingRepository.children ? editingRepository.children : [];
+				editingRepository.children = editingRepository.children ? editingRepository.children : (editingRepository.type == VersionControlTypes.SVN ? [] : null);
 				editingRepository.isRoot = true;
 				if (editingRepository.isRequireAuthentication)
 				{
@@ -199,8 +199,7 @@
 	<s:HGroup width="100%">
 		<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
 					   selected="true"/>
-		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
-					   enabled="false"/>	
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"/>	
 	</s:HGroup>
 	<view:PromptTextInput id="txtSource"
 						  width="100%" styleName="textInput"
