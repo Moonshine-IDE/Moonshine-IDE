@@ -155,47 +155,29 @@
 	                var fcsh:NativeProcess = new NativeProcess();
 	                fcsh.start(shellInfo);
 	            }*/
-	
-				// for Windows only at this moment
-				if (!ConstantsCoreVO.IS_MACOS || ConstantsCoreVO.IS_DEVELOPMENT_MODE)
-				{
-					initAutoUpdater();
-				}
-				else if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+				
+				// verify if an App Store version
+				if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
 				{
 					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/InstallConfig.xml");
 					if (tmpConfiguration.fileBridge.exists)
 					{
 						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
-						if (String(tmpXML.isAppStoreVersion) == "false")
+						if (String(tmpXML.isAppStoreVersion) != "false")
 						{
-							initAutoUpdater();
+							isAppStoreVersion = true;
 						}
 					}
 				}
-	
-				// workspace define
-				/*if (ConstantsCoreVO.IS_MACOS)
-	            {
-	            setTimeout(function():void
-	            {
-	            if (!OSXBookmarkerNotifiers.isWorkspaceAcknowledged) GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.SET_WORKSPACE));
-	            }, 3600);
-	            }*/
-	
-				/*
-	             * @local
-	             */
-				function initAutoUpdater():void
-				{
-					updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
-					updater.initialize();
-				}
+				
+				// continue to update check
+				updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
+				updater.initialize();
 			}
 	
 			public function onHelperAppInstallationCompletes():void
 			{
-				Alert.show("download completed");
+				Alert.show("Download completed");
 			}
 	
 			//--------------------------------------------------------------------------
@@ -268,6 +250,6 @@
 	<fx:Script source="actionScripts/utils/AutoUpdater.as"/>
 	<containers:UpdaterView width="100%" height="100%"
 							includeInLayout="{isUpdater}" visible="{isUpdater}"
-							updater="{updater}" downlaoding="{downlaoding}"
+							updater="{updater}" downlaoding="{downlaoding}" isAppStoreVersion="{isAppStoreVersion}"
 							UPDATEYES="btnYes_clickHandler(event)" UPDATENO="btnNo_clickHandler(event)" UPDATECANCEL="btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>
