@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"output": "bin-debug/MoonshineWorker.swf",
+		"keep-generated-actionscript": true,
+		"source-path": [
+			"src"
+		]
+	},
+	"files": [
+		"src/MoonshineWorker.as"
+	],
+	"application": "src/MoonshineWorker-app.xml",
+	"copySourcePathAssets": true,
+	"additionalOptions": "-locale en_US",
+	"airOptions": {
+		"output": "MoonshineWorker.air"
+	},
+	"config": "air"
+}

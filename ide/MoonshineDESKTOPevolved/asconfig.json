@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"output": "bin-debug/MoonshineDESKTOP.swf",
+		"keep-generated-actionscript": true,
+		"accessible": true,
+		"source-path": [
+			"src",
+			"../MoonshineSharedCore/src",
+			"../MoonshineSharedCore/src/locale/en_US",
+			"../../../Moonshine-SDK-Installer/InstallerSharedCore/src"
+		],
+		"library-path": [
+			"libs",
+			"libs/ApacheFlexSDKInstallerLib.swc",
+			"../../../Moonshine-IDE/ide/MoonshineSharedCore/libs"
+		]
+	},
+	"files": [
+		"src/MoonshineDESKTOP.mxml"
+	],
+	"application": "src/MoonshineDESKTOP-app.xml",
+	"copySourcePathAssets": true,
+	"additionalOptions": "-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false",
+	"airOptions": {
+		"output": "MoonshineDESKTOP.air",
+		"extdir": [
+			"extensions/SSB.ane"
+		]
+	},
+	"config": "air"
+}

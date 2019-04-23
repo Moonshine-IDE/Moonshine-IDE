@@ -93,7 +93,7 @@ public class SuperStatementNode extends ScriptNode implements ISuperStatement
 	 */	
 	public function set arguments(value:Vector.<IExpression>):void
 	{
-		return ArgumentUtil.setArguments(findCall(), value);
+		ArgumentUtil.setArguments(findCall(), value);
 	}
 	
 	//--------------------------------------------------------------------------
