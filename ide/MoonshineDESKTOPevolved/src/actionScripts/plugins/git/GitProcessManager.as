@@ -833,7 +833,7 @@ package actionScripts.plugins.git
 					// if is not a git-meta, and no possible project found
 					// in the root directory, continue searching for possible
 					// project exietence in its sub-directories
-					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
+					//dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
 				}
 			}
 		}
