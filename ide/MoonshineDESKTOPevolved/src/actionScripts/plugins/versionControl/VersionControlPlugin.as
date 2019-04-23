@@ -26,8 +26,11 @@ package actionScripts.plugins.versionControl
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.WorkerEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -45,6 +48,7 @@ package actionScripts.plugins.versionControl
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Version Controls' Manager Plugin"; }
 		
+		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
 		
@@ -54,6 +58,9 @@ package actionScripts.plugins.versionControl
 			
 			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, handleSearchForProjectsInDirectories, false, 0, true);
+			
+			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -62,6 +69,9 @@ package actionScripts.plugins.versionControl
 			
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories);
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository);
+			dispatcher.removeEventListener(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, handleSearchForProjectsInDirectories);
+			
+			worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -108,6 +118,16 @@ package actionScripts.plugins.versionControl
 		//
 		//--------------------------------------------------------------------------
 		
+		protected function onWorkerValueIncoming(event:GeneralEvent):void
+		{
+			switch (event.value.event)
+			{
+				case WorkerEvent.FOUND_PROJECTS_IN_DIRECTORIES:
+					trace(event.value.value);
+					break;
+			}
+		}
+		
 		protected function handleOpenAddRepository(event:Event):void
 		{
 			openAddEditRepositoryWindow(
@@ -115,6 +135,25 @@ package actionScripts.plugins.versionControl
 				((event as VersionControlEvent).value as RepositoryItemVO) : 
 				null
 			);
+		}
+		
+		protected function handleSearchForProjectsInDirectories(event:VersionControlEvent):void
+		{
+			// send path instead of file as sending file is expensive
+			worker.sendToWorker(WorkerEvent.SEARCH_PROJECTS_IN_DIRECTORIES, getObject());
+			
+			/*
+			 * @local
+			 */
+			function getObject():Object
+			{
+				var tmpObj:Object = new Object();
+				//tmpObj.path = (event.value.path as File).nativePath;
+				tmpObj.path = "C:\\Users\\Santanu\\Desktop\\TestSubs";
+				//tmpObj.udid = (event.value.repository as RepositoryItemVO).udid;
+				tmpObj.maxDepthCount = VersionControlUtils.MAX_DEPTH_COUNT_IN_PROJECT_SEARCH;
+				return tmpObj;
+			}
 		}
 		
 		protected function openAddEditRepositoryWindow(editItem:RepositoryItemVO=null):void

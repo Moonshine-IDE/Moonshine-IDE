@@ -19,6 +19,8 @@
 package actionScripts.valueObjects
 {
 	import flash.filesystem.File;
+	
+	import actionScripts.utils.WorkerSearchInProjects;
 
 	[Bindable] dynamic public class WorkerFileWrapper
 	{
@@ -51,7 +53,7 @@ package actionScripts.valueObjects
 			if (isRoot && projectRef && projectRef.name) name = projectRef.name;
 			else if (file) name = file.name;
 			
-			MoonshineWorker.FILES_COUNT++;
+			WorkerSearchInProjects.FILES_COUNT++;
 			
 			// store filelocation reference for later
 			// search through Find Resource menu option

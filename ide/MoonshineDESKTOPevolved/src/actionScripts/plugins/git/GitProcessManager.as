@@ -43,6 +43,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
@@ -826,7 +827,14 @@ package actionScripts.plugins.git
 			}
 			else if (repositoryUnderCursor)
 			{
-				VersionControlUtils.parseGitDependencies(repositoryUnderCursor, path);
+				// following method is mainly applicable for git-meta type of repository
+				if (!VersionControlUtils.parseGitDependencies(repositoryUnderCursor, path))
+				{
+					// if is not a git-meta, and no possible project found
+					// in the root directory, continue searching for possible
+					// project exietence in its sub-directories
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
+				}
 			}
 		}
 	}

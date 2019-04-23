@@ -27,6 +27,7 @@ package actionScripts.utils
 		public function WorkerListOfNativeProcess()
 		{
 		}
+		
 		public function runProcesses(processDescriptor:Object):void
 		{
 			if (customProcess && customProcess.running)
