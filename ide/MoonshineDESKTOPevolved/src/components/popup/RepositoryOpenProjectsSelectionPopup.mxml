@@ -23,7 +23,7 @@
 				// check if any selection exists 
 				if (!hasSelectionToChanges())
 				{
-					Alert.show("There is nothing to commit.", "Note!");
+					Alert.show("There is nothing to Open.", "Note!");
 					return;
 				}
 				
