@@ -23,7 +23,7 @@ package actionScripts.languageServer
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.GroovyTextEditor;
     import actionScripts.utils.HtmlFormatter;
@@ -57,7 +57,7 @@ package actionScripts.languageServer
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["groovy"];
 
-		private var _project:GroovyProjectVO;
+		private var _project:GrailsProjectVO;
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -66,7 +66,7 @@ package actionScripts.languageServer
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJDKPath:String = null;
 
-		public function GroovyLanguageServerManager(project:GroovyProjectVO)
+		public function GroovyLanguageServerManager(project:GrailsProjectVO)
 		{
 			_project = project;
 
@@ -167,7 +167,7 @@ package actionScripts.languageServer
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
 			processArgs.push("-cp");
 			processArgs.push(jarFile.nativePath + "/*");
-			processArgs.push("moonshine.groovyls.Main");
+			processArgs.push("net.prominic.groovyls.GroovyLanguageServer");
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
 			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);

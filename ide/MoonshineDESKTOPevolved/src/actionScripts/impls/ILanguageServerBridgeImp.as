@@ -12,7 +12,7 @@ package actionScripts.impls
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.languageServer.JavaLanguageServerManager;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 	import actionScripts.languageServer.GroovyLanguageServerManager;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
@@ -194,10 +194,10 @@ package actionScripts.impls
 				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
 				manager = javaManager;
 			}
-			if(project is GroovyProjectVO)
+			if(project is GrailsProjectVO)
 			{
-				var groovyProject:GroovyProjectVO = GroovyProjectVO(project);
-				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(groovyProject);
+				var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(grailsProject);
 				manager = groovyManager;
 			}
 			managers.push(manager);

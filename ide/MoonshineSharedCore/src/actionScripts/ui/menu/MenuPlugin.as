@@ -54,7 +54,7 @@ import actionScripts.valueObjects.KeyboardShortcut;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.ui.menu.vo.ProjectMenuTypes;
 import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 import actionScripts.valueObjects.Settings;
 
     // This class is a singleton
@@ -291,7 +291,7 @@ import actionScripts.valueObjects.Settings;
 								return item === ProjectMenuTypes.JAVA;
 							});
 						}
-						else if(currentProject is GroovyProjectVO)
+						else if(currentProject is GrailsProjectVO)
 						{
 							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 							{

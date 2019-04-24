@@ -53,7 +53,7 @@ package actionScripts.ui.renderers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 
 	use namespace mx_internal;
 	
@@ -415,9 +415,9 @@ package actionScripts.ui.renderers
 					//TODO: make a better set of menu types for Java
 					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_JAVACLASS);
 				}
-				else if(activeProject is GroovyProjectVO)
+				else if(activeProject is GrailsProjectVO)
 				{
-					//TODO: make a better set of menu types for Java
+					//TODO: make a better set of menu types for Groovy
 					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_GROOVYCLASS);
 				}
 				else if(activeProject is AS3ProjectVO)

@@ -42,7 +42,7 @@ package actionScripts.plugins.nativeFiles
 		override public function get author():String		{ return "Moonshine Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
 		
-		private static var projectFileTypes:Array = ["as3proj", "veditorproj", "gvyproj"];
+		private static var projectFileTypes:Array = ["as3proj", "veditorproj", "grailsproj"];
 		
 		override public function activate():void
 		{

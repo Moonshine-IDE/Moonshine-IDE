@@ -22,7 +22,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 
 	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
 	{
@@ -47,9 +47,9 @@ package actionScripts.utils
 				return model.javaPathForTypeAhead.fileBridge.nativePath;
 			}
 		}
-		else if(project is GroovyProjectVO)
+		else if(project is GrailsProjectVO)
 		{
-			var groovyProject:GroovyProjectVO = GroovyProjectVO(project);
+			var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
 			if(model.javaPathForTypeAhead)
 			{
 				return model.javaPathForTypeAhead.fileBridge.nativePath;

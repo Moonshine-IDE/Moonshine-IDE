@@ -25,13 +25,13 @@ package actionScripts.plugin.groovy.groovyproject
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	
-	public class GroovyProjectPlugin extends PluginBase
+	public class GrailsProjectPlugin extends PluginBase
 	{	
 		public var activeType:uint = ProjectType.GROOVY;
 		
-		override public function get name():String 			{ return "Groovy Project Plugin"; }
+		override public function get name():String 			{ return "Grails Project Plugin"; }
 		override public function get author():String 		{ return "Moonshine Project Team"; }
-		override public function get description():String 	{ return "Groovy project importing, exporting & scaffolding."; }
+		override public function get description():String 	{ return "Grails project importing, exporting & scaffolding."; }
 		
 		override public function activate():void
 		{
@@ -60,7 +60,7 @@ package actionScripts.plugin.groovy.groovyproject
         private function canCreateProject(event:NewProjectEvent):Boolean
         {
             var projectTemplateName:String = event.templateDir.fileBridge.name;
-            return projectTemplateName.indexOf(ProjectTemplateType.GROOVY) != -1;
+            return projectTemplateName.indexOf(ProjectTemplateType.GRAILS) != -1;
         }
 	}
 }

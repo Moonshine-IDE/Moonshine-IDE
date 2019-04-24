@@ -16,17 +16,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.groovy.groovyproject.exporter
 {
-    import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
 
-    public class GroovyExporter extends FlashDevelopExporterBase
+    public class GrailsExporter extends FlashDevelopExporterBase
     {
-		private static const FILE_EXTENSION_GVYPROJ:String = ".gvyproj";
+		private static const FILE_EXTENSION_GRAILSPROJ:String = ".grailsproj";
 
-        public static function export(project:GroovyProjectVO):void
+        public static function export(project:GrailsProjectVO):void
         {
-            var projectSettings:FileLocation = project.folderLocation.resolvePath(project.projectName + FILE_EXTENSION_GVYPROJ);
+            var projectSettings:FileLocation = project.folderLocation.resolvePath(project.projectName + FILE_EXTENSION_GRAILSPROJ);
             if (!projectSettings.fileBridge.exists)
             {
                 projectSettings.fileBridge.createFile();
@@ -36,20 +36,9 @@ package actionScripts.plugin.groovy.groovyproject.exporter
             projectSettings.fileBridge.save(projectXML.toXMLString());
 		}
 
-		private static function toXML(project:GroovyProjectVO):XML
+		private static function toXML(project:GrailsProjectVO):XML
 		{
 			var projectXML:XML = <project/>;
-
-			var outputXML:XML = project.jarOutput.toXML(project.folderLocation);
-			projectXML.appendChild(outputXML);
-
-			var buildXML:XML = project.buildOptions.toXML();
-			projectXML.appendChild(buildXML);
-			
-			projectXML.appendChild(exportPaths(project.classpaths, <classpaths />, <class />, project));
-
-			projectXML.appendChild(exportPaths(project.targets, <compileTargets />, <compile />, project));
-			
 			return projectXML;
 		}
 	}

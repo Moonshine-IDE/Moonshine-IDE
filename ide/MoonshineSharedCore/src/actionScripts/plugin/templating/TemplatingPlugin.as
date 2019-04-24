@@ -298,7 +298,7 @@ package actionScripts.plugin.templating
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
-			var groovyProjectTemplates:ArrayCollection = new ArrayCollection();
+			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 
             for each (var file:FileLocation in projectTemplates)
             {
@@ -346,9 +346,9 @@ package actionScripts.plugin.templating
                         javaProjectTemplates.addItem(template);
 					}
 
-					if (template.title.indexOf("Groovy") != -1)
+					if (template.title.indexOf("Grails") != -1)
 					{
-                        groovyProjectTemplates.addItem(template);
+                        grailsProjectTemplates.addItem(template);
 					}
                 }
             }
@@ -358,7 +358,7 @@ package actionScripts.plugin.templating
 			royaleProjectTemplates.source = royaleProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
-			ConstantsCoreVO.TEMPLATES_PROJECTS_GROOVY = groovyProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

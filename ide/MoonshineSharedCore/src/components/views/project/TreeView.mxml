@@ -74,7 +74,7 @@
         import actionScripts.valueObjects.URLDescriptorVO;
 
         import components.popup.NewFolderPopup;
-        import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+        import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 
         private var newFolderWindow:NewFolderPopup;
 
@@ -181,10 +181,10 @@
                     var as3Project:AS3ProjectVO = AS3ProjectVO(project);
                     sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
                 }
-                else if (project is GroovyProjectVO)
+                else if (project is GrailsProjectVO)
                 {
-                    var gvyProject:GroovyProjectVO = GroovyProjectVO(project);
-                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, gvyProject.sourceFolder);
+                    var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
                 }
                 if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
             }
@@ -378,10 +378,10 @@
                         var as3Project:AS3ProjectVO = AS3ProjectVO(project);
                         sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
                     }
-                    else if (project is GroovyProjectVO)
+                    else if (project is GrailsProjectVO)
                     {
-                        var gvyProject:GroovyProjectVO = GroovyProjectVO(project);
-                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, gvyProject.sourceFolder);
+                        var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
                     }
                     if (sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 

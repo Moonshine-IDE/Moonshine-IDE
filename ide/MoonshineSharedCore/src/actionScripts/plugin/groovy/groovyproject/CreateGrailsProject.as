@@ -7,8 +7,8 @@ package actionScripts.plugin.groovy.groovyproject
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.groovy.groovyproject.importer.GroovyImporter;
-	import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+	import actionScripts.plugin.groovy.groovyproject.importer.GrailsImporter;
+	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -26,16 +26,16 @@ package actionScripts.plugin.groovy.groovyproject
 	import flash.net.SharedObject;
 
 	import mx.controls.Alert;
-	import actionScripts.plugin.groovy.groovyproject.exporter.GroovyExporter;
+	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
 
-	public class CreateGroovyProject
+	public class CreateGrailsProject
 	{
-		public function CreateGroovyProject(event:NewProjectEvent)
+		public function CreateGrailsProject(event:NewProjectEvent)
 		{
 			createGroovyProject(event);
 		}
 
-		private var project:GroovyProjectVO;
+		private var project:GrailsProjectVO;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var isInvalidToSave:Boolean;
@@ -70,7 +70,7 @@ package actionScripts.plugin.groovy.groovyproject
 			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 			projectName = "New" + projectName.replace(/ /g, "");
 
-			project = new GroovyProjectVO(folderLocation, projectName);
+			project = new GrailsProjectVO(folderLocation, projectName);
 
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
@@ -94,7 +94,7 @@ package actionScripts.plugin.groovy.groovyproject
 			templateLookup[project] = event.templateDir;
 		}
 
-		private function getProjectSettings(project:GroovyProjectVO, eventObject:NewProjectEvent):SettingsWrapper
+		private function getProjectSettings(project:GrailsProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
@@ -120,7 +120,7 @@ package actionScripts.plugin.groovy.groovyproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = GroovyImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = GrailsImporter.test(value.fileBridge.getFile as File);
 			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 
@@ -178,7 +178,7 @@ package actionScripts.plugin.groovy.groovyproject
 			}
 			
 			var view:SettingsView = event.target as SettingsView;
-			var project:GroovyProjectVO = view.associatedData as GroovyProjectVO;
+			var project:GrailsProjectVO = view.associatedData as GrailsProjectVO;
 			var targetFolder:FileLocation = project.folderLocation;
 
 			//save project path in shared object
@@ -194,7 +194,7 @@ package actionScripts.plugin.groovy.groovyproject
 			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 
-            project = createFileSystemBeforeSave(project, view.exportProject as GroovyProjectVO);
+            project = createFileSystemBeforeSave(project, view.exportProject as GrailsProjectVO);
 			if (!project) return;
 
             targetFolder = targetFolder.resolvePath(project.projectName);
@@ -223,7 +223,7 @@ package actionScripts.plugin.groovy.groovyproject
 			//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
 		}
 
-		private function createFileSystemBeforeSave(pvo:GroovyProjectVO, exportProject:GroovyProjectVO = null):GroovyProjectVO
+		private function createFileSystemBeforeSave(pvo:GrailsProjectVO, exportProject:GrailsProjectVO = null):GrailsProjectVO
 		{	
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
@@ -257,18 +257,14 @@ package actionScripts.plugin.groovy.groovyproject
 			th.templatingData["$Settings"] = projectName;
 			th.templatingData["$SourcePath"] = sourcePath;
 			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
-			th.templatingData["$ProjectJAR"] = sourceFile + ".jar";
 
             th.projectTemplate(templateDir, targetFolder);
 
-			var projectSettingsFileName:String = projectName + ".gvyproj";
+			var projectSettingsFileName:String = projectName + ".grailsproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
-			pvo = GroovyImporter.parse(settingsFile, projectName);
+			pvo = GrailsImporter.parse(settingsFile, projectName);
 
-			var folderToCreate:FileLocation = pvo.jarOutput.path.fileBridge.parent;
-			if (!folderToCreate.fileBridge.exists) folderToCreate.fileBridge.createDirectory();
-
-			GroovyExporter.export(pvo);
+			GrailsExporter.export(pvo);
 
 			return pvo;
 		}

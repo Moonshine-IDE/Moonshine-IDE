@@ -21,15 +21,14 @@ package actionScripts.impls
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IGroovyBridge;
-    import actionScripts.plugin.groovy.groovyproject.CreateGroovyProject;
-    import actionScripts.plugin.groovy.groovyproject.GroovyProjectPlugin;
-    import actionScripts.plugin.groovy.groovyproject.importer.GroovyImporter;
-    import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+    import actionScripts.plugin.groovy.groovyproject.CreateGrailsProject;
+    import actionScripts.plugin.groovy.groovyproject.GrailsProjectPlugin;
+    import actionScripts.plugin.groovy.groovyproject.importer.GrailsImporter;
+    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
 
     import flash.filesystem.File;
-    import actionScripts.plugins.groovy.GroovyCPlugin;
 
     public class IGroovyBridgeImpl extends ProjectBridgeImplBase implements IGroovyBridge
     {
@@ -47,17 +46,15 @@ package actionScripts.impls
         public function getDefaultPlugins():Array
         {
             return [
-                GroovyCPlugin,
 				GroovySyntaxPlugin,
-                GroovyProjectPlugin,
+                GrailsProjectPlugin,
             ];
         }
 
         public function getPluginsNotToShowInSettings():Array
         {
             return [
-                GroovyCPlugin,
-                GroovyProjectPlugin,
+                GrailsProjectPlugin,
             ];
         }
 
@@ -71,21 +68,21 @@ package actionScripts.impls
             return "";
         }
 		
-        protected var executeCreateGroovyProject:CreateGroovyProject;
+        protected var executeCreateGroovyProject:CreateGrailsProject;
 
 		override public function createProject(event:NewProjectEvent):void
         {
-			executeCreateGroovyProject = new CreateGroovyProject(event);
+			executeCreateGroovyProject = new CreateGrailsProject(event);
 		}
 		
-		public function testGroovy(file:Object):FileLocation
+		public function testGrails(file:Object):FileLocation
 		{
-			return GroovyImporter.test(file as File);
+			return GrailsImporter.test(file as File);
 		}
 
-		public function parseGroovy(file:FileLocation):GroovyProjectVO
+		public function parseGrails(file:FileLocation):GrailsProjectVO
 		{
-			return GroovyImporter.parse(file);
+			return GrailsImporter.parse(file);
 		}
     }
 }

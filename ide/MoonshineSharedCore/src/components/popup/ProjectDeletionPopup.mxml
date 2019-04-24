@@ -46,7 +46,7 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.plugin.groovy.groovyproject.vo.GroovyProjectVO;
+			import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 			
 			[Bindable] public var wrapperBelongToProject:FileWrapper;
 			
@@ -118,10 +118,10 @@
 						project.folderLocation.fileBridge.resolvePath("build.gradle"));
 					filesList.concat(project.projectFolder.projectReference.hiddenPaths);
 				}
-				else if(project is GroovyProjectVO)
+				else if(project is GrailsProjectVO)
 				{
-					var gvyProject:GroovyProjectVO = GroovyProjectVO(project);
-					filesList.unshift(gvyProject.classpaths);
+					var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+					filesList.unshift(grailsProject.classpaths);
 				}
 				
 				for (var i:int; i < filesList.length; i++)

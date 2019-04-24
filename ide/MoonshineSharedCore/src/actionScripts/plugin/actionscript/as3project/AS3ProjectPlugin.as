@@ -326,7 +326,7 @@ package actionScripts.plugin.actionscript.as3project
             var projectTemplateName:String = event.templateDir.fileBridge.name;
             return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.GROOVY) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1;
         }
 	}
 }
