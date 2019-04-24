@@ -127,7 +127,8 @@
 					if (results != null)
 					{
 						isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath : "...";
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
+						if (!isPathMapped) txtTarget.prompt = "Parent directory";
 						autoFolderName = results[0].split("/").pop();
 						if (!isFolderNameManuallyChanged || isFolderNameManuallyEmpty)
 						{
@@ -145,7 +146,8 @@
 					if (results != null)
 					{
 						isGitAvailable = isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath : "...";
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
+						if (!isPathMapped) txtTarget.prompt = "Parent directory";
 						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
 						
 						return;

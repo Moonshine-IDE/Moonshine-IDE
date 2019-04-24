@@ -309,7 +309,7 @@ package actionScripts.plugins.git
 				
 				processManager.checkGitAvailability();
 				
-				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, false) as SourceControlCheckout;
+				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, true) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
 				checkoutWindow.type = VersionControlTypes.GIT;
 				checkoutWindow.isGitAvailable = isGitAvailable;

@@ -6,7 +6,7 @@ package actionScripts.utils
 	
 	public class WorkerSearchForProjects
 	{
-		public static const READABLE_FILES_PATTERNS:Array = ["as3proj", "veditorproj", "javaproj", ".project"];
+		public static const READABLE_FILES_PATTERNS:Array = ["as3proj", "veditorproj", "javaproj"];
 		
 		public var worker:MoonshineWorker;
 		public var projectSearchObject:Object;
@@ -35,7 +35,8 @@ package actionScripts.utils
 		{
 			if (!baseQueue || (depthIndex >= maxDepthCount))
 			{
-				worker.workerToMain.send({event:WorkerEvent.FOUND_PROJECTS_IN_DIRECTORIES, value:foundProjectsInDirectories});
+				projectSearchObject.value.foundProjectsInDirectories = foundProjectsInDirectories;
+				worker.workerToMain.send({event:WorkerEvent.FOUND_PROJECTS_IN_DIRECTORIES, value:projectSearchObject});
 				return;
 			}
 			
@@ -62,6 +63,7 @@ package actionScripts.utils
 		
 		private function searchForProjectFile(value:File):Array
 		{
+			var hasFlashBuilderProject:File = value.resolvePath(".project");
 			var tmpFiles:Array = value.getDirectoryListing();
 			for (var i:int = 0; i < tmpFiles.length; i++)
 			{
@@ -69,10 +71,9 @@ package actionScripts.utils
 				{
 					if (isAcceptableResource(tmpFiles[i].extension))
 					{
-						var tmpResult:SearchResult = new SearchResult();
-						tmpResult.isRoot = (depthIndex == 0);
-						tmpResult.projectFile = tmpFiles[i];
-						foundProjectsInDirectories.push(tmpResult);
+						// we want to keep precedence of Moonshine
+						// configuration files over Flash-Builder files
+						updateToProjects(tmpFiles[i]);
 						return null;
 					}
 					else
@@ -83,7 +84,26 @@ package actionScripts.utils
 				}
 			}
 			
+			// if no Moonshine project configuration file found
+			// but flash-builder configuration 
+			if (hasFlashBuilderProject && hasFlashBuilderProject.exists) 
+			{
+				updateToProjects(hasFlashBuilderProject);
+				return null;
+			}
+			
 			return ((tmpFiles.length != 0) ? tmpFiles : null);
+			
+			/*
+			 * @local
+			 */
+			function updateToProjects(path:File):void
+			{
+				var tmpResult:SearchResult = new SearchResult();
+				tmpResult.isRoot = (depthIndex == 0);
+				tmpResult.projectFile = path;
+				foundProjectsInDirectories.push(tmpResult);
+			}
 		}
 		
 		private function isAcceptableResource(extension:String):Boolean

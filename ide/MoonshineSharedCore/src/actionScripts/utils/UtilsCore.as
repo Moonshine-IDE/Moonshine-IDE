@@ -934,6 +934,30 @@ package actionScripts.utils
 			
 			return tmpValue;
 		}
+		
+		/**
+		 * Reads through project configuration and
+		 * returns the project name
+		 */
+		public static function getProjectNameFromConfiguration(file:FileLocation=null, path:String=null):String
+		{
+			if (!file && !path) return null;
+			if (!file && path) file = new FileLocation(path);
+			
+			var configurationXML:XML = new XML(file.fileBridge.read() as String);
+			if (file.fileBridge.extension == "project")
+			{
+				// flash-builder projec
+				return String(configurationXML.name);
+			}
+			else
+			{
+				// moonshine projects
+				return file.fileBridge.nameWithoutExtension;
+			}
+			
+			return null;
+		}
 
 		public static function getConsolePath():String
 		{
@@ -1084,6 +1108,5 @@ package actionScripts.utils
                         return item == extension;
                     });
         }
-
     }
 }

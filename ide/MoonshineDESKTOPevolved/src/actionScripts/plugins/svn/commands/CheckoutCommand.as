@@ -29,6 +29,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class CheckoutCommand extends SVNCommandBase
@@ -162,7 +163,8 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(this.root.nativePath + File.separator + targetFolder)));
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryItem, path:new File(this.root.nativePath + File.separator + targetFolder)}));
+				//dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(this.root.nativePath + File.separator + targetFolder)));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)

@@ -816,16 +816,7 @@ package actionScripts.plugins.git
 		
 		private function doPostCloneProcess(path:File):void
 		{
-			// validate first if root is a know project
-			var hasProject:FileLocation = FlashDevelopImporter.test(path);
-			if (!hasProject) hasProject = FlashBuilderImporter.test(path);
-			
-			if (hasProject)
-			{
-				print("Opening project from:"+ path.nativePath);
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, path));
-			}
-			else if (repositoryUnderCursor)
+			if (repositoryUnderCursor)
 			{
 				// following method is mainly applicable for git-meta type of repository
 				if (!VersionControlUtils.parseGitDependencies(repositoryUnderCursor, path))
@@ -833,7 +824,7 @@ package actionScripts.plugins.git
 					// if is not a git-meta, and no possible project found
 					// in the root directory, continue searching for possible
 					// project exietence in its sub-directories
-					//dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
 				}
 			}
 		}

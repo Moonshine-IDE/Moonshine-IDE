@@ -23,11 +23,13 @@ package actionScripts.plugins.versionControl
 	import flash.events.Event;
 	import flash.filesystem.File;
 	
+	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.factory.FileLocation;
@@ -37,11 +39,13 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.AddRepositoryPopup;
 	import components.popup.ManageRepositoriesPopup;
+	import components.popup.RepositoryOpenProjectsSelectionPopup;
 
 	public class VersionControlPlugin extends PluginBase
 	{
@@ -52,6 +56,7 @@ package actionScripts.plugins.versionControl
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
+		private var projectOpenSelection:RepositoryOpenProjectsSelectionPopup;
 		
 		override public function activate():void
 		{
@@ -120,11 +125,11 @@ package actionScripts.plugins.versionControl
 			switch (event.value.event)
 			{
 				case WorkerEvent.FOUND_PROJECTS_IN_DIRECTORIES:
-					trace(event.value.value);
-					
 					// remove the listener 
 					// we'll re-add when again needed
 					worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+					
+					loadOrReportOnRepositoryProjects(event.value.value.value);
 					break;
 			}
 		}
@@ -201,6 +206,73 @@ package actionScripts.plugins.versionControl
 		//  PRIVATE API
 		//
 		//--------------------------------------------------------------------------
+		
+		private function loadOrReportOnRepositoryProjects(workerData:Object):void
+		{
+			var projectFiles:Array = workerData.foundProjectsInDirectories;
+			if ((projectFiles.length == 1) && projectFiles[0].isRoot)
+			{
+				// open the only project to sidebar
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, 
+					(new File(projectFiles[0].projectFile.nativePath)).parent));
+			}
+			else
+			{
+				var tmpCollection:ArrayCollection = new ArrayCollection();
+				var tmpSelectableObject:GenericSelectableObject;
+				var repositoryRoot:File = new File(workerData.path);
+				var configurationParent:File;
+				for each (var projectRef:Object in projectFiles)
+				{
+					configurationParent = (new File(projectRef.projectFile.nativePath)).parent;
+					tmpSelectableObject = new GenericSelectableObject(true);
+					tmpSelectableObject.data = {
+						name: repositoryRoot.getRelativePath(configurationParent, true),
+						path: projectRef.projectFile.nativePath
+					};
+					tmpCollection.addItem(tmpSelectableObject);
+				}
+				
+				openProjectSelectionWindow(tmpCollection, repositoryRoot);
+			}
+		}
+		
+		private function openProjectSelectionWindow(collection:ArrayCollection, repositoryRoot:File):void
+		{
+			if (!projectOpenSelection)
+			{
+				projectOpenSelection = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RepositoryOpenProjectsSelectionPopup, true) as RepositoryOpenProjectsSelectionPopup;
+				projectOpenSelection.title = "Select Projects to Open";
+				projectOpenSelection.projects = collection;
+				projectOpenSelection.repositoryRoot = repositoryRoot.nativePath;
+				projectOpenSelection.addEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
+				
+				PopUpManager.centerPopUp(projectOpenSelection);
+			}
+			else
+			{
+				PopUpManager.bringToFront(projectOpenSelection);
+			}
+		}
+		
+		private function onOpenProjectsWindowClosed(event:CloseEvent):void
+		{
+			if (projectOpenSelection.isSubmit)
+			{
+				var projects:ArrayCollection = projectOpenSelection.projects;
+				for each (var item:GenericSelectableObject in projects)
+				{
+					if (item.isSelected)
+					{
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, 
+							(new File(item.data.path)).parent));
+					}
+				}
+			}
+			
+			projectOpenSelection.removeEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
+			projectOpenSelection = null;
+		}
 		
 		private function continueIfSVNSupported():Boolean
 		{
