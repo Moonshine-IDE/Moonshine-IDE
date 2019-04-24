@@ -1,1 +1,0 @@
-Create a Flex/ActionScript library project.

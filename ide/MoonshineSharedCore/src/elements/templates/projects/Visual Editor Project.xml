@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template>
+        <title>Flex Visual Editor Project</title>
+        <name>Visual Editor Project</name>
+        <icon>Visual Editor Project.png</icon>
+        <description>Create a Visual Editor project that will generate an Flex application, to run on browser.</description>
+    </template>
+    <template>
+        <title>PrimeFaces Visual Editor Project</title>
+        <name>PrimeFaces Project</name>
+        <icon>Visual Editor Project.png</icon>
+        <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
+    </template>
+</templates>

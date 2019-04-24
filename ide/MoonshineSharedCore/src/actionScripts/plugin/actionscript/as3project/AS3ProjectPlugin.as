@@ -46,8 +46,6 @@ package actionScripts.plugin.actionscript.as3project
 	
 	public class AS3ProjectPlugin extends PluginBase
 	{
-		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
-		public static const EVENT_IMPORT_FLASHDEVELOP_PROJECT:String = "importFDProjectEvent";
         public static const AS3PROJ_AS_AIR:uint = 1;
         public static const AS3PROJ_AS_WEB:uint = 2;
 		public static const AS3PROJ_AS_ANDROID:uint = 3;

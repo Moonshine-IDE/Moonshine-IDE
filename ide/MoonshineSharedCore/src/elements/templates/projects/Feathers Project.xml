@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template>
+        <title>Feathers Desktop Project (MacOS, Windows)</title>
+        <name>Feathers Desktop Project (MacOS, Windows)</name>
+        <icon>Feathers Desktop Project (MacOS, Windows).png</icon>
+        <description>Create project with Feathers SDK for desktop application. This can be used to generate .AIR, .EXE (Windows only) and .DMG (OSX) installers.</description>
+    </template>
+    <template>
+        <title>Feathers Mobile Project (MacOS, Windows)</title>
+        <name>Feathers Mobile Project (MacOS, Windows)</name>
+        <icon>Feathers Mobile Project (MacOS, Windows).png</icon>
+        <description>Create project with Feathers SDK for mobile devices.</description>
+    </template>
+</templates>

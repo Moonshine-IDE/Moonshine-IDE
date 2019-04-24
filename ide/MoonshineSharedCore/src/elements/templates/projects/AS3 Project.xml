@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template>
+        <title>ActionScript Project (SWF, Desktop)</title>
+        <name>ActionScript Project (SWF, Desktop)</name>
+        <icon>ActionScript Project (SWF, Desktop).png</icon>
+        <description>Create a pure ActionScript project.</description>
+    </template>
+    <template>
+        <title>Library Project</title>
+        <name>Library Project</name>
+        <icon>Library Project.png</icon>
+        <description>Create a Flex/ActionScript library project.</description>
+    </template>
+</templates>

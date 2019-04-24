@@ -1,1 +1,0 @@
-Create a Flex project that will generate an SWF and HTML files, to run on browser.

@@ -106,7 +106,9 @@ package actionScripts.plugin.templating
 		protected var newFilePopup:NewFilePopup;
 		
 		private var resetIndex:int = -1;
-		
+
+		private var templateConfigs:Array;
+
 		public function TemplatingPlugin()
 		{
 			super();
@@ -244,11 +246,25 @@ package actionScripts.plugin.templating
 
 			var projects:FileLocation = templatesDir.resolvePath("projects");
 			list = projects.fileBridge.getDirectoryListing();
+			list = list.filter(function(item:Object, index:int, arr:Array):Boolean {
+				return item.extension == "xml";
+			});
+
+			templateConfigs = [];
 			for each (file in list)
 			{
-				if (!file.isHidden && file.isDirectory)
+				if (!file.isHidden)
 				{
-					projectTemplates.push(new FileLocation(file.nativePath));
+					var projectTemplateConfigLocation:FileLocation = new FileLocation(file.nativePath);
+					var projectTemplateConfig:XML = new XML(projectTemplateConfigLocation.fileBridge.read());
+					var projectTemplateConfigs:XMLList = projectTemplateConfig.template;
+
+					for each (var template:XML in projectTemplateConfigs)
+					{
+						var templateName:String = String(template.name);
+						projectTemplates.push(projects.resolvePath(templateName));
+						templateConfigs.push(template);
+					}
 				}
 			}
 			
@@ -291,23 +307,24 @@ package actionScripts.plugin.templating
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 
-            for each (var file:FileLocation in projectTemplates)
+            for each (var templateConfig:XML in templateConfigs)
             {
-                var tmpDescripFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".txt");
-                if (tmpDescripFile.exists)
+				var templateName:String = String(templateConfig.name);
+				var projectsLocation:FileLocation = templatesDir.resolvePath("projects" + templatesDir.fileBridge.separator + templateName);
+                if (projectsLocation.fileBridge.exists)
                 {
-                    var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
                     var template:TemplateVO = new TemplateVO();
-                    template.title = file.fileBridge.name;
-                    template.file = file;
-                    var tmpImageFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".png");
-                    template.description = String(tmpDescripFileLocation.fileBridge.read());
+                    template.title = String(templateConfig.title);
+                    template.file = projectsLocation;
+                    template.description = String(templateConfig.description);
+
+					var tmpImageFile:Object = projectsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
                     if (tmpImageFile.exists)
 					{
 						template.logoImagePath = tmpImageFile.url;
                     }
 
-                    if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1)
+                    if (templateName.indexOf("Feathers") != -1 || templateName.indexOf("Away3D") != -1)
 					{
 						feathersProjectTemplates.addItem(template);
                     }
@@ -316,23 +333,12 @@ package actionScripts.plugin.templating
 						projectTemplateCollection.addItem(template);
                     }
 
-					if (template.title.indexOf("Royale") != -1 && template.title.indexOf("FlexJS") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
 					}
 
-					if (template.title.indexOf("FlexJS") != -1)
-					{
-						template = new TemplateVO();
-                        template.title = "Flex Browser Project (FlexJS)";
-                        template.file = file;
-                        template.logoImagePath = tmpImageFile.url;
-                        template.description = String(tmpDescripFileLocation.fileBridge.read());
-
-						royaleProjectTemplates.addItem(template);
-					}
-
-					if (template.title.indexOf("Java") != -1)
+					if (templateName.indexOf("Java") != -1)
 					{
                         javaProjectTemplates.addItem(template);
 					}

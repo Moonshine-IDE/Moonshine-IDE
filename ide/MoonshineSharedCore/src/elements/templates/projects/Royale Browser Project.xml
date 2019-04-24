@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template>
+        <title>Royale Browser Project</title>
+        <name>Royale Browser Project Basic</name>
+        <icon>Royale Browser Project.png</icon>
+        <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
+    </template>
+    <template>
+        <title>Royale Browser Project</title>
+        <name>Royale Browser Project Jewel</name>
+        <icon>Royale Browser Project.png</icon>
+        <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
+    </template>
+</templates>
