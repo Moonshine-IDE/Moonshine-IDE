@@ -775,7 +775,7 @@ package actionScripts.plugins.fdb
 					isMatchFound = true;
 				}
 				
-				match = buffer.match(/[\(fdb)\]*^\s[0-9]+[\s*]+\w*/);
+				match = buffer.match(/[\(fdb\)]*^\s[0-9]+[\s*]+\w*/);
 				if(match && isStepOver)
 				{
 					match = buffer.match(/^\s[0-9]+[\s*]/);

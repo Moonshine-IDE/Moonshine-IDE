@@ -65,7 +65,7 @@ public class MemberNode extends ScriptNode implements IMember
 	 */	
 	public function set visibility(value:Visibility):void
 	{
-		return ModifierUtil.setVisibility(node, value);
+		ModifierUtil.setVisibility(node, value);
 	}
 	
 	//----------------------------------
