@@ -171,7 +171,7 @@ package actionScripts.plugins.versionControl
 			if (!addRepositoryWindow)
 			{
 				addRepositoryWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, AddRepositoryPopup, true) as AddRepositoryPopup;
-				addRepositoryWindow.title = "Add Repository";
+				addRepositoryWindow.title = editItem ? "Edit Repository" : "Add Repository";
 				addRepositoryWindow.type = VersionControlTypes.SVN;
 				addRepositoryWindow.editingRepository = editItem;
 				addRepositoryWindow.addEventListener(CloseEvent.CLOSE, onAddRepoWindowClosed);
