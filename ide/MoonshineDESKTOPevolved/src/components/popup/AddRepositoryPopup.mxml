@@ -67,23 +67,22 @@
 				var tmpRepositoryUrl:String = (txtSource.text.charAt(txtSource.text.length - 1) == "/") ? 
 					txtSource.text.substr(0, txtSource.text.length - 1) : 
 					txtSource.text;
+				var isEditing:Boolean;
+				if (!editingRepository) editingRepository = new RepositoryItemVO();
+				else isEditing = true;
 				
 				// ensure duplicate url entry
 				if (VersionControlUtils.REPOSITORIES)
 				{
 					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
 					{
-						if (repo.url == tmpRepositoryUrl)
+						if (repo.url == tmpRepositoryUrl && repo != editingRepository)
 						{
 							Alert.show("Duplicate repository entry is not permitted.", "Error!");
 							return;
 						}
 					}
 				}
-				
-				var isEditing:Boolean;
-				if (!editingRepository) editingRepository = new RepositoryItemVO();
-				else isEditing = true;
 				
 				editingRepository.url = tmpRepositoryUrl;
 				editingRepository.notes = StringUtil.trim(txtNotes.text).length != 0 ? txtNotes.text : null;
