@@ -124,7 +124,7 @@ package actionScripts.plugin.splashscreen
 
 		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
 		{
-			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.title) == -1;
+			return item.displayHome;
         }
     }
 }

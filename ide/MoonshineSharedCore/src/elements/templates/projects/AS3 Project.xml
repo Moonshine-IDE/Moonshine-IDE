@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
-    <template>
+    <template displayHome="true">
         <title>ActionScript Project (SWF, Desktop)</title>
+        <homeTitle>ActionScript Project (SWF, Desktop)</homeTitle>
         <name>ActionScript Project (SWF, Desktop)</name>
         <icon>ActionScript Project (SWF, Desktop).png</icon>
         <description>Create a pure ActionScript project.</description>
     </template>
-    <template>
-        <title>Library Project</title>
+    <template displayHome="true">
+        <title>Library Project (Flex)</title>
+        <homeTitle>Library Project (Flex)</homeTitle>
         <name>Library Project</name>
         <icon>Library Project.png</icon>
         <description>Create a Flex/ActionScript library project.</description>

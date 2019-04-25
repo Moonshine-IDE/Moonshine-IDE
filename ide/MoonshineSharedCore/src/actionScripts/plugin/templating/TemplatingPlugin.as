@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
+	import actionScripts.utils.SerializeUtil;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -309,12 +311,15 @@ package actionScripts.plugin.templating
 
             for each (var templateConfig:XML in templateConfigs)
             {
-				var templateName:String = String(templateConfig.name);
+				var templateName:String = SerializeUtil.deserializeString(templateConfig.name);
+
 				var projectsLocation:FileLocation = templatesDir.resolvePath("projects" + templatesDir.fileBridge.separator + templateName);
                 if (projectsLocation.fileBridge.exists)
                 {
                     var template:TemplateVO = new TemplateVO();
-                    template.title = String(templateConfig.title);
+                    template.title = SerializeUtil.deserializeString(templateConfig.title);
+					template.homeTitle = SerializeUtil.deserializeString(templateConfig.homeTitle);
+					template.displayHome = SerializeUtil.deserializeBoolean(templateConfig.@displayHome);
                     template.file = projectsLocation;
                     template.description = String(templateConfig.description);
 
@@ -422,18 +427,25 @@ package actionScripts.plugin.templating
 			
 			var separator:MenuItem = new MenuItem(null);
 			newFileMenu.items.push(separator);
-			
-			var filteredProjectTemplatesToMenu:Array = projectTemplates.filter(filterProjectsTemplates);
-			for each (var projectTemplate:FileLocation in filteredProjectTemplatesToMenu)
+
+			var filteredProjectTemplatesToMenu:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source;
+			filteredProjectTemplatesToMenu.concat(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source,
+												  ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE.source,
+					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source);
+			filteredProjectTemplatesToMenu = filteredProjectTemplatesToMenu.filter(filterProjectsTemplates);
+
+			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
-				if (projectTemplate.fileBridge.isHidden) continue;
-				lbl = TemplatingHelper.getTemplateLabel(projectTemplate);
-				
-				eventType = "eventNewProjectFromTemplate"+lbl;
+				if (projectTemplate.file.fileBridge.isHidden)
+				{
+					continue;
+				}
+
+				eventType = "eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(projectTemplate.file);
 				
 				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
-				menuItem = new MenuItem(lbl, null, null, eventType);
+				menuItem = new MenuItem(projectTemplate.homeTitle, null, null, eventType);
 				menuItem.data = projectTemplate;
 				
 				newFileMenu.items.push(menuItem);	
@@ -1308,9 +1320,9 @@ package actionScripts.plugin.templating
             newProjectFromTemplate(event.type);
 		}
 		
-		private function filterProjectsTemplates(item:FileLocation, index:int, arr:Array):Boolean
+		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
 		{
-			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.name) == -1;
+			return item.displayHome;
 		}
 
         private function handleExportNewProjectFromTemplate(event:ExportVisualEditorProjectEvent):void

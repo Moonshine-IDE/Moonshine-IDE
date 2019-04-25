@@ -23,10 +23,12 @@ package actionScripts.valueObjects
 
 	public class TemplateVO
 	{
-		public var title: String;
-		public var description: String;
-		public var logoImagePath: String;
+		public var title:String;
+		public var homeTitle:String;
+		public var description:String;
+		public var logoImagePath:String;
 		public var file: FileLocation;
+		public var displayHome:Boolean;
 		
 		public function TemplateVO()
 		{
