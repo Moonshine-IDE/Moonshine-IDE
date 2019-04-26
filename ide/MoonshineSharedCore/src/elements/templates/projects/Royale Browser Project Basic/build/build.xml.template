@@ -16,7 +16,7 @@
 
     <!-- READS FALCON_HOME FROM ENVIRONMENT VARIABLE IF EXISTS -->
     <property environment="env"/>
-    <propertycopy property="ROYALE_HOME" from="env.FLEX_HOME"/>
+    <propertycopy property="ROYALE_HOME" from="env.ROYALE_HOME"/>
     <echo message="SDK : ${ROYALE_HOME}" />
 
     <!-- GENERAL PROPERTIES -->
@@ -25,7 +25,6 @@
     <property name="COMPILER_TARGETS" value="-compiler.targets=JSFlex" />
     
     <property name="DEPLOY_DIR" value="DEPLOY"/>
-    <taskdef resource="flexTasks.tasks" classpath="${ROYALE_HOME}/js/lib/falcon-flexTasks.jar"/>
 
     <!-- PROJECT SOURCES -->
     <property name="SOURCE_PATH" value="${basedir}/../$SourcePath"/>
