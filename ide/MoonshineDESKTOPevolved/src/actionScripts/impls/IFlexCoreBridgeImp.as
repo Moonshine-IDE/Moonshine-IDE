@@ -398,7 +398,7 @@ package actionScripts.impls
 						if (firstMenuItems[i].label == "Close All")
 						{
 							firstMenuItems.splice(i+1, 0, (new MenuItem(null)));
-							firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, null, ProjectEvent.ACCESS_MANAGER)));
+							if (ConstantsCoreVO.IS_APP_STORE_VERSION) firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, null, ProjectEvent.ACCESS_MANAGER)));
 							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST : StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
 							break;
 						}

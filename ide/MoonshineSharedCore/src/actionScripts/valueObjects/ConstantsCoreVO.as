@@ -219,8 +219,9 @@ package actionScripts.valueObjects
 		public static var IS_OSX_CODECOMPLETION_PROMPT		: Boolean;
 		public static var IS_OSX_JAVA_SDK_PROMPT			: Boolean;
 		public static var IS_CONSOLE_CLEARED_ONCE			: Boolean;
-		public static var IS_GIT_OSX_AVAILABLE:Boolean;
-		public static var IS_SVN_OSX_AVAILABLE:Boolean;
+		public static var IS_GIT_OSX_AVAILABLE				: Boolean;
+		public static var IS_SVN_OSX_AVAILABLE				: Boolean;
+		public static var IS_APP_STORE_VERSION				: Boolean;
 		
 		//--------------------------------------------------------------------------
 		//

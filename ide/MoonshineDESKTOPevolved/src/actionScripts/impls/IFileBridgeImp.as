@@ -93,7 +93,7 @@ package actionScripts.impls
 		{
 			setFileInternalPath(startFromLocation);
 			
-			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				var selectedPathValue: String;
 				var relativePathToOpen: String = "";
@@ -428,7 +428,7 @@ package actionScripts.impls
 				}
 			}
 			
-			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				var selectedPathValue: String;
 				var relativePathToOpen: String = "";

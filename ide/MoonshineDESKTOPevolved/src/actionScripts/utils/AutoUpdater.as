@@ -28,7 +28,6 @@ import air.update.events.UpdateEvent;
 
 [Bindable] protected var downlaoding:Boolean = false;
 [Bindable] protected var isUpdater:Boolean;
-[Bindable] protected var isAppStoreVersion:Boolean;
 
 protected function isNewerFunction(currentVersion:String, updateVersion:String):Boolean
 {

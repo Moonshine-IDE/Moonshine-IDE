@@ -165,7 +165,7 @@
 						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
 						if (String(tmpXML.isAppStoreVersion) != "false")
 						{
-							isAppStoreVersion = true;
+							ConstantsCoreVO.IS_APP_STORE_VERSION = true;
 						}
 					}
 				}
@@ -250,6 +250,6 @@
 	<fx:Script source="actionScripts/utils/AutoUpdater.as"/>
 	<containers:UpdaterView width="100%" height="100%"
 							includeInLayout="{isUpdater}" visible="{isUpdater}"
-							updater="{updater}" downlaoding="{downlaoding}" isAppStoreVersion="{isAppStoreVersion}"
+							updater="{updater}" downlaoding="{downlaoding}" isAppStoreVersion="{ConstantsCoreVO.IS_APP_STORE_VERSION}"
 							UPDATEYES="btnYes_clickHandler(event)" UPDATENO="btnNo_clickHandler(event)" UPDATECANCEL="btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>
