@@ -492,6 +492,11 @@ package actionScripts.impls
 		{
 			if (checkFileExistenceAndReport()) _file.openWithDefaultApplication();
 		}
+		
+		public function getFileByPath(value:String):Object
+		{
+			return (new File(value));
+		}
 
 		public function get url():String
 		{

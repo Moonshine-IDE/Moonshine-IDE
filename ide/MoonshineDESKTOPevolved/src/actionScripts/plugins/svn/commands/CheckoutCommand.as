@@ -163,7 +163,7 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryItem, path:new File(this.root.nativePath + File.separator + targetFolder)}));
+				dispatcher.dispatchEvent(new VersionControlEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryItem, path:new File(this.root.nativePath + File.separator + targetFolder)}));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)

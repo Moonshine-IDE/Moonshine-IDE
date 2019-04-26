@@ -206,6 +206,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function getFileByPath(value:String):Object
+		{
+			return (new FileReference(value));
+		}
+		
 		public function get url():String
 		{
 			//TODO: implement function
@@ -227,6 +232,7 @@ package actionScripts.impls
 			//TODO: implement function
 			return _file;
 		}
+		
 		
 		public function get parent():FileLocation
 		{

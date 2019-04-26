@@ -30,8 +30,6 @@ package actionScripts.plugins.versionControl
 
 	public class VersionControlUtils
 	{
-		public static const MAX_DEPTH_COUNT_IN_PROJECT_SEARCH:int = 3;
-		
 		private static var _REPOSITORIES:ArrayCollection;
 		public static function get REPOSITORIES():ArrayCollection
 		{

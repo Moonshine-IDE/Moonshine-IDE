@@ -49,6 +49,7 @@ package actionScripts.valueObjects
 		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
 		public static const MOONSHINE_IDE_LABEL:String = "Moonshine IDE™";
 		public static const MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © Prominic.NET, Inc. All rights reserved.";
+		public static const MAX_DEPTH_COUNT_IN_PROJECT_SEARCH:int = 3;
 		
 		[Embed(source='/elements/swf/loading.swf')]
 		public static var loaderIcon: Class;

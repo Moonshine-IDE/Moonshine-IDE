@@ -60,6 +60,7 @@ package actionScripts.interfaces
 		function moveToTrashAsync():void;
 		function openWithDefaultApplication():void;
 		function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean;
+		function getFileByPath(value:String):Object;
 		
 		function get url():String;
 		function set url(value:String):void

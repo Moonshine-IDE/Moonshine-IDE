@@ -38,8 +38,6 @@ package actionScripts.plugins.git
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
@@ -824,7 +822,7 @@ package actionScripts.plugins.git
 					// if is not a git-meta, and no possible project found
 					// in the root directory, continue searching for possible
 					// project exietence in its sub-directories
-					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryUnderCursor, path:path}));
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, path));
 				}
 			}
 		}

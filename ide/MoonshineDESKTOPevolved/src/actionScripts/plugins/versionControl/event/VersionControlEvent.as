@@ -26,7 +26,6 @@ package actionScripts.plugins.versionControl.event
 		public static const OPEN_ADD_REPOSITORY:String = "openAddRepositoryView";
 		public static const ADD_EDIT_REPOSITORY:String = "addOrEditRepository";
 		public static const LOAD_REMOTE_SVN_LIST:String = "loadRemoteSvnList";
-		public static const SEARCH_PROJECTS_IN_DIRECTORIES:String = "searchForProjectsInDirectories";
 		
 		public var value:Object;
 		
