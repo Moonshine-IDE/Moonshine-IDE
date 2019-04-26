@@ -16,20 +16,16 @@
 
     <!-- READS FALCON_HOME FROM ENVIRONMENT VARIABLE IF EXISTS -->
     <property environment="env"/>
-    <propertycopy property="ROYALE_HOME" from="env.FLEX_HOME"/>
+    <propertycopy property="ROYALE_HOME" from="env.ROYALE_HOME"/>
     <echo message="SDK : ${ROYALE_HOME}" />
 
-    <!-- GENERAL PROPERTIES -->
-    <property name="IS_FLEXJS_AFTER_7" value="false"/>
-    <property name="IS_APACHE_ROYALE" value="false"/>
-    <property name="COMPILER_TARGETS" value="-compiler.targets=JSFlex" />
-    
     <property name="DEPLOY_DIR" value="DEPLOY"/>
-    <taskdef resource="flexTasks.tasks" classpath="${ROYALE_HOME}/js/lib/falcon-flexTasks.jar"/>
 
     <!-- PROJECT SOURCES -->
-    <property name="SOURCE_PATH" value="${basedir}/../$SourcePath"/>
-    <property name="MAIN_FILE_NAME" value="${SOURCE_PATH}/$ProjectFile"/>
+    <property name="SOURCE_PATH" value="${basedir}/../src"/>
+    <property name="RESOURCES_PATH" value="${basedir}/../src/resources"/>
+    <property name="ROYALE_THEME" value="${royalelib}/themes/JewelTheme/src/main/resources/defaults.css"/>
+    <property name="MAIN_FILE_NAME" value="${SOURCE_PATH}/NewJavaScriptBrowserJewelProject.mxml"/>
 
     <!-- JS COMPILER PATH -->
     <condition property="MXMLC_PATH" value="${ROYALE_HOME}/js/bin/mxmlc.bat">
@@ -51,12 +47,6 @@
     <target name="init">
         <delete dir="${DEPLOY_DIR}"/>
         <mkdir dir="${DEPLOY_DIR}" />
-        <if>
-            <equals arg1="${IS_APACHE_ROYALE}" arg2="true"/>
-            <then>
-                <var name="COMPILER_TARGETS" value="-compiler.targets=JSRoyale"/>
-            </then>
-        </if>
     </target>
 
 
@@ -70,28 +60,15 @@
 
     <!-- Compile web Apache Royale application -->
     <target name="compileJavascript" depends="init">
-	    <if>
-			<!-- Command with special argument for FlexJS versions after 0.7  -->
-			<equals arg1="${IS_FLEXJS_AFTER_7}" arg2="true"/>
-			<then>
-				<exec executable="${MXMLC_PATH}" failonerror="true">
-		            <arg value="-source-path+=${SOURCE_PATH}" />
-		            <arg value="-external-library-path+=${ROYALE_HOME}/js/libs/js.swc" />
-		        	<arg value="${COMPILER_TARGETS}" />
-		            <arg value="-compiler.debug=false" />
-		            <arg value="-output=${DEPLOY_DIR}" />
-		            <arg value="${MAIN_FILE_NAME}" />
-	        	</exec>
-			</then>
-			<else>
-				<exec executable="${MXMLC_PATH}" failonerror="true">
+	    <exec executable="${MXMLC_PATH}" failonerror="true">
 		            <arg value="-source-path+=${SOURCE_PATH}" />
 		            <arg value="-external-library-path+=${ROYALE_HOME}/js/libs/js.swc" />
 		            <arg value="-compiler.debug=false" />
+					<arg value="-compiler.targets=JSRoyale" />
+					<arg value="-html-template=${RESOURCES_PATH}/jewel-index-template.html"/>
+					<arg value="-theme=${ROYALE_THEME}"/>
 		            <arg value="-output=${DEPLOY_DIR}" />
 		            <arg value="${MAIN_FILE_NAME}" />
 	        	</exec>
-			</else>
-		</if>
     </target>
 </project>
