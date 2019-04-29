@@ -7,6 +7,8 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
 			import mx.events.FlexEvent;
 			import mx.events.TreeEvent;
 			
@@ -15,6 +17,7 @@
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
 			import actionScripts.valueObjects.RepositoryItemVO;
+			import actionScripts.valueObjects.VersionControlTypes;
 			
 			[Bindable] public var selectedItem:Object;
 			[Bindable] private var repositories:ArrayCollection;
@@ -31,6 +34,8 @@
 			public function setRepositories(value:Array):void
 			{
 				repositories = new ArrayCollection(value);
+				repositories.sort = new Sort([new SortField("type"), new SortField("url")]);
+				repositories.refresh();
 			}
 			
 			public function onBackEvent():void
@@ -73,8 +78,14 @@
 			
 			private function repositoryLabelFunction(item:RepositoryItemVO):String
 			{
-				if (item.isRoot) return item.url;
-				return item.label;
+				if (item.type == VersionControlTypes.SVN)
+				{
+					if (item.isRoot) return item.url;
+					return item.label;
+				}
+				
+				if (item.label) return item.label +" ("+ item.url +")";
+				return item.url;
 			}
 			
 			private function collapseAllItems():void

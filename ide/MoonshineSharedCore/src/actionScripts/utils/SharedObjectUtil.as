@@ -21,8 +21,9 @@ package actionScripts.utils
     import flash.net.SharedObject;
     
     import mx.collections.ArrayCollection;
+    import mx.collections.Sort;
+    import mx.collections.SortField;
     import mx.utils.ObjectUtil;
-    import mx.utils.UIDUtil;
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
@@ -75,7 +76,6 @@ package actionScripts.utils
 				for each (var item:Object in cookie.data.savedRepositories)
 				{
 					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
-					tmpRepository.udid = UIDUtil.createUID();
 					if (tmpRepository.children) 
 					{
 						if (tmpRepository.type == VersionControlTypes.GIT)
@@ -89,7 +89,6 @@ package actionScripts.utils
 							for each (var subItem:Object in children)
 							{
 								subRepository = ObjectTranslator.objectToInstance(subItem, RepositoryItemVO) as RepositoryItemVO;
-								subRepository.udid = UIDUtil.createUID();
 								tmpRepository.children.push(subRepository);
 							}
 						}
@@ -103,6 +102,10 @@ package actionScripts.utils
 					tmpCollection.addItem(tmpRepository);
 				}
 			}
+			
+			// add sorting by type
+			tmpCollection.sort = new Sort([new SortField("type"), new SortField("url")]);
+			tmpCollection.refresh();
 			
 			return tmpCollection;
 		}

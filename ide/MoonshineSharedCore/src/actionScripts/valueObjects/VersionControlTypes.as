@@ -22,5 +22,6 @@ package actionScripts.valueObjects
     {
         public static const SVN:String = "svn";
         public static const GIT:String = "git";
+		public static const XML:String = "xml";
     }
 }

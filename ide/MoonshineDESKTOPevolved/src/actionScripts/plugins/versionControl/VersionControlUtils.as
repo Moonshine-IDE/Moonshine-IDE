@@ -20,8 +20,10 @@
 package actionScripts.plugins.versionControl
 {
 	import flash.filesystem.File;
+	import flash.net.registerClassAlias;
 	
 	import mx.collections.ArrayCollection;
+	import mx.utils.ObjectUtil;
 	
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.SharedObjectUtil;
@@ -63,21 +65,24 @@ package actionScripts.plugins.versionControl
 				var readObject:Object = FileUtils.readFromFile(fromPath);
 				var dependencies:XML = new XML(readObject);
 				var tmpRepo:RepositoryItemVO;
+				
+				// put this inside so we initialize only
+				// if the correct xml format found
+				ofRepository.children = [];
 				for each (var repo:XML in dependencies..dependency)
 				{
-					// put this inside so we initialize only
-					// if the correct xml format found
-					if (!ofRepository.children) ofRepository.children = [];
-					
 					tmpRepo = new RepositoryItemVO();
-					tmpRepo.label = String(repo.label);
 					tmpRepo.url = String(repo.url);
+					tmpRepo.label = String(repo.label);
 					tmpRepo.notes = String(repo.purpose);
 					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
 					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
 					tmpRepo.udid = ofRepository.udid;
-					tmpRepo.type = VersionControlTypes.GIT;
+					tmpRepo.type = VersionControlTypes.XML;
 					ofRepository.children.push(tmpRepo);
+					
+					registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
+					VersionControlUtils.REPOSITORIES.addItem(ObjectUtil.copy(tmpRepo) as RepositoryItemVO);
 				}
 				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);

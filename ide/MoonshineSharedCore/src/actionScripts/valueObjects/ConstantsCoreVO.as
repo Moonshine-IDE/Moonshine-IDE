@@ -61,6 +61,8 @@ package actionScripts.valueObjects
 		public static var gitLabelIcon: Class;
 		[Embed(source='/elements/images/label_svn.png')]
 		public static var svnLabelIcon: Class;
+		[Embed(source='/elements/images/label_xml.png')]
+		public static var xmlLabelIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		[Embed("/elements/images/upArrow_menuScroll.png")]

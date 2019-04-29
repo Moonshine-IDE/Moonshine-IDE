@@ -40,6 +40,7 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.plugins.svn.SVNPlugin;
+			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.valueObjects.RepositoryItemVO;
@@ -84,13 +85,35 @@
 			protected function onCheckoutRequest(event:MouseEvent):void
 			{
 				var repositoryItem:Object = (currentState == "default") ? dgRepositories.selectedItem : repoBrowser.selectedItem;
-				if (repositoryItem.type == VersionControlTypes.GIT) dispatcher.dispatchEvent(new VersionControlEvent(GitHubPlugin.CLONE_REQUEST, repositoryItem));
+				var repoType:String = repositoryItem.type;
+				
+				// in case of XML/dependency type, we need to find 'type' 
+				// of its root/dependent repository
+				if (repositoryItem.type == VersionControlTypes.XML)
+				{
+					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					{
+						if (repo.udid == repositoryItem.udid)
+						{
+							repoType = repo.type;
+							break;
+						}
+					}
+				}
+				
+				if (repoType == VersionControlTypes.GIT) dispatcher.dispatchEvent(new VersionControlEvent(GitHubPlugin.CLONE_REQUEST, repositoryItem));
 				else dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repositoryItem));
 			}
 			
 			protected function onItemDoubleClicked(event:GridEvent):void
 			{
 				onBrowseRepository(dgRepositories.selectedItem as RepositoryItemVO);
+			}
+			
+			private function repoNameLabelFunction(item:Object, column:GridColumn):String
+			{
+				if (item.label) return item.label +" ("+ item.url +")";
+				return item.url;
 			}
 			
 		]]>
@@ -113,8 +136,31 @@
 					rowHeight="24">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="url" headerText="Repository"/>
-					<s:GridColumn dataField="userName" headerText="User" width="200"/>
+					<s:GridColumn headerText="Repository" labelFunction="repoNameLabelFunction"/>
+					<s:GridColumn dataField="type" headerText="Type" width="50">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:GridItemRenderer width="100%">
+									<fx:Script>
+										<![CDATA[
+											import actionScripts.valueObjects.ConstantsCoreVO;
+											override public function set data(value:Object):void
+											{
+												if (data != value && imgIcon)
+												{
+													super.data = value;
+													imgIcon.source = new ConstantsCoreVO[data.type +"LabelIcon"];
+												}
+											}
+										]]>
+									</fx:Script>
+									<s:Image id="imgIcon"
+											 horizontalCenter="0" verticalCenter="0"/>
+								</s:GridItemRenderer>
+							</fx:Component>
+						</s:itemRenderer>
+					</s:GridColumn>
+					<s:GridColumn dataField="userName" headerText="User" width="100"/>
 					<s:GridColumn dataField="notes" headerText="Notes"/>
 				</s:ArrayList>
 			</s:columns>
@@ -136,7 +182,7 @@
 					  styleName="darkButton"
 					  click="onRepositoryDelete(event)"/>
 			<s:Button label="Edit"
-					  enabled="{dgRepositories.selectedItem}" 
+					  enabled="{dgRepositories.selectedItem &amp;&amp; dgRepositories.selectedItem.type != VersionControlTypes.XML}" 
 					  styleName="darkButton"
 					  click="onItemEdit()"/>
 			<s:Button label="{(dgRepositories.selectedItem &amp;&amp; dgRepositories.selectedItem.type == VersionControlTypes.GIT) ? 

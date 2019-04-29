@@ -30,6 +30,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	
 	public class LoadRemoteListCommand extends SVNCommandBase
 	{
@@ -199,6 +200,7 @@ package actionScripts.plugins.svn.commands
 						tmpRepoItem.isRequireAuthentication = this.repositoryItem.isRequireAuthentication;
 						tmpRepoItem.isTrustCertificate = this.repositoryItem.isTrustCertificate;
 						tmpRepoItem.udid = this.repositoryItem.udid;
+						tmpRepoItem.type = VersionControlTypes.SVN;
 						
 						this.repositoryItem.children.push(tmpRepoItem);
 					}

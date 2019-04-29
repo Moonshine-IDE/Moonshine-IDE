@@ -93,10 +93,10 @@ package actionScripts.ui.renderers
 					removeChild(repositoryIcon);
 					repositoryIcon = null;
 				}
-				if ((data.isRoot || data.type == VersionControlTypes.GIT) && !repositoryIcon)
+				if ((data.isRoot || data.type != VersionControlTypes.SVN) && !repositoryIcon)
 				{
 					repositoryIcon = new Image();
-					repositoryIcon.source = (data.type == VersionControlTypes.GIT) ? new ConstantsCoreVO.gitLabelIcon : new ConstantsCoreVO.svnLabelIcon;
+					repositoryIcon.source = new ConstantsCoreVO[data.type +"LabelIcon"];
 					addChild(repositoryIcon);
 				}
 			}
