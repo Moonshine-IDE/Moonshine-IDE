@@ -374,12 +374,12 @@
 					if(project is AS3ProjectVO)
 					{
                         var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+						if (as3Project.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
 					}
                     else if (project is JavaProjectVO)
                     {
                         var javaProject:JavaProjectVO = JavaProjectVO(project);
-                        sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
+                        if (javaProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
                     }
 					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
