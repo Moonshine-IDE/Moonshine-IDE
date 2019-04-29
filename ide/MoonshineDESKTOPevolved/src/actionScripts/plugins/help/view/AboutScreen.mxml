@@ -69,6 +69,7 @@
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
 				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
+				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) version.text += " (App Store Version)";
 			}
 			
 			protected function onInfoBackground(event:MouseEvent):void

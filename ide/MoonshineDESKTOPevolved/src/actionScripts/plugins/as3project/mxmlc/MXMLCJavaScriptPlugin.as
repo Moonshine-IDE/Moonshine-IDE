@@ -289,8 +289,7 @@ package actionScripts.plugins.as3project.mxmlc
 			CONFIG::OSX
 			{
 				// before proceed, check file access dependencies
-				if (ConstantsCoreVO.IS_APP_STORE_VERSION && 
-					!OSXBookmarkerNotifiers.checkAccessDependencies(new ArrayCollection([activeProject as AS3ProjectVO]), "Access Manager - Build Halt!")) 
+				if (!OSXBookmarkerNotifiers.checkAccessDependencies(new ArrayCollection([activeProject as AS3ProjectVO]), "Access Manager - Build Halt!")) 
 				{
 					Alert.show("Please fix the dependencies before build.", "Error!");
 					return;

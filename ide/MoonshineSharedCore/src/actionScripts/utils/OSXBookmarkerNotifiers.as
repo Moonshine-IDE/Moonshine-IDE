@@ -38,6 +38,7 @@ package actionScripts.utils
 	import actionScripts.plugin.templating.settings.PathAccessSetting;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.DefineWorkspacePopup;
@@ -68,6 +69,9 @@ package actionScripts.utils
 		
 		public static function checkAccessDependencies(projects:ArrayCollection, title:String="Access Manager", openByMenu:Boolean=false): Boolean
 		{
+			// probable termination for non-sandbox build
+			if (!ConstantsCoreVO.IS_APP_STORE_VERSION) return true;
+			
 			// gets bookmark access
 			var settings:Vector.<ISetting> = new Vector.<ISetting>();
 			for each (var project:ProjectVO in projects)
@@ -156,6 +160,9 @@ package actionScripts.utils
 		
 		public static function isPathBookmarked(value:String):Boolean
 		{
+			// probable termination for non-sandbox build
+			if (!ConstantsCoreVO.IS_APP_STORE_VERSION) return true;
+			
 			// sandbox application default directory
 			if (value.indexOf("Library/Containers/com.moonshine-ide/Data/Documents") != -1) return true;
 			
