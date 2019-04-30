@@ -881,7 +881,7 @@
 				{
 					tmpProject = UtilsCore.getProjectFromProjectFolder(value);
 				}
-				if(tmpProject && (tmpProject is AS3ProjectVO))
+				if(tmpProject && (tmpProject is AS3ProjectVO) && (tmpProject as AS3ProjectVO).sourceFolder)
 				{
 					if((tmpProject as AS3ProjectVO).sourceFolder.fileBridge.nativePath == value.nativePath)
 					{
