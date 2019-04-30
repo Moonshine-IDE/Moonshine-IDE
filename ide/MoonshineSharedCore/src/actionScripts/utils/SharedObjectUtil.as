@@ -78,7 +78,7 @@ package actionScripts.utils
 					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
 					if (tmpRepository.children) 
 					{
-						if (tmpRepository.type == VersionControlTypes.GIT)
+						if (tmpRepository.type == VersionControlTypes.XML)
 						{
 							// only in the case of Git type
 							// we shall parse children to parse saved

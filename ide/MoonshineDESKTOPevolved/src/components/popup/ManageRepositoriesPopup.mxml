@@ -34,14 +34,17 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			
 			import spark.events.GridEvent;
 			
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.ProjectEvent;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.plugins.svn.SVNPlugin;
 			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.utils.FileUtils;
 			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
@@ -65,6 +68,15 @@
 			{
 				repositories.removeItem(dgRepositories.selectedItem);
 				SharedObjectUtil.saveRepositoriesToSO(repositories);
+			}
+			
+			protected function updateRepositoriesBeforeBrowse(selectedRepository:RepositoryItemVO=null):void
+			{
+				// check and update dependency repositories
+				VersionControlUtils.updateDependentRepositories(selectedRepository);
+				
+				// continue to browsing
+				onBrowseRepository(selectedRepository);
 			}
 			
 			protected function onBrowseRepository(selectedRepository:RepositoryItemVO=null):void
@@ -91,23 +103,34 @@
 				// of its root/dependent repository
 				if (repositoryItem.type == VersionControlTypes.XML)
 				{
-					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					var ownerRepository:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
+					if (ownerRepository && ownerRepository.pathToDownloaded)
 					{
-						if (repo.udid == repositoryItem.udid)
+						// test the path existence
+						if (!FileUtils.isPathExists(ownerRepository.pathToDownloaded)) 
 						{
-							repoType = repo.type;
-							break;
+							Alert.show("Project '"+ ownerRepository.pathToDownloaded +"' not found. Remove this entry if the project has been deleted.", "Error!");
+						}
+						else
+						{
+							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, new File(ownerRepository.pathToDownloaded)));
 						}
 					}
 				}
-				
-				if (repoType == VersionControlTypes.GIT) dispatcher.dispatchEvent(new VersionControlEvent(GitHubPlugin.CLONE_REQUEST, repositoryItem));
+				else if (repoType == VersionControlTypes.GIT) dispatcher.dispatchEvent(new VersionControlEvent(GitHubPlugin.CLONE_REQUEST, repositoryItem));
 				else dispatcher.dispatchEvent(new VersionControlEvent(SVNPlugin.CHECKOUT_REQUEST, repositoryItem));
 			}
 			
 			protected function onItemDoubleClicked(event:GridEvent):void
 			{
-				onBrowseRepository(dgRepositories.selectedItem as RepositoryItemVO);
+				updateRepositoriesBeforeBrowse(dgRepositories.selectedItem as RepositoryItemVO);
+			}
+			
+			protected function onItemClicked(event:GridEvent):void
+			{
+				if (dgRepositories.selectedItem.type == VersionControlTypes.GIT) btnCloneCheckout.label = "Clone";
+				else if (dgRepositories.selectedItem.type == VersionControlTypes.XML) btnCloneCheckout.label = "Open Project";
+				else btnCloneCheckout.label = "Checkout";
 			}
 			
 			private function repoNameLabelFunction(item:Object, column:GridColumn):String
@@ -133,6 +156,7 @@
 					dataProvider="{repositories}"
 					doubleClickMode="row" doubleClickEnabled="true"
 					gridDoubleClick="onItemDoubleClicked(event)"
+					gridClick="onItemClicked(event)"
 					rowHeight="24">
 			<s:columns>
 				<s:ArrayList>
@@ -185,19 +209,19 @@
 					  enabled="{dgRepositories.selectedItem &amp;&amp; dgRepositories.selectedItem.type != VersionControlTypes.XML}" 
 					  styleName="darkButton"
 					  click="onItemEdit()"/>
-			<s:Button label="{(dgRepositories.selectedItem &amp;&amp; dgRepositories.selectedItem.type == VersionControlTypes.GIT) ? 
-					  'Clone' : 'Checkout'}"
+			<s:Button id="btnCloneCheckout" 
+					  label="Checkout"
 					  enabled="{dgRepositories.selectedItem}" 
 					  styleName="darkButton"
 					  click="onCheckoutRequest(event)"/>
 			<s:Button label="Browse"
 					  enabled="{dgRepositories.selectedItem}" 
 					  styleName="darkButton"
-					  click="onBrowseRepository(dgRepositories.selectedItem as RepositoryItemVO)"/>
+					  click="updateRepositoriesBeforeBrowse(dgRepositories.selectedItem as RepositoryItemVO)"/>
 			<s:Spacer width="100%"/>
 			<s:Button label="Browse All"
 					  styleName="darkButton"
-					  click="onBrowseRepository()"/>
+					  click="updateRepositoriesBeforeBrowse()"/>
 		</s:HGroup>
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeIn="browse">
@@ -208,7 +232,9 @@
 			<s:Button label="{(repoBrowser.selectedItem &amp;&amp; repoBrowser.selectedItem.type == VersionControlTypes.GIT) ? 
 					  'Clone' : 'Checkout'}"
 					  styleName="darkButton"
-					  enabled="{repoBrowser.selectedItem &amp;&amp; (repoBrowser.selectedItem.type == VersionControlTypes.GIT || repoBrowser.selectedItem.children)}"
+					  enabled="{repoBrowser.selectedItem &amp;&amp; 
+					  	(repoBrowser.selectedItem.type != VersionControlTypes.XML) &amp;&amp; 
+					  	(repoBrowser.selectedItem.type == VersionControlTypes.GIT || repoBrowser.selectedItem.children)}"
 					  click="onCheckoutRequest(event)"/>
 		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>

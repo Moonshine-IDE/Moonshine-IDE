@@ -68,5 +68,9 @@ package actionScripts.valueObjects
 		private var _isUpdating:Boolean;
 		public function get isUpdating():Boolean						{ return _isUpdating; }
 		public function set isUpdating(value:Boolean):void				{ _isUpdating = value; }
+		
+		private var _pathToDownloaded:String;
+		public function get pathToDownloaded():String					{ return _pathToDownloaded; }
+		public function set pathToDownloaded(value:String):void			{ _pathToDownloaded = value; }
 	}
 }

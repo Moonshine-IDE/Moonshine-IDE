@@ -23,6 +23,7 @@ package actionScripts.plugins.versionControl
 	import flash.net.registerClassAlias;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
 	
 	import actionScripts.utils.FileUtils;
@@ -57,18 +58,37 @@ package actionScripts.plugins.versionControl
 			return (match != null);
 		}
 		
-		public static function parseGitDependencies(ofRepository:RepositoryItemVO, fromPath:File):Boolean
+		public static function parseRepositoryDependencies(ofRepository:RepositoryItemVO, fromPath:File, type:String, duplicateOfRepository:Boolean=true):Boolean
 		{
+			ofRepository.pathToDownloaded = fromPath.nativePath;
 			fromPath = fromPath.resolvePath("dependencies.xml")
 			if (fromPath.exists)
 			{
 				var readObject:Object = FileUtils.readFromFile(fromPath);
 				var dependencies:XML = new XML(readObject);
 				var tmpRepo:RepositoryItemVO;
+				var gitMetaRepository:RepositoryItemVO;
+				
+				if (duplicateOfRepository)
+				{
+					// duplicate the original git-meta entry
+					// to add as a separate/new-one to the manage repositories list
+					registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
+					gitMetaRepository = ObjectUtil.copy(ofRepository) as RepositoryItemVO;
+					gitMetaRepository.label = String(dependencies.label); 
+					gitMetaRepository.type = VersionControlTypes.XML;
+					gitMetaRepository.children = [];
+					
+					VersionControlUtils.REPOSITORIES.addItem(gitMetaRepository);
+				}
+				else
+				{
+					gitMetaRepository = ofRepository;
+					gitMetaRepository.children = [];
+				}
 				
 				// put this inside so we initialize only
 				// if the correct xml format found
-				ofRepository.children = [];
 				for each (var repo:XML in dependencies..dependency)
 				{
 					tmpRepo = new RepositoryItemVO();
@@ -78,11 +98,8 @@ package actionScripts.plugins.versionControl
 					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
 					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
 					tmpRepo.udid = ofRepository.udid;
-					tmpRepo.type = VersionControlTypes.XML;
-					ofRepository.children.push(tmpRepo);
-					
-					registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
-					VersionControlUtils.REPOSITORIES.addItem(ObjectUtil.copy(tmpRepo) as RepositoryItemVO);
+					tmpRepo.type = type;
+					gitMetaRepository.children.push(tmpRepo);
 				}
 				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
@@ -90,6 +107,48 @@ package actionScripts.plugins.versionControl
 			}
 			
 			return false;
+		}
+		
+		public static function updateDependentRepositories(selectedRepository:RepositoryItemVO=null):void
+		{
+			var repositories:Array = selectedRepository ? [selectedRepository] : REPOSITORIES.source;
+			var nonExistingRepositories:Array = [];
+			var ownerRepository:RepositoryItemVO;
+			var repo:RepositoryItemVO;
+			for each (repo in repositories)
+			{
+				if (repo.type == VersionControlTypes.XML)
+				{
+					ownerRepository = getRepositoryItemByUdid(repo.udid);
+					if (ownerRepository && ownerRepository.pathToDownloaded)
+					{
+						// test the path existence
+						if (!FileUtils.isPathExists(ownerRepository.pathToDownloaded)) 
+						{
+							nonExistingRepositories.push(repo);
+						}
+						else
+						{
+							parseRepositoryDependencies(repo, new File(ownerRepository.pathToDownloaded), ownerRepository.type, false);
+						}
+					}
+				}
+			}
+			
+			// alert if some owner-repositories does not exists
+			if (nonExistingRepositories.length > 0)
+			{
+				var tmpMessage:String = "Following projects not found. You can remove the entries if the project has been deleted:\n";
+				for each (repo in nonExistingRepositories)
+				{
+					if (repo.pathToDownloaded)
+					{
+						tmpMessage += "\n1. "+ repo.pathToDownloaded;
+					}
+				}
+				
+				Alert.show(tmpMessage, "Note!");
+			}
 		}
 	}
 }

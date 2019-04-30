@@ -817,13 +817,11 @@ package actionScripts.plugins.git
 			if (repositoryUnderCursor)
 			{
 				// following method is mainly applicable for git-meta type of repository
-				if (!VersionControlUtils.parseGitDependencies(repositoryUnderCursor, path))
-				{
-					// if is not a git-meta, and no possible project found
-					// in the root directory, continue searching for possible
-					// project exietence in its sub-directories
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, path));
-				}
+				VersionControlUtils.parseRepositoryDependencies(repositoryUnderCursor, path, VersionControlTypes.GIT);
+				
+				// continue searching for possible
+				// project exietence in its sub-directories
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, path));
 			}
 		}
 	}

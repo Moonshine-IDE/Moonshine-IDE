@@ -31,6 +31,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	
 	public class CheckoutCommand extends SVNCommandBase
 	{
@@ -163,7 +164,11 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new VersionControlEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, {repository:repositoryItem, path:new File(this.root.nativePath + File.separator + targetFolder)}));
+				var tmpPath:File = new File(this.root.nativePath + File.separator + targetFolder);
+				
+				// following method is mainly applicable for git-meta type of repository
+				VersionControlUtils.parseRepositoryDependencies(repositoryItem, tmpPath, VersionControlTypes.SVN);
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, tmpPath));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
