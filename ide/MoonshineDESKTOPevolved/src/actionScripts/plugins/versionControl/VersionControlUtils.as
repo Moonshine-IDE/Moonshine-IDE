@@ -61,7 +61,7 @@ package actionScripts.plugins.versionControl
 		public static function parseRepositoryDependencies(ofRepository:RepositoryItemVO, fromPath:File, type:String, duplicateOfRepository:Boolean=true):Boolean
 		{
 			ofRepository.pathToDownloaded = fromPath.nativePath;
-			fromPath = fromPath.resolvePath("dependencies.xml")
+			fromPath = fromPath.resolvePath("moonshine-dependencies.xml")
 			if (fromPath.exists)
 			{
 				var readObject:Object = FileUtils.readFromFile(fromPath);

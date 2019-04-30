@@ -8,6 +8,9 @@ ide/MoonshineSharedCore/bin/MoonshineSharedCore.swc
 ide/MoonshineWorker/MoonshineWorker.iml
 ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
+ide/MoonshineWEBevolved/obj/
+ide/MoonshineWorker/obj/
+library/ApacheFlexSDKInstallerLib/obj/
 .idea/
 vscode-nextgenas_MoonshineModifications/vscode-nextgenas_MoonshineModifications.iml
 vscode-nextgenas_MoonshineModifications/dist/
@@ -16,3 +19,4 @@ vscode-nextgenas_MoonshineModifications/dist/
 .vscode/
 ide/MoonshineDESKTOPevolved/build/DEPLOY/MoonshineDevelopment.exe
 ide/MoonshineDESKTOPevolved/build/DEPLOY/Moonshine.exe
+**/*.swp
