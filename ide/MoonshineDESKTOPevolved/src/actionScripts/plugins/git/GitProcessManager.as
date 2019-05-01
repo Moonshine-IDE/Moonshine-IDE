@@ -817,7 +817,7 @@ package actionScripts.plugins.git
 			if (repositoryUnderCursor)
 			{
 				// following method is mainly applicable for git-meta type of repository
-				VersionControlUtils.parseRepositoryDependencies(repositoryUnderCursor, path, VersionControlTypes.GIT);
+				VersionControlUtils.parseRepositoryDependencies(repositoryUnderCursor, path);
 				
 				// continue searching for possible
 				// project exietence in its sub-directories

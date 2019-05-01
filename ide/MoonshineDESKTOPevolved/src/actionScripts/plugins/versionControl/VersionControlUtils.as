@@ -59,7 +59,7 @@ package actionScripts.plugins.versionControl
 			return (match != null);
 		}
 		
-		public static function parseRepositoryDependencies(ofRepository:RepositoryItemVO, fromPath:File, type:String, duplicateOfRepository:Boolean=true):Boolean
+		public static function parseRepositoryDependencies(ofRepository:RepositoryItemVO, fromPath:File, duplicateOfRepository:Boolean=true):Boolean
 		{
 			ofRepository.pathToDownloaded = fromPath.nativePath;
 			fromPath = fromPath.resolvePath("moonshine-dependencies.xml")
@@ -96,10 +96,10 @@ package actionScripts.plugins.versionControl
 					tmpRepo.url = String(repo.url);
 					tmpRepo.label = String(repo.label);
 					tmpRepo.notes = String(repo.description);
+					tmpRepo.type = String(repo["repo-type"]);
 					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
 					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
 					tmpRepo.udid = UIDUtil.createUID();
-					tmpRepo.type = type;
 					gitMetaRepository.children.push(tmpRepo);
 				}
 				
@@ -130,7 +130,7 @@ package actionScripts.plugins.versionControl
 						}
 						else
 						{
-							 (repo, new File(ownerRepository.pathToDownloaded), ownerRepository.type, false);
+							parseRepositoryDependencies(repo, new File(ownerRepository.pathToDownloaded), false);
 						}
 					}
 				}

@@ -167,7 +167,7 @@ package actionScripts.plugins.svn.commands
 				var tmpPath:File = new File(this.root.nativePath + File.separator + targetFolder);
 				
 				// following method is mainly applicable for git-meta type of repository
-				VersionControlUtils.parseRepositoryDependencies(repositoryItem, tmpPath, VersionControlTypes.SVN);
+				VersionControlUtils.parseRepositoryDependencies(repositoryItem, tmpPath);
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, tmpPath));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
