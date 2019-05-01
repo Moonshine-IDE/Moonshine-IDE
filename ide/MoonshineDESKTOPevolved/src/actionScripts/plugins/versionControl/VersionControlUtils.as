@@ -25,6 +25,7 @@ package actionScripts.plugins.versionControl
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
+	import mx.utils.UIDUtil;
 	
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.SharedObjectUtil;
@@ -94,10 +95,10 @@ package actionScripts.plugins.versionControl
 					tmpRepo = new RepositoryItemVO();
 					tmpRepo.url = String(repo.url);
 					tmpRepo.label = String(repo.label);
-					tmpRepo.notes = String(repo.purpose);
+					tmpRepo.notes = String(repo.description);
 					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
 					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
-					tmpRepo.udid = ofRepository.udid;
+					tmpRepo.udid = UIDUtil.createUID();
 					tmpRepo.type = type;
 					gitMetaRepository.children.push(tmpRepo);
 				}
@@ -129,7 +130,7 @@ package actionScripts.plugins.versionControl
 						}
 						else
 						{
-							parseRepositoryDependencies(repo, new File(ownerRepository.pathToDownloaded), ownerRepository.type, false);
+							 (repo, new File(ownerRepository.pathToDownloaded), ownerRepository.type, false);
 						}
 					}
 				}
