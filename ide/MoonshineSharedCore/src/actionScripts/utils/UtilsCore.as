@@ -1051,7 +1051,7 @@ package actionScripts.utils
 		{
 			if (model.svnPath)
 			{
-				return (new FileLocation(model.svnPath).fileBridge.exists);
+				return (model.fileCore.isPathExists(model.svnPath));
 			}
 			
 			return false;
@@ -1061,7 +1061,7 @@ package actionScripts.utils
 		{
 			if (model.gitPath)
 			{
-				return (new FileLocation(model.gitPath).fileBridge.exists);
+				return (model.fileCore.isPathExists(model.gitPath));
 			}
 			
 			return false;

@@ -708,7 +708,7 @@ package actionScripts.ui.menu
 
 			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
-			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Clone" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Manage Repositories" : "Grant Permission";
 		}
 		
 		private function onSVNCheckoutPermissionChange(event:Event):void
