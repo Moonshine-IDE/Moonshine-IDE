@@ -18,43 +18,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
-    
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.events.MenuEvent;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.events.WorkerEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.locator.IDEWorker;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.project.ProjectType;
-    import actionScripts.plugin.templating.TemplatingHelper;
-    import actionScripts.plugin.templating.event.TemplateEvent;
-    import actionScripts.utils.FileCoreUtil;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.GenericSelectableObject;
-    import actionScripts.valueObjects.ProjectVO;
-    
-    import components.popup.NativeExtensionMessagePopup;
-    import components.popup.OpenFlexProject;
-    import components.popup.ProjectsToOpenSelectionPopup;
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.MenuEvent;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WorkerEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEWorker;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.plugin.project.ProjectType;
+	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.plugin.templating.event.TemplateEvent;
+	import actionScripts.utils.FileCoreUtil;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
+	import actionScripts.valueObjects.ProjectVO;
+	
+	import components.popup.NativeExtensionMessagePopup;
+	import components.popup.OpenFlexProject;
+	import components.popup.ProjectsToOpenSelectionPopup;
 	
 	public class AS3ProjectPlugin extends PluginBase
 	{
-        public static const AS3PROJ_AS_AIR:uint = 1;
-        public static const AS3PROJ_AS_WEB:uint = 2;
+		public static const AS3PROJ_AS_AIR:uint = 1;
+		public static const AS3PROJ_AS_WEB:uint = 2;
 		public static const AS3PROJ_AS_ANDROID:uint = 3;
 		public static const AS3PROJ_AS_IOS:uint = 4;
 		
@@ -136,7 +136,7 @@ package actionScripts.plugin.actionscript.as3project
 			{
 				model.fileCore.browseForDirectory("Flex Project Directory", searchForProjectsByDirectory, onFileSelectionCancelled);
 			}
-			// for WEB
+				// for WEB
 			else
 			{
 				importProjectPopup = new OpenFlexProject();
@@ -349,12 +349,12 @@ package actionScripts.plugin.actionscript.as3project
 			aneMessagePopup.removeEventListener(CloseEvent.CLOSE, onAneMessageClosed);
 			aneMessagePopup = null;
 		}
-
-        private function canCreateProject(event:NewProjectEvent):Boolean
-        {
-            var projectTemplateName:String = event.templateDir.fileBridge.name;
-            return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 && projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1;
-        }
+		
+		private function canCreateProject(event:NewProjectEvent):Boolean
+		{
+			var projectTemplateName:String = event.templateDir.fileBridge.name;
+			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 && projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1;
+		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void
 		{

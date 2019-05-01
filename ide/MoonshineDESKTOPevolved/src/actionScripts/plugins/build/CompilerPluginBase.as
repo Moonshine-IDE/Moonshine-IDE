@@ -23,6 +23,7 @@ package actionScripts.plugins.build
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.valueObjects.ProjectVO;
 
 	public class CompilerPluginBase extends PluginBase implements IPlugin
@@ -114,9 +115,25 @@ package actionScripts.plugins.build
 		
 		private function checkPathFileLocation(value:FileLocation, type:String):void
 		{
-			if (!value.fileBridge.exists)
+			if (value.fileBridge.nativePath.indexOf("{locale}") != -1)
 			{
-				invalidPaths.push(type +": "+ value.fileBridge.nativePath);
+				var localePath:String = OSXBookmarkerNotifiers.isValidLocalePath(value);
+				if (!localePath || !model.fileCore.isPathExists(localePath))
+				{
+					storeInvalidPath(localePath);
+				}
+			}
+			else if (!value.fileBridge.exists)
+			{
+				storeInvalidPath(value.fileBridge.nativePath);
+			}
+			
+			/*
+			 * @local
+			 */
+			function storeInvalidPath(path:String):void
+			{
+				invalidPaths.push(type +": "+ path);
 			}
 		}
 	}
