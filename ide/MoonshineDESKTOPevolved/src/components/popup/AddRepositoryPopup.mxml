@@ -32,6 +32,7 @@
 			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
+			import mx.utils.UIDUtil;
 			import mx.validators.Validator;
 			
 			import actionScripts.plugins.versionControl.VersionControlUtils;
@@ -92,6 +93,7 @@
 				editingRepository.type = rgType.selectedValue.toString();
 				editingRepository.children = editingRepository.children ? editingRepository.children : (editingRepository.type == VersionControlTypes.SVN ? [] : null);
 				editingRepository.isRoot = true;
+				if (!isEditing) editingRepository.udid = UIDUtil.createUID();
 				if (editingRepository.isRequireAuthentication)
 				{
 					editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
