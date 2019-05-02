@@ -196,9 +196,9 @@
 	</resizableTitleWindow:layout>
 	
 	<s:HGroup width="100%">
-		<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
 					   selected="true"/>
-		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"/>	
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"/>
 	</s:HGroup>
 	<view:PromptTextInput id="txtSource"
 						  width="100%" styleName="textInput"

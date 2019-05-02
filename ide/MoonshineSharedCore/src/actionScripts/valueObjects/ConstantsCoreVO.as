@@ -224,6 +224,7 @@ package actionScripts.valueObjects
 		public static var IS_GIT_OSX_AVAILABLE				: Boolean;
 		public static var IS_SVN_OSX_AVAILABLE				: Boolean;
 		public static var IS_APP_STORE_VERSION				: Boolean;
+		public static var IS_DEFAULT_REPOSITORIES_POPULATED	: Boolean;
 		
 		//--------------------------------------------------------------------------
 		//

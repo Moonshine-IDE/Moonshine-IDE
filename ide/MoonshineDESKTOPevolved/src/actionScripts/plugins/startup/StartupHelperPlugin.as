@@ -37,7 +37,6 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;

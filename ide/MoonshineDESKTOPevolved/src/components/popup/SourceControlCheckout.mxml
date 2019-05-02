@@ -42,6 +42,7 @@
 			
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.svn.event.SVNEvent;
+			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
@@ -97,21 +98,9 @@
 			{
 				mappedPath = (fileObj as File).nativePath;
 				
+				VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE = true;
 				isPathMapped = true;
-				updatePossiblePath();
-			}
-			
-			private function updatePossiblePath():void
-			{
 				validateURLInput();
-				if (!isValidURL && isPathMapped)
-				{
-					txtTarget.text = mappedPath + model.fileCore.separator + "...";
-				}
-				else if (!isValidURL && !isPathMapped)
-				{
-					txtTarget.text = "...";
-				}
 			}
 			
 			private function validateURLInput():void
@@ -129,6 +118,7 @@
 						isValidURL = true;
 						txtTarget.text = (isPathMapped) ? mappedPath : "";
 						if (!isPathMapped) txtTarget.prompt = "Parent directory";
+						moveCursorToTargetEnd();
 						autoFolderName = results[0].split("/").pop();
 						if (!isFolderNameManuallyChanged || isFolderNameManuallyEmpty)
 						{
@@ -148,6 +138,7 @@
 						isGitAvailable = isValidURL = true;
 						txtTarget.text = (isPathMapped) ? mappedPath : "";
 						if (!isPathMapped) txtTarget.prompt = "Parent directory";
+						moveCursorToTargetEnd();
 						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
 						
 						return;
@@ -163,11 +154,16 @@
 				if (editingRepository) 
 				{
 					txtSource.text = editingRepository.url;
-					updatePossiblePath();
+				}
+				if (VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE)
+				{
+					mappedPath = model.fileCore.nativePath;
+					isPathMapped = true;
 				}
 				
 				lblSeparator.text = File.separator;
 				txtSource.setFocus();
+				validateURLInput();
 			}
 			
 			protected function onFolderNameChanged(event:TextOperationEvent):void
@@ -182,7 +178,16 @@
 				{
 					isFolderNameManuallyEmpty = false;
 					isFolderNameManuallyChanged = true;
-					updatePossiblePath();
+					validateURLInput();
+				}
+			}
+			
+			private function moveCursorToTargetEnd():void
+			{
+				if (isPathMapped)
+				{
+					// this will move the cursor to the end
+					txtTarget.appendText('');
 				}
 			}
 			
@@ -198,14 +203,17 @@
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
-							  prompt="Repository URL" change="updatePossiblePath()"/>
+							  prompt="Repository URL" change="validateURLInput()"/>
 		<s:HGroup verticalAlign="middle" width="100%">
 			<view:PromptTextInput id="txtTarget" 
-								  prompt="Where to download" width="100%" styleName="textInput"
-								  editable="false" tabIndex="2"/>
+								  prompt="Where to download" width="60%" styleName="textInput"
+								  tabIndex="2" editable="false"/>
+			<s:Button icon="@Embed('/elements/images/icoTreeFolder_close.png')"
+					  styleName="lightButton" toolTip="Choose Parent Directory"
+					  click="browse()"/>
 			<s:Label id="lblSeparator"/>
 			<view:PromptTextInput id="txtFolderName"
-								  prompt="Target folder name"
+								  prompt="Target folder name" width="40%"
 								  styleName="textInput" restrict="0-9A-Za-z_"
 								  change="onFolderNameChanged(event)"/>
 		</s:HGroup>
@@ -235,9 +243,6 @@
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button label="Choose Parent Directory"
-				  styleName="darkButton"
-				  click="browse()"/>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit" 
 				  label="{(type == VersionControlTypes.GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"

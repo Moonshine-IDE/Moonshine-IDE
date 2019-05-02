@@ -27,6 +27,7 @@ package actionScripts.utils
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
@@ -103,6 +104,11 @@ package actionScripts.utils
 				}
 			}
 			
+			if (cookie.data.hasOwnProperty('defaultRepositoriesPopulated'))
+			{
+				ConstantsCoreVO.IS_DEFAULT_REPOSITORIES_POPULATED = true;
+			}
+			
 			// add sorting by type
 			tmpCollection.sort = new Sort([new SortField("type"), new SortField("url")]);
 			tmpCollection.refresh();
@@ -134,6 +140,7 @@ package actionScripts.utils
 			
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
 			cookie.data['savedRepositories'] = duplicate;
+			cookie.data['defaultRepositoriesPopulated'] = true;
 			cookie.flush();
 		}
 		

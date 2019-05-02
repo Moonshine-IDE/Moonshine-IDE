@@ -23,6 +23,7 @@ package actionScripts.plugins.versionControl
 	import flash.net.registerClassAlias;
 	
 	import mx.collections.ArrayCollection;
+	import mx.collections.ArrayList;
 	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
 	import mx.utils.UIDUtil;
@@ -34,6 +35,8 @@ package actionScripts.plugins.versionControl
 
 	public class VersionControlUtils
 	{
+		public static var IS_CHECKOUT_BROWSED_ONCE:Boolean;
+		
 		private static var _REPOSITORIES:ArrayCollection;
 		public static function get REPOSITORIES():ArrayCollection
 		{
@@ -150,6 +153,31 @@ package actionScripts.plugins.versionControl
 				
 				Alert.show(tmpMessage, "Note!");
 			}
+		}
+		
+		public static function getDefaultRepositories():ArrayList
+		{
+			var tmpCollection:ArrayList = new ArrayList();
+			
+			var tmpRepository:RepositoryItemVO = new RepositoryItemVO();
+			tmpRepository.url = "https://github.com/prominic/Moonshine-IDE";
+			tmpRepository.notes = "Moonshine-IDE Source Code";
+			tmpRepository.type = VersionControlTypes.GIT;
+			tmpCollection.addItem(tmpRepository);
+			
+			tmpRepository = new RepositoryItemVO();
+			tmpRepository.url = "https://github.com/apache/royale-asjs";
+			tmpRepository.notes = "Apache Royale Source and Examples";
+			tmpRepository.type = VersionControlTypes.GIT;
+			tmpCollection.addItem(tmpRepository);
+			
+			tmpRepository = new RepositoryItemVO();
+			tmpRepository.url = "https://github.com/prominic/Royale-Examples";
+			tmpRepository.notes = "Additional Apache Royale Examples";
+			tmpRepository.type = VersionControlTypes.GIT;
+			tmpCollection.addItem(tmpRepository);
+			
+			return tmpCollection;
 		}
 	}
 }

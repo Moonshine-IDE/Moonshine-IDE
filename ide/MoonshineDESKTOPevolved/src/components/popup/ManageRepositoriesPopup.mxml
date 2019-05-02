@@ -26,7 +26,8 @@
 										   backgroundColor="0xf5f5f5" 
 										   minHeight="300" minWidth="300"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
-										   xmlns:containers="components.containers.*">
+										   xmlns:containers="components.containers.*"
+										   creationComplete="onCreationCompletes(event)">
 	<resizableTitleWindow:layout>
 		<s:VerticalLayout paddingLeft="12" paddingBottom="6" paddingTop="9"
 						  horizontalAlign="left" paddingRight="12"/>
@@ -35,8 +36,10 @@
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			import mx.events.FlexEvent;
 			
 			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent;
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.ProjectEvent;
@@ -46,12 +49,22 @@
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.FileUtils;
 			import actionScripts.utils.SharedObjectUtil;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 	
 			[Bindable] public var repositories:ArrayCollection;
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (repositories && !ConstantsCoreVO.IS_DEFAULT_REPOSITORIES_POPULATED)
+				{
+					repositories.addAllAt(VersionControlUtils.getDefaultRepositories(), 0);
+					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+				}
+			}
 
 			protected function onItemEdit():void
 			{
@@ -126,17 +139,17 @@
 				updateRepositoriesBeforeBrowse(dgRepositories.selectedItem as RepositoryItemVO);
 			}
 			
-			protected function onItemClicked(event:GridEvent):void
-			{
-				if (dgRepositories.selectedItem.type == VersionControlTypes.GIT) btnCloneCheckout.label = "Clone";
-				else if (dgRepositories.selectedItem.type == VersionControlTypes.XML) btnCloneCheckout.label = "Open Project";
-				else btnCloneCheckout.label = "Checkout";
-			}
-			
 			private function repoNameLabelFunction(item:Object, column:GridColumn):String
 			{
 				if (item.label) return item.label +" ("+ item.url +")";
 				return item.url;
+			}
+			
+			protected function onSelectionChange(event:GridSelectionEvent):void
+			{
+				if (dgRepositories.selectedItem.type == VersionControlTypes.GIT) btnCloneCheckout.label = "Clone";
+				else if (dgRepositories.selectedItem.type == VersionControlTypes.XML) btnCloneCheckout.label = "Open Project";
+				else btnCloneCheckout.label = "Checkout";
 			}
 			
 		]]>
@@ -156,7 +169,7 @@
 					dataProvider="{repositories}"
 					doubleClickMode="row" doubleClickEnabled="true"
 					gridDoubleClick="onItemDoubleClicked(event)"
-					gridClick="onItemClicked(event)"
+					selectionChange="onSelectionChange(event)"
 					rowHeight="24">
 			<s:columns>
 				<s:ArrayList>

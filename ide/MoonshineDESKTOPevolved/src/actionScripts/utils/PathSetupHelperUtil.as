@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import flash.filesystem.File;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
@@ -168,9 +170,10 @@ package actionScripts.utils
 				}
 				else
 				{
+					if (path) path += (!ConstantsCoreVO.IS_MACOS ? (File.separator +'bin'+ File.separator +'svn.exe') : '');
 					model.svnPath = path;
 					var settings:Vector.<ISetting> = Vector.<ISetting>([
-						new PathSetting({svnBinaryPath: path}, 'svnBinaryPath', 'SVN Binary', false)
+						new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
 					]);
 					
 					// save as moonshine settings
@@ -192,9 +195,9 @@ package actionScripts.utils
 				}
 				else
 				{
-					model.gitPath = path;
+					model.gitPath = path + (!ConstantsCoreVO.IS_MACOS ? (File.separator +'bin'+ File.separator +'git.exe') : '');
 					var settings:Vector.<ISetting> = Vector.<ISetting>([
-						new PathSetting({gitBinaryPathOSX: path}, 'gitBinaryPathOSX', 'Git Path', true)
+						new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
 					]);
 					
 					// save as moonshine settings
