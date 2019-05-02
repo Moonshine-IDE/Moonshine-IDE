@@ -3,6 +3,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.2.0]
+
+### Added
+* Added repository browser for GIT to allow users to browse the files inside of a repository based on special xml file.
+* Added option to open sub projects automatically.
+* Added [Apache Royale](https://royale.apache.org/) Jewel project template.
+
+### Changed
+* Provide non-sandbox version of Moonshine for Mac users.
+* Visual Editor: Allow search **Code** tab using menu option **Edit** -> **Find**.
+
+### Fixed
+* Fix issue where Browse All repository throws an error when list was empty. 
+* Templating: Fix issue where modification of existing template throws and error.
+
 ## Moonshine IDE [2.1.0]
 
 ### Added
