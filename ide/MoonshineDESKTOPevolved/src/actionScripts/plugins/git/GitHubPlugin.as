@@ -314,6 +314,7 @@ package actionScripts.plugins.git
 				checkoutWindow.type = VersionControlTypes.GIT;
 				checkoutWindow.isGitAvailable = isGitAvailable;
 				if (event is VersionControlEvent) checkoutWindow.editingRepository = (event as VersionControlEvent).value as RepositoryItemVO;
+				checkoutWindow.addEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCloneRequested);
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				PopUpManager.centerPopUp(checkoutWindow);
 			}
@@ -325,12 +326,15 @@ package actionScripts.plugins.git
 		
 		private function onCheckoutWindowClosed(event:CloseEvent):void
 		{
-			var submitObject:Object = checkoutWindow.submitObject;
-			
+			checkoutWindow.removeEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCloneRequested);
 			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 			PopUpManager.removePopUp(checkoutWindow);
 			checkoutWindow = null;
-			
+		}
+		
+		private function onCloneRequested(event:VersionControlEvent):void
+		{
+			var submitObject:Object = checkoutWindow.submitObject;
 			if (submitObject) processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
 		}
 		

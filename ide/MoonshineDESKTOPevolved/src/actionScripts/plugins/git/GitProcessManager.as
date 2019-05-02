@@ -41,6 +41,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
@@ -466,6 +467,10 @@ package actionScripts.plugins.git
 						onXCodePathDetection(null, true, null);
 					}
 				}
+				case GitHubPlugin.CLONE_REQUEST:
+				{
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:value.output}));
+				}
 			}
 			
 			if (!match) error(value.output);
@@ -821,6 +826,7 @@ package actionScripts.plugins.git
 				// continue searching for possible
 				// project exietence in its sub-directories
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, path));
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:false, message:null}));
 			}
 		}
 	}

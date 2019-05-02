@@ -228,7 +228,7 @@ package actionScripts.plugins.svn
 				checkoutWindow.type = VersionControlTypes.SVN;
 				if (event is VersionControlEvent) checkoutWindow.editingRepository = (event as VersionControlEvent).value as RepositoryItemVO;
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
-				checkoutWindow.addEventListener(SVNEvent.EVENT_CHECKOUT, onCheckoutWindowSubmitted);
+				checkoutWindow.addEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCheckoutWindowSubmitted);
 				
 				dispatcher.addEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
 				dispatcher.addEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
@@ -241,7 +241,7 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		protected function onCheckoutWindowSubmitted(event:SVNEvent):void
+		protected function onCheckoutWindowSubmitted(event:VersionControlEvent):void
 		{
 			var submitObject:Object = checkoutWindow.submitObject;
 			if (submitObject)
@@ -262,7 +262,7 @@ package actionScripts.plugins.svn
 		protected function onCheckoutWindowClosed(event:CloseEvent):void
 		{
 			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
-			checkoutWindow.removeEventListener(SVNEvent.EVENT_CHECKOUT, onCheckoutWindowSubmitted);
+			checkoutWindow.removeEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCheckoutWindowSubmitted);
 			dispatcher.removeEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
 			dispatcher.removeEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
 			

@@ -26,9 +26,6 @@
 										   width="500" minWidth="400" minHeight="100" autoLayout="true"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
-	<fx:Metadata>
-		[Event(name="name", type="flash.events.Event")]
-	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.utils.StringUtil;
@@ -38,11 +35,13 @@
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
+			import spark.components.BusyIndicator;
 			import spark.events.TextOperationEvent;
 			
+			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.svn.event.SVNEvent;
 			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
@@ -55,7 +54,10 @@
 			
 			[Bindable] private var isValidURL:Boolean;
 			[Bindable] private var isPathMapped:Boolean;
+			[Bindable] private var completionMessage:String;
+			[Bindable] private var initialContentHeight:Number;
 			
+			private var busyIndicator:BusyIndicator;
 			private var mappedPath:String
 			private var isFolderNameManuallyChanged:Boolean;
 			private var isFolderNameManuallyEmpty:Boolean;
@@ -81,12 +83,10 @@
 				submitObject.targetFolder = txtFolderName.text;
 				submitObject.repository = editingRepository;
 				
-				if (type != VersionControlTypes.SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				else 
-				{
-					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				}
+				GlobalEventDispatcher.getInstance().addEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted, false, 0, true);
+				dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_REQUESTED));
+				currentState = "progress";
+				addRemoveBusyIndicator();
 			}
 			
 			private function browse():void
@@ -191,6 +191,44 @@
 				}
 			}
 			
+			private function onCloneCheckoutCompleted(event:VersionControlEvent):void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
+				addRemoveBusyIndicator();
+				this.currentState = "complete";
+				
+				// check the completion type/status/message
+				if (event.value && event.value.hasError)
+				{
+					completionMessage = event.value.message;
+					txtCompletionMessage.setStyle("color", 0xff0000);
+				}
+				else
+				{
+					completionMessage = "Clone completes!";
+					txtCompletionMessage.setStyle("color", 0x000);
+				}
+			}
+			
+			private function addRemoveBusyIndicator():void
+			{
+				if (!busyIndicator)
+				{
+					busyIndicator = new BusyIndicator();
+					vgProgress.addElementAt(busyIndicator, 0);
+				}
+				else
+				{
+					vgProgress.removeElement(busyIndicator);
+					busyIndicator = null;
+				}
+			}
+			
+			protected function resetForm(event:MouseEvent):void
+			{
+				this.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -198,9 +236,15 @@
 		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 	</fx:Declarations>
+	<resizableTitleWindow:states>
+		<s:State name="default"/>
+		<s:State name="progress"/>
+		<s:State name="complete"/>
+	</resizableTitleWindow:states>
 	
 	<s:VGroup height="100%" width="100%" 
-			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"
+			  includeIn="default" creationComplete="initialContentHeight=event.target.height">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
 							  prompt="Repository URL" change="validateURLInput()"/>
@@ -242,10 +286,39 @@
 		</s:VGroup>
 	</s:VGroup>
 	
+	<s:VGroup id="vgProgress" 
+			  width="100%" height="{initialContentHeight}"
+			  includeIn="progress"
+			  horizontalAlign="center" verticalAlign="middle">
+		<s:Label text="In Progress.."
+				 styleName="uiTextSettingsLabel" color="0x000"/>
+	</s:VGroup>
+	
+	<s:VGroup width="100%" height="{initialContentHeight}"
+			  includeIn="complete" verticalAlign="middle" horizontalAlign="center">
+		<s:Label id="txtCompletionMessage" 
+				 text="{completionMessage}"
+				 styleName="uiTextSettingsLabel" 
+				 textAlign="center" width="100%"
+				 paddingLeft="20" paddingRight="20"
+				 maxDisplayedLines="5"/>
+	</s:VGroup>
+	
 	<resizableTitleWindow:controlBarContent>
-		<s:Spacer width="100%"/>
-		<s:Button id="btnSubmit" 
-				  label="{(type == VersionControlTypes.GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
-				  click="onCheckoutRequest()"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="default">
+			<s:Spacer width="100%"/>
+			<s:Button id="btnSubmit" 
+					  label="{(type == VersionControlTypes.GIT) ? 'Clone' : 'Checkout'}" styleName="darkButton" 
+					  enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
+					  click="onCheckoutRequest()"/>
+		</s:HGroup>
+		<s:Spacer height="31" includeIn="progress"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="complete">
+			<s:Spacer width="100%"/>
+			<s:Button label="{(type == VersionControlTypes.GIT) ? 'Clone Another' : 'Checkout Another'}" styleName="darkButton"
+					  click="resetForm(event)"/>
+		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
