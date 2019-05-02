@@ -6,17 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Moonshine IDE [2.2.0]
 
 ### Added
-* Added repository browser for GIT to allow users to browse the files inside of a repository based on special xml file.
-* Added option to open sub projects automatically.
+* Added support to define related repositories for an SVN or Git repository, using moonshine-dependencies.xml.  See the documentation [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
+* If a cloned or checked out repository contains multiple subprojects (like https://github.com/prominic/Moonshine-IDE.git), Moonshine will allow the user to automatically open the subprojects (up to 3 levels deep).
 * Added [Apache Royale](https://royale.apache.org/) Jewel project template.
 
 ### Changed
+* Added support for Git in the Manage Repositories interface.
 * Provide non-sandbox version of Moonshine for Mac users.
 * Visual Editor: Allow search **Code** tab using menu option **Edit** -> **Find**.
 
 ### Fixed
-* Fix issue where Browse All repository throws an error when list was empty. 
-* Templating: Fix issue where modification of existing template throws and error.
+* Fixed issue where Browse All repository threw an error when the repository list was empty. 
+* Templates: Fixed issue where modifying a template triggered an exception 
+
+#### Known Issue
+* Template Modifications will not be applied to new projects.
+
 
 ## Moonshine IDE [2.1.0]
 
