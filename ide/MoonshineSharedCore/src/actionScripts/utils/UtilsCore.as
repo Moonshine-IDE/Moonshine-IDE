@@ -146,7 +146,8 @@ package actionScripts.utils
 		{
 			var tmpPoint : Point = getContentToGlobalXY( event.currentTarget as UIComponent );
 			event.toolTip.y = tmpPoint.y + 20;
-			event.toolTip.x = event.toolTip.x - 20;
+			//event.toolTip.x = event.toolTip.x - 20;
+			event.toolTip.x = ( event.currentTarget as UIComponent ).mouseX;
 		}
 		
 		/**

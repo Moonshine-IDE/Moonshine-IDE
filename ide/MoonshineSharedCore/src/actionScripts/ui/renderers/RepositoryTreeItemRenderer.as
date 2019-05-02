@@ -25,6 +25,7 @@ package actionScripts.ui.renderers
     import mx.binding.utils.ChangeWatcher;
     import mx.controls.treeClasses.TreeItemRenderer;
     import mx.core.mx_internal;
+    import mx.events.ToolTipEvent;
     
     import spark.components.BusyIndicator;
     import spark.components.Image;
@@ -32,6 +33,7 @@ package actionScripts.ui.renderers
     
     import actionScripts.events.TreeMenuItemEvent;
     import actionScripts.locator.IDEModel;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.VersionControlTypes;
 
@@ -48,6 +50,7 @@ package actionScripts.ui.renderers
 		private var hitareaSprite:Sprite;
 		private var busyIndicator:BusyIndicator;
 		private var repositoryIcon:Image;
+		private var isTooltipListenerAdded:Boolean;
 
 		public function RepositoryTreeItemRenderer()
 		{
@@ -98,6 +101,13 @@ package actionScripts.ui.renderers
 					repositoryIcon = new Image();
 					repositoryIcon.source = new ConstantsCoreVO[data.type +"LabelIcon"];
 					addChild(repositoryIcon);
+				}
+				
+				if (!isTooltipListenerAdded)
+				{
+					addEventListener(ToolTipEvent.TOOL_TIP_CREATE, UtilsCore.createCustomToolTip, false, 0, true);
+					addEventListener(ToolTipEvent.TOOL_TIP_SHOW, UtilsCore.positionTip, false, 0, true);
+					isTooltipListenerAdded = true;
 				}
 			}
 		}

@@ -79,7 +79,8 @@ package actionScripts.plugins.versionControl
 					// to add as a separate/new-one to the manage repositories list
 					registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
 					gitMetaRepository = ObjectUtil.copy(ofRepository) as RepositoryItemVO;
-					gitMetaRepository.label = String(dependencies.label); 
+					gitMetaRepository.label = String(dependencies.label);
+					gitMetaRepository.notes = String(dependencies.description);
 					gitMetaRepository.type = VersionControlTypes.XML;
 					gitMetaRepository.children = [];
 					
@@ -106,15 +107,23 @@ package actionScripts.plugins.versionControl
 					gitMetaRepository.children.push(tmpRepo);
 				}
 				
+				// add sort
+				if (gitMetaRepository.children.length > 0)
+				{
+					gitMetaRepository.children.sortOn("url", Array.CASEINSENSITIVE);
+				}
+				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
 				return true;
 			}
 			
+			SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
 			return false;
 		}
 		
 		public static function updateDependentRepositories(selectedRepository:RepositoryItemVO=null):void
 		{
+			var tmpRepo:Object = REPOSITORIES;
 			var repositories:Array = selectedRepository ? [selectedRepository] : REPOSITORIES.source;
 			var nonExistingRepositories:Array = [];
 			var ownerRepository:RepositoryItemVO;
@@ -163,18 +172,21 @@ package actionScripts.plugins.versionControl
 			tmpRepository.url = "https://github.com/prominic/Moonshine-IDE";
 			tmpRepository.notes = "Moonshine-IDE Source Code";
 			tmpRepository.type = VersionControlTypes.GIT;
+			tmpRepository.udid = UIDUtil.createUID();
 			tmpCollection.addItem(tmpRepository);
 			
 			tmpRepository = new RepositoryItemVO();
 			tmpRepository.url = "https://github.com/apache/royale-asjs";
 			tmpRepository.notes = "Apache Royale Source and Examples";
 			tmpRepository.type = VersionControlTypes.GIT;
+			tmpRepository.udid = UIDUtil.createUID();
 			tmpCollection.addItem(tmpRepository);
 			
 			tmpRepository = new RepositoryItemVO();
 			tmpRepository.url = "https://github.com/prominic/Royale-Examples";
 			tmpRepository.notes = "Additional Apache Royale Examples";
 			tmpRepository.type = VersionControlTypes.GIT;
+			tmpRepository.udid = UIDUtil.createUID();
 			tmpCollection.addItem(tmpRepository);
 			
 			return tmpCollection;

@@ -92,6 +92,12 @@ package actionScripts.utils
 								subRepository = ObjectTranslator.objectToInstance(subItem, RepositoryItemVO) as RepositoryItemVO;
 								tmpRepository.children.push(subRepository);
 							}
+							
+							// sort the items
+							if (tmpRepository.children.length > 0)
+							{
+								tmpRepository.children.sortOn("url", Array.CASEINSENSITIVE);
+							}
 						}
 						else
 						{

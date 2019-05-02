@@ -31,11 +31,16 @@
 			//
 			//--------------------------------------------------------------------------
 			
-			public function setRepositories(value:Array):void
+			public function setRepositories(value:ArrayCollection):void
 			{
-				repositories = new ArrayCollection(value);
-				repositories.sort = new Sort([new SortField("type"), new SortField("url")]);
-				repositories.refresh();
+				repositories = value;
+				if (!repositories.sort)
+				{
+					repositories.sort = new Sort([new SortField("type"), new SortField("url")]);
+					repositories.refresh();
+				}
+				
+				treeRepositories.callLater(expandItems);
 			}
 			
 			public function onBackEvent():void
@@ -86,6 +91,17 @@
 				
 				if (item.label) return item.label +" ("+ item.url +")";
 				return item.url;
+			}
+			
+			private function expandItems():void
+			{
+				for each (var item:Object in repositories)
+				{
+					if (item.type != VersionControlTypes.SVN)
+					{
+						treeRepositories.expandItem(item, true);
+					}
+				}
 			}
 			
 			private function collapseAllItems():void
@@ -155,6 +171,12 @@
 				});
 			}
 			
+			private function getTreeTooltip(item:Object):String
+			{
+				if (item.notes) return item.notes;
+				return null;
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -168,6 +190,8 @@
 			 rollOverColor="0xe4e4e4"
 			 selectionColor="0xCCCCCC"
 			 color="0x000"
+			 showDataTips="true"
+			 dataTipFunction="getTreeTooltip"
 			 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
 			 itemOpen="onTreeItemOpen(event)"
 			 itemClick="selectedItem = treeRepositories.selectedItem"/>

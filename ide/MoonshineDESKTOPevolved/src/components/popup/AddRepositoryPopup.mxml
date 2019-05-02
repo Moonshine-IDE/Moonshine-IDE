@@ -76,7 +76,8 @@
 				{
 					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
 					{
-						if (repo.url == tmpRepositoryUrl && repo != editingRepository)
+						if (repo.url.toLowerCase() == tmpRepositoryUrl.toLowerCase() && 
+							repo != editingRepository)
 						{
 							Alert.show("Duplicate repository entry is not permitted.", "Error!");
 							return;

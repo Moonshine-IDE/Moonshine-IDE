@@ -61,7 +61,7 @@
 			{
 				if (repositories && !ConstantsCoreVO.IS_DEFAULT_REPOSITORIES_POPULATED)
 				{
-					repositories.addAllAt(VersionControlUtils.getDefaultRepositories(), 0);
+					VersionControlUtils.REPOSITORIES.addAllAt(VersionControlUtils.getDefaultRepositories(), 0);
 					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
 				}
 			}
@@ -97,7 +97,7 @@
 				currentState = "browse";
 				this.title = "Browse";
 				
-				repoBrowser.setRepositories(selectedRepository ? [selectedRepository] : repositories.source);
+				repoBrowser.setRepositories(selectedRepository ? new ArrayCollection([selectedRepository]) : repositories);
 			}
 			
 			protected function onBack(event:MouseEvent):void
