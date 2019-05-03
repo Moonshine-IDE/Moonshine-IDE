@@ -170,7 +170,11 @@ package actionScripts.utils
 				}
 				else
 				{
-					if (path) path += (!ConstantsCoreVO.IS_MACOS ? (File.separator +'bin'+ File.separator +'svn.exe') : '');
+					if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
+					{
+						path += (File.separator +'bin'+ File.separator +'svn.exe');
+					}
+					
 					model.svnPath = path;
 					var settings:Vector.<ISetting> = Vector.<ISetting>([
 						new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
@@ -195,7 +199,12 @@ package actionScripts.utils
 				}
 				else
 				{
-					model.gitPath = path + (!ConstantsCoreVO.IS_MACOS ? (File.separator +'bin'+ File.separator +'git.exe') : '');
+					if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
+					{
+						path += (File.separator +'bin'+ File.separator +'git.exe');
+					}
+					
+					model.gitPath = path;
 					var settings:Vector.<ISetting> = Vector.<ISetting>([
 						new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
 					]);

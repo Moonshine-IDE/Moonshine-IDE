@@ -138,6 +138,7 @@ package actionScripts.plugins.svn.commands
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
+			dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:data}));
 			startShell(false);
 		}
 		
@@ -169,6 +170,7 @@ package actionScripts.plugins.svn.commands
 				// following method is mainly applicable for git-meta type of repository
 				VersionControlUtils.parseRepositoryDependencies(repositoryItem, tmpPath);
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, tmpPath));
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:false, message:null}));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)

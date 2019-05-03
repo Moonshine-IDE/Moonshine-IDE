@@ -63,6 +63,7 @@
 				{
 					VersionControlUtils.REPOSITORIES.addAllAt(VersionControlUtils.getDefaultRepositories(), 0);
 					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+					ConstantsCoreVO.IS_DEFAULT_REPOSITORIES_POPULATED = true;
 				}
 			}
 

@@ -103,6 +103,20 @@
 			stateGroups="withControls"/>
 	</s:states>
 	
+	<!--<s:RectangularDropShadow id="dropShadow"
+							 bottom="0"
+							 color="0x000000"
+							 left="0"
+							 right="0"
+							 top="0"
+							 alpha="0.32"
+							 alpha.inactiveGroup="0.22"
+							 angle="90"
+							 blurX="20"
+							 blurY="20"
+							 distance="11"
+							 distance.inactiveGroup="7"/>-->
+	
 	<s:BorderContainer cornerRadius="6" borderColor="0x2d2d2d"
 					   top="0" left="0" right="0" bottom="0">
 		<s:backgroundFill>

@@ -54,6 +54,20 @@ package actionScripts.plugins.versionControl
 			return null;
 		}
 		
+		public static function getRepositoryItemByURL(value:String, ofType:String=null):RepositoryItemVO
+		{
+			for each (var item:RepositoryItemVO in REPOSITORIES)
+			{
+				if (item.url == value) 
+				{
+					if (ofType && item.type == ofType) return item;
+					else if (!ofType) return item;
+				}
+			}
+			
+			return null;
+		}
+		
 		public static function hasAuthenticationFailError(value:String):Boolean
 		{
 			var match:Array = value.toLowerCase().match(/authentication failed/);
@@ -75,16 +89,26 @@ package actionScripts.plugins.versionControl
 				
 				if (duplicateOfRepository)
 				{
-					// duplicate the original git-meta entry
-					// to add as a separate/new-one to the manage repositories list
-					registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
-					gitMetaRepository = ObjectUtil.copy(ofRepository) as RepositoryItemVO;
-					gitMetaRepository.label = String(dependencies.label);
-					gitMetaRepository.notes = String(dependencies.description);
-					gitMetaRepository.type = VersionControlTypes.XML;
-					gitMetaRepository.children = [];
-					
-					VersionControlUtils.REPOSITORIES.addItem(gitMetaRepository);
+					// check if the same URL entry already added
+					// we don't want same entry item twice in the list
+					gitMetaRepository = getRepositoryItemByURL(ofRepository.url, VersionControlTypes.XML);
+					if (gitMetaRepository && (gitMetaRepository.type == VersionControlTypes.XML))
+					{
+						gitMetaRepository.children = [];
+					}
+					else
+					{
+						// duplicate the original git-meta entry
+						// to add as a separate/new-one to the manage repositories list
+						registerClassAlias("actionScripts.valueObjects.RepositoryItemVO", RepositoryItemVO);
+						gitMetaRepository = ObjectUtil.copy(ofRepository) as RepositoryItemVO;
+						gitMetaRepository.label = String(dependencies.label);
+						gitMetaRepository.notes = String(dependencies.description);
+						gitMetaRepository.type = VersionControlTypes.XML;
+						gitMetaRepository.children = [];
+						
+						VersionControlUtils.REPOSITORIES.addItem(gitMetaRepository);
+					}
 				}
 				else
 				{

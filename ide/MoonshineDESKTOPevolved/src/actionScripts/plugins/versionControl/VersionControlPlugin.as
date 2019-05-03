@@ -88,6 +88,8 @@ package actionScripts.plugins.versionControl
 				manageRepoWindow.height = FlexGlobals.topLevelApplication.stage.nativeWindow.height * .5;
 				manageRepoWindow.addEventListener(CloseEvent.CLOSE, onManageRepoWindowClosed);
 				PopUpManager.centerPopUp(manageRepoWindow);
+				
+				dispatcher.addEventListener(VersionControlEvent.CLOSE_MANAGE_REPOSITORIES, onCloseRepoWindowFromSomewhereElse);
 			}
 			else
 			{
@@ -97,9 +99,15 @@ package actionScripts.plugins.versionControl
 		
 		protected function onManageRepoWindowClosed(event:CloseEvent):void
 		{
+			dispatcher.removeEventListener(VersionControlEvent.CLOSE_MANAGE_REPOSITORIES, onCloseRepoWindowFromSomewhereElse);
 			manageRepoWindow.removeEventListener(CloseEvent.CLOSE, onManageRepoWindowClosed);
 			PopUpManager.removePopUp(manageRepoWindow);
 			manageRepoWindow = null;
+		}
+		
+		protected function onCloseRepoWindowFromSomewhereElse(event:VersionControlEvent):void
+		{
+			onManageRepoWindowClosed(null);
 		}
 		
 		//--------------------------------------------------------------------------

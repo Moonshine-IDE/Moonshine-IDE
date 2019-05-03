@@ -230,9 +230,6 @@ package actionScripts.plugins.svn
 				checkoutWindow.addEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 				checkoutWindow.addEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCheckoutWindowSubmitted);
 				
-				dispatcher.addEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
-				dispatcher.addEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
-				
 				PopUpManager.centerPopUp(checkoutWindow);
 			}
 			else
@@ -263,17 +260,9 @@ package actionScripts.plugins.svn
 		{
 			checkoutWindow.removeEventListener(CloseEvent.CLOSE, onCheckoutWindowClosed);
 			checkoutWindow.removeEventListener(VersionControlEvent.CLONE_CHECKOUT_REQUESTED, onCheckoutWindowSubmitted);
-			dispatcher.removeEventListener(SVNEvent.SVN_ERROR, onCheckoutOutputEvent);
-			dispatcher.removeEventListener(SVNEvent.SVN_RESULT, onCheckoutOutputEvent);
 			
 			PopUpManager.removePopUp(checkoutWindow);
 			checkoutWindow = null;
-		}
-		
-		protected function onCheckoutOutputEvent(event:SVNEvent):void
-		{
-			if (event.type == SVNEvent.SVN_ERROR) checkoutWindow.notifySVNCheckoutError();
-			else checkoutWindow.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 		}
 		
 		protected function handleCommitRequest(event:Event, user:String=null, password:String=null, commitInfo:Object=null):void

@@ -69,6 +69,12 @@
 				btnSubmit.enabled = true;
 			}
 			
+			override protected function closeThis():void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
+				super.closeThis();
+			}
+			
 			private function onCheckoutRequest():void
 			{
 				var tmpArr:Array = new Array(fnValidator);
@@ -205,7 +211,8 @@
 				}
 				else
 				{
-					completionMessage = "Clone completes!";
+					completionMessage = (type == VersionControlTypes.GIT) ? "Clone complete!" : "Checkout complete!";
+					completionMessage += "\nRepository downloaded at:\n"+ mappedPath + File.separator + txtFolderName.text;
 					txtCompletionMessage.setStyle("color", 0x000);
 				}
 			}
@@ -226,6 +233,14 @@
 			
 			protected function resetForm(event:MouseEvent):void
 			{
+				this.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function onCloseAll():void
+			{
+				// this should let versionControlPlugin close
+				// all its opened windows
+				GlobalEventDispatcher.getInstance().dispatchEvent(new VersionControlEvent(VersionControlEvent.CLOSE_MANAGE_REPOSITORIES));
 				this.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
@@ -252,8 +267,9 @@
 			<view:PromptTextInput id="txtTarget" 
 								  prompt="Where to download" width="60%" styleName="textInput"
 								  tabIndex="2" editable="false"/>
-			<s:Button icon="@Embed('/elements/images/icoTreeFolder_close.png')"
-					  styleName="lightButton" toolTip="Choose Parent Directory"
+			<s:Button icon="@Embed('/elements/images/icoFolderBlue.png')"
+					  styleName="darkButton" toolTip="Choose Parent Directory"
+					  height="{btnSubmit.height}"
 					  click="browse()"/>
 			<s:Label id="lblSeparator"/>
 			<view:PromptTextInput id="txtFolderName"
@@ -290,7 +306,7 @@
 			  width="100%" height="{initialContentHeight}"
 			  includeIn="progress"
 			  horizontalAlign="center" verticalAlign="middle">
-		<s:Label text="In Progress.."
+		<s:Label text="In progress.."
 				 styleName="uiTextSettingsLabel" color="0x000"/>
 	</s:VGroup>
 	
@@ -298,7 +314,7 @@
 			  includeIn="complete" verticalAlign="middle" horizontalAlign="center">
 		<s:Label id="txtCompletionMessage" 
 				 text="{completionMessage}"
-				 styleName="uiTextSettingsLabel" 
+				 styleName="smallText" 
 				 textAlign="center" width="100%"
 				 paddingLeft="20" paddingRight="20"
 				 maxDisplayedLines="5"/>
@@ -319,6 +335,8 @@
 			<s:Spacer width="100%"/>
 			<s:Button label="{(type == VersionControlTypes.GIT) ? 'Clone Another' : 'Checkout Another'}" styleName="darkButton"
 					  click="resetForm(event)"/>
+			<s:Button label="Close All" styleName="darkButton"
+					  click="onCloseAll()"/>
 		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
