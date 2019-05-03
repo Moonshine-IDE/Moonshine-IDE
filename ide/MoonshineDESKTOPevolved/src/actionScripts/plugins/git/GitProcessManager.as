@@ -483,7 +483,7 @@ package actionScripts.plugins.git
 			switch (tmpQueue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
-					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
+					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL +")");
 					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
 					break;
 				case GIT_PUSH:
