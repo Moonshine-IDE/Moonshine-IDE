@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Moonshine IDE [2.2.0]
 
+### Summary
+
+This release was focused on adding Git support in the Manage Repositories interface from 2.1.0.  You may now clone and track Git repositories in this interface.  To help new users get started, we have added a few example repositories to the interface by default.  This includes the Moonshine source and some examples for Apache Royale.
+
+We also made some changes to make it faster to clone complicated projects.  Moonshine will now automatically detect subprojects within a repository, and prompt the user to decide which projects to open.  In addition, we added a feature to allow repositories to define links to other repositories with moonshine-dependencies.xml.   For example, Moonshine-IDE provides links to all of its external dependencies, so that you can clone all required projects without leaving Moonshine or reviewing a README file.  This file may be added to other repositories using the format defined [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
+
 ### Added
 * Added support to define related repositories for an SVN or Git repository, using moonshine-dependencies.xml.  See the documentation [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
 * If a cloned or checked out repository contains multiple subprojects (like https://github.com/prominic/Moonshine-IDE.git), Moonshine will allow the user to automatically open the subprojects (up to 3 levels deep).
-* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a nightly build (0.9.6) of Apache Royale.
+* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) of Apache Royale.
 
 ### Changed
 * Added support for Git in the Manage Repositories interface.
@@ -21,7 +27,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 #### Known Issue
 * Template modifications will not be applied to new projects.
-* The Jewel template for Apache Royale requires the latest nightly build (0.9.6), which is not currently available with Moonshine SDK Installer
+* The Jewel template for Apache Royale requires the latest nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) which is not currently available with Moonshine SDK Installer
+
 
 
 ## Moonshine IDE [2.1.0]
