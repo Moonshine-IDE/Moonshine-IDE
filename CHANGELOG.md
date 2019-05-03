@@ -14,7 +14,7 @@ We also made some changes to make it faster to clone complicated projects.  Moon
 ### Added
 * Added support to define related repositories for an SVN or Git repository, using moonshine-dependencies.xml.  See the documentation [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
 * If a cloned or checked out repository contains multiple subprojects (like https://github.com/prominic/Moonshine-IDE.git), Moonshine will allow the user to automatically open the subprojects (up to 3 levels deep).
-* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) of Apache Royale.
+* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a [nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) of Apache Royale.
 
 ### Changed
 * Added support for Git in the Manage Repositories interface.
@@ -27,7 +27,7 @@ We also made some changes to make it faster to clone complicated projects.  Moon
 
 #### Known Issue
 * Template modifications will not be applied to new projects.
-* The Jewel template for Apache Royale requires the latest nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) which is not currently available with Moonshine SDK Installer
+* The Jewel template for Apache Royale requires the latest [nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) which is not currently available with Moonshine SDK Installer
 
 
 
