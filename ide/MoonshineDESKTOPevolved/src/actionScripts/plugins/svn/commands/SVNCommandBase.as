@@ -31,6 +31,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.plugins.core.ExternalCommandBase;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
@@ -122,7 +123,11 @@ package actionScripts.plugins.svn.commands
 		protected function onAuthWindowClosed(event:CloseEvent):void
 		{
 			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
-			if (!target.userObject) onCancelAuthentication();
+			if (!target.userObject) 
+			{
+				onCancelAuthentication();
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:"Authentication failed!"}));
+			}
 			
 			target.removeEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
 			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);

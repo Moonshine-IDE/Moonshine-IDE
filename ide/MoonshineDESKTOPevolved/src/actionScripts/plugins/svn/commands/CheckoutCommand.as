@@ -134,11 +134,14 @@ package actionScripts.plugins.svn.commands
 			{
 				openAuthentication();
 			}
+			else
+			{
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:data}));
+			}
 	
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
-			dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:data}));
 			startShell(false);
 		}
 		
