@@ -86,6 +86,7 @@
 				if (item.type == VersionControlTypes.SVN)
 				{
 					if (item.isRoot) return item.url;
+					else if (item.isDownloadable) return item.label +" ("+ item.url +")";
 					return item.label;
 				}
 				
