@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Added support to define related repositories for an SVN or Git repository, using moonshine-dependencies.xml.  See the documentation [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
 * If a cloned or checked out repository contains multiple subprojects (like https://github.com/prominic/Moonshine-IDE.git), Moonshine will allow the user to automatically open the subprojects (up to 3 levels deep).
-* Added [Apache Royale](https://royale.apache.org/) Jewel project template.
+* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a nightly build (0.9.6) of Apache Royale.
 
 ### Changed
 * Added support for Git in the Manage Repositories interface.
@@ -20,7 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Templates: Fixed issue where modifying a template triggered an exception 
 
 #### Known Issue
-* Template Modifications will not be applied to new projects.
+* Template modifications will not be applied to new projects.
+* The Jewel template for Apache Royale requires the latest nightly build (0.9.6), which is not currently available with Moonshine SDK Installer
 
 
 ## Moonshine IDE [2.1.0]
