@@ -439,8 +439,9 @@ package actionScripts.plugins.as3project.mxmlc
             }
             else
             {
+				var royaleLibPath:String = "royalelib=".concat('"', SDKstr, File.separator, "frameworks", '"');
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+" && " : '', "export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
 				);
             }
 
