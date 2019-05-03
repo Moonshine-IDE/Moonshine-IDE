@@ -96,7 +96,7 @@ package actionScripts.ui.renderers
 					removeChild(repositoryIcon);
 					repositoryIcon = null;
 				}
-				if ((data.isRoot || data.type != VersionControlTypes.SVN) && !repositoryIcon)
+				if ((data.isRoot || data.isDownloadable || data.type != VersionControlTypes.SVN) && !repositoryIcon)
 				{
 					repositoryIcon = new Image();
 					repositoryIcon.source = new ConstantsCoreVO[data.type +"LabelIcon"];

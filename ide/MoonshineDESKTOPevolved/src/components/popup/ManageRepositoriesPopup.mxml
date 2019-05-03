@@ -248,7 +248,7 @@
 					  styleName="darkButton"
 					  enabled="{repoBrowser.selectedItem &amp;&amp; 
 					  	(repoBrowser.selectedItem.type != VersionControlTypes.XML) &amp;&amp; 
-					  	(repoBrowser.selectedItem.type == VersionControlTypes.GIT || repoBrowser.selectedItem.children)}"
+					  	(repoBrowser.selectedItem.type == VersionControlTypes.GIT || repoBrowser.selectedItem.children || repoBrowser.selectedItem.isDownloadable)}"
 					  click="onCheckoutRequest(event)"/>
 		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>

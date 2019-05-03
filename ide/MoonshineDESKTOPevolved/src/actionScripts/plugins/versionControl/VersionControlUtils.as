@@ -127,6 +127,7 @@ package actionScripts.plugins.versionControl
 					tmpRepo.type = String(repo["repo-type"]);
 					tmpRepo.isRequireAuthentication = ofRepository.isRequireAuthentication;
 					tmpRepo.isTrustCertificate = ofRepository.isTrustCertificate;
+					tmpRepo.isDownloadable = true;
 					tmpRepo.udid = UIDUtil.createUID();
 					gitMetaRepository.children.push(tmpRepo);
 				}
