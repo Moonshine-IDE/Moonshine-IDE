@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-	import actionScripts.utils.SerializeUtil;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -62,6 +60,7 @@ package actionScripts.plugin.templating
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.AS3ClassAttributes;
@@ -279,7 +278,7 @@ package actionScripts.plugin.templating
 			
 			for each (file in fileList)
 			{
-				if (getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
+				if (TemplatingHelper.getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
 					&& !file.isHidden)
 				{
 					fileTemplates.push(new FileLocation(file.nativePath));
@@ -292,7 +291,7 @@ package actionScripts.plugin.templating
 			
 			for each (file in projectList)
 			{
-				if (getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
+				if (TemplatingHelper.getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
 					&& !file.isHidden && file.isDirectory)
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
@@ -467,7 +466,7 @@ package actionScripts.plugin.templating
 			else
 			{
 				originalTemplate = template;
-				customTemplate = getCustomFileFor(template);
+				customTemplate = TemplatingHelper.getCustomFileFor(template);
 			}
 			
 			var setting:TemplateSetting = new TemplateSetting(originalTemplate, customTemplate, template.fileBridge.name);
@@ -603,28 +602,6 @@ package actionScripts.plugin.templating
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [custom])
 				);
 			}
-		}
-		
-		protected function getCustomFileFor(template:FileLocation):FileLocation
-		{
-			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
-			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-			
-			var customTemplatePath:String = template.fileBridge.nativePath.substr(appDirPath.length+1);
-			var customTemplate:FileLocation = template.fileBridge.resolveApplicationStorageDirectoryPath(customTemplatePath);
-			
-			return customTemplate;
-		}
-		
-		protected function getOriginalFileForCustom(template:FileLocation):FileLocation
-		{
-			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
-			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-			
-			var originalTemplatePath:String = template.fileBridge.nativePath.substr(appStorageDirPath.length+1);
-			var originalTemplate:FileLocation = template.fileBridge.resolveApplicationDirectoryPath(originalTemplatePath);
-			
-			return originalTemplate;
 		}
 		
 		protected function handleTemplateReset(event:Event):void
