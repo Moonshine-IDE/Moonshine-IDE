@@ -647,7 +647,6 @@ package actionScripts.plugins.as3project
 				sourcePath = "src/main/webapp";
 			}
 
-			var e:Error;
 			var targetFolder:FileLocation = pvo.folderLocation;
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
@@ -755,13 +754,13 @@ package actionScripts.plugins.as3project
 					{
 						descriptorFileLocation.fileBridge.moveTo(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 					}
-					catch(e)
+					catch(e:Error)
 					{
 						try
 						{
 							descriptorFileLocation.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
 						}
-						catch (e)
+						catch (e:Error)
 						{}
 					}
 				}

@@ -688,7 +688,7 @@ package actionScripts.impls
 				return this.name.substring(0, extensionIndex - 1);
 			}
 
-			return null;
+			return this.name;
 		}
 
 		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
