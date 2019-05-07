@@ -29,6 +29,7 @@ package actionScripts.events
 		public static const EVENT_RESTART_HELPING:String = "EVENT_RESTART_HELPING";
 		public static const EVENT_SDK_INSTALLER_NOTIFIER_NOTIFICATION:String = "EVENT_SDK_INSTALLER_NOTIFIER_NOTIFICATION";
 		public static const EVENT_DNS_GETTING_STARTED:String = "EVENT_DNS_GETTING_STARTED";
+		public static const REFRESH_GETTING_STARTED:String = "REFRESH_GETTING_STARTED";
 		
 		public var value:Object;
 		

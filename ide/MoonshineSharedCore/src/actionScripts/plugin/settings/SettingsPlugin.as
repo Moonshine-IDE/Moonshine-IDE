@@ -326,6 +326,8 @@ package actionScripts.plugin.settings
 			{
 				saveClassSettings(settingObject);
 			}
+			
+			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.REFRESH_GETTING_STARTED));
 		}
 
 		// Close clicked in the view
