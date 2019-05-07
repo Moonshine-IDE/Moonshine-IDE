@@ -647,9 +647,6 @@ package actionScripts.plugin.templating
 							&& ed.currentFile
 							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
 						{
-							// active the editor
-							handleTemplateModify(event);
-							
 							// close the tab
 							GlobalEventDispatcher.getInstance().dispatchEvent(
 								new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
@@ -1125,9 +1122,16 @@ package actionScripts.plugin.templating
 				PopUpManager.centerPopUp(newJavaComponentPopup);
 			}
 		}
+		
+		protected function checkAndUpdateIfTemplateModified(event:NewFileEvent):void
+		{
+			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.fromTemplate);
+			if (modifiedTemplate.fileBridge.exists) event.fromTemplate = modifiedTemplate;
+		}
 
 		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1174,6 +1178,7 @@ package actionScripts.plugin.templating
 		
 		protected function onNewInterfaceCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1200,6 +1205,7 @@ package actionScripts.plugin.templating
 
 		protected function onMXMLFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1212,6 +1218,7 @@ package actionScripts.plugin.templating
 		
 		protected function onFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1225,6 +1232,7 @@ package actionScripts.plugin.templating
 
         protected function onVisualEditorFileCreateRequest(event:NewFileEvent):void
         {
+			checkAndUpdateIfTemplateModified(event);
             if (event.fromTemplate.fileBridge.exists)
             {
                 var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1282,6 +1290,7 @@ package actionScripts.plugin.templating
 
 		protected function onCSSFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
