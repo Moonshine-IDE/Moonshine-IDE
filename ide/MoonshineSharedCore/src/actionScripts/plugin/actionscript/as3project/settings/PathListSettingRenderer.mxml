@@ -142,7 +142,7 @@
 				var item:PathListItemVO = new PathListItemVO(null, null);
 				if (setting.relativeRoot)
 				{
-					item.file = new FileLocation(NOT_SET_PATH_MESSAGE);
+					item.file = new FileLocation();
 					item.label = NOT_SET_PATH_MESSAGE;
 					/*item.file = new FileLocation(setting.relativeRoot.fileBridge.nativePath);
 					item.label = "/";*/

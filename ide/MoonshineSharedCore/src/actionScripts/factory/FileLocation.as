@@ -24,6 +24,7 @@ package actionScripts.factory
 	
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.interfaces.IFileBridge;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.URLDescriptorVO;
 	
 	[Bindable] public class FileLocation extends EventDispatcher
@@ -35,7 +36,11 @@ package actionScripts.factory
 			// ** IMPORTANT **
 			var obj:Object = BridgeFactory.getFileInstanceObject();
 			fileBridge = new obj();
-			if (!path) return;
+			if (!path) 
+			{
+				path = IDEModel.getInstance().fileCore.nativePath;
+				return;
+			}
 
 			if(isURL)
 			{

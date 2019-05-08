@@ -53,7 +53,7 @@ package actionScripts.impls
 	 */
 	public class IFileBridgeImp implements IFileBridge
 	{
-		private var _file: File = File.desktopDirectory;
+		private var _file: File = new File(FileUtils.lastAccessedLocation);
 		
 		CONFIG::OSX
 		{
@@ -752,7 +752,7 @@ package actionScripts.impls
             {
                 if (startFromLocation && FileUtils.isPathExists(startFromLocation))
                 {
-                    _file.nativePath = startFromLocation;
+                    FileUtils.lastAccessedLocation = _file.nativePath = startFromLocation;
                 }
             }
 			catch(e:Error)
