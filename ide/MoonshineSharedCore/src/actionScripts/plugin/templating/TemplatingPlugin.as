@@ -109,6 +109,7 @@ package actionScripts.plugin.templating
 		private var resetIndex:int = -1;
 
 		private var templateConfigs:Array;
+		private var allLoadedTemplates:Array;
 
 		public function TemplatingPlugin()
 		{
@@ -252,6 +253,7 @@ package actionScripts.plugin.templating
 			});
 
 			templateConfigs = [];
+
 			for each (file in list)
 			{
 				if (!file.isHidden)
@@ -308,6 +310,7 @@ package actionScripts.plugin.templating
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 
+			allLoadedTemplates = [];
             for each (var templateConfig:XML in templateConfigs)
             {
 				var templateName:String = SerializeUtil.deserializeString(templateConfig.name);
@@ -346,6 +349,8 @@ package actionScripts.plugin.templating
 					{
                         javaProjectTemplates.addItem(template);
 					}
+
+					allLoadedTemplates.push(template);
                 }
             }
 
@@ -427,11 +432,7 @@ package actionScripts.plugin.templating
 			var separator:MenuItem = new MenuItem(null);
 			newFileMenu.items.push(separator);
 
-			var filteredProjectTemplatesToMenu:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source;
-			filteredProjectTemplatesToMenu.concat(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source,
-												  ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE.source,
-					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source);
-			filteredProjectTemplatesToMenu = filteredProjectTemplatesToMenu.filter(filterProjectsTemplates);
+			var filteredProjectTemplatesToMenu:Array = allLoadedTemplates.filter(filterProjectsTemplates);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{

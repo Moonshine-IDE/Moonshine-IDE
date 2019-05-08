@@ -263,15 +263,17 @@
 
 			if(ConstantsCoreVO.IS_AIR)
 			{
+				var templateLabel:String = TemplatingHelper.getTemplateLabel(fl.file);
 				if(fl.file.fileBridge.isDirectory)
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
+							new Event("eventNewProjectFromTemplate" + templateLabel)
 					);
-				} else
+				}
+				else
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewFileFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
+							new Event("eventNewFileFromTemplate" + templateLabel)
 					);
 				}
 			} else
