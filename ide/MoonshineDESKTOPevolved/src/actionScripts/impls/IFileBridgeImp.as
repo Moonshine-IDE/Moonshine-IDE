@@ -750,8 +750,7 @@ package actionScripts.impls
 			// set file path if requires
 			try
             {
-                var pathExists:File = new File(startFromLocation);
-                if (startFromLocation && pathExists.exists)
+                if (startFromLocation && FileUtils.isPathExists(startFromLocation))
                 {
                     _file.nativePath = startFromLocation;
                 }
