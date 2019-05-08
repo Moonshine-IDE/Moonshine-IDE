@@ -625,16 +625,12 @@ package actionScripts.plugin.templating
 							isProjectOpen = true;
 							i.projectFolder.isRoot = true;
 							model.mainView.getTreeViewPanel().tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, FTETreeItemRenderer.DELETE_PROJECT, i.projectFolder, false));
-							// remove the item from New/File menu
-							dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
 							break;
 						}
 					}
 					
 					if (!isProjectOpen) 
 					{
-						// remove the item from New/File menu
-						dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
 						custom.fileBridge.deleteDirectory(true);
 					}
 				}
@@ -655,8 +651,6 @@ package actionScripts.plugin.templating
 						}
 					}
 					
-					// remove the item from New/File menu
-					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, false, lbl));
 					// deletes the file
 					custom.fileBridge.deleteFile();
 				}
@@ -671,8 +665,20 @@ package actionScripts.plugin.templating
 				rdr.dispatchEvent(new Event('refresh'));
 				
 				//readTemplates();
-				if (custom.fileBridge.isDirectory) projectTemplates.splice(projectTemplates.indexOf(custom), 1);
-				else fileTemplates.splice(fileTemplates.indexOf(custom), 1);
+				if (custom.fileBridge.isDirectory) 
+				{
+					// remove the item from New/File menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
+					
+					projectTemplates.splice(projectTemplates.indexOf(custom), 1);
+				}
+				else 
+				{
+					// remove the item from New/File menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, false, lbl));
+					
+					fileTemplates.splice(fileTemplates.indexOf(custom), 1);
+				}
 			}
 		}
 		
