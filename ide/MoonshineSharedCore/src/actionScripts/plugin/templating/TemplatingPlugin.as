@@ -325,10 +325,11 @@ package actionScripts.plugin.templating
                     template.file = projectsLocation;
                     template.description = String(templateConfig.description);
 
-					var tmpImageFile:Object = projectsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
-                    if (tmpImageFile.exists)
+					var iconsLocation:FileLocation = projectsLocation.fileBridge.parent.resolvePath("icons");
+					var iconFile:Object = iconsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
+                    if (iconFile.exists)
 					{
-						template.logoImagePath = tmpImageFile.url;
+						template.logoImagePath = iconFile.url;
                     }
 
                     if (templateName.indexOf("Feathers") != -1 || templateName.indexOf("Away3D") != -1)
