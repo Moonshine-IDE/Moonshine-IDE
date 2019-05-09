@@ -202,11 +202,12 @@ package actionScripts.plugin.rename
 		
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
-			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName +"."+ event.fileLocation.fileBridge.extension);
+			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName + 
+				(event.fileLocation.fileBridge.extension ? "."+ event.fileLocation.fileBridge.extension : ""));
 			
 			// based on request, we also updates class name and package path
 			// to the duplicated file, in case of actionScript class
-			if (event.fileLocation.fileBridge.extension == "as")
+			if (event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "as")
 			{
 				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedContent);

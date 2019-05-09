@@ -1229,9 +1229,12 @@ package actionScripts.plugin.templating
 			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
+				var isCustomExtension:Boolean = newFilePopup.openType == NewFilePopup.AS_PLAIN_TEXT;
+				
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var tmpArr:Array = event.fromTemplate.fileBridge.name.split(".");
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +"."+ tmpArr[tmpArr.length - 2]);
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + 
+					(isCustomExtension ? "" : "."+ tmpArr[tmpArr.length - 2]));
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);

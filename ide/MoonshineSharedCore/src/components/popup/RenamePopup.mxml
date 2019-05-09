@@ -91,7 +91,7 @@
 					txtFileName.selectRange(0, txtFileName.text.length);
 					originalFileName = txtFileName.text;
 					
-					if (wrapperOfFolderLocation.file.fileBridge.isDirectory) {
+					if (wrapperOfFolderLocation.file.fileBridge.isDirectory || !wrapperOfFolderLocation.file.fileBridge.extension) {
 						fileExtension = "";
 					}
 					else
