@@ -44,6 +44,7 @@ package actionScripts.impls
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.locator.IDEModel;
 	
 	/**
 	 * IFileBridgeImp
@@ -53,7 +54,9 @@ package actionScripts.impls
 	 */
 	public class IFileBridgeImp implements IFileBridge
 	{
-		private var _file: File = new File(FileUtils.lastAccessedLocation);
+		private var _file: File = ConstantsCoreVO.LAST_BROWSED_LOCATION ? 
+			new File(ConstantsCoreVO.LAST_BROWSED_LOCATION) : 
+			File.desktopDirectory;
 		
 		CONFIG::OSX
 		{
@@ -121,7 +124,8 @@ package actionScripts.impls
 					
 					if (isValidFilePath(selectedPathValue))
 					{
-						_file.nativePath = selectedPathValue;
+						updateCoreFilePathOnBrowse(selectedPathValue);
+						//_file.nativePath = selectedPathValue;
 						selectListner(new File(selectedPathValue));
 					}
 					else if (cancelListener != null)
@@ -146,7 +150,8 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
-				_file.nativePath = (event.target as File).nativePath;
+				updateCoreFilePathOnBrowse((event.target as File).nativePath);
+				//_file.nativePath = (event.target as File).nativePath;
 				onCancelHandler(event);
 				selectListner(event.target as File);
 			}
@@ -752,12 +757,21 @@ package actionScripts.impls
             {
                 if (startFromLocation && FileUtils.isPathExists(startFromLocation))
                 {
-                    FileUtils.lastAccessedLocation = _file.nativePath = startFromLocation;
+					updateCoreFilePathOnBrowse(startFromLocation);
                 }
             }
 			catch(e:Error)
 			{
 
+			}
+		}
+		
+		private function updateCoreFilePathOnBrowse(value:String):void
+		{
+			ConstantsCoreVO.LAST_BROWSED_LOCATION = _file.nativePath = value;
+			if (IDEModel.getInstance().fileCore.getFile != _file)
+			{
+				IDEModel.getInstance().fileCore.nativePath = value;
 			}
 		}
 	}
