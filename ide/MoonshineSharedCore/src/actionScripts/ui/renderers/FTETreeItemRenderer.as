@@ -415,18 +415,13 @@ package actionScripts.ui.renderers
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
 				
-				if(activeProject is JavaProjectVO)
+				if (activeProject is ProjectVO)
 				{
-					//TODO: make a better set of menu types for Java
-					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_JAVACLASS);
-				}
-				else if(activeProject is AS3ProjectVO)
-				{
-					var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
+					var projectVO:ProjectVO = activeProject as ProjectVO;
 					enableTypes = TemplatingHelper.getTemplateMenuType(label);
 					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 					{
-						return as3ProjectVO.menuType.indexOf(item) != -1;
+						return projectVO.menuType.indexOf(item) != -1;
 					});
 				}
 				

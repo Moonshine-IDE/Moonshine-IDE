@@ -3,6 +3,7 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.MavenPomUtil;
 
 	public class JavaImporter extends FlashDevelopImporterBase
@@ -69,6 +70,7 @@ package actionScripts.plugin.java.javaproject.importer
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+			javaProject.menuType = ProjectMenuTypes.JAVA;
 
             var sourceDirectory:String = null;
 			var settingsData:XML = null;

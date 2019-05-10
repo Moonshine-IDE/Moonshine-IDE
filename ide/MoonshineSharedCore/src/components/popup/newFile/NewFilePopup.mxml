@@ -99,11 +99,9 @@
 						if (txtFileName.text.indexOf(".") != -1)
 						{
 							var tmpNameSplit:Array = txtFileName.text.split(".");
-							if (tmpNameSplit[0] == "") tmpNameSplit.shift();
-							if (tmpNameSplit.length > 1 && tmpNameSplit[tmpNameSplit.length - 1] == "") tmpNameSplit.pop();
-							if (tmpNameSplit.length == 1)
+							if (tmpNameSplit[tmpNameSplit.length - 1] == "")
 							{
-								Alert.show("Please provide file name with (optional)extension.", "Error!");
+								Alert.show("Trailing '.' not permitted for file name", "Error!");
 								return;
 							}
 						}
@@ -234,7 +232,6 @@
 					title = "New File";
 					if (!fileTemplate)
 					{
-						txtFileName.restrict = "0-9A-Za-z_.";
 						txtFileName.text = ".txt";
 					}
 					else
