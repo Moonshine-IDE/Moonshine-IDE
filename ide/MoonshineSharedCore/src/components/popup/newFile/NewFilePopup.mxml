@@ -47,7 +47,8 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 
-			public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
+			[Bindable] public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
+			
 			public static var AS_XML:String = "AS_XML";
 			public static var AS_CUSTOM:String = "AS_CUSTOM";
 			public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";

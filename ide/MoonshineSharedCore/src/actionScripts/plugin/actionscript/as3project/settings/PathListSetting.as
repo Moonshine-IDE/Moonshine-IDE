@@ -113,11 +113,14 @@ package actionScripts.plugin.actionscript.as3project.settings
         		itemMatch = false;
         		for each (var item:PathListItemVO in copiedPaths)
         		{
-					tmpString += f1.fileBridge.nativePath +" : "+ item.file.fileBridge.nativePath +"\n";
-        			if (f1.fileBridge.nativePath == item.file.fileBridge.nativePath)
-        			{
-        				itemMatch = true;
-        			}
+					if (item.file)
+					{
+						tmpString += f1.fileBridge.nativePath +" : "+ item.file.fileBridge.nativePath +"\n";
+	        			if (f1.fileBridge.nativePath == item.file.fileBridge.nativePath)
+	        			{
+	        				itemMatch = true;
+	        			}
+					}
         		}
         		
         		if (!itemMatch)

@@ -87,6 +87,9 @@
 						  includeInLayout="{isAppStoreVersion}" visible="{isAppStoreVersion}">
 					<s:Label text="-- Message to be updated --"
 							 styleName="smallText"/>
+					<s:Button label="OK"
+							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
+							  width="60"/>
 				</s:VGroup>
 			</s:VGroup>
 		</s:HGroup>

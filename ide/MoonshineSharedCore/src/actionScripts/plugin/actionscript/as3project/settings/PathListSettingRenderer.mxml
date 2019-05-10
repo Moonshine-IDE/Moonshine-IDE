@@ -65,12 +65,12 @@
 				var file:FileLocation = fileBrowsing.file;
 				
 				// {locale} check
-				if (file.fileBridge.nativePath.indexOf("{locale}") != -1)
+				if (file && file.fileBridge.nativePath.indexOf("{locale}") != -1)
 				{
 					isPresentFileBrowseIsLocale = (OSXBookmarkerNotifiers.isValidLocalePath(file) != null) ? true : false;
 				}
 				
-				model.fileCore.browseForDirectory(setting.label, dirSelect, dirCancel, file.fileBridge.nativePath);
+				model.fileCore.browseForDirectory(setting.label, dirSelect, dirCancel, file ? file.fileBridge.nativePath : null);
 			}
 			
 			protected function dirSelect(dir:Object):void
@@ -79,6 +79,7 @@
 				// if I write:
 				// filebrowsing.label = setting.getlabelFor(dir)
 				// thus a new label initiation and then submission
+				if (!fileBrowsing.file) fileBrowsing.file = new FileLocation();
 				var tmpLabel: String = setting.getLabelFor(dir);
 				
 				var finalPath: String = dir.nativePath;
@@ -97,11 +98,14 @@
 			protected function browseFile(event:Event):void
 			{
 				fileBrowsing = event.target.data;
-				model.fileCore.browseForOpen(setting.label, fileSelect, fileCancel, null, (fileBrowsing.file as FileLocation).fileBridge.nativePath);
+				model.fileCore.browseForOpen(setting.label, fileSelect, fileCancel, null, fileBrowsing.file ? (fileBrowsing.file as FileLocation).fileBridge.nativePath : null);
 			}
 			
 			protected function fileSelect(fileDir:Object):void
 			{
+				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
+				fileBrowsing.file = new FileLocation(finalPath);
+				
 				// I dont' know what the heck it's not working in PKG
 				// if I write:
 				// filebrowsing.label = setting.getlabelFor(dir)
@@ -109,8 +113,6 @@
 				var tmpLabel: String = setting.getLabelFor(fileDir);
 				fileBrowsing.label = tmpLabel;
 				
-				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
-				fileBrowsing.file = new FileLocation(finalPath);
 			}
 			
 			protected function fileCancel():void
@@ -142,14 +144,14 @@
 				var item:PathListItemVO = new PathListItemVO(null, null);
 				if (setting.relativeRoot)
 				{
-					item.file = new FileLocation();
+					//item.file = new FileLocation();
 					item.label = NOT_SET_PATH_MESSAGE;
 					/*item.file = new FileLocation(setting.relativeRoot.fileBridge.nativePath);
 					item.label = "/";*/
 				}
 				else
 				{
-					item.file = new FileLocation();
+					//item.file = new FileLocation();
 					item.label = NOT_SET_PATH_MESSAGE;
 				}
 				
