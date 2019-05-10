@@ -125,6 +125,13 @@ package actionScripts.impls
 					
 					if (isValidFilePath(selectedPathValue))
 					{
+						// to overcome a macOS bug where previously selected
+						// file can return to directory browsing
+						if (!testSelectionIfDirectory(null, selectedPathValue))
+						{
+							return;
+						}
+						
 						selectListner(new File(selectedPathValue));
 						updateCoreFilePathOnBrowse(selectedPathValue);
 					}
@@ -154,9 +161,8 @@ package actionScripts.impls
 				
 				// to overcome a macOS bug where previously selected
 				// file can return to directory browsing
-				if (!(event.target as File).isDirectory)
+				if (!testSelectionIfDirectory(event.target as File))
 				{
-					Alert.show("Selected file is not Directory.", "Error!");
 					return;
 				}
 				
@@ -167,6 +173,23 @@ package actionScripts.impls
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
+			}
+			function testSelectionIfDirectory(byFile:File=null, byPath:String=null):Boolean
+			{
+				var isValid:Boolean;
+				// to overcome a macOS bug where previously selected
+				// file can return to directory browsing
+				if (byFile && byFile.isDirectory)
+				{
+					isValid = true;
+				}
+				else if (byPath && FileUtils.isPathDirectory(byPath))
+				{
+					isValid = true;
+				}
+				
+				if (!isValid) Alert.show("Selected file is not Directory.", "Error!");
+				return isValid;
 			}
 		}
 		
