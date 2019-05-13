@@ -23,12 +23,10 @@ package actionScripts.plugins.versionControl
 	import flash.events.Event;
 	
 	import mx.collections.ArrayList;
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
