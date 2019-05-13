@@ -252,8 +252,14 @@ package actionScripts.plugin.actionscript.as3project
 				
 				importFDProject(flashDevelopProjectFile);
 			}
-			else if (isFBProject) importFBProject();
-			else if (isFDProject) importFDProject(flashDevelopProjectFile);
+			else if (isFBProject)
+			{
+				importFBProject();
+			}
+			else if (isFDProject)
+			{
+				importFDProject(flashDevelopProjectFile);
+			}
 		}
 		
 		private function onExistingSourceProjectConfirm(event:CloseEvent):void
@@ -336,7 +342,7 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			if (!canCreateProject(event)) return;
+			//if (!canCreateProject(event)) return;
 			
 			model.flexCore.createProject(event);
 		}

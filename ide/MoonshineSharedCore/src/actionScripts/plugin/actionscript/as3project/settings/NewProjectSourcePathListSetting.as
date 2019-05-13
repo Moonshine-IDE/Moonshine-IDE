@@ -32,7 +32,7 @@ package actionScripts.plugin.actionscript.as3project.settings
 		
 		private var rdr:NewProjectSourcePathListSettingRenderer;
 		
-		private var _project:AS3ProjectVO;
+		private var _project:Object;
 		private var _visible:Boolean = true;
 
 		public function NewProjectSourcePathListSetting(provider:Object, name:String, label:String, 
@@ -79,12 +79,16 @@ package actionScripts.plugin.actionscript.as3project.settings
 			return _visible;
 		}
 
-		public function set project(value:AS3ProjectVO):void
+		public function set project(value:Object):void
 		{
 			_project = value;
-			if (rdr) rdr.resetAllProjectPaths();
+			if (rdr)
+			{
+				rdr.resetAllProjectPaths();
+			}
 		}
-		[Bindable] public function get project():AS3ProjectVO
+		[Bindable]
+		public function get project():Object
 		{
 			return _project;
 		}

@@ -78,8 +78,6 @@ package actionScripts.valueObjects
 			projectReference = new ProjectReferenceVO();
 			projectReference.name = projectName;
 			projectReference.path = folder.fileBridge.nativePath;
-			
-			folderLocation = folder;
 
 			folderLocation.fileBridge.name = this.projectName = projectName;
 			shallUpdateToTreeView = updateToTreeView;
@@ -122,9 +120,9 @@ package actionScripts.valueObjects
 		{
 			return folderLocation.fileBridge.nativePath;
 		}
-		public function set folderPath(v:String):void 
+		public function set folderPath(value:String):void
 		{
-			folderLocation.fileBridge.nativePath = v;
+			folderLocation.fileBridge.nativePath = value;
 		}
 		
 		public function saveSettings():void	

@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import flash.display.DisplayObject;
+	import actionScripts.plugin.project.vo.ProjectShellVO;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
     import flash.net.SharedObject;
@@ -81,7 +84,7 @@ package actionScripts.plugins.as3project
 		private var newProjectTypeSetting:MultiOptionSetting;
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
-		private var project:AS3ProjectVO;
+		private var project:Object;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
@@ -94,13 +97,13 @@ package actionScripts.plugins.as3project
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
 		private var isFlexJSRoyalProject:Boolean;
+		private var isJavaProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
-		private var _libraryProjectTemplateType:String;
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
 		
@@ -182,16 +185,7 @@ package actionScripts.plugins.as3project
 		{
 			return _projectTemplateType;
 		}
-		
-		public function set libraryProjectTemplateType(value:String):void
-		{
-			_libraryProjectTemplateType = value;
-		}
-		public function get libraryProjectTemplateType():String
-		{
-			return _libraryProjectTemplateType;
-		}
-		
+
 		public function get customFlexSDK():String
 		{
 			return _customFlexSDK;
@@ -222,13 +216,13 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				project = new AS3ProjectVO(event.templateDir, null, false);
+				project = new ProjectShellVO(event.templateDir, null);
 			}
 			else
 			{
 				project = FlashDevelopImporter.parse(event.settingsFile, null, null, false);
 			}
-			
+
 			project.isVisualEditorProject = isVisualEditorProject;
 			project.isLibraryProject = isLibraryProject;
 
@@ -387,7 +381,7 @@ package actionScripts.plugins.as3project
             return projectFileExtension != "as3proj" || projectFileExtension != "veditorproj" || !projectFileExtension;
         }
 
-		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
+		private function getProjectSettings(project:Object, eventObject:NewProjectEvent):SettingsWrapper
 		{
 			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
 			if (historyPaths.length == 0)
@@ -453,8 +447,14 @@ package actionScripts.plugins.as3project
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
-			else if (isProjectFromExistingSource) newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, AbstractSetting.MESSAGE_IMPORTANT);
-			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			else if (isProjectFromExistingSource)
+			{
+				newProjectPathSetting.setMessage("(Note) Project with existing source directory is:\n"+ value.fileBridge.nativePath, AbstractSetting.MESSAGE_IMPORTANT);
+			}
+			else
+			{
+				newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			}
 			
 			if (newProjectPathSetting.stringValue == "") 
 			{
@@ -530,7 +530,7 @@ package actionScripts.plugins.as3project
 			}
 			
 			var view:SettingsView = event.target as SettingsView;
-			var project:AS3ProjectVO = view.associatedData as AS3ProjectVO;
+			var project:Object = view.associatedData;
 			//var targetFolder:FileLocation = project.folderLocation = _isProjectFromExistingSource ? project.folderLocation.resolvePath(project.name) : project.folderLocation;
 			var targetFolder:FileLocation = project.folderLocation;
 
@@ -606,7 +606,7 @@ package actionScripts.plugins.as3project
 			}
 		}
 
-		private function exportVisualEditorProject(project:AS3ProjectVO, exportProject:AS3ProjectVO):void
+		private function exportVisualEditorProject(project:Object, exportProject:AS3ProjectVO):void
 		{
 			var mainExportedFile:FileLocation = exportProject.targets[0];
 			var mainProjectFile:FileLocation = project.targets[0];
@@ -629,13 +629,13 @@ package actionScripts.plugins.as3project
 			}
 		}
 
-		private function createFileSystemBeforeSave(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
+		private function createFileSystemBeforeSave(shell:Object, exportProject:AS3ProjectVO = null):Object
 		{
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
-			pvo = getProjectWithTemplate(pvo, exportProject);
+			var pvo:Object = getProjectWithTemplate(shell, exportProject);
 			
-			var templateDir:FileLocation = templateLookup[pvo];
+			var templateDir:FileLocation = templateLookup[shell];
 			var projectName:String = pvo.projectName;
 			var sourceFile:String = (_isProjectFromExistingSource && !isLibraryProject) ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
 			var sourceFileWithExtension:String;
@@ -888,10 +888,18 @@ package actionScripts.plugins.as3project
             return pvo;
 		}
 
-		private function getProjectWithTemplate(pvo:AS3ProjectVO, exportProject:AS3ProjectVO = null):AS3ProjectVO
+		private function getProjectWithTemplate(pvo:Object, exportProject:AS3ProjectVO = null):Object
 		{
-			if (!projectTemplateType) return pvo;
-			
+			if (!projectTemplateType)
+			{
+				return pvo;
+			}
+
+			if (pvo is ProjectShellVO)
+			{
+				pvo = (pvo as ProjectShellVO).getProjectOutOfShell(projectTemplateType);
+			}
+
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
@@ -914,8 +922,11 @@ package actionScripts.plugins.as3project
                         var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
                         var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
                         templateLookup[pvo] = template.file;
-                        pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
-                        pvo.folderLocation = tmpLocation;
+						if (!isJavaProject)
+						{
+							pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
+						}
+						pvo.folderLocation = tmpLocation;
                         pvo.projectName = tmpName;
                         pvo.projectWithExistingSourcePaths = tmpExistingSource;
                         pvo.isProjectFromExistingSource = tmpIsExistingProjectSource;
@@ -983,6 +994,10 @@ package actionScripts.plugins.as3project
 			else if (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1)
 			{
 				isFlexJSRoyalProject = true;
+			}
+			else if (templateName.indexOf(ProjectTemplateType.JAVA) != -1)
+			{
+				isJavaProject = true;
 			}
             else
             {

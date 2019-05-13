@@ -44,7 +44,7 @@
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			
-			[Bindable] public var wrapperBelongToProject:ProjectVO;
+			[Bindable] public var wrapperBelongToProject:Object;
 			[Bindable] public var isInterfaceDialog:Boolean;
 			
 			[Bindable] public var wrapperOfFolderLocation:FileWrapper;
