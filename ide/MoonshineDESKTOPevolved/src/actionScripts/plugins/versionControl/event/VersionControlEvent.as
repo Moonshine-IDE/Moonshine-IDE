@@ -29,6 +29,7 @@ package actionScripts.plugins.versionControl.event
 		public static const LOAD_REMOTE_SVN_LIST:String = "loadRemoteSvnList";
 		public static const CLONE_CHECKOUT_REQUESTED:String = "cloneCheckoutRequested";
 		public static const CLONE_CHECKOUT_COMPLETED:String = "cloneCheckoutCompleted";
+		public static const RESTORE_DEFAULT_REPOSITORIES:String = "restoreDefaultRepositories";
 		
 		public var value:Object;
 		
