@@ -19,47 +19,52 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.languageServer.LanguageClient;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-    import actionScripts.utils.HtmlFormatter;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
-
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
     import flash.events.Event;
+    import flash.events.EventDispatcher;
+    import flash.events.MouseEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
-    import flash.utils.IDataInput;
-
-    import no.doomsday.console.ConsoleUtil;
-    import flash.events.EventDispatcher;
-    import mx.utils.SHA256;
-    import flash.utils.ByteArray;
-    import components.popup.StandardPopup;
-    import spark.components.Button;
-    import flash.events.MouseEvent;
-    import mx.managers.PopUpManager;
-    import mx.core.FlexGlobals;
-    import flash.display.DisplayObject;
-    import actionScripts.events.ExecuteLanguageServerCommandEvent;
-    import flash.net.navigateToURL;
     import flash.net.URLRequest;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
-    import actionScripts.ui.editor.JavaTextEditor;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.utils.applyWorkspaceEdit;
-    import actionScripts.valueObjects.WorkspaceEdit;
+    import flash.net.navigateToURL;
+    import flash.utils.ByteArray;
+    import flash.utils.IDataInput;
+    
+    import mx.core.FlexGlobals;
+    import mx.managers.PopUpManager;
+    import mx.utils.SHA256;
+    
+    import spark.components.Button;
+    
+    import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
-    import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.languageServer.LanguageClient;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.plugin.console.ConsoleOutputter;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.JavaTextEditor;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.HtmlFormatter;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.applyWorkspaceEdit;
+    import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
+    import actionScripts.valueObjects.WorkspaceEdit;
+    
+    import components.popup.StandardPopup;
+    
+    import no.doomsday.console.ConsoleUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -110,7 +115,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 
 			prepareApplicationStorage();
-			startNativeProcess();
+			preTaskLanguageServer();
 		}
 
 		public function get project():ProjectVO
@@ -178,6 +183,14 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
 		}
+		
+		private function preTaskLanguageServer():void
+		{
+			if (!requireUpdateGradleClasspath()) 
+			{
+				startNativeProcess();
+			}
+		}
 
 		private function prepareApplicationStorage():void
 		{
@@ -214,6 +227,67 @@ package actionScripts.languageServer
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, ConsoleOutputEvent.TYPE_ERROR)
 				);
+			}
+		}
+		
+		private function requireUpdateGradleClasspath():Boolean
+		{
+			// in case of Gradle project we need to
+			// update its eclipse plugin
+			if (IDEModel.getInstance().gradlePath && _project.hasGradleBuild())
+			{
+				if(_nativeProcess)
+				{
+					trace("Error: Java language server process already exists!");
+					return true;
+				}
+				
+				var gradleFolder:File = new File(IDEModel.getInstance().gradlePath);
+				var gradleFileName:String = (Settings.os == "win") ? "gradle.bat" : "gradle";
+				gradleFileName = gradleFolder.resolvePath("bin/"+gradleFileName).nativePath;
+				
+				var compilerArg:String = "\""+ gradleFileName +"\" eclipse";
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					null, "Updating Gradle classpath", false
+				));
+				return true;
+			}
+			
+			return false;
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var cmdFile:File;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				_shellInfo = new NativeProcessStartupInfo();
+				_shellInfo.arguments = processArgs;
+				_shellInfo.executable = cmdFile;
+				_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+				
+				_nativeProcess = new NativeProcess();
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
+				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
+				_nativeProcess.start(_shellInfo);
 			}
 		}
 
@@ -351,7 +425,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				startNativeProcess();
+				preTaskLanguageServer();
 			}
 		}
 
@@ -378,6 +452,25 @@ package actionScripts.languageServer
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
 			trace(data);
 		}
+		
+		private function shellErrorOnGradleClasspath(e:ProgressEvent):void
+		{
+			var output:IDataInput = _nativeProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			ConsoleUtil.print("shellError while updating Gradle classpath" + data + ".");
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			trace(data);
+		}
+		
+		private function shellDataOnGradleClasspath(e:ProgressEvent):void 
+		{
+			if(_nativeProcess)
+			{
+				var output:IDataInput = _nativeProcess.standardOutput;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			}
+		}
 
 		private function shellExit(e:NativeProcessExitEvent):void
 		{
@@ -398,6 +491,20 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
+				preTaskLanguageServer();
+			}
+		}
+		
+		private function shellExitAfterGradleClasspath(event:NativeProcessExitEvent):void
+		{
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
+			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+			_nativeProcess.exit();
+			_nativeProcess = null;
+			
+			if (event.exitCode == 0)
+			{
 				startNativeProcess();
 			}
 		}
