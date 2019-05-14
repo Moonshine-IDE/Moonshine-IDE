@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.vo.ProjectShellVO;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -27,8 +29,10 @@ package actionScripts.plugins.as3project
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
+
+	import mx.collections.ArrayCollection;
+
+	import mx.collections.ArrayCollection;
     import mx.controls.Alert;
     import mx.utils.ObjectUtil;
     
@@ -109,13 +113,21 @@ package actionScripts.plugins.as3project
 		
 		public function CreateProject(event:NewProjectEvent)
 		{
+
+			// if opened by Open project, event.settingsFile will be false
+			// and event.templateDir will be open folder location
+			isOpenProjectCall = !event.settingsFile;
+
 			// update template path to custom in case
 			// the original template have modified
 			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.templateDir);
 			if (modifiedTemplate.fileBridge.exists)
 			{
 				event.templateDir = modifiedTemplate;
-				event.settingsFile = modifiedTemplate.resolvePath(event.settingsFile.fileBridge.name);
+				if (event.settingsFile)
+				{
+					event.settingsFile = modifiedTemplate.resolvePath(event.settingsFile.fileBridge.name);
+				}
 			}
 			
 			if (!allProjectTemplates)
@@ -144,17 +156,19 @@ package actionScripts.plugins.as3project
 		
 		public function get allProjectTemplates():ArrayCollection
 		{
-			if (!isOpenProjectCall) return _allProjectTemplates;
-			
-			var tmpCollection:ArrayCollection = new ArrayCollection();
-			for each (var i:TemplateVO in _allProjectTemplates)
+			if (!isOpenProjectCall)
 			{
-				// lets not include Library Project option in case of
-				// project with existing source for cutting complexities
-				if (i.title != ProjectTemplateType.LIBRARY_PROJECT) tmpCollection.addItem(i);
+				return _allProjectTemplates;
 			}
-			
-			return tmpCollection;
+
+			if (_allProjectTemplates)
+			{
+				return new ArrayCollection(_allProjectTemplates.source.filter(function(item:TemplateVO, index:int, arr:Array):Boolean {
+					return item.title != ProjectTemplateType.LIBRARY_PROJECT
+				}));
+			}
+
+			return null;
 		}
 		
 		public function get isProjectFromExistingSource():Boolean
@@ -209,10 +223,6 @@ package actionScripts.plugins.as3project
 			
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			//Read recent project path from shared object
-			
-			// if opened by Open project, event.settingsFile will be false
-			// and event.templateDir will be open folder location
-			isOpenProjectCall = !event.settingsFile;
 
 			if (isOpenProjectCall)
 			{
@@ -841,9 +851,15 @@ package actionScripts.plugins.as3project
 				descriptorFileLocation.fileBridge.save(stringOutput);
 			}
 
-			var projectSettingsFile:String = isVisualEditorProject && !exportProject ?
-                    projectName+".veditorproj" :
-                    projectName+".as3proj";
+			var projectSettingsFile:String = projectName + ".as3proj";
+			if (isVisualEditorProject && !exportProject)
+			{
+				projectName+".veditorproj";
+			}
+			else if (isJavaProject)
+			{
+				projectName+".javaproj";
+			}
 
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
@@ -882,8 +898,15 @@ package actionScripts.plugins.as3project
 				pvo.isActionScriptOnly = false;
 			}
 
-			// Write settings
-			FlashDevelopExporter.export(pvo, settingsFile);
+			if (isJavaProject)
+			{
+				JavaExporter.export(pvo as JavaProjectVO);
+			}
+			else
+			{
+				// Write settings
+				FlashDevelopExporter.export(pvo as AS3ProjectVO, settingsFile);
+			}
 
             return pvo;
 		}
@@ -1005,7 +1028,7 @@ package actionScripts.plugins.as3project
             }
         }
 		
-		private function getProjectMenuType(pvo:AS3ProjectVO):String
+		private function getProjectMenuType(pvo:Object):String
 		{
 			if (pvo.isPrimeFacesVisualEditorProject)
 			{
@@ -1029,7 +1052,12 @@ package actionScripts.plugins.as3project
 			{
 				return ProjectMenuTypes.JS_ROYALE;
 			}
-			
+
+			if (isJavaProject)
+			{
+				return ProjectMenuTypes.JAVA;
+			}
+
 			return ProjectMenuTypes.FLEX_AS;
 		}
     }
