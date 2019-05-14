@@ -78,9 +78,14 @@
 			this.message = value;
 			this.messageType = type;
 
-			if(!lblMessage || !this.message)
+			if(!lblMessage)
 			{
 				return;
+			}
+			if (!this.message)
+			{
+				lblMessage.text = "";
+				lblMessage.includeInLayout = lblMessage.visible = false;
 			}
 
 			lblMessage.includeInLayout = lblMessage.visible = true;

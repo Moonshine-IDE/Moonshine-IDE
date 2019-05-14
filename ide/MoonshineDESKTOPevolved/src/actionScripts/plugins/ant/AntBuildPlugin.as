@@ -47,6 +47,7 @@ package actionScripts.plugins.ant
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.ant.events.AntBuildEvent;
@@ -54,8 +55,11 @@ package actionScripts.plugins.ant
     import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.HelperUtils;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ComponentTypes;
+    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
     
@@ -96,6 +100,7 @@ package actionScripts.plugins.ant
         private var antBuildScreen:IFlexDisplayObject;
         private var isASuccessBuild:Boolean;
         private var selectedProject:AS3ProjectVO;
+		private var pathSetting:PathSetting;
 
         private var _antHomePath:String;
         private var _buildWithAnt:Boolean;
@@ -153,10 +158,23 @@ package actionScripts.plugins.ant
 
         public function getSettingsList():Vector.<ISetting>
         {
+			onSettingsClose();
+			pathSetting = new PathSetting(this, 'antHomePath', 'Ant Home', true, antHomePath);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			
             return Vector.<ISetting>([
-                new PathSetting(this, 'antHomePath', 'Ant Home', true, antHomePath)
+                pathSetting
             ]);
         }
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
 
         override public function deactivate():void
         {
@@ -178,6 +196,24 @@ package actionScripts.plugins.ant
             selectedProject = null;
             model.antScriptFile = null;
         }
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_ANT);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_ANT, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Directory must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					pathSetting.setMessage(null);
+				}
+			}
+		}
 
         private function onAntURLSet(event:NewFileEvent):void
         {
