@@ -27,6 +27,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.ui.parser.AS3LineParser;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
 	public class JSSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
@@ -34,7 +35,7 @@ package actionScripts.plugin.syntax
 		private var formats:Object = {};
 		
 		override public function get name():String 			{return "JS Syntax Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for JS.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 		
@@ -80,7 +81,7 @@ package actionScripts.plugin.syntax
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "js")
+			if (event.fileExtension == "js" || event.fileExtension == "json")
 			{
 				event.editor.setParserAndStyles(new AS3LineParser(), formats);
 			}

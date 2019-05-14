@@ -48,6 +48,11 @@ package actionScripts.impls
 			}
 		}
 		
+		public function isPathExists(value:String):Boolean
+		{
+			return false;
+		}
+		
 		public function getDirectoryListing():Array
 		{
 			return _file.getDirectoryListing();
@@ -201,6 +206,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function getFileByPath(value:String):Object
+		{
+			return (new FileReference(value));
+		}
+		
 		public function get url():String
 		{
 			//TODO: implement function
@@ -222,6 +232,7 @@ package actionScripts.impls
 			//TODO: implement function
 			return _file;
 		}
+		
 		
 		public function get parent():FileLocation
 		{
@@ -369,7 +380,12 @@ package actionScripts.impls
 			_file.data = value;
 		}
 		
-		public function checkFileExistenceAndReport():Boolean
+		public function get nameWithoutExtension():String
+		{
+			return null;
+		}
+		
+		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{
 			// this method has different importance and
 			// working in desktop project

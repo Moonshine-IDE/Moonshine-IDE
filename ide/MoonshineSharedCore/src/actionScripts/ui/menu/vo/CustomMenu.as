@@ -28,106 +28,125 @@ package actionScripts.ui.menu.vo
 	 */
 	public class CustomMenu implements ICustomMenu, IMenuEntity
 	{
-		
+		public var dynamicItem:Boolean;
+
 		private var _items:Vector.<ICustomMenuItem> = new Vector.<ICustomMenuItem>();
-		public function get items():Vector.<ICustomMenuItem> { return _items; }
-		
-		
-		
-		
-		public function get numItems():int {
-			return _items.length;
+		public function get items():Vector.<ICustomMenuItem>
+		{
+			return _items;
 		}
-		
-		
-		
-		private var _label:String
-		public function get label():String {
+
+		public function get numItems():int
+		{
+			return items.length;
+		}
+
+		private var _label:String;
+		public function get label():String
+		{
 			return _label;
 		}
-		public function set label(value:String):void {
+
+		public function set label(value:String):void
+		{
 			if (label == value)  return;
-			_label = value;		
-			
+			_label = value;
 		}
-		
-	
-	
-		public function CustomMenu(label:String="",items:Vector.<IMenuEntity>=null) {			
+
+		public function CustomMenu(label:String="",items:Vector.<IMenuEntity>=null)
+		{
 			this.label = label;			
 		}
-	
-		
-		
-		
-		public function addItem(item:ICustomMenuItem):ICustomMenuItem {			
+
+		public function addItem(item:ICustomMenuItem):ICustomMenuItem
+		{
 			// TODO : Check if item is bound to another ICustomMenu
-			//if(item.
-			_items.push(item);
+			items.push(item);
 			return item;
 		}
-		public function addItemAt(item:ICustomMenuItem, index:int):ICustomMenuItem {
-			
+
+		public function addItemAt(item:ICustomMenuItem, index:int):ICustomMenuItem
+		{
 			var pos:int = index;
-			if(index > _items.length)
-				pos = _items.length;	
-			
-			
+			if(index > items.length)
+				pos = items.length;
+
 			var removeIndex:int = getItemIndex(item);
-			
-			if(removeIndex ==-1)				
-				_items.splice(removeIndex,1);
-			
-			_items.splice(pos,0,item);
+			if(removeIndex ==-1)
+			{
+				items.splice(removeIndex, 1);
+			}
+
+			items.splice(pos,0,item);
+
 			return item;
 		}
-		public function addSubmenu(submenu:ICustomMenu, label:String=null):ICustomMenuItem {
+		public function addSubmenu(submenu:ICustomMenu, label:String=null):ICustomMenuItem
+		{
 			return addItem(new CustomMenuItem(label||submenu.label,false,{
 				data:submenu
-				
-			}))
+			}));
 		}
-		public function addSubMenuAt(submenu:ICustomMenu, index:int, label:String=null):ICustomMenuItem {
+		public function addSubMenuAt(submenu:ICustomMenu, index:int, label:String=null):ICustomMenuItem
+		{
 			return addItemAt(new CustomMenuItem(label || submenu.label,false,{
 				data:submenu
 			}),index);
 			
 		}
 		
-		public function containsItem(item:ICustomMenuItem):Boolean {
+		public function containsItem(item:ICustomMenuItem):Boolean
+		{
 			return false;
 		}		
 		
-		public function getItemAt(index:int):ICustomMenuItem {
-			if(index > _items.length || index <0) return null;
-			return _items[index];
-		}
-		public function getItemByName(name:String):ICustomMenuItem {
-			
-				for each(var entity:ICustomMenuItem in _items){
-					if(!entity) continue;
-					if(entity.label == name) return entity;
-				}
+		public function getItemAt(index:int):ICustomMenuItem
+		{
+			if(index > items.length || index <0)
+			{
 				return null;
+			}
+
+			return items[index];
 		}
-		public function getItemIndex(item:ICustomMenuItem):int {
+
+		public function getItemByName(name:String):ICustomMenuItem
+		{
+			for each(var entity:ICustomMenuItem in items)
+			{
+				if(!entity) continue;
+				if(entity.label == name) return entity;
+			}
+			return null;
+		}
+
+		public function getItemIndex(item:ICustomMenuItem):int
+		{
 			return _items.indexOf(item);
 			
 		}
-		
-		/* INTERFACE com.moonshineproject.plugin.menu.interfaces.IMenuEntity */
-	
-		
-		public function get menu():ICustomMenu{
+
+		public function removeItemAt(index:int):ICustomMenuItem
+		{
+			if(index > items.length || index <0)
+			{
+				return null;
+			}
+
+			var removedItem:ICustomMenuItem = this.getItemAt(index);
+			items.splice(index, 1);
+
+			return removedItem;
+		}
+
+		public function get menu():ICustomMenu
+		{
 			return null;
 		}
 		
-		public function set menu(value:ICustomMenu):void{
+		public function set menu(value:ICustomMenu):void
+		{
 			
 		}
-		
-		
-		
 	}
-
 }

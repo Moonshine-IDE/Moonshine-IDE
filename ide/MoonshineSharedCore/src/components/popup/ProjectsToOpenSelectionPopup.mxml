@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="600" height="300" minWidth="300" minHeight="200"
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:ns="library://ns.adobe.com/flashx/textLayout">
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			
+			import actionScripts.valueObjects.GenericSelectableObject;
+			
+			[Bindable] public var projects:ArrayCollection;
+			[Bindable] public var repositoryRoot:String;
+			
+			public var isSubmit:Boolean;
+			
+			private function onSubmit():void
+			{
+				// check if any selection exists 
+				if (!hasSelectionToChanges())
+				{
+					Alert.show("There is nothing to Open.", "Note!");
+					return;
+				}
+				
+				btnSubmit.enabled = false;
+				isSubmit = true;
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			protected function onSelectAllChange(event:Event):void
+			{
+				var isSelected:Boolean = event.target.selected;
+				for each (var i:GenericSelectableObject in projects)
+				{
+					i.isSelected = isSelected;
+				}
+			}
+			
+			protected function hasSelectionToChanges():Boolean
+			{
+				for each (var i:GenericSelectableObject in projects)
+				{
+					if (i.isSelected) return true;
+				}
+				
+				return false;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
+		<s:VGroup id="hgTitle"
+				  width="100%" gap="4" paddingBottom="4">
+			<s:Label text="Moonshine detected multiple sub-projects in this directory:"/>
+			<s:Label text="{repositoryRoot}"
+					 width="100%" maxDisplayedLines="4"/>
+		</s:VGroup>
+		<s:List id="lstFiles"
+				width="100%" height="70%" styleName="multiLineList"
+				dataProvider="{projects}"
+				requireSelection="true">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer height="22">
+						<fx:Script>
+							<![CDATA[
+								override public function set data(value:Object):void
+								{
+									if (value) 
+									{
+										super.data = value;
+										labelDisplay.text = data.data.name;
+									}
+								}
+							]]>
+						</fx:Script>
+						
+						<s:layout>
+							<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="6" gap="2"/>
+						</s:layout>
+						
+						<s:CheckBox id="cbSelect"
+									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+						<s:Label id="labelDisplay"
+								 paddingLeft="8"/>
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+		</s:List>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:CheckBox label="Select/Deselect All"
+					color="0xffffff" selected="true"
+					change="onSelectAllChange(event)"/>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit" 
+				  label="Open Selected Projects"
+				  styleName="darkButton" click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

@@ -18,13 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+    import flash.net.SharedObject;
+    
+    import mx.collections.ArrayCollection;
+    import mx.collections.Sort;
+    import mx.collections.SortField;
+    import mx.utils.ObjectUtil;
+    
     import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
-
-    import flash.net.SharedObject;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.locator.IDEModel;
+    import actionScripts.valueObjects.RepositoryItemVO;
+    import actionScripts.valueObjects.VersionControlTypes;
 
     public class SharedObjectUtil
 	{
@@ -58,6 +66,96 @@ package actionScripts.utils
 
             cookie.flush();
         }
+		
+		public static function getRepositoriesFromSO():ArrayCollection
+		{
+			var tmpCollection:ArrayCollection = new ArrayCollection();
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			var tmpRepository:RepositoryItemVO;
+			if (cookie.data.hasOwnProperty('savedRepositories'))
+			{
+				for each (var item:Object in cookie.data.savedRepositories)
+				{
+					tmpRepository = ObjectTranslator.objectToInstance(item, RepositoryItemVO) as RepositoryItemVO;
+					if (tmpRepository.children) 
+					{
+						if (tmpRepository.type == VersionControlTypes.XML)
+						{
+							// only in the case of Git type
+							// we shall parse children to parse saved
+							// git-meta (#503)
+							var children:Array = tmpRepository.children;
+							var subRepository:RepositoryItemVO;
+							tmpRepository.children = [];
+							for each (var subItem:Object in children)
+							{
+								subRepository = ObjectTranslator.objectToInstance(subItem, RepositoryItemVO) as RepositoryItemVO;
+								tmpRepository.children.push(subRepository);
+							}
+							
+							// sort the items
+							if (tmpRepository.children.length > 0)
+							{
+								tmpRepository.children.sortOn("url", Array.CASEINSENSITIVE);
+							}
+						}
+						else
+						{
+							// in case of SVN we'll continue
+							// to update children at runtime only
+							tmpRepository.children = [];
+						}
+					}
+					tmpCollection.addItem(tmpRepository);
+				}
+			}
+			
+			if (cookie.data.hasOwnProperty('defaultRepositoriesPopulated'))
+			{
+				ConstantsCoreVO.IS_DEFAULT_REPOSITORIES_POPULATED = true;
+			}
+			
+			// add sorting by type
+			tmpCollection.sort = new Sort([new SortField("type"), new SortField("url")]);
+			tmpCollection.refresh();
+			
+			return tmpCollection;
+		}
+		
+		public static function saveRepositoriesToSO(collection:ArrayCollection):void
+		{
+			var duplicate:ArrayCollection = ObjectUtil.copy(collection) as ArrayCollection;
+			
+			// we don't want to store children data
+			// only in case of non-Git item type.
+			// continue to save children to save any
+			// already parsed git-meta (#503)
+			for each (var repo:Object in duplicate)
+			{
+				if (repo.children && 
+					repo.children.length > 0 && 
+					repo.type == VersionControlTypes.SVN)
+				{
+					repo.children = [];
+				}
+				
+				// also don't store any password if asked to
+				// save for current session
+				repo.userPassword = null;
+			}
+			
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			cookie.data['savedRepositories'] = duplicate;
+			cookie.data['defaultRepositoriesPopulated'] = true;
+			cookie.flush();
+		}
+		
+		public static function resetRepositoriesSO():void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
+			cookie.clear();
+			cookie.flush();
+		}
 
 		public static function saveProjectTreeItemForOpen(item:Object, propertyNameKey:String,
                                                           propertyNameKeyValue:String):void

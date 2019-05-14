@@ -21,10 +21,12 @@ package actionScripts.plugin.visualEditor
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+
     public class VisualEditorProjectPlugin extends PluginBase
     {
         override public function get name():String 	{return "Visual Editor Project";}
-        override public function get author():String {return "Moonshine Project Team";}
+        override public function get author():String {return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
         override public function get description():String 	{return "Visual Editor project is aim to start create your application visually.";}
 
         public function VisualEditorProjectPlugin()

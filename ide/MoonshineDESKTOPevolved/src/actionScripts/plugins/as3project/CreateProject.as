@@ -27,6 +27,7 @@ package actionScripts.plugins.as3project
     
     import mx.collections.ArrayCollection;
     import mx.controls.Alert;
+    import mx.utils.ObjectUtil;
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GeneralEvent;
@@ -46,8 +47,8 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.SettingsView;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
-    import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.DropDownListSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.MultiOptionSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
@@ -65,6 +66,8 @@ package actionScripts.plugins.as3project
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.SDKReferenceVO;
+    import actionScripts.valueObjects.SDKTypes;
     import actionScripts.valueObjects.TemplateVO;
 	
     public class CreateProject
@@ -112,7 +115,10 @@ package actionScripts.plugins.as3project
 			
 			// determine if a given project is custom or Moonshine default
 			var customTemplateDirectory:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("templates/projects");
-			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1) isCustomTemplateProject = true;
+			if (event.templateDir.fileBridge.nativePath.indexOf(customTemplateDirectory.fileBridge.nativePath) != -1)
+			{
+				isCustomTemplateProject = true;
+			}
 			
 			if (isCustomTemplateProject)
 			{
@@ -188,12 +194,10 @@ package actionScripts.plugins.as3project
 		
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			// Only template for those we can handle
-			if (!isAllowedTemplateFile(event.projectFileEnding)) return;
-			
 			var lastSelectedProjectPath:String;
 
             setProjectType(event.templateDir.fileBridge.name);
+			setAutoSuggestSDKbyType();
 			
 			CONFIG::OSX
 				{
@@ -230,7 +234,6 @@ package actionScripts.plugins.as3project
 				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
 			
-			isFlexJSRoyalProject = event.templateDir.fileBridge.name.indexOf("Royale") != -1 || event.templateDir.fileBridge.name.indexOf("FlexJS") != -1;
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
@@ -377,8 +380,15 @@ package actionScripts.plugins.as3project
 
 		private function getProjectSettings(project:AS3ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
+			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0)
+			{
+				historyPaths.addItem(project.folderPath);
+			}
+			
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+			newProjectPathSetting.dropdownListItems = historyPaths;
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
@@ -629,29 +639,6 @@ package actionScripts.plugins.as3project
 			}
 
 			var targetFolder:FileLocation = pvo.folderLocation;
-			
-			if (_isProjectFromExistingSource && !isLibraryProject)
-			{
-				sourceFileWithExtension = pvo.projectWithExistingSourcePaths[1].fileBridge.name;
-			}
-			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
-			{
-				sourceFileWithExtension = pvo.projectName + ".as";
-			}
-			else if (isLibraryProject)
-			{
-				// we creates library project without any default created file inside
-				sourceFileWithExtension = null;
-			}
-			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
-			{
-				sourceFileWithExtension = pvo.projectName + ".xhtml";
-			}
-			else
-			{
-				sourceFileWithExtension = pvo.projectName + ".mxml";
-			}
-
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
@@ -673,16 +660,42 @@ package actionScripts.plugins.as3project
 				targetFolder = targetFolder.resolvePath(projectName);
 				targetFolder.fileBridge.createDirectory();
 			}
-			
-			// Time to do the templating thing!
+
 			var th:TemplatingHelper = new TemplatingHelper();
+
+			if (_isProjectFromExistingSource && !isLibraryProject)
+			{
+				th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
+			}
+			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
+			{
+				sourceFileWithExtension = pvo.projectName + ".as";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isLibraryProject)
+			{
+				// we creates library project without any default created file inside
+				sourceFileWithExtension = null;
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+			{
+				sourceFileWithExtension = pvo.projectName + ".xhtml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else
+			{
+				sourceFileWithExtension = pvo.projectName + ".mxml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+
+			// Time to do the templating thing!
 			th.isProjectFromExistingSource = _isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
 			th.templatingData["$SourcePath"] = sourcePath;
-			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 			th.templatingData["$SourceNameOnly"] = sourceFile;
 			th.templatingData["$ProjectSWF"] = sourceFile +".swf";
 			th.templatingData["$ProjectSWC"] = sourceFile +".swc";
@@ -825,7 +838,7 @@ package actionScripts.plugins.as3project
                     null;
 
             // Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile);
+			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
 			pvo.projectName = projectName;
 			pvo.isLibraryProject = isLibraryProject;
 			if (pvo.isLibraryProject)
@@ -872,11 +885,11 @@ package actionScripts.plugins.as3project
                         ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
                         allProjectTemplates;
 
-                for each (var i:TemplateVO in projectsTemplates)
+                for each (var template:TemplateVO in projectsTemplates)
                 {
-                    if (i.title == projectTemplateType)
+                    if (template.title == projectTemplateType)
                     {
-                        setProjectType(i.title);
+                        setProjectType(template.title);
 
                         var templateSettingsName:String = isVisualEditorProject && !exportProject ?
                                 "$Settings.veditorproj.template" :
@@ -886,8 +899,8 @@ package actionScripts.plugins.as3project
                         var tmpName:String = pvo.projectName;
                         var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
                         var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
-                        templateLookup[pvo] = i.file;
-                        pvo = FlashDevelopImporter.parse(i.file.fileBridge.resolvePath(templateSettingsName));
+                        templateLookup[pvo] = template.file;
+                        pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
                         pvo.folderLocation = tmpLocation;
                         pvo.projectName = tmpName;
                         pvo.projectWithExistingSourcePaths = tmpExistingSource;
@@ -898,6 +911,30 @@ package actionScripts.plugins.as3project
             }
 
 			return pvo;
+		}
+		
+		private function setAutoSuggestSDKbyType():void
+		{
+			customFlexSDK = null;
+			
+			var sdkReference:SDKReferenceVO;
+			if (isFeathersProject)
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
+			}
+			else if (isFlexJSRoyalProject)
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
+			}
+			else
+			{
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+			}
+			
+			if (sdkReference)
+			{
+				customFlexSDK = sdkReference.path;
+			}
 		}
 
         private function setProjectType(templateName:String):void
@@ -928,6 +965,10 @@ package actionScripts.plugins.as3project
 			else if (templateName.indexOf(ProjectTemplateType.AWAY3D) != -1)
 			{
 				isAway3DProject = true;
+			}
+			else if (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1)
+			{
+				isFlexJSRoyalProject = true;
 			}
             else
             {

@@ -23,7 +23,7 @@ package actionScripts.valueObjects
 		public var data:Object;
 		public var isSelected:Boolean;
 		
-		public function GenericSelectableObject(isSelcted:Boolean, data:Object)
+		public function GenericSelectableObject(isSelcted:Boolean=false, data:Object=null)
 		{
 			this.isSelected = isSelcted;
 			this.data = data;

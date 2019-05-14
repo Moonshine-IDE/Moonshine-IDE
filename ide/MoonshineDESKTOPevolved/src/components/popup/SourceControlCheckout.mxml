@@ -26,32 +26,41 @@
 										   width="500" minWidth="400" minHeight="100" autoLayout="true"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
-	<fx:Metadata>
-		[Event(name="name", type="flash.events.Event")]
-	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.svn.event.SVNEvent;
+			import spark.components.BusyIndicator;
+			import spark.events.TextOperationEvent;
 			
-			public static const TYPE_SVN:String = "typeSVN";
-			public static const TYPE_GIT:String = "typeGit";
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.valueObjects.RepositoryItemVO;
+			import actionScripts.valueObjects.VersionControlTypes;
 			
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var type:String;
 			
+			public var editingRepository:RepositoryItemVO;
 			public var submitObject:Object;
 			public var isTrustServerCertificate:Boolean;
 			
 			[Bindable] private var isValidURL:Boolean;
 			[Bindable] private var isPathMapped:Boolean;
+			[Bindable] private var completionMessage:String;
+			[Bindable] private var initialContentHeight:Number;
 			
+			private var busyIndicator:BusyIndicator;
 			private var mappedPath:String
+			private var isFolderNameManuallyChanged:Boolean;
+			private var isFolderNameManuallyEmpty:Boolean;
 			private var model:IDEModel = IDEModel.getInstance();
 			
 			public function notifySVNCheckoutError():void
@@ -60,65 +69,70 @@
 				btnSubmit.enabled = true;
 			}
 			
+			override protected function closeThis():void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
+				super.closeThis();
+			}
+			
 			private function onCheckoutRequest():void
 			{
-				if (type == TYPE_SVN && cbLogin.selected)
+				var tmpArr:Array = new Array(fnValidator);
+				if (Validator.validateAll(tmpArr).length != 0)
 				{
-					var tmpArr : Array = new Array(eValidator, pValidator);
-					if (Validator.validateAll(tmpArr).length != 0)
-					{
-						return;
-					}
+					return;
 				}
 				
-				submitObject = (type == TYPE_GIT) ? {url:txtSource.text, target:mappedPath} : {url:txtSource.text, target:mappedPath, user:txtLogin.text, password:txtPassword.text, trustCertificate:isTrustServerCertificate};
+				submitObject = new Object();
+				submitObject.url = txtSource.text;
+				submitObject.target = mappedPath;
+				submitObject.targetFolder = txtFolderName.text;
+				submitObject.repository = editingRepository;
 				
-				// do not close if SVN
-				if (type != TYPE_SVN) dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				else 
-				{
-					dispatchEvent(new SVNEvent(SVNEvent.EVENT_CHECKOUT, null));
-					btnSubmit.enabled = false;
-				}
+				GlobalEventDispatcher.getInstance().addEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted, false, 0, true);
+				dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_REQUESTED));
+				currentState = "progress";
+				addRemoveBusyIndicator();
 			}
 			
 			private function browse():void
 			{
-				model.fileCore.browseForDirectory("Git checkout target", onDirectorySelected);
+				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected);
 			}
 			
 			private function onDirectorySelected(fileObj:Object):void
 			{
 				mappedPath = (fileObj as File).nativePath;
 				
+				VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE = true;
 				isPathMapped = true;
-				updatePossiblePath();
+				validateURLInput();
 			}
 			
-			private function updatePossiblePath():void
+			private function validateURLInput():void
 			{
+				var autoFolderName:String;
 				var searchRegExp:RegExp;
 				var results:Array;
-				if (type == TYPE_GIT)
+				if (type == VersionControlTypes.GIT)
 				{
 					// expected format is https://github.com/{organization/author}/{project}
-					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/([^/]+)(?:\\.git)?", "i");
+					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/.*/([^/]+)(?:\\.git)?", "i");
 					results = searchRegExp.exec(txtSource.text);
 					if (results != null)
 					{
 						isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath + model.fileCore.separator + results[0].split("/").pop() : 
-							"..." + model.fileCore.separator + results[0].split("/").pop();
-					}
-					else if (isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
+						if (!isPathMapped) txtTarget.prompt = "Parent directory";
+						moveCursorToTargetEnd();
+						autoFolderName = results[0].split("/").pop();
+						if (!isFolderNameManuallyChanged || isFolderNameManuallyEmpty)
+						{
+							txtFolderName.text = autoFolderName;
+							isFolderNameManuallyChanged = isFolderNameManuallyEmpty = false;
+						}
+						
+						return;
 					}
 				}
 				else
@@ -128,65 +142,153 @@
 					if (results != null)
 					{
 						isGitAvailable = isValidURL = true;
-						if (isPathMapped)
-						{
-							txtTarget.text = mappedPath + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
-						else
-						{
-							txtTarget.text = "..." + model.fileCore.separator + txtSource.text.split("/").pop();
-						}
-					}
-					else if (isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = mappedPath + model.fileCore.separator + "...";
-					}
-					else if (!isPathMapped)
-					{
-						isValidURL = false;
-						txtTarget.text = "...";
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
+						if (!isPathMapped) txtTarget.prompt = "Parent directory";
+						moveCursorToTargetEnd();
+						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
+						
+						return;
 					}
 				}
+				
+				if (!results && !isFolderNameManuallyChanged) txtFolderName.text = "";
+				isValidURL = false;
 			}
 			
 			protected function onCreationCompletes():void
 			{
+				if (editingRepository) 
+				{
+					txtSource.text = editingRepository.url;
+				}
+				if (VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE)
+				{
+					mappedPath = model.fileCore.nativePath;
+					isPathMapped = true;
+				}
+				
+				lblSeparator.text = File.separator;
 				txtSource.setFocus();
+				validateURLInput();
+			}
+			
+			protected function onFolderNameChanged(event:TextOperationEvent):void
+			{
+				if (StringUtil.trim(txtFolderName.text).length == 0)
+				{
+					isValidURL = false;
+					isFolderNameManuallyEmpty = true;
+					isFolderNameManuallyChanged = false;
+				}
+				else
+				{
+					isFolderNameManuallyEmpty = false;
+					isFolderNameManuallyChanged = true;
+					validateURLInput();
+				}
+			}
+			
+			private function moveCursorToTargetEnd():void
+			{
+				if (isPathMapped)
+				{
+					// this will move the cursor to the end
+					txtTarget.appendText('');
+				}
+			}
+			
+			private function onCloneCheckoutCompleted(event:VersionControlEvent):void
+			{
+				GlobalEventDispatcher.getInstance().removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
+				addRemoveBusyIndicator();
+				this.currentState = "complete";
+				
+				// check the completion type/status/message
+				if (event.value && event.value.hasError)
+				{
+					completionMessage = event.value.message;
+					txtCompletionMessage.setStyle("color", 0xff0000);
+				}
+				else
+				{
+					completionMessage = (type == VersionControlTypes.GIT) ? "Clone complete!" : "Checkout complete!";
+					completionMessage += "\nRepository downloaded at:\n"+ mappedPath + File.separator + txtFolderName.text;
+					txtCompletionMessage.setStyle("color", 0x000);
+				}
+			}
+			
+			private function addRemoveBusyIndicator():void
+			{
+				if (!busyIndicator)
+				{
+					busyIndicator = new BusyIndicator();
+					vgProgress.addElementAt(busyIndicator, 0);
+				}
+				else
+				{
+					vgProgress.removeElement(busyIndicator);
+					busyIndicator = null;
+				}
+			}
+			
+			protected function resetForm(event:MouseEvent):void
+			{
+				this.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function onCloseAll():void
+			{
+				// this should let versionControlPlugin close
+				// all its opened windows
+				GlobalEventDispatcher.getInstance().dispatchEvent(new VersionControlEvent(VersionControlEvent.CLOSE_MANAGE_REPOSITORIES));
+				this.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
+		<mx:StringValidator id="fnValidator" source="{txtFolderName}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 	</fx:Declarations>
+	<resizableTitleWindow:states>
+		<s:State name="default"/>
+		<s:State name="progress"/>
+		<s:State name="complete"/>
+	</resizableTitleWindow:states>
 	
 	<s:VGroup height="100%" width="100%" 
-			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"
+			  includeIn="default" creationComplete="initialContentHeight=event.target.height">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
-							  prompt="Repository URL" change="updatePossiblePath()"/>
+							  prompt="Repository URL" change="validateURLInput()"/>
 		<s:HGroup verticalAlign="middle" width="100%">
 			<view:PromptTextInput id="txtTarget" 
-								  prompt="Where to download" width="100%" styleName="textInput"
-								  editable="false" tabIndex="2"/>
-			<s:Button width="60" label="Browse" 
-					  styleName="lightButtonTight" 
-					  click="browse()" />
+								  prompt="Where to download" width="60%" styleName="textInput"
+								  tabIndex="2" editable="false"/>
+			<s:Button icon="@Embed('/elements/images/icoFolderBlue.png')"
+					  styleName="darkButton" toolTip="Choose Parent Directory"
+					  height="{btnSubmit.height}"
+					  click="browse()"/>
+			<s:Label id="lblSeparator"/>
+			<view:PromptTextInput id="txtFolderName"
+								  prompt="Target folder name" width="40%"
+								  styleName="textInput" restrict="0-9A-Za-z_"
+								  change="onFolderNameChanged(event)"/>
 		</s:HGroup>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{!isGitAvailable &amp;&amp; type == TYPE_GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == TYPE_GIT}"/>
+				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
 		<s:HGroup width="100%" verticalAlign="middle"
-				  includeInLayout="{type == TYPE_SVN}" visible="{type == TYPE_SVN}">
+				  includeInLayout="false" visible="false">
 			<s:CheckBox id="cbLogin"
 						label="Need Authentication" selected="false"/>
 			<s:CheckBox label="Trust Server Certificate"
 						change="isTrustServerCertificate=event.target.selected"/>
 		</s:HGroup>
 		<s:VGroup width="100%"
-				  visible="{cbLogin.selected &amp;&amp; type == TYPE_SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == TYPE_SVN}">
+				  visible="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}">
 			<view:PromptTextInput
 				id="txtLogin" 
 				prompt="User Name"
@@ -200,10 +302,41 @@
 		</s:VGroup>
 	</s:VGroup>
 	
+	<s:VGroup id="vgProgress" 
+			  width="100%" height="{initialContentHeight}"
+			  includeIn="progress"
+			  horizontalAlign="center" verticalAlign="middle">
+		<s:Label text="In progress.."
+				 styleName="uiTextSettingsLabel" color="0x000"/>
+	</s:VGroup>
+	
+	<s:VGroup width="100%" height="{initialContentHeight}"
+			  includeIn="complete" verticalAlign="middle" horizontalAlign="center">
+		<s:Label id="txtCompletionMessage" 
+				 text="{completionMessage}"
+				 styleName="smallText" 
+				 textAlign="center" width="100%"
+				 paddingLeft="20" paddingRight="20"
+				 maxDisplayedLines="5"/>
+	</s:VGroup>
+	
 	<resizableTitleWindow:controlBarContent>
-		<s:Spacer width="100%"/>
-		<s:Button id="btnSubmit" 
-				  label="{(type == TYPE_GIT) ? 'Pull' : 'Checkout'}" styleName="darkButton" enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
-				  click="onCheckoutRequest()"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="default">
+			<s:Spacer width="100%"/>
+			<s:Button id="btnSubmit" 
+					  label="{(type == VersionControlTypes.GIT) ? 'Clone' : 'Checkout'}" styleName="darkButton" 
+					  enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
+					  click="onCheckoutRequest()"/>
+		</s:HGroup>
+		<s:Spacer height="31" includeIn="progress"/>
+		<s:HGroup width="100%" verticalAlign="middle"
+				  includeIn="complete">
+			<s:Spacer width="100%"/>
+			<s:Button label="{(type == VersionControlTypes.GIT) ? 'Clone Another' : 'Checkout Another'}" styleName="darkButton"
+					  click="resetForm(event)"/>
+			<s:Button label="Close All" styleName="darkButton"
+					  click="onCloseAll()"/>
+		</s:HGroup>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

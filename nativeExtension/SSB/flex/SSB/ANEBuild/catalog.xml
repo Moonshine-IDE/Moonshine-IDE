@@ -2,7 +2,7 @@
 <swc xmlns="http://www.adobe.com/flash/swccatalog/9">
   <versions>
     <swc version="1.2" />
-    <flex version="4.14.0" build="20150123" minimumSupportedVersion="3.0.0" />
+    <flex version="4.16.1" build="20171115" minimumSupportedVersion="3.0.0" />
   </versions>
   <features>
     <feature-script-deps />
@@ -14,18 +14,18 @@
   </components>
   <libraries>
     <library path="library.swf">
-      <script name="_f411aada218fd76ec674eab4edbf03e6409d0d728db8134bd5066786a1c263f9_flash_display_Sprite" mod="1460705435171" signatureChecksum="992836427" >
-        <def id="_f411aada218fd76ec674eab4edbf03e6409d0d728db8134bd5066786a1c263f9_flash_display_Sprite" /> 
-        <dep id="flash.system:Security" type="e" /> 
-        <dep id="AS3" type="n" /> 
-        <dep id="flash.display:Sprite" type="i" /> 
-      </script>
-      <script name="actionScripts/interfaces/IScopeBookmarkInterface" mod="1460698301000" signatureChecksum="1412591956" >
+      <script name="actionScripts/interfaces/IScopeBookmarkInterface" mod="1552889409000" signatureChecksum="869503796" >
         <def id="actionScripts.interfaces:IScopeBookmarkInterface" /> 
         <dep id="AS3" type="n" /> 
         <dep id="Object" type="i" /> 
       </script>
-      <script name="net/prominic/SecurityScopeBookmark/Main" mod="1460704760000" signatureChecksum="3961371179" >
+      <script name="_9cf7fdc63669c2ee804909eac368ab1718b7ba9bd4189fca38d90f2b4cc1417f_flash_display_Sprite" mod="1554803688482" signatureChecksum="2106031069" >
+        <def id="_9cf7fdc63669c2ee804909eac368ab1718b7ba9bd4189fca38d90f2b4cc1417f_flash_display_Sprite" /> 
+        <dep id="flash.system:Security" type="e" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="flash.display:Sprite" type="i" /> 
+      </script>
+      <script name="net/prominic/SecurityScopeBookmark/Main" mod="1552889409000" signatureChecksum="3205880399" >
         <def id="net.prominic.SecurityScopeBookmark:Main" /> 
         <dep id="flash.external:ExtensionContext" type="e" /> 
         <dep id="flash.events:IEventDispatcher" type="s" /> 
@@ -35,7 +35,7 @@
         <dep id="actionScripts.interfaces:IScopeBookmarkInterface" type="i" /> 
       </script>
       <digests>
-        <digest type="SHA-256" signed="false" value="b48630b1a9620b5857fea8e9e36c29501b697df79e5042ea6b86336a6726fb74"   />
+        <digest type="SHA-256" signed="false" value="86ae995ff07f96958c69cd7f11f6e9437c015ead8964033487d79dacc878bfe5"   />
       </digests>
     </library>
   </libraries>

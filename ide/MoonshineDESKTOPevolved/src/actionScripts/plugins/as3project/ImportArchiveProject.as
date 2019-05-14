@@ -24,7 +24,9 @@ package actionScripts.plugins.as3project
     import flash.filesystem.File;
     import flash.net.SharedObject;
     
+    import mx.collections.ArrayCollection;
     import mx.controls.Alert;
+    import mx.utils.ObjectUtil;
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
@@ -45,6 +47,7 @@ package actionScripts.plugins.as3project
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.Unzip;
+
 	CONFIG::OSX
 		{
 		import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -260,8 +263,11 @@ package actionScripts.plugins.as3project
 
 		private function getProjectSettings():SettingsWrapper
 		{
+			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			
             newProjectNameSetting = new StringSetting(this, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(this, 'folderPath', 'Target Directory', true, null, false, true);
+			newProjectPathSetting.dropdownListItems = historyPaths;
 			archivePathSetting = new PathSetting(this, 'archivePath', 'Archive File', false);
 			archivePathSetting.fileFilters = ["*.zip"];
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);

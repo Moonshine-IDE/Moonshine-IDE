@@ -22,10 +22,11 @@
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark"
-			   width="475" height="280" minWidth="400" minHeight="200" title="How Moonshine supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
+			   width="475" height="280" minWidth="400" minHeight="200" title="How {ConstantsCoreVO.MOONSHINE_IDE_LABEL} supports native extension" skinClass="components.skins.ResizableTitleWindowSkin"
 			   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*">
 	<fx:Script>
 		<![CDATA[
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 		]]>
 	</fx:Script>

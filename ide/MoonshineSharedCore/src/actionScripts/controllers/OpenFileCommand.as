@@ -209,10 +209,14 @@ package actionScripts.controllers
 			}
 			
 			// Let plugins know that we're opening a file & abort it if they want to render it themselves
-			var plugEvent:FilePluginEvent = new FilePluginEvent(FilePluginEvent.EVENT_FILE_OPEN, file);
-			ged.dispatchEvent(plugEvent);
-			if (plugEvent.isDefaultPrevented())
-				return;
+			// as this will add a link to RECENT items, add only for non 'Tour de Flex' items
+			if (!openAsTourDe)
+			{
+				var plugEvent:FilePluginEvent = new FilePluginEvent(FilePluginEvent.EVENT_FILE_OPEN, file);
+				ged.dispatchEvent(plugEvent);
+				if (plugEvent.isDefaultPrevented())
+					return;
+			}
 			
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)

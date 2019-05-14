@@ -285,9 +285,9 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
 			updateDescriptorLoader.close();
 			
-			dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
+			/*dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
 				"Error downloading updater file, try again later.",
-				UpdaterErrorCodes.ERROR_9003, event.errorID));
+				UpdaterErrorCodes.ERROR_9003, event.errorID));*/
 		}
 		
 		/**

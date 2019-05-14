@@ -20,8 +20,8 @@ package actionScripts.valueObjects
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -48,6 +48,8 @@ package actionScripts.valueObjects
 		public var projectName:String;
 		public var fileNamesOnly:Vector.<String>;
 		public var classFilesInProject: ArrayCollection;
+		public var hasVersionControlType:String; // of VersionControlTypes
+		public var menuType:String = "";
 		
 		private var _projectFolder: FileWrapper;
 		
@@ -66,7 +68,6 @@ package actionScripts.valueObjects
 
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
-			//if (ConstantsCoreVO.IS_AIR && !folderLocation) folder = folder.getDirectoryListing();
 			classFilesInProject = new ArrayCollection();
 
 			folderLocation = folder;

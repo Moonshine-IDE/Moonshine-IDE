@@ -1,1 +1,0 @@
-Create project with Feathers SDK for mobile devices.

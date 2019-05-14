@@ -38,6 +38,7 @@ package actionScripts.events
 		public static const SAVE_PROJECT_SETTINGS:String = "SAVE_PROJECT_SETTINGS";
 		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
 		public static const EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG:String = "importProjectDirect";
+		public static const SEARCH_PROJECTS_IN_DIRECTORIES:String = "searchForProjectsInDirectories";
 		
 		public static const EVENT_IMPORT_PROJECT_ARCHIVE:String = "importProjectArchive";
 		

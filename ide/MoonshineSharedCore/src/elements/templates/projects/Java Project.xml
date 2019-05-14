@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Java Maven Project</title>
+        <homeTitle>Java Maven Project</homeTitle>
+        <name>Java Maven Project</name>
+        <icon>Java Maven Project.png</icon>
+        <description>Create a Java project built with Maven.</description>
+    </template>
+    <template displayHome="true">
+        <title>Java Gradle Project</title>
+        <homeTitle>Java Gradle Project</homeTitle>
+        <name>Java Gradle Project</name>
+        <icon>Java Gradle Project.png</icon>
+        <description>Create a Java project built with Gradle.</description>
+    </template>
+</templates>

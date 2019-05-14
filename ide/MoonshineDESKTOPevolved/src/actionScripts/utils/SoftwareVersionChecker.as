@@ -19,64 +19,307 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
-	import flash.filesystem.File;
-	import flash.utils.IDataInput;
+	import flash.events.Event;
 	
-	import actionScripts.valueObjects.Settings;
+	import mx.collections.ArrayCollection;
+	import mx.utils.UIDUtil;
+	
+	import actionScripts.events.WorkerEvent;
+	import actionScripts.interfaces.IWorkerSubscriber;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.locator.IDEWorker;
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.WorkerNativeProcessResult;
+	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class SoftwareVersionChecker
+	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
 	{
-		[Bindable] public static var JAVA_VERSION: String = "- Not Found -";
-		[Bindable] public static var ANT_VERSION: String = "- Not Found -";
-		[Bindable] public static var FLEX_SYSTEM_VERSION: String = "- Not Found -";
-		[Bindable]public  static var isMacOS  : Boolean;
+		private static const QUERY_FLEX_AIR_VERSION:String = "getFlexAIRversion";
+		private static const QUERY_ROYALE_FJS_VERSION:String = "getRoyaleFlexJSversion";
+		private static const QUERY_JDK_VERSION:String = "getJDKVersion";
+		private static const QUERY_ANT_VERSION:String = "getAntVersion";
+		private static const QUERY_MAVEN_VERSION:String = "getMavenVersion";
+		private static const QUERY_SVN_GIT_VERSION:String = "getSVNGitVersion";
 		
-		private var cmdFile: File;
-		private var shellInfo: NativeProcessStartupInfo;
-		private var nativeProcess: NativeProcess;
-		private var checkingQueues: Array; 
-		private var currentQueuePosition: int;
-		private var javaPathRetrievalHandler:Function;
-		private var nativeInfoReaderHandler:Function;
+		public var pendingProcess:Array /* of MethodDescriptor */ = [];
+		
+		protected var processType:String;
+		
+		private var worker:IDEWorker = IDEWorker.getInstance();
+		private var queue:Vector.<Object> = new Vector.<Object>();
+		private var model:IDEModel = IDEModel.getInstance();
+		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
+		private var components:ArrayCollection;
+		private var lastOutput:String;
+		private var subscribeIdToWorker:String;
+		private var itemUnderCursorIndex:int;
 		
 		/**
 		 * CONSTRUCTOR
 		 */
 		public function SoftwareVersionChecker()
 		{
+			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER) subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
+			else subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
+			
+			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
+			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
 		/**
 		 * Checks some required/optional software installation
 		 * and their version if available
 		 */
-		public function retrieveAboutInformation():void
+		public function retrieveAboutInformation(items:ArrayCollection):void
 		{
-			if (Settings.os == "win")
+			components = items;
+			startRequestProcess();
+		}
+		
+		private function startRequestProcess():void
+		{
+			var itemTypeUnderCursor:String;
+			if (itemUnderCursorIndex <= (components.length - 1))
 			{
-				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-				checkingQueues = ["java -version", "ant -version", "mxmlc -version"];
-				isMacOS = false;
+				var executable:String;
+				var itemUnderCursor:ComponentVO = components.getItemAt(itemUnderCursorIndex) as ComponentVO;
+				var executableFullPath:String;
+				if (itemUnderCursor.installToPath != null)
+				{
+					var commands:String;
+					queue = new Vector.<Object>();
+					switch (itemUnderCursor.type)
+					{
+						case ComponentTypes.TYPE_FLEX:
+						case ComponentTypes.TYPE_FEATHERS:
+						case ComponentTypes.TYPE_FLEXJS:
+							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version' + (ConstantsCoreVO.IS_MACOS ? ';' : '&& ');
+							executable = ConstantsCoreVO.IS_MACOS ? "adt" : "adt.bat";
+							commands += '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							itemTypeUnderCursor = QUERY_FLEX_AIR_VERSION;
+							break;
+						case ComponentTypes.TYPE_ROYALE:
+							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
+							commands = '"'+ itemUnderCursor.installToPath+'/js/bin/'+ executable +'" --version';
+							itemTypeUnderCursor = QUERY_ROYALE_FJS_VERSION;
+							break;
+						case ComponentTypes.TYPE_OPENJAVA:
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/java" -version';
+							itemTypeUnderCursor = QUERY_JDK_VERSION;
+							break;
+						case ComponentTypes.TYPE_ANT:
+							executable = ConstantsCoreVO.IS_MACOS ? "ant" : "ant.bat";
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
+							itemTypeUnderCursor = QUERY_ANT_VERSION;
+							break;
+						case ComponentTypes.TYPE_MAVEN:
+							executable = ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd";
+							executableFullPath = itemUnderCursor.installToPath+'/bin/'+ executable;
+							if (!FileUtils.isPathExists(executableFullPath))
+							{
+								executableFullPath = itemUnderCursor.installToPath+'/'+ executable;
+							}
+							commands = '"'+ executableFullPath +'" -version';
+							itemTypeUnderCursor = QUERY_MAVEN_VERSION;
+							break;
+						case ComponentTypes.TYPE_SVN:
+						case ComponentTypes.TYPE_GIT:
+							commands = '"'+ itemUnderCursor.installToPath+'" --version';
+							itemTypeUnderCursor = QUERY_SVN_GIT_VERSION;
+							break;
+					}
+					
+					environmentSetup.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [commands]);
+				}
+				else
+				{
+					itemUnderCursorIndex++;
+					startRequestProcess();
+				}
 			}
-			else 
+			else
 			{
-				cmdFile = File.documentsDirectory.resolvePath("/bin/bash");
-				isMacOS = true;
-				checkingQueues = ["java -version"];
+				dispatchEvent(new Event(Event.COMPLETE));
 			}
 			
-			nativeInfoReaderHandler = parseData;
-			startCheckingProcess();
+			function onEnvironmentPrepared(value:String):void
+			{
+				addToQueue(new NativeProcessQueueVO(value, false, itemTypeUnderCursor, itemUnderCursorIndex));
+				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+				itemUnderCursorIndex++;
+			}
+		}
+		
+		public function onWorkerValueIncoming(value:Object):void
+		{
+			var tmpValue:Object = value.value;
+			switch (value.event)
+			{
+				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
+					if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_DATA) shellData(tmpValue);
+					else if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE) shellExit(tmpValue);
+					else shellError(tmpValue);
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
+					if (queue.length != 0) queue.shift();
+					processType = tmpValue.processType;
+					shellTick(tmpValue);
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
+					listOfProcessEnded();
+					// starts checking pending process here
+					if (pendingProcess.length > 0)
+					{
+						var process:MethodDescriptor = pendingProcess.shift();
+						process.callMethod();
+					}
+					break;
+				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
+					//debug("%s", event.value.value);
+					break;
+			}
+		}
+		
+		private function addToQueue(value:Object):void
+		{
+			queue.push(value);
+		}
+		
+		private function listOfProcessEnded():void
+		{
+			switch (processType)
+			{
+				case QUERY_FLEX_AIR_VERSION:
+					//success("...Flex Process completed");
+					break;
+			}
+			
+			startRequestProcess();
+		}
+		
+		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
+			error(value.output);
+		}
+		
+		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			if (tmpQueue.extraArguments && tmpQueue.extraArguments.length != 0 && lastOutput)
+			{
+				var tmpIndex:int = int(tmpQueue.extraArguments[0]);
+				switch (tmpQueue.processType)
+				{
+					case QUERY_FLEX_AIR_VERSION:
+						components[tmpIndex].version = lastOutput;
+						break;
+					case QUERY_MAVEN_VERSION:
+						components[tmpIndex].version = getVersionNumberedTypeLine(lastOutput);
+						break;
+				}
+			}
+			
+			lastOutput = null;
+		}
+		
+		private function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
+		{
+			/*var tmpIndex:int = int(value.extraArguments[0]);
+			switch (value.processType)
+			{
+			case QUERY_FLEX_AIR_VERSION:
+			if (!components[tmpIndex].version) components[tmpIndex].version = lastOutput;
+			else components[tmpIndex].version += ", "+ lastOutput;
+			break;
+			}*/
+		}
+		
+		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void 
+		{
+			var match:Array;
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			var isFatal:Boolean;
+			var tmpProject:ProjectVO;
+			var versionNumberString:String;
+			
+			match = value.output.match(/fatal: .*/);
+			if (match) isFatal = true;
+			
+			match = value.output.match(/is not recognized as an internal or external command/);
+			if (!match)
+			{
+				switch(tmpQueue.processType)
+				{
+					case QUERY_FLEX_AIR_VERSION:
+					{
+						versionNumberString = getVersionNumberedTypeLine(value.output);
+						if (!lastOutput && versionNumberString) lastOutput = versionNumberString;
+						else if (versionNumberString) lastOutput += ", "+ versionNumberString;
+						break;
+					}
+					case QUERY_ROYALE_FJS_VERSION:
+						match = value.output.match(/Version /);
+						if (match)
+						{
+							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
+						}
+						break;
+					case QUERY_JDK_VERSION:
+					case QUERY_ANT_VERSION:
+					case QUERY_SVN_GIT_VERSION:
+					{
+						if (!components[int(tmpQueue.extraArguments[0])].version)
+						{
+							versionNumberString = getVersionNumberedTypeLine(value.output);
+							if (versionNumberString) components[int(tmpQueue.extraArguments[0])].version = versionNumberString;
+						}
+						break;
+					}
+					case QUERY_MAVEN_VERSION:
+						// in case of 'mvn -version' on OSX the process
+						// returns the full information in many shell-data
+						// so we need to prepare the full output first
+						// (unlike others) and extract the first line
+						// from it
+						if (!lastOutput) lastOutput = value.output;
+						else lastOutput += value.output;
+						break;
+				}
+			}
+			
+			if (isFatal)
+			{
+				shellError(value);
+				return;
+			}
+			else
+			{
+				//notice(value.output);
+			}
+		}
+		
+		private function getVersionNumberedTypeLine(value:String):String
+		{
+			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
+			for each (var line:String in lines)
+			{
+				if (line.match(/\d+.\d+.\d+/)) return line;
+			}
+			
+			return null;
 		}
 		
 		/**
 		 * Retrieves Java path in OSX
 		 */
-		public function getJavaPath(completionHandler:Function):void
+		/*public function getJavaPath(completionHandler:Function):void
 		{
 			javaPathRetrievalHandler = completionHandler;
 			cmdFile = File.documentsDirectory.resolvePath("/bin/bash");
@@ -85,91 +328,6 @@ package actionScripts.utils
 			
 			nativeInfoReaderHandler = parseJavaOnlyPath;
 			startCheckingProcess();
-		}
-		
-		private function startCheckingProcess():void
-		{
-			// probable termination
-			if (currentQueuePosition >= checkingQueues.length) return;
-			
-			var processArgs:Vector.<String> = new Vector.<String>;
-			shellInfo = new NativeProcessStartupInfo();
-			
-			if (Settings.os == "win") processArgs.push("/C");
-			else processArgs.push("-c");
-			processArgs.push(checkingQueues[currentQueuePosition]);
-			shellInfo.arguments = processArgs;
-			shellInfo.executable = cmdFile;
-			
-			initShell();
-		}
-		
-		private function initShell():void 
-		{
-			if (nativeProcess) nativeProcess.exit();
-			else startShell();
-		}
-		
-		private function startShell():void 
-		{
-			nativeProcess = new NativeProcess();
-			
-			nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-			nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			nativeProcess.start(shellInfo);
-		}
-		
-		private function shellData(e:ProgressEvent):void 
-		{
-			var output:IDataInput = nativeProcess.standardOutput;
-			nativeInfoReaderHandler(output.readUTFBytes(output.bytesAvailable));
-		}
-		
-		private function shellError(e:ProgressEvent):void 
-		{
-			var output:IDataInput = nativeProcess.standardError;
-			nativeInfoReaderHandler(output.readUTFBytes(output.bytesAvailable));
-		}
-		
-		private function shellExit(e:NativeProcessExitEvent):void 
-		{
-			nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-			nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			nativeProcess.exit();
-			nativeProcess = null;
-			currentQueuePosition ++;
-			startCheckingProcess();
-		}
-		
-		private function parseData(data:String):void
-		{
-			var match : Array = data.match(/java version/);
-			if (match) JAVA_VERSION = (data.split("\n")[0].toString()).split("java version")[1];
-			
-			match = data.match(/Ant\(TM\) version/);
-			if (match) ANT_VERSION = data.split("\n")[0];
-			
-			// mxmlc check
-			if (currentQueuePosition == 2 && data.match("Version")) FLEX_SYSTEM_VERSION = data.split("\n")[0];
-		}
-		
-		private function parseJavaOnlyPath(data:String):void
-		{
-			var match : Array = data.match(/Unable to find/);
-			if (match) javaPathRetrievalHandler(null);
-			else 
-			{
-				match = data.match(/JavaVirtualMachines/);
-				if (match && (javaPathRetrievalHandler != null)) 
-				{
-					// once found between two commands (in queue array)
-					javaPathRetrievalHandler(data);
-				}
-			}
-			
-			javaPathRetrievalHandler = null;
-		}
+		}*/
 	}
 }

@@ -18,38 +18,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.utils.setTimeout;
-    
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
-    
-    import actionScripts.events.MenuEvent;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.project.ProjectType;
-    import actionScripts.plugin.templating.TemplatingHelper;
-    import actionScripts.plugin.templating.event.TemplateEvent;
-    import actionScripts.utils.FileCoreUtil;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectVO;
-    
-    import components.popup.NativeExtensionMessagePopup;
-    import components.popup.OpenFlexProject;
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.MenuEvent;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WorkerEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEWorker;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.plugin.project.ProjectType;
+	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.plugin.templating.event.TemplateEvent;
+	import actionScripts.utils.FileCoreUtil;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
+	import actionScripts.valueObjects.ProjectVO;
+	
+	import components.popup.NativeExtensionMessagePopup;
+	import components.popup.OpenFlexProject;
+	import components.popup.ProjectsToOpenSelectionPopup;
 	
 	public class AS3ProjectPlugin extends PluginBase
 	{
-		public static const EVENT_IMPORT_FLASHBUILDER_PROJECT:String = "importFBProjectEvent";
-		public static const EVENT_IMPORT_FLASHDEVELOP_PROJECT:String = "importFDProjectEvent";
-        public static const AS3PROJ_AS_AIR:uint = 1;
-        public static const AS3PROJ_AS_WEB:uint = 2;
+		public static const AS3PROJ_AS_AIR:uint = 1;
+		public static const AS3PROJ_AS_WEB:uint = 2;
 		public static const AS3PROJ_AS_ANDROID:uint = 3;
 		public static const AS3PROJ_AS_IOS:uint = 4;
 		
@@ -61,9 +66,11 @@ package actionScripts.plugin.actionscript.as3project
 		private var flashDevelopProjectFile:FileLocation;
 		private var nonProjectFolderLocation:FileLocation;
 		private var aneMessagePopup:NativeExtensionMessagePopup;
+		private var worker:IDEWorker = IDEWorker.getInstance();
+		private var projectOpenSelection:ProjectsToOpenSelectionPopup;
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "AS3 project importing, exporting & scaffolding.";}
 		
 		public function AS3ProjectPlugin()
@@ -79,6 +86,7 @@ package actionScripts.plugin.actionscript.as3project
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.addEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.addEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
+			dispatcher.addEventListener(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, handleEventSearchForProjectsInDirectories, false, 0, true);
 			
 			super.activate();
 		}
@@ -87,10 +95,11 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
-			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
+			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.removeEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.removeEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
+			dispatcher.removeEventListener(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, handleEventSearchForProjectsInDirectories);
 			
 			super.deactivate();
 		}
@@ -114,13 +123,10 @@ package actionScripts.plugin.actionscript.as3project
 		
 		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
-			var p:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
-			p.projectFile = projectFile;
-			model.activeProject = p;
+			var project:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
+			project.projectFile = projectFile;
 			
-			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, p, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null)
-			);
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null));
 		}
 		
 		private function importProject(event:Event):void
@@ -128,9 +134,9 @@ package actionScripts.plugin.actionscript.as3project
 			// for AIR
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				model.fileCore.browseForDirectory("Flex Project Directory", openFile, onFileSelectionCancelled);
+				model.fileCore.browseForDirectory("Flex Project Directory", searchForProjectsByDirectory, onFileSelectionCancelled);
 			}
-			// for WEB
+				// for WEB
 			else
 			{
 				importProjectPopup = new OpenFlexProject();
@@ -149,7 +155,30 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			if (!event.anObject) return;
 			
-			openFile(event.anObject);
+			openProjectByDirectory(event.anObject);
+		}
+		
+		private function searchForProjectsByDirectory(dir:Object):void
+		{
+			if (!worker.hasEventListener(IDEWorker.WORKER_VALUE_INCOMING))
+			{
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+			}
+			
+			// send path instead of file as sending file is expensive
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, null, "Searching for projects", false));
+			worker.sendToWorker(WorkerEvent.SEARCH_PROJECTS_IN_DIRECTORIES, getObject());
+			
+			/*
+			* @local
+			*/
+			function getObject():Object
+			{
+				var tmpObj:Object = new Object();
+				tmpObj.path = (dir is FileLocation) ? (dir as FileLocation).fileBridge.nativePath : dir.nativePath;
+				tmpObj.maxDepthCount = ConstantsCoreVO.MAX_DEPTH_COUNT_IN_PROJECT_SEARCH;
+				return tmpObj;
+			}
 		}
 		
 		private function onFileSelectionCancelled():void
@@ -158,7 +187,7 @@ package actionScripts.plugin.actionscript.as3project
 			event.target.removeEventListener(Event.CANCEL, onFileSelectionCancelled);*/
 		}
 		
-		private function openFile(dir:Object):void
+		private function openProjectByDirectory(dir:Object):void
 		{
 			//onFileSelectionCancelled(event);
 			// probable termination due to error at objC side
@@ -320,13 +349,102 @@ package actionScripts.plugin.actionscript.as3project
 			aneMessagePopup.removeEventListener(CloseEvent.CLOSE, onAneMessageClosed);
 			aneMessagePopup = null;
 		}
-
-        private function canCreateProject(event:NewProjectEvent):Boolean
-        {
-            var projectTemplateName:String = event.templateDir.fileBridge.name;
-            return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
+		
+		private function canCreateProject(event:NewProjectEvent):Boolean
+		{
+			var projectTemplateName:String = event.templateDir.fileBridge.name;
+			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1;
-        }
+		}
+		
+		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void
+		{
+			searchForProjectsByDirectory(event.anObject);
+		}
+		
+		protected function onWorkerValueIncoming(event:GeneralEvent):void
+		{
+			switch (event.value.event)
+			{
+				case WorkerEvent.FOUND_PROJECTS_IN_DIRECTORIES:
+					// remove the listener 
+					// we'll re-add when again needed
+					worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+					
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+					loadOrReportOnRepositoryProjects(event.value.value.value);
+					break;
+			}
+		}
+		
+		private function loadOrReportOnRepositoryProjects(workerData:Object):void
+		{
+			var projectFiles:Array = workerData.foundProjectsInDirectories;
+			if (projectFiles.length == 0)
+			{
+				openProjectByDirectory(model.fileCore.getFileByPath(workerData.path));
+			}
+			else if ((projectFiles.length == 1) && projectFiles[0].isRoot)
+			{
+				// open the only project to sidebar
+				openProjectByDirectory(model.fileCore.getFileByPath(projectFiles[0].projectFile.nativePath).parent);
+			}
+			else
+			{
+				var tmpCollection:ArrayCollection = new ArrayCollection();
+				var tmpSelectableObject:GenericSelectableObject;
+				var repositoryRootFile:Object = model.fileCore.getFileByPath(workerData.path);
+				var configurationParent:Object;
+				for each (var projectRefFile:Object in projectFiles)
+				{
+					configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath).parent;
+					tmpSelectableObject = new GenericSelectableObject(true);
+					tmpSelectableObject.data = {
+						name: repositoryRootFile.getRelativePath(configurationParent, true),
+							path: projectRefFile.projectFile.nativePath
+					};
+					tmpCollection.addItem(tmpSelectableObject);
+				}
+				
+				openProjectSelectionWindow(tmpCollection, repositoryRootFile);
+			}
+		}
+		
+		private function openProjectSelectionWindow(collection:ArrayCollection, repositoryRootFile:Object):void
+		{
+			if (!projectOpenSelection)
+			{
+				projectOpenSelection = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ProjectsToOpenSelectionPopup, true) as ProjectsToOpenSelectionPopup;
+				projectOpenSelection.title = "Select Projects to Open";
+				projectOpenSelection.projects = collection;
+				projectOpenSelection.repositoryRoot = repositoryRootFile.nativePath;
+				projectOpenSelection.addEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
+				
+				PopUpManager.centerPopUp(projectOpenSelection);
+			}
+			else
+			{
+				PopUpManager.bringToFront(projectOpenSelection);
+			}
+		}
+		
+		private function onOpenProjectsWindowClosed(event:CloseEvent):void
+		{
+			if (projectOpenSelection.isSubmit)
+			{
+				var projects:ArrayCollection = projectOpenSelection.projects;
+				for each (var item:GenericSelectableObject in projects)
+				{
+					if (item.isSelected)
+					{
+						openProjectByDirectory(model.fileCore.getFileByPath(item.data.path).parent);
+					}
+				}
+			}
+			
+			projectOpenSelection.removeEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
+			projectOpenSelection = null;
+		}
 	}
 }

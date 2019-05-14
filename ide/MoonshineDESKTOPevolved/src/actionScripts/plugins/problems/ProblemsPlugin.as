@@ -30,9 +30,11 @@ package actionScripts.plugins.problems
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.plugins.problems.view.ProblemsView;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.LayoutModifier;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Diagnostic;
 
 	public class ProblemsPlugin extends PluginBase
@@ -44,11 +46,12 @@ package actionScripts.plugins.problems
 		}
 
 		override public function get name():String { return "Problems Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays problems in source files."; }
 
 		private var problemsPanel:ProblemsView = new ProblemsView();
 		private var isStartupCall:Boolean = true;
+		private var isProblemsViewVisible:Boolean = false;
 
 		override public function activate():void
 		{
@@ -66,11 +69,36 @@ package actionScripts.plugins.problems
 
 		private function handleProblemsShow(event:Event):void
 		{
-			LayoutModifier.addToSidebar(problemsPanel, event);
-			
-			problemsPanel.validateNow();
-			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
+			if (!isProblemsViewVisible)
+            {
+                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, problemsPanel));
+                initializeProblemsViewEventHandlers(event);
+				isProblemsViewVisible = true;
+            }
+			else
+			{
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, problemsPanel));
+                cleanupProblemsViewEventHandlers();
+				isProblemsViewVisible = false;
+			}
 			isStartupCall = false;
+		}
+		
+		private function initializeProblemsViewEventHandlers(event:Event):void
+		{
+			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
+			problemsPanel.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+		}
+
+		private function cleanupProblemsViewEventHandlers():void
+		{
+			problemsPanel.problemsTree.removeEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
+			problemsPanel.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+		}
+
+		private function problemsPanel_removedFromStage(event:Event):void
+		{
+            isProblemsViewVisible = false;
 		}
 
 		private function handleShowDiagnostics(event:DiagnosticsEvent):void

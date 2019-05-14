@@ -24,11 +24,11 @@ package actionScripts.plugin.errors
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import flashx.textLayout.elements.LinkElement;
 	import flashx.textLayout.elements.ParagraphElement;
@@ -40,7 +40,7 @@ package actionScripts.plugin.errors
 	public class UncaughtErrorsPlugin extends PluginBase implements IMenuPlugin
 	{
 		override public function get name():String { return "Uncaught Error Handlers Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Catch any uncaught errors in the application"; }
 		
 		private var _problemList:ArrayList;
@@ -122,7 +122,7 @@ package actionScripts.plugin.errors
 			p.addChild(span1);
 			p.addChild(link);
 			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
 		}
 		
 		private function reportBugFromConsole(event:ConsoleEvent):void 

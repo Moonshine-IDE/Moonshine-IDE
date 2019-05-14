@@ -29,15 +29,15 @@ package actionScripts.plugins.startup
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SdkEvent;
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.impls.IHelperMoonshineBridgeImp;
+	import actionScripts.managers.InstallerItemsManager;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
-	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.HelperUtils;
@@ -47,8 +47,9 @@ package actionScripts.plugins.startup
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
+	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
-
+	
 	import components.popup.GettingStartedPopup;
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
@@ -56,30 +57,21 @@ package actionScripts.plugins.startup
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Startup Helper Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Startup Helper Plugin. Esc exits."; }
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		
-		private static const SDK_XTENDED:String = "SDK_XTENDED";
-		private static const CC_JAVA:String = "CC_JAVA";
-		private static const CC_SDK:String = "CC_SDK";
-		private static const CC_ANT:String = "CC_ANT";
-		private static const CC_MAVEN:String = "CC_MAVEN";
-		private static const CC_GIT:String = "CC_GIT";
-		private static const CC_SVN:String = "CC_SVN";
-		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
+		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
 		private var ccNotificationView:JavaPathSetupPopup;
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
-		private var sequences:Array;
 		private var isSDKSetupShowing:Boolean;
 		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
-		private var changeMenuSDKTimeout:uint;
 		private var didShowPreviouslyOpenedTabs:Boolean;
 		
 		private var _isAllDependenciesPresent:Boolean = true;
@@ -109,12 +101,12 @@ package actionScripts.plugins.startup
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
-				{
-					dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
-					dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
-				}
+			{
+				//dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
+				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
+			}
 				
-				preInitHelping();
+			preInitHelping();
 		}
 		
 		override public function resetSettings():void
@@ -125,13 +117,18 @@ package actionScripts.plugins.startup
 			}
 		}
 		
+		//--------------------------------------------------------------------------
+		//
+		//  SDKs DETECTION AND RELATED
+		//
+		//--------------------------------------------------------------------------
+		
 		/**
 		 * Pre-initialization helping process
 		 */
 		private function preInitHelping():void
 		{
 			clearTimeout(startHelpingTimeout);
-			sequences = [SDK_XTENDED, CC_JAVA, CC_SDK, CC_ANT, CC_MAVEN, CC_GIT, CC_SVN];
 			
 			// env.variable parsing only available for Windows
 			if (!ConstantsCoreVO.IS_MACOS)
@@ -145,7 +142,7 @@ package actionScripts.plugins.startup
 				continueOnHelping();
 			}
 		}
-
+		
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -155,52 +152,12 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
 			
-			if (sequences.length == 0)
-			{
-				// if we have a reason to open Getting Started tab
-				if (!isAllDependenciesPresent) openOrFocusGettingStarted();
-				return;
-			}
+			toggleListenersInstallerItemsManager(true);
 			
-			var tmpSequence:String = sequences.shift();
-			switch(tmpSequence)
-			{
-				case SDK_XTENDED:
-				{
-					checkDefaultSDK();
-					break;
-				}
-				case CC_JAVA:
-				{
-					checkJavaPathPresenceForTypeahead();
-					break;
-				}
-				case CC_SDK:
-				{
-					checkSDKPrsenceForTypeahead();
-					break;
-				}
-				case CC_ANT:
-				{
-					checkAntPathPresence();
-					break;
-				}
-				case CC_MAVEN:
-				{
-					checkMavenPathPresence();
-					break;
-				}
-				case CC_GIT:
-				{
-					checkGitPathPresence();
-					break;
-				}
-				case CC_SVN:
-				{
-					checkSVNPathPresence();
-					break;
-				}
-			}
+			HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
+			installerItemsManager.dependencyCheckUtil = dependencyCheckUtil;
+			installerItemsManager.environmentUtil = environmentUtil;
+			installerItemsManager.loadItemsAndDetect();
 			
 			if (!didShowPreviouslyOpenedTabs)
 			{
@@ -214,220 +171,118 @@ package actionScripts.plugins.startup
 		}
 		
 		/**
+		 * On any items found not installed by the installer
+		 */
+		private function onComponentNotDownloadedEvent(event:HelperEvent):void
+		{
+			isAllDependenciesPresent = false;
+			onPostDetectionEvent(event.value as ComponentVO);
+		}
+		
+		private function onAnyComponentDownloaded(event:HelperEvent):void
+		{
+			// autoset moonshine internal fields as appropriate
+			var component:ComponentVO = event.value as ComponentVO;
+			PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
+			onPostDetectionEvent(component);
+		}
+		
+		/**
+		 * When all the items complete testing by the installer
+		 */
+		private function onAllComponentTestedEvent(event:HelperEvent):void
+		{
+			toggleListenersInstallerItemsManager(false);
+			checkDefaultSDK();
+			
+			if (!isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS)
+			{
+				openOrFocusGettingStarted();
+			}
+		}
+		
+		/**
+		 * Post-detection event against individual
+		 * component tested by sdk installer
+		 */
+		private function onPostDetectionEvent(item:ComponentVO):void
+		{
+			var isPresent:Boolean;
+			switch (item.type)
+			{
+				case ComponentTypes.TYPE_FLEX:
+				case ComponentTypes.TYPE_FEATHERS:
+				case ComponentTypes.TYPE_FLEXJS:
+				case ComponentTypes.TYPE_ROYALE:
+					isPresent = dependencyCheckUtil.isDefaultSDKPresent();
+					if (!isPresent)
+					{
+						isAllDependenciesPresent = false;
+						showNoSDKStripAndListenForDefaultSDK();
+					}
+					break;
+				case ComponentTypes.TYPE_OPENJAVA:
+					isPresent = dependencyCheckUtil.isJavaPresent();
+					if (isPresent && !dispatcher.hasEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK))
+					{
+						// starting server
+						dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
+					}
+					break;
+			}
+		}
+		
+		/**
 		 * Checks default SDK to Moonshine
 		 */
-		private function checkDefaultSDK(forceShow:Boolean=false):void
+		private function checkDefaultSDK():void
 		{
 			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
-			if (!isPresent && (!ConstantsCoreVO.IS_MACOS || (ConstantsCoreVO.IS_MACOS && (!ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS || forceShow))))
+			if (!isPresent)
 			{
-				//triggerSDKNotificationView(false, false);
-				
-				// check if env.variable has any FLEX_HOME found or not
-				if (environmentUtil && environmentUtil.environments.FLEX_HOME)
-				{
-					// set as default SDK
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.FLEX, environmentUtil.environments.FLEX_HOME.path.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-			}
-			else if (!isPresent)
-			{
-				// lets show up the default sdk requirement strip at bottom
-				changeMenuSDKTimeout = setTimeout(function():void
-				{
-					clearTimeout(changeMenuSDKTimeout);
-					changeMenuSDKTimeout = 0;
-					
-					dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
-				}, 1000);
+				// in case of no default sdk set by
+				// sdk installer default location or system
+				// environment variable, and if a relevant sdk
+				// exists in sdk-list, set it
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexSDKAvailable(), SDKTypes.FLEX)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexJSSDKAvailable(), SDKTypes.FLEXJS)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isRoyaleSDKAvailable(), SDKTypes.ROYALE)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFeathersSDKAvailable(), SDKTypes.FEATHERS)) return;
 			}
 			
-			startHelping();
-		}
-		
-		/**
-		 * Checks code-completion Java presence
-		 */
-		private function checkJavaPathPresenceForTypeahead():void
-		{
-			var isPresent:Boolean = dependencyCheckUtil.isJavaPresent();
-			if (!isPresent && !ccNotificationView)
+			/*
+			* @local
+			*/
+			function checkAndSetDefaultSDKObject(value:Object, type:String):Boolean
 			{
-				// check if env.variable has JAVA_HOME with JDK setup
-				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
+				if (value) 
 				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
+					PathSetupHelperUtil.updateFieldPath(type, (value as SDKReferenceVO).path);
+					return true;
 				}
-				else
-				{
-					isAllDependenciesPresent = false;
-					model.javaPathForTypeAhead = null;
-				}
-				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, false);
+				return false;
 			}
-			
-			startHelping();
 		}
 		
 		/**
-		 * Checks code-completion sdk requisites
+		 * Add or remove listeners from itemsManager
 		 */
-		private function checkSDKPrsenceForTypeahead():void
+		private function toggleListenersInstallerItemsManager(toggle:Boolean):void
 		{
-			var isPresent:Boolean = dependencyCheckUtil.isDefaultSDKPresent();
-			//var path:String = UtilsCore.checkCodeCompletionFlexJSSDK();
-			if (!isPresent && !ccNotificationView && !isSDKSetupShowing)
+			if (toggle)
 			{
-				if (environmentUtil && environmentUtil.environments.JAVA_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.OPENJAVA, environmentUtil.environments.JAVA_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-				//javaSetupPathTimeout = setTimeout(triggerJavaSetupViewWithParam, 1000, true);
+				installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
+				installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
+				installerItemsManager.addEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
-			else if (!isPresent && isSDKSetupShowing)
+			else
 			{
-				isAllDependenciesPresent = false;
-				showNoSDKStripAndListenForDefaultSDK();
+				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
+				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
+				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
-			else if (isPresent && dependencyCheckUtil.isJavaPresent())
-			{
-				// starting server
-				dispatcher.addEventListener(StartupHelperEvent.EVENT_TYPEAHEAD_REQUIRES_SDK, onTypeaheadFailedDueToSDK);
-			}
-			
-			startHelping();
 		}
 		
-		/**
-		 * Checks internal Ant path
-		 */
-		private function checkAntPathPresence():void
-		{
-			if (!dependencyCheckUtil.isAntPresent())
-			{
-				if (environmentUtil && environmentUtil.environments.ANT_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.ANT, environmentUtil.environments.ANT_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-			}
-			
-			startHelping();
-		}
-		
-		/**
-		 * Checks internal Maven path
-		 */
-		private function checkMavenPathPresence():void
-		{
-			if (!dependencyCheckUtil.isMavenPresent())
-			{
-				if (environmentUtil && environmentUtil.environments.MAVEN_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.MAVEN, environmentUtil.environments.MAVEN_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-			}
-			
-			startHelping();
-		}
-		
-		/**
-		 * Checks internal Git path
-		 */
-		private function checkGitPathPresence():void
-		{
-			if (!dependencyCheckUtil.isGitPresent())
-			{
-				if (environmentUtil && environmentUtil.environments.GIT_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.GIT, environmentUtil.environments.GIT_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-			}
-			
-			startHelping();
-		}
-		
-		/**
-		 * Checks internal SVN path
-		 */
-		private function checkSVNPathPresence():void
-		{
-			if (!dependencyCheckUtil.isSVNPresent())
-			{
-				if (environmentUtil && environmentUtil.environments.SVN_HOME)
-				{
-					PathSetupHelperUtil.updateFieldPath(SDKTypes.SVN, environmentUtil.environments.SVN_HOME.nativePath);
-				}
-				else
-				{
-					isAllDependenciesPresent = false;
-				}
-			}
-			
-			startHelping();
-		}
-		
-		/**
-		 * Opening SDK notification prompt
-		 */
-		private function triggerSDKNotificationView(showAsDownloader:Boolean, showAsRequiresSDKNotif:Boolean):void
-		{
-			sdkNotificationView = new SDKUnzipConfirmPopup;
-			sdkNotificationView.showAsHelperDownloader = showAsDownloader;
-			sdkNotificationView.horizontalCenter = sdkNotificationView.verticalCenter = 0;
-			sdkNotificationView.addEventListener(Event.CLOSE, onSDKNotificationClosed, false, 0, true);
-			FlexGlobals.topLevelApplication.addElement(sdkNotificationView);
-		}
-		
-		/**
-		 * Opens Java detection etc. for code-completion prompt
-		 */
-		private function triggerJavaSetupViewWithParam(showAsRequiresSDKNotif:Boolean):void
-		{
-			clearTimeout(javaSetupPathTimeout);
-			javaSetupPathTimeout = 0;
-			
-			ccNotificationView = new JavaPathSetupPopup();
-			ccNotificationView.showAsRequiresSDKNotification = showAsRequiresSDKNotif;
-			ccNotificationView.horizontalCenter = ccNotificationView.verticalCenter = 0;
-			ccNotificationView.addEventListener(Event.CLOSE, onJavaPromptClosed, false, 0, true);
-			FlexGlobals.topLevelApplication.addElement(ccNotificationView);
-		}
-		
-		/**
-		 * Showing no sdk strip at bottom and also listens for
-		 * default SDK setup event
-		 */
-		private function showNoSDKStripAndListenForDefaultSDK():void
-		{
-			// lets show up the default sdk requirement strip at bottom
-			// at very end of startup prompt being shown
-			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_SDK_STATE));
-			// in case of Windows, we open-up MXMLC Plugin section and shall
-			// wait for the user to add/download a default SDK
-			//sequenceIndex --;
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
-		}
-
 		private function continueOnHelping():void
 		{
 			// just a little delay to see things visually right
@@ -435,50 +290,37 @@ package actionScripts.plugins.startup
 			startHelpingTimeout = setTimeout(startHelping, 1000);
 			copyToLocalStoragePayaraEmbededLauncher();
 		}
-
+		
 		private function addEventListenersToEnvironmentUtil():void
 		{
 			environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_COMPLETED, onEnvironmentVariableReadCompleted);
 			environmentUtil.addEventListener(EnvironmentUtils.ENV_READ_ERROR, onEnvironmentVariableReadError);
 		}
-
+		
 		private function removeEventListenersFromEnvironmentUtil():void
 		{
 			if (!environmentUtil) return;
-
+			
 			environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_COMPLETED, onEnvironmentVariableReadCompleted);
 			environmentUtil.removeEventListener(EnvironmentUtils.ENV_READ_ERROR, onEnvironmentVariableReadError);
 		}
-		//--------------------------------------------------------------------------
-		//
-		//  LISTENERS API
-		//
-		//--------------------------------------------------------------------------
-
+		
 		private function onEnvironmentVariableReadError(event:HelperEvent):void
 		{
 			error("Unable to read environment variable: "+ (event.value as String));
 			continueOnHelping();
 		}
-
+		
 		private function onEnvironmentVariableReadCompleted(event:Event):void
 		{
 			continueOnHelping();
 		}
-
-		/**
-		 * To restart helping process
-		 */
-		private function onRestartRequest(event:StartupHelperEvent):void
-		{
-			sdkNotificationView = null;
-			ccNotificationView = null;
-			sequences = null;
-			isSDKSetupShowing = false;
-			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
-			
-			preInitHelping();
-		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  GETTING-STARTED TAB
+		//
+		//--------------------------------------------------------------------------
 		
 		/**
 		 * On getting started menu item
@@ -545,6 +387,150 @@ package actionScripts.plugins.startup
 					gettingStartedPopup.dispose();
 				}
 			}
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  GETTING-STARTED UPDATE API
+		//
+		//--------------------------------------------------------------------------
+		
+		/**
+		 * In case of polling only on Windows
+		 */
+		private function onInstallerFileNotifierFound(event:StartupHelperEvent):void
+		{
+			onInvokeEventFired(null);
+		}
+		
+		/**
+		 * To listen updates from SDK Installer
+		 */
+		private function onInvokeEventFired(event:InvokeEvent):void
+		{
+			var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
+			if (updateNotifierFile.fileBridge.exists)
+			{
+				var type:String;
+				var path:String;
+				var pathValidation:String;
+				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
+				for each (var item:XML in notifierValue.items.item)
+				{
+					type = String(item.@type);
+					path = String(item.path);
+					pathValidation = String(item.pathValidation);
+					
+					// validate before set
+					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
+					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
+					
+					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
+					{
+						updateGitAndSVN(path);
+					}
+					else
+					{
+						if (!gettingStartedPopup)
+						{
+							PathSetupHelperUtil.updateFieldPath(type, path);
+						}
+						else
+						{
+							gettingStartedPopup.onInvokeEvent(type, path);
+						}
+					}
+				}
+			}
+		}
+		
+		/**
+		 * When getting warning updates
+		 */
+		private function onWarningUpdated(event:HelperEvent):void
+		{
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
+			tmpComponent.hasWarning = event.value.message;
+		}
+		
+		/**
+		 * Multiple component update requirement
+		 */
+		private function updateGitAndSVN(path:String):void
+		{
+			var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+			var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+			if (!gettingStartedPopup)
+			{
+				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_GIT, path);
+				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_SVN, path);
+			}
+			else
+			{
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_GIT, path);
+				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN, path);
+			}
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE API
+		//
+		//--------------------------------------------------------------------------
+		
+		/**
+		 * Opening SDK notification prompt
+		 */
+		private function triggerSDKNotificationView(showAsDownloader:Boolean, showAsRequiresSDKNotif:Boolean):void
+		{
+			sdkNotificationView = new SDKUnzipConfirmPopup;
+			sdkNotificationView.showAsHelperDownloader = showAsDownloader;
+			sdkNotificationView.horizontalCenter = sdkNotificationView.verticalCenter = 0;
+			sdkNotificationView.addEventListener(Event.CLOSE, onSDKNotificationClosed, false, 0, true);
+			FlexGlobals.topLevelApplication.addElement(sdkNotificationView);
+		}
+		
+		/**
+		 * Opens Java detection etc. for code-completion prompt
+		 */
+		private function triggerJavaSetupViewWithParam(showAsRequiresSDKNotif:Boolean):void
+		{
+			clearTimeout(javaSetupPathTimeout);
+			javaSetupPathTimeout = 0;
+			
+			ccNotificationView = new JavaPathSetupPopup();
+			ccNotificationView.showAsRequiresSDKNotification = showAsRequiresSDKNotif;
+			ccNotificationView.horizontalCenter = ccNotificationView.verticalCenter = 0;
+			ccNotificationView.addEventListener(Event.CLOSE, onJavaPromptClosed, false, 0, true);
+			FlexGlobals.topLevelApplication.addElement(ccNotificationView);
+		}
+		
+		/**
+		 * Showing no sdk strip at bottom and also listens for
+		 * default SDK setup event
+		 */
+		private function showNoSDKStripAndListenForDefaultSDK():void
+		{
+			// lets show up the default sdk requirement strip at bottom
+			// at very end of startup prompt being shown
+			dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
+			// in case of Windows, we open-up MXMLC Plugin section and shall
+			// wait for the user to add/download a default SDK
+			//sequenceIndex --;
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
+		}
+		
+		/**
+		 * To restart helping process
+		 */
+		private function onRestartRequest(event:StartupHelperEvent):void
+		{
+			sdkNotificationView = null;
+			ccNotificationView = null;
+			isSDKSetupShowing = false;
+			ConstantsCoreVO.IS_OSX_CODECOMPLETION_PROMPT = false;
+			
+			preInitHelping();
 		}
 		
 		/**
@@ -614,7 +600,6 @@ package actionScripts.plugins.startup
 				if ((tmpEvent.tab is SettingsView) && (SettingsView(tmpEvent.tab).longLabel == "Settings") && SettingsView(tmpEvent.tab).isSaved)
 				{
 					dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onSettingsTabClosed);
-					startHelping();
 				}
 			}
 		}
@@ -626,7 +611,7 @@ package actionScripts.plugins.startup
 		private function onSDKSetupRequest(event:StartupHelperEvent):void
 		{
 			//sequenceIndex = -1;
-			checkDefaultSDK(true);
+			checkDefaultSDK();
 		}
 		
 		/**
@@ -649,89 +634,6 @@ package actionScripts.plugins.startup
 			catch (e:Error)
 			{
 				warning("Problem with updating PayaraEmbeddedLauncher %s", e.message);
-			}
-		}
-		
-		/**
-		 * In case of polling only on Windows
-		 */
-		private function onInstallerFileNotifierFound(event:StartupHelperEvent):void
-		{
-			onInvokeEventFired(null);
-		}
-		
-		/**
-		 * To listen updates from SDK Installer
-		 */
-		private function onInvokeEventFired(event:InvokeEvent):void
-		{
-			var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
-			if (updateNotifierFile.fileBridge.exists)
-			{
-				var type:String;
-				var path:String;
-				var pathValidation:String;
-				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
-				for each (var item:XML in notifierValue.items.item)
-				{
-					type = String(item.@type);
-					path = String(item.path);
-					pathValidation = String(item.pathValidation);
-					
-					// validate before set
-					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
-					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
-					
-					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
-					{
-						updateGitAndSVN(path);
-					}
-					else
-					{
-						if (!gettingStartedPopup)
-						{
-							PathSetupHelperUtil.updateFieldPath(type, path);
-						}
-						else
-						{
-							gettingStartedPopup.onInvokeEvent(type, path);
-						}
-					}
-				}
-			}
-		}
-		
-		/**
-		 * When getting warning updates
-		 */
-		private function onWarningUpdated(event:HelperEvent):void
-		{
-			if (!gettingStartedPopup)
-			{
-				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-			}
-			else
-			{
-				gettingStartedPopup.onWarningUpdate(event);
-			}
-		}
-		
-		/**
-		 * Multiple component update requirement
-		 */
-		private function updateGitAndSVN(path:String):void
-		{
-			var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
-			var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
-			if (!gettingStartedPopup)
-			{
-				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_GIT, path);
-				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_SVN, path);
-			}
-			else
-			{
-				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_GIT, path);
-				gettingStartedPopup.onInvokeEvent(ComponentTypes.TYPE_SVN, path);
 			}
 		}
 	}

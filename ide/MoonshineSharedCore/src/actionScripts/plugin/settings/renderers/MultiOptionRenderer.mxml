@@ -80,6 +80,7 @@
 			private function commitValue():void
 			{
 				setting.value = radioButtonGroup.selectedValue;
+				if (setting.isCommitOnChange) setting.commitChanges();
 			}
 			
 		]]>

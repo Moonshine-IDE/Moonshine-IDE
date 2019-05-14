@@ -20,10 +20,12 @@ package actionScripts.plugins.git
 {
 	import com.adobe.utils.StringUtil;
 	
+	import flash.events.Event;
 	import flash.filesystem.File;
 	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
+	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -31,23 +33,27 @@ package actionScripts.plugins.git
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
 	
-	public class GitProcessManager extends ConsoleOutputter
+	public class GitProcessManager extends ConsoleOutputter implements IWorkerSubscriber
 	{
 		public static const GIT_DIFF_CHECKED:String = "gitDiffProcessCompleted";
 		public static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
@@ -81,8 +87,10 @@ package actionScripts.plugins.git
 		private var model:IDEModel = IDEModel.getInstance();
 		private var onXCodePathDetection:Function;
 		private var xCodePathDetectionType:String;
+		private var repositoryUnderCursor:RepositoryItemVO;
 		private var completionFunctionsDic:Dictionary = new Dictionary();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var subscribeIdToWorker:String = UIDUtil.createUID();
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
 		private var isGitUserName:Boolean;
@@ -101,8 +109,8 @@ package actionScripts.plugins.git
 		
 		public function GitProcessManager()
 		{
-			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS);
-			worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
+			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
 		public function getOSXCodePath(completion:Function, against:String):void
@@ -112,7 +120,7 @@ package actionScripts.plugins.git
 			xCodePathDetectionType = against;
 			
 			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 		}
 		
 		public function checkGitAvailability():void
@@ -120,7 +128,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' --version'), false, GIT_AVAIL_DECTECTION));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 		}
 		
 		public function checkIfGitRepository(project:AS3ProjectVO):void
@@ -128,7 +136,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' rev-parse --git-dir'), false, GIT_REPOSITORY_TEST, project.folderLocation.fileBridge.nativePath));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function getGitRemoteURL(project:ProjectVO):void
@@ -139,7 +147,7 @@ package actionScripts.plugins.git
 			project !== model.activeProject;
 
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' config --get remote.origin.url'), false, GIT_REMOTE_ORIGIN_URL, project.folderLocation.fileBridge.nativePath));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function getCurrentBranch(project:ProjectVO=null):void
@@ -150,19 +158,20 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_CURRENT_BRANCH_NAME, project.folderLocation.fileBridge.nativePath));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
-		public function clone(url:String, target:String):void
+		public function clone(url:String, target:String, targetFolder:String, repository:RepositoryItemVO):void
 		{
 			queue = new Vector.<Object>();
 			
+			repositoryUnderCursor = repository;
 			lastCloneURL = url;
 			lastCloneTarget = target;
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url), false, GitHubPlugin.CLONE_REQUEST));
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
 		}
 		
 		public function checkDiff():void
@@ -175,7 +184,7 @@ package actionScripts.plugins.git
 					File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath),
 				false, 
 				GIT_DIFF_CHECK));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function getGitAuthor(completion:Function):void
@@ -188,7 +197,7 @@ package actionScripts.plugins.git
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' config user.name'), false, GIT_QUERY_USER_NAME, model.activeProject.folderLocation.fileBridge.nativePath));
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' config user.email'), false, GIT_QUERY_USER_EMAIL, model.activeProject.folderLocation.fileBridge.nativePath));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function setGitAuthor(userObject:Object):void
@@ -206,7 +215,7 @@ package actionScripts.plugins.git
 				ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" config user.email $'"+ userObject.email +"'" : 
 				gitBinaryPathOSX +'&&config&&user.email&&'+ userObject.email, 
 				false, GIT_QUERY_USER_EMAIL, model.activeProject.folderLocation.fileBridge.nativePath));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function commit(files:ArrayCollection, withMessage:String):void
@@ -226,7 +235,7 @@ package actionScripts.plugins.git
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'" : gitBinaryPathOSX +'&&commit&&-m&&"'+ UtilsCore.getEncodedForShell(withMessage, true) +'"', false, GIT_COMMIT));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function revert(files:ArrayCollection):void
@@ -253,7 +262,7 @@ package actionScripts.plugins.git
 			}
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "File Revert ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:plugin.modelAgainstProject[model.activeProject].rootLocal.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:plugin.modelAgainstProject[model.activeProject].rootLocal.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function push(userObject:Object=null):void
@@ -287,7 +296,7 @@ package actionScripts.plugins.git
 
 			warning("Git push requested...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Push ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function pull():void
@@ -300,7 +309,7 @@ package actionScripts.plugins.git
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" pull --progress -v --no-rebase origin $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GitHubPlugin.PULL_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function switchBranch():void
@@ -315,7 +324,7 @@ package actionScripts.plugins.git
 			
 			warning("Fetching branch details...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Branch Details ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function changeBranchTo(value:GenericSelectableObject):void
@@ -328,7 +337,7 @@ package actionScripts.plugins.git
 			pendingProcess.push(new MethodDescriptor(this, "getCurrentBranch"));
 			
 			notice("Trying to switch branch...");
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function createAndCheckoutNewBranch(name:String, pushToOrigin:Boolean):void
@@ -347,7 +356,7 @@ package actionScripts.plugins.git
 			}
 			
 			notice("Trying to switch branch...");
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function checkout():void
@@ -359,7 +368,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"' --" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'&&--', false, GIT_CHECKOUT_BRANCH));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		public function checkBranchNameValidity(name:String, completion:Function):void
@@ -368,7 +377,7 @@ package actionScripts.plugins.git
 			queue = new Vector.<Object>();
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" check-ref-format --branch $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&check-ref-format&&--branch&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath});
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
 		private function getPlatformMessage(value:String):String
@@ -382,10 +391,10 @@ package actionScripts.plugins.git
 			return gitBinaryPathOSX + value;
 		}
 		
-		private function onWorkerValueIncoming(event:GeneralEvent):void
+		public function onWorkerValueIncoming(value:Object):void
 		{
-			var tmpValue:Object = event.value.value;
-			switch (event.value.event)
+			var tmpValue:Object = value.value;
+			switch (value.event)
 			{
 				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
 					if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_DATA) shellData(tmpValue);
@@ -408,7 +417,7 @@ package actionScripts.plugins.git
 					}
 					break;
 				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
-					debug("%s", event.value.value);
+					debug("%s", value.value);
 					break;
 			}
 		}
@@ -458,6 +467,10 @@ package actionScripts.plugins.git
 						onXCodePathDetection(null, true, null);
 					}
 				}
+				case GitHubPlugin.CLONE_REQUEST:
+				{
+					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:value.output}));
+				}
 			}
 			
 			if (!match) error(value.output);
@@ -470,8 +483,8 @@ package actionScripts.plugins.git
 			switch (tmpQueue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
-					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL + File.separator + cloningProjectName +")");
-					openClonedProjectBy(new File(lastCloneTarget).resolvePath(cloningProjectName));
+					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL +")");
+					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
 					break;
 				case GIT_PUSH:
 					success("...process completed");
@@ -547,7 +560,8 @@ package actionScripts.plugins.git
 					{
 						if (tmpProject)
 						{
-							(tmpProject as AS3ProjectVO).menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+							tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
+							(tmpProject as AS3ProjectVO).hasVersionControlType = VersionControlTypes.GIT;
 							if (plugin.modelAgainstProject[tmpProject] == undefined) 
 							{
 								value.output = value.output.replace("\n", "");
@@ -561,7 +575,7 @@ package actionScripts.plugins.git
 							pendingProcess.push(new MethodDescriptor(this, 'getGitRemoteURL', tmpProject)); // store the remote URL
 							
 							// following will enable/disable Moonshine top menus based on project
-							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
+							dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 						}
 						
 						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
@@ -581,7 +595,10 @@ package actionScripts.plugins.git
 					}
 					
 					// following will enable/disable Moonshine top menus based on project
-					if (tmpProject) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
+					if (tmpProject)
+					{
+						dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+					}
 					return;
 				}
 				case GIT_REMOTE_ORIGIN_URL:
@@ -799,15 +816,18 @@ package actionScripts.plugins.git
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
 		}
 		
-		private function openClonedProjectBy(path:File):void
+		private function doPostCloneProcess(path:File):void
 		{
-			// validate first if root is a know project
-			var isKnownProject:FileLocation = FlashDevelopImporter.test(path);
-			if (!isKnownProject) isKnownProject = FlashBuilderImporter.test(path);
-			
-			print("Opening project from:"+ path.nativePath);
-			if (isKnownProject)
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, path));
+			if (repositoryUnderCursor)
+			{
+				// following method is mainly applicable for git-meta type of repository
+				VersionControlUtils.parseRepositoryDependencies(repositoryUnderCursor, path);
+				
+				// continue searching for possible
+				// project exietence in its sub-directories
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, path));
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:false, message:null}));
+			}
 		}
 	}
 }

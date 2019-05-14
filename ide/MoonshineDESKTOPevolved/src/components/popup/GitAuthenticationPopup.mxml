@@ -9,12 +9,13 @@
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
-			public static const TYPE_SVN:String = "typeSVN";
-			public static const TYPE_GIT:String = "typeGit";
-			public static const GIT_AUTH_COMPLETED:String = "gitAuthenticationCompleted";
+			import actionScripts.valueObjects.VersionControlTypes;
+			
+			public static const AUTH_SUBMITTED:String = "gitAuthenticationCompleted";
 			
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var type:String;
+			[Bindable] public var userName:String;
 			
 			public var userObject:Object;
 			
@@ -24,9 +25,9 @@
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
 					userObject = {userName:txtUser.text, password:txtPassword.text};
-					if (type == TYPE_GIT) userObject.save = cbSaveAuth.selected;
+					userObject.save = cbSaveAuth.selected;
 					
-					dispatchEvent(new Event(GIT_AUTH_COMPLETED));
+					dispatchEvent(new Event(AUTH_SUBMITTED));
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
 			}
@@ -42,21 +43,20 @@
 			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
 		<view:PromptTextInput id="txtUser"
 							  width="100%" styleName="textInput"
-							  prompt="User Name"/>
+							  prompt="User Name" text="{userName}"/>
 		<view:PromptTextInput id="txtPassword" 
 							  prompt="Password" width="100%" styleName="textInput"
 							  displayAsPassword="true" enter="onSubmit()"/>
 		<s:CheckBox id="cbSaveAuth"
-					label="Save for this project's session"
-					includeInLayout="{type==TYPE_GIT}" visible="{type==TYPE_GIT}"/>
+					label="Save until Moonshine exits"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
-				 includeInLayout="{type==TYPE_GIT &amp;&amp; !isGitAvailable}" visible="{type==TYPE_GIT &amp;&amp; !isGitAvailable}"/>
+				 includeInLayout="{type==VersionControlTypes.GIT &amp;&amp; !isGitAvailable}" visible="{type==VersionControlTypes.GIT &amp;&amp; !isGitAvailable}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCommit" label="Submit"
 				  styleName="darkButton" click="onSubmit()"
-				  enabled="{isGitAvailable || type==TYPE_SVN}"/>
+				  enabled="{isGitAvailable || type == VersionControlTypes.SVN}"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

@@ -26,10 +26,10 @@
 		 height="100%"
 		 backgroundColor="0x444444"
 		 verticalGap="0"
-		 implements="actionScripts.ui.IPanelWindow"
+		 implements="actionScripts.interfaces.IViewWithTitle"
 		 verticalScrollPolicy="off" xmlns:project="actionScripts.ui.project.*">
 	<mx:Style>
-		.headerStyle
+		.problemsHeaderStyle
 		{
 			color: #e0e0e0;
 			fontWeight: bold;
@@ -37,31 +37,44 @@
 	</mx:Style>
 	<mx:Script><![CDATA[
 		import mx.collections.ArrayCollection;
-		import actionScripts.ui.LayoutModifier;
 		import actionScripts.ui.tabview.TabViewTab;
+		import actionScripts.valueObjects.Diagnostic;
+		import mx.controls.dataGridClasses.DataGridColumn;
+		import actionScripts.valueObjects.Range;
+		import actionScripts.valueObjects.Position;
+		import actionScripts.factory.FileLocation;
+
 		[Bindable]
 		public var objectTree:ArrayCollection = new ArrayCollection();
 
-		private function initHeader():void
+		public function get title():String
 		{
-			header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+			return "Problems";
 		}
 
-		private function handleClose(event:Event):void
+		private function getMessageLabel(diagnostic:Diagnostic, column:DataGridColumn):String
 		{
-			if(stage)
+			var label:String = diagnostic.message;
+			if(diagnostic.code)
 			{
-				LayoutModifier.removeFromSidebar(this);
+				label += " (" + diagnostic.code + ")";
 			}
+			return label;
+		}
+
+		private function getLocationLabel(diagnostic:Diagnostic, column:DataGridColumn):String
+		{
+			var label:String = new FileLocation(diagnostic.path).name;
+			var range:Range = diagnostic.range;
+			var start:Position = range.start;
+			if(start)
+			{
+				label += " (" + (start.line + 1) + ", " + (start.character + 1) + ")";
+			}
+			return label;
 		}
 
 	]]></mx:Script>
-
-	<project:ProjectViewHeader
-		id="header"
-		label="Problems"
-		width="100%"
-		creationComplete="initHeader()" />
 
 	<mx:DataGrid id="problemsTree"
 		dataProvider="{objectTree}"
@@ -77,12 +90,12 @@
 		textSelectedColor="0xe0e0e0"
 		borderVisible="false"
 		useRollOver="true"
-		headerStyleName="headerStyle"
+		headerStyleName="problemsHeaderStyle"
 		chromeColor="#393939">
 		<mx:columns>
-			<mx:DataGridColumn headerText="Problem" dataField="message"
+			<mx:DataGridColumn headerText="Problem" dataField="message" labelFunction="{getMessageLabel}"
 							   itemRenderer="components.renderers.CopyContentDataGridItemRenderer"/>
-			<mx:DataGridColumn headerText="Location" dataField="path"
+			<mx:DataGridColumn headerText="Location" dataField="path" labelFunction="{getLocationLabel}"
 			                   itemRenderer="components.renderers.CopyContentDataGridItemRenderer"/>
 		</mx:columns>
 	</mx:DataGrid>

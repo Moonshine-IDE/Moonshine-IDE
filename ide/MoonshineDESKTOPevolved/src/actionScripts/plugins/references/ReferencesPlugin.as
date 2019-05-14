@@ -18,19 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.references
 {
-	import actionScripts.events.ReferencesEvent;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugins.references.view.ReferencesView;
-	import actionScripts.valueObjects.Location;
-
 	import flash.display.DisplayObject;
-
 	import flash.events.Event;
-
+	
 	import mx.collections.ArrayCollection;
 	import mx.managers.PopUpManager;
+	
+	import actionScripts.events.LanguageServerEvent;
+	import actionScripts.events.ReferencesEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugins.references.view.ReferencesView;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.Location;
 
 	public class ReferencesPlugin extends PluginBase
 	{
@@ -41,7 +41,7 @@ package actionScripts.plugins.references
 		}
 
 		override public function get name():String { return "References Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays all references for a symbol in the entire workspace."; }
 
 		private var referencesView:ReferencesView = new ReferencesView();

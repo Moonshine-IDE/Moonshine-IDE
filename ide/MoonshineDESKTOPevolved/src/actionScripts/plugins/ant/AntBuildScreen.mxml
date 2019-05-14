@@ -27,21 +27,22 @@
 		   label="Ant Build" creationComplete="onAntBuildScreenCreationComplete(event)" horizontalCenter="0" verticalCenter="0" >
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.events.ProjectEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.settings.renderers.LinkButtonSkin;
-		import actionScripts.plugin.settings.vo.PluginSetting;
-		import actionScripts.plugins.ant.events.AntBuildEvent;
-
-		import components.popup.SDKDefinePopup;
-		import components.popup.SDKSelectorPopup;
-
-		import mx.core.FlexGlobals;
-		import mx.events.CloseEvent;
-		import mx.events.FlexEvent;
-		import mx.managers.PopUpManager;
-		import mx.validators.Validator;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.validators.Validator;
+			
+			import actionScripts.events.ProjectEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
+			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.plugins.ant.events.AntBuildEvent;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			
+			import components.popup.SDKDefinePopup;
+			import components.popup.SDKSelectorPopup;
 
 		[Bindable]
 		private var _isFlexSDK:Boolean;
@@ -127,7 +128,7 @@
 			else
 				_isAntConfigurPath = false;
 
-			var ps:PluginSetting = new PluginSetting("Ant Build", "Moonshine Project Team", "Build Flex application through Ant script", false);
+			var ps:PluginSetting = new PluginSetting("Ant Build", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Build Flex application through Ant script", false);
 			vgContainer.addElementAt(ps.renderer, 0);
 
 			/*   ps = new PluginSetting("Ant Build Description", "", description, false);

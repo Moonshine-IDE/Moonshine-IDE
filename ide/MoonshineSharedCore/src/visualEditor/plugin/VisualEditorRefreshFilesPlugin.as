@@ -38,7 +38,7 @@ package visualEditor.plugin
         }
 
         override public function get name():String { return "Refresh Visual Editor project files"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Translate and copy manually added Visual Editor XML project files to visualeditor-src folder"; }
 
         override public function activate():void

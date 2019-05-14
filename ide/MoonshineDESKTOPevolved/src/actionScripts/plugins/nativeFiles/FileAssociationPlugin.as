@@ -35,11 +35,12 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
 		override public function get name():String			{ return "FileAssociationPlugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
 		
 		private static var projectFileTypes:Array = ["as3proj", "veditorproj", "grailsproj"];

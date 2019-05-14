@@ -6,19 +6,33 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		Pnzk33myZdoS+y1b9KEWJjNHO/g=
+		21tGw3NM76fj/uWDnO7+FXRyAKo=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
 		<key>Modules/module.modulemap</key>
-		<data>
-		aThkDIdI00xE7QI47wAwfyr0ucY=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			aThkDIdI00xE7QI47wAwfyr0ucY=
+			</data>
+			<key>hash2</key>
+			<data>
+			pmeF5UJoVKWqSw61iLXAyp8oseElCkuMI1tXkJDlN5I=
+			</data>
+		</dict>
 		<key>Resources/Info.plist</key>
-		<data>
-		Pnzk33myZdoS+y1b9KEWJjNHO/g=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			21tGw3NM76fj/uWDnO7+FXRyAKo=
+			</data>
+			<key>hash2</key>
+			<data>
+			aIPmR62kjm7sUvGXOlVFv3PUsRgHhZQVvUWQA8p1ycs=
+			</data>
+		</dict>
 	</dict>
 	<key>rules</key>
 	<dict>

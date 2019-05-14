@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
-	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.NativeProcessExitEvent;
@@ -28,33 +27,33 @@ package actionScripts.plugins.svn.commands
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.svn.event.SVNEvent;
-	import actionScripts.valueObjects.ProjectVO;
-	
-	import flashx.textLayout.tlf_internal;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	
 	public class CheckoutCommand extends SVNCommandBase
 	{
 		private var cmdFile:File;
 		private var isEventReported:Boolean;
+		private var url:String;
+		private var targetFolder:String;
 		
 		public function CheckoutCommand(executable:File, root:File)
 		{
 			super(executable, root);
 			//cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-			
 		}
-		
-		public function checkout(event:SVNEvent, isTrustServerCertificateSVN:Boolean):void
+		// url, folder, user, password, istrust
+		public function checkout(url:String, rootDirectory:File, targetFolder:String, isTrustServerCertificateSVN:Boolean, repository:RepositoryItemVO, userName:String=null, userPassword:String=null):void
 		{
-			if (runningForFile)
-			{
-				error("Currently running, try again later.");
-				return;
-			}
-			
-			notice("Trying to check out %s. May take a while.", event.url);
+			this.repositoryItem = repository;
+			this.root = rootDirectory;
+			this.url = url;
+			this.targetFolder = targetFolder;
+			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
+			notice("Trying to check out %s. May take a while.", url);
 			
 			isEventReported = false;
 			customInfo = new NativeProcessStartupInfo();
@@ -63,31 +62,38 @@ package actionScripts.plugins.svn.commands
 			
 			// http://stackoverflow.com/questions/1625406/using-tortoisesvn-via-the-command-line
 			var args:Vector.<String> = new Vector.<String>();
+			var username:String;
+			var password:String;
 			args.push("checkout");
-			if (event.authObject != null)
+			if (repositoryItem && repositoryItem.userName && repositoryItem.userPassword)
+			{
+				username = repositoryItem.userName;
+				password = repositoryItem.userPassword;
+			}
+			else if (userName && userPassword)
+			{
+				username = userName;
+				password = userPassword;
+			}
+			if (username != null && password != null)
 			{
 				args.push("--username");
-				args.push(event.authObject.username);
+				args.push(username);
 				args.push("--password");
-				args.push(event.authObject.password);
+				args.push(password);
 			}
-			args.push(event.url);
+			args.push(url);
+			args.push(targetFolder);
 			args.push("--non-interactive");
 			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			
 			customInfo.arguments = args;
-			customInfo.workingDirectory = event.file;
+			customInfo.workingDirectory = this.root;
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "SVN Process ", false));
 			
 			startShell(true);
 			customProcess.start(customInfo);
-			
-			var tmpSplit: Array = event.url.split("/");
-			var tmpLastFolderName: String = tmpSplit[tmpSplit.length-1];
-			var newFilePath: String = !NativeApplication.supportsSystemTrayIcon ? event.file.nativePath +"/"+ tmpLastFolderName : event.file.nativePath +"\\"+ tmpLastFolderName;
-			
-			runningForFile = new File(newFilePath);
 		}
 		
 		private function startShell(start:Boolean):void
@@ -120,14 +126,28 @@ package actionScripts.plugins.svn.commands
 			var match:Array = data.toLowerCase().match(/Error validating server certificate for/);
 			if (match) 
 			{
-				serverCertificatePrompt(data);
-				return;
+				//serverCertificatePrompt(data);
+				//return;
+			}
+			
+			if (VersionControlUtils.hasAuthenticationFailError(data))
+			{
+				openAuthentication();
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:data}));
 			}
 	
 			error("%s", data);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.dispatchEvent(new SVNEvent(SVNEvent.SVN_ERROR, null));
 			startShell(false);
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			this.checkout(this.url, this.root, this.targetFolder, this.isTrustServerCertificateSVN, this.repositoryItem, username, password);
 		}
 		
 		protected function svnOutput(event:ProgressEvent):void
@@ -148,7 +168,12 @@ package actionScripts.plugins.svn.commands
 		{
 			if (event.exitCode == 0)
 			{
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(runningForFile.nativePath)));
+				var tmpPath:File = new File(this.root.nativePath + File.separator + targetFolder);
+				
+				// following method is mainly applicable for git-meta type of repository
+				VersionControlUtils.parseRepositoryDependencies(repositoryItem, tmpPath);
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SEARCH_PROJECTS_IN_DIRECTORIES, tmpPath));
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:false, message:null}));
 				/*var p:ProjectVO = new ProjectVO(new FileLocation(runningForFile.nativePath));
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)

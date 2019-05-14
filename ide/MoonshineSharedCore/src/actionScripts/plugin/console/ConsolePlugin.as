@@ -18,26 +18,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console
 {
-    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
-
     import flash.events.Event;
-	import flash.events.KeyboardEvent;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-
+    import flash.events.KeyboardEvent;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+    
     import mx.events.FlexEvent;
-	import mx.resources.ResourceManager;
-	
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.console.setting.SpecialKeySetting;
-	import actionScripts.plugin.console.view.ConsoleModeEvent;
-	import actionScripts.plugin.console.view.ConsoleView;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.valueObjects.ConstantsCoreVO;
+    import mx.resources.ResourceManager;
+    
+    import actionScripts.plugin.IPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.console.setting.SpecialKeySetting;
+    import actionScripts.plugin.console.view.ConsoleModeEvent;
+    import actionScripts.plugin.console.view.ConsoleView;
+    import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+    import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	/**
 	 *  @private
@@ -224,7 +223,8 @@ package actionScripts.plugin.console
 		
 		public function aboutCommand(args:Array):void
 		{
-			var ntc:String = "Moonshine IDE "+ model.flexCore.version +"\n";
+			var ntc:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +" "+ model.flexCore.version +"\n";
+			ntc += ConstantsCoreVO.MOONSHINE_IDE_COPYRIGHT_LABEL +"\n";
 			ntc += "Source code is under Apache License, Version 2.0\n";
 			ntc += "https://github.com/prominic/Moonshine-IDE\n";
 			ntc += "Uses as3abc (LGPL), as3swf (MIT), fzip (ZLIB), asblocks (Apache License 2.0), NativeApplicationUpdater (LGPL)\n";

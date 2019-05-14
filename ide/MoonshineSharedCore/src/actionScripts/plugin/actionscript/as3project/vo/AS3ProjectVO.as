@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
-    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import flash.events.Event;
     import flash.events.MouseEvent;
     
@@ -35,12 +33,14 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
     import actionScripts.plugin.run.RunMobileSetting;
     import actionScripts.plugin.settings.vo.BooleanSetting;
+    import actionScripts.plugin.settings.vo.BuildActionsListSettings;
     import actionScripts.plugin.settings.vo.ColorSetting;
+    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.IntSetting;
-    import actionScripts.plugin.settings.vo.DropDownListSetting;
     import actionScripts.plugin.settings.vo.NameValuePair;
     import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -110,11 +110,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
+		public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var isTrustServerCertificateSVN:Boolean;
 		public var visualEditorExportPath:String;
-
-		public var menuType:String = "";
 
 		private var additional:StringSetting;
 		private var htmlFilePath:PathSetting;
@@ -420,15 +419,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 				// project type - flash builder or flash develop.
 				// also we shall take .as3proj file if exists to project opening,
 				// even there's an .actionScriptProperties file exists
-
-				/*if (isFlashBuilderProject)
-				{
-				settingsFile = folderLocation.resolvePath(".actionScriptProperties");
-				// Write settings
-				IDEModel.getInstance().flexCore.exportFlashBuilder(this, settingsFile);
-				}
-				else
-				{*/
 
                 var projectFileName:String = this.isVisualEditorProject ? projectName+".veditorproj" : projectName+".as3proj";
                 var settingsFile:FileLocation = folderLocation.resolvePath(projectFileName);

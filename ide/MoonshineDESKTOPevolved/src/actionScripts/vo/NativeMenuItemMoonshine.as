@@ -30,7 +30,8 @@ package actionScripts.vo
 	public class NativeMenuItemMoonshine extends NativeMenuItem
 	{
 		public var enableTypes:Array;
-		
+		public var dynamicItem:Boolean;
+
 		public function NativeMenuItemMoonshine(label:String="", isSeparator:Boolean=false)
 		{
 			super(label, isSeparator);

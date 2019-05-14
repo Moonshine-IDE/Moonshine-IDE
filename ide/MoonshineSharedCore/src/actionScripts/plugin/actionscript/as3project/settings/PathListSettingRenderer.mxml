@@ -53,10 +53,10 @@
 				pathList.itemRenderer = factory;
 				pathList.dataProvider = setting.paths;
 				
-				pathList.addEventListener(PathRenderer.EVENT_BROWSE_FILE, browseFile);
-				pathList.addEventListener(PathRenderer.EVENT_BROWSE_DIR, browseDir);
-				pathList.addEventListener(PathRenderer.EVENT_REMOVE_ITEM, removeItem);
-				pathList.addEventListener(PathRenderer.EVENT_MANUAL_UPDATE, onManualUpdate);
+				pathList.addEventListener(PathRenderer.EVENT_BROWSE_FILE, browseFile, false, 0, true);
+				pathList.addEventListener(PathRenderer.EVENT_BROWSE_DIR, browseDir, false, 0, true);
+				pathList.addEventListener(PathRenderer.EVENT_REMOVE_ITEM, removeItem, false, 0, true);
+				pathList.addEventListener(PathRenderer.EVENT_MANUAL_UPDATE, onManualUpdate, false, 0, true);
 			}
 			
 			protected function browseDir(event:Event):void
@@ -80,12 +80,12 @@
 				// filebrowsing.label = setting.getlabelFor(dir)
 				// thus a new label initiation and then submission
 				var tmpLabel: String = setting.getLabelFor(dir);
-				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? model.fileCore.separator +"{locale}" : "");
 				
 				var finalPath: String = dir.nativePath;
 				if (isPresentFileBrowseIsLocale) finalPath += model.fileCore.separator +"{locale}";
 				
 				fileBrowsing.file.fileBridge.nativePath = finalPath;
+				fileBrowsing.label = tmpLabel + (isPresentFileBrowseIsLocale ? model.fileCore.separator +"{locale}" : "");
 				isPresentFileBrowseIsLocale = false;
 			}
 			
@@ -110,7 +110,7 @@
 				fileBrowsing.label = tmpLabel;
 				
 				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
-				fileBrowsing.file.fileBridge.nativePath = finalPath;
+				fileBrowsing.file = new FileLocation(finalPath);
 			}
 			
 			protected function fileCancel():void

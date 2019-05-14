@@ -18,22 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.syntax
 {
-    import actionScripts.ui.parser.PythonLineParser;
-
     import flash.text.engine.ElementFormat;
-	import flash.text.engine.FontDescription;
-	
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.valueObjects.Settings;
+    import flash.text.engine.FontDescription;
+    
+    import actionScripts.events.EditorPluginEvent;
+    import actionScripts.plugin.IEditorPlugin;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.ui.parser.PythonLineParser;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.Settings;
 	
 	public class PythonSyntaxPlugin extends PluginBase implements IEditorPlugin
 	{
 		private var formats:Object = {};
 		
 		override public function get name():String 			{return "Python Syntax Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Python.";}
 		
 		override public function activate():void

@@ -9,15 +9,15 @@
 			import flash.net.navigateToURL;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.plugins.git.model.GitProjectVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
+			import actionScripts.valueObjects.VersionControlTypes;
 			
-			public static const TYPE_SVN:String = "typeSVN";
-			public static const TYPE_GIT:String = "typeGit";
 			public static const TYPE_COMMIT:String = "typeCommit";
 			public static const TYPE_REVERT:String = "typeRevert";
 			public static const GET_AUTHOR:String = "getGitAuthor";
@@ -25,7 +25,7 @@
 			[Bindable] public var filesCount:int;
 			[Bindable] public var isGitAvailable:Boolean;
 			[Bindable] public var commitDiffCollection:ArrayCollection;
-			[Bindable] public var windowType:String = TYPE_GIT;
+			[Bindable] public var windowType:String = VersionControlTypes.GIT;
 			
 			public var type:String = TYPE_COMMIT;
 			public var isSubmit:Boolean;
@@ -59,6 +59,13 @@
 			
 			private function onSubmit():void
 			{
+				// check if any selection exists 
+				if (!hasSelectionToChanges())
+				{
+					Alert.show("There is nothing to commit.", "Note!");
+					return;
+				}
+				
 				if (type == TYPE_COMMIT)
 				{
 					var tmpArr : Array = new Array(sValidator);
@@ -85,6 +92,16 @@
 				{
 					i.isSelected = isSelected;
 				}
+			}
+			
+			protected function hasSelectionToChanges():Boolean
+			{
+				for each (var i:GenericSelectableObject in commitDiffCollection)
+				{
+					if (i.isSelected) return true;
+				}
+				
+				return false;
 			}
 			
 			protected function onAuthorSetMessage(value:Boolean):void
@@ -179,7 +196,7 @@
 				  width="100%"
 				  verticalAlign="middle" paddingTop="4"
 				  clipAndEnableScrolling="false"
-				  includeInLayout="{windowType == TYPE_GIT}" visible="{windowType == TYPE_GIT}">
+				  includeInLayout="{windowType == VersionControlTypes.GIT}" visible="{windowType == VersionControlTypes.GIT}">
 			<s:Label id="lblAuthor"/>
 			<s:Label text="How can I change this?"
 					 creationComplete="event.target.setStyle('textDecoration', 'underline')" buttonMode="true"

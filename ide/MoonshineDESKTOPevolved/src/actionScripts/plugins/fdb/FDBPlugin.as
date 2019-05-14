@@ -48,7 +48,7 @@ package actionScripts.plugins.fdb
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugins.fdb.event.FDBEvent;
 	import actionScripts.plugins.fdb.view.FDBView;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
@@ -117,15 +117,15 @@ package actionScripts.plugins.fdb
 			debugView.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, refreshItem);
 			
 			
-			dispatcher.addEventListener(CompilerEventBase.POSTBUILD, postbuild);
-			dispatcher.addEventListener(CompilerEventBase.PREBUILD, handleCompile);
+			dispatcher.addEventListener(ActionScriptBuildEvent.POSTBUILD, postbuild);
+			dispatcher.addEventListener(ActionScriptBuildEvent.PREBUILD, handleCompile);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_EVENT, handleEditorSave);
 			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, handleEditorSave);
 			dispatcher.addEventListener(FDBEvent.SHOW_DEBUG_VIEW, handleShowDebugView);
-			dispatcher.addEventListener(CompilerEventBase.CONTINUE_EXECUTION,continueExecutionHandler);
-			dispatcher.addEventListener(CompilerEventBase.TERMINATE_EXECUTION,terminateExecutionHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION,continueExecutionHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION,terminateExecutionHandler);
 	
 			
 			var	fdbObj:Object = new Object();
@@ -168,7 +168,7 @@ package actionScripts.plugins.fdb
 				stopDebugger();
 		}
 		
-		private function exitFDBHandler(e:CompilerEventBase):void{
+		private function exitFDBHandler(e:ActionScriptBuildEvent):void{
 			if(fdb) 
 				send("quit");
 		}
@@ -204,7 +204,7 @@ package actionScripts.plugins.fdb
 		override public function deactivate():void
 		{
 			super.deactivate();
-			dispatcher.removeEventListener(CompilerEventBase.POSTBUILD, postbuild);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.POSTBUILD, postbuild);
 			
 			unregisterCommand(CONSOLE_MODE);
 			
@@ -337,7 +337,7 @@ package actionScripts.plugins.fdb
 				if (!fdb)
 				{
 					// start debugg process
-					GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.BUILD_AND_DEBUG,false,false));
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.BUILD_AND_DEBUG,false,false));
 					//send(args.join(" "));
 					//print("FDB not running, please build the project you want to debug at least once.");
 				}
@@ -522,7 +522,7 @@ package actionScripts.plugins.fdb
 				match = data.match(/Waiting for Player to connect/)
 				if(match)
 				{				
-					GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.RUN_AFTER_DEBUG));
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.RUN_AFTER_DEBUG));
 					isMatchFound = true;
 				}
 				match = data.match(/.*Player connected; session starting\..*/);
@@ -715,7 +715,7 @@ package actionScripts.plugins.fdb
 					if (!manualMode)
 					{
 						isStepOver = true;
-						dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER,handleCodeStepOver );
+						dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
 						objectTree.removeAll();
 						var itemThis : XML = <item label="this" path="this" name="this" value="this" isBranch="true" />;
 						var itemLocals : XML = <item label="locals" path="" name="locals" value="locals" isBranch="true" />;
@@ -771,11 +771,11 @@ package actionScripts.plugins.fdb
 						}
 					}
 					//unregister "F6" command
-					dispatcher.removeEventListener(CompilerEventBase.DEBUG_STEPOVER,handleCodeStepOver );
+					dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
 					isMatchFound = true;
 				}
 				
-				match = buffer.match(/[\(fdb)\]*^\s[0-9]+[\s*]+\w*/);
+				match = buffer.match(/[\(fdb\)]*^\s[0-9]+[\s*]+\w*/);
 				if(match && isStepOver)
 				{
 					match = buffer.match(/^\s[0-9]+[\s*]/);
@@ -783,7 +783,7 @@ package actionScripts.plugins.fdb
 					{
 						var nextLine3:int = match[0];
 						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, [getFileTargetPath(nameOfFile)], nextLine3-1));
-						dispatcher.addEventListener(CompilerEventBase.DEBUG_STEPOVER,handleCodeStepOver );
+						dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
 					}
 					isMatchFound = true;
 				}
@@ -831,7 +831,7 @@ package actionScripts.plugins.fdb
 		private function debuggerExit(e:NativeProcessExitEvent):void
 		{
 			debug("FDB exit code %s", e.exitCode);
-			GlobalEventDispatcher.getInstance().removeEventListener(CompilerEventBase.STOP_DEBUG,stopDebugHandler);
+			GlobalEventDispatcher.getInstance().removeEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
 			fdb = null;
 		}
 		
@@ -847,8 +847,8 @@ package actionScripts.plugins.fdb
 				print("2 in MXMLCPlugin debugafterBuild");
 				initDebugger();
 				send("run");
-				GlobalEventDispatcher.getInstance().addEventListener(CompilerEventBase.STOP_DEBUG,stopDebugHandler);
-				GlobalEventDispatcher.getInstance().addEventListener(CompilerEventBase.EXIT_FDB,exitFDBHandler);
+				GlobalEventDispatcher.getInstance().addEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
+				GlobalEventDispatcher.getInstance().addEventListener(ActionScriptBuildEvent.EXIT_FDB,exitFDBHandler);
 			}
 			else
 			{
@@ -870,12 +870,12 @@ package actionScripts.plugins.fdb
 			}
 		}
 		
-		private function stopDebugHandler(e:CompilerEventBase):void{
+		private function stopDebugHandler(e:ActionScriptBuildEvent):void{
 			if(fdb)
 			{
 				stopDebugger();
 			}
-			GlobalEventDispatcher.getInstance().removeEventListener(CompilerEventBase.STOP_DEBUG,stopDebugHandler);
+			GlobalEventDispatcher.getInstance().removeEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
 		}
 		
 		// remoce trace line from editor and unlaunch swf
@@ -893,7 +893,7 @@ package actionScripts.plugins.fdb
 				}
 			}
 			//unregister "F6" command
-			dispatcher.removeEventListener(CompilerEventBase.DEBUG_STEPOVER,handleCodeStepOver );
+			dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
 			if(!isSession){
 				fdb.closeInput();
 			}

@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"output": "bin/MoonshineSharedCore.swc",
+		"keep-generated-actionscript": true,
+		"source-path": [
+			"src"
+		],
+		"library-path": [
+			"libs"
+		],
+		"include-sources": [
+			"src"
+		]
+	},
+	"type": "lib",
+	"additionalOptions": "-locale en_US ja_JP -define+=CONFIG::OSX,false"
+}

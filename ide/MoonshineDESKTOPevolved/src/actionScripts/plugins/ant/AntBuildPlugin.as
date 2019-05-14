@@ -74,7 +74,7 @@ package actionScripts.plugins.ant
 
         override public function get author():String
         {
-            return "Moonshine Project Team";
+            return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";
         }
 
         override public function get description():String

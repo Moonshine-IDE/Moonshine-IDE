@@ -46,6 +46,7 @@
 			import actionScripts.ui.tabview.CloseTabEvent;
 			import actionScripts.utils.NoSDKNotifier;
 			import actionScripts.utils.SDKUtils;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.SDKReferenceVO;
 			import actionScripts.valueObjects.SdkDescriptionVO;
 			
@@ -78,7 +79,7 @@
 
 		private function DefineSDKCreationComplete(event:FlexEvent):void
 		{
-			var ps:PluginSetting = new PluginSetting("Flex SDKs", "Moonshine Project Team", "Define Default Flex SDKs", false);
+			var ps:PluginSetting = new PluginSetting("Flex SDKs", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Define Default Flex SDKs", false);
 			vgContainer.addElementAt(ps.renderer, 0);
 
 			addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onThisClosing, false, 0, true);

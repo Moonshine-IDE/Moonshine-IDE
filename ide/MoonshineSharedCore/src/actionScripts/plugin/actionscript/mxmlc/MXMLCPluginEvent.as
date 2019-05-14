@@ -21,13 +21,13 @@ package actionScripts.plugin.actionscript.mxmlc
 	import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	
 	/**
 	 * ...
 	 * @author SmilyOrg
 	 */
-	public class MXMLCPluginEvent extends CompilerEventBase 
+	public class MXMLCPluginEvent extends ActionScriptBuildEvent
 	{
 		public var sdk:FileLocation;
 		public function MXMLCPluginEvent(type:String, sdk:FileLocation = null, bubbles:Boolean=false, cancelable:Boolean=false) 

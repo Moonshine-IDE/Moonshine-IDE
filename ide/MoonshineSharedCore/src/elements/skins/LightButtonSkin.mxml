@@ -117,4 +117,4 @@
     	fontFamily="DejaVuSans"
     	text="{hostComponent.label}" /> 
  
-</s:SparkSkin >
+</s:SparkSkin>

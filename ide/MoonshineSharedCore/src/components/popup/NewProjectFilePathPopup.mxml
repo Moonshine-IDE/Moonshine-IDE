@@ -20,60 +20,71 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark" 
-				   xmlns:mx="library://ns.adobe.com/flex/mx"
-				   backgroundColor="0xf5f5f5"
-				   width="500" minWidth="400" height="300" minHeight="300"
-				   creationComplete="onCreationCompletes(event)" 
-				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
+										   backgroundColor="0xf5f5f5"
+										   width="500" minWidth="400" height="300" minHeight="300"
+										   creationComplete="onNewProjectFilePathCreationComplete(event)"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayList;
-			import mx.events.FlexEvent;
-			
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			
-			public var folderLocation:FileLocation;
-			
-			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			[Bindable] private var files:ArrayList;
-			
-			protected function onCreateButton(event:MouseEvent):void
+		import actionScripts.valueObjects.FileWrapper;
+
+		import mx.events.FlexEvent;
+
+		import actionScripts.events.NewFileEvent;
+		import actionScripts.locator.IDEModel;
+
+		public var folderWrapper:FileWrapper;
+
+		[Bindable]
+		private var model:IDEModel = IDEModel.getInstance();
+
+		protected function onProjectCreateButton(event:MouseEvent):void
+		{
+			selectMainProjectFile();
+		}
+
+		private function onFileSelectedDoubleClick(event:MouseEvent):void
+		{
+			selectMainProjectFile();
+		}
+
+		protected function onNewProjectFilePathCreationComplete(event:FlexEvent):void
+		{
+			title = "Main application file";
+			// probable termination
+			if(!folderWrapper)
 			{
-				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_SELECTED, lstResources.selectedItem.nativePath);
-				dispatchEvent(tmpEvent);
-				
-				super.closeThis();
+				hgExistingWarning.visible = true;
+				return;
 			}
-			
-			protected function onCreationCompletes(event:FlexEvent):void
+
+			tree.dataProvider = folderWrapper;
+
+			if(!folderWrapper.children || folderWrapper.children.length == 0)
 			{
-				title = "Main application file";
-				
-				// probable termination
-				if (!folderLocation)
-				{
-					hgExistingWarning.visible = true;
-					return;
-				}
-				
-				var tmpFiles:Array = folderLocation.fileBridge.getDirectoryListing();
-				files = new ArrayList();
-				for each (var i:Object in tmpFiles)
-				{
-					if (i.extension == "as" || i.extension == "mxml") files.addItem(i);
-				}
-				
-				if (files.length == 0) hgExistingWarning.visible = true;
+				hgExistingWarning.visible = true;
 			}
-			
+		}
+
+		private function getIconForFile(object:Object):Class
+		{
+			return null;
+		}
+
+		private function selectMainProjectFile():void
+		{
+			var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_SELECTED, tree.selectedItem.nativePath);
+			dispatchEvent(tmpEvent);
+
+			super.closeThis();
+		}
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -84,10 +95,22 @@
 	<s:VGroup height="100%" width="100%" 
 			  gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
 			  horizontalAlign="center">
-		<s:List id="lstResources" 
-				width="100%" height="100%"
-				dataProvider="{files}" labelField="name" styleName="multiLineList"
-				doubleClickEnabled="true" doubleClick="onCreateButton(null)"/>
+		<utils:CustomTree id="tree"
+								 width="100%" height="100%"
+								 color="0xEEEEEE"
+								 contentBackgroundColor="0x0"
+								 rollOverColor="0x393939"
+								 selectionColor="0xc165b8"
+								 alternatingItemColors="[0x444444, 0x4d4c4c]"
+								 verticalScrollBarStyleName="black"
+								 borderVisible="false"
+								 rowHeight="18"
+								 useRollOver="true"
+								 labelField="name"
+						  		 iconFunction="{getIconForFile}"
+								 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+								 doubleClickEnabled="true"
+								 doubleClick="onFileSelectedDoubleClick(event)"/>
 		<s:HGroup id="hgExistingWarning" 
 				  width="100%" verticalAlign="middle" visible="false">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
@@ -98,6 +121,6 @@
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnCreate" label="Select"
 				  styleName="darkButton"
-				  click="onCreateButton(event)" enabled="{lstResources.selectedIndex != -1}"/>
+				  click="onProjectCreateButton(event)" enabled="{tree.selectedIndex != -1}"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

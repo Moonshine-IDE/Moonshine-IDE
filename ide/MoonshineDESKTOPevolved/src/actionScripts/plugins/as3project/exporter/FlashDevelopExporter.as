@@ -116,7 +116,8 @@ package actionScripts.plugins.as3project.exporter
 				testMovieCommand	:	SerializeUtil.serializeString(p.testMovieCommand),
                 isPrimeFacesVisualEditor: SerializeUtil.serializeBoolean(p.isPrimeFacesVisualEditorProject),
                 isExportedToExistingSource: SerializeUtil.serializeBoolean(p.isExportedToExistingSource),
-                visualEditorExportPath: SerializeUtil.serializeString(p.visualEditorExportPath)
+                visualEditorExportPath: SerializeUtil.serializeString(p.visualEditorExportPath),
+				isRoyale: SerializeUtil.serializeBoolean(p.isRoyale)
 			}
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{

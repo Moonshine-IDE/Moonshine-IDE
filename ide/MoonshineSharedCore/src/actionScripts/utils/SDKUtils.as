@@ -29,10 +29,8 @@ package actionScripts.utils
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.ProjectEvent;
-    import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.help.HelpPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.RoyaleOutputTarget;
     import actionScripts.valueObjects.SDKReferenceVO;
@@ -212,26 +210,6 @@ package actionScripts.utils
 			// for non-OSX
 			return [];
 		}
-		
-		public static function openSDKUnzipPrompt():void
-		{
-			// open-up sdk extraction prompt if,
-			// 1. no specific sdk found in user's downloads folder
-			// 2. this method called during moonshine start
-			// 3. user didn't choose to not show sdk extraction prompt again
-			if (ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT && ((IDEModel.getInstance().userSavedSDKs.length == 0) || (IDEModel.getInstance().userSavedSDKs[0].status != SDKUtils.BUNDLED)) && !ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS) 
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST));
-			}
-			else if (((IDEModel.getInstance().userSavedSDKs.length == 0) || (IDEModel.getInstance().userSavedSDKs[0].status != SDKUtils.BUNDLED)) && !ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS) 
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST));
-			}
-			else 
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(HelpPlugin.EVENT_CHECK_MINIMUM_SDK_REQUIREMENT)); 
-			}
-		}
 
 		public static function setDefaultSDKByBundledSDK():void
 		{
@@ -269,7 +247,14 @@ package actionScripts.utils
 				var displayName:String = tmpXML["name"];
 				if (description.fileBridge.name.indexOf("royale") > -1)
 				{
-                    displayName += " " + tmpXML.version;
+					if (outputTargets.length == 1)
+					{
+						displayName = displayName.concat(" ", tmpXML.version," (", outputTargets[0].name, " only)");
+					}
+					else
+					{
+						displayName += " " + tmpXML.version;
+					}
 				}
 				
 				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
@@ -416,15 +401,15 @@ package actionScripts.utils
             return currentSdkMinorVersion;
         }
 		
-		public static function checkSDKTypeInSDKList(type:String):Boolean
+		public static function checkSDKTypeInSDKList(type:String):SDKReferenceVO
 		{
 			var model:IDEModel = IDEModel.getInstance();
 			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
 			{
-				if (sdk.type == type) return true;
+				if (sdk.type == type) return sdk;
 			}
 			
-			return false;
+			return null;
 		}
 		
 		private static function onExtractionFailed(event:Event):void

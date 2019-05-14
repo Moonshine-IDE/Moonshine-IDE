@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-    import actionScripts.factory.FileLocation;
+	import actionScripts.events.PreviewPluginEvent;
+	import actionScripts.factory.FileLocation;
     import actionScripts.utils.MavenPomUtil;
 
     import flash.events.Event;
-    
-    import mx.events.CollectionEvent;
+
+	import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.FlexEvent;
     
@@ -40,13 +41,13 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
-    
-    import utils.VisualEditorType;
-    
+
     import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
+		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
+
 		private var visualEditorView:VisualEditorView;
 		private var hasChangedProperties:Boolean;
 		
@@ -81,8 +82,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView = new VisualEditorView();
 			
 			visualEditorProject.isPrimeFacesVisualEditorProject ?
-				visualEditorView.visualEditorType = VisualEditorType.PRIME_FACES :
-				visualEditorView.visualEditorType = VisualEditorType.FLEX;
+				visualEditorView.currentState = "primeFacesVisualEditor" :
+				visualEditorView.currentState = "flexVisualEditor";
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -100,14 +101,18 @@ package actionScripts.plugins.ui.editor
 			
 			visualEditorView.codeEditor = editor;
 			
-			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
-			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
-			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
-			
+			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, previewStartFailedHandler);
+			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STARTING, previewStartingHandler);
+
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 		}
-		
+
 		protected function handleEditorCollectionChange(event:CollectionEvent):void
 		{
 			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
@@ -125,11 +130,16 @@ package actionScripts.plugins.ui.editor
 					visualEditorView.visualEditor.removeEventListener("saveCode", onVisualEditorSaveCode);
 				}
 				
-				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, onTabAdd);
-				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, onTabOpenClose);
-				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, onTabSelect);
-				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, onDuplicateSelectedElement);
-				
+				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
+				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, previewStartFailedHandler);
+				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STARTING, previewStartingHandler);
+				dispatcher.removeEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
+
 				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 				undoManager.dispose();
 			}
@@ -145,9 +155,32 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			visualEditorView.visualEditor.propertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_ITEM_DELETING, onPropertyEditorChanged);
             visualEditorView.visualEditor.addEventListener("saveCode", onVisualEditorSaveCode);
+			visualEditorView.addEventListener("startPreview", onStartPreview);
 
 			visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+
+			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
+		}
+
+		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesVisualEditor";
+		}
+
+		private function previewStartingHandler(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesPreviewStarting";
+		}
+
+		private function previewStoppedHandler(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesVisualEditor";
+		}
+
+		private function previewStartFailedHandler(event:PreviewPluginEvent):void
+		{
+			visualEditorView.currentState = "primeFacesVisualEditor";
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -156,14 +189,12 @@ package actionScripts.plugins.ui.editor
 			this.save();
 		}
 
-		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
+		private function switchTabToCodeHandler(event:Event):void
 		{
-			editor.dataProvider = getMxmlCode();
-			
-			updateChangeStatus()
+			visualEditorView.viewStack.selectedIndex = 1;
 		}
 
-        private function onDuplicateSelectedElement(event:Event):void
+        private function duplicateSelectedElementHandler(event:Event):void
         {
 			visualEditorView.visualEditor.duplicateSelectedElement();
         }
@@ -258,15 +289,22 @@ package actionScripts.plugins.ui.editor
 		{
 			undoManager.handleChange(event);
 		}
-		
-		private function onTabAdd(event:Event):void
+
+		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
+		{
+			editor.dataProvider = getMxmlCode();
+
+			updateChangeStatus()
+		}
+
+		private function addTabHandler(event:Event):void
 		{
 			if (!visualEditorView.visualEditor) return;
 			
 			visualEditorView.visualEditor.editingSurface.selectedItem = null;
 		}
 		
-		private function onTabOpenClose(event:Event):void
+		private function closeTabHandler(event:Event):void
 		{
 			if (!visualEditorView.visualEditor) return;
 			
@@ -282,7 +320,7 @@ package actionScripts.plugins.ui.editor
 			}
 		}
 		
-		private function onTabSelect(event:TabEvent):void
+		private function tabSelectHandler(event:TabEvent):void
 		{
 			if (!visualEditorView.visualEditor) return;
 			
@@ -297,7 +335,15 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 			}
 		}
-		
+
+		private function onStartPreview(event:Event):void
+		{
+			if (visualEditorView.currentState == "primeFacesVisualEditor")
+			{
+				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, file, visualEditorProject));
+			}
+		}
+
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();

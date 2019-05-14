@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.settings
 {
-	import mx.controls.Alert;
 	import mx.core.IVisualElement;
 	
 	import __AS3__.vec.Vector;
@@ -26,7 +25,6 @@ package actionScripts.plugin.actionscript.as3project.settings
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
-	
 	
 	public class NewProjectSourcePathListSetting extends AbstractSetting
 	{
@@ -48,12 +46,12 @@ package actionScripts.plugin.actionscript.as3project.settings
 			defaultValue = "";
 		}
 		
-		override public function set stringValue(v:String):void 
+		override public function set stringValue(value:String):void
 		{
-			if (v != "")
+			if (value != "")
 			{
 				var toRet:Vector.<FileLocation> = new Vector.<FileLocation>();
-				var values:Array = v.split(",");
+				var values:Array = value.split(",");
 				for each (var v:String in values)
 				{
 					toRet.push( new FileLocation(v) );

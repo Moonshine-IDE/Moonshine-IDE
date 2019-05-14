@@ -27,11 +27,12 @@ package actionScripts.plugin.core.mouse
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.editor.text.TextEditor;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class MouseManagerPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Mouse Manager Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Mouse Manager Plugin. Esc exits."; }
 		
 		private var lastKnownEditor:TextEditor;

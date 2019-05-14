@@ -19,52 +19,62 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.OutputProgressEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.filesystem.FileStream;
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
-    import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.managers.PopUpManager;
-    import mx.resources.ResourceManager;
-    
-    import actionScripts.events.RefreshTreeEvent;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
-    import actionScripts.plugin.core.compiler.CompilerEventBase;
-    import actionScripts.plugin.project.ProjectType;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.BooleanSetting;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.PathSetting;
-    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-    import actionScripts.utils.EnvironmentSetupUtils;
-    import actionScripts.utils.NoSDKNotifier;
-    import actionScripts.utils.OSXBookmarkerNotifiers;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
-    
-    import components.popup.SelectOpenedFlexProject;
-    import components.views.project.TreeView;
+	import actionScripts.locator.HelperModel;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.utils.SDKUtils;
+	import actionScripts.valueObjects.SDKReferenceVO;
 
-    public class MXMLCJavaScriptPlugin extends PluginBase implements IPlugin, ISettingsProvider
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.OutputProgressEvent;
+	import flash.events.ProgressEvent;
+	import flash.filesystem.File;
+	import flash.filesystem.FileStream;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	import flash.utils.setTimeout;
+
+	import flashx.textLayout.elements.LinkElement;
+
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.managers.PopUpManager;
+	import mx.resources.ResourceManager;
+	
+	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.project.ProjectType;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.BooleanSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.NoSDKNotifier;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Settings;
+	
+	import components.popup.SelectOpenedFlexProject;
+	import components.views.project.TreeView;
+
+    public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "MXMLC Java Script Compiler Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
@@ -103,6 +113,7 @@ package actionScripts.plugins.as3project.mxmlc
 		protected var runAfterBuild:Boolean;
 
 		private var successMessage:String;
+		private var isProjectHasInvalidPaths:Boolean;
 
 		public function MXMLCJavaScriptPlugin() 
 		{
@@ -134,8 +145,8 @@ package actionScripts.plugins.as3project.mxmlc
 			registerCommand('buildjs',tempObj);
 			
 			
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
-			dispatcher.addEventListener(CompilerEventBase.BUILD_AS_JAVASCRIPT, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT, build);
 			reset();
 		}
 		
@@ -144,6 +155,15 @@ package actionScripts.plugins.as3project.mxmlc
 			super.deactivate();
 			reset();
 			shellInfo = null;
+		}
+		
+		override protected function onProjectPathsValidated(paths:Array):void
+		{
+			if (paths)
+			{
+				isProjectHasInvalidPaths = true;
+				error("Following path(s) are invalid or does not exists:\n"+ paths.join("\n"));
+			}
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -178,6 +198,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function build(e:Event, runAfterBuild:Boolean=false):void
 		{
+			this.isProjectHasInvalidPaths = false;
 			this.runAfterBuild = runAfterBuild;
 			checkProjectCount();
 		}
@@ -202,10 +223,10 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:AS3ProjectVO = tmpTreeView.getProjectBySelection();
+					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
 					if (projectReference)
 					{
-						checkForUnsavedEdior(projectReference as ProjectVO);
+						checkForUnsavedEdior(projectReference);
 						return;
 					}
 				}
@@ -257,6 +278,12 @@ package actionScripts.plugins.as3project.mxmlc
 				return;
 			}
 			
+			checkProjectForInvalidPaths(activeProject); 
+			if (isProjectHasInvalidPaths)
+			{
+				return;
+			}
+			
 			reset();
 			
 			CONFIG::OSX
@@ -276,6 +303,8 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				currentProject = activeProject;
 				var tempCurrentSDK:FileLocation = UtilsCore.getCurrentSDK(activeProject as AS3ProjectVO);
+				var sdkReference:SDKReferenceVO = SDKUtils.getSDKReference(tempCurrentSDK);
+
 				currentSDK = null;
 				if (!tempCurrentSDK)
 				{
@@ -294,7 +323,13 @@ package actionScripts.plugins.as3project.mxmlc
 					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
 					return;
 				}
-				
+
+				if (!sdkReference.hasPlayerglobal && !HelperModel.getInstance().moonshineBridge.playerglobalExists && !sdkReference.isJSOnlySdk)
+				{
+					displayPlayerGlobalError(sdkReference);
+					return;
+				}
+
 				var targetFile:FileLocation = compile(activeProject as AS3ProjectVO);
 				if(!targetFile)
 				{
@@ -309,7 +344,7 @@ package actionScripts.plugins.as3project.mxmlc
 				var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 				
 				UtilsCore.checkIfRoyaleApplication(as3Pvo);
-				if (as3Pvo.isFlexJS)
+				if (as3Pvo.isFlexJS || as3Pvo.isRoyale)
 				{
 					// FlexJS Application
 					shellInfo = new NativeProcessStartupInfo();
@@ -404,8 +439,9 @@ package actionScripts.plugins.as3project.mxmlc
             }
             else
             {
+				var royaleLibPath:String = "royalelib=".concat('"', SDKstr, File.separator, "frameworks", '"');
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+" && " : '', "export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
 				);
             }
 
@@ -492,7 +528,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private function compile(pvo:AS3ProjectVO):FileLocation 
 		{
 			clearConsoleBeforeRun();
-			dispatcher.dispatchEvent(new MXMLCPluginEvent(CompilerEventBase.PREBUILD, new FileLocation(currentSDK.nativePath)));
+			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
 			print("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
@@ -785,6 +821,36 @@ package actionScripts.plugins.as3project.mxmlc
             }
 
             print("%s", data);
+		}
+
+		private function displayPlayerGlobalError(sdkReference:SDKReferenceVO):void
+		{
+			var separator:String = model.fileCore.separator;
+			var playerVersion:String = sdkReference.getPlayerGlobalVersion();
+			var p:ParagraphElement = new ParagraphElement();
+			var spanText:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+
+			if (!playerVersion)
+			{
+				playerVersion = "{version}";
+			}
+
+			p.color = 0xFA8072;
+			spanText.text = ":\n: This SDK does not contains playerglobal.swc in frameworks".concat(
+					separator, "libs", separator, "player", separator, playerVersion, separator, "playerglobal.swc", ".",
+					" Download playerglobal ");
+			link.href = "https://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html";
+			link.linkNormalFormat = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
+
+			var spanLink:SpanElement = new SpanElement();
+			spanLink.text = "here";
+			link.addChild(spanLink);
+
+			p.addChild(spanText);
+			p.addChild(link);
+
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, p));
 		}
 	}
 }

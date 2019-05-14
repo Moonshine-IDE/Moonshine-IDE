@@ -41,9 +41,7 @@
 			
 			[Bindable] public var downlaoding			: Boolean;
 			[Bindable] public var updater				: NativeApplicationUpdater;
-
-           /*[Embed('../../MoonshineSharedCore/src/elements/images/imgInstall.png')]
-            private var imgInstall:Class;*/
+			[Bindable] public var isAppStoreVersion		: Boolean;
 			
 		]]>
 	</fx:Script>
@@ -64,24 +62,32 @@
 		<s:layout>
 			<s:VerticalLayout verticalAlign="middle"/>
 		</s:layout>
-		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle">
-		<!--	<s:Image source="{imgInstall}"/>-->
-			<s:VGroup>
+		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10">
+			<s:Image source="/elements/images/imgInstall.png"/>
+			<s:VGroup gap="10">
 				<s:Label text="Updates:"
-						 styleName="dashboardLabel"/>
+						 styleName="pathInputs"/>
 				<s:Label text="New version ({updater.updateVersion}) is available."
-						 styleName="dashboardLabel"/>
-				<s:Label text="Do you want to download it and install?"
-						 styleName="dashboardLabel"/>
-				<mx:ProgressBar id="prgBar" source="{updater}" label="{(downlaoding)?'Downloading %3%':''}" alpha="{(downlaoding)?1:.3}" />
-				<s:HGroup width="100%">
-					<s:Button label="YES" 
-							  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
-							  width="60" emphasized="true"/>
-					<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
-							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
-							  width="60"/>
-				</s:HGroup>
+						 styleName="smallText"/>
+				<s:VGroup width="100%"
+						  includeInLayout="{!isAppStoreVersion}" visible="{!isAppStoreVersion}">
+					<s:Label text="Do you want to download it and install?"
+							 styleName="smallText"/>
+					<mx:ProgressBar id="prgBar" source="{updater}" label="{(downlaoding)?'Downloading %3%':''}" alpha="{(downlaoding)?1:.3}" />
+					<s:HGroup width="100%">
+						<s:Button label="YES" 
+								  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
+								  width="60" emphasized="true"/>
+						<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
+								  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
+								  width="60"/>
+					</s:HGroup>
+				</s:VGroup>
+				<s:VGroup width="100%"
+						  includeInLayout="{isAppStoreVersion}" visible="{isAppStoreVersion}">
+					<s:Label text="-- Message to be updated --"
+							 styleName="smallText"/>
+				</s:VGroup>
 			</s:VGroup>
 		</s:HGroup>
 	</s:BorderContainer>

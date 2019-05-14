@@ -35,6 +35,7 @@
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.HelperEvent;
+			import actionScripts.events.StartupHelperEvent;
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.PluginSetting;
@@ -109,12 +110,6 @@
 					PathSetupHelperUtil.updateFieldPath(componentId, path);
 			}
 			
-			public function onWarningUpdate(event:HelperEvent):void
-			{
-				var component:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-				component.hasWarning = event.value.message;
-			}
-			
 			public function dispose():void
 			{
 				stopMessageAnimateProcess();
@@ -140,7 +135,9 @@
 			
 			private function updateUI():void
 			{
-				var ps:PluginSetting = new PluginSetting("Moonshine IDE is Installed. What's Next?", "Moonshine Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				cbDNS.selected = ConstantsCoreVO.IS_GETTING_STARTED_DNS;
+				
+				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
 				body.addElementAt(ps.renderer, 0);
 			}
 			
@@ -251,6 +248,12 @@
 				viewHelper.checkForUpdate();
 			}
 			
+			protected function onDNSchange(event:Event):void
+			{
+				ConstantsCoreVO.IS_GETTING_STARTED_DNS = cbDNS.selected;
+				dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_DNS_GETTING_STARTED));
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -262,7 +265,7 @@
 	
 	<s:VGroup id="body"
 			  width="100%" height="100%"
-			  paddingLeft="12" paddingTop="24" paddingBottom="24" paddingRight="12"
+			  paddingLeft="12" paddingTop="24" paddingBottom="12" paddingRight="12"
 			  horizontalAlign="center">
 		<s:Button label="Download Third-party Software"
 				  styleName="greyButton"
@@ -276,6 +279,9 @@
 							   DOWNLOAD_COMPONENT="runAppStoreHelper(event)"
 							   OPEN_MOON_SETTINGS="onOpenSettings(event)"
 							   COMPONENT_DOWNLOADED="onAnyComponentDownloaded(event)"/>
+		<s:CheckBox id="cbDNS"
+					label="Do not show this tab on startup"
+					change="onDNSchange(event)"/>
 	</s:VGroup>
 	
 	<s:HGroup verticalAlign="middle" horizontalAlign="right"

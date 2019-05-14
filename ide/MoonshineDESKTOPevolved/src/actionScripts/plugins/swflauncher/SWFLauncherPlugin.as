@@ -31,10 +31,9 @@ package actionScripts.plugins.swflauncher
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.FilePluginEvent;
-	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.core.compiler.CompilerEventBase;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
@@ -50,7 +49,7 @@ package actionScripts.plugins.swflauncher
 		public static var RUN_AS_DEBUGGER: Boolean = false;
 		
 		override public function get name():String			{ return "SWF Launcher Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Opens .swf files externally. Handles AIR launching via ADL."; }
 		
 		private var customProcess:NativeProcess;
@@ -289,7 +288,7 @@ package actionScripts.plugins.swflauncher
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
 			if(customProcess)
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.STOP_DEBUG,false));
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
 		}
 		
 		private function shellData(e:ProgressEvent):void 
@@ -300,12 +299,12 @@ package actionScripts.plugins.swflauncher
 			if (data.match(/initial content not found/))
 			{
 				warning("SWF source not found in application descriptor.");
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.EXIT_FDB,false));
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.EXIT_FDB,false));
 			}
 			else if (data.match(/error while loading initial content/))
 			{
 				error('Error while loading SWF source.\nInvalid application descriptor: Unknown namespace: '+ currentAIRNamespaceVersion);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new CompilerEventBase(CompilerEventBase.EXIT_FDB,false));
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.EXIT_FDB,false));
 			}
 			else
 			{

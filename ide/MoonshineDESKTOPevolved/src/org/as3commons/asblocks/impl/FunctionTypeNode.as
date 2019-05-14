@@ -68,7 +68,7 @@ public class FunctionTypeNode extends FunctionNodeBase implements IFunctionType
 		{
 			throw new ASBlocksSyntaxError("IType visibility must be public");
 		}
-		return ModifierUtil.setVisibility(node, value);
+		ModifierUtil.setVisibility(node, value);
 	}
 	
 	//----------------------------------

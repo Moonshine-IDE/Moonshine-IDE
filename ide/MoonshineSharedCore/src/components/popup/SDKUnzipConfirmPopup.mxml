@@ -29,13 +29,13 @@
 		<![CDATA[
 		import flash.net.navigateToURL;
 		import flash.utils.setTimeout;
-
+		
 		import mx.controls.Alert;
 		import mx.core.UIComponent;
 		import mx.events.FlexEvent;
-
+		
 		import spark.utils.TextFlowUtil;
-
+		
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.locator.IDEModel;
@@ -52,8 +52,8 @@
 		[Bindable]
 		private var userNotes:String;
 
-		private var unzipperNotes:String = "This is the Moonshine IDE Complete (App Store) release. The IDE requires the Apache Flex® SDK to be un-zipped to enable you to later compile the source code you write in the IDE. This is a one-time operation. Please click Confirm to proceed.";
-		private var helperDownloaderNotes:String = "In order to compile your project, Moonshine needs the Apache Flex® or FlexJS® SDKs, as well as Apache Ant.\n\nDue to Apple sandbox, your SDK location needs to be in your 'Downloads' folder. Use Moonshine App Store Helper to automatically install the required versions.";
+		private var unzipperNotes:String = "This is the "+ ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Complete (App Store) release. The IDE requires the Apache Flex® SDK to be un-zipped to enable you to later compile the source code you write in the IDE. This is a one-time operation. Please click Confirm to proceed.";
+		private var helperDownloaderNotes:String = "In order to compile your project, "+ ConstantsCoreVO.MOONSHINE_IDE_LABEL +" needs the Apache Flex® or FlexJS® SDKs, as well as Apache Ant.\n\nDue to Apple sandbox, your SDK location needs to be in your 'Downloads' folder. Use Moonshine App Store Helper to automatically install the required versions.";
 		private var model:IDEModel = IDEModel.getInstance();
 
 		private function addCloseButton():void

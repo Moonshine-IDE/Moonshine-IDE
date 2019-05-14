@@ -25,13 +25,14 @@ package actionScripts.plugin.fullscreen
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FullscreenPlugin extends PluginBase 
 	{
 		public static const EVENT_FULLSCREEN:String = "fullscreenEvent";
 		
 		override public function get name():String			{ return "Fullscreen Plugin"; }
-		override public function get author():String		{ return "Moonshine Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Show edit in fullscreen. Esc exits."; }
 		
 		override public function activate():void

@@ -1,1 +1,0 @@
-Create project with Feathers SDK for desktop application. This can be used to generate .AIR, .EXE (Windows only) and .DMG (OSX) installers.

@@ -6,26 +6,32 @@ package actionScripts.plugins.build
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
-    import flash.filesystem.File;
     import flash.utils.IDataInput;
     
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.PluginBase;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
 
-    public class ConsoleBuildPluginBase extends PluginBase
+    public class ConsoleBuildPluginBase extends CompilerPluginBase
     {
         protected var nativeProcess:NativeProcess;
         private var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
-        protected var running:Boolean;
-
         public function ConsoleBuildPluginBase()
         {
             super();
+        }
+
+        private var _running:Boolean;
+        protected function get running():Boolean
+        {
+            return _running;
+        }
+
+        protected function set running(value:Boolean):void
+        {
+            _running = value;
         }
 
         override public function activate():void
@@ -54,7 +60,7 @@ package actionScripts.plugins.build
 
         public function start(args:Vector.<String>, buildDirectory:*):void
         {
-            if (nativeProcess.running && running)
+            if (nativeProcess.running && _running)
             {
                 warning("Build is running. Wait for finish...");
                 return;

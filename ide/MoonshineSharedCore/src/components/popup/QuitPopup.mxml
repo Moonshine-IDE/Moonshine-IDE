@@ -12,7 +12,7 @@
         <s:VerticalLayout verticalAlign="middle" horizontalAlign="left"
                           paddingLeft="10" paddingRight="10"/>
     </resizabletitlewindow:layout>
-    <s:Label text="Are you sure you want to exit Moonshine IDE?" fontWeight="bold"/>
+    <s:Label text="Are you sure you want to exit {ConstantsCoreVO.MOONSHINE_IDE_LABEL}?" fontWeight="bold"/>
     <s:CheckBox label="Do not ask me again" left="10" selected="@{_doNotAskMeAgain}"/>
     <resizabletitlewindow:controlBarContent>
         <s:Spacer width="100%"/>
@@ -22,9 +22,11 @@
                   styleName="darkButton" click="onExitButtonClick(event)"/>
     </resizabletitlewindow:controlBarContent>
     <fx:Script><![CDATA[
-        import elements.skins.DarkButtonSkin;
-
-        import mx.events.FlexEvent;
+		import mx.events.FlexEvent;
+		
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		
+		import elements.skins.DarkButtonSkin;
 
         [Bindable]
         private var _doNotAskMeAgain:Boolean;

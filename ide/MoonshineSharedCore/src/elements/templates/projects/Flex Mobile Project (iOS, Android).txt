@@ -1,1 +1,0 @@
-Create a project that will create an application designed for mobile devices.

@@ -25,7 +25,8 @@ package actionScripts.plugins.visualEditor
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.maven.MavenBuildPlugin;
-    import actionScripts.plugins.maven.MavenBuildStatus;
+    import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.utils.MavenPomUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -49,6 +50,7 @@ package actionScripts.plugins.visualEditor
     {
         private static const APP_WAS_DEPLOYED:RegExp = /app was successfully deployed/;
         private static const APP_FAILED:RegExp = /Failed to start, exiting/;
+        private static const APP_FAILED_TO_START:RegExp = /Server failed to start/;
         private static const CLOSED:RegExp = /\[CLOSED\]/;
 
         private const PAYARA_SERVER_BUILD:String = "payaraServerBuild";
@@ -72,23 +74,32 @@ package actionScripts.plugins.visualEditor
         }
 
         override public function get name():String { return "Start Preview of PrimeFaces project"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Preview PrimeFaces project."; }
 
         override public function activate():void
         {
             super.activate();
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, previewVisualEditorFileHandler);
             dispatcher.addEventListener(PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW, stopVisualEditorPreviewHandler);
             dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, closeProjectHandler);
+        }
+
+        override protected function set running(value:Boolean):void
+        {
+            super.running = value;
+            if (currentProject)
+            {
+                currentProject.isPreviewRunning = value;
+            }
         }
 
         override public function deactivate():void
         {
             super.deactivate();
 
-            dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_VISUALEDITOR_FILE, previewVisualEditorFileHandler);
+            dispatcher.addEventListener(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, previewVisualEditorFileHandler);
         }
 
         override public function complete():void
@@ -116,6 +127,9 @@ package actionScripts.plugins.visualEditor
             else
             {
                 super.stop(forceStop);
+
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
+                dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
             }
         }
 
@@ -137,7 +151,6 @@ package actionScripts.plugins.visualEditor
             if (status == MavenBuildStatus.COMPLETE)
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-                running = false;
             }
         }
 
@@ -170,6 +183,8 @@ package actionScripts.plugins.visualEditor
                 currentProject = this.newProject;
                 filePreview = this.newFilePreview;
                 prepareProjectForPreviewing();
+
+                dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
                 return;
             }
             else
@@ -183,7 +198,7 @@ package actionScripts.plugins.visualEditor
             var failed:Boolean = super.buildFailed(data);
             if (!failed)
             {
-                if (data.match(APP_FAILED))
+                if (data.match(APP_FAILED) || data.match(APP_FAILED_TO_START))
                 {
                     stop();
                     dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
@@ -218,6 +233,9 @@ package actionScripts.plugins.visualEditor
                 payaraShutdownSocket.close();
                 payaraShutdownSocket = null;
             }
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function onPayaraShutdownSocketConnect(event:Event):void
@@ -230,17 +248,50 @@ package actionScripts.plugins.visualEditor
 
             payaraShutdownSocket.close();
             payaraShutdownSocket = null;
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STOPPED, filePreview, currentProject));
         }
 
-        private function previewVisualEditorFileHandler(event:PreviewPluginEvent):void
+        private function previewVisualEditorFileHandler(event:Event):void
         {
-            var newProject:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(event.fileWrapper as FileWrapper) as AS3ProjectVO;
-            if (!newProject) return;
+            var newProject:AS3ProjectVO = null;
+            var fileWrapper:Object = null;
+            var previewPluginEvent:PreviewPluginEvent = event as PreviewPluginEvent;
+
+            if (previewPluginEvent)
+            {
+                if(previewPluginEvent.fileWrapper is FileWrapper)
+                {
+                    newProject = UtilsCore.getProjectFromProjectFolder(previewPluginEvent.fileWrapper as FileWrapper) as AS3ProjectVO;
+                }
+                else if(previewPluginEvent.project)
+                {
+                    newProject = previewPluginEvent.project;
+                    fileWrapper = previewPluginEvent.fileWrapper;
+                }
+            }
+            else if (model.activeProject)
+            {
+                newProject = model.activeProject as AS3ProjectVO;
+                if (!newProject.isPrimeFacesVisualEditorProject)
+                {
+                    newProject = null;
+                }
+                else
+                {
+                    fileWrapper = newProject.folderLocation;
+                }
+            }
+
+            if (!newProject)
+            {
+                return;
+            }
 
             if (currentProject && currentProject != newProject)
             {
                 this.newProject = newProject;
-                this.newFilePreview = event.fileWrapper.file;
+                this.newFilePreview = fileWrapper as FileLocation;
 
                 stop(true);
                 return;
@@ -264,15 +315,25 @@ package actionScripts.plugins.visualEditor
             this.newProject = null;
             this.newFilePreview = null;
 
-            filePreview = event.fileWrapper.file;
+            if (previewPluginEvent && previewPluginEvent.fileWrapper is FileWrapper)
+            {
+                filePreview = previewPluginEvent.fileWrapper.file;
+            }
+            else
+            {
+                filePreview = fileWrapper as FileLocation;
+            }
+
             currentProject = newProject;
 
             if (status == MavenBuildStatus.COMPLETE && status != MavenBuildStatus.STOPPED)
             {
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STARTING, filePreview, currentProject));
                 startPreview();
             }
             else
             {
+                dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_STARTING, filePreview, currentProject));
                 prepareProjectForPreviewing();
             }
         }
@@ -311,6 +372,9 @@ package actionScripts.plugins.visualEditor
             dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_FAILED, onMavenBuildFailed);
 
             running = false;
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_FAILED, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function prepareProjectForPreviewing():void
@@ -355,6 +419,9 @@ package actionScripts.plugins.visualEditor
 
             var urlReq:URLRequest = new URLRequest(URL_PREVIEW.concat(fileName));
             navigateToURL(urlReq);
+
+            dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.PREVIEW_START_COMPLETE, filePreview, currentProject));
+            dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
         }
 
         private function getPreRunPreviewServerCommands():Array

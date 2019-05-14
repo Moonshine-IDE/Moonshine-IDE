@@ -24,8 +24,10 @@ package actionScripts.locator
 	import flash.system.Worker;
 	import flash.system.WorkerDomain;
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
 	
 	import actionScripts.events.GeneralEvent;
+	import actionScripts.interfaces.IWorkerSubscriber;
 	
 	public class IDEWorker extends EventDispatcher
 	{
@@ -38,6 +40,8 @@ package actionScripts.locator
 		private var mainToWorker:MessageChannel;
 		private var workerToMain:MessageChannel;
 		private var worker:Worker;
+		private var individualSubscriptions:Dictionary = new Dictionary();
+		private var incomingData:Object;
 		
 		public static function getInstance():IDEWorker 
 		{	
@@ -66,14 +70,40 @@ package actionScripts.locator
 			worker.start();
 		}
 		
-		public function sendToWorker(type:String, value:Object):void
+		public function subscribeAsIndividualComponent(udid:String, anyClass:Object):void
 		{
-			mainToWorker.send({event: type, value: value});
+			individualSubscriptions[udid] = anyClass;
+		}
+		
+		public function unSubscribeComponent(udid:String):void
+		{
+			if (individualSubscriptions[udid] != undefined) 
+			{
+				delete individualSubscriptions[udid];
+			}
+		}
+		
+		public function sendToWorker(type:String, value:Object, subscriberUdid:String=null):void
+		{
+			mainToWorker.send({event: type, value: value, subscriberUdid: subscriberUdid});
 		}
 		
 		private function onWorkerToMain(event:Event): void
 		{
-			dispatchEvent(new GeneralEvent(WORKER_VALUE_INCOMING, workerToMain.receive()));
+			incomingData = workerToMain.receive();
+			if (incomingData.hasOwnProperty("subscriberUdid") && 
+				individualSubscriptions[incomingData.subscriberUdid] != undefined)
+			{
+				try
+				{
+					(individualSubscriptions[incomingData.subscriberUdid] as IWorkerSubscriber).onWorkerValueIncoming(incomingData);
+				}
+				catch (e:Error){}
+			}
+			else
+			{
+				dispatchEvent(new GeneralEvent(WORKER_VALUE_INCOMING, incomingData));
+			}
 		}
 	}
 }

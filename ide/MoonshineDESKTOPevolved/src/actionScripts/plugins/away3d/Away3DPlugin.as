@@ -56,7 +56,7 @@ package actionScripts.plugins.away3d
 		private static const APP_INTERNAL_PATH_TO_PLIST		: String = "/Contents/Info.plist";
 		
 		override public function get name():String { return "Away3D"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "The Away3D Moonshine Plugin."; }
 		
 		private var customProcess:NativeProcess;

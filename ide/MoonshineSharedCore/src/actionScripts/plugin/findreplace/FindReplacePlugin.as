@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findreplace
 {
-    import flash.display.DisplayObject;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
+	import flash.display.DisplayObject;
     import flash.events.Event;
     
     import mx.core.FlexGlobals;
@@ -34,6 +36,7 @@ package actionScripts.plugin.findreplace
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.utils.TextUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FindReplacePlugin extends PluginBase
 	{
@@ -55,7 +58,7 @@ package actionScripts.plugin.findreplace
 			super();
 		}
 		
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Provides Find/Replace"; }
 		override public function get name():String { return "Find & Replace"; }
 		
@@ -78,13 +81,13 @@ package actionScripts.plugin.findreplace
 			tempObj.commandDesc = "Execute a regular expression in the currently open file.  See http://help.adobe.com/en_US/as3/dev/WS5b3ccc516d4fbf351e63e3d118a9b90204-7ea9.html .  Syntax:  sr /pattern/  -or-  sr /pattern/replacement/flags";
 			registerCommand("sr",tempObj);
 
-			dispatcher.addEventListener(EVENT_FIND_NEXT, handleSearch);
-            dispatcher.addEventListener(EVENT_FIND_PREV, handleSearch);
-			dispatcher.addEventListener(EVENT_FIND_SHOW_ALL, onFindAndShowAll);
-			dispatcher.addEventListener(EVENT_GO_TO_LINE, onGoToLineRequest);
+			dispatcher.addEventListener(EVENT_FIND_NEXT, searchHandler);
+            dispatcher.addEventListener(EVENT_FIND_PREV, searchHandler);
+			dispatcher.addEventListener(EVENT_FIND_SHOW_ALL, findAndShowAllHandler);
+			dispatcher.addEventListener(EVENT_GO_TO_LINE, goToLineRequestHandler);
 		}
 		
-		protected function handleSearch(event:Event):void
+		protected function searchHandler(event:Event):void
 		{
 			// No searching for other components than BasicTextEditor
 			if (!model.activeEditor || (model.activeEditor as BasicTextEditor) == null) return;
@@ -96,7 +99,16 @@ package actionScripts.plugin.findreplace
 			else
 			{
 				searchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchView, false) as SearchView;
-				
+
+				var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+				if (as3Project)
+				{
+					if (as3Project.isVisualEditorProject)
+					{
+						searchView.currentState = "findOnly";
+					}
+				}
+
 				// Set initial selection
 				var editor:BasicTextEditor = BasicTextEditor(model.activeEditor);
 				var str:String = editor.getEditorComponent().getSelection(); 
@@ -104,7 +116,7 @@ package actionScripts.plugin.findreplace
 				{
 					searchView.initialSearchString = str;
 				}
-				
+
 				searchView.addEventListener(Event.CLOSE, handleSearchViewClose);
 				searchView.addEventListener(EVENT_FIND_NEXT, dialogSearch);
 				searchView.addEventListener(EVENT_FIND_PREV, dialogSearch);
@@ -117,17 +129,17 @@ package actionScripts.plugin.findreplace
 			}
 		}
 		
-		protected function onFindAndShowAll(event:GeneralEvent):void
+		protected function findAndShowAllHandler(event:GeneralEvent):void
 		{
 			// No searching for other components than BasicTextEditor
 			if (!model.activeEditor || (model.activeEditor as BasicTextEditor) == null) return;
-			
+
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 			editor.searchAndShowAll(event.value.search);
 			if (event.value.range) editor.selectRangeAtLine(event.value.search, event.value.range);
 		}
 		
-		protected function onGoToLineRequest(event:Event):void
+		protected function goToLineRequestHandler(event:Event):void
 		{
 			// probable termination
 			if (!(model.activeEditor is BasicTextEditor)) return;
@@ -314,6 +326,15 @@ package actionScripts.plugin.findreplace
 			else
 			{
 				searchView.findInput.resultText = result.totalMatches.toString();
+			}
+
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (as3Project)
+			{
+				if (as3Project.isVisualEditorProject)
+				{
+					dispatcher.dispatchEvent(new Event("switchTabToCode"));
+				}
 			}
 		}
 		

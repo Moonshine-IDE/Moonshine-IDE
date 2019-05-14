@@ -1,1 +1,0 @@
-Create a pure ActionScript project.

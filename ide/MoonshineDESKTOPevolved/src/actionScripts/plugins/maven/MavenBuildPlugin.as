@@ -1,22 +1,28 @@
 package actionScripts.plugins.maven
 {
+    import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.build.MavenBuildStatus;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
+    import flash.utils.clearTimeout;
+
+    import flash.utils.setTimeout;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -24,10 +30,12 @@ package actionScripts.plugins.maven
         protected var stopWithoutMessage:Boolean;
 
         protected var buildId:String;
+		private var isProjectHasInvalidPaths:Boolean;
 
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
         private static const BUILD_FAILED:RegExp = /BUILD FAILED/;
+        private static const BUILD_FAILURE:RegExp = /BUILD FAILURE/;
         private static const ERROR:RegExp = /\[ERROR\]/;
 
         public function MavenBuildPlugin()
@@ -42,7 +50,7 @@ package actionScripts.plugins.maven
 
         override public function get author():String
         {
-            return "Moonshine Project Team";
+            return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";
         }
 
         override public function get description():String
@@ -85,6 +93,15 @@ package actionScripts.plugins.maven
             dispatcher.removeEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.removeEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
+		
+		override protected function onProjectPathsValidated(paths:Array):void
+		{
+			if (paths)
+			{
+				isProjectHasInvalidPaths = true;
+				error("Following path(s) are invalid or does not exists:\n"+ paths.join("\n"));
+			}
+		}
 
         override public function start(args:Vector.<String>, buildDirectory:*):void
         {
@@ -149,6 +166,12 @@ package actionScripts.plugins.maven
                 dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Maven Build"));
                 return;
             }
+			
+			checkProjectForInvalidPaths(model.activeProject);
+			if (isProjectHasInvalidPaths)
+			{
+				return;
+			}
 
             var args:Vector.<String> = this.getConstantArguments();
             if (arguments.length > 0)
@@ -169,6 +192,7 @@ package actionScripts.plugins.maven
         {
             super.startConsoleBuildHandler(event);
 
+			this.isProjectHasInvalidPaths = false;
             this.status = 0;
             this.buildId = this.getBuildId(event);
             var preArguments:Array = this.getPreCommandLine(event);
@@ -261,15 +285,21 @@ package actionScripts.plugins.maven
 
         protected function buildFailed(data:String):Boolean
         {
-            if (data.match(BUILD_FAILED))
+            var hasBuildFailed:Boolean = false;
+
+            if (data.match(BUILD_FAILURE))
+            {
+                deferredStop();
+                hasBuildFailed = true;
+            }
+            else if (data.match(BUILD_FAILED))
             {
                 stop();
                 dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
-
-                return true;
+                hasBuildFailed = true;
             }
 
-            return false;
+            return hasBuildFailed;
         }
 
         protected function buildSuccess(data:String):void
@@ -353,6 +383,15 @@ package actionScripts.plugins.maven
             }
 
             return null;
+        }
+
+        private function deferredStop():void
+        {
+            var stopDelay:uint = setTimeout(function():void {
+                stop();
+                dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.MAVEN_BUILD_FAILED, this.buildId, MavenBuildStatus.FAILED));
+                clearTimeout(stopDelay);
+            }, 800);
         }
     }
 }

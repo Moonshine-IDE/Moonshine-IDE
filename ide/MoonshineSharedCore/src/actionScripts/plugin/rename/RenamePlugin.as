@@ -18,39 +18,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.rename
 {
-    import components.popup.newFile.NewFilePopup;
-
     import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-	
-	import mx.controls.Alert;
-	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-	
-	import actionScripts.events.DuplicateEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.NewFileEvent;
-	import actionScripts.events.RenameEvent;
-	import actionScripts.events.TreeMenuItemEvent;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-	import actionScripts.plugin.rename.view.RenameView;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.utils.CustomTree;
-	import actionScripts.utils.TextUtil;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.FileWrapper;
-	import actionScripts.valueObjects.ProjectReferenceVO;
-
-	import components.popup.RenamePopup;
-	import actionScripts.ui.editor.LanguageServerTextEditor;
+    import flash.events.Event;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+    
+    import mx.controls.Alert;
+    import mx.core.FlexGlobals;
+    import mx.events.CloseEvent;
+    import mx.managers.PopUpManager;
+    
+    import actionScripts.events.DuplicateEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.LanguageServerEvent;
+    import actionScripts.events.NewFileEvent;
+    import actionScripts.events.RenameEvent;
+    import actionScripts.events.TreeMenuItemEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.PluginBase;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+    import actionScripts.plugin.rename.view.RenameView;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.LanguageServerTextEditor;
+    import actionScripts.utils.CustomTree;
+    import actionScripts.utils.TextUtil;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.ProjectReferenceVO;
+    
+    import components.popup.RenamePopup;
+    import components.popup.newFile.NewFilePopup;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -61,7 +61,7 @@ package actionScripts.plugin.rename
 		public function RenamePlugin() {	}
 
 		override public function get name():String { return "Rename Plugin"; }
-		override public function get author():String { return "Moonshine Project Team"; }
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Rename a symbol in a project."; }
 		
 		private var _line:int;

@@ -21,49 +21,170 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:s="library://ns.adobe.com/flex/spark"
 		  autoLayout="true"
-		  initialize="onInit(event)" creationComplete="onCreationCompletes()" horizontalAlign="center">
+		  creationComplete="onSoftwareInfoCreationComplete(event)">
+	<fx:Metadata>
+		[Event(name="complete", type="flash.events.Event")]
+	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
+			import mx.utils.ObjectUtil;
 			
+			import actionScripts.locator.HelperModel;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.FileUtils;
+			import actionScripts.utils.SDKUtils;
 			import actionScripts.utils.SoftwareVersionChecker;
-			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ComponentTypes;
+			import actionScripts.valueObjects.ComponentVO;
 			import actionScripts.valueObjects.SDKReferenceVO;
-			
-			[Bindable] private var flexSDKPath:String = "- Not Installed -";
-			[Bindable] private var AntPath:String = "- Not Installed -";
-			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			
-			private var versionChecker: SoftwareVersionChecker = new SoftwareVersionChecker();
+	
+			[Bindable]
+			private var flexSDKPath:String = "- Not Installed -";
+			[Bindable]
+			private var AntPath:String = "- Not Installed -";
+			[Bindable]
+			private var model:IDEModel = IDEModel.getInstance();
+			[Bindable]
+			private var components:ArrayCollection;
+	
+			private var versionChecker:SoftwareVersionChecker = new SoftwareVersionChecker();
+	
 			/**
 			 * On creation completes
 			 */
-			public function onCreationCompletes():void
+			public function onSoftwareInfoCreationComplete(event:FlexEvent):void
 			{
-				if (model.defaultSDK) {
-					var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(model.defaultSDK.fileBridge.nativePath, "path");
-					if (isFound) flexSDKPath = isFound.name;
+				registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
+				components = ObjectUtil.copy(HelperModel.getInstance().components) as ArrayCollection;
+				updateWithMoonshinePaths();
+	
+				var tmpAddition:ComponentVO = new ComponentVO();
+				tmpAddition.title = "Default SDK";
+				if(model.defaultSDK && model.defaultSDK.fileBridge.exists)
+				{
+					var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(model.defaultSDK.fileBridge.nativePath);
+					tmpAddition.type = sdkReference.type;
+					tmpAddition.installToPath = sdkReference.path;
 				}
-				if(model.antHomePath){
-					AntPath = model.antHomePath.fileBridge.name;
+				components.addItemAt(tmpAddition, 0);
+	
+				versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
+				versionChecker.retrieveAboutInformation(components);
+			}
+				
+			private function updateWithMoonshinePaths():void
+			{
+				var sdkReference:SDKReferenceVO;
+				for each (var component:ComponentVO in components)
+				{
+					sdkReference = null;
+					component.installToPath = null;
+					switch (component.type)
+					{
+						case ComponentTypes.TYPE_FLEX:
+						case ComponentTypes.TYPE_FEATHERS:
+						case ComponentTypes.TYPE_ROYALE:
+						case ComponentTypes.TYPE_FLEXJS:
+							sdkReference = SDKUtils.checkSDKTypeInSDKList(component.type);
+							component.installToPath = sdkReference ? sdkReference.path : null;
+							break;
+						case ComponentTypes.TYPE_OPENJAVA:
+							if(model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
+								component.installToPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+							break;
+						case ComponentTypes.TYPE_GIT:
+							if(model.gitPath && FileUtils.isPathExists(model.gitPath))
+								component.installToPath = model.gitPath;
+							break;
+						case ComponentTypes.TYPE_MAVEN:
+							if(model.mavenPath && FileUtils.isPathExists(model.mavenPath))
+								component.installToPath = model.mavenPath;
+							break;
+						case ComponentTypes.TYPE_SVN:
+							if(model.svnPath && FileUtils.isPathExists(model.svnPath))
+								component.installToPath = model.svnPath;
+							break;
+						case ComponentTypes.TYPE_ANT:
+							if(model.antHomePath && model.antHomePath.fileBridge.exists)
+								component.installToPath = model.antHomePath.fileBridge.nativePath;
+							break;
+					}
+	
+					component.version = null;
 				}
 			}
 			
-			protected function onInit(event:FlexEvent):void
+			private function onRetrievalComplete(event:Event):void
 			{
-				versionChecker.retrieveAboutInformation();
+				versionChecker.removeEventListener(Event.COMPLETE, onRetrievalComplete);
+				dispatchEvent(event);
 			}
-			
 		]]>
 	</fx:Script>
 	
-	<s:Label text="SDK (System): {SoftwareVersionChecker.FLEX_SYSTEM_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
-	<s:Label text="SDK (Moonshine): {flexSDKPath}"
-			 maxDisplayedLines="5" />
-	<s:Label text="Apache Ant® (System): {SoftwareVersionChecker.ANT_VERSION}" visible="{!SoftwareVersionChecker.isMacOS}" includeInLayout="{!SoftwareVersionChecker.isMacOS}"/>
-	<s:Label text="Apache Ant® (Moonshine): {AntPath}"  />
-	<s:Label text="Java: {SoftwareVersionChecker.JAVA_VERSION}" />
+	<s:Label text="Configured SDKs in Moonshine:" color="0x333333"
+			 paddingLeft="8"/>
+	<s:DataGrid id="dgComponents"
+				width="100%" height="100%"
+				sortableColumns="false" variableRowHeight="true"
+				dataProvider="{components}" requestedMaxRowCount="{components.length}"
+				initialize="dgComponents.columnHeaderGroup.visible =
+				dgComponents.columnHeaderGroup.includeInLayout = false">
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn dataField="title"/>
+				<s:GridColumn width="300">
+					<s:itemRenderer>
+						<fx:Component>
+							<s:GridItemRenderer width="100%">
+								<fx:Script>
+									<![CDATA[
+										import actionScripts.plugins.startup.StartupHelperPlugin;
+										import actionScripts.events.GlobalEventDispatcher;
+										override public function set data(value:Object):void
+										{
+											if (value)
+											{
+												super.data = value;
+												if (value.version) 
+												{
+													lblVersion.text = value.version;
+													lblVersion.visible = lblVersion.includeInLayout = true;
+													lblNI.visible = lblNI.includeInLayout = lblFix.visible = 
+														lblFix.includeInLayout = false;
+												}
+											}
+										}
+										
+										protected function onFixRequest(event:MouseEvent):void
+										{
+											GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_GETTING_STARTED));
+										}
+										
+									]]>
+								</fx:Script>
+								<s:layout>
+									<s:HorizontalLayout verticalAlign="middle"
+														padding="8"/>
+								</s:layout>
+								<s:Label id="lblVersion"
+										 width="100%"
+										 includeInLayout="false" visible="false"/>
+								<s:Label id="lblNI" 
+										 text="Not Installed."/>
+								<s:Label id="lblFix" 
+										 text="Fix this" color="0x8a2a2a"
+										 textDecoration="underline" buttonMode="true"
+										 click="onFixRequest(event)"/>
+							</s:GridItemRenderer>
+						</fx:Component>
+					</s:itemRenderer>
+				</s:GridColumn>
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
 </s:VGroup>

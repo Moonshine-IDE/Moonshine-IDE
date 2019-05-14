@@ -30,5 +30,6 @@ package actionScripts.plugin.project
 		public static const AWAY3D:String = "Away3D Project";
         public static const JAVA:String = "Java";
         public static const GRAILS:String = "Grails";
+        public static const ROYALE_PROJECT:String = "Royale Browser Project";
     }
 }

@@ -132,7 +132,8 @@ package actionScripts.ui.menu.vo
 		}
 		
 		private var _enabled:Boolean = true;
-		[Bindable] public function set enabled(value:Boolean):void
+		[Bindable]
+        public function set enabled(value:Boolean):void
 		{
 			_enabled = value;
 		}
@@ -142,5 +143,16 @@ package actionScripts.ui.menu.vo
 		}
 		
 		public var enableTypes:Array;
+
+        private var _dynamicItem:Boolean;
+        public function get dynamicItem():Boolean
+        {
+            return _dynamicItem;
+        }
+
+        public function set dynamicItem(value:Boolean):void
+        {
+            _dynamicItem = value;
+        }
 	}
 }

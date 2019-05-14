@@ -32,22 +32,22 @@ package actionScripts.impls
 			return UtilsCore.isDefaultSDKAvailable();
 		}
 		
-		public function isFlexSDKAvailable():Boolean
+		public function isFlexSDKAvailable():Object
 		{
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
 		}
 		
-		public function isFlexJSSDKAvailable():Boolean
+		public function isFlexJSSDKAvailable():Object
 		{
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEXJS);
 		}
 		
-		public function isRoyaleSDKAvailable():Boolean
+		public function isRoyaleSDKAvailable():Object
 		{
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
 		}
 		
-		public function isFeathersSDKAvailable():Boolean
+		public function isFeathersSDKAvailable():Object
 		{
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
 		}
@@ -76,10 +76,21 @@ package actionScripts.impls
 		{
 			return UtilsCore.isGitPresent();	
 		}
-		
+
 		public function runOrDownloadSDKInstaller():void
 		{
 			MSDKIdownloadUtil.getInstance().runOrDownloadSDKInstaller();
+		}
+
+		private var _playerglobalExists:Boolean;
+		public function get playerglobalExists():Boolean
+		{
+			return _playerglobalExists;
+		}
+
+		public function set playerglobalExists(value:Boolean):void
+		{
+			_playerglobalExists = value;
 		}
 	}
 }

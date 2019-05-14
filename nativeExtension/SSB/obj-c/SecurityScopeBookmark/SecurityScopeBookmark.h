@@ -11,7 +11,7 @@
 
 #define EXPORT __attribute__((visibility("default")))
 
-#include <Adobe AIR/Adobe AIR.h>
+#include "Adobe AIR.framework/Versions/1.0/Headers/Adobe AIR.h"
 #include <Foundation/Foundation.h>
 
 FREObject confirmHandshaking(FREContext ctx, void* funcData, uint32_t argc, FREObject argv[]);

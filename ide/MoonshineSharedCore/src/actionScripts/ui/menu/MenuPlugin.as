@@ -18,46 +18,47 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-import flash.display.NativeMenu;
-import flash.display.NativeMenuItem;
-import flash.events.Event;
-import flash.utils.Dictionary;
+	import flash.display.NativeMenu;
+	import flash.display.NativeMenuItem;
+	import flash.events.Event;
+	import flash.utils.Dictionary;
+	
+	import mx.collections.ArrayList;
+	import mx.core.FlexGlobals;
+	import mx.events.MenuEvent;
+	import mx.resources.IResourceManager;
+	import mx.resources.ResourceManager;
+	
+	import actionScripts.events.PreviewPluginEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.ShortcutEvent;
+	import actionScripts.events.TemplatingEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.factory.NativeMenuItemLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
+	import actionScripts.plugin.templating.TemplatingPlugin;
+	import actionScripts.ui.menu.interfaces.ICustomMenu;
+	import actionScripts.ui.menu.vo.CustomMenu;
+	import actionScripts.ui.menu.vo.CustomMenuItem;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.KeyboardShortcutManager;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.KeyboardShortcut;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Settings;
+	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 
-import mx.collections.ArrayList;
-import mx.core.FlexGlobals;
-import mx.events.MenuEvent;
-
-import actionScripts.events.ProjectEvent;
-import actionScripts.events.ShortcutEvent;
-import actionScripts.events.TemplatingEvent;
-import actionScripts.factory.FileLocation;
-import actionScripts.factory.NativeMenuItemLocation;
-import actionScripts.locator.IDEModel;
-import actionScripts.plugin.PluginBase;
-import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-import actionScripts.plugin.settings.ISettingsProvider;
-import actionScripts.plugin.settings.vo.ISetting;
-import actionScripts.plugin.settings.vo.MultiOptionSetting;
-import actionScripts.plugin.settings.vo.NameValuePair;
-import actionScripts.plugin.templating.TemplatingPlugin;
-import actionScripts.ui.menu.interfaces.ICustomMenu;
-import actionScripts.ui.menu.vo.CustomMenu;
-import actionScripts.ui.menu.vo.CustomMenuItem;
-import actionScripts.ui.menu.vo.MenuItem;
-import actionScripts.ui.menu.vo.ProjectMenuTypes;
-import actionScripts.utils.KeyboardShortcutManager;
-import actionScripts.utils.UtilsCore;
-import actionScripts.valueObjects.ConstantsCoreVO;
-import actionScripts.valueObjects.KeyboardShortcut;
-import actionScripts.valueObjects.ProjectVO;
-import actionScripts.ui.menu.vo.ProjectMenuTypes;
-import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
-import actionScripts.valueObjects.Settings;
-
-    // This class is a singleton
+	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
@@ -65,10 +66,10 @@ import actionScripts.valueObjects.Settings;
 		public static const MENU_SAVE_EVENT:String = "menuSaveEvent";
 		public static const MENU_SAVE_AS_EVENT:String = "menuSaveAsEvent";
 		public static const EVENT_ABOUT:String = "EVENT_ABOUT";
+		public static const REFRESH_MENU_STATE:String = "refreshMenuState";
 		public static const CHANGE_MENU_MAC_DISABLE_STATE:String = "CHANGE_MENU_MAC_DISABLE_STATE"; // shows only Quit command with File menu
 		public static const CHANGE_MENU_MAC_NO_MENU_STATE:String = "CHANGE_MENU_MAC_NO_MENU_STATE"; // shows absolutely no top menu
 		public static const CHANGE_MENU_MAC_ENABLE_STATE:String = "CHANGE_MENU_MAC_ENABLE_STATE";
-		public static const CHANGE_MENU_SDK_STATE:String = "CHANGE_MENU_SDK_STATE";
 		public static const CHANGE_GIT_CLONE_PERMISSION_LABEL:String = "CHANGE_GIT_CLONE_PERMISSION_LABEL";
 		public static const CHANGE_SVN_CHECKOUT_PERMISSION_LABEL:String = "CHANGE_SVN_CHECKOUT_PERMISSION_LABEL";
 		
@@ -84,9 +85,16 @@ import actionScripts.valueObjects.Settings;
 		private var isFileNewMenuIsEnabled:Boolean;
 		private var moonshineMenu:NativeMenuItem;
 
+		private var projectMenu:ProjectMenu;
+
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
+
+		public function MenuPlugin():void
+		{
+			projectMenu = new ProjectMenu();
+		}
 
 		public function getSettingsList():Vector.<ISetting>
 		{
@@ -195,14 +203,14 @@ import actionScripts.valueObjects.Settings;
 				buildingNativeMenu = false;
 				createMenu();
 			}
-			
-			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, handleShortcutPreFired);
-			dispatcher.addEventListener(CHANGE_MENU_SDK_STATE, onSDKStateChange);
-			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, onNewMenuAddRequest, false, 0, true);
-			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, onNewMenuRemoveRequest, false, 0, true);
-			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, onNewMenuRenameRequest, false, 0, true);
-			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList, false, 0, true);
-			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList, false, 0, true);
+
+			dispatcher.addEventListener(MenuPlugin.REFRESH_MENU_STATE, refreshMenuStateHandler);
+			dispatcher.addEventListener(ShortcutEvent.SHORTCUT_PRE_FIRED, shortcutPreFiredHandler);
+			dispatcher.addEventListener(TemplatingEvent.ADDED_NEW_TEMPLATE, addedNewTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.REMOVE_TEMPLATE, removeTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(TemplatingEvent.RENAME_TEMPLATE, renameTemplateHandler, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, recentProjectListUpdatedHandler, false, 0, true);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, recentFilesListUpdatedHandler, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
@@ -213,36 +221,67 @@ import actionScripts.valueObjects.Settings;
 				dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onMenusDisableStateChange);
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onMenusDisableStateChange);
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
 			
 			// disable File-New menu as default
 			isFileNewMenuIsEnabled = false;
-            updateMenuOptionsBasedOnActiveProject();
+            disableMenuOptions();
 			disableNewFileMenuOptions();
 		}
 
-        private function onMenusDisableStateChange(event:ProjectEvent):void
+		private function refreshMenuStateHandler(event:Event):void
+		{
+			disableNewFileMenuOptions();
+			disableMenuOptions();
+			refreshMenuItems();
+		}
+
+        private function addProjectHandler(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
-			updateMenuOptionsBasedOnActiveProject();
+			disableMenuOptions();
         }
 
-		private function updateMenuOptionsBasedOnActiveProject(lastSelectedProject:ProjectVO=null):void
+		private function activeProjectChangedHandler(event:ProjectEvent):void
+		{
+			disableNewFileMenuOptions();
+			updateMenuOptionsInMenuProject(event.project);
+			disableMenuOptions();
+		}
+
+		private function disableNewFileMenuOptions():void
+		{
+			if (!topNativeMenuItemsForFileNew)
+			{
+				// os == mac
+				var menu:Object = getMenuObject();
+				if (buildingNativeMenu)
+				{
+					var itemsInTopMenu:Array = menu.items; // top-level menus, i.e. Moonshine, File etc.
+					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
+					topNativeMenuItemsForFileNew = subItemsInItemOfTopMenu[0].submenu.items; // i.e. File -> New
+				}
+				else
+				{
+					topNativeMenuItemsForFileNew = (menu.items[0] as CustomMenuItem).data.items[0].data.items;
+				}
+			}
+
+			isFileNewMenuIsEnabled = false;
+			for (var j:int = 0; j < TemplatingPlugin.fileTemplates.length; j++)
+			{
+				topNativeMenuItemsForFileNew[j].enabled = false;
+			}
+		}
+
+		private function disableMenuOptions(lastSelectedProject:ProjectVO=null):void
 		{
 			var activeProject:ProjectVO = lastSelectedProject ? lastSelectedProject : model.activeProject;
 
 			if (ConstantsCoreVO.IS_AIR)
             {
-				var menu:Object = null;
-                if (Settings.os == "win")
-                {
-                    menu = (model.mainView.getChildAt(0) as MenuBar).menu;
-                }
-				else if (Settings.os == "mac")
-				{
-                    menu = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				}
+				var menu:Object = getMenuObject();
 
 				if (menu)
                 {
@@ -258,6 +297,77 @@ import actionScripts.valueObjects.Settings;
                     }
                 }
             }
+		}
+
+		private function refreshMenuItems():void
+		{
+			if (!model.activeProject) return;
+
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (as3Project)
+			{
+				if (as3Project.isPrimeFacesVisualEditorProject)
+				{
+					var resourceManager:IResourceManager = ResourceManager.getInstance();
+					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(model.activeProject);
+
+					var previewItem:MenuItem = projectMenus[projectMenus.length - 1];
+					if (as3Project.isPreviewRunning)
+					{
+						previewItem.label = resourceManager.getString('resources', 'STOP_PREVIEW');
+						previewItem.event = PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW;
+					}
+					else
+					{
+						previewItem.label = resourceManager.getString('resources', 'START_PREVIEW');
+						previewItem.event = PreviewPluginEvent.START_VISUALEDITOR_PREVIEW;
+					}
+
+					updateMenuOptionsInMenuProject(model.activeProject);
+				}
+			}
+		}
+
+		private function updateMenuOptionsInMenuProject(project:ProjectVO):void
+		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			var projectMenuItemName:String = resourceManager.getString('resources','PROJECT');
+			var menu:Object = getMenuObject();
+			var countMenuItems:int = menu.items.length;
+			var menuItem:Object;
+			for (var i:int = 0; i < countMenuItems; i++)
+			{
+				menuItem = menu.items[i];
+				if (menuItem.label == projectMenuItemName)
+				{
+					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
+                    for (var j:int = menuItem.submenu.numItems - 1; j > 0; j--)
+                    {
+                        var removeItem:Boolean = false;
+                        var item:Object = menuItem.submenu.getItemAt(j);
+
+                        if (item.hasOwnProperty("dynamicItem") && item.dynamicItem)
+                        {
+                            removeItem = true;
+                        }
+                        else if (item.data && item.data["dynamicItem"])
+                        {
+                            removeItem = true;
+                        }
+
+                        if (removeItem)
+                        {
+                            menuItem.submenu.removeItemAt(j);
+                        }
+                    }
+
+					if (projectMenus)
+					{
+						addMenus(projectMenus, menuItem.submenu);
+					}
+					break;
+				}
+			}
 		}
 
 		private function recursiveDisableMenuOptionsByProject(menuItems:Object, currentProject:ProjectVO):void
@@ -279,8 +389,14 @@ import actionScripts.valueObjects.Settings;
 				
 				if (!buildingNativeMenu || isEnableTypePresent)
 				{
-					if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0) menuItem.enabled = false;
-					else if (!menuItem.enableTypes) menuItem.enabled = true;
+					if (!currentProject && menuItem.enableTypes && menuItem.enableTypes.length != 0)
+					{
+						menuItem.enabled = false;
+					}
+					else if (!menuItem.enableTypes)
+					{
+						menuItem.enabled = true;
+					}
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
@@ -411,33 +527,7 @@ import actionScripts.valueObjects.Settings;
 			noSDKOptionsToMenuMapping[5 + noSDKOptionsRootIndex] = [0];
 		}
 
-		private function disableNewFileMenuOptions():void
-		{
-			if (!topNativeMenuItemsForFileNew)
-			{
-				// os == mac
-				if (buildingNativeMenu)
-				{
-					var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-					var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
-					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
-					topNativeMenuItemsForFileNew = subItemsInItemOfTopMenu[0].submenu.items; // i.e. File -> New
-				}
-				else
-				{
-					var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-					topNativeMenuItemsForFileNew = (menuBarMenu.items[0] as CustomMenuItem).data.items[0].data.items;
-				}
-			}
-			
-			isFileNewMenuIsEnabled = false;
-			for (var j:int = 0; j < TemplatingPlugin.fileTemplates.length; j++)
-			{
-				topNativeMenuItemsForFileNew[j].enabled = false;
-			}
-		}
-		
-		private function onNewMenuAddRequest(event:TemplatingEvent):void
+		private function addedNewTemplateHandler(event:TemplatingEvent):void
 		{
 			var tmpMI:MenuItem = new MenuItem(event.label, null, null, event.listener);
 			var menuItem:* = createNewMenuItem(tmpMI);
@@ -447,10 +537,11 @@ import actionScripts.valueObjects.Settings;
 			
 			if (menuItem)
 			{
+				var menu:Object = getMenuObject();
 				if (buildingNativeMenu)
 				{
-					var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-					var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+
+					var itemsInTopMenu:Array = menu.items; // top-level menus, i.e. Moonshine, File etc.
 					var subItemsInItemOfTopMenu:Array = itemsInTopMenu[1].submenu.items; // i.e. File
 					subItemsInItemOfTopMenu[0].submenu.items[0].menu.addItemAt(menuObject, itemToAddAt);
 					
@@ -458,25 +549,23 @@ import actionScripts.valueObjects.Settings;
 				}
 				else
 				{
-					var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-					CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.insertAt(itemToAddAt, menuObject);
+					CustomMenuItem(menu.items[0].submenu.items[0]).data.items.insertAt(itemToAddAt, menuObject);
 				}
 			}
 		}
 		
-		private function onNewMenuRemoveRequest(event:TemplatingEvent):void
+		private function removeTemplateHandler(event:TemplatingEvent):void
 		{
+			var menu:Object = getMenuObject();
 			var subItemsInItemOfTopMenu:Object;
 			if (buildingNativeMenu)
 			{
-				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				var itemsInTopMenu:Array = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
+				var itemsInTopMenu:Array = menu.items; // top-level menus, i.e. Moonshine, File etc.
 				subItemsInItemOfTopMenu = itemsInTopMenu[1].submenu.items[0].submenu.items;
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
+				subItemsInItemOfTopMenu = CustomMenuItem(menu.items[0].submenu.items[0]).data.items;
 			}
 			
 			for (var i:int=0; i < subItemsInItemOfTopMenu.length; i++)
@@ -488,24 +577,23 @@ import actionScripts.valueObjects.Settings;
 						itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
 						windowMenus[1].items[0].items.removeAt(i);
 					}
-					else CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items.removeAt(i);
+					else CustomMenuItem(menu.items[0].submenu.items[0]).data.items.removeAt(i);
 					return;
 				}
 			}
 		}
 		
-		private function updateRecetProjectList(event:Event):void
+		private function recentProjectListUpdatedHandler(event:Event):void
 		{
+			var menu:Object = getMenuObject();
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
 			{
-				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				subItemsLength = tmpTopMenu.items[1].submenu.items[2].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				subItemsLength = menu.items[1].submenu.items[2].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-				subItemsLength = CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).data.items.length;
+				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[2]).data.items.length;
 			}
 			
 			if (subItemsLength != -1)
@@ -514,31 +602,30 @@ import actionScripts.valueObjects.Settings;
 				{
 					if (buildingNativeMenu) 
 					{
-						tmpTopMenu.items[1].submenu.items[2].submenu.items[0].menu.removeItemAt(0);
+						menu.items[1].submenu.items[2].submenu.items[0]["menu"].removeItemAt(0);
 					}
 					else
 					{
-						CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).data.items.removeAt(0);
+						CustomMenuItem(menu.items[0].submenu.items[2]).data.items.removeAt(0);
 					}
 				}
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentProjectsMenu();
-				addMenus(tmpMI.items, buildingNativeMenu ? tmpTopMenu.items[1].submenu.items[2].submenu : CustomMenuItem(menuBarMenu.items[0].submenu.items[2]).submenu);
+				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[2].submenu : CustomMenuItem(menu.items[0].submenu.items[2]).submenu);
 			}
 		}
 		
-		private function updateRecetFileList(event:Event):void
+		private function recentFilesListUpdatedHandler(event:Event):void
 		{
+			var menu:Object = getMenuObject();
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
 			{
-				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				subItemsLength = tmpTopMenu.items[1].submenu.items[3].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				subItemsLength = menu.items[1].submenu.items[3].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
-				subItemsLength = CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).data.items.length;
+				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[3]).data.items.length;
 			}
 			
 			if (subItemsLength != -1)
@@ -547,30 +634,30 @@ import actionScripts.valueObjects.Settings;
 				{
 					if (buildingNativeMenu) 
 					{
-						tmpTopMenu.items[1].submenu.items[3].submenu.items[0].menu.removeItemAt(0);
+						menu.items[1].submenu.items[3].submenu.items[0]["menu"].removeItemAt(0);
 					}
 					else
 					{
-						CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).data.items.removeAt(0);
+						CustomMenuItem(menu.items[0].submenu.items[3]).data.items.removeAt(0);
 					}
 				}
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentFilesMenu();
-				addMenus(tmpMI.items, buildingNativeMenu ? tmpTopMenu.items[1].submenu.items[3].submenu : CustomMenuItem(menuBarMenu.items[0].submenu.items[3]).submenu);
+				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[3].submenu : CustomMenuItem(menu.items[0].submenu.items[3]).submenu);
 			}
 		}
 		
-		private function onNewMenuRenameRequest(event:TemplatingEvent):void
+		private function renameTemplateHandler(event:TemplatingEvent):void
 		{
+			var menu:Object = getMenuObject();
 			var subItemsInItemOfTopMenu:Object;
 			if (buildingNativeMenu)
 			{
-				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				subItemsInItemOfTopMenu = tmpTopMenu.items[1].submenu.items[0].submenu.items;
+				subItemsInItemOfTopMenu = menu.items[1].submenu.items[0].submenu.items;
 			}
 			else
 			{
-				var menuBarMenu:CustomMenu = (model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu;
+				var menuBarMenu:CustomMenu = menu as CustomMenu;
 				subItemsInItemOfTopMenu = CustomMenuItem(menuBarMenu.items[0].submenu.items[0]).data.items;
 			}
 			
@@ -604,7 +691,10 @@ import actionScripts.valueObjects.Settings;
 		private function onMacNoMenuStateChange(event:Event):void
 		{
 			// keep this to repopulate later
-			moonshineMenu = FlexGlobals.topLevelApplication.nativeApplication.menu.items[0];
+			var menu:Object = getMenuObject();
+			if (!menu) return;
+
+			moonshineMenu = menu.items[0];
             applyNewNativeMenu(new Vector.<MenuItem>());
 			
 			lastSelectedProjectBeforeMacDisableStateChange = model.activeProject;
@@ -613,69 +703,35 @@ import actionScripts.valueObjects.Settings;
 		private function onMacEnableStateChange(event:Event):void
 		{
 			applyNewNativeMenu(windowMenus);
-			
+			updateMenuOptionsInMenuProject(lastSelectedProjectBeforeMacDisableStateChange);
+
 			// update menus for VE project
-			updateMenuOptionsBasedOnActiveProject(lastSelectedProjectBeforeMacDisableStateChange);
+			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);
 		}
 		
 		private function onGitClonePermissionChange(event:Event):void
 		{
-			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var menu:Object = getMenuObject();
+			if (!menu) return;
+
+			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
-			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE ? "Clone" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Manage Repositories" : "Grant Permission";
 		}
 		
 		private function onSVNCheckoutPermissionChange(event:Event):void
 		{
-			var itemsInTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var menu:Object = getMenuObject();
+			if (!menu) return;
+
+			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
 			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
-			subItemsInItemOfTopMenu.label = ConstantsCoreVO.IS_SVN_OSX_AVAILABLE ? "Checkout" : "Grant Permission";
+			subItemsInItemOfTopMenu.label = UtilsCore.isSVNPresent() ? "Manage Repositories" : "Grant Permission";
 		}
-		
-		private function onSDKStateChange(event:Event):void
-		{
-			var isEnable:Boolean = model.defaultSDK ? true : false;
-			var itemsInTopMenu:Object;
-			// os == mac
-			if (buildingNativeMenu)
-			{
-				var tmpTopMenu:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
-				itemsInTopMenu = tmpTopMenu.items; // top-level menus, i.e. Moonshine, File etc.
-			}
-			else
-			{
-				itemsInTopMenu = ((model.mainView.getChildAt(0) as MenuBar).menu as CustomMenu).items;
-			}
-			
-			var tmpOptionsArr:Array;
-			var subItemsInTopMenu:Object;
-			for (var i:String in noSDKOptionsToMenuMapping)
-			{
-				tmpOptionsArr = noSDKOptionsToMenuMapping[i];
-				subItemsInTopMenu = itemsInTopMenu[int(i)].submenu.items;
-				for (var j:String in tmpOptionsArr)
-				{
-					subItemsInTopMenu[tmpOptionsArr[j]].enabled = isEnable;
-				}
-			}
-			
-			if (!model.isCodeCompletionJavaPresent || !model.javaPathForTypeAhead) isEnable = false;
-			else if (model.isCodeCompletionJavaPresent && model.javaPathForTypeAhead) isEnable = true;
-			else isEnable = false;
-			for (var k:String in noCodeCompletionOptionsToMenuMapping)
-			{
-				tmpOptionsArr = noCodeCompletionOptionsToMenuMapping[k];
-				subItemsInTopMenu = itemsInTopMenu[int(k)].submenu.items;
-				for (var l:String in tmpOptionsArr)
-				{
-					subItemsInTopMenu[tmpOptionsArr[l]].enabled = isEnable;
-				}
-			}
-		}
-		
+
 		protected function createNewMenu():*
 		{
-			return buildingNativeMenu ? new NativeMenu() : new CustomMenu();
+			return buildingNativeMenu ? new CustomNativeMenu() : new CustomMenu();
 		}
 		
 		private function createNewMenuItem(item:MenuItem):*
@@ -759,25 +815,54 @@ import actionScripts.valueObjects.Settings;
 				
 				if (item && item.items)
 				{
-					var newMenu:*;
-					newMenu = createNewMenu();
+					var newMenu:* = createNewMenu();
 					if (!newMenu)
 						continue;
+
 					addMenus(item.items, newMenu);
-					parentMenu.addSubmenu(newMenu, item.label);
+					newMenu = parentMenu.addSubmenu(newMenu, item.label);
+
+                    if (item.hasOwnProperty("dynamicItem"))
+                    {
+                        if (newMenu.hasOwnProperty("dynamicItem"))
+                        {
+                            newMenu.dynamicItem = item.dynamicItem;
+                        }
+                        else
+                        {
+                            newMenu.data = {dynamicItem: item.dynamicItem};
+                        }
+                    }
 				}
 				else if (item)
 				{
 					var menuItem:* = createNewMenuItem(item);
 					if (menuItem)
-						parentMenu.addItem((menuItem is NativeMenuItemLocation) ? NativeMenuItemLocation(menuItem).item.getNativeMenuItem : menuItem);
+					{
+                        var nativeMenuItem:Object = null;
+                        if (menuItem is NativeMenuItemLocation)
+                        {
+                            nativeMenuItem = NativeMenuItemLocation(menuItem).item.getNativeMenuItem;
+                        }
+                        else
+                        {
+                            nativeMenuItem = menuItem;
+                        }
+
+                        if (nativeMenuItem.hasOwnProperty("dynamicItem"))
+						{
+                            nativeMenuItem.dynamicItem = item.dynamicItem;
+						}
+
+						parentMenu.addItem(nativeMenuItem);
+					}
 				}
-			}
+            }
 		}
 
         private function applyNewNativeMenu(menuItems:Vector.<MenuItem>):Object
         {
-            var mainMenu:Object = buildingNativeMenu ? new NativeMenu() : new CustomMenu();
+            var mainMenu:Object = createNewMenu();
             addMenus(menuItems, mainMenu);
 
             // for mac only
@@ -798,7 +883,7 @@ import actionScripts.valueObjects.Settings;
 		{
 			if (nativeMenu.items.length == 0) return;
 			
-			var topLevel:Object = FlexGlobals.topLevelApplication.nativeApplication.menu;
+			var topLevel:Object = getMenuObject();
 			if (topLevel.items.length == 0)
 			{
 				topLevel = new ArrayList([moonshineMenu]);
@@ -845,7 +930,7 @@ import actionScripts.valueObjects.Settings;
 			}
 		}
 		
-		protected function handleShortcutPreFired(e:ShortcutEvent):void
+		protected function shortcutPreFiredHandler(e:ShortcutEvent):void
 		{
 			if (!eventToMenuMapping[e.event])
 				return;
@@ -854,6 +939,21 @@ import actionScripts.valueObjects.Settings;
 			dispatcher.dispatchEvent(new MenuEvent(
 				data.event, false, false,
 				data.eventData))
+		}
+
+
+		private function getMenuObject():Object
+		{
+			if (Settings.os == "win")
+			{
+				return (model.mainView.getChildAt(0) as MenuBar).menu;
+			}
+			else if (Settings.os == "mac")
+			{
+				return FlexGlobals.topLevelApplication.nativeApplication.menu;
+			}
+
+			return null;
 		}
 	}
 }

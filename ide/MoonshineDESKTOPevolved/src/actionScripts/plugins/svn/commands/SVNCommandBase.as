@@ -24,15 +24,26 @@ package actionScripts.plugins.svn.commands
 	import flash.utils.IDataOutput;
 	
 	import mx.core.FlexGlobals;
+	import mx.core.IFlexDisplayObject;
+	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.core.ExternalCommandBase;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.utils.SharedObjectUtil;
+	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
+	
+	import components.popup.GitAuthenticationPopup;
 	
 	public class SVNCommandBase extends ExternalCommandBase
 	{
 		override public function get name():String { return "Subversion Plugin"; }
+		
+		protected var repositoryItem:RepositoryItemVO;
+		protected var isTrustServerCertificateSVN:Boolean;
 		
 		public function SVNCommandBase(executable:File, root:File)
 		{
@@ -92,5 +103,104 @@ package actionScripts.plugins.svn.commands
 			d.removeEventListener(ServerCertificateDialog.EVENT_CANCEL, dontAccept);
 		}
 		
+		protected function openAuthentication():void
+		{
+			var authWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+			authWindow.title = "Needs Authentication";
+			authWindow.type = VersionControlTypes.SVN;
+			
+			if (repositoryItem) 
+			{
+				var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
+				if (tmpTopLevel && tmpTopLevel.userName) authWindow.userName = tmpTopLevel.userName;
+			}
+			
+			authWindow.addEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
+			authWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.centerPopUp(authWindow);
+		}
+		
+		protected function onAuthWindowClosed(event:CloseEvent):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			if (!target.userObject) 
+			{
+				onCancelAuthentication();
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:"Authentication failed!"}));
+			}
+			
+			target.removeEventListener(CloseEvent.CLOSE, onAuthWindowClosed);
+			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.removePopUp(target as IFlexDisplayObject);
+		}
+		
+		protected function onAuthSubmitted(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			if (target.userObject)
+			{
+				if (target.userObject.save && repositoryItem)
+				{
+					var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
+					tmpTopLevel.userName = target.userObject.userName;
+					tmpTopLevel.userPassword = target.userObject.password;
+					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+				}
+				
+				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
+			}
+		}
+		
+		protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+		}
+		
+		protected function onCancelAuthentication():void
+		{
+		}
+		
+		protected function getRepositoryInfo():void
+		{
+			var infoCommand:InfoCommand = new InfoCommand(executable, root);
+			infoCommand.addEventListener(Event.COMPLETE, handleInfoUpdateComplete);
+			infoCommand.addEventListener(Event.CANCEL, handleInfoUpdateCancel);
+			infoCommand.request(this.root, this.isTrustServerCertificateSVN);
+		}
+		
+		protected function handleInfoUpdateComplete(event:Event):void
+		{
+			releaseListenersFromInfoCommand(event);
+			
+			var infoLines:Array = (event.target as InfoCommand).infoLines;
+			var searchCriteria:String = "Repository Root: ";
+			for each (var line:String in infoLines)
+			{
+				if (line.indexOf(searchCriteria) != -1)
+				{
+					searchCriteria = line.substr(searchCriteria.length, line.length);
+					// find out relevant repository item associate to the url
+					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					{
+						if (repo.url == searchCriteria)
+						{
+							this.repositoryItem = repo;
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+		
+		protected function handleInfoUpdateCancel(event:Event):void
+		{
+			releaseListenersFromInfoCommand(event);
+		}
+		
+		private function releaseListenersFromInfoCommand(event:Event):void
+		{
+			event.target.removeEventListener(Event.COMPLETE, handleInfoUpdateComplete);
+			event.target.removeEventListener(Event.CANCEL, handleInfoUpdateCancel);
+		}
 	}
 }

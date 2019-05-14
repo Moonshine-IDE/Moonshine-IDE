@@ -8,6 +8,10 @@ package actionScripts.plugin.java.javaproject.importer
 
 	public class JavaImporter extends FlashDevelopImporterBase
 	{
+		private static const FILE_EXTENSION_JAVAPROJ:String = ".javaproj";
+		private static const FILE_NAME_POM_XML:String = "pom.xml";
+		private static const FILE_NAME_BUILD_GRADLE:String = "build.gradle";
+
 		public static function test(file:Object):FileLocation
 		{
 			if (!file.exists)
@@ -21,13 +25,39 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 			
 			var listing:Array = file.getDirectoryListing();
+			var projectFile:FileLocation = null;
+			var pomFile:FileLocation = null;
+			var gradleFile:FileLocation = null;
 			for each (var i:Object in listing)
 			{
-				if (i.name == "pom.xml") {
-					return (new FileLocation(i.nativePath));
+				var fileName:String = i.name;
+				if (fileName == FILE_NAME_POM_XML)
+				{
+					pomFile = new FileLocation(i.nativePath);
 				}
-				if (i.name == "build.gradle") {
-					return (new FileLocation(i.nativePath));
+				else if (fileName == FILE_NAME_BUILD_GRADLE)
+				{
+					gradleFile = new FileLocation(i.nativePath);
+				}
+				else
+				{
+					var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_JAVAPROJ);
+					if(extensionIndex != -1 && extensionIndex == (fileName.length - FILE_EXTENSION_JAVAPROJ.length))
+					{
+						projectFile = new FileLocation(i.nativePath);
+					}
+				}
+			}
+
+			if(projectFile)
+			{
+				if(pomFile)
+				{
+					return pomFile;
+				}
+				else if(gradleFile)
+				{
+					return gradleFile;
 				}
 			}
 			
@@ -44,7 +74,7 @@ package actionScripts.plugin.java.javaproject.importer
 
             if (!settingsFileLocation)
             {
-                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + ".javaproj");
+                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + FILE_EXTENSION_JAVAPROJ);
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
@@ -68,7 +98,7 @@ package actionScripts.plugin.java.javaproject.importer
 				}
 
 				var pomFile:FileLocation = new FileLocation(
-						javaProject.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml")
+						javaProject.mavenBuildOptions.mavenBuildPath.concat(separator, FILE_NAME_POM_XML)
 				);
 
 				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);

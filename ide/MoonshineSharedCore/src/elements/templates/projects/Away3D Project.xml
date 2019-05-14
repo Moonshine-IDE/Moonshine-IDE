@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Away3D Project</title>
+        <homeTitle>Away3D Project</homeTitle>
+        <name>Away3D Project</name>
+        <icon>Away3D Project.png</icon>
+        <description>Create a new Away3D project.</description>
+    </template>
+</templates>

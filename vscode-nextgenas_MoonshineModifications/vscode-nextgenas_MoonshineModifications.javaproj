@@ -1,0 +1,14 @@
+<project>
+  <mavenBuild>
+    <option commandLine="clean package"/>
+    <actions>
+      <action actionName="Clean and package" action="clean package"/>
+    </actions>
+  </mavenBuild>
+  <classpaths>
+    <class path="src/main/java"/>
+  </classpaths>
+  <build>
+    <option mainclass="Main"/>
+  </build>
+</project>

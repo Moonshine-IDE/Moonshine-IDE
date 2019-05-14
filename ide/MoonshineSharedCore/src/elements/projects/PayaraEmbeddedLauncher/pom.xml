@@ -17,7 +17,7 @@
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-embedded-web</artifactId>
-            <version>5.184</version>
+            <version>5.191</version>
         </dependency>
     </dependencies>
     <build>

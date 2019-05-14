@@ -50,7 +50,7 @@ package actionScripts.plugin.core.importer
 				{
 					// since we didn't found {DOCUMENTS} path in
 					// FlashBuilderImporter.readActionScriptSettings(), we take
-					// {DOCUMENTS} as p.folderLocation.parent to make the
+					// {DOCUMENTS} as p.folderWrapper.parent to make the
 					// fileLocation valid, else it'll throw error
 					var isParentPathAvailable:Boolean = true;
 					CONFIG::OSX

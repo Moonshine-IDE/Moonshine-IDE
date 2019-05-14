@@ -19,16 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import flash.display.NativeMenu;
-	import flash.display.NativeMenuItem;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
-	
-	import mx.controls.FlexNativeMenu;
-	import mx.core.UIComponent;
-	import mx.events.FlexNativeMenuEvent;
-	
-	import spark.components.Button;
 	
 	import actionScripts.interfaces.INativeMenuItemBridge;
 	import actionScripts.ui.menu.vo.CustomMenuItem;
@@ -37,12 +28,12 @@ package actionScripts.impls
 	
 	public class INativeMenuItemBridgeImp extends CustomMenuItem implements INativeMenuItemBridge
 	{
-		protected var nativeMenuItem:NativeMenuItem;
+		protected var nativeMenuItem:NativeMenuItemMoonshine;
 		
 		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null):void
 		{
 			nativeMenuItem = new NativeMenuItemMoonshine(label, isSeparator);
-			(nativeMenuItem as NativeMenuItemMoonshine).enableTypes = enableTypes;
+			nativeMenuItem.enableTypes = enableTypes;
 		}
 	
 	    public function get keyEquivalent():String
@@ -79,7 +70,6 @@ package actionScripts.impls
 		{
 			if (value != null) 
 				nativeMenuItem.addEventListener(Event.SELECT, value, false, 0, true);
-			
 		}
 		
 		override public function set shortcut(value:KeyboardShortcut):void

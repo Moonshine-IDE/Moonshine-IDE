@@ -3,6 +3,65 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.2.0]
+
+### Summary
+
+This release was focused on adding Git support in the Manage Repositories interface from 2.1.0.  You may now clone and track Git repositories in this interface.  To help new users get started, we have added a few example repositories to the interface by default.  This includes the Moonshine source and some examples for Apache Royale.
+
+We also made some changes to make it faster to clone complicated projects.  Moonshine will now automatically detect subprojects within a repository, and prompt the user to decide which projects to open.  In addition, we added a feature to allow repositories to define links to other repositories with moonshine-dependencies.xml.   For example, Moonshine-IDE provides links to all of its external dependencies, so that you can clone all required projects without leaving Moonshine or reviewing a README file.  This file may be added to other repositories using the format defined [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
+
+### Added
+* Added support to define related repositories for an SVN or Git repository, using moonshine-dependencies.xml.  See the documentation [here](https://github.com/prominic/Moonshine-IDE/wiki/Link-Related-Projects-with-moonshine-dependencies.xml).
+* If a cloned or checked out repository contains multiple subprojects (like https://github.com/prominic/Moonshine-IDE.git), Moonshine will allow the user to automatically open the subprojects (up to 3 levels deep).
+* Added [Apache Royale](https://royale.apache.org/) Jewel project template.  This requires a [nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) of Apache Royale.
+
+### Changed
+* Added support for Git in the Manage Repositories interface.
+* Provide non-sandbox version of Moonshine for Mac users.
+* Visual Editor: Allow search **Code** tab using menu option **Edit** -> **Find**.
+
+### Fixed
+* Fixed issue where Browse All repository threw an error when the repository list was empty. 
+* Templates: Fixed issue where modifying a template triggered an exception 
+
+#### Known Issue
+* Template modifications will not be applied to new projects.
+* The Jewel template for Apache Royale requires the latest [nightly build (0.9.6)](http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/lastSuccessfulBuild/artifact/out/) which is not currently available with Moonshine SDK Installer
+
+
+
+## Moonshine IDE [2.1.0]
+
+### Added
+* Added repository browser for SVN to allow users to browse the files inside of a repository before checking out a directory.
+* Visual Editor PrimeFaces: Add **Preview** button for opened file.
+* Java Maven Project: Added **Build & Run** option in menu **Project**.
+* Added syntax highlighting for IDE project files.
+* Improved handling of environment variables for build (and other) actions from Moonshine
+* Automatically select an appropriate SDK for a new project based on the project type.
+* About screen shows the versions of all configured SDKs.  This may take a few seconds to populate.
+
+### Changed
+* Updated [as3mxml](https://as3mxml.com/) engine to version 0.18.0.
+* Visual Editor: Updated Payara server to [5.191](https://github.com/payara/Payara/releases/tag/payara-server-5.191) for PrimeFaces preview 
+* Menu Project: Improved logic for displaying items in menu. The displayed items depend on the type of the currently selected project. 
+* Home Tab: Excluded **Tour De Flex** files from the **RECENT** list.
+* Import Project:  Added greater flexibility for selecting the main application file when importing a project.
+* Problems View has been moved to bottom of the interface with the Console and Debug views.
+* The Getting Started page will display if any of the SDKs are not installed.  This behavior can be disabled with the "Do not show" checkbox - the tab can still be opened from Help > Getting Started.
+
+### Fixed
+* Tour De Flex: Fixed issue where files were opened in wrong editor
+* Java Project: Fixed issue that caused New Project menua to be very slow
+* Java Project: Fixed issue when Java project do not deletes fully
+* Fixed issue where updating a project dependency path threw an error when the earlier path was invalid.
+* Access Manager: Fixed issue where Moonshine threw an error when a Java of project was opened
+* Visual Editor: Fixed issue preventing the selected element in the visual editor from highlighting in the Code tab
+* Find: Fixed issue where searching was disabled for Java projects.
+* Git:  Fixed issue where Git project triggered error on Moonshine startup
+
+
 ## Moonshine IDE [2.0.0]
 
 ### Added

@@ -18,64 +18,64 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-	import components.popup.newFile.NewJavaFilePopup;
+	import actionScripts.utils.SerializeUtil;
 
 	import flash.display.DisplayObject;
-    import flash.events.Event;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
-    import mx.managers.PopUpManager;
-    import mx.resources.ResourceManager;
-    
-    import __AS3__.vec.Vector;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.ExportVisualEditorProjectEvent;
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.NewFileEvent;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.RenameApplicationEvent;
-    import actionScripts.events.TemplatingEvent;
-    import actionScripts.events.TreeMenuItemEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IMenuPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.StaticLabelSetting;
-    import actionScripts.plugin.templating.event.TemplateEvent;
-    import actionScripts.plugin.templating.settings.NewTemplateSetting;
-    import actionScripts.plugin.templating.settings.TemplateSetting;
-    import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
-    import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
-    import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.ui.renderers.FTETreeItemRenderer;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.TextUtil;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.AS3ClassAttributes;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.TemplateVO;
-    
-    import components.popup.newFile.NewASFilePopup;
-    import components.popup.newFile.NewCSSFilePopup;
-    import components.popup.newFile.NewFilePopup;
-    import components.popup.newFile.NewMXMLFilePopup;
-    import components.popup.newFile.NewVisualEditorFilePopup;
-    import components.popup.newFile.NewGroovyFilePopup;
-
-    import mx.utils.StringUtil;
+	import flash.events.Event;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	import mx.resources.ResourceManager;
+	import mx.utils.StringUtil;
+	
+	import __AS3__.vec.Vector;
+	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.ExportVisualEditorProjectEvent;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.NewFileEvent;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.RenameApplicationEvent;
+	import actionScripts.events.TemplatingEvent;
+	import actionScripts.events.TreeMenuItemEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.IMenuPlugin;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.StaticLabelSetting;
+	import actionScripts.plugin.templating.event.TemplateEvent;
+	import actionScripts.plugin.templating.settings.NewTemplateSetting;
+	import actionScripts.plugin.templating.settings.TemplateSetting;
+	import actionScripts.plugin.templating.settings.renderer.NewTemplateRenderer;
+	import actionScripts.plugin.templating.settings.renderer.TemplateRenderer;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.TextUtil;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.AS3ClassAttributes;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.TemplateVO;
+	
+	import components.popup.newFile.NewASFilePopup;
+	import components.popup.newFile.NewCSSFilePopup;
+	import components.popup.newFile.NewFilePopup;
+	import components.popup.newFile.NewJavaFilePopup;
+	import components.popup.newFile.NewMXMLFilePopup;
+	import components.popup.newFile.NewVisualEditorFilePopup;
+	import components.popup.newFile.NewGroovyFilePopup;
 
     /*
     Templating plugin
@@ -89,7 +89,7 @@ package actionScripts.plugin.templating
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
 	{
 		override public function get name():String 			{return "Templating";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return ResourceManager.getInstance().getString('resources','plugin.desc.templating');}
 		
 		public static var fileTemplates:Array = [];
@@ -110,7 +110,9 @@ package actionScripts.plugin.templating
 		protected var newFilePopup:NewFilePopup;
 		
 		private var resetIndex:int = -1;
-		
+
+		private var templateConfigs:Array;
+
 		public function TemplatingPlugin()
 		{
 			super();
@@ -252,11 +254,25 @@ package actionScripts.plugin.templating
 
 			var projects:FileLocation = templatesDir.resolvePath("projects");
 			list = projects.fileBridge.getDirectoryListing();
+			list = list.filter(function(item:Object, index:int, arr:Array):Boolean {
+				return item.extension == "xml";
+			});
+
+			templateConfigs = [];
 			for each (file in list)
 			{
-				if (!file.isHidden && file.isDirectory)
+				if (!file.isHidden)
 				{
-					projectTemplates.push(new FileLocation(file.nativePath));
+					var projectTemplateConfigLocation:FileLocation = new FileLocation(file.nativePath);
+					var projectTemplateConfig:XML = new XML(projectTemplateConfigLocation.fileBridge.read());
+					var projectTemplateConfigs:XMLList = projectTemplateConfig.template;
+
+					for each (var template:XML in projectTemplateConfigs)
+					{
+						var templateName:String = String(template.name);
+						projectTemplates.push(projects.resolvePath(templateName));
+						templateConfigs.push(template);
+					}
 				}
 			}
 			
@@ -300,23 +316,27 @@ package actionScripts.plugin.templating
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 
-            for each (var file:FileLocation in projectTemplates)
+            for each (var templateConfig:XML in templateConfigs)
             {
-                var tmpDescripFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".txt");
-                if (tmpDescripFile.exists)
+				var templateName:String = SerializeUtil.deserializeString(templateConfig.name);
+
+				var projectsLocation:FileLocation = templatesDir.resolvePath("projects" + templatesDir.fileBridge.separator + templateName);
+                if (projectsLocation.fileBridge.exists)
                 {
-                    var tmpDescripFileLocation: FileLocation = new FileLocation(tmpDescripFile.nativePath);
                     var template:TemplateVO = new TemplateVO();
-                    template.title = file.fileBridge.name;
-                    template.file = file;
-                    var tmpImageFile: Object = file.fileBridge.getFile.parent.resolvePath(file.fileBridge.name+".png");
-                    template.description = String(tmpDescripFileLocation.fileBridge.read());
+                    template.title = SerializeUtil.deserializeString(templateConfig.title);
+					template.homeTitle = SerializeUtil.deserializeString(templateConfig.homeTitle);
+					template.displayHome = SerializeUtil.deserializeBoolean(templateConfig.@displayHome);
+                    template.file = projectsLocation;
+                    template.description = String(templateConfig.description);
+
+					var tmpImageFile:Object = projectsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
                     if (tmpImageFile.exists)
 					{
 						template.logoImagePath = tmpImageFile.url;
                     }
 
-                    if (template.title.indexOf("Feathers") != -1 || template.title.indexOf("Away3D") != -1)
+                    if (templateName.indexOf("Feathers") != -1 || templateName.indexOf("Away3D") != -1)
 					{
 						feathersProjectTemplates.addItem(template);
                     }
@@ -325,23 +345,12 @@ package actionScripts.plugin.templating
 						projectTemplateCollection.addItem(template);
                     }
 
-					if (template.title.indexOf("Royale") != -1 && template.title.indexOf("FlexJS") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
 					}
 
-					if (template.title.indexOf("FlexJS") != -1)
-					{
-						template = new TemplateVO();
-                        template.title = "Flex Browser Project (FlexJS)";
-                        template.file = file;
-                        template.logoImagePath = tmpImageFile.url;
-                        template.description = String(tmpDescripFileLocation.fileBridge.read());
-
-						royaleProjectTemplates.addItem(template);
-					}
-
-					if (template.title.indexOf("Java") != -1)
+					if (templateName.indexOf("Java") != -1)
 					{
                         javaProjectTemplates.addItem(template);
 					}
@@ -431,18 +440,25 @@ package actionScripts.plugin.templating
 			
 			var separator:MenuItem = new MenuItem(null);
 			newFileMenu.items.push(separator);
-			
-			var filteredProjectTemplatesToMenu:Array = projectTemplates.filter(filterProjectsTemplates);
-			for each (var projectTemplate:FileLocation in filteredProjectTemplatesToMenu)
+
+			var filteredProjectTemplatesToMenu:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source;
+			filteredProjectTemplatesToMenu.concat(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source,
+												  ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE.source,
+					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source);
+			filteredProjectTemplatesToMenu = filteredProjectTemplatesToMenu.filter(filterProjectsTemplates);
+
+			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
-				if (projectTemplate.fileBridge.isHidden) continue;
-				lbl = TemplatingHelper.getTemplateLabel(projectTemplate);
-				
-				eventType = "eventNewProjectFromTemplate"+lbl;
+				if (projectTemplate.file.fileBridge.isHidden)
+				{
+					continue;
+				}
+
+				eventType = "eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(projectTemplate.file);
 				
 				dispatcher.addEventListener(eventType, handleNewProjectFile);
 				
-				menuItem = new MenuItem(lbl, null, null, eventType);
+				menuItem = new MenuItem(projectTemplate.homeTitle, null, null, eventType);
 				menuItem.data = projectTemplate;
 				
 				newFileMenu.items.push(menuItem);	
@@ -1366,9 +1382,9 @@ package actionScripts.plugin.templating
             newProjectFromTemplate(event.type);
 		}
 		
-		private function filterProjectsTemplates(item:FileLocation, index:int, arr:Array):Boolean
+		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean
 		{
-			return ConstantsCoreVO.EXCLUDE_PROJECT_TEMPLATES_IN_MENU.indexOf(item.name) == -1;
+			return item.displayHome;
 		}
 
         private function handleExportNewProjectFromTemplate(event:ExportVisualEditorProjectEvent):void

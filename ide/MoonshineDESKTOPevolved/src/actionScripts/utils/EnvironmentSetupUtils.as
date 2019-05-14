@@ -34,6 +34,8 @@ package actionScripts.utils
 	
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
+	import actionScripts.valueObjects.SDKTypes;
 	
 	public class EnvironmentSetupUtils
 	{
@@ -148,9 +150,11 @@ package actionScripts.utils
 		{
 			var setCommand:String = ConstantsCoreVO.IS_MACOS ? "" : "@echo off\r\n";
 			var isValidToExecute:Boolean;
-			var setPathCommand:String = "set PATH=";
+			var setPathCommand:String = ConstantsCoreVO.IS_MACOS ? "export PATH=" : "set PATH=";
 			var defaultOrCustomSDKPath:String;
 			var additionalCommandLines:String = "";
+			var defaultSDKtype:String;
+			var defaultSDKreferenceVo:SDKReferenceVO;
 			
 			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
 			{
@@ -161,22 +165,25 @@ package actionScripts.utils
 				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
 			}
 			
+			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
+			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
+			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
 				setCommand += getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
-				setPathCommand += "%JAVA_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath);
-				setPathCommand += "%ANT_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "%ANT_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isMavenAvailable())
 			{
 				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
-				setPathCommand += "%MAVEN_HOME%\\bin;";
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$MAVEN_HOME/bin:" : "%MAVEN_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
@@ -198,8 +205,9 @@ package actionScripts.utils
 			}
 			if (defaultOrCustomSDKPath)
 			{
-				setCommand += getSetExportCommand("FLEX_HOME", defaultOrCustomSDKPath);
-				setPathCommand += "%FLEX_HOME%\\bin;";
+				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
+				setCommand += getSetExportCommand(flexRoyaleHomeType, defaultOrCustomSDKPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
 				isValidToExecute = true;
 			}
 			
@@ -208,6 +216,7 @@ package actionScripts.utils
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
+				setCommand += setPathCommand + "$PATH;";
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}
@@ -240,10 +249,10 @@ package actionScripts.utils
 				{
 					// returns batch file path to be 
 					// executed by the caller's nativeProcess process
-					externalCallCompletionHandler(windowsBatchFile.nativePath);
+					if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
 					cleanUp();
 				}
-				else
+				else if (windowsBatchFile)
 				{
 					onCommandLineExecutionWith(windowsBatchFile.nativePath);
 				}

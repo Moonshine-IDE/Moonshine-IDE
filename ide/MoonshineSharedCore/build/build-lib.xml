@@ -400,7 +400,7 @@
 			<key>LSApplicationCategoryType</key>
 			<string>public.app-category.developer-tools</string>
 			<key>CFBundleVersion</key>
-			<string>46.0</string>]]></replacevalue>
+			<string>48.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -412,7 +412,7 @@
 			<key>LSApplicationCategoryType</key>
 			<string>public.app-category.developer-tools</string>
 			<key>CFBundleVersion</key>
-			<string>46.0</string>]]></replacevalue>
+			<string>48.0</string>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
@@ -509,6 +509,11 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
+		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='cp -rf ${desktopBinaryFilename} ${deploy_dir}/${installerName}_NonSandbox.app'/>
+		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
@@ -517,8 +522,24 @@
 			<arg value="-c"/>
 			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
 		</exec>
+		<!-- @devsena: Delete the existing sandbox-entitlement app file -->
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='rm -R ${desktopBinaryFilename}'/>
+		</exec>
+		<!-- @devsena: Rename the non-sandbox app file to regular app file name -->
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='mv ${deploy_dir}/${installerName}_NonSandbox.app ${desktopBinaryFilename}'/>
+		</exec>
 		<!-- @devsena; We shall going to maintain a flag for non-App-Store version to determine when app starts, by adding certain value to a certain XML file and re-package as a "DONOTUSE" pkg -->
 		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" token="$isAppStoreVersion" value="false" />
+		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
+		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
@@ -526,7 +547,7 @@
 		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing -->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonAppStore_Distribution.pkg'/>
+			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>

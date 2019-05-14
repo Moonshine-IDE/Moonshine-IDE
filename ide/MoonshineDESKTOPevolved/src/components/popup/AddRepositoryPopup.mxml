@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   backgroundColor="0xf5f5f5"
+										   width="500" minWidth="400" minHeight="100" autoLayout="true"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.utils.UIDUtil;
+			import mx.validators.Validator;
+			
+			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.RepositoryItemVO;
+			import actionScripts.valueObjects.VersionControlTypes;
+			
+			[Bindable] public var type:String;
+			
+			public var editingRepository:RepositoryItemVO;
+			
+			[Bindable] private var isValidURL:Boolean;
+
+			public function notifySVNCheckoutError():void
+			{
+				Alert.show("Oops! There is something wrong!\nPlease check console for details.", "Error!");
+				btnSubmit.enabled = true;
+			}
+			
+			private function onAddRequest():void
+			{
+				if (type == VersionControlTypes.SVN && cbLogin.selected)
+				{
+					var tmpArr : Array = new Array(eValidator);
+					if (Validator.validateAll(tmpArr).length != 0)
+					{
+						return;
+					}
+				}
+				
+				// do not let keep any trailing slash (necessary for svn)
+				var tmpRepositoryUrl:String = (txtSource.text.charAt(txtSource.text.length - 1) == "/") ? 
+					txtSource.text.substr(0, txtSource.text.length - 1) : 
+					txtSource.text;
+				var isEditing:Boolean;
+				if (!editingRepository) editingRepository = new RepositoryItemVO();
+				else isEditing = true;
+				
+				// ensure duplicate url entry
+				if (VersionControlUtils.REPOSITORIES)
+				{
+					for each (var repo:RepositoryItemVO in VersionControlUtils.REPOSITORIES)
+					{
+						if (repo.url.toLowerCase() == tmpRepositoryUrl.toLowerCase() && 
+							repo != editingRepository)
+						{
+							Alert.show("Duplicate repository entry is not permitted.", "Error!");
+							return;
+						}
+					}
+				}
+				
+				editingRepository.url = tmpRepositoryUrl;
+				editingRepository.notes = StringUtil.trim(txtNotes.text).length != 0 ? txtNotes.text : null;
+				editingRepository.isRequireAuthentication = cbLogin.selected;
+				editingRepository.isTrustCertificate = (type == VersionControlTypes.SVN) ? cbTrustCert.selected : false;
+				editingRepository.type = rgType.selectedValue.toString();
+				editingRepository.children = editingRepository.children ? editingRepository.children : (editingRepository.type == VersionControlTypes.SVN ? [] : null);
+				editingRepository.isRoot = true;
+				if (!isEditing) editingRepository.udid = UIDUtil.createUID();
+				if (editingRepository.isRequireAuthentication)
+				{
+					editingRepository.userName = StringUtil.trim(txtLogin.text).length != 0 ? txtLogin.text : null;
+				}
+				else
+				{
+					editingRepository.userName = null;
+				}
+				
+				dispatchEvent(new VersionControlEvent(
+					VersionControlEvent.ADD_EDIT_REPOSITORY, 
+					editingRepository
+				));
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function updatePossiblePath():void
+			{
+				var searchRegExp:RegExp;
+				var results:Array;
+				if (type == VersionControlTypes.GIT)
+				{
+					// expected format is https://github.com/{organization/author}/{project}
+					searchRegExp = new RegExp("(?:https?|git|ssh)\://.*/([^/]+)(?:\\.git)?", "i");
+					results = searchRegExp.exec(txtSource.text);
+					if (results != null)
+					{
+						isValidURL = true;
+					}
+					else
+					{
+						isValidURL = false;
+					}
+				}
+				else
+				{
+					searchRegExp = new RegExp("\\w*://.*/.+$", "i");
+					results = searchRegExp.exec(txtSource.text);
+					if (results != null)
+					{
+						isValidURL = true;
+					}
+					else
+					{
+						isValidURL = false;
+					}
+				}
+			}
+			
+			protected function onCreationCompletes():void
+			{
+				// if in edit mode
+				if (editingRepository)
+				{
+					rgType.selectedValue = editingRepository.type;
+					txtSource.text = editingRepository.url;
+					txtNotes.text = editingRepository.notes;
+					cbLogin.selected = editingRepository.isRequireAuthentication;
+					cbTrustCert.selected = editingRepository.isTrustCertificate;
+					txtLogin.text = editingRepository.userName;
+				}
+				
+				txtSource.setFocus();
+				onTypeChanged(null);
+			}
+			
+			private function onTypeChanged(event:Event):void
+			{
+				lblNoPath.visible = lblNoPath.includeInLayout = false;
+				if (rgType.selectedValue == VersionControlTypes.SVN)
+				{
+					type = VersionControlTypes.SVN;
+					if (!UtilsCore.isSVNPresent()) displayNoPathMessageFor("SVN");
+				}
+				else if (rgType.selectedValue == VersionControlTypes.GIT)
+				{
+					type = VersionControlTypes.GIT;
+					if (!UtilsCore.isGitPresent()) displayNoPathMessageFor("Git");
+				}
+				
+				// update if already inserted path
+				if (StringUtil.trim(txtSource.text).length != 0) updatePossiblePath();
+				
+				/*
+				 * @local
+				 */
+				function displayNoPathMessageFor(pathType:String):void
+				{
+					lblNoPath.text = "You need "+ pathType +" installed on your system.";
+					lblNoPath.visible = lblNoPath.includeInLayout = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
+		<s:RadioButtonGroup id="rgType" change="onTypeChanged(event)"/>
+	</fx:Declarations>
+	
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+	
+	<s:HGroup width="100%">
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.GIT}" label="Git"
+					   selected="true"/>
+		<s:RadioButton groupName="rgType" value="{VersionControlTypes.SVN}" label="SVN"/>
+	</s:HGroup>
+	<view:PromptTextInput id="txtSource"
+						  width="100%" styleName="textInput"
+						  prompt="Repository URL" change="updatePossiblePath()"/>
+	<s:VGroup width="100%">
+		<s:Label text="Notes (optional):"/>
+		<view:PromptTextInput id="txtNotes" 
+							  prompt="Repostory notes.." width="100%" styleName="textInput"/>
+	</s:VGroup>
+	<s:Label id="lblNoPath" 
+			 width="100%" textAlign="center" color="0xff0000"
+			 includeInLayout="false" visible="false"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:CheckBox id="cbLogin"
+					label="Need Authentication" selected="false"/>
+		<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
+					enabled="{type == VersionControlTypes.SVN}"/>
+	</s:HGroup>
+	<s:VGroup width="100%"
+			  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
+		<view:PromptTextInput
+			id="txtLogin" 
+			prompt="User Name"
+			width="100%"
+			styleName="textInput"/>
+		<s:Label text="Password will be prompted when needed by version control software"
+				 color="0x444444"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit" 
+				  label="Save" styleName="darkButton" enabled="{isValidURL}"
+				  click="onAddRequest()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

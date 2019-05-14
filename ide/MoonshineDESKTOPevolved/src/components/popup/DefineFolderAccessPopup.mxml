@@ -41,6 +41,7 @@
 			
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.settings.vo.ISetting;
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -49,6 +50,7 @@
 			import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 			
 			private var _requisitePaths:Vector.<ISetting>;
@@ -78,7 +80,7 @@
 			
 			private function updateUI():void
 			{
-				var ps:PluginSetting = new PluginSetting("Accessible Paths", "Moonshine Project Team", "Moonshine currently has access to the following directories. You may add more access as desired.", false);
+				var ps:PluginSetting = new PluginSetting("Accessible Paths", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine currently has access to the following directories. You may add more access as desired.", false);
 				vgContents1.addElementAt(ps.renderer, 0);
 				
 				ps = new PluginSetting("Unaccessible Dependencies", "", bigMessage, false);
@@ -209,14 +211,15 @@
 				}
 				
 				// update application properties file
-				if (renderer.setting.project.air)
+				if ((renderer.setting.project is AS3ProjectVO) && 
+					(renderer.setting.project as AS3ProjectVO).air)
 				{
-					if (renderer.setting.project.isFlashBuilderProject) 
+					if ((renderer.setting.project as AS3ProjectVO).isFlashBuilderProject) 
 					{
 						var settingsFile:File = (renderer.setting.project.folderLocation.fileBridge.getFile as File).resolvePath(".actionScriptProperties");
-						FlashBuilderExporter.export(renderer.setting.project, settingsFile);
+						FlashBuilderExporter.export(renderer.setting.project as AS3ProjectVO, settingsFile);
 					}
-					else FlashDevelopExporter.export(renderer.setting.project, renderer.setting.project.projectFile);
+					else FlashDevelopExporter.export(renderer.setting.project as AS3ProjectVO, renderer.setting.project.projectFile);
 				}
 				
 				// we need to show a re-build button in the interface if all 

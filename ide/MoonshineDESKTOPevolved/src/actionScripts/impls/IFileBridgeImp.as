@@ -41,12 +41,9 @@ package actionScripts.impls
 	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.interfaces.IScopeBookmarkInterface;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
-	import flash.events.IOErrorEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import mx.controls.Alert;
 	import actionScripts.utils.FileUtils;
-	import flash.utils.ByteArray;
 	
 	/**
 	 * IFileBridgeImp
@@ -68,6 +65,15 @@ package actionScripts.impls
 			}
 		}
 		
+		/**
+		 * Creating new File instance everytime
+		 * to detect if exists could be expensive
+		 */
+		public function isPathExists(value:String):Boolean
+		{
+			return FileUtils.isPathExists(value);
+		}
+		
 		public function getDirectoryListing():Array
 		{
 			if (!checkFileExistenceAndReport()) return [];
@@ -87,7 +93,7 @@ package actionScripts.impls
 		{
 			setFileInternalPath(startFromLocation);
 			
-			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				var selectedPathValue: String;
 				var relativePathToOpen: String = "";
@@ -112,11 +118,21 @@ package actionScripts.impls
 					// update the path to bookmarked list
 					var tmpArr:Array = OSXBookmarkerNotifiers.availableBookmarkedPaths.split(",");
 					if (tmpArr.indexOf(selectedPathValue) == -1) OSXBookmarkerNotifiers.availableBookmarkedPaths += ","+ selectedPathValue;
-					_file.nativePath = selectedPathValue;
 					
-					selectListner(new File(selectedPathValue));
+					if (isValidFilePath(selectedPathValue))
+					{
+						_file.nativePath = selectedPathValue;
+						selectListner(new File(selectedPathValue));
+					}
+					else if (cancelListener != null)
+					{
+						cancelListener();
+					}
 				}
-				else if (cancelListener != null) cancelListener();
+				else if (cancelListener != null) 
+				{
+					cancelListener();
+				}
 			}
 			else
 			{
@@ -363,7 +379,7 @@ package actionScripts.impls
 			}
 			function onReadIO(value:String):void
 			{
-				//Alert.show(event.toString());
+
 			}
 		}
 		
@@ -412,7 +428,7 @@ package actionScripts.impls
 				}
 			}
 			
-			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				var selectedPathValue: String;
 				var relativePathToOpen: String = "";
@@ -434,10 +450,20 @@ package actionScripts.impls
 						return;
 					}
 					
-					_file.nativePath = selectedPathValue;
-					selectListner(new File(selectedPathValue));
+					if (isValidFilePath(selectedPathValue))
+					{
+						_file.nativePath = selectedPathValue;
+						selectListner(new File(selectedPathValue));
+					}
+					else if (cancelListener != null) 
+					{
+						cancelListener();
+					}
 				}
-				else if (cancelListener != null) cancelListener();
+				else if (cancelListener != null) 
+				{
+					cancelListener();
+				}
 			}
 			else
 			{
@@ -465,6 +491,11 @@ package actionScripts.impls
 		public function openWithDefaultApplication():void
 		{
 			if (checkFileExistenceAndReport()) _file.openWithDefaultApplication();
+		}
+		
+		public function getFileByPath(value:String):Object
+		{
+			return (new File(value));
 		}
 
 		public function get url():String
@@ -554,7 +585,20 @@ package actionScripts.impls
 		{
 			try
 			{
-				if (checkFileExistenceAndReport()) _file.nativePath = value;
+				if (checkFileExistenceAndReport(false)) 
+				{
+					_file.nativePath = value;
+				}
+				else if (FileUtils.isPathExists(value))
+				{
+					_file = new File(value);
+				}
+				else
+				{
+					var errorMessage:String = value +" does not exist on the filesystem.\nOperation canceled.";
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
+				}
 			}
 			catch (e:Error)
 			{
@@ -635,8 +679,19 @@ package actionScripts.impls
 		public function set data(value:Object):void
 		{
 		}
-		
-		public function checkFileExistenceAndReport():Boolean
+
+		public function get nameWithoutExtension():String
+		{
+			var extensionIndex:int = this.name.lastIndexOf(extension);
+			if (extensionIndex > -1)
+			{
+				return this.name.substring(0, extensionIndex - 1);
+			}
+
+			return null;
+		}
+
+		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{
 			// we want to keep this method separate from
 			// 'exists' and not add these alerts to the
@@ -644,8 +699,10 @@ package actionScripts.impls
 			// internal checks which are not intentional to throw an alert
 			if (!_file.exists)
 			{
-				Alert.show(_file.name +" does not exist on the filesystem.\nOperation canceled.", "Error!");
-				reportPathAccessError(_file.isDirectory, false);
+				if (showAlert) 
+				{
+					reportPathAccessError(_file.isDirectory, false);
+				}
 				return false;
 			}
 			
@@ -674,6 +731,18 @@ package actionScripts.impls
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
+		}
+		
+		private function isValidFilePath(value:String):Boolean
+		{
+			if (value.indexOf("Error Domain=NSCocoaErrorDomain") != -1)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value, false, false, ConsoleOutputEvent.TYPE_ERROR));
+				return false;
+			}
+			
+			return true;
 		}
 		
 		private function setFileInternalPath(startFromLocation:String):void

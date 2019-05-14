@@ -49,6 +49,8 @@ package actionScripts.ui.menu.interfaces
 		function set enabled(value:Boolean):void;
 		function get enabled():Boolean;
 
+		function get dynamicItem():Boolean;
+		function set dynamicItem(value:Boolean):void;
 	}
 
 }

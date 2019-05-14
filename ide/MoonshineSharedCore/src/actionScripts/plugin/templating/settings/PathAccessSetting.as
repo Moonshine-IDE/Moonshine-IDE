@@ -21,9 +21,9 @@ package actionScripts.plugin.templating.settings
 	import mx.core.IVisualElement;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.templating.settings.renderer.PathAccessRenderer;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	public class PathAccessSetting extends AbstractSetting
 	{
@@ -33,7 +33,7 @@ package actionScripts.plugin.templating.settings
 		[Bindable] public var errorType:String = "";
 		
 		public var fakeSetting:String = "";
-		public var project: AS3ProjectVO;
+		public var project: ProjectVO;
 		public var isLocalePath:Boolean;
 		
 		public function PathAccessSetting(originalPath:FileLocation)

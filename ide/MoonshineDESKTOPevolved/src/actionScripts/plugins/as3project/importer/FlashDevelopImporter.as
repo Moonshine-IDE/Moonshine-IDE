@@ -16,7 +16,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
-    import actionScripts.utils.SerializeUtil;
+	import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.utils.SerializeUtil;
 
     import flash.filesystem.File;
 	import flash.filesystem.FileMode;
@@ -48,7 +49,7 @@ package actionScripts.plugins.as3project.importer
 			return null;
 		}
 		
-		public static function parse(file:FileLocation, projectName:String=null, descriptorFile:File=null, shallUpdateChildren:Boolean=true):AS3ProjectVO
+		public static function parse(file:FileLocation, projectName:String=null, descriptorFile:File=null, shallUpdateChildren:Boolean=true, projectTemplateType:String = null):AS3ProjectVO
 		{
 			var folder:File = (file.fileBridge.getFile as File).parent;
 			
@@ -197,7 +198,21 @@ package actionScripts.plugins.as3project.importer
 			var simulator:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
             project.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
 			
-			if (!project.air) UtilsCore.checkIfRoyaleApplication(project);
+			if (!project.air)
+			{
+				UtilsCore.checkIfRoyaleApplication(project);
+				if (!project.isRoyale)
+				{
+					if (projectTemplateType == ProjectTemplateType.ROYALE_PROJECT)
+					{
+						project.isRoyale = true;
+					}
+					else
+					{
+						project.isRoyale = SerializeUtil.deserializeBoolean(data.options.option.@isRoyale);
+					}
+				}
+			}
 
             project.buildOptions.isMobileHasSimulatedDevice = new MobileDeviceVO(SerializeUtil.deserializeString(data.moonshineRunCustomization.deviceSimulator));
             project.buildOptions.certAndroid = SerializeUtil.deserializeString(data.moonshineRunCustomization.certAndroid);

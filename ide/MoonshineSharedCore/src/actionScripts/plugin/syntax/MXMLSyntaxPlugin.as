@@ -32,6 +32,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.ui.parser.context.ContextSwitch;
 	import actionScripts.ui.parser.context.InlineParser;
 	import actionScripts.ui.parser.context.InlineParserManager;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 	
 	public class MXMLSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
@@ -48,7 +49,7 @@ package actionScripts.plugin.syntax
 		private var formats:Object = {};
 		
 		override public function get name():String 			{return "MXML Syntax Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for MXML.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 		

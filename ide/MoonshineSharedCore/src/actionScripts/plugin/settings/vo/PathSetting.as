@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.vo
 {
+	import mx.collections.ArrayCollection;
 	import mx.core.IVisualElement;
 	
 	import actionScripts.plugin.settings.renderers.PathRenderer;
@@ -25,8 +26,8 @@ package actionScripts.plugin.settings.vo
 	[Event(name="pathSelected", type="flash.events.Event")]
 	public class PathSetting extends AbstractSetting
 	{
-		[Bindable]
-		public var directory:Boolean;
+		[Bindable] public var dropdownListItems:ArrayCollection;
+		[Bindable] public var directory:Boolean;
 		public var fileFilters:Array;
 		
 		private var isSDKPath:Boolean;

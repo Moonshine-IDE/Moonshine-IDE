@@ -27,6 +27,7 @@ package actionScripts.interfaces
 		{
 			function getSSBInterface():IScopeBookmarkInterface;
 		}
+		function isPathExists(value:String):Boolean;
 		function getDirectoryListing():Array;
 		function deleteFileOrDirectory():void;
 		function onSuccessDelete(value:Object, message:String=null):void;
@@ -58,7 +59,8 @@ package actionScripts.interfaces
 		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void;
 		function moveToTrashAsync():void;
 		function openWithDefaultApplication():void;
-		function checkFileExistenceAndReport():Boolean;
+		function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean;
+		function getFileByPath(value:String):Object;
 		
 		function get url():String;
 		function set url(value:String):void
@@ -93,5 +95,7 @@ package actionScripts.interfaces
 		function set modificationDate(value:Date):void;
 		function get data():Object;
 		function set data(value:Object):void;
+
+		function get nameWithoutExtension():String;
 	}
 }

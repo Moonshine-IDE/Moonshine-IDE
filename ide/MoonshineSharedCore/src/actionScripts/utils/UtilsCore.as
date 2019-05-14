@@ -146,7 +146,8 @@ package actionScripts.utils
 		{
 			var tmpPoint : Point = getContentToGlobalXY( event.currentTarget as UIComponent );
 			event.toolTip.y = tmpPoint.y + 20;
-			event.toolTip.x = event.toolTip.x - 20;
+			//event.toolTip.x = event.toolTip.x - 20;
+			event.toolTip.x = ( event.currentTarget as UIComponent ).mouseX;
 		}
 		
 		/**
@@ -257,18 +258,37 @@ package actionScripts.utils
 		}
 		
 		/**
-		 * Returns project based on its folderLocation
+		 * Returns project based on its path
 		 */
 		public static function getProjectByPath(value:String):ProjectVO
 		{
-			for each (var i:ProjectVO in model.projects)
+			for each (var project:ProjectVO in model.projects)
 			{
-				if (i.folderLocation.fileBridge.nativePath == value) return i;
+				if (project.folderLocation.fileBridge.nativePath == value)
+				{
+					return project;
+				}
 			}
 			
 			return null;
 		}
-		
+
+		/**
+		 * Returns project based on its name
+		 */
+		public static function getProjectByName(projectName:String):ProjectVO
+		{
+			for each (var project:ProjectVO in model.projects)
+			{
+				if (project.projectName == projectName)
+				{
+					return project;
+				}
+			}
+
+			return null;
+		}
+
 		/**
 		 * Returns projectVO against fileWrapper
 		 */
@@ -595,6 +615,8 @@ package actionScripts.utils
 		 */
 		public static function checkIfRoyaleApplication(project:AS3ProjectVO):void
 		{
+			if (project.isRoyale) return;
+
             // probable termination
             if (project.targets.length == 0 || !project.targets[0].fileBridge.exists) return;
 
@@ -878,10 +900,14 @@ package actionScripts.utils
 			
 			if (value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
 			
-			// git check
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
-			// svn check
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, value));
+			// version-control check
+			if (!value.hasVersionControlType)
+			{
+				// git check
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, value));
+				// svn check
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, value));
+			}
 		}
 		
 		/**
@@ -908,6 +934,30 @@ package actionScripts.utils
 			}
 			
 			return tmpValue;
+		}
+		
+		/**
+		 * Reads through project configuration and
+		 * returns the project name
+		 */
+		public static function getProjectNameFromConfiguration(file:FileLocation=null, path:String=null):String
+		{
+			if (!file && !path) return null;
+			if (!file && path) file = new FileLocation(path);
+			
+			var configurationXML:XML = new XML(file.fileBridge.read() as String);
+			if (file.fileBridge.extension == "project")
+			{
+				// flash-builder projec
+				return String(configurationXML.name);
+			}
+			else
+			{
+				// moonshine projects
+				return file.fileBridge.nameWithoutExtension;
+			}
+			
+			return null;
 		}
 
 		public static function getConsolePath():String
@@ -1002,7 +1052,7 @@ package actionScripts.utils
 		{
 			if (model.svnPath)
 			{
-				return (new FileLocation(model.svnPath).fileBridge.exists);
+				return (model.fileCore.isPathExists(model.svnPath));
 			}
 			
 			return false;
@@ -1012,10 +1062,15 @@ package actionScripts.utils
 		{
 			if (model.gitPath)
 			{
-				return (new FileLocation(model.gitPath).fileBridge.exists);
+				return (model.fileCore.isPathExists(model.gitPath));
 			}
 			
 			return false;
+		}
+		
+		public static function getLineBreakEncoding():String
+		{
+			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
@@ -1054,6 +1109,5 @@ package actionScripts.utils
                         return item == extension;
                     });
         }
-
     }
 }

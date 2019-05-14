@@ -45,9 +45,11 @@ package actionScripts.valueObjects
 		
 		public static const IS_AIR: Boolean = Security.sandboxType.toString() == "application" ? true : false;
 		public static const MOONSHINE_PROD_ID: String = "com.moonshine-ide";
-		public static const REQUIRED_FLEXJS_SDK_VERION_MINIMUM:String = "0.7.0";
 		public static const EVENT_PROBLEMS:String = "EVENT_PROBLEMS";
 		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
+		public static const MOONSHINE_IDE_LABEL:String = "Moonshine IDE™";
+		public static const MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © Prominic.NET, Inc. All rights reserved.";
+		public static const MAX_DEPTH_COUNT_IN_PROJECT_SEARCH:int = 3;
 		
 		[Embed(source='/elements/swf/loading.swf')]
 		public static var loaderIcon: Class;
@@ -55,6 +57,12 @@ package actionScripts.valueObjects
 		public static var sourceFolderIcon: Class;
 		[Embed(source='/elements/images/icoTick.png')]
 		public static var menuTickIcon: Class;
+		[Embed(source='/elements/images/label_git.png')]
+		public static var gitLabelIcon: Class;
+		[Embed(source='/elements/images/label_svn.png')]
+		public static var svnLabelIcon: Class;
+		[Embed(source='/elements/images/label_xml.png')]
+		public static var xmlLabelIcon: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		[Embed("/elements/images/upArrow_menuScroll.png")]
@@ -98,7 +106,6 @@ package actionScripts.valueObjects
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
-		public static var EXCLUDE_PROJECT_TEMPLATES_IN_MENU:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
@@ -212,11 +219,14 @@ package actionScripts.valueObjects
 		public static var IS_HELPER_DOWNLOADED_ANT_PRESENT	: Object;
 		public static var IS_BUNDLED_SDK_PROMPT_DNS			: Boolean;
 		public static var IS_SDK_HELPER_PROMPT_DNS			: Boolean;
+		public static var IS_GETTING_STARTED_DNS			: Boolean;
 		public static var IS_OSX_CODECOMPLETION_PROMPT		: Boolean;
 		public static var IS_OSX_JAVA_SDK_PROMPT			: Boolean;
 		public static var IS_CONSOLE_CLEARED_ONCE			: Boolean;
-		public static var IS_GIT_OSX_AVAILABLE:Boolean;
-		public static var IS_SVN_OSX_AVAILABLE:Boolean;
+		public static var IS_GIT_OSX_AVAILABLE				: Boolean;
+		public static var IS_SVN_OSX_AVAILABLE				: Boolean;
+		public static var IS_APP_STORE_VERSION				: Boolean;
+		public static var IS_DEFAULT_REPOSITORIES_POPULATED	: Boolean;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -381,16 +391,18 @@ public class $fileName
 
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
-			openTemplateProjectVO.title = openTemplateProject.fileBridge.name = "Open Apache® Flex/Royale Project...";
+			openTemplateProject.fileBridge.name = "Open/Import Project...";
+
+			openTemplateProjectVO.displayHome = true;
+			openTemplateProjectVO.homeTitle = "Open/Import Project...";
+			openTemplateProjectVO.title = "Open/Import Project...";
 			openTemplateProjectVO.logoImagePath = "/elements/images/Open Project.png";
-			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open an ActionScript or Apache® Flex Project in Moonshine.";
+			openTemplateProject.fileBridge.data = openTemplateProjectVO.description = "Import or Open Project in "+ ConstantsCoreVO.MOONSHINE_IDE_LABEL;
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
-			
-			EXCLUDE_PROJECT_TEMPLATES_IN_MENU = ["PrimeFaces Project"];
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
@@ -417,23 +429,6 @@ public class $fileName
 					else TEMPLATES_IOS_DEVICES.addItem(new MobileDeviceVO(String(i.@name), String(i.@key), String(i.@type), String(i.@screenDPI), true));
 				}
 			}
-		}
-		
-		//--------------------------------------------------------------------------
-		//
-		//  PRIVATE STATIC API
-		//
-		//--------------------------------------------------------------------------
-		
-		private static function getNewTemplateType(fileName:String, isDirectory:Boolean, extension:String, data:String=null):Object
-		{
-			var newTemplate:Object = new Object();
-			newTemplate.name = fileName;
-			newTemplate.isDirectory = isDirectory;
-			newTemplate.extension = extension;
-			newTemplate.data = data;
-			
-			return newTemplate;
 		}
 	}
 }

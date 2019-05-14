@@ -40,7 +40,8 @@
 			{
 				if (!loaderBar)
 				{
-					lblBuilding.text = event.notificationSuffix + event.projectName;
+					lblBuilding.text = (event.notificationSuffix ? event.notificationSuffix : "") + 
+						(event.projectName ? event.projectName : "" );
 					btnStop.includeInLayout = btnStop.visible = event.isShowStopButton;
 					
 					loaderBar = new loadingBar();

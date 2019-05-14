@@ -20,6 +20,7 @@ package actionScripts.plugin.project
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsInfoView;
+	import actionScripts.ui.menu.MenuPlugin;
 
 	import flash.events.Event;
     import flash.net.SharedObject;
@@ -57,7 +58,7 @@ package actionScripts.plugin.project
 		public static const EVENT_SHOW_OPEN_RESOURCE:String = "showOpenResource";
 		
 		override public function get name():String 	{return "Project Plugin";}
-		override public function get author():String 		{return "Moonshine Project Team";}
+		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
 		
 		private var treeView:TreeView;
@@ -219,10 +220,10 @@ package actionScripts.plugin.project
 					model.projects.addItem(pvo);
                     model.activeProject = pvo;
 					
-					if (lastActiveProjectMenuType != (pvo as AS3ProjectVO).menuType)
+					if (lastActiveProjectMenuType != pvo.menuType)
 					{
 	                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
-						lastActiveProjectMenuType = (pvo as AS3ProjectVO).menuType;
+						lastActiveProjectMenuType = pvo.menuType;
 					}
 
 					showProjectPanel();
@@ -265,12 +266,11 @@ package actionScripts.plugin.project
 			if (model.projects.getItemIndex(event.project) == -1)
 			{
 				model.projects.addItemAt(event.project, 0);
-				model.activeProject = event.project;
-				
-				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != (event.project as AS3ProjectVO).menuType)
+
+				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != event.project.menuType)
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, event.project));
-					lastActiveProjectMenuType = (event.project as AS3ProjectVO).menuType;
+					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+					lastActiveProjectMenuType = event.project.menuType;
 				}
 			}
 
@@ -288,11 +288,7 @@ package actionScripts.plugin.project
 			
 			if (model.activeProject == event.project)
 			{
-				if (model.projects.length)
-				{
-					model.activeProject = model.projects[0];
-                }
-				else
+				if (model.projects.length == 0)
 				{
 					model.activeProject = null;
                 }
@@ -302,7 +298,7 @@ package actionScripts.plugin.project
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 					if(model.activeProject is AS3ProjectVO)
 					{
-						lastActiveProjectMenuType = model.activeProject ? (model.activeProject as AS3ProjectVO).menuType : null;
+						lastActiveProjectMenuType = model.activeProject ? model.activeProject.menuType : null;
 					}
 					else
 					{

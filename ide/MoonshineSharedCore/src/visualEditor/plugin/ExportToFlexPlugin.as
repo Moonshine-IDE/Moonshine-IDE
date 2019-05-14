@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package visualEditor.plugin
 {
+    import flash.events.Event;
+    
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.utils.UtilsCore;
-
-    import flash.events.Event;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
     public class ExportToFlexPlugin extends PluginBase
     {
@@ -33,7 +34,7 @@ package visualEditor.plugin
         }
 
         override public function get name():String { return "Export Visual Editor Project to Flex Plugin"; }
-        override public function get author():String { return "Moonshine Project Team"; }
+        override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
         override public function get description():String { return "Exports Visual Editor project to Flex (Adobe Air Desktop)."; }
 
         override public function activate():void
