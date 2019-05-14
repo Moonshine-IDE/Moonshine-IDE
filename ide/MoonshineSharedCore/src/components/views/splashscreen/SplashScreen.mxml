@@ -318,7 +318,7 @@
 				projectFileLocation = model.groovyCore.testGrails(projectFile);
 				if (projectFileLocation)
 				{
-					return model.groovyCore.parseGrails(recentOpenedProjectObject as FileLocation);
+					return model.groovyCore.parseGrails(projectFileLocation as FileLocation);
 				}
 			}
 
