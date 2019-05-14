@@ -186,14 +186,14 @@ package actionScripts.plugins.versionControl
 				VersionControlUtils.REPOSITORIES.addAllAt(tmpDefaults, 0);
 				dispatcher.dispatchEvent(new ConsoleOutputEvent(
 					ConsoleOutputEvent.CONSOLE_PRINT, 
-					"Default repositories: Items restored to Manage Repositories under Subversion/Git.", 
+					"The default repositories were restored in Manage Repositories.", 
 					false, false, ConsoleOutputEvent.TYPE_SUCCESS));
 			}
 			else
 			{
 				dispatcher.dispatchEvent(new ConsoleOutputEvent(
 					ConsoleOutputEvent.CONSOLE_PRINT, 
-					"Default repositories: Items already exists to Manage Repositories under Subversion/Git."));
+					"The default repositories are already present in Manage Repositories."));
 			}
 		}
 		

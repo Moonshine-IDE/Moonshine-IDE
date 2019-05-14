@@ -333,6 +333,23 @@ package actionScripts.plugin.settings
 		// Close clicked in the view
 		private function handleAppSettingsClose(e:Event):void
 		{
+			var catPlugins:String = "Plugins";
+			var allSettings:Array = appSettings.getSettings(catPlugins);
+			
+			for each (var settingObject:IHasSettings in allSettings)
+			{
+				var qualifiedClassName:String = (settingObject as PluginSettingsWrapper).qualifiedClassName;
+				var className:String = qualifiedClassName.split("::").pop();
+				use namespace moonshine_internal;
+				var plug:IPlugin = pluginManager.getPluginByClassName(className);
+				if (plug is ISettingsProvider)
+				{
+					// notify all the plugin classes on settings close
+					// so they can do their side of post-settings process
+					(plug as ISettingsProvider).onSettingsClose();
+				}
+			}
+			
 			dispatcher.dispatchEvent(
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, appSettings as DisplayObject)
 				);
