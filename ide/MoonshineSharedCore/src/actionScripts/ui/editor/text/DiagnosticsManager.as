@@ -66,7 +66,7 @@ package actionScripts.ui.editor.text
                     endLine = linesCount - 1;
                 }
 
-                if(startLine === endLine && endChar === startChar)
+                if(startLine != -1 && startLine === endLine && endChar === startChar)
 				{
 					//if the start and end are the same, try to extend the
 					//underline to the end of the current word
@@ -84,7 +84,7 @@ package actionScripts.ui.editor.text
 					end.character = TextUtil.endOfWord(line.text, startChar);
 				}
 
-				if (startLine < linesCount)
+				if (startLine != -1 && startLine < linesCount)
                 {
                     line = lines[startLine];
                     line.diagnostics.push(diagnostic);
