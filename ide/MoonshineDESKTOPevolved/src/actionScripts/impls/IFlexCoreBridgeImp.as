@@ -81,6 +81,7 @@ package actionScripts.impls
 	import actionScripts.plugins.away3d.Away3DPlugin;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
 	import actionScripts.plugins.maven.MavenBuildPlugin;
@@ -194,6 +195,7 @@ package actionScripts.impls
 				FullscreenPlugin,
 				AntBuildPlugin,
 				MavenBuildPlugin,
+				GradleBuildPlugin,
 				RunJavaProject,
 				PreviewPrimeFacesProjectPlugin,
 				SearchPlugin,
