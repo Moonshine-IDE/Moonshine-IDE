@@ -28,8 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,6 +41,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.SourceUnit;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import net.prominic.groovyls.compiler.control.GroovyLSCompilationUnit;
@@ -48,9 +53,7 @@ import net.prominic.groovyls.util.FileContentsTracker;
 
 public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFactory {
 	private static final String FILE_EXTENSION_GROOVY = ".groovy";
-	private static final Path RELATIVE_PATH_SRC_MAIN_GROOVY = Paths.get("src/main/groovy");
-	private static final Path RELATIVE_PATH_SRC_TEST_GROOVY = Paths.get("src/test/groovy");
-	private static final Path RELATIVE_PATH_GRAILS__APP = Paths.get("grails-app");
+	private static final String FILE_ECLIPSE_CLASSPATH = ".classpath";
 
 	private Path storagePath;
 
@@ -58,40 +61,43 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	}
 
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
+		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
+		Document projectDocument = loadXMLDocument(projectFilePath);
+		if (projectDocument == null) {
+			return null;
+		}
+
+		Path classpathFilePath = workspaceRoot.resolve(FILE_ECLIPSE_CLASSPATH);
+		Document classpathDocument = null;
+		if (Files.exists(classpathFilePath)) {
+			classpathDocument = loadXMLDocument(classpathFilePath);
+		}
+		if (classpathDocument == null) {
+			return null;
+		}
+
+		CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
+
+		GroovyLSCompilationUnit compilationUnit = new GroovyLSCompilationUnit(config);
+
+		if (classpathDocument != null) {
+			Set<Path> sourceFolders = parseSrcClasspaths(classpathDocument, workspaceRoot);
+			for (Path sourceFolderPath : sourceFolders) {
+				addDirectoryToCompilationUnit(sourceFolderPath, compilationUnit, fileContentsTracker);
+			}
+		}
+
+		return compilationUnit;
+	}
+
+	protected CompilerConfiguration createConfig(Path workspaceRoot, Document classpathDocument) {
 		Path workspaceStoragePath = getStoragePath(workspaceRoot);
 		if (workspaceStoragePath == null) {
 			System.err.println("Failed to create temporary directory for Groovy language server.");
 			return null;
 		}
 
-		DocumentBuilder xmlBuilder = null;
-		try {
-			xmlBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace(System.err);
-			return null;
-		}
-
-		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
-
-		Document document = null;
-		try {
-			document = xmlBuilder.parse(projectFilePath.toFile());
-		} catch (IOException e) {
-			System.err.println("Error reading Groovy project file: " + projectFilePath);
-			e.printStackTrace(System.err);
-			return null;
-		} catch (SAXException e) {
-			System.err.println("Error parsing Groovy project file: " + projectFilePath);
-			e.printStackTrace(System.err);
-			return null;
-		}
-
-		CompilerConfiguration config = parseBuildOptions(document, workspaceRoot);
-		if (config == null) {
-			System.err.println("Failed to parse Groovy compiler options.");
-			return null;
-		}
+		CompilerConfiguration config = new CompilerConfiguration();
 
 		Path targetDirPath = workspaceStoragePath.resolve("build/libs");
 		if (Files.exists(targetDirPath)) {
@@ -102,14 +108,38 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			}
 		}
 		config.setTargetDirectory(targetDirPath.toFile());
-		Set<Path> sourceFolders = parseClasspaths(document, workspaceRoot);
 
-		GroovyLSCompilationUnit compilationUnit = new GroovyLSCompilationUnit(config);
-		for (Path sourceFolderPath : sourceFolders) {
-			addDirectoryToCompilationUnit(sourceFolderPath, compilationUnit, fileContentsTracker);
+		if (classpathDocument != null) {
+			List<String> libraries = parseLibClasspaths(classpathDocument, workspaceRoot);
+			config.setClasspathList(libraries);
 		}
 
-		return compilationUnit;
+		return config;
+	}
+
+	protected Document loadXMLDocument(Path documentPath) {
+
+		DocumentBuilder xmlBuilder = null;
+		try {
+			xmlBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace(System.err);
+			return null;
+		}
+
+		Document result = null;
+		try {
+			result = xmlBuilder.parse(documentPath.toFile());
+		} catch (IOException e) {
+			System.err.println("Error reading XML file: " + documentPath);
+			e.printStackTrace(System.err);
+			return null;
+		} catch (SAXException e) {
+			System.err.println("Error parsing XML file: " + documentPath);
+			e.printStackTrace(System.err);
+			return null;
+		}
+		return result;
 	}
 
 	protected Path getStoragePath(Path workspaceRoot) {
@@ -138,16 +168,52 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		}
 	}
 
-	protected Set<Path> parseClasspaths(Document document, Path workspaceRoot) {
-		Set<Path> sourceFolders = new HashSet<>();
-		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_SRC_MAIN_GROOVY));
-		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_SRC_TEST_GROOVY));
-		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_GRAILS__APP));
-		return sourceFolders;
+	protected Set<Path> parseSrcClasspaths(Document document, Path workspaceRoot) {
+		Set<Path> classpaths = new HashSet<>();
+
+		NodeList classpathentryElements = document.getElementsByTagName("classpathentry");
+		if (classpathentryElements.getLength() == 0) {
+			return classpaths;
+		}
+		for (int i = 0; i < classpathentryElements.getLength(); i++) {
+			Node classpathentryNode = classpathentryElements.item(i);
+			NamedNodeMap attributes = classpathentryNode.getAttributes();
+			Node kindNode = attributes.getNamedItem("kind");
+			if (kindNode == null || !kindNode.getTextContent().equals("src")) {
+				continue;
+			}
+			Node pathNode = attributes.getNamedItem("path");
+			if (pathNode == null) {
+				continue;
+			}
+			String classpathentryPath = pathNode.getTextContent();
+			classpaths.add(workspaceRoot.resolve(classpathentryPath));
+		}
+		return classpaths;
 	}
 
-	protected CompilerConfiguration parseBuildOptions(Document document, Path workspaceRoot) {
-		return new CompilerConfiguration();
+	protected List<String> parseLibClasspaths(Document document, Path workspaceRoot) {
+		List<String> classpaths = new ArrayList<>();
+
+		NodeList classpathentryElements = document.getElementsByTagName("classpathentry");
+		if (classpathentryElements.getLength() == 0) {
+			return classpaths;
+		}
+		for (int i = 0; i < classpathentryElements.getLength(); i++) {
+			Node classpathentryNode = classpathentryElements.item(i);
+			NamedNodeMap attributes = classpathentryNode.getAttributes();
+			Node kindNode = attributes.getNamedItem("kind");
+			if (kindNode == null || !kindNode.getTextContent().equals("lib")) {
+				continue;
+			}
+			Node pathNode = attributes.getNamedItem("path");
+			if (pathNode == null) {
+				continue;
+			}
+			String classpathentryPath = pathNode.getTextContent();
+			classpaths.add(workspaceRoot.resolve(classpathentryPath).toString());
+		}
+		return classpaths;
 	}
 
 	protected void addDirectoryToCompilationUnit(Path dirPath, GroovyLSCompilationUnit compilationUnit,
