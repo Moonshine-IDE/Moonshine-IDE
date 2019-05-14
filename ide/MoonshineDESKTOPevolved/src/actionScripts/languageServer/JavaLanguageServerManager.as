@@ -459,6 +459,10 @@ package actionScripts.languageServer
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError while updating Gradle classpath" + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS
+			));
 			trace(data);
 		}
 		
