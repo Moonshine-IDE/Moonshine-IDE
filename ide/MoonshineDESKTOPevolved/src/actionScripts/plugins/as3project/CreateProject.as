@@ -110,7 +110,9 @@ package actionScripts.plugins.as3project
 		private var _projectTemplateType:String;
 		private var _customFlexSDK:String;
 		private var _currentCauseToBeInvalid:String;
-		
+
+		private var projectFolder:FileLocation;
+
 		public function CreateProject(event:NewProjectEvent)
 		{
 
@@ -118,6 +120,10 @@ package actionScripts.plugins.as3project
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
 
+			if (isOpenProjectCall)
+			{
+				projectFolder = event.templateDir;
+			}
 			// update template path to custom in case
 			// the original template have modified
 			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.templateDir);
@@ -143,7 +149,7 @@ package actionScripts.plugins.as3project
 			{
 				isCustomTemplateProject = true;
 			}
-			
+
 			if (isCustomTemplateProject)
 			{
 				createCustomOrAway3DProject(event);
@@ -226,7 +232,7 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				project = new ProjectShellVO(event.templateDir, null);
+				project = new ProjectShellVO(projectFolder ? projectFolder : event.templateDir, null);
 			}
 			else
 			{
@@ -263,9 +269,9 @@ package actionScripts.plugins.as3project
 			
 			if (isOpenProjectCall)
 			{
-				if (!model.recentSaveProjectPath.contains(event.templateDir.fileBridge.nativePath))
+				if (!model.recentSaveProjectPath.contains(projectFolder.fileBridge.nativePath))
 				{
-					model.recentSaveProjectPath.addItem(event.templateDir.fileBridge.nativePath);
+					model.recentSaveProjectPath.addItem(projectFolder.fileBridge.nativePath);
                 }
 				project.projectName = "ExternalProject";
 				project.isProjectFromExistingSource = true;
@@ -926,36 +932,40 @@ package actionScripts.plugins.as3project
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
-                var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
-                        ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
-                        allProjectTemplates;
 
-                for each (var template:TemplateVO in projectsTemplates)
-                {
-                    if (template.title == projectTemplateType)
-                    {
-                        setProjectType(template.title);
+				if (!isJavaProject)
+				{
+					var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
+							ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
+							allProjectTemplates;
 
-                        var templateSettingsName:String = isVisualEditorProject && !exportProject ?
-                                "$Settings.veditorproj.template" :
-                                "$Settings.as3proj.template";
-
-                        var tmpLocation:FileLocation = pvo.folderLocation;
-                        var tmpName:String = pvo.projectName;
-                        var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
-                        var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
-                        templateLookup[pvo] = template.file;
-						if (!isJavaProject)
+					for each (var template:TemplateVO in projectsTemplates)
+					{
+						if(template.title == projectTemplateType)
 						{
+							setProjectType(template.title);
+
+							var templateSettingsName:String = "$Settings.as3proj.template";
+							if(isVisualEditorProject && !exportProject)
+							{
+								templateSettingsName = "$Settings.veditorproj.template";
+							}
+
+							var tmpLocation:FileLocation = pvo.folderLocation;
+							var tmpName:String = pvo.projectName;
+							var tmpExistingSource:Vector.<FileLocation> = pvo.projectWithExistingSourcePaths;
+							var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
+							templateLookup[pvo] = template.file;
+
 							pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
+							pvo.folderLocation = tmpLocation;
+							pvo.projectName = tmpName;
+							pvo.projectWithExistingSourcePaths = tmpExistingSource;
+							pvo.isProjectFromExistingSource = tmpIsExistingProjectSource;
+							break;
 						}
-						pvo.folderLocation = tmpLocation;
-                        pvo.projectName = tmpName;
-                        pvo.projectWithExistingSourcePaths = tmpExistingSource;
-                        pvo.isProjectFromExistingSource = tmpIsExistingProjectSource;
-						break;
-                    }
-                }
+					}
+				}
             }
 
 			return pvo;

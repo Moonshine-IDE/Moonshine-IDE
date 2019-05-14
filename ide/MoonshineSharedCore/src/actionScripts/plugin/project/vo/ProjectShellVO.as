@@ -3,9 +3,7 @@ package actionScripts.plugin.project.vo
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.java.javaproject.importer.JavaImporter;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
@@ -84,9 +82,9 @@ package actionScripts.plugin.project.vo
                 project = JavaImporter.parse(this.folderLocation, this.projectName);
             }
 
-            for(var prop:String in project)
+            for (var prop:String in this)
             {
-                if (this.hasOwnProperty(prop))
+                if (project.hasOwnProperty(String(prop)))
                 {
                     project[prop] = this[prop];
                 }
