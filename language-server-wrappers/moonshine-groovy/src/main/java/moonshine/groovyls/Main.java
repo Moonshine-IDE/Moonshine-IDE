@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 public class Main {
     public static void main(String[] args) {
-        GroovyLanguageServer server = new GroovyLanguageServer(new GvyProjCompilationUnitFactory());
+        GroovyLanguageServer server = new GroovyLanguageServer(new GrailsProjectCompilationUnitFactory());
         Launcher<LanguageClient> launcher = Launcher.createLauncher(server, LanguageClient.class, System.in,
                 System.out);
         server.connect(launcher.getRemoteProxy());

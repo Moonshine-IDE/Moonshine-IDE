@@ -28,11 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -41,25 +38,23 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.tools.FileSystemCompiler;
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import groovyjarjarpicocli.CommandLine;
 import net.prominic.groovyls.compiler.control.GroovyLSCompilationUnit;
 import net.prominic.groovyls.compiler.control.io.StringReaderSourceWithURI;
 import net.prominic.groovyls.config.ICompilationUnitFactory;
 import net.prominic.groovyls.util.FileContentsTracker;
 
-public class GvyProjCompilationUnitFactory implements ICompilationUnitFactory {
+public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFactory {
 	private static final String FILE_EXTENSION_GROOVY = ".groovy";
+	private static final Path RELATIVE_PATH_SRC_MAIN_GROOVY = Paths.get("src/main/groovy");
+	private static final Path RELATIVE_PATH_SRC_TEST_GROOVY = Paths.get("src/test/groovy");
+	private static final Path RELATIVE_PATH_GRAILS__APP = Paths.get("grails-app");
 
 	private Path storagePath;
 
-	public GvyProjCompilationUnitFactory() {
+	public GrailsProjectCompilationUnitFactory() {
 	}
 
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
@@ -77,7 +72,7 @@ public class GvyProjCompilationUnitFactory implements ICompilationUnitFactory {
 			return null;
 		}
 
-		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".gvyproj");
+		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
 
 		Document document = null;
 		try {
@@ -144,142 +139,15 @@ public class GvyProjCompilationUnitFactory implements ICompilationUnitFactory {
 	}
 
 	protected Set<Path> parseClasspaths(Document document, Path workspaceRoot) {
-		NodeList classpathsElements = document.getElementsByTagName("classpaths");
 		Set<Path> sourceFolders = new HashSet<>();
-		for (int i = 0; i < classpathsElements.getLength(); i++) {
-			Node classpathNode = classpathsElements.item(i);
-			Node childNode = classpathNode.getFirstChild();
-			while (childNode != null) {
-				if (childNode.getNodeType() == Node.ELEMENT_NODE && childNode.getNodeName().equals("class")) {
-					Node pathAttribute = childNode.getAttributes().getNamedItem("path");
-					if (pathAttribute != null) {
-						String sourceFolder = pathAttribute.getTextContent();
-						Path sourceFolderPath = workspaceRoot.resolve(sourceFolder);
-						sourceFolders.add(sourceFolderPath);
-					}
-				}
-				childNode = childNode.getNextSibling();
-			}
-		}
+		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_SRC_MAIN_GROOVY));
+		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_SRC_TEST_GROOVY));
+		sourceFolders.add(workspaceRoot.resolve(RELATIVE_PATH_GRAILS__APP));
 		return sourceFolders;
 	}
 
 	protected CompilerConfiguration parseBuildOptions(Document document, Path workspaceRoot) {
-		NodeList buildElements = document.getElementsByTagName("build");
-		if (buildElements.getLength() == 0) {
-			//nothing to parse. use default options.
-			return new CompilerConfiguration();
-		}
-		List<String> args = new ArrayList<>();
-		Node buildNode = buildElements.item(0);
-		Node childNode = buildNode.getFirstChild();
-		while (childNode != null) {
-			if (childNode.getNodeType() == Node.ELEMENT_NODE && childNode.getNodeName().equals("option")) {
-				NamedNodeMap attributes = childNode.getAttributes();
-				for (int i = 0; i < attributes.getLength(); i++) {
-					Node attributeNode = attributes.item(i);
-					switch (attributeNode.getNodeName()) {
-					case "additional": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.addAll(Arrays.asList(textContent.split(" ")));
-						}
-						break;
-					}
-					case "configscript": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("--configscript");
-							args.add(textContent);
-						}
-						break;
-					}
-					case "destdir": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("-d");
-							args.add(textContent);
-						}
-						break;
-					}
-					case "encoding": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("--encoding");
-							args.add(textContent);
-						}
-						break;
-					}
-					case "exception": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.equals("True")) {
-							args.add("--exception");
-						}
-						break;
-					}
-					case "jointCompilation": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.equals("True")) {
-							args.add("--jointCompilation");
-						}
-						break;
-					}
-					case "indy": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.equals("True")) {
-							args.add("--indy");
-						}
-						break;
-					}
-					case "parameters": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.equals("True")) {
-							args.add("--parameters");
-						}
-						break;
-					}
-					case "scriptBaseClass": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("--basescript");
-							args.add(textContent);
-						}
-						break;
-					}
-					case "targetBytecode": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("-Dgroovy.target.bytecode=" + textContent);
-						}
-						break;
-					}
-					case "temp": {
-						String textContent = attributeNode.getTextContent();
-						if (textContent.length() > 0) {
-							args.add("--temp");
-							args.add(textContent);
-						}
-					}
-					case "verbose": {
-						if (attributeNode.getTextContent().equals("True")) {
-							args.add("-Dgroovy.output.verbose");
-						}
-						break;
-					}
-					}
-				}
-			}
-			childNode = childNode.getNextSibling();
-		}
-
-		FileSystemCompiler.CompilationOptions options = new FileSystemCompiler.CompilationOptions();
-		CommandLine parser = FileSystemCompiler.configureParser(options);
-		parser.parseArgs(args.toArray(new String[args.size()]));
-		try {
-			return options.toCompilerConfiguration();
-		} catch (IOException e) {
-			return null;
-		}
+		return new CompilerConfiguration();
 	}
 
 	protected void addDirectoryToCompilationUnit(Path dirPath, GroovyLSCompilationUnit compilationUnit,
