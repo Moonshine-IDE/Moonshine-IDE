@@ -107,6 +107,11 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 			else
 			{
+				if (javaProject.hasGradleBuild() && settingsData)
+				{
+					javaProject.gradleBuildOptions.parse(settingsData.gradleBuild);
+				}
+				
 				parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
 				javaProject.mainClassName = settingsData.build.option.@mainclass;
 
