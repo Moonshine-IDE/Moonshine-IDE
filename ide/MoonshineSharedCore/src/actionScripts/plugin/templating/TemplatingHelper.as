@@ -171,7 +171,7 @@ package actionScripts.plugin.templating
 				case "Java File":
 					return [ProjectMenuTypes.JAVA];
 				case "Groovy File":
-					return [ProjectMenuTypes.GROOVY];
+					return [ProjectMenuTypes.GRAILS];
 			}
 			
 			return [];

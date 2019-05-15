@@ -411,7 +411,7 @@ package actionScripts.ui.menu
 						{
 							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 							{
-								return item === ProjectMenuTypes.GROOVY;
+								return item === ProjectMenuTypes.GRAILS;
 							});
 						}
 						else if(currentProject is AS3ProjectVO)

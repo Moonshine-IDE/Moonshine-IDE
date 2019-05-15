@@ -192,7 +192,7 @@ package actionScripts.languageServer
 			trace("Groovy language server workspace root: " + project.folderPath);
 			trace("Groovy language Server JDK: " + sdkPath);
 
-			var debugMode:Boolean = true;//false;
+			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_GROOVY, _project, debugMode, {},
 				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);

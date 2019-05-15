@@ -29,6 +29,7 @@ package actionScripts.impls
     import actionScripts.plugins.core.ProjectBridgeImplBase;
 
     import flash.filesystem.File;
+    import actionScripts.plugins.grails.GrailsBuildPlugin;
 
     public class IGroovyBridgeImpl extends ProjectBridgeImplBase implements IGroovyBridge
     {
@@ -48,6 +49,7 @@ package actionScripts.impls
             return [
 				GroovySyntaxPlugin,
                 GrailsProjectPlugin,
+                GrailsBuildPlugin,
             ];
         }
 

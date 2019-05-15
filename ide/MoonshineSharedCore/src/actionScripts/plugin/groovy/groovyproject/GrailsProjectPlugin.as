@@ -18,19 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.groovy.groovyproject
 {
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.project.ProjectType;
     import actionScripts.events.NewProjectEvent;
+    import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.settings.SettingsView;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugin.project.ProjectType;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class GrailsProjectPlugin extends PluginBase
 	{	
 		public var activeType:uint = ProjectType.GROOVY;
 		
 		override public function get name():String 			{ return "Grails Project Plugin"; }
-		override public function get author():String 		{ return "Moonshine Project Team"; }
+		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String 	{ return "Grails project importing, exporting & scaffolding."; }
 		
 		override public function activate():void

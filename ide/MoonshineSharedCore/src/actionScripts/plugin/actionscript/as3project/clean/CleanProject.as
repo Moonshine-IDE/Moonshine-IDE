@@ -148,6 +148,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 				{
 					cleanJavaProject(project as JavaProjectVO);
 				}
+				//GrailsProjectVO is handled in GrailsBuildPlugin
 			}
 		}
 
