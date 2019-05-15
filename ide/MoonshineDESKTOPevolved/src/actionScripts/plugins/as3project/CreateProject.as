@@ -21,16 +21,12 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.vo.ProjectShellVO;
-	import actionScripts.valueObjects.ProjectVO;
-
 	import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
-
-	import mx.collections.ArrayCollection;
 
 	import mx.collections.ArrayCollection;
     import mx.controls.Alert;
@@ -609,7 +605,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject && !isLibraryProject)
+			if (!isCustomTemplateProject && !isLibraryProject && !isJavaProject)
 			{
 				dispatcher.dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
@@ -873,36 +869,41 @@ package actionScripts.plugins.as3project
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 
-            // Set some stuff to get the paths right
-			pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
+			if (!isJavaProject)
+			{
+				// Set some stuff to get the paths right
+				pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
+				pvo.isLibraryProject = isLibraryProject;
+
+				if (pvo.isLibraryProject)
+				{
+					pvo.air = librarySettingObject.includeAIR;
+					pvo.isMobile = (librarySettingObject.type == LibrarySettingsVO.MOBILE_LIBRARY || librarySettingObject.output == LibrarySettingsVO.MOBILE);
+					if (pvo.air) pvo.buildOptions.additional = "+configname=air";
+					if (pvo.isMobile) pvo.buildOptions.additional = "+configname=airmobile";
+					if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
+				}
+
+				pvo.buildOptions.customSDKPath = _customFlexSDK;
+				_customFlexSDK = null;
+
+				if (isVisualEditorProject)
+				{
+					pvo.isPrimeFacesVisualEditorProject = projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES;
+				}
+
+				// in case of Flex project (where mx or spark controls can be included)
+				// we need to populate the project's intrinsic libraries. this will also help
+				// when next time project opens we can detect between pure AS and flex type of project
+				if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
+				{
+					pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
+					pvo.isActionScriptOnly = false;
+				}
+			}
+
 			pvo.projectName = projectName;
-			pvo.isLibraryProject = isLibraryProject;
-			if (pvo.isLibraryProject)
-			{
-				pvo.air = librarySettingObject.includeAIR;
-				pvo.isMobile = (librarySettingObject.type == LibrarySettingsVO.MOBILE_LIBRARY || librarySettingObject.output == LibrarySettingsVO.MOBILE);
-				if (pvo.air) pvo.buildOptions.additional = "+configname=air";
-				if (pvo.isMobile) pvo.buildOptions.additional = "+configname=airmobile";
-				if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
-			}
-
-			if (isVisualEditorProject)
-			{
-				pvo.isPrimeFacesVisualEditorProject = projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES;
-			}
-
-			pvo.buildOptions.customSDKPath = _customFlexSDK;
 			pvo.menuType = getProjectMenuType(pvo);
-			_customFlexSDK = null;
-			
-			// in case of Flex project (where mx or spark controls can be included)
-			// we need to populate the project's intrinsic libraries. this will also help 
-			// when next time project opens we can detect between pure AS and flex type of project
-			if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
-			{
-				pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
-				pvo.isActionScriptOnly = false;
-			}
 
 			if (isJavaProject)
 			{
@@ -1040,11 +1041,11 @@ package actionScripts.plugins.as3project
 		
 		private function getProjectMenuType(pvo:Object):String
 		{
-			if (pvo.isPrimeFacesVisualEditorProject)
+			if (pvo.hasOwnProperty("isPrimeFacesVisualEditorProject") && pvo.isPrimeFacesVisualEditorProject)
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
 			}
-			if (pvo.isActionScriptOnly)
+			if (pvo.hasOwnProperty("isActionScriptOnly") && pvo.isActionScriptOnly)
 			{
 				return ProjectMenuTypes.PURE_AS;
 			}

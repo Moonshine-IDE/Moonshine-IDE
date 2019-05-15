@@ -83,7 +83,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var assetLibrary:XMLList; // TODO Unknown if it works in FD, there just for compatibility purposes (<library/> tag)
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var projectWithExistingSourcePaths:Vector.<FileLocation>;
 		public var showHiddenPaths:Boolean = false;
 		public var filesList:ArrayCollection; // all acceptable files list those can be opened in Moonshine editor (mainly generates for VisualEditor project)
 		

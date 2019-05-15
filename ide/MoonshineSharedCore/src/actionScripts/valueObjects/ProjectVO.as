@@ -50,7 +50,8 @@ package actionScripts.valueObjects
 		public var classFilesInProject: ArrayCollection;
 		public var hasVersionControlType:String; // of VersionControlTypes
 		public var menuType:String = "";
-		
+		public var projectWithExistingSourcePaths:Vector.<FileLocation>;
+
 		private var _projectFolder: FileWrapper;
 		
 		private var loader: DataAgent;
