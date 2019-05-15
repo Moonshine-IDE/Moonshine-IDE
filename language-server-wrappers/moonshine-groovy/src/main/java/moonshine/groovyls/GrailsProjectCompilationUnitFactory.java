@@ -56,6 +56,7 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	private static final String FILE_ECLIPSE_CLASSPATH = ".classpath";
 
 	private Path storagePath;
+	private GroovyLSCompilationUnit compilationUnit;
 
 	public GrailsProjectCompilationUnitFactory() {
 	}
@@ -76,14 +77,17 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			return null;
 		}
 
-		CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
-
-		GroovyLSCompilationUnit compilationUnit = new GroovyLSCompilationUnit(config);
+		Set<URI> changedUris = fileContentsTracker.getChangedURIs();
+		if (compilationUnit == null) {
+			CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
+			compilationUnit = new GroovyLSCompilationUnit(config);
+			changedUris = null;
+		}
 
 		if (classpathDocument != null) {
 			Set<Path> sourceFolders = parseSrcClasspaths(classpathDocument, workspaceRoot);
 			for (Path sourceFolderPath : sourceFolders) {
-				addDirectoryToCompilationUnit(sourceFolderPath, compilationUnit, fileContentsTracker);
+				addDirectoryToCompilationUnit(sourceFolderPath, compilationUnit, fileContentsTracker, changedUris);
 			}
 		}
 
@@ -217,7 +221,7 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	}
 
 	protected void addDirectoryToCompilationUnit(Path dirPath, GroovyLSCompilationUnit compilationUnit,
-			FileContentsTracker fileContentsTracker) {
+			FileContentsTracker fileContentsTracker, Set<URI> changedUris) {
 		try {
 			if (Files.exists(dirPath)) {
 				Files.walk(dirPath).forEach((filePath) -> {
@@ -228,7 +232,9 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 					if (!fileContentsTracker.isOpen(fileURI)) {
 						File file = filePath.toFile();
 						if (file.isFile()) {
-							compilationUnit.addSource(file);
+							if (changedUris == null || changedUris.contains(fileURI)) {
+								compilationUnit.addSource(file);
+							}
 						}
 					}
 				});
@@ -240,6 +246,9 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		fileContentsTracker.getOpenURIs().forEach(uri -> {
 			Path openPath = Paths.get(uri);
 			if (!openPath.normalize().startsWith(dirPath.normalize())) {
+				return;
+			}
+			if (changedUris != null && !changedUris.contains(uri)) {
 				return;
 			}
 			String contents = fileContentsTracker.getContents(uri);
