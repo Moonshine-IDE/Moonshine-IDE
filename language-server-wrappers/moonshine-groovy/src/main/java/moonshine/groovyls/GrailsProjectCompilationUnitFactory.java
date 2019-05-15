@@ -82,6 +82,16 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
 			compilationUnit = new GroovyLSCompilationUnit(config);
 			changedUris = null;
+		} else {
+			final Set<URI> urisToSkip = changedUris;
+			GroovyLSCompilationUnit oldUnit = compilationUnit;
+			compilationUnit = new GroovyLSCompilationUnit(oldUnit.getConfiguration());
+			oldUnit.iterator().forEachRemaining(sourceUnit -> {
+				URI uri = sourceUnit.getSource().getURI();
+				if (!urisToSkip.contains(uri)) {
+					compilationUnit.addSource(sourceUnit);
+				}
+			});
 		}
 
 		if (classpathDocument != null) {
