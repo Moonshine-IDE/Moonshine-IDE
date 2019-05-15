@@ -42,9 +42,8 @@ package actionScripts.languageServer
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.StatusBarEvent;
-    import actionScripts.factory.FileLocation;
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputEvent;
@@ -54,7 +53,6 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.HtmlFormatter;
-    import actionScripts.utils.UtilsCore;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -113,6 +111,7 @@ package actionScripts.languageServer
 			//dispose()
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.addEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh, false, 0, true);
 
 			prepareApplicationStorage();
 			preTaskLanguageServer();
@@ -230,6 +229,11 @@ package actionScripts.languageServer
 			}
 		}
 		
+		private function onGradleClassPathRefresh(event:Event):void
+		{
+			restartLanguageServer()
+		}
+		
 		private function requireUpdateGradleClasspath():Boolean
 		{
 			// in case of Gradle project we need to
@@ -242,11 +246,7 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var gradleFolder:File = new File(IDEModel.getInstance().gradlePath);
-				var gradleFileName:String = (Settings.os == "win") ? "gradle.bat" : "gradle";
-				gradleFileName = gradleFolder.resolvePath("bin/"+gradleFileName).nativePath;
-				
-				var compilerArg:String = "\""+ gradleFileName +"\" eclipse";
+				var compilerArg:String = "gradle eclipse";
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
@@ -457,11 +457,23 @@ package actionScripts.languageServer
 			var output:IDataInput = _nativeProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
-			data = "shellError while updating Gradle classpath" + data + ".";
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-				ConsoleOutputEvent.CONSOLE_OUTPUT, 
-				HtmlFormatter.sprintfa(data, null), false, false, 
-				ConsoleOutputEvent.TYPE_ERROR));
+			if (data.match(/'eclipse' not found in root project/))
+			{
+				data = _project.name +": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct."; 
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					data, 
+					false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+			}
+			else
+			{
+				data = "shellError while updating Gradle classpath" + data + ".";
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					HtmlFormatter.sprintfa(data, null), false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+			}
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS

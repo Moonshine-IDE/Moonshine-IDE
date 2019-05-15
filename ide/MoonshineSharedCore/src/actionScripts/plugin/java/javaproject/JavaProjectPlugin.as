@@ -20,6 +20,7 @@ package actionScripts.plugin.java.javaproject
 {
 	import flash.events.Event;
 	
+	import actionScripts.events.GradleBuildEvent;
 	import actionScripts.events.MavenBuildEvent;
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.RunJavaProjectEvent;
@@ -45,6 +46,7 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
 			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
+			dispatcher.addEventListener(GradleBuildEvent.GRADLE_BUILD_COMPLETE, gradleBuildCompleteHandler);
 
 			super.activate();
 		}
@@ -56,6 +58,7 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.removeEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
 			dispatcher.removeEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
+			dispatcher.removeEventListener(GradleBuildEvent.GRADLE_BUILD_COMPLETE, gradleBuildCompleteHandler);
 
 			super.deactivate();
 		}
@@ -75,11 +78,12 @@ package actionScripts.plugin.java.javaproject
 			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
 			if (javaProject && javaProject.hasGradleBuild())
 			{
-				warning("Project build is currently managed by build.gradle only.");
-				return;
+				dispatcher.dispatchEvent(new Event(GradleBuildEvent.START_GRADLE_BUILD));
 			}
-
-			dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
+			else if (javaProject)
+			{
+				dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
+			}
 		}
 
 		private function buildAndRunHandler(event:Event):void
@@ -87,15 +91,14 @@ package actionScripts.plugin.java.javaproject
 			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
 			if (javaProject)
 			{
-				if (javaProject.hasGradleBuild())
-				{
-					warning("Project build is currently managed by build.gradle only.");
-					return;
-				}
-
 				if (!javaProject.mainClassName)
 				{
 					warning("Select main application class");
+				}
+				if (javaProject.hasGradleBuild())
+				{
+					dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.START_GRADLE_BUILD, model.activeProject.projectName,
+						MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, javaProject.gradleBuildOptions.getCommandLine()));
 				}
 				else
 				{
@@ -107,8 +110,18 @@ package actionScripts.plugin.java.javaproject
 
 		private function mavenBuildCompleteHandler(event:MavenBuildEvent):void
 		{
-			var project:JavaProjectVO = UtilsCore.getProjectByName(event.buildId) as JavaProjectVO;
-			if (project && project.projectName == event.buildId)
+			runJavaProjectByBuildId(event.buildId);
+		}
+		
+		private function gradleBuildCompleteHandler(event:GradleBuildEvent):void
+		{
+			runJavaProjectByBuildId(event.buildId);
+		}
+		
+		private function runJavaProjectByBuildId(value:String):void
+		{
+			var project:JavaProjectVO = UtilsCore.getProjectByName(value) as JavaProjectVO;
+			if (project && project.projectName == value)
 			{
 				dispatcher.dispatchEvent(new RunJavaProjectEvent(RunJavaProjectEvent.RUN_JAVA_PROJECT, project));
 			}

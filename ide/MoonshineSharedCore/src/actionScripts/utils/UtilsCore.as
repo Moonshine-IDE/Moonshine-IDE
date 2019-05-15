@@ -1028,6 +1028,36 @@ package actionScripts.utils
 			return null;
         }
 		
+		public static function getGradleBinPath():String
+		{
+			if (!model.gradlePath || model.gradlePath == "")
+			{
+				return null;
+			}
+			
+			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
+			var gradleBin:String = "bin" + model.fileCore.separator;
+			if (gradleLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				gradleBin = "";
+			}
+			
+			if (!gradleLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+			{
+				return gradleLocation.resolvePath(gradleBin + "gradle.bat").fileBridge.nativePath;
+			}
+			else
+			{
+				return UtilsCore.convertString(gradleLocation.resolvePath(gradleBin + "gradle").fileBridge.nativePath);
+			}
+			
+			return null;
+		}
+		
 		public static function isDefaultSDKAvailable():Boolean
 		{
 			if (!model.defaultSDK || !model.defaultSDK.fileBridge.exists)
