@@ -27,12 +27,14 @@ package actionScripts.plugin.groovy.groovyproject
 
 	import mx.controls.Alert;
 	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
+	import mx.utils.ObjectUtil;
+	import mx.collections.ArrayCollection;
 
 	public class CreateGrailsProject
 	{
 		public function CreateGrailsProject(event:NewProjectEvent)
 		{
-			createGroovyProject(event);
+			createGrailsProject(event);
 		}
 
 		private var project:GrailsProjectVO;
@@ -47,7 +49,7 @@ package actionScripts.plugin.groovy.groovyproject
 
 		private var _currentCauseToBeInvalid:String;
 
-		private function createGroovyProject(event:NewProjectEvent):void
+		private function createGrailsProject(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
 			
@@ -96,8 +98,15 @@ package actionScripts.plugin.groovy.groovyproject
 
 		private function getProjectSettings(project:GrailsProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
+			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
+			if (historyPaths.length == 0)
+			{
+				historyPaths.addItem(project.folderPath);
+			}
+
             newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
+			newProjectPathSetting.dropdownListItems = historyPaths;
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
@@ -120,21 +129,30 @@ package actionScripts.plugin.groovy.groovyproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = GrailsImporter.test(value.fileBridge.getFile as File);
-			if (!tmpFile && value.fileBridge.exists) tmpFile = value;
+			var tmpFile:FileLocation = GrailsImporter.test(value.fileBridge.getFile);
+			if (!tmpFile && value.fileBridge.exists)
+			{
+				tmpFile = value;
+			}
 			
 			if (tmpFile) 
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
-			else newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			else
+			{
+				newProjectPathSetting.setMessage(value.fileBridge.nativePath);
+			}
 			
 			if (newProjectPathSetting.stringValue == "") 
 			{
 				isInvalidToSave = true;
 				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 			}
-			else isInvalidToSave = tmpFile ? true : false;
+			else
+			{
+				isInvalidToSave = tmpFile ? true : false;
+			}
 		}
 		
 		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void

@@ -444,7 +444,8 @@ package actionScripts.plugin.templating
 			var filteredProjectTemplatesToMenu:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source;
 			filteredProjectTemplatesToMenu.concat(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source,
 												  ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE.source,
-					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source);
+					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source,
+					                              ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS.source);
 			filteredProjectTemplatesToMenu = filteredProjectTemplatesToMenu.filter(filterProjectsTemplates);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)

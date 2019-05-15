@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Grails Project</title>
+        <homeTitle>Grails Project</homeTitle>
+        <name>Grails Project</name>
+        <icon>Grails Project.png</icon>
+        <description>Create a Grails project.</description>
+    </template>
+</templates>

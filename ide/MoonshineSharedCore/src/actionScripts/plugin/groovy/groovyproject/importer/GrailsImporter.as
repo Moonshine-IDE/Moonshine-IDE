@@ -11,7 +11,7 @@ package actionScripts.plugin.groovy.groovyproject.importer
 	{
 		private static const FILE_EXTENSION_GRAILSPROJ:String = "grailsproj";
 
-		public static function test(file:File):FileLocation
+		public static function test(file:Object):FileLocation
 		{
 			if (!file.exists)
 			{
