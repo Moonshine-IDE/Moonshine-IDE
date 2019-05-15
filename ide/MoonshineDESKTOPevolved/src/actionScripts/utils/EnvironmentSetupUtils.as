@@ -25,7 +25,6 @@ package actionScripts.utils
 	import flash.events.ProgressEvent;
 	import flash.events.TimerEvent;
 	import flash.filesystem.File;
-	import flash.utils.IDataInput;
 	import flash.utils.Timer;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
@@ -184,6 +183,12 @@ package actionScripts.utils
 			{
 				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$MAVEN_HOME/bin:" : "%MAVEN_HOME%\\bin;");
+				isValidToExecute = true;
+			}
+			if (UtilsCore.isGradleAvailable())
+			{
+				setCommand += getSetExportCommand("GRADLE_HOME", model.gradlePath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRADLE_HOME/bin:" : "%GRADLE_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
