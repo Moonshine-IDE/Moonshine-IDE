@@ -281,7 +281,7 @@ package actionScripts.languageServer
 				_shellInfo = new NativeProcessStartupInfo();
 				_shellInfo.arguments = processArgs;
 				_shellInfo.executable = cmdFile;
-				_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+				_shellInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 				
 				_nativeProcess = new NativeProcess();
 				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
@@ -344,7 +344,7 @@ package actionScripts.languageServer
 			processArgs.push(getWorkspaceNativePath());
 			_shellInfo.arguments = processArgs;
 			_shellInfo.executable = cmdFile;
-			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			_shellInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 
 			_nativeProcess = new NativeProcess();
 			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
@@ -450,20 +450,22 @@ package actionScripts.languageServer
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
-			trace(data);
 		}
 		
 		private function shellErrorOnGradleClasspath(e:ProgressEvent):void
 		{
 			var output:IDataInput = _nativeProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleUtil.print("shellError while updating Gradle classpath" + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			
+			data = "shellError while updating Gradle classpath" + data + ".";
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+				ConsoleOutputEvent.CONSOLE_OUTPUT, 
+				HtmlFormatter.sprintfa(data, null), false, false, 
+				ConsoleOutputEvent.TYPE_ERROR));
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS
 			));
-			trace(data);
 		}
 		
 		private function shellDataOnGradleClasspath(e:ProgressEvent):void 

@@ -63,6 +63,9 @@ package actionScripts.utils
 				case SDKTypes.MAVEN:
 					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
 					break;
+				case SDKTypes.GRADLE:
+					pluginClass = "actionScripts.plugins.gradle::GradleBuildPlugin";
+					break;
 				case SDKTypes.SVN:
 					pluginClass = "actionScripts.plugins.svn::SVNPlugin";
 					break;
@@ -92,6 +95,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.MAVEN:
 					updateMavenPath(path);
+					break;
+				case SDKTypes.GRADLE:
+					updateGradlePath(path);
 					break;
 				case SDKTypes.SVN:
 					updateSVNPath(path);
@@ -133,6 +139,23 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 					null, "actionScripts.plugins.maven::MavenBuildPlugin", settings));
+			}
+		}
+		
+		public static function updateGradlePath(path:String):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!model.gradlePath)
+			{
+				model.gradlePath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({gradlePath: path}, 'gradlePath', 'Gradle Home', true, path)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugins.gradle::GradleBuildPlugin", settings));
 			}
 		}
 		

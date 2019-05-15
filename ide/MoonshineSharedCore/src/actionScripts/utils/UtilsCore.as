@@ -985,6 +985,17 @@ package actionScripts.utils
 			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
 			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
 		}
+		
+		public static function isGradleAvailable():Boolean
+		{
+			if (!model.gradlePath || model.gradlePath == "")
+			{
+				return false;
+			}
+			
+			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
+			return gradleLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "gradle" : "gradle.bat")).fileBridge.exists;
+		}
 
         public static function getMavenBinPath():String
         {
