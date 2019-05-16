@@ -17,6 +17,7 @@ package actionScripts.plugins.gradle
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
+    import actionScripts.utils.GradleBuildUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
@@ -265,7 +266,7 @@ package actionScripts.plugins.gradle
 		
 		private function stopGradleDaemon(event:Event):void
 		{
-			if (model.gradlePath)
+			if (model.gradlePath && GradleBuildUtil.IS_GRADLE_STARTED)
 			{
 				status = int.MAX_VALUE;
 				super.start(Vector.<String>(["gradle --stop"]), null);
