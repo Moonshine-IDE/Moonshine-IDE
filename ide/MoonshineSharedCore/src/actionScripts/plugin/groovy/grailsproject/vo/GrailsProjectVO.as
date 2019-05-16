@@ -30,11 +30,6 @@ package actionScripts.plugin.groovy.grailsproject.vo
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
-                new SettingsWrapper("Paths",
-					new <ISetting>[
-						new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
-					]
-                )
 			]);
 			settings.sort(order);
 			return settings;
