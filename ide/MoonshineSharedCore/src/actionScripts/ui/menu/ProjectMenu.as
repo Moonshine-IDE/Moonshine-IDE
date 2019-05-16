@@ -26,6 +26,7 @@ package actionScripts.ui.menu
         private var vePrimeFaces:Vector.<MenuItem>;
         private var veFlex:Vector.<MenuItem>;
         private var javaMenu:Vector.<MenuItem>;
+		private var javaMenuGradle:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
 
@@ -202,7 +203,27 @@ package actionScripts.ui.menu
         {
             var enabledTypes:Array = [ProjectMenuTypes.JAVA];
             var resourceManager:IResourceManager = ResourceManager.getInstance();
-
+			
+			// for gradle project type
+			if ((currentProject as JavaProjectVO).hasGradleBuild())
+			{
+				if (!javaMenuGradle)
+				{
+					javaMenuGradle = Vector.<MenuItem>([
+						new MenuItem(null),
+						new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
+							'b', [Keyboard.COMMAND],
+							'b', [Keyboard.CONTROL]),
+						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
+						new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
+					]);
+				}
+				
+				javaMenuGradle.forEach(makeDynamic);
+				return javaMenuGradle;
+			}
+			
+			// for usual project type
             javaMenu = Vector.<MenuItem>([
                 new MenuItem(null),
                 new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
@@ -214,15 +235,7 @@ package actionScripts.ui.menu
                 new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
             ]);
 			
-			if ((currentProject as JavaProjectVO).hasGradleBuild())
-			{
-				javaMenu.push(
-					new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
-					);
-			}
-			
             javaMenu.forEach(makeDynamic);
-
             return javaMenu;
         }
 

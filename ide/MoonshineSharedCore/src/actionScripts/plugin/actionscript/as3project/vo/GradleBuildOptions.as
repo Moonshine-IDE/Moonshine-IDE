@@ -85,25 +85,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         public function toXML():XML
         {
-            var build:XML = <mavenBuild/>;
+            var build:XML = <gradleBuild/>;
 
             var pairs:Object = {
-                gradleBuildPath: SerializeUtil.serializeString(gradleBuildPath),
-                commandLine: SerializeUtil.serializeString(commandLine),
-                settingsFilePath: SerializeUtil.serializeString(settingsFilePath)
+                commandLine: SerializeUtil.serializeString(commandLine)
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
-
-            var availableOptions:XML = <actions/>;
-            for each (var item:BuildActionVO in this.buildActions)
-            {
-                availableOptions.appendChild(SerializeUtil.serializeObjectPairs(
-                        {action: item.action, actionName: item.actionName},
-                        <action />));
-            }
-
-            build.appendChild(availableOptions);
 
             return build;
         }
