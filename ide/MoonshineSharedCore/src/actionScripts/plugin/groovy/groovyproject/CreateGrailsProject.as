@@ -30,6 +30,7 @@ package actionScripts.plugin.groovy.groovyproject
 	import mx.utils.ObjectUtil;
 	import mx.collections.ArrayCollection;
 	import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+	import actionScripts.events.SettingsEvent;
 
 	public class CreateGrailsProject
 	{
@@ -52,6 +53,12 @@ package actionScripts.plugin.groovy.groovyproject
 
 		private function createGrailsProject(event:NewProjectEvent):void
 		{
+            if (!model.grailsPath)
+            {
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
+                return;
+            }
+
 			var lastSelectedProjectPath:String;
 			
 			CONFIG::OSX
