@@ -77,7 +77,6 @@ package actionScripts.plugins.grails
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.CLEAN, grailsCleanHandler);
-			dispatcher.addEventListener(GrailsBuildEvent.CREATE_APP, grailsCreateAppHandler);
         }
 
         override public function deactivate():void
@@ -88,7 +87,6 @@ package actionScripts.plugins.grails
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.CLEAN, grailsCleanHandler);
-			dispatcher.removeEventListener(GrailsBuildEvent.CREATE_APP, grailsCreateAppHandler);
         }
 
         private function getConstantArguments():Vector.<String>
@@ -155,12 +153,6 @@ package actionScripts.plugins.grails
 		private function grailsCleanHandler(event:Event):void
 		{
 			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "clean"].join(" ")], model.activeProject.folderLocation);
-		}
-
-		private function grailsCreateAppHandler(event:Event):void
-		{
-            var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
-			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "create-app", project.name, "--inplace"].join(" ")], model.activeProject.folderLocation);
 		}
 
         override protected function onNativeProcessIOError(event:IOErrorEvent):void

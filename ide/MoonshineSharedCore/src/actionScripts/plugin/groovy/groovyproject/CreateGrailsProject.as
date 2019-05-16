@@ -5,8 +5,12 @@ package actionScripts.plugin.groovy.groovyproject
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
 	import actionScripts.plugin.groovy.groovyproject.importer.GrailsImporter;
 	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
@@ -18,21 +22,26 @@ package actionScripts.plugin.groovy.groovyproject
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.Settings;
 
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.net.SharedObject;
+	import flash.utils.IDataInput;
 
-	import mx.controls.Alert;
-	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
-	import mx.utils.ObjectUtil;
 	import mx.collections.ArrayCollection;
-	import actionScripts.plugin.core.compiler.GrailsBuildEvent;
-	import actionScripts.events.SettingsEvent;
+	import mx.controls.Alert;
+	import mx.utils.ObjectUtil;
 
-	public class CreateGrailsProject
+	public class CreateGrailsProject extends ConsoleOutputter
 	{
 		public function CreateGrailsProject(event:NewProjectEvent)
 		{
@@ -56,6 +65,11 @@ package actionScripts.plugin.groovy.groovyproject
             if (!model.grailsPath)
             {
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
+                return;
+            }
+            if (!model.gradlePath)
+            {
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.gradle::GradleBuildPlugin"));
                 return;
             }
 
@@ -178,20 +192,20 @@ package actionScripts.plugin.groovy.groovyproject
 		
 		private function createClose(event:Event):void
 		{
-			var settings:SettingsView = event.target as SettingsView;
-			
-			settings.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
-			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
+			var view:SettingsView = event.target as SettingsView;
+
+			view.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
+			view.removeEventListener(SettingsView.EVENT_SAVE, createSave);
 			if (newProjectPathSetting) 
 			{
 				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 			}
 			
-			delete templateLookup[settings.associatedData];
+			delete templateLookup[view.associatedData];
 			
 			dispatcher.dispatchEvent(
-				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject)
+				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, view as DisplayObject)
 			);
 		}
 		
@@ -221,35 +235,189 @@ package actionScripts.plugin.groovy.groovyproject
 			cookie.flush();
 
             project = createFileSystemBeforeSave(project, view.exportProject as GrailsProjectVO);
-			if (!project) return;
-
-            targetFolder = targetFolder.resolvePath(project.projectName);
-			
-			// Close settings view
-			createClose(event);
-			
-			// Open main file for editing
-			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
-			);
-			
-			/*dispatcher.dispatchEvent( 
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, project.targets[0], -1, project.projectFolder)
-			);*/
-
-			if (view.exportProject)
+			if (!project)
 			{
-                dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
+				return;
 			}
 
-			model.activeProject = project;
-			dispatcher.dispatchEvent(new GrailsBuildEvent(GrailsBuildEvent.CREATE_APP));
+			this.project = project;
+
+			this.grailsCreateApp();
+
+		}
+
+		private var _shellInfo:NativeProcessStartupInfo;
+		private var _nativeProcess:NativeProcess;
+
+		private function grailsCreateApp():void
+		{
+			var compilerArg:String = UtilsCore.getGrailsBinPath() + " create-app " + project.name + " --inplace";
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+			dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.PROJECT_BUILD_STARTED,
+				project.projectName, "Creating ", false
+			));
+			warning("Creating Grails application " + project.name);
+			
+			function onEnvironmentPrepared(value:String):void
+			{
+				var cmdFile:File;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				_shellInfo = new NativeProcessStartupInfo();
+				_shellInfo.arguments = processArgs;
+				_shellInfo.executable = cmdFile;
+				_shellInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
+				
+				_nativeProcess = new NativeProcess();
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGrailsCreateApp);
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGrailsCreateApp);
+				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGrailsCreateApp);
+				_nativeProcess.start(_shellInfo);
+			}
+		}
+
+		private function createEclipseProject():void
+		{
+			var compilerArg:String = UtilsCore.getGradleBinPath() + " eclipse";
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+			dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.PROJECT_BUILD_STARTED,
+				null, "Preparing dependencies", false
+			));
+			warning("Preparing dependencies for Grails project " + project.name);
+			
+			function onEnvironmentPrepared(value:String):void
+			{
+				var cmdFile:File;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				_shellInfo = new NativeProcessStartupInfo();
+				_shellInfo.arguments = processArgs;
+				_shellInfo.executable = cmdFile;
+				_shellInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
+				
+				_nativeProcess = new NativeProcess();
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
+				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
+				_nativeProcess.start(_shellInfo);
+			}
+		}
+		
+		private function shellDataOnGrailsCreateApp(e:ProgressEvent):void 
+		{
+			if(!_nativeProcess)
+			{
+				return;
+			}
+			var output:IDataInput = _nativeProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			print(data);
+		}
+		
+		private function shellErrorOnGrailsCreateApp(e:ProgressEvent):void
+		{
+			if(!_nativeProcess)
+			{
+				return;
+			}
+			var output:IDataInput = _nativeProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			error(data);
+		}
+		
+		private function shellExitAfterGrailsCreateApp(event:NativeProcessExitEvent):void
+		{
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
+			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+			_nativeProcess.exit();
+			_nativeProcess = null;
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			if (event.exitCode == 0)
+			{
+				createEclipseProject();
+			}
+		}
+		
+		private function shellErrorOnGradleClasspath(e:ProgressEvent):void
+		{
+			var output:IDataInput = _nativeProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			
+			if (data.match(/'eclipse' not found in root project/))
+			{
+				data = project.name +": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct."; 
+				error(data);
+			}
+			else
+			{
+				data = "shellError while updating Gradle classpath" + data + ".";
+				error(data);
+			}
+		}
+		
+		private function shellDataOnGradleClasspath(e:ProgressEvent):void 
+		{
+			if(_nativeProcess)
+			{
+				var output:IDataInput = _nativeProcess.standardOutput;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				print(data);
+			}
+		}
+		
+		private function shellExitAfterGradleClasspath(event:NativeProcessExitEvent):void
+		{
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
+			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+			_nativeProcess.exit();
+			_nativeProcess = null;
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			if (event.exitCode == 0)
+			{
+				// Open main file for editing
+				dispatcher.dispatchEvent(
+					new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
+				);
+				
+				dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
+			}
 		}
 		
 		private function throwError():void
 		{
 			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
-			//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
 		}
 
 		private function createFileSystemBeforeSave(pvo:GrailsProjectVO, exportProject:GrailsProjectVO = null):GrailsProjectVO
