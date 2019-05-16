@@ -21,6 +21,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.vo.ProjectShellVO;
+	import actionScripts.plugin.settings.renderers.PathRenderer;
+
 	import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.filesystem.File;
@@ -82,6 +84,9 @@ package actionScripts.plugins.as3project
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var newProjectTypeSetting:MultiOptionSetting;
+		private var customSdkPathSetting:PathSetting;
+		private var projectTemplateTypeSetting:DropDownListSetting;
+
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
 		private var project:Object;
@@ -104,7 +109,7 @@ package actionScripts.plugins.as3project
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
 		private var _projectTemplateType:String;
-		private var _customFlexSDK:String;
+		private var _customSdk:String;
 		private var _currentCauseToBeInvalid:String;
 
 		private var projectFolder:FileLocation;
@@ -195,27 +200,33 @@ package actionScripts.plugins.as3project
 		
 		public function set projectTemplateType(value:String):void
 		{
-			_projectTemplateType = value;
+			if (_projectTemplateType != value)
+			{
+				_projectTemplateType = value;
+
+				setProjectType(projectTemplateType);
+				setAutoSuggestSDKbyType();
+			}
 		}
 		public function get projectTemplateType():String
 		{
 			return _projectTemplateType;
 		}
 
-		public function get customFlexSDK():String
+		public function get customSdk():String
 		{
-			return _customFlexSDK;
+			return _customSdk;
 		}
-		public function set customFlexSDK(value:String):void
+
+		public function set customSdk(value:String):void
 		{
-			_customFlexSDK = value;
+			_customSdk = value;
 		}
 		
 		private function createAS3Project(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
 
-            setProjectType(event.templateDir.fileBridge.name);
 			setAutoSuggestSDKbyType();
 			
 			CONFIG::OSX
@@ -241,7 +252,10 @@ package actionScripts.plugins.as3project
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
-				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+				{
+					lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				}
 			}
 			else if (!isOpenProjectCall)
 			{
@@ -311,12 +325,17 @@ package actionScripts.plugins.as3project
 
 			if (isOpenProjectCall)
 			{
-				settings.getSettingsList().splice(3, 0, new DropDownListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title"));
+				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", allProjectTemplates, "title");
+				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+
+				settings.getSettingsList().splice(3, 0, projectTemplateTypeSetting);
 			}
 			else if (isFlexJSRoyalProject)
 			{
-                settings.getSettingsList().splice(3, 0,
-						new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title"));
+				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE, "title");
+				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+
+				settings.getSettingsList().splice(3, 0, projectTemplateTypeSetting);
 			}
 			else if (isLibraryProject)
 			{
@@ -324,8 +343,8 @@ package actionScripts.plugins.as3project
 				settings.getSettingsList().splice(3, 0, newLibrarySetting);
 			}
 
-			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
-			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+			settingsView.addEventListener(SettingsView.EVENT_SAVE, onCreateProjectSave);
+			settingsView.addEventListener(SettingsView.EVENT_CLOSE, onCreateProjectClose);
 			settingsView.addSetting(settings, "");
 			
 			settingsView.label = "New Project";
@@ -337,7 +356,7 @@ package actionScripts.plugins.as3project
 			
 			templateLookup[project] = event.templateDir;
 		}
-		
+
 		private function createCustomOrAway3DProject(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
@@ -374,8 +393,8 @@ package actionScripts.plugins.as3project
 			
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 			
-			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
-			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+			settingsView.addEventListener(SettingsView.EVENT_SAVE, onCreateProjectSave);
+			settingsView.addEventListener(SettingsView.EVENT_CLOSE, onCreateProjectClose);
 			settingsView.addSetting(settings, "");
 			
 			settingsView.label = "New Project";
@@ -439,11 +458,12 @@ package actionScripts.plugins.as3project
                 ]));
             }
 
+			customSdkPathSetting = new PathSetting(this,'customSdk', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customSdk, true);
             return new SettingsWrapper("Name & Location", Vector.<ISetting>([
 				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
 				newProjectNameSetting, // No space input either plx
 				newProjectPathSetting,
-				new PathSetting(this,'customFlexSDK', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customFlexSDK, true),
+				customSdkPathSetting,
 				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
 				newProjectWithExistingSourcePathSetting
 			]));
@@ -505,35 +525,42 @@ package actionScripts.plugins.as3project
 		
 		private function onProjectNameChanged(event:Event):void
 		{
-			if (!isProjectFromExistingSource) checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+			if (!isProjectFromExistingSource)
+			{
+				checkIfProjectDirectory(project.folderLocation.resolvePath(newProjectNameSetting.stringValue));
+			}
 		}
 		
-		private function createClose(event:Event):void
+		private function onCreateProjectClose(event:Event):void
 		{
 			var settings:SettingsView = event.target as SettingsView;
 			
-			settings.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
-			settings.removeEventListener(SettingsView.EVENT_SAVE, createSave);
+			settings.removeEventListener(SettingsView.EVENT_CLOSE, onCreateProjectClose);
+			settings.removeEventListener(SettingsView.EVENT_SAVE, onCreateProjectSave);
 			if (newProjectPathSetting) 
 			{
 				newProjectPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 				newProjectNameSetting.removeEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 			}
-			
+
+			if (projectTemplateTypeSetting)
+			{
+				projectTemplateTypeSetting.removeEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+			}
+
 			delete templateLookup[settings.associatedData];
 			
 			dispatcher.dispatchEvent(
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.target as DisplayObject)
 			);
 		}
-		
-		private function throwError():void
+
+		private function onProjectTemplateTypeChange(event:Event):void
 		{
-			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
-			//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _currentCauseToBeInvalid +"\nProject creation terminated.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+			projectTemplateTypeSetting.commitChanges();
 		}
-		
-		private function createSave(event:Event):void
+
+		private function onCreateProjectSave(event:Event):void
 		{
 			if (isInvalidToSave) 
 			{
@@ -554,10 +581,10 @@ package actionScripts.plugins.as3project
 				// validate if all requirement supplied
 				if (newProjectWithExistingSourcePathSetting.stringValue == "")
 				{
-					event.target.removeEventListener(SettingsView.EVENT_CLOSE, createClose);
+					event.target.removeEventListener(SettingsView.EVENT_CLOSE, onCreateProjectClose);
 					var timeoutValue:uint = setTimeout(function():void
 					{
-						event.target.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+						event.target.addEventListener(SettingsView.EVENT_CLOSE, onCreateProjectClose);
 						clearTimeout(timeoutValue);
 					}, 500);
 					
@@ -598,7 +625,7 @@ package actionScripts.plugins.as3project
             if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
 			
 			// Close settings view
-			createClose(event);
+			onCreateProjectClose(event);
 			
 			// Open main file for editing
 			dispatcher.dispatchEvent(
@@ -729,9 +756,9 @@ package actionScripts.plugins.as3project
 			th.templatingData["$MovieVersion"] = movieVersion;
 			th.templatingData["$pom"] = "pom";
 
-			if (_customFlexSDK)
+			if (_customSdk)
 			{
-				th.templatingData["${flexlib}"] = _customFlexSDK;
+				th.templatingData["${flexlib}"] = _customSdk;
             }
 			else
 			{
@@ -884,8 +911,8 @@ package actionScripts.plugins.as3project
 					if (!pvo.air && !pvo.isMobile) pvo.buildOptions.additional = "+configname=flex";
 				}
 
-				pvo.buildOptions.customSDKPath = _customFlexSDK;
-				_customFlexSDK = null;
+				pvo.buildOptions.customSDKPath = _customSdk;
+				_customSdk = null;
 
 				if (isVisualEditorProject)
 				{
@@ -933,6 +960,7 @@ package actionScripts.plugins.as3project
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
+				setAutoSuggestSDKbyType();
 
 				var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
 						ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
@@ -949,8 +977,6 @@ package actionScripts.plugins.as3project
 						}
 						else
 						{
-							setProjectType(template.title);
-
 							var templateSettingsName:String = "$Settings.as3proj.template";
 							if(isVisualEditorProject && !exportProject)
 							{
@@ -979,7 +1005,7 @@ package actionScripts.plugins.as3project
 		
 		private function setAutoSuggestSDKbyType():void
 		{
-			customFlexSDK = null;
+			customSdk = null;
 			
 			var sdkReference:SDKReferenceVO;
 			if (isFeathersProject)
@@ -990,19 +1016,30 @@ package actionScripts.plugins.as3project
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
 			}
-			else
+			else if (!isJavaProject)
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
 			}
 			
 			if (sdkReference)
 			{
-				customFlexSDK = sdkReference.path;
+				customSdk = sdkReference.path;
+
+				if (customSdkPathSetting)
+				{
+					customSdkPathSetting.stringValue = sdkReference.name;
+				}
+			}
+			else if (customSdkPathSetting)
+			{
+				customSdkPathSetting.stringValue = null;
 			}
 		}
 
         private function setProjectType(templateName:String):void
         {
+			isJavaProject = false;
+
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
 				isVisualEditorProject = true;
@@ -1076,5 +1113,10 @@ package actionScripts.plugins.as3project
 
 			return ProjectMenuTypes.FLEX_AS;
 		}
-    }
+
+		private function throwError():void
+		{
+			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
+		}
+	}
 }

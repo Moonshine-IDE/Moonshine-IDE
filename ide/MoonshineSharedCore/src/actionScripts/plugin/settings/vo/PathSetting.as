@@ -71,12 +71,15 @@ package actionScripts.plugin.settings.vo
 		
 		override public function get renderer():IVisualElement
 		{
-			rdr = new PathRenderer();
-			rdr.setting = this;
-			rdr.isSDKPath = isSDKPath;
-			rdr.isDropDown = isDropDown;
-			rdr.enabled = _isEditable;
-			rdr.setMessage(message, messageType);
+			if (!rdr)
+			{
+				rdr = new PathRenderer();
+				rdr.setting = this;
+				rdr.isSDKPath = isSDKPath;
+				rdr.isDropDown = isDropDown;
+				rdr.enabled = _isEditable;
+				rdr.setMessage(message, messageType);
+			}
 
 			return rdr;
 		}

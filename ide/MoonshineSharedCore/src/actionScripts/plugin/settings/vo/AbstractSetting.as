@@ -93,9 +93,9 @@ package actionScripts.plugin.settings.vo
 			//if(pendingChanges) return pendingChanges.toString();
             return getSetting().toString();
         }
-        public function set stringValue(v:String):void
+        public function set stringValue(value:String):void
         {
-            setPendingSetting(v);
+            setPendingSetting(value);
         }
 		
 		// Not-directly used to save to disk — if we want we can use it for additional purpose.
@@ -105,9 +105,9 @@ package actionScripts.plugin.settings.vo
 		{
 			return _additionalValue;
 		}
-		public function set additionalValue(v:Object):void
+		public function set additionalValue(value:Object):void
 		{
-			_additionalValue = v;
+			_additionalValue = value;
 		}
 
         // Fetches default values from the provider
