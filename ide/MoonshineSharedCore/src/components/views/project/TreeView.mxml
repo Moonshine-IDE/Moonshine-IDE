@@ -75,7 +75,7 @@
 		import actionScripts.valueObjects.URLDescriptorVO;
 		
 		import components.popup.NewFolderPopup;
-		import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+		import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 		private var newFolderWindow:NewFolderPopup;
 

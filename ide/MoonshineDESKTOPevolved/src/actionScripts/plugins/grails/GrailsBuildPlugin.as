@@ -24,7 +24,7 @@ package actionScripts.plugins.grails
 
     import flash.utils.setTimeout;
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {

@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.groovy.groovyproject
+package actionScripts.plugin.groovy.grailsproject
 {
     import actionScripts.events.NewProjectEvent;
     import actionScripts.plugin.PluginBase;

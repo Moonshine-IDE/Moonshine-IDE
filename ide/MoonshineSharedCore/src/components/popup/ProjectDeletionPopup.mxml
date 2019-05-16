@@ -46,7 +46,7 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 			
 			[Bindable] public var wrapperBelongToProject:FileWrapper;
 			

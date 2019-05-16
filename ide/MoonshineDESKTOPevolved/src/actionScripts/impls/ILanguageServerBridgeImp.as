@@ -12,7 +12,7 @@ package actionScripts.impls
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.languageServer.JavaLanguageServerManager;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.languageServer.GroovyLanguageServerManager;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge

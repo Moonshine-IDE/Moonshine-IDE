@@ -51,7 +51,7 @@
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";

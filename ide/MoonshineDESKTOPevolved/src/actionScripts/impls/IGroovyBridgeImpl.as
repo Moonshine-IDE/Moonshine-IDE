@@ -21,10 +21,10 @@ package actionScripts.impls
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IGroovyBridge;
-    import actionScripts.plugin.groovy.groovyproject.CreateGrailsProject;
-    import actionScripts.plugin.groovy.groovyproject.GrailsProjectPlugin;
-    import actionScripts.plugin.groovy.groovyproject.importer.GrailsImporter;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.CreateGrailsProject;
+    import actionScripts.plugin.groovy.grailsproject.GrailsProjectPlugin;
+    import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.syntax.GroovySyntaxPlugin;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
 

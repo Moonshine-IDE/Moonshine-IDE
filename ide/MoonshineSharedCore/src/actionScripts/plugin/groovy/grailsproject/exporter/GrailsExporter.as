@@ -14,9 +14,9 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.groovy.groovyproject.exporter
+package actionScripts.plugin.groovy.grailsproject.exporter
 {
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
 

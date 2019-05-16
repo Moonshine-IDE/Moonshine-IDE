@@ -23,7 +23,7 @@ package actionScripts.languageServer
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.GroovyTextEditor;
     import actionScripts.utils.HtmlFormatter;

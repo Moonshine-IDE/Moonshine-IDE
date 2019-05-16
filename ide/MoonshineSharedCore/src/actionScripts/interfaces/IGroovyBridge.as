@@ -19,7 +19,7 @@
 package actionScripts.interfaces
 {
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
     public interface IGroovyBridge extends IProject
     {

@@ -1,9 +1,9 @@
-package actionScripts.plugin.groovy.groovyproject.vo
+package actionScripts.plugin.groovy.grailsproject.vo
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
+	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;

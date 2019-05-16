@@ -22,7 +22,7 @@ package actionScripts.ui.menu
 
     import mx.resources.IResourceManager;
     import mx.resources.ResourceManager;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
 
     public class ProjectMenu

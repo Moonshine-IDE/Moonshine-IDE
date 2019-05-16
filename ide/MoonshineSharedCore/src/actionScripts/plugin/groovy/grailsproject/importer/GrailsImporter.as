@@ -1,8 +1,8 @@
-package actionScripts.plugin.groovy.groovyproject.importer
+package actionScripts.plugin.groovy.grailsproject.importer
 {
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
-	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;

@@ -53,7 +53,7 @@ package actionScripts.ui.renderers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	use namespace mx_internal;
 	

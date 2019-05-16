@@ -56,7 +56,7 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider

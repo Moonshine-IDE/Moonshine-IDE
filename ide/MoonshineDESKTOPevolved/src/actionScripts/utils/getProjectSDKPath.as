@@ -22,7 +22,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
 	{

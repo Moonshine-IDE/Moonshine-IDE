@@ -1,4 +1,4 @@
-package actionScripts.plugin.groovy.groovyproject
+package actionScripts.plugin.groovy.grailsproject
 {
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -10,9 +10,9 @@ package actionScripts.plugin.groovy.groovyproject
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
-	import actionScripts.plugin.groovy.groovyproject.importer.GrailsImporter;
-	import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
+	import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
