@@ -67,6 +67,11 @@ package actionScripts.impls
 			return UtilsCore.isMavenAvailable();
 		}
 		
+		public function isGrailsPresent():Boolean
+		{
+			return UtilsCore.isGrailsAvailable();
+		}
+		
 		public function isSVNPresent():Boolean
 		{
 			return UtilsCore.isSVNPresent();

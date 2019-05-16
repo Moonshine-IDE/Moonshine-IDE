@@ -985,6 +985,17 @@ package actionScripts.utils
 			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
 			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
 		}
+		
+		public static function isGrailsAvailable():Boolean
+		{
+			if (!model.grailsPath || model.grailsPath == "")
+			{
+				return false;
+			}
+			
+			var grailsLocation:FileLocation = new FileLocation(model.grailsPath);
+			return grailsLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.bat")).fileBridge.exists;
+		}
 
         public static function getMavenBinPath():String
         {
