@@ -81,6 +81,7 @@ package actionScripts.impls
 	import actionScripts.plugins.away3d.Away3DPlugin;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
 	import actionScripts.plugins.maven.MavenBuildPlugin;
@@ -194,6 +195,7 @@ package actionScripts.impls
 				FullscreenPlugin,
 				AntBuildPlugin,
 				MavenBuildPlugin,
+				GradleBuildPlugin,
 				RunJavaProject,
 				PreviewPrimeFacesProjectPlugin,
 				SearchPlugin,
@@ -373,10 +375,13 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources', 'HELP'), [
 					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
+                    new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY),
+					new MenuItem(null),
 					new MenuItem("Getting Started", null, null, StartupHelperPlugin.EVENT_GETTING_STARTED),
 					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
 					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
-                    new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY)])
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'RESTORE_DEFAULT_REPOSITORIES'), null, null, VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES)])
 			]);
 			
 			// adding in-projet search for desktop only

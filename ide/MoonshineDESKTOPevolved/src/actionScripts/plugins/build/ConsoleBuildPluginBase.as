@@ -107,7 +107,7 @@ package actionScripts.plugins.build
 				
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				nativeProcessStartupInfo.arguments = processArgs;
-				nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
+				if (buildDirectory) nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
 				
 				nativeProcess.start(nativeProcessStartupInfo);
 			}

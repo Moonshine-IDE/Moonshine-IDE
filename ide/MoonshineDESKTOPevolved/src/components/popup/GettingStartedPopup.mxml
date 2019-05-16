@@ -41,6 +41,7 @@
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.ui.IContentWindow;
+			import actionScripts.ui.tabview.CloseTabEvent;
 			import actionScripts.utils.EnvironmentUtils;
 			import actionScripts.utils.HelperUtils;
 			import actionScripts.utils.MSDKIdownloadUtil;
@@ -131,6 +132,8 @@
 			protected function onCreationCompletes():void
 			{
 				updateUI();
+				dispatcher.addEventListener(StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshRequest, false, 0, true);
+				this.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onTabClosed);
 			}
 			
 			private function updateUI():void
@@ -146,6 +149,12 @@
 			//  PRIVATE LISTENERS
 			//
 			//--------------------------------------------------------------------------
+			
+			private function onTabClosed(event:CloseTabEvent):void
+			{
+				dispatcher.removeEventListener(StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshRequest);
+				this.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onTabClosed);
+			}
 			
 			private function runAppStoreHelper(event:HelperEvent):void
 			{
@@ -243,7 +252,7 @@
 				else sdkInstallerInstallingMess = sdkInstallerInstallingMess.replace("..", ".");
 			}
 			
-			protected function onRefreshRequest(event:MouseEvent):void
+			protected function onRefreshRequest(event:Event):void
 			{
 				viewHelper.checkForUpdate();
 			}

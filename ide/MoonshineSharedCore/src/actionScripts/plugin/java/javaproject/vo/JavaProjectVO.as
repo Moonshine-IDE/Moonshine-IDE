@@ -2,6 +2,7 @@ package actionScripts.plugin.java.javaproject.vo
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+	import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
@@ -15,6 +16,7 @@ package actionScripts.plugin.java.javaproject.vo
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
 		public var mavenBuildOptions:MavenBuildOptions;
+		public var gradleBuildOptions:GradleBuildOptions;
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var sourceFolder:FileLocation;
 
@@ -26,6 +28,7 @@ package actionScripts.plugin.java.javaproject.vo
 
             projectReference.hiddenPaths.splice(0, projectReference.hiddenPaths.length);
 			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
+			gradleBuildOptions = new GradleBuildOptions(projectFolder.nativePath);
 		}
 
 		public function hasPom():Boolean
@@ -73,6 +76,13 @@ package actionScripts.plugin.java.javaproject.vo
 				settings.push(new SettingsWrapper("Maven Build", Vector.<ISetting>([
 					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions")
+				])));
+			}
+			
+			if (hasGradleBuild())
+			{
+				settings.push(new SettingsWrapper("Gradle Build", Vector.<ISetting>([
+					new BuildActionsListSettings(this.gradleBuildOptions, gradleBuildOptions.buildActions, "commandLine", "Build Actions")
 				])));
 			}
 

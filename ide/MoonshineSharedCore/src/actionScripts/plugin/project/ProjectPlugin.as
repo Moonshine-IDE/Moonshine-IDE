@@ -153,19 +153,6 @@ package actionScripts.plugin.project
 
 			var settingsLabel:String = project.folderLocation.fileBridge.name + " settings";
 
-			if (project is JavaProjectVO)
-			{
-				var gradleProject:JavaProjectVO = project as JavaProjectVO;
-				if (gradleProject.hasGradleBuild())
-				{
-					var noSettingsInfo:SettingsInfoView = new SettingsInfoView();
-					noSettingsInfo.addEventListener(SettingsInfoView.EVENT_CLOSE, settingsInfoClose);
-
-					dispatcher.dispatchEvent(new AddTabEvent(noSettingsInfo));
-					return;
-				}
-			}
-
 			// Create settings view & fetch project settings
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.Width = 230;

@@ -22,6 +22,7 @@ package actionScripts.plugins.versionControl
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
+	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -29,6 +30,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
@@ -54,6 +56,7 @@ package actionScripts.plugins.versionControl
 			
 			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -62,6 +65,7 @@ package actionScripts.plugins.versionControl
 			
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories);
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository);
+			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -158,6 +162,39 @@ package actionScripts.plugins.versionControl
 			
 			PopUpManager.removePopUp(addRepositoryWindow);
 			addRepositoryWindow = null;
+		}
+		
+		protected function restoreDefaultRepositories(event:Event):void
+		{
+			var tmpDefaults:ArrayList = VersionControlUtils.getDefaultRepositories();
+			for (var i:int = 0; i < tmpDefaults.length; i++)
+			{
+				VersionControlUtils.REPOSITORIES.source.some(function(repoExisting:RepositoryItemVO, index:int, arr:Array):Boolean {
+					if (repoExisting.url.toLowerCase() == tmpDefaults.getItemAt(i).url.toLowerCase())
+					{
+						tmpDefaults.removeItemAt(i);
+						i--;
+						return true;
+					}
+					return false;
+				});
+			};
+			
+			// add if items are found to be added
+			if (tmpDefaults.length > 0)
+			{
+				VersionControlUtils.REPOSITORIES.addAllAt(tmpDefaults, 0);
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT, 
+					"The default repositories were restored in Manage Repositories.", 
+					false, false, ConsoleOutputEvent.TYPE_SUCCESS));
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT, 
+					"The default repositories are already present in Manage Repositories."));
+			}
 		}
 		
 		//--------------------------------------------------------------------------

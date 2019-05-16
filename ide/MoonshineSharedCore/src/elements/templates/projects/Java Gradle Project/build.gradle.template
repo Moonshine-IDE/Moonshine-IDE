@@ -1,6 +1,9 @@
 plugins {
     id 'java'
+    id 'application'  // allows 'run' task.
+    id 'eclipse'      // allows dependencies to be exported to .classpath
 }
+mainClassName = '$ProjectName'
 repositories {
     mavenCentral()
 }

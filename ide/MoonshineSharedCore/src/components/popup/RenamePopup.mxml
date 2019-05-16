@@ -83,12 +83,15 @@
 				minHeight = height;
 				if (wrapperOfFolderLocation) 
 				{
-					txtFileName.text = wrapperOfFolderLocation.file.fileBridge.name.split(".")[0];
+					/*var tempArr:Array = wrapperOfFolderLocation.file.fileBridge.name.split(".");
+					tempArr.pop();*/
+					
+					txtFileName.text = wrapperOfFolderLocation.file.fileBridge.nameWithoutExtension;
 					txtFileName.setFocus();
 					txtFileName.selectRange(0, txtFileName.text.length);
 					originalFileName = txtFileName.text;
 					
-					if (wrapperOfFolderLocation.file.fileBridge.isDirectory) {
+					if (wrapperOfFolderLocation.file.fileBridge.isDirectory || !wrapperOfFolderLocation.file.fileBridge.extension) {
 						fileExtension = "";
 					}
 					else

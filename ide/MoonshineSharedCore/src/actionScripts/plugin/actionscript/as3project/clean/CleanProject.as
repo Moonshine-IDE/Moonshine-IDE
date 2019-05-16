@@ -154,18 +154,21 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 		private function cleanJavaProject(project:JavaProjectVO):void
 		{
-			var target:FileLocation = project.folderLocation.resolvePath("target");
-			if (target.fileBridge.exists)
+			var targets:Array = [project.folderLocation.resolvePath("target"), project.folderLocation.resolvePath("build")];
+			for each (var target:FileLocation in targets)
 			{
-				currentTargets.push(target);
-
-				target.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
-				target.fileBridge.getFile.addEventListener(Event.COMPLETE, onProjectFolderComplete);
-				target.fileBridge.deleteDirectoryAsync(true);
-			}
-			else
-			{
-				success("Project files cleaned successfully : " + project.name);
+				if (target.fileBridge.exists)
+				{
+					currentTargets.push(target);
+	
+					target.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+					target.fileBridge.getFile.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+					target.fileBridge.deleteDirectoryAsync(true);
+				}
+				else
+				{
+					success("Project files cleaned successfully : " + project.name);
+				}
 			}
 		}
 

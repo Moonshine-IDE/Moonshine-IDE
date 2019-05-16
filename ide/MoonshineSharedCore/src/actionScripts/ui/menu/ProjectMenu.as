@@ -1,6 +1,12 @@
 package actionScripts.ui.menu
 {
+    import flash.ui.Keyboard;
+    
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    
     import actionScripts.events.ExportVisualEditorProjectEvent;
+    import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -27,6 +33,7 @@ package actionScripts.ui.menu
         private var vePrimeFaces:Vector.<MenuItem>;
         private var veFlex:Vector.<MenuItem>;
         private var javaMenu:Vector.<MenuItem>;
+		private var javaMenuGradle:Vector.<MenuItem>;
         private var grailsMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
@@ -208,24 +215,41 @@ package actionScripts.ui.menu
 
         private function getJavaMenuItems():Vector.<MenuItem>
         {
-            if (javaMenu == null)
-            {
-                var enabledTypes:Array = (currentProject as JavaProjectVO).hasGradleBuild() ? [] : [ProjectMenuTypes.JAVA];
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
-
-                javaMenu = Vector.<MenuItem>([
-                    new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
-                            'b', [Keyboard.COMMAND],
-                            'b', [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
-                            "\n", [Keyboard.COMMAND],
-                            "\n", [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
-                ]);
-                javaMenu.forEach(makeDynamic);
-            }
-
+            var enabledTypes:Array = [ProjectMenuTypes.JAVA];
+            var resourceManager:IResourceManager = ResourceManager.getInstance();
+			
+			// for gradle project type
+			if ((currentProject as JavaProjectVO).hasGradleBuild())
+			{
+				if (!javaMenuGradle)
+				{
+					javaMenuGradle = Vector.<MenuItem>([
+						new MenuItem(null),
+						new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
+							'b', [Keyboard.COMMAND],
+							'b', [Keyboard.CONTROL]),
+						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
+						new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
+					]);
+				}
+				
+				javaMenuGradle.forEach(makeDynamic);
+				return javaMenuGradle;
+			}
+			
+			// for usual project type
+            javaMenu = Vector.<MenuItem>([
+                new MenuItem(null),
+                new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
+                        'b', [Keyboard.COMMAND],
+                        'b', [Keyboard.CONTROL]),
+                new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
+                        "\n", [Keyboard.COMMAND],
+                        "\n", [Keyboard.CONTROL]),
+                new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
+            ]);
+			
+            javaMenu.forEach(makeDynamic);
             return javaMenu;
         }
 

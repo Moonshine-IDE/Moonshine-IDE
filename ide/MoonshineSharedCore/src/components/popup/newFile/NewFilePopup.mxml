@@ -29,31 +29,32 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.factory.FileLocation;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.TextOperationEvent;
+			
+			import actionScripts.events.DuplicateEvent;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.extResources.com.validator.ValidatorType;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.SimpleValidator;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
 
-		import mx.events.FlexEvent;
-		import mx.events.ListEvent;
-		import mx.managers.PopUpManager;
-		
-		import spark.events.TextOperationEvent;
-		
-		import actionScripts.events.DuplicateEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.extResources.com.validator.ValidatorType;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.ui.menu.MenuPlugin;
-		import actionScripts.utils.SimpleValidator;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-
-			public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
+			[Bindable] public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
+			
 			public static var AS_XML:String = "AS_XML";
 			public static var AS_CUSTOM:String = "AS_CUSTOM";
 			public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";
 
-			public var openType:String;
+			[Bindable] public var openType:String;
+			
 			public var fileTemplate:FileLocation;
 			public var folderFileLocation:FileLocation;
 
@@ -95,6 +96,17 @@
 					}
 					else if (openType == AS_PLAIN_TEXT)
 					{
+						// test if filename.extension
+						if (txtFileName.text.indexOf(".") != -1)
+						{
+							var tmpNameSplit:Array = txtFileName.text.split(".");
+							if (tmpNameSplit[tmpNameSplit.length - 1] == "")
+							{
+								Alert.show("Trailing '.' not permitted for file name", "Error!");
+								return;
+							}
+						}
+						
 						fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
 					}
 
@@ -188,10 +200,19 @@
 				minHeight = height;
 				if (openType == AS_DUPLICATE_FILE)
 				{
-					var extension:String = folderFileLocation.fileBridge.extension.toLowerCase();
 					title = "Duplicate File";
-					lblExtension.text = "."+ extension;
 					lblName.text = "New File Name:";
+					
+					var extension:String;
+					if (folderFileLocation.fileBridge.extension)
+					{
+						extension = folderFileLocation.fileBridge.extension.toLowerCase();
+						lblExtension.text = "."+ extension;
+					}
+					else
+					{
+						lblExtension.text = "";
+					}
 					
 					if (extension == "as" || extension == "mxml")
 					{
@@ -212,7 +233,7 @@
 					title = "New File";
 					if (!fileTemplate)
 					{
-						lblExtension.text = ".txt";
+						txtFileName.text = ".txt";
 					}
 					else
 					{
@@ -232,6 +253,7 @@
 				tree.callLater(parseFolders);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 			}
+			
 		]]>
 	</fx:Script>
 	<s:VGroup width="100%">
@@ -263,7 +285,8 @@
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label id="lblExtension"
 					 styleName="textInputLabel" textAlign="right"
-					 right="6" verticalCenter="0"/>
+					 right="6" verticalCenter="0"
+					 visible="{openType != AS_PLAIN_TEXT}"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"

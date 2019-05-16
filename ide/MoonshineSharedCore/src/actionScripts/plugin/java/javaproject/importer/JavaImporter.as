@@ -4,6 +4,7 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import flash.filesystem.File;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.MavenPomUtil;
 
 	public class JavaImporter extends FlashDevelopImporterBase
@@ -78,6 +79,7 @@ package actionScripts.plugin.java.javaproject.importer
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+			javaProject.menuType = ProjectMenuTypes.JAVA;
 
             var sourceDirectory:String = null;
 			var settingsData:XML = null;
@@ -114,6 +116,11 @@ package actionScripts.plugin.java.javaproject.importer
 			}
 			else
 			{
+				if (javaProject.hasGradleBuild() && settingsData)
+				{
+					javaProject.gradleBuildOptions.parse(settingsData.gradleBuild);
+				}
+				
 				parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
 				javaProject.mainClassName = settingsData.build.option.@mainclass;
 

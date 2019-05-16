@@ -68,6 +68,11 @@ package actionScripts.plugin.settings.providers
 			}
 		}
 		
+		public function onSettingsClose():void
+		{
+			
+		}
+		
 		private function resetJavaPath():void
 		{
 			if (!model.javaPathForTypeAhead) return;

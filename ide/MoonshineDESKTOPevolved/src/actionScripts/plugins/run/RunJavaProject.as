@@ -4,7 +4,9 @@ package actionScripts.plugins.run
     import flash.events.NativeProcessExitEvent;
     
     import actionScripts.events.RunJavaProjectEvent;
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.MavenPomUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -47,36 +49,43 @@ package actionScripts.plugins.run
 
         override protected function startConsoleBuildHandler(event:Event):void
         {
-            var javaProjectEvent:RunJavaProjectEvent = event as RunJavaProjectEvent;
-            if (javaProjectEvent && javaProjectEvent.project)
+			var tmpJavaProject:JavaProjectVO = event ? (event as RunJavaProjectEvent).project : null;
+			var javaCommand:Vector.<String>;
+            if (tmpJavaProject)
             {
-                warning("Starting application: " + javaProjectEvent.project.projectName);
-
-                var pomPathLocation:FileLocation = new FileLocation(javaProjectEvent.project.mavenBuildOptions.mavenBuildPath)
-                        .resolvePath("pom.xml");
-
-                var projectVersion:String = MavenPomUtil.getProjectVersion(pomPathLocation);
-                var jarName:String = javaProjectEvent.project.projectName.concat("-", projectVersion, ".jar");
-                var jarLocation:FileLocation = javaProjectEvent.project.folderLocation
-                        .resolvePath("target" + model.fileCore.separator + jarName);
-
-                if (jarLocation.fileBridge.exists)
-                {
-                    var javaCommand:Vector.<String> = Vector.<String>(["java -classpath " + jarLocation.fileBridge.nativePath +
-                                                                        " " + javaProjectEvent.project.mainClassName]);
-                    this.start(javaCommand, javaProjectEvent.project.projectFolder.file);
-                }
-                else
-                {
-                    error("Project .jar file does not exist: " + jarLocation.fileBridge.nativePath);
-                }
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
+					tmpJavaProject.name,
+					"Running "));
+				
+				// maven project
+				warning("Starting application: " + tmpJavaProject.projectName);
+				
+				var pomPathLocation:FileLocation = new FileLocation(tmpJavaProject.mavenBuildOptions.mavenBuildPath)
+					.resolvePath("pom.xml");
+				
+				var projectVersion:String = MavenPomUtil.getProjectVersion(pomPathLocation);
+				var jarName:String = tmpJavaProject.projectName.concat("-", projectVersion, ".jar");
+				var jarLocation:FileLocation = tmpJavaProject.folderLocation
+					.resolvePath("target" + model.fileCore.separator + jarName);
+				
+				if (jarLocation.fileBridge.exists)
+				{
+					javaCommand = Vector.<String>(["java -classpath " + jarLocation.fileBridge.nativePath +
+						" " + tmpJavaProject.mainClassName]);
+					this.start(javaCommand, tmpJavaProject.projectFolder.file);
+				}
+				else
+				{
+					error("Project .jar file does not exist: " + jarLocation.fileBridge.nativePath);
+				}
             }
         }
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
             super.onNativeProcessExit(event);
-
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
             if (!isNaN(event.exitCode))
             {
                 var info:String = "Application exited with code: " + event.exitCode;

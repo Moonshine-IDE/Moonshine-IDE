@@ -108,17 +108,36 @@ package actionScripts.plugin.actionscript.as3project
 		private function importFDProject(projectFile:FileLocation=null, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
 			// Is file in an already opened project?
-			for each (var p:ProjectVO in model.projects)
-			{
-				if (projectFile.fileBridge.parent.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
-				{
-					warning("Project already opened. Ignoring.");
-					return;
-				}
-			}
+			if (checkIfProjectIsAlreadyOpened(projectFile.fileBridge.parent.fileBridge.nativePath)) return;
 			
 			// Assume user wants to open project by clicking settings file
 			openProject(projectFile, openWithChoice, openByProject);
+		}
+		
+		private function importFBProject(openWithChoice:Boolean=false):void
+		{
+			// Is file in an already opened project?
+			if (checkIfProjectIsAlreadyOpened(flashBuilderProjectFile.fileBridge.nativePath)) return;
+			
+			var p:AS3ProjectVO = model.flexCore.parseFlashBuilder(flashBuilderProjectFile);
+			dispatcher.dispatchEvent(
+				new ProjectEvent(ProjectEvent.ADD_PROJECT, p, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FB_PROJECT : null)
+			);
+		}
+		
+		private function checkIfProjectIsAlreadyOpened(path:String):Boolean
+		{
+			for each (var p:ProjectVO in model.projects)
+			{
+				if (path == p.folderLocation.fileBridge.nativePath)
+				{
+					warning("Project already opened. Ignoring.");
+					return true;
+				}
+			}
+			
+			// project is not opened
+			return false;
 		}
 		
 		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
@@ -254,14 +273,6 @@ package actionScripts.plugin.actionscript.as3project
 				if (event.detail == Alert.OK) importFBProject(true);
 				else if (event.detail == Alert.YES) importFDProject(flashDevelopProjectFile, true);
 			}, 300);
-		}
-		
-		private function importFBProject(openWithChoice:Boolean=false):void
-		{
-			var p:AS3ProjectVO = model.flexCore.parseFlashBuilder(flashBuilderProjectFile);
-			dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, p, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FB_PROJECT : null)
-			);
 		}
 		
 		private function handleTemplatingDataRequest(event:TemplateEvent):void

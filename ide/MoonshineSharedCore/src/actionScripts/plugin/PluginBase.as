@@ -65,6 +65,10 @@ package actionScripts.plugin
 			
 		}
 		
+		public function onSettingsClose():void
+		{
+			
+		}
 		
 		public function PluginBase() {}
 		

@@ -416,7 +416,7 @@ package actionScripts.ui.renderers
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
 				
-				if(activeProject is JavaProjectVO)
+				if (activeProject is ProjectVO)
 				{
 					//TODO: make a better set of menu types for Java
 					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_JAVACLASS);

@@ -24,7 +24,8 @@ package actionScripts.plugin.settings
 	{
 		// Returns a settings list for the settings plugin
 		function getSettingsList():Vector.<ISetting>;
-
+		// Notify the plugin class when settings view close
+		function onSettingsClose():void;
 	}
 
 }

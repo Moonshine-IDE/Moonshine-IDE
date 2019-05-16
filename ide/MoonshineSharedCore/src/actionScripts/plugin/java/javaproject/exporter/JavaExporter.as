@@ -1,6 +1,7 @@
 package actionScripts.plugin.java.javaproject.exporter
 {
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.utils.MavenPomUtil;
     import actionScripts.utils.SerializeUtil;
@@ -12,9 +13,22 @@ package actionScripts.plugin.java.javaproject.exporter
             XML.ignoreWhitespace = true;
             XML.ignoreComments = false;
 
+			var isGradle:Boolean = project.hasGradleBuild();
             var projectXML:XML = new XML("<project></project>");
 
-            projectXML.appendChild(project.mavenBuildOptions.toXML());
+            projectXML.appendChild(
+				isGradle ? project.gradleBuildOptions.toXML() : project.mavenBuildOptions.toXML()
+			);
+			
+			var classPathsXML:XML = new XML(<classpaths></classpaths>);
+			for each (var path:FileLocation in project.classpaths)
+			{
+				classPathsXML.appendChild(SerializeUtil.serializePairs(
+					{path: project.folderLocation.fileBridge.getRelativePath(path, true)},
+					<class />));
+			}
+			
+			projectXML.appendChild(classPathsXML);
 
             var buildXML:XML = new XML(<build></build>);
             var build:Object = {

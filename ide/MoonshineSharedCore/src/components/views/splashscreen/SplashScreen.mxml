@@ -25,12 +25,10 @@
 		   label="Home"
 		   width="100%"
 		   height="100%" xmlns:splashscreen="components.views.splashscreen.*"
-		   creationComplete="onSplashScreenCreationComplete(event)" removedFromStage="onTabRemoved(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
-	
+		   creationComplete="onSplashScreenCreationComplete(event)" removedFromStage="onTabRemoved(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+		   mouseChildren="{!ConstantsCoreVO.IS_APPLICATION_CLOSING}">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.events.SdkEvent;
-
 		import mx.controls.Alert;
 		import mx.core.FlexGlobals;
 		import mx.effects.Fade;
@@ -38,15 +36,16 @@
 		import mx.events.FlexEvent;
 		import mx.events.ResizeEvent;
 		import mx.managers.PopUpManager;
-
+		
 		import spark.effects.Move;
-
+		
 		import actionScripts.controllers.DataAgent;
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.MenuEvent;
 		import actionScripts.events.NewProjectEvent;
 		import actionScripts.events.OpenFileEvent;
 		import actionScripts.events.ProjectEvent;
+		import actionScripts.events.SdkEvent;
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
@@ -58,21 +57,20 @@
 		import actionScripts.utils.UtilsCore;
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import actionScripts.valueObjects.ProjectReferenceVO;
+		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.TemplateVO;
 		import actionScripts.valueObjects.URLDescriptorVO;
-
+		
 		import components.popup.Authentication;
 		import components.popup.AuthenticationPopUp;
 		import components.popup.NegativeRatingPopup;
 		import components.popup.PositiveRatingPopup;
 		import components.renderers.RecentProjectRenderer;
 		import components.renderers.TemplateItemRenderer;
-
+		
 		import flashx.textLayout.events.FlowElementMouseEvent;
-
+		
 		import no.doomsday.console.core.events.ConsoleEvent;
-
-		import actionScripts.valueObjects.ProjectVO;
 
 		[Embed("/elements/images/icoThumbUp.png")]
 		private const ICON_THUMB_UP:Class;
@@ -263,15 +261,17 @@
 
 			if(ConstantsCoreVO.IS_AIR)
 			{
+				var templateLabel:String = TemplatingHelper.getTemplateLabel(fl.file);
 				if(fl.file.fileBridge.isDirectory)
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewProjectFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
+							new Event("eventNewProjectFromTemplate" + templateLabel)
 					);
-				} else
+				}
+				else
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new Event("eventNewFileFromTemplate" + TemplatingHelper.getTemplateLabel(fl.file))
+							new Event("eventNewFileFromTemplate" + templateLabel)
 					);
 				}
 			} else

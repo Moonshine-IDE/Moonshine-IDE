@@ -985,6 +985,17 @@ package actionScripts.utils
 			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
 			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
 		}
+
+		public static function isGradleAvailable():Boolean
+		{
+			if (!model.gradlePath || model.gradlePath == "")
+			{
+				return false;
+			}
+			
+			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
+			return gradleLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "gradle" : "gradle.bat")).fileBridge.exists;
+		}
 		
 		public static function isGrailsAvailable():Boolean
 		{
@@ -1027,6 +1038,36 @@ package actionScripts.utils
 			
 			return null;
         }
+		
+		public static function getGradleBinPath():String
+		{
+			if (!model.gradlePath || model.gradlePath == "")
+			{
+				return null;
+			}
+			
+			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
+			var gradleBin:String = "bin" + model.fileCore.separator;
+			if (gradleLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				gradleBin = "";
+			}
+			
+			if (!gradleLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+			{
+				return gradleLocation.resolvePath(gradleBin + "gradle.bat").fileBridge.nativePath;
+			}
+			else
+			{
+				return UtilsCore.convertString(gradleLocation.resolvePath(gradleBin + "gradle").fileBridge.nativePath);
+			}
+			
+			return null;
+		}
 
         public static function getGrailsBinPath():String
         {

@@ -106,6 +106,15 @@ package actionScripts.plugins.as3project
 		
 		public function CreateProject(event:NewProjectEvent)
 		{
+			// update template path to custom in case
+			// the original template have modified
+			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.templateDir);
+			if (modifiedTemplate.fileBridge.exists)
+			{
+				event.templateDir = modifiedTemplate;
+				event.settingsFile = modifiedTemplate.resolvePath(event.settingsFile.fileBridge.name);
+			}
+			
 			if (!allProjectTemplates)
 			{
 				_allProjectTemplates = new ArrayCollection();
@@ -747,7 +756,12 @@ package actionScripts.plugins.as3project
 					}
 					catch(e:Error)
 					{
-						descriptorFileLocation.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						try
+						{
+							descriptorFileLocation.fileBridge.moveToAsync(targetFolder.resolvePath(sourcePath + File.separator + sourceFile +"-app.xml"), true);
+						}
+						catch (e:Error)
+						{}
 					}
 				}
 				else
@@ -764,16 +778,16 @@ package actionScripts.plugins.as3project
 				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
 				var folderToDelete5:FileLocation = targetFolder.resolvePath("build");
 				
-				folderToDelete1.fileBridge.deleteDirectory(true);
+				if (folderToDelete1.fileBridge.exists) folderToDelete1.fileBridge.deleteDirectory(true);
 				if (isActionScriptProject)
 				{
-					folderToDelete2.fileBridge.deleteDirectory(true);
-					folderToDelete3.fileBridge.deleteDirectory(true);
-					folderToDelete4.fileBridge.deleteDirectory(true);
+					if (folderToDelete2.fileBridge.exists) folderToDelete2.fileBridge.deleteDirectory(true);
+					if (folderToDelete3.fileBridge.exists) folderToDelete3.fileBridge.deleteDirectory(true);
+					if (folderToDelete4.fileBridge.exists) folderToDelete4.fileBridge.deleteDirectory(true);
 				}
 				if (isAway3DProject)
 				{
-					folderToDelete5.fileBridge.deleteDirectory(true);
+					if (folderToDelete5.fileBridge.exists) folderToDelete5.fileBridge.deleteDirectory(true);
 				}
 
 			}
@@ -791,8 +805,8 @@ package actionScripts.plugins.as3project
 				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");
 				var folderToDelete7:FileLocation = targetFolder.resolvePath("src_flex");
 					
-				folderToDelete6.fileBridge.deleteDirectory(true);
-				folderToDelete7.fileBridge.deleteDirectory(true);
+				if (folderToDelete6.fileBridge.exists) folderToDelete6.fileBridge.deleteDirectory(true);
+				if (folderToDelete7.fileBridge.exists) folderToDelete7.fileBridge.deleteDirectory(true);
 			}
 			if (isLibraryProject)
 			{

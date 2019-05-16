@@ -24,14 +24,11 @@
 		 height="100%"
 		 backgroundColor="0x444444"
 		 verticalGap="0" xmlns:project="actionScripts.ui.project.*"
-		 preinitialize="onCreationCompletes()" remove="onRemoval()" xmlns:utils="actionScripts.utils.*">
+		 preinitialize="onCreationCompletes()" remove="onRemoval()" xmlns:utils="actionScripts.utils.*"
+		 mouseChildren="{!ConstantsCoreVO.IS_APPLICATION_CLOSING}">
 
 	<mx:Script>
 		<![CDATA[
-		import actionScripts.events.PreviewPluginEvent;
-		import actionScripts.plugin.core.compiler.ProjectActionEvent;
-		import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-
 		import mx.collections.ArrayCollection;
 		import mx.collections.Sort;
 		import mx.collections.SortField;
@@ -43,7 +40,7 @@
 		import mx.events.ListEvent;
 		import mx.events.TreeEvent;
 		import mx.managers.PopUpManager;
-
+		
 		import actionScripts.events.AddFolderEvent;
 		import actionScripts.events.DeleteFileEvent;
 		import actionScripts.events.DuplicateEvent;
@@ -52,6 +49,7 @@
 		import actionScripts.events.HiddenFilesEvent;
 		import actionScripts.events.NewFileEvent;
 		import actionScripts.events.OpenFileEvent;
+		import actionScripts.events.PreviewPluginEvent;
 		import actionScripts.events.ProjectEvent;
 		import actionScripts.events.RefreshVisualEditorSourcesEvent;
 		import actionScripts.events.RenameApplicationEvent;
@@ -63,6 +61,8 @@
 		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.plugin.core.compiler.ProjectActionEvent;
+		import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 		import actionScripts.plugin.templating.TemplatingHelper;
 		import actionScripts.ui.LayoutModifier;
 		import actionScripts.ui.renderers.FTETreeItemRenderer;
@@ -73,7 +73,7 @@
 		import actionScripts.valueObjects.FileWrapper;
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.valueObjects.URLDescriptorVO;
-
+		
 		import components.popup.NewFolderPopup;
 		import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 

@@ -46,6 +46,7 @@ package actionScripts.plugin.templating
 		
 		public function projectTemplate(fromDir:FileLocation, toDir:FileLocation):void
 		{
+			if (!fromDir.fileBridge.exists) return;
 			copyFiles(fromDir, toDir);
 		}
 		
@@ -122,6 +123,7 @@ package actionScripts.plugin.templating
 		
 		private function copyFileContents(src:FileLocation, dst:FileLocation):void
 		{
+			if (!src.fileBridge.exists) return;
 			src.fileBridge.copyTo(dst);
 		}
 		
@@ -150,6 +152,28 @@ package actionScripts.plugin.templating
 			return name;
 		}
 		
+		public static function getCustomFileFor(template:FileLocation):FileLocation
+		{
+			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
+			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
+			
+			var customTemplatePath:String = template.fileBridge.nativePath.substr(appDirPath.length+1);
+			var customTemplate:FileLocation = template.fileBridge.resolveApplicationStorageDirectoryPath(customTemplatePath);
+			
+			return customTemplate;
+		}
+		
+		public static function getOriginalFileForCustom(template:FileLocation):FileLocation
+		{
+			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
+			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
+			
+			var originalTemplatePath:String = template.fileBridge.nativePath.substr(appStorageDirPath.length+1);
+			var originalTemplate:FileLocation = template.fileBridge.resolveApplicationDirectoryPath(originalTemplatePath);
+			
+			return originalTemplate;
+		}
+		
 		public static function getTemplateMenuType(file:String):Array
 		{
 			switch (file)
@@ -163,12 +187,12 @@ package actionScripts.plugin.templating
 				case "XML File":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS];
 				case "File":
-					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
 				case "Visual Editor Flex File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
-				case "Java File":
+				case "Java Class":
 					return [ProjectMenuTypes.JAVA];
 				case "Groovy File":
 					return [ProjectMenuTypes.GRAILS];

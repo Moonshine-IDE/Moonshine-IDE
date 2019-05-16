@@ -44,6 +44,8 @@ package actionScripts.impls
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.locator.IDEModel;
+	import mx.controls.Alert;
 	
 	/**
 	 * IFileBridgeImp
@@ -53,7 +55,9 @@ package actionScripts.impls
 	 */
 	public class IFileBridgeImp implements IFileBridge
 	{
-		private var _file: File = File.desktopDirectory;
+		private var _file: File = ConstantsCoreVO.LAST_BROWSED_LOCATION ? 
+			new File(ConstantsCoreVO.LAST_BROWSED_LOCATION) : 
+			File.desktopDirectory;
 		
 		CONFIG::OSX
 		{
@@ -92,7 +96,7 @@ package actionScripts.impls
 		public function browseForDirectory(title:String, selectListner:Function, cancelListener:Function=null, startFromLocation:String=null):void
 		{
 			setFileInternalPath(startFromLocation);
-			
+
 			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				var selectedPathValue: String;
@@ -121,8 +125,15 @@ package actionScripts.impls
 					
 					if (isValidFilePath(selectedPathValue))
 					{
-						_file.nativePath = selectedPathValue;
+						// to overcome a macOS bug where previously selected
+						// file can return to directory browsing
+						if (!testSelectionIfDirectory(null, selectedPathValue))
+						{
+							return;
+						}
+						
 						selectListner(new File(selectedPathValue));
+						updateCoreFilePathOnBrowse(selectedPathValue);
 					}
 					else if (cancelListener != null)
 					{
@@ -146,14 +157,39 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
-				_file.nativePath = (event.target as File).nativePath;
 				onCancelHandler(event);
+				
+				// to overcome a macOS bug where previously selected
+				// file can return to directory browsing
+				if (!testSelectionIfDirectory(event.target as File))
+				{
+					return;
+				}
+				
 				selectListner(event.target as File);
+				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
+			}
+			function testSelectionIfDirectory(byFile:File=null, byPath:String=null):Boolean
+			{
+				var isValid:Boolean;
+				// to overcome a macOS bug where previously selected
+				// file can return to directory browsing
+				if (byFile && byFile.isDirectory)
+				{
+					isValid = true;
+				}
+				else if (byPath && FileUtils.isPathDirectory(byPath))
+				{
+					isValid = true;
+				}
+				
+				if (!isValid) Alert.show("Selected file is not Directory.", "Error!");
+				return isValid;
 			}
 		}
 		
@@ -263,9 +299,9 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
-				_file.nativePath = (event.target as File).nativePath;
 				removeListeners(event);
 				selected(event.target as File);
+				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
 			{
@@ -452,8 +488,8 @@ package actionScripts.impls
 					
 					if (isValidFilePath(selectedPathValue))
 					{
-						_file.nativePath = selectedPathValue;
 						selectListner(new File(selectedPathValue));
+						updateCoreFilePathOnBrowse(selectedPathValue);
 					}
 					else if (cancelListener != null) 
 					{
@@ -477,9 +513,9 @@ package actionScripts.impls
 			*/
 			function onSelectHandler(event:Event):void
 			{
-				_file.nativePath = (event.target as File).nativePath;
 				onCancelHandler(event);
 				selectListner(event.target as File);
+				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
 			{
@@ -688,7 +724,7 @@ package actionScripts.impls
 				return this.name.substring(0, extensionIndex - 1);
 			}
 
-			return null;
+			return this.name;
 		}
 
 		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
@@ -750,16 +786,26 @@ package actionScripts.impls
 			// set file path if requires
 			try
             {
-                var pathExists:File = new File(startFromLocation);
-                if (startFromLocation && pathExists.exists)
+                if (startFromLocation && FileUtils.isPathExists(startFromLocation))
                 {
-                    _file.nativePath = startFromLocation;
+					_file.nativePath = startFromLocation;
                 }
+				else
+				{
+					updateCoreFilePathOnBrowse(IDEModel.getInstance().fileCore.nativePath);
+				}
             }
 			catch(e:Error)
-			{
-
-			}
+			{}
+		}
+		
+		private function updateCoreFilePathOnBrowse(value:String):void
+		{
+			if (FileUtils.isPathDirectory(value)) ConstantsCoreVO.LAST_BROWSED_LOCATION = value;
+			else ConstantsCoreVO.LAST_BROWSED_LOCATION = (new File(value)).parent.nativePath;
+			
+			IDEModel.getInstance().fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+			_file.nativePath = value;
 		}
 	}
 }

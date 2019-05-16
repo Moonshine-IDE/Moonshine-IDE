@@ -44,7 +44,10 @@ package actionScripts.plugins.svn
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
@@ -88,6 +91,7 @@ package actionScripts.plugins.svn
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var failedMethodObjectBeforeAuth:Array;
+		private var pathSetting:PathSetting;
 		
 		override public function activate():void
 		{
@@ -126,15 +130,49 @@ package actionScripts.plugins.svn
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
-			var binaryPath:PathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false);
+			onSettingsClose();
+			pathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false, svnBinaryPath);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			setUsualMessage();
+			
+			return Vector.<ISetting>([
+				new PathSetting(this,'svnBinaryPath', 'SVN Binary', false, svnBinaryPath)
+			]);
+		}
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					setUsualMessage();
+				}
+			}
+		}
+		
+		private function setUsualMessage():void
+		{
 			var svnMessage:String = "SVN binary needs to be command-line compliant";
 			if (ConstantsCoreVO.IS_MACOS) svnMessage += "\nFor most users, it will be easier to set this with \"Subversion > Grant Permission\"";
 			
-			binaryPath.setMessage(svnMessage, AbstractSetting.MESSAGE_IMPORTANT);
-			
-			return Vector.<ISetting>([
-				binaryPath
-			]);
+			pathSetting.setMessage(svnMessage, AbstractSetting.MESSAGE_IMPORTANT);
 		}
 		
 		protected function checkOpenedProjectsIfVersioned():void

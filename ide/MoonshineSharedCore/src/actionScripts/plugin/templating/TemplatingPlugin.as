@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
-	import actionScripts.utils.SerializeUtil;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -62,6 +60,7 @@ package actionScripts.plugin.templating
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.AS3ClassAttributes;
@@ -112,6 +111,7 @@ package actionScripts.plugin.templating
 		private var resetIndex:int = -1;
 
 		private var templateConfigs:Array;
+		private var allLoadedTemplates:Array;
 
 		public function TemplatingPlugin()
 		{
@@ -259,6 +259,7 @@ package actionScripts.plugin.templating
 			});
 
 			templateConfigs = [];
+
 			for each (file in list)
 			{
 				if (!file.isHidden)
@@ -285,7 +286,7 @@ package actionScripts.plugin.templating
 			
 			for each (file in fileList)
 			{
-				if (getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
+				if (TemplatingHelper.getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
 					&& !file.isHidden)
 				{
 					fileTemplates.push(new FileLocation(file.nativePath));
@@ -298,7 +299,7 @@ package actionScripts.plugin.templating
 			
 			for each (file in projectList)
 			{
-				if (getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
+				if (TemplatingHelper.getOriginalFileForCustom(new FileLocation(file.nativePath)).fileBridge.exists == false
 					&& !file.isHidden && file.isDirectory)
 				{
 					projectTemplates.push(new FileLocation(file.nativePath));
@@ -316,6 +317,7 @@ package actionScripts.plugin.templating
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 
+			allLoadedTemplates = [];
             for each (var templateConfig:XML in templateConfigs)
             {
 				var templateName:String = SerializeUtil.deserializeString(templateConfig.name);
@@ -330,10 +332,11 @@ package actionScripts.plugin.templating
                     template.file = projectsLocation;
                     template.description = String(templateConfig.description);
 
-					var tmpImageFile:Object = projectsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
-                    if (tmpImageFile.exists)
+					var iconsLocation:FileLocation = projectsLocation.fileBridge.parent.resolvePath("icons");
+					var iconFile:Object = iconsLocation.fileBridge.getFile.resolvePath(String(templateConfig.icon));
+                    if (iconFile.exists)
 					{
-						template.logoImagePath = tmpImageFile.url;
+						template.logoImagePath = iconFile.url;
                     }
 
                     if (templateName.indexOf("Feathers") != -1 || templateName.indexOf("Away3D") != -1)
@@ -359,6 +362,8 @@ package actionScripts.plugin.templating
 					{
                         grailsProjectTemplates.addItem(template);
 					}
+
+					allLoadedTemplates.push(template);
                 }
             }
 
@@ -441,12 +446,7 @@ package actionScripts.plugin.templating
 			var separator:MenuItem = new MenuItem(null);
 			newFileMenu.items.push(separator);
 
-			var filteredProjectTemplatesToMenu:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source;
-			filteredProjectTemplatesToMenu.concat(ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source,
-												  ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE.source,
-					                              ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA.source,
-					                              ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS.source);
-			filteredProjectTemplatesToMenu = filteredProjectTemplatesToMenu.filter(filterProjectsTemplates);
+			var filteredProjectTemplatesToMenu:Array = allLoadedTemplates.filter(filterProjectsTemplates);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
@@ -481,7 +481,7 @@ package actionScripts.plugin.templating
 			else
 			{
 				originalTemplate = template;
-				customTemplate = getCustomFileFor(template);
+				customTemplate = TemplatingHelper.getCustomFileFor(template);
 			}
 			
 			var setting:TemplateSetting = new TemplateSetting(originalTemplate, customTemplate, template.fileBridge.name);
@@ -619,28 +619,6 @@ package actionScripts.plugin.templating
 			}
 		}
 		
-		protected function getCustomFileFor(template:FileLocation):FileLocation
-		{
-			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
-			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-			
-			var customTemplatePath:String = template.fileBridge.nativePath.substr(appDirPath.length+1);
-			var customTemplate:FileLocation = template.fileBridge.resolveApplicationStorageDirectoryPath(customTemplatePath);
-			
-			return customTemplate;
-		}
-		
-		protected function getOriginalFileForCustom(template:FileLocation):FileLocation
-		{
-			var appDirPath:String = template.fileBridge.resolveApplicationDirectoryPath(null).fileBridge.nativePath;
-			var appStorageDirPath:String = template.fileBridge.resolveApplicationStorageDirectoryPath(null).fileBridge.nativePath;
-			
-			var originalTemplatePath:String = template.fileBridge.nativePath.substr(appStorageDirPath.length+1);
-			var originalTemplate:FileLocation = template.fileBridge.resolveApplicationDirectoryPath(originalTemplatePath);
-			
-			return originalTemplate;
-		}
-		
 		protected function handleTemplateReset(event:Event):void
 		{
 			// Resetting a template just removes it from app-storage
@@ -661,16 +639,12 @@ package actionScripts.plugin.templating
 							isProjectOpen = true;
 							i.projectFolder.isRoot = true;
 							model.mainView.getTreeViewPanel().tree.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, FTETreeItemRenderer.DELETE_PROJECT, i.projectFolder, false));
-							// remove the item from New/File menu
-							dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
 							break;
 						}
 					}
 					
 					if (!isProjectOpen) 
 					{
-						// remove the item from New/File menu
-						dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
 						custom.fileBridge.deleteDirectory(true);
 					}
 				}
@@ -684,9 +658,6 @@ package actionScripts.plugin.templating
 							&& ed.currentFile
 							&& ed.currentFile.fileBridge.nativePath == custom.fileBridge.nativePath)
 						{
-							// active the editor
-							handleTemplateModify(event);
-							
 							// close the tab
 							GlobalEventDispatcher.getInstance().dispatchEvent(
 								new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, ed, true)
@@ -694,8 +665,6 @@ package actionScripts.plugin.templating
 						}
 					}
 					
-					// remove the item from New/File menu
-					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, false, lbl));
 					// deletes the file
 					custom.fileBridge.deleteFile();
 				}
@@ -710,8 +679,20 @@ package actionScripts.plugin.templating
 				rdr.dispatchEvent(new Event('refresh'));
 				
 				//readTemplates();
-				if (custom.fileBridge.isDirectory) projectTemplates.splice(projectTemplates.indexOf(custom), 1);
-				else fileTemplates.splice(fileTemplates.indexOf(custom), 1);
+				if (custom.fileBridge.isDirectory) 
+				{
+					// remove the item from New/File menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, true, lbl));
+					
+					projectTemplates.splice(projectTemplates.indexOf(custom), 1);
+				}
+				else 
+				{
+					// remove the item from New/File menu
+					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.REMOVE_TEMPLATE, false, lbl));
+					
+					fileTemplates.splice(fileTemplates.indexOf(custom), 1);
+				}
 			}
 		}
 		
@@ -1172,6 +1153,12 @@ package actionScripts.plugin.templating
 				PopUpManager.centerPopUp(newJavaComponentPopup);
 			}
 		}
+		
+		protected function checkAndUpdateIfTemplateModified(event:NewFileEvent):void
+		{
+			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.fromTemplate);
+			if (modifiedTemplate.fileBridge.exists) event.fromTemplate = modifiedTemplate;
+		}
 
 		protected function openGroovyTypeChoose(event:Event, isInterfaceDialog:Boolean):void
 		{
@@ -1210,6 +1197,7 @@ package actionScripts.plugin.templating
 
 		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1260,6 +1248,7 @@ package actionScripts.plugin.templating
 		
 		protected function onNewInterfaceCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1286,6 +1275,7 @@ package actionScripts.plugin.templating
 
 		protected function onMXMLFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1298,11 +1288,15 @@ package actionScripts.plugin.templating
 		
 		protected function onFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
+				var isCustomExtension:Boolean = newFilePopup.openType == NewFilePopup.AS_PLAIN_TEXT;
+				
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var tmpArr:Array = event.fromTemplate.fileBridge.name.split(".");
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +"."+ tmpArr[tmpArr.length - 2]);
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName + 
+					(isCustomExtension ? "" : "."+ tmpArr[tmpArr.length - 2]));
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
@@ -1311,6 +1305,7 @@ package actionScripts.plugin.templating
 
         protected function onVisualEditorFileCreateRequest(event:NewFileEvent):void
         {
+			checkAndUpdateIfTemplateModified(event);
             if (event.fromTemplate.fileBridge.exists)
             {
                 var content:String = String(event.fromTemplate.fileBridge.read());
@@ -1368,6 +1363,7 @@ package actionScripts.plugin.templating
 
 		protected function onCSSFileCreateRequest(event:NewFileEvent):void
 		{
+			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
