@@ -297,7 +297,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return JavaImporter.parse(targetFolder, projectName, settingsFileLocation);
+			return JavaImporter.parse(targetFolder, projectName);
 		}
 	}
 }

@@ -46,7 +46,6 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
 			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
-			dispatcher.addEventListener(GradleBuildEvent.GRADLE_BUILD_COMPLETE, gradleBuildCompleteHandler);
 
 			super.activate();
 		}
@@ -58,7 +57,6 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.removeEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
 			dispatcher.removeEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
-			dispatcher.removeEventListener(GradleBuildEvent.GRADLE_BUILD_COMPLETE, gradleBuildCompleteHandler);
 
 			super.deactivate();
 		}
@@ -109,11 +107,6 @@ package actionScripts.plugin.java.javaproject
 		}
 
 		private function mavenBuildCompleteHandler(event:MavenBuildEvent):void
-		{
-			runJavaProjectByBuildId(event.buildId);
-		}
-		
-		private function gradleBuildCompleteHandler(event:GradleBuildEvent):void
 		{
 			runJavaProjectByBuildId(event.buildId);
 		}

@@ -231,7 +231,6 @@ package actionScripts.plugins.gradle
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 
-                dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.GRADLE_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
                 running = false;
             }

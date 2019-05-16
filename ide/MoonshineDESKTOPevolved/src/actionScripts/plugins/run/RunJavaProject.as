@@ -57,35 +57,26 @@ package actionScripts.plugins.run
 					tmpJavaProject.name,
 					"Running "));
 				
-				if (tmpJavaProject.hasGradleBuild())
+				// maven project
+				warning("Starting application: " + tmpJavaProject.projectName);
+				
+				var pomPathLocation:FileLocation = new FileLocation(tmpJavaProject.mavenBuildOptions.mavenBuildPath)
+					.resolvePath("pom.xml");
+				
+				var projectVersion:String = MavenPomUtil.getProjectVersion(pomPathLocation);
+				var jarName:String = tmpJavaProject.projectName.concat("-", projectVersion, ".jar");
+				var jarLocation:FileLocation = tmpJavaProject.folderLocation
+					.resolvePath("target" + model.fileCore.separator + jarName);
+				
+				if (jarLocation.fileBridge.exists)
 				{
-					// in case of Gradle project
-					javaCommand = Vector.<String>(["gradle run"]);
+					javaCommand = Vector.<String>(["java -classpath " + jarLocation.fileBridge.nativePath +
+						" " + tmpJavaProject.mainClassName]);
 					this.start(javaCommand, tmpJavaProject.projectFolder.file);
 				}
 				else
 				{
-					// maven project
-	                warning("Starting application: " + tmpJavaProject.projectName);
-	
-	                var pomPathLocation:FileLocation = new FileLocation(tmpJavaProject.mavenBuildOptions.mavenBuildPath)
-	                        .resolvePath("pom.xml");
-	
-	                var projectVersion:String = MavenPomUtil.getProjectVersion(pomPathLocation);
-	                var jarName:String = tmpJavaProject.projectName.concat("-", projectVersion, ".jar");
-	                var jarLocation:FileLocation = tmpJavaProject.folderLocation
-	                        .resolvePath("target" + model.fileCore.separator + jarName);
-	
-	                if (jarLocation.fileBridge.exists)
-	                {
-	                    javaCommand = Vector.<String>(["java -classpath " + jarLocation.fileBridge.nativePath +
-	                                                                        " " + tmpJavaProject.mainClassName]);
-	                    this.start(javaCommand, tmpJavaProject.projectFolder.file);
-	                }
-	                else
-	                {
-	                    error("Project .jar file does not exist: " + jarLocation.fileBridge.nativePath);
-	                }
+					error("Project .jar file does not exist: " + jarLocation.fileBridge.nativePath);
 				}
             }
         }

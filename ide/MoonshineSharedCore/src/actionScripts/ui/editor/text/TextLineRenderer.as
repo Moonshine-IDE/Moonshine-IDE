@@ -283,19 +283,24 @@ package actionScripts.ui.editor.text
             var selStart:int = 0;
 			if (textLine)
             {
-                if (start > textLine.atomCount)
+                if (start >= textLine.atomCount)
                 {
                     start = textLine.atomCount - 1;
                 }
+				
+				if (start < 0)
+				{
+					start = 0;
+				}
 
-                if (end > textLine.atomCount)
+                if (end >= textLine.atomCount)
                 {
-                    end = textLine.atomCount;
+                    end = textLine.atomCount - 1;
                 }
-
-                var endBounds:Rectangle = textLine.getAtomBounds(end-1);
-                selStart = Math.floor(textLine.getAtomBounds(start).x);
-                selWidth = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
+				
+				var endBounds:Rectangle = textLine.getAtomBounds(end);
+				selStart = Math.floor(textLine.getAtomBounds(start).x);
+				selWidth = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
             }
 
 			drawSelectionRect(selStart, selWidth);
