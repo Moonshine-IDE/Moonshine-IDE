@@ -7,6 +7,8 @@ package actionScripts.events
         public static const START_GRADLE_BUILD:String = "startGradleBuild";
         public static const STOP_GRADLE_BUILD:String = "stopGradleBuild";
 		public static const REFRESH_GRADLE_CLASSPATH:String = "refreshGradleClasspath";
+		public static const STOP_GRADLE_DAEMON:String = "stopGradleDaemon";
+		public static const GRADLE_DAEMON_CLOSED:String = "gradleDaemonClosed";
 
         public static const GRADLE_BUILD_FAILED:String = "gradleBuildFailed";
         public static const GRADLE_BUILD_COMPLETE:String = "gradleBuildComplete";

@@ -18,41 +18,38 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.MouseEvent;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+    
+    import mx.collections.ArrayCollection;
+    import mx.core.FlexGlobals;
+    import mx.events.ResizeEvent;
+    import mx.managers.PopUpManager;
+    
+    import spark.components.Button;
+    
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.settings.event.SetSettingsEvent;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
-
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.LayoutModifier;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.menu.MenuPlugin;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.valueObjects.ConstantsCoreVO;
+    
     import components.popup.QuitPopup;
-
-    import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-
-    import mx.collections.ArrayCollection;
-	import mx.core.FlexGlobals;
-	import mx.events.ResizeEvent;
-	import mx.managers.PopUpManager;
-	
-	import spark.components.Button;
-	
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.LayoutModifier;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.popup.StandardPopup;
-	import components.views.splashscreen.SplashScreen;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.valueObjects.ProjectVO;
-	import flash.utils.setTimeout;
-	import flash.utils.clearTimeout;
+    import components.popup.StandardPopup;
+    import components.views.splashscreen.SplashScreen;
 
 	public class QuitCommand implements ICommand
 	{
@@ -61,6 +58,7 @@ package actionScripts.controllers
 		private static var pop:StandardPopup;
 		private var quitPopup:QuitPopup;
 		private var timedOutClosingLanguageServers:Boolean = false;
+		private var isGradleDaemonClosed:Boolean;
 		private var languageServerTimeoutID:uint = uint.MAX_VALUE;
 
 		private var commandEvent:Event;
@@ -104,7 +102,7 @@ package actionScripts.controllers
             var editorsToClose:Array = [];
             for each (var tab:IContentWindow in editors)
             {
-                if (!tab.isChanged())
+                if (!tab.isChanged() && !(tab is SplashScreen))
                 {
                     editorsToClose.push(tab);
                 }
@@ -118,7 +116,7 @@ package actionScripts.controllers
             }
 
             // One editor is auto-created when last is removed
-            if (editors.length == 0)
+            if (editors.length == 0 || ((editors.length == 1) && editors[0] is SplashScreen))
             {
                 onApplicationClosing();
             }
@@ -145,6 +143,8 @@ package actionScripts.controllers
 		 */
 		protected function onApplicationClosing():void
 		{
+			ConstantsCoreVO.IS_APPLICATION_CLOSING = true;
+			
 			if(!timedOutClosingLanguageServers && model.languageServerCore.connectedProjectCount > 0)
 			{
 				timedOutClosingLanguageServers = false;
@@ -158,6 +158,14 @@ package actionScripts.controllers
 			if(languageServerTimeoutID != uint.MAX_VALUE)
 			{
 				clearTimeout(languageServerTimeoutID);
+			}
+			
+			// gradle daemon closing
+			if (!isGradleDaemonClosed)
+			{
+				dispatcher.addEventListener(GradleBuildEvent.GRADLE_DAEMON_CLOSED, onGradleDaemonClosed);
+				dispatcher.dispatchEvent(new Event(GradleBuildEvent.STOP_GRADLE_DAEMON));
+				return;
 			}
 
 			LayoutModifier.saveLastSidebarState();
@@ -242,6 +250,14 @@ package actionScripts.controllers
 				return;
 			}
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onLanguageServerClosed);
+			this.onApplicationClosing();
+		}
+		
+		private function onGradleDaemonClosed(event:Event):void
+		{
+			dispatcher.removeEventListener(GradleBuildEvent.GRADLE_DAEMON_CLOSED, onGradleDaemonClosed);
+			
+			isGradleDaemonClosed = true;
 			this.onApplicationClosing();
 		}
 

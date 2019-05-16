@@ -4,6 +4,8 @@ package actionScripts.plugins.gradle
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
     
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.SettingsEvent;
@@ -15,14 +17,10 @@ package actionScripts.plugins.gradle
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
-    import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.GradleBuildUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
-
-    import flash.utils.clearTimeout;
-
-    import flash.utils.setTimeout;
 
     public class GradleBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -84,6 +82,7 @@ package actionScripts.plugins.gradle
 
             dispatcher.addEventListener(GradleBuildEvent.START_GRADLE_BUILD, startConsoleBuildHandler);
             dispatcher.addEventListener(GradleBuildEvent.STOP_GRADLE_BUILD, stopConsoleBuildHandler);
+			dispatcher.addEventListener(GradleBuildEvent.STOP_GRADLE_DAEMON, stopGradleDaemon);
         }
 
         override public function deactivate():void
@@ -92,6 +91,7 @@ package actionScripts.plugins.gradle
 
             dispatcher.removeEventListener(GradleBuildEvent.START_GRADLE_BUILD, startConsoleBuildHandler);
             dispatcher.removeEventListener(GradleBuildEvent.STOP_GRADLE_BUILD, stopConsoleBuildHandler);
+			dispatcher.removeEventListener(GradleBuildEvent.STOP_GRADLE_DAEMON, stopGradleDaemon);
         }
 		
 		override protected function onProjectPathsValidated(paths:Array):void
@@ -257,7 +257,25 @@ package actionScripts.plugins.gradle
                 dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.GRADLE_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
             }
+			else if (status == int.MAX_VALUE)
+			{
+				model.gradlePath = null;
+				stopGradleDaemon(null);
+			}
         }
+		
+		private function stopGradleDaemon(event:Event):void
+		{
+			if (model.gradlePath && GradleBuildUtil.IS_GRADLE_STARTED)
+			{
+				status = int.MAX_VALUE;
+				super.start(Vector.<String>(["gradle --stop"]), null);
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new Event(GradleBuildEvent.GRADLE_DAEMON_CLOSED));
+			}
+		}
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {

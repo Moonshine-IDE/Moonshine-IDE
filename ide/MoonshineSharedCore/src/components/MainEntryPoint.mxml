@@ -28,13 +28,13 @@
 	<fx:Script>
 		<![CDATA[
 		import mx.events.FlexEvent;
-			
-			import actionScripts.factory.BridgeFactory;
-			import actionScripts.locator.IDEController;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.PluginManager;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.Settings;
+		
+		import actionScripts.factory.BridgeFactory;
+		import actionScripts.locator.IDEController;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.PluginManager;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.valueObjects.Settings;
 			
 			//--------------------------------------------------------------------------
 			//
@@ -109,4 +109,16 @@
 	
 	<ui:MainView id="mainView" x="0" y="0" width="100%" height="100%"
 				 creationComplete="onMainViewCompletes(event)"/>
+	
+	<s:BorderContainer cornerRadius="5"
+					   borderVisible="false"
+					   horizontalCenter="0" verticalCenter="0"
+					   includeInLayout="{ConstantsCoreVO.IS_APPLICATION_CLOSING}" visible="{ConstantsCoreVO.IS_APPLICATION_CLOSING}">
+		<s:backgroundFill>
+			<s:SolidColor color="0x373737"/>
+		</s:backgroundFill>
+		<s:Label text="Preparing to close.. Please wait."
+				 paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"
+				 styleName="textInputLabel"/>
+	</s:BorderContainer>
 </s:Group>

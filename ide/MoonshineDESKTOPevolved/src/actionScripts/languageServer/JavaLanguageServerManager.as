@@ -52,6 +52,7 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
@@ -523,6 +524,7 @@ package actionScripts.languageServer
 			
 			if (event.exitCode == 0)
 			{
+				GradleBuildUtil.IS_GRADLE_STARTED = true;
 				startNativeProcess();
 			}
 		}

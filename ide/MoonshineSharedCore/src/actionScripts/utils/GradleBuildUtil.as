@@ -4,6 +4,8 @@ package actionScripts.utils
 
     public class GradleBuildUtil
     {
+		public static var IS_GRADLE_STARTED:Boolean;
+		
         public static function getProjectSourceDirectory(pomLocation:FileLocation):String
         {
             var fileContent:Object = pomLocation.fileBridge.read();
