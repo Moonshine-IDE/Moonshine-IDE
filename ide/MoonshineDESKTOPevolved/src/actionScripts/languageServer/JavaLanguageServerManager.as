@@ -98,8 +98,8 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _shellInfo:NativeProcessStartupInfo;
-		private var _nativeProcess:NativeProcess;
+		private var _languageServerProcess:NativeProcess;
+		private var _gradleProcess:NativeProcess;
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJDKPath:String = null;
@@ -241,7 +241,7 @@ package actionScripts.languageServer
 			// update its eclipse plugin
 			if (IDEModel.getInstance().gradlePath && _project.hasGradleBuild())
 			{
-				if(_nativeProcess)
+				if(_languageServerProcess)
 				{
 					trace("Error: Java language server process already exists!");
 					return true;
@@ -279,22 +279,22 @@ package actionScripts.languageServer
 					processArgs.push(value);
 				}
 				
-				_shellInfo = new NativeProcessStartupInfo();
-				_shellInfo.arguments = processArgs;
-				_shellInfo.executable = cmdFile;
-				_shellInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 				
-				_nativeProcess = new NativeProcess();
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
-				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
-				_nativeProcess.start(_shellInfo);
+				_gradleProcess = new NativeProcess();
+				_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
+				_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
+				_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
+				_gradleProcess.start(processInfo);
 			}
 		}
 
 		private function startNativeProcess():void
 		{
-			if(_nativeProcess)
+			if(_languageServerProcess)
 			{
 				trace("Error: Java language server process already exists!");
 				return;
@@ -317,7 +317,7 @@ package actionScripts.languageServer
 
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var processArgs:Vector.<String> = new <String>[];
-			_shellInfo = new NativeProcessStartupInfo();
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
 			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
@@ -343,14 +343,14 @@ package actionScripts.languageServer
 			//this is a file outside of the project folder due to limitations
 			//of the language server, which is based on Eclipse
 			processArgs.push(getWorkspaceNativePath());
-			_shellInfo.arguments = processArgs;
-			_shellInfo.executable = cmdFile;
-			_shellInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 
-			_nativeProcess = new NativeProcess();
-			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.start(_shellInfo);
+			_languageServerProcess = new NativeProcess();
+			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.start(processInfo);
 
 			initializeLanguageServer(jdkPath);
 		}
@@ -398,7 +398,7 @@ package actionScripts.languageServer
 			_languageStatusDone = false;
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_JAVA, _project, debugMode, initOptions,
-				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
+				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
@@ -418,10 +418,10 @@ package actionScripts.languageServer
 				_waitingToRestart = true;
 				_languageClient.stop();
 			}
-			else if(_nativeProcess)
+			else if(_languageServerProcess)
 			{
 				_waitingToRestart = true;
-				_nativeProcess.exit();
+				_languageServerProcess.exit();
 			}
 
 			if(!_waitingToRestart)
@@ -445,17 +445,55 @@ package actionScripts.languageServer
 			};
 		}
 
-		private function shellError(e:ProgressEvent):void
+		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
-			var output:IDataInput = _nativeProcess.standardError;
+			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
 		}
-		
-		private function shellErrorOnGradleClasspath(e:ProgressEvent):void
+
+		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
-			var output:IDataInput = _nativeProcess.standardError;
+			if(_languageClient)
+			{
+				//this should have already happened, but if the process exits
+				//abnormally, it might not have
+				_languageClient.stop();
+				
+				ConsoleOutputter.formatOutput(
+					"Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
+					"warning");
+			}
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.exit();
+			_languageServerProcess = null;
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				preTaskLanguageServer();
+			}
+		}
+		
+		private function gradleProcess_standardOutputDataHandler(e:ProgressEvent):void 
+		{
+			if(!_gradleProcess)
+			{
+				return;
+			}
+			var output:IDataInput = _gradleProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+		}
+		
+		private function gradleProcess_standardErrorDataHandler(e:ProgressEvent):void
+		{
+			if(!_gradleProcess)
+			{
+				return;
+			}
+			var output:IDataInput = _gradleProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			
 			if (data.match(/'eclipse' not found in root project/))
@@ -481,46 +519,13 @@ package actionScripts.languageServer
 			));
 		}
 		
-		private function shellDataOnGradleClasspath(e:ProgressEvent):void 
+		private function gradleProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
-			if(_nativeProcess)
-			{
-				var output:IDataInput = _nativeProcess.standardOutput;
-				var data:String = output.readUTFBytes(output.bytesAvailable);
-				ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
-			}
-		}
-
-		private function shellExit(e:NativeProcessExitEvent):void
-		{
-			if(_languageClient)
-			{
-				//this should have already happened, but if the process exits
-				//abnormally, it might not have
-				_languageClient.stop();
-				
-				ConsoleOutputter.formatOutput(
-					"Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
-					"warning");
-			}
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.exit();
-			_nativeProcess = null;
-			if(_waitingToRestart)
-			{
-				_waitingToRestart = false;
-				preTaskLanguageServer();
-			}
-		}
-		
-		private function shellExitAfterGradleClasspath(event:NativeProcessExitEvent):void
-		{
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
-			_nativeProcess.exit();
-			_nativeProcess = null;
+			_gradleProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
+			_gradleProcess.removeEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
+			_gradleProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
+			_gradleProcess.exit();
+			_gradleProcess = null;
 			
 			if (event.exitCode == 0)
 			{
