@@ -29,6 +29,7 @@ package actionScripts.plugin.groovy.groovyproject
 	import actionScripts.plugin.groovy.groovyproject.exporter.GrailsExporter;
 	import mx.utils.ObjectUtil;
 	import mx.collections.ArrayCollection;
+	import actionScripts.plugin.core.compiler.GrailsBuildEvent;
 
 	public class CreateGrailsProject
 	{
@@ -233,6 +234,9 @@ package actionScripts.plugin.groovy.groovyproject
 			{
                 dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
 			}
+
+			model.activeProject = project;
+			dispatcher.dispatchEvent(new GrailsBuildEvent(GrailsBuildEvent.CREATE_APP));
 		}
 		
 		private function throwError():void

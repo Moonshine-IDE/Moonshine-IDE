@@ -24,6 +24,7 @@ package actionScripts.plugins.grails
 
     import flash.utils.setTimeout;
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+    import actionScripts.plugin.groovy.groovyproject.vo.GrailsProjectVO;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -48,9 +49,23 @@ package actionScripts.plugins.grails
             return "Grails Build Plugin. Esc exits.";
         }
 
+        public function get grailsPath():String
+        {
+            return model ? model.grailsPath : null;
+        }
+
+        public function set grailsPath(value:String):void
+        {
+            if (model.grailsPath != value)
+            {
+                model.grailsPath = value;
+            }
+        }
+
         public function getSettingsList():Vector.<ISetting>
         {
             return Vector.<ISetting>([
+                new PathSetting(this, 'grailsPath', 'Grails Home', true, grailsPath)
             ]);
         }
 
@@ -62,6 +77,7 @@ package actionScripts.plugins.grails
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.CLEAN, grailsCleanHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.CREATE_APP, grailsCreateAppHandler);
         }
 
         override public function deactivate():void
@@ -72,17 +88,8 @@ package actionScripts.plugins.grails
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.CLEAN, grailsCleanHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.CREATE_APP, grailsCreateAppHandler);
         }
-
-		private function getGrails():String
-		{
-			var grails:String = "./grailsw";
-			if (!ConstantsCoreVO.IS_MACOS)
-			{
-				grails += ".bat";
-			}
-			return grails;
-		}
 
         private function getConstantArguments():Vector.<String>
         {
@@ -106,6 +113,14 @@ package actionScripts.plugins.grails
                 warning("Build is running. Wait for finish...");
                 return;
             }
+
+            if (!grailsPath)
+            {
+                error("Specify path to Grails folder.");
+                stop(true);
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
+                return;
+            }
 			
             warning("Starting Grails build...");
 
@@ -124,22 +139,28 @@ package actionScripts.plugins.grails
 
 		private function grailsBuildHandler(event:Event):void
 		{
-			this.start(new <String>[[getGrails(), "compile"].join(" ")], model.activeProject.folderLocation);
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "compile"].join(" ")], model.activeProject.folderLocation);
 		}
 
 		private function grailsBuildReleaseHandler(event:Event):void
 		{
-			this.start(new <String>[[getGrails(), "war"].join(" ")], model.activeProject.folderLocation);
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
 		}
 
 		private function grailsBuildAndRunHandler(event:Event):void
 		{
-			this.start(new <String>[[getGrails(), "run-app"].join(" ")], model.activeProject.folderLocation);
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
 		}
 
 		private function grailsCleanHandler(event:Event):void
 		{
-			this.start(new <String>[[getGrails(), "clean"].join(" ")], model.activeProject.folderLocation);
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "clean"].join(" ")], model.activeProject.folderLocation);
+		}
+
+		private function grailsCreateAppHandler(event:Event):void
+		{
+            var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "create-app", project.name, "--inplace"].join(" ")], model.activeProject.folderLocation);
 		}
 
         override protected function onNativeProcessIOError(event:IOErrorEvent):void

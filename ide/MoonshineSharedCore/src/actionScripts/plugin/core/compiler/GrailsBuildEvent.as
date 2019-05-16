@@ -26,6 +26,7 @@ package actionScripts.plugin.core.compiler
 		public static const BUILD:String = "grailsBuild";
 		public static const BUILD_RELEASE:String = "grailsBuildRelease";
 		public static const CLEAN:String = "grailsClean";
+		public static const CREATE_APP:String = "grailsCreateApp";
 		
 		public function GrailsBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{

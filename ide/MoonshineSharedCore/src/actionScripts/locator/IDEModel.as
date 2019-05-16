@@ -74,6 +74,7 @@ package actionScripts.locator
 		public var antHomePath:FileLocation;
 		public var antScriptFile:FileLocation;
 		public var mavenPath:String;
+		public var grailsPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var svnPath:String;
 		public var gitPath:String;

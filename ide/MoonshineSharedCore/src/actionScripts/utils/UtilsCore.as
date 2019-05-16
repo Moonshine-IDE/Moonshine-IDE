@@ -1016,6 +1016,37 @@ package actionScripts.utils
 			
 			return null;
         }
+
+        public static function getGrailsBinPath():String
+        {
+			if (!model.grailsPath || model.grailsPath == "")
+			{
+				return null;
+			}
+
+			var separator:String = model.fileCore.separator;
+            var grailsLocation:FileLocation = new FileLocation(model.grailsPath);
+            var grailsBin:String = "bin" + separator;
+			if (grailsLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			{
+				grailsBin = "";
+			}
+			
+			if (!grailsLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return grailsLocation.resolvePath(grailsBin + "grails.bat").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(grailsLocation.resolvePath(grailsBin + "grails").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
 		
 		public static function isDefaultSDKAvailable():Boolean
 		{
