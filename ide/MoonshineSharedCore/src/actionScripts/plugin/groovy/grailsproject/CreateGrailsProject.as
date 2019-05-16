@@ -22,7 +22,6 @@ package actionScripts.plugin.groovy.grailsproject
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.Settings;
@@ -251,43 +250,39 @@ package actionScripts.plugin.groovy.grailsproject
 
 		private function grailsCreateApp():void
 		{
-			var compilerArg:String = UtilsCore.getGrailsBinPath() + " create-app " + project.name + " --inplace";
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+			var command:String = UtilsCore.getGrailsBinPath() + " create-app " + project.name + " --inplace";
 			dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.PROJECT_BUILD_STARTED,
 				project.projectName, "Creating ", false
 			));
 			warning("Creating Grails application " + project.name);
 			
-			function onEnvironmentPrepared(value:String):void
+			var cmdFile:File;
+			var processArgs:Vector.<String> = new <String>[];
+			
+			if (Settings.os == "win")
 			{
-				var cmdFile:File;
-				var processArgs:Vector.<String> = new <String>[];
-				
-				if (Settings.os == "win")
-				{
-					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					cmdFile = new File("/bin/bash");
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-				
-				_shellInfo = new NativeProcessStartupInfo();
-				_shellInfo.arguments = processArgs;
-				_shellInfo.executable = cmdFile;
-				_shellInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
-				
-				_nativeProcess = new NativeProcess();
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGrailsCreateApp);
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGrailsCreateApp);
-				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGrailsCreateApp);
-				_nativeProcess.start(_shellInfo);
+				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+				processArgs.push("/c");
+				processArgs.push(command);
 			}
+			else
+			{
+				cmdFile = new File("/bin/bash");
+				processArgs.push("-c");
+				processArgs.push(command);
+			}
+			
+			_shellInfo = new NativeProcessStartupInfo();
+			_shellInfo.arguments = processArgs;
+			_shellInfo.executable = cmdFile;
+			_shellInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
+			
+			_nativeProcess = new NativeProcess();
+			_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGrailsCreateApp);
+			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGrailsCreateApp);
+			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGrailsCreateApp);
+			_nativeProcess.start(_shellInfo);
 		}
 		
 		private function shellDataOnGrailsCreateApp(e:ProgressEvent):void 
