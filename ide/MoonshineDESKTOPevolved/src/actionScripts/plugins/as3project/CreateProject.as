@@ -647,7 +647,7 @@ package actionScripts.plugins.as3project
 			// we'll need to get the template project directory by it's name
 			var pvo:Object = getProjectWithTemplate(shell, exportProject);
 			
-			var templateDir:FileLocation = templateLookup[shell];
+			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
 			var sourceFile:String = (_isProjectFromExistingSource && !isLibraryProject) ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
 			var sourceFileWithExtension:String;
@@ -934,15 +934,20 @@ package actionScripts.plugins.as3project
             {
 				setProjectType(projectTemplateType);
 
-				if (!isJavaProject)
-				{
-					var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
-							ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
-							allProjectTemplates;
+				var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
+						ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
+						allProjectTemplates;
 
-					for each (var template:TemplateVO in projectsTemplates)
+				for each (var template:TemplateVO in projectsTemplates)
+				{
+					if(template.title == projectTemplateType)
 					{
-						if(template.title == projectTemplateType)
+						if (isJavaProject)
+						{
+							templateLookup[pvo] = template.file;
+							break;
+						}
+						else
 						{
 							setProjectType(template.title);
 
