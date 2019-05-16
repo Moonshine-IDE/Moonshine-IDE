@@ -289,47 +289,6 @@ package actionScripts.plugin.groovy.groovyproject
 				_nativeProcess.start(_shellInfo);
 			}
 		}
-
-		private function createEclipseProject():void
-		{
-			var compilerArg:String = UtilsCore.getGradleBinPath() + " eclipse";
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
-			dispatcher.dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.PROJECT_BUILD_STARTED,
-				null, "Preparing dependencies", false
-			));
-			warning("Preparing dependencies for Grails project " + project.name);
-			
-			function onEnvironmentPrepared(value:String):void
-			{
-				var cmdFile:File;
-				var processArgs:Vector.<String> = new <String>[];
-				
-				if (Settings.os == "win")
-				{
-					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					cmdFile = new File("/bin/bash");
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-				
-				_shellInfo = new NativeProcessStartupInfo();
-				_shellInfo.arguments = processArgs;
-				_shellInfo.executable = cmdFile;
-				_shellInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
-				
-				_nativeProcess = new NativeProcess();
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
-				_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
-				_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
-				_nativeProcess.start(_shellInfo);
-			}
-		}
 		
 		private function shellDataOnGrailsCreateApp(e:ProgressEvent):void 
 		{
@@ -355,51 +314,9 @@ package actionScripts.plugin.groovy.groovyproject
 		
 		private function shellExitAfterGrailsCreateApp(event:NativeProcessExitEvent):void
 		{
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
-			_nativeProcess.exit();
-			_nativeProcess = null;
-			
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-			if (event.exitCode == 0)
-			{
-				createEclipseProject();
-			}
-		}
-		
-		private function shellErrorOnGradleClasspath(e:ProgressEvent):void
-		{
-			var output:IDataInput = _nativeProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
-			
-			if (data.match(/'eclipse' not found in root project/))
-			{
-				data = project.name +": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct."; 
-				error(data);
-			}
-			else
-			{
-				data = "shellError while updating Gradle classpath" + data + ".";
-				error(data);
-			}
-		}
-		
-		private function shellDataOnGradleClasspath(e:ProgressEvent):void 
-		{
-			if(_nativeProcess)
-			{
-				var output:IDataInput = _nativeProcess.standardOutput;
-				var data:String = output.readUTFBytes(output.bytesAvailable);
-				print(data);
-			}
-		}
-		
-		private function shellExitAfterGradleClasspath(event:NativeProcessExitEvent):void
-		{
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGradleClasspath);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGradleClasspath);
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGradleClasspath);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellErrorOnGrailsCreateApp);
+			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExitAfterGrailsCreateApp);
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellDataOnGrailsCreateApp);
 			_nativeProcess.exit();
 			_nativeProcess = null;
 			

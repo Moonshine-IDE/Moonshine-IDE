@@ -42,6 +42,11 @@ package actionScripts.languageServer
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.utils.GradleBuildUtil;
+	import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.utils.UtilsCore;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -61,8 +66,8 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _shellInfo:NativeProcessStartupInfo;
-		private var _nativeProcess:NativeProcess;
+		private var _languageServerProcess:NativeProcess;
+		private var _gradleProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJDKPath:String = null;
 
@@ -74,7 +79,7 @@ package actionScripts.languageServer
 			//dispose()
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 
-			startNativeProcess();
+			preTaskLanguageServer();
 		}
 
 		public function get project():ProjectVO
@@ -141,9 +146,9 @@ package actionScripts.languageServer
 
 		private function startNativeProcess():void
 		{
-			if(_nativeProcess)
+			if(_languageServerProcess)
 			{
-				trace("Error: Java language server process already exists!");
+				trace("Error: Groovy language server process already exists!");
 				return;
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
@@ -163,21 +168,86 @@ package actionScripts.languageServer
 			}
 
 			var processArgs:Vector.<String> = new <String>[];
-			_shellInfo = new NativeProcessStartupInfo();
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
 			processArgs.push("-cp");
 			processArgs.push(jarFile.nativePath + "/*");
 			processArgs.push("moonshine.groovyls.Main");
-			_shellInfo.arguments = processArgs;
-			_shellInfo.executable = cmdFile;
-			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
-			_nativeProcess = new NativeProcess();
-			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.start(_shellInfo);
+			_languageServerProcess = new NativeProcess();
+			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.start(processInfo);
 
 			initializeLanguageServer(jdkPath);
+		}
+		
+		private function preTaskLanguageServer():void
+		{
+			if (!requireUpdateGradleClasspath()) 
+			{
+				startNativeProcess();
+			}
+		}
+		
+		private function requireUpdateGradleClasspath():Boolean
+		{
+			// in case of Gradle project we need to
+			// update its eclipse plugin
+			if (IDEModel.getInstance().gradlePath)
+			{
+				if(_languageServerProcess)
+				{
+					trace("Error: Groovy language server process already exists!");
+					return true;
+				}
+				
+				var compilerArg:String = UtilsCore.getGradleBinPath() + " eclipse";
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					null, "Updating Gradle classpath", false
+				));
+				return true;
+			}
+			
+			return false;
+			
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				var cmdFile:File;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_gradleProcess = new NativeProcess();
+				_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
+				_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
+				_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
+				_gradleProcess.start(processInfo);
+			}
 		}
 		
 		private function initializeLanguageServer(sdkPath:String):void
@@ -194,7 +264,7 @@ package actionScripts.languageServer
 
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_GROOVY, _project, debugMode, {},
-				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
+				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 		}
@@ -212,28 +282,28 @@ package actionScripts.languageServer
 				_waitingToRestart = true;
 				_languageClient.stop();
 			}
-			else if(_nativeProcess)
+			else if(_languageServerProcess)
 			{
 				_waitingToRestart = true;
-				_nativeProcess.exit();
+				_languageServerProcess.exit();
 			}
 
 			if(!_waitingToRestart)
 			{
-				startNativeProcess();
+				preTaskLanguageServer();
 			}
 		}
 
-		private function shellError(e:ProgressEvent):void
+		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
-			var output:IDataInput = _nativeProcess.standardError;
+			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
 			trace(data);
 		}
 
-		private function shellExit(e:NativeProcessExitEvent):void
+		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
 			if(_languageClient)
 			{
@@ -245,13 +315,66 @@ package actionScripts.languageServer
 					"Groovy language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
 					"warning");
 			}
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.exit();
-			_nativeProcess = null;
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.exit();
+			_languageServerProcess = null;
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
+				preTaskLanguageServer();
+			}
+		}
+		
+		private function gradleProcess_standardOutputDataHandler(e:ProgressEvent):void 
+		{
+			if(_gradleProcess)
+			{
+				var output:IDataInput = _gradleProcess.standardOutput;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			}
+		}
+		
+		private function gradleProcess_standardErrorDataHandler(e:ProgressEvent):void
+		{
+			var output:IDataInput = _gradleProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			
+			if (data.match(/'eclipse' not found in root project/))
+			{
+				data = _project.name +": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct."; 
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					data, 
+					false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+			}
+			else
+			{
+				data = "shellError while updating Gradle classpath" + data + ".";
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					HtmlFormatter.sprintfa(data, null), false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+			}
+		}
+		
+		private function gradleProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
+			_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
+			_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
+			_gradleProcess.exit();
+			_gradleProcess = null;
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS
+			));
+			
+			if (event.exitCode == 0)
+			{
+				GradleBuildUtil.IS_GRADLE_STARTED = true;
 				startNativeProcess();
 			}
 		}
