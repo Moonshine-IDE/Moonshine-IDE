@@ -51,6 +51,7 @@
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";
@@ -144,6 +145,10 @@
 				{
 					projectPath += ".veditorproj";
 				}
+				else if(associatedData is GrailsProjectVO)
+				{
+					projectPath += ".grailsproj";
+				}
 				else
 				{
 					projectPath += ".as3proj";
@@ -154,6 +159,7 @@
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
 					projectPath += as3Project.isVisualEditorProject ? ".veditorproj" : ".as3proj";
 				}*/
+
 				var projectFile:FileLocation = new FileLocation(projectPath);
 				if (projectFile.fileBridge.exists)
 				{

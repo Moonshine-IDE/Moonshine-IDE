@@ -66,10 +66,15 @@ package actionScripts.impls
 		{
 			return UtilsCore.isMavenAvailable();
 		}
-		
+
 		public function isGradlePresent():Boolean
 		{
 			return UtilsCore.isGradleAvailable();
+		}
+		
+		public function isGrailsPresent():Boolean
+		{
+			return UtilsCore.isGrailsAvailable();
 		}
 		
 		public function isSVNPresent():Boolean

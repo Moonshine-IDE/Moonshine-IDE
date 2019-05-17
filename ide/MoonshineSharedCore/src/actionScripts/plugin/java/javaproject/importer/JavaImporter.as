@@ -3,6 +3,7 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import flash.filesystem.File;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.MavenPomUtil;
 
@@ -14,7 +15,15 @@ package actionScripts.plugin.java.javaproject.importer
 
 		public static function test(file:Object):FileLocation
 		{
-			if (!file.exists) return null;
+			if (!file.exists)
+			{
+				return null;
+			}
+			var srcMainJava:File = file.resolvePath("src/main/java");
+			if (!srcMainJava.exists || !srcMainJava.isDirectory)
+			{
+				return null;
+			}
 			
 			var listing:Array = file.getDirectoryListing();
 			var projectFile:FileLocation = null;

@@ -56,6 +56,7 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -404,6 +405,13 @@ package actionScripts.ui.menu
 							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 							{
 								return item === ProjectMenuTypes.JAVA;
+							});
+						}
+						else if(currentProject is GrailsProjectVO)
+						{
+							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+							{
+								return item === ProjectMenuTypes.GRAILS;
 							});
 						}
 						else if(currentProject is AS3ProjectVO)

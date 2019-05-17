@@ -25,5 +25,6 @@ package actionScripts.plugin.project
         public static const VISUAL_EDITOR:uint = 3;
         public static const JAVA:uint = 4;
         public static const ROYALE:uint = 5;
+        public static const GROOVY:uint = 6;
     }
 }

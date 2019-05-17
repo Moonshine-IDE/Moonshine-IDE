@@ -1,7 +1,6 @@
 {
 	"compilerOptions": {
 		"output": "bin-debug/MoonshineDESKTOP.swf",
-		"keep-generated-actionscript": true,
 		"accessible": true,
 		"source-path": [
 			"src",

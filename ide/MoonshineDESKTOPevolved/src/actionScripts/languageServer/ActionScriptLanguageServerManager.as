@@ -69,8 +69,7 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _shellInfo:NativeProcessStartupInfo;
-		private var _nativeProcess:NativeProcess;
+		private var _languageServerProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJavaPath:String = null;
 		private var _previousSDKPath:String = null;
@@ -192,7 +191,7 @@ package actionScripts.languageServer
 
 		private function startNativeProcess():void
 		{
-			if(_nativeProcess)
+			if(_languageServerProcess)
 			{
 				trace("Error: AS3 & MXML language server process already exists!");
 				return;
@@ -223,7 +222,7 @@ package actionScripts.languageServer
 			var frameworksPath:String = (new File(sdkPath)).resolvePath("frameworks").nativePath;
 
 			var processArgs:Vector.<String> = new <String>[];
-			_shellInfo = new NativeProcessStartupInfo();
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
 			if (Settings.os == "win")
 			{
@@ -239,14 +238,14 @@ package actionScripts.languageServer
 			processArgs.push("-cp");
 			processArgs.push(cp);
 			processArgs.push("moonshine.Main");
-			_shellInfo.arguments = processArgs;
-			_shellInfo.executable = cmdFile;
-			_shellInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
-			_nativeProcess = new NativeProcess();
-			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.start(_shellInfo);
+			_languageServerProcess = new NativeProcess();
+			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.start(processInfo);
 
 			initializeLanguageServer(sdkPath);
 			
@@ -269,7 +268,7 @@ package actionScripts.languageServer
 
 			var debugMode:Boolean = false;
 			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
-				_dispatcher, _nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
+				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
 			_languageClient.registerScheme("swc");
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
@@ -288,10 +287,10 @@ package actionScripts.languageServer
 				_waitingToRestart = true;
 				_languageClient.stop();
 			}
-			else if(_nativeProcess)
+			else if(_languageServerProcess)
 			{
 				_waitingToRestart = true;
-				_nativeProcess.exit();
+				_languageServerProcess.exit();
 			}
 
 			if(!_waitingToRestart)
@@ -397,16 +396,16 @@ package actionScripts.languageServer
 			_languageClient.sendNotification(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 
-		private function shellError(e:ProgressEvent):void
+		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
-			var output:IDataInput = _nativeProcess.standardError;
+			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
 			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
 			trace(data);
 		}
 
-		private function shellExit(e:NativeProcessExitEvent):void
+		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
 			if(_languageClient)
 			{
@@ -418,10 +417,10 @@ package actionScripts.languageServer
 					"ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
 					"warning");
 			}
-			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			_nativeProcess.exit();
-			_nativeProcess = null;
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+			_languageServerProcess.exit();
+			_languageServerProcess = null;
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;

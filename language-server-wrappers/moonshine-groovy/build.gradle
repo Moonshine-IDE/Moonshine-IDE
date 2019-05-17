@@ -1,0 +1,19 @@
+plugins {
+  id "java"
+}
+
+compileJava {
+  sourceCompatibility = "1.8"
+  targetCompatibility = "1.8"
+}
+
+ext.mainClass = "moonshine.groovylc.Main"
+
+dependencies {
+  compile files("../../ide/MoonshineSharedCore/src/elements/groovy-language-server/groovy-language-server-all.jar")
+}
+
+task deploy(type: Copy) {
+    from "build/libs/moonshine-groovy.jar"
+    into "../../ide/MoonshineSharedCore/src/elements/groovy-language-server/"
+}   

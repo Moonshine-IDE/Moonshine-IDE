@@ -134,7 +134,8 @@ package actionScripts.plugin.settings
 		{
 			excludeFromSettings = excludeFromSettings.concat(
 				model.flexCore.getPluginsNotToShowInSettings(),
-				model.javaCore.getPluginsNotToShowInSettings()
+				model.javaCore.getPluginsNotToShowInSettings(),
+				model.groovyCore.getPluginsNotToShowInSettings()
 			);
 			
 			dispatcher.addEventListener(SettingsEvent.EVENT_OPEN_SETTINGS, openAppSettings);

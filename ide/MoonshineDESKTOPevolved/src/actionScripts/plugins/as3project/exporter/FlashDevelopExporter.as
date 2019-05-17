@@ -25,8 +25,9 @@ package actionScripts.plugins.as3project.exporter
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
 	
-	public class FlashDevelopExporter
+	public class FlashDevelopExporter extends FlashDevelopExporterBase
 	{
 		public static function export(p:AS3ProjectVO, file:FileLocation):void
 		{
@@ -163,55 +164,6 @@ package actionScripts.plugins.as3project.exporter
 			}
 				
 			return project;
-		}
-		
-		private static function exportPaths(v:Vector.<FileLocation>, container:XML, element:XML, p:AS3ProjectVO, absolutePath:Boolean=false, appendAsValue:Boolean=false, nullValue:String=null):XML
-		{
-			for each (var f:FileLocation in v) 
-			{
-				var e:XML = element.copy();
-				var relative:String = p.folderLocation.fileBridge.getRelativePath(f, true);
-				if (absolutePath) relative = null;
-				if (appendAsValue) e.appendChild(relative ? relative : f.fileBridge.nativePath);
-				else e.@path = relative ? relative : f.fileBridge.nativePath;
-				container.appendChild( e );
-			}
-			
-			if (v.length == 0 && nullValue)
-			{
-				element.appendChild(nullValue);
-				container.appendChild(nullValue);
-			}
-			else if (v.length == 0)
-			{
-				container.appendChild(<!-- <empty/> -->);
-			}
-			
-			return container;
-		}
-		
-		private static function exportPathString(v:Vector.<String>, container:XML, element:XML, p:AS3ProjectVO, absolutePath:Boolean=false, appendAsValue:Boolean=false, nullValue:String=null):XML
-		{
-			for each (var f:String in v) 
-			{
-				var e:XML = element.copy();
-				if (appendAsValue) e.appendChild(f);
-				else e.@path = f;
-				container.appendChild( e );
-			}
-			
-			if (v.length == 0 && nullValue)
-			{
-				element.appendChild(nullValue);
-				container.appendChild(nullValue);
-			}
-			else if (v.length == 0)
-			{
-				var tmpXML:XML = <!-- <empty/> -->
-				container.appendChild(tmpXML);
-			}
-			
-			return container;
 		}
 	}
 }

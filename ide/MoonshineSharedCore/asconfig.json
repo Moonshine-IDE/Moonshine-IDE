@@ -1,7 +1,6 @@
 {
 	"compilerOptions": {
 		"output": "bin/MoonshineSharedCore.swc",
-		"keep-generated-actionscript": true,
 		"source-path": [
 			"src"
 		],

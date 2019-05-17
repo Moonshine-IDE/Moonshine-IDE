@@ -18,6 +18,13 @@ package actionScripts.ui.menu
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ProjectVO;
 
+    import flash.ui.Keyboard;
+
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+
     public class ProjectMenu
     {
         private var actionScriptMenu:Vector.<MenuItem>;
@@ -27,6 +34,7 @@ package actionScripts.ui.menu
         private var veFlex:Vector.<MenuItem>;
         private var javaMenu:Vector.<MenuItem>;
 		private var javaMenuGradle:Vector.<MenuItem>;
+        private var grailsMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
 
@@ -64,6 +72,12 @@ package actionScripts.ui.menu
             if (javaProject)
             {
                 return getJavaMenuItems();
+            }
+
+            var grailsProject:GrailsProjectVO = project as GrailsProjectVO;
+            if (grailsProject)
+            {
+                return getGrailsMenuItems();
             }
 
             return null;
@@ -237,6 +251,30 @@ package actionScripts.ui.menu
 			
             javaMenu.forEach(makeDynamic);
             return javaMenu;
+        }
+
+        private function getGrailsMenuItems():Vector.<MenuItem>
+        {
+            if (grailsMenu == null)
+            {
+                var enabledTypes:Array = [ProjectMenuTypes.GRAILS];
+                var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+                grailsMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, GrailsBuildEvent.BUILD,
+                            'b', [Keyboard.COMMAND],
+                            'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, GrailsBuildEvent.BUILD_AND_RUN,
+                            "\n", [Keyboard.COMMAND],
+                            "\n", [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, GrailsBuildEvent.CLEAN)
+                ]);
+                grailsMenu.forEach(makeDynamic);
+            }
+
+            return grailsMenu;
         }
 
         private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void

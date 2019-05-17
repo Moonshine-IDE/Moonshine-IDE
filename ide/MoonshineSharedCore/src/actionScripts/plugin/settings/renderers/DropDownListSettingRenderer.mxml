@@ -50,7 +50,7 @@
 					{
 						for (var i:int = 0; i < setting.dataProvider.length; i++)
 						{
-							if (setting.provider[setting.name] == setting.dataProvider[i][setting.labelField])
+							if (setting.provider[setting.name] == setting.dataProvider.getItemAt(i)[setting.labelField])
 							{
 								cmbOption.selectedIndex = i;
 								break;
@@ -59,7 +59,7 @@
 					}
 
 					// default value
-					setting.stringValue = setting.labelField ? setting.dataProvider[cmbOption.selectedIndex][setting.labelField] : setting.dataProvider[cmbOption.selectedIndex];
+					setting.stringValue = setting.labelField ? setting.dataProvider.getItemAt(cmbOption.selectedIndex)[setting.labelField] : setting.dataProvider.getItemAt(cmbOption.selectedIndex).toString();
 				});
 			}
 		}

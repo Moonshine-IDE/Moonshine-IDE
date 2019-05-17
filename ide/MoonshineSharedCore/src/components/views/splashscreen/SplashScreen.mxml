@@ -314,6 +314,12 @@
 				{
 					return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
 				}
+
+				projectFileLocation = model.groovyCore.testGrails(projectFile);
+				if (projectFileLocation)
+				{
+					return model.groovyCore.parseGrails(projectFileLocation as FileLocation);
+				}
 			}
 
 			return null;

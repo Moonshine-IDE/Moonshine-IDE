@@ -54,6 +54,7 @@
 			import components.MainEntryPoint;
 			
 			import no.doomsday.console.ConsoleUtil;
+			import actionScripts.impls.IGroovyBridgeImpl;
 
 			//--------------------------------------------------------------------------
 			//
@@ -70,6 +71,7 @@
 	        private static const NEEDED_FOR_COMPILATION7:IClipboardBridgeImp = null;
 	        private static const NEEDED_FOR_COMPILATION8:IJavaBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION9:ILanguageServerBridgeImp = null;
+	        private static const NEEDED_FOR_COMPILATION10:IGroovyBridgeImpl = null;
 			
 			//--------------------------------------------------------------------------
 			//

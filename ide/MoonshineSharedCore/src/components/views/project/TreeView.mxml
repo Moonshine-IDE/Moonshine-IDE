@@ -75,6 +75,7 @@
 		import actionScripts.valueObjects.URLDescriptorVO;
 		
 		import components.popup.NewFolderPopup;
+		import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 		private var newFolderWindow:NewFolderPopup;
 
@@ -183,6 +184,11 @@
                 {
                     var javaProject:JavaProjectVO = JavaProjectVO(project);
                     sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
+                }
+                else if (project is GrailsProjectVO)
+                {
+                    var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
                 }
 				if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 			}
@@ -380,6 +386,11 @@
                     {
                         var javaProject:JavaProjectVO = JavaProjectVO(project);
                         if (javaProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
+                    }
+                    else if (project is GrailsProjectVO)
+                    {
+                        var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
+						if (grailsProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
                     }
 					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
