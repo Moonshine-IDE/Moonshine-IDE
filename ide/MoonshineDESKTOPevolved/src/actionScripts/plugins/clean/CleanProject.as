@@ -17,11 +17,12 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.actionscript.as3project.clean
+package actionScripts.plugins.clean
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.events.NativeProcessExitEvent;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -32,17 +33,20 @@ package actionScripts.plugin.actionscript.as3project.clean
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.project.ProjectType;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
 
-	public class CleanProject extends PluginBase implements IPlugin
+	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
 		private var loader: DataAgent;
 		private var selectProjectPopup:SelectOpenedFlexProject;
@@ -50,6 +54,7 @@ package actionScripts.plugin.actionscript.as3project.clean
 		private var currentTargets:Array;
 		private var folderCount:int;
 		private var currentProjectName:String;
+		private var currentCleanType:uint;
 
 		override public function get name():String { return "Clean Project"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -142,10 +147,12 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 				if (project is AS3ProjectVO)
 				{
+					currentCleanType = ProjectType.AS3PROJ_AS_AIR;
 					cleanAS3Project(project as AS3ProjectVO);
 				}
 				else if (project is JavaProjectVO)
 				{
+					currentCleanType = ProjectType.JAVA;
 					cleanJavaProject(project as JavaProjectVO);
 				}
 				//GrailsProjectVO is handled in GrailsBuildPlugin
@@ -154,13 +161,24 @@ package actionScripts.plugin.actionscript.as3project.clean
 
 		private function cleanJavaProject(project:JavaProjectVO):void
 		{
-			var targets:Array = [project.folderLocation.resolvePath("target"), project.folderLocation.resolvePath("build")];
-			for each (var target:FileLocation in targets)
+			if (project.hasGradleBuild())
 			{
+				if (UtilsCore.isGradleAvailable())
+				{
+					start(Vector.<String>(["gradle clean"]), project.folderLocation);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean failed: Missing Gradle configuration in Moonshine settings.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+				}
+			}
+			else if (project.hasPom())
+			{
+				var target:FileLocation = project.folderLocation.resolvePath("target");
 				if (target.fileBridge.exists)
 				{
 					currentTargets.push(target);
-	
+					
 					target.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
 					target.fileBridge.getFile.addEventListener(Event.COMPLETE, onProjectFolderComplete);
 					target.fileBridge.deleteDirectoryAsync(true);
@@ -168,6 +186,19 @@ package actionScripts.plugin.actionscript.as3project.clean
 				else
 				{
 					success("Project files cleaned successfully : " + project.name);
+				}
+			}
+		}
+		
+		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+		{
+			super.onNativeProcessExit(event);
+			
+			if (event.exitCode == 0)
+			{
+				if (currentCleanType == ProjectType.JAVA)
+				{
+					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project cleaned succssfully."));
 				}
 			}
 		}

@@ -42,7 +42,6 @@ package actionScripts.impls
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
-	import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -79,6 +78,7 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
+	import actionScripts.plugins.clean.CleanProject;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
