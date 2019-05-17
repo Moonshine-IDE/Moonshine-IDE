@@ -39,7 +39,6 @@ package actionScripts.impls
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
-	import actionScripts.plugin.actionscript.as3project.clean.CleanProject;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
@@ -290,14 +289,13 @@ package actionScripts.impls
 				JSSyntaxPlugin,
 				MXMLSyntaxPlugin,
 				XMLSyntaxPlugin,
-				SplashScreenPlugin,
-				CleanProject
+				SplashScreenPlugin
 				];
 		}
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [CleanProject, HelpPlugin, ProjectPlugin, FindReplacePlugin, AS3ProjectPlugin, RecentlyOpenedPlugin, TemplatingPlugin, MXMLCPlugin];
+			return [HelpPlugin, ProjectPlugin, FindReplacePlugin, AS3ProjectPlugin, RecentlyOpenedPlugin, TemplatingPlugin, MXMLCPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
