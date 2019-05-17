@@ -1033,6 +1033,7 @@ package actionScripts.plugins.as3project
 			else if (customSdkPathSetting)
 			{
 				customSdkPathSetting.stringValue = null;
+				customSdkPathSetting.commitChanges();
 			}
 		}
 
