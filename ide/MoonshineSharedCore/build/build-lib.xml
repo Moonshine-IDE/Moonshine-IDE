@@ -686,7 +686,7 @@
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
-	<target name="CompileSWFWindows" depends="compileLibrary" unless="${isOSX}">
+	<target name="CompileSWFWindows" depends="createBuildInfoFile" unless="${isOSX}">
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
@@ -711,10 +711,12 @@
 			<compiler.library-path dir="../libs" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
-			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
+				<include name="**/*.swc" />
+			</compiler.library-path>
 		</mxmlc>
 	</target>
-	<target name="CompileSWFOSX" depends="compileLibrary" if="${isOSX}">
+	<target name="CompileSWFOSX" depends="createBuildInfoFile" if="${isOSX}">
 		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
 		<copy todir="${basedir}/assets" overwrite="true">
 			<fileset dir="${assets_dir}"/>
@@ -742,7 +744,9 @@
 			<compiler.library-path dir="../libs" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
-			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
+				<include name="**/*.swc" />
+			</compiler.library-path>
 			<compiler.external-library-path dir="${debug_dir}" append="true">
 			   <include name="SSB.ane" />
 			</compiler.external-library-path>
@@ -750,7 +754,7 @@
 	</target>
 	
 	<!-- Compile web SWF to build directory for desktop packaging -->
-	<target name="CompileWeb" depends="compileLibrary">
+	<target name="CompileWeb" depends="createBuildInfoFile">
 		<copy todir="${debug_dir}/elements" overwrite="true">
 			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
 		</copy>
@@ -777,7 +781,9 @@
 			<source-path path-element="${locale.path}"/>
 			<source-path path-element="${applicationSourceDirectory}"/>
 			<compiler.debug>false</compiler.debug>
-			<library-path dir="${debug_dir}" includes="*.swc" append="true" />
+			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
+				<include name="**/*.swc" />
+			</compiler.library-path>
 		</mxmlc>
 	</target>
 
@@ -792,7 +798,7 @@
 	</target>
 	
 	<!-- Compile library project to SWC -->
-	<target name="compileLibrary" description="compiles the Library" depends="createBuildInfoFile">
+	<!-- target name="compileLibrary" description="compiles the Library" depends="createBuildInfoFile">
 		<echo>Compiling MoonshineSharedCore Library SWC To Deploy SWC Folder (Debug: ${IsDebug})</echo>
 		<compc debug="{$IsDebug}" output="${debug_dir}/MoonshineSharedCore.swc" incremental="true" maxmemory="2048m">
 			<define name="CONFIG::OSX" value="${isOSX}"/>
@@ -808,7 +814,7 @@
 				<language>EN</language>
 			</metadata>
 		</compc>
-	</target>
+	</target -->
 	
 	<!-- Determine the SVN revision of the current project
             The revision is set to the "svn.revision" property
