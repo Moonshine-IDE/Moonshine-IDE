@@ -18,7 +18,6 @@ package actionScripts.plugin.java.javaproject.vo
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var sourceFolder:FileLocation;
 
 		public var mainClassName:String;
 
