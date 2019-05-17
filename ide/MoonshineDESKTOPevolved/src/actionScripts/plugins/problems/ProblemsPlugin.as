@@ -21,19 +21,14 @@ package actionScripts.plugins.problems
 	import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.AdvancedDataGrid;
 	import mx.events.ListEvent;
 	
 	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.plugins.problems.view.ProblemsView;
-	import actionScripts.ui.IPanelWindow;
-	import actionScripts.ui.LayoutModifier;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Diagnostic;
 

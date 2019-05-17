@@ -18,11 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.references
 {
-	import flash.display.DisplayObject;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+
 	import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
-	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.ReferencesEvent;
@@ -45,6 +45,7 @@ package actionScripts.plugins.references
 		override public function get description():String { return "Displays all references for a symbol in the entire workspace."; }
 
 		private var referencesView:ReferencesView = new ReferencesView();
+		private var isReferencesViewVisible:Boolean;
 
 		override public function activate():void
 		{
@@ -67,8 +68,6 @@ package actionScripts.plugins.references
 			{
 				return;
 			}
-			PopUpManager.addPopUp(referencesView, DisplayObject(editor.parentApplication), true);
-			PopUpManager.centerPopUp(referencesView);
 
 			var startLine:int = editor.editor.model.selectedLineIndex;
 			var startChar:int = editor.editor.startPos;
@@ -91,7 +90,21 @@ package actionScripts.plugins.references
 			}
 			collection.filterFunction = null;
 			collection.refresh();
+
+			if (!isReferencesViewVisible)
+			{
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, referencesView));
+				isReferencesViewVisible = true;
+
+				referencesView.addEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
+			}
 		}
 
+		private function onReferenceViewRemovedFromStage(event:Event):void
+		{
+			referencesView.references.removeAll();
+			isReferencesViewVisible = false;
+			referencesView.removeEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
+		}
 	}
 }

@@ -27,7 +27,7 @@
 		 backgroundColor="0x444444"
 		 verticalGap="0"
 		 implements="actionScripts.interfaces.IViewWithTitle"
-		 verticalScrollPolicy="off" xmlns:project="actionScripts.ui.project.*">
+		 verticalScrollPolicy="off">
 	<mx:Style>
 		.problemsHeaderStyle
 		{
@@ -37,7 +37,6 @@
 	</mx:Style>
 	<mx:Script><![CDATA[
 		import mx.collections.ArrayCollection;
-		import actionScripts.ui.tabview.TabViewTab;
 		import actionScripts.valueObjects.Diagnostic;
 		import mx.controls.dataGridClasses.DataGridColumn;
 		import actionScripts.valueObjects.Range;
