@@ -27,16 +27,15 @@ package actionScripts.locator
     import actionScripts.interfaces.IContextMenuBridge;
     import actionScripts.interfaces.IFileBridge;
     import actionScripts.interfaces.IFlexCoreBridge;
+    import actionScripts.interfaces.IGroovyBridge;
     import actionScripts.interfaces.IJavaBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
+    import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.MainView;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.interfaces.IJavaBridge;
-    import actionScripts.interfaces.ILanguageServerBridge;
-    import actionScripts.interfaces.IGroovyBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -57,6 +56,7 @@ package actionScripts.locator
 		public var javaCore:IJavaBridge;
 		public var groovyCore:IGroovyBridge;
 		public var languageServerCore:ILanguageServerBridge;
+		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		
 		// Currently active editor
 		public var activeEditor:IContentWindow;

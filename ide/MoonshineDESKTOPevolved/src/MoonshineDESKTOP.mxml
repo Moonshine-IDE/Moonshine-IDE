@@ -40,9 +40,11 @@
 			import actionScripts.impls.IContextMenuBridgeImp;
 			import actionScripts.impls.IFileBridgeImp;
 			import actionScripts.impls.IFlexCoreBridgeImp;
+			import actionScripts.impls.IGroovyBridgeImpl;
 			import actionScripts.impls.IJavaBridgeImpl;
 			import actionScripts.impls.ILanguageServerBridgeImp;
 			import actionScripts.impls.INativeMenuItemBridgeImp;
+			import actionScripts.impls.IOSXBookmarkerBridgeImp;
 			import actionScripts.impls.IVisualEditorProjectBridgeImpl;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.LayoutModifier;
@@ -54,7 +56,6 @@
 			import components.MainEntryPoint;
 			
 			import no.doomsday.console.ConsoleUtil;
-			import actionScripts.impls.IGroovyBridgeImpl;
 
 			//--------------------------------------------------------------------------
 			//
@@ -72,6 +73,7 @@
 	        private static const NEEDED_FOR_COMPILATION8:IJavaBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION9:ILanguageServerBridgeImp = null;
 	        private static const NEEDED_FOR_COMPILATION10:IGroovyBridgeImpl = null;
+			private static const NEEDED_FOR_COMPILATION11:IOSXBookmarkerBridgeImp = null;
 			
 			//--------------------------------------------------------------------------
 			//

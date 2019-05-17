@@ -74,6 +74,11 @@ package actionScripts.plugin.groovy.grailsproject
 
 			var lastSelectedProjectPath:String;
 			
+			CONFIG::OSX
+				{
+					if (model.osxBookmarkerCore.availableBookmarkedPaths == "") model.osxBookmarkerCore.removeFlashCookies();
+				}
+			
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
@@ -340,7 +345,7 @@ package actionScripts.plugin.groovy.grailsproject
 			// Create project root directory
 			CONFIG::OSX
 				{
-					if (!OSXBookmarkerNotifiers.isPathBookmarked(targetFolder.fileBridge.nativePath))
+					if (!model.osxBookmarkerCore.isPathBookmarked(targetFolder.fileBridge.nativePath))
 					{
 						_currentCauseToBeInvalid = 'Unable to access Parent Directory:\n'+ targetFolder.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 						throwError();

@@ -61,6 +61,7 @@
 				ideModel.contextMenuCore = BridgeFactory.getContextMenuInstance();
 				ideModel.languageServerCore = BridgeFactory.getLanguageServerCoreInstance();
 				ideModel.flexCore = BridgeFactory.getFlexCoreInstance();
+				ideModel.osxBookmarkerCore = BridgeFactory.getOSXBookmarkerCoreInstance();
 				ideModel.aboutCore = BridgeFactory.getAboutInstance();
 				ideModel.visualEditorCore = BridgeFactory.getVisualEditorInstance();
 				ideModel.clipboardCore = BridgeFactory.getClipboardInstance();

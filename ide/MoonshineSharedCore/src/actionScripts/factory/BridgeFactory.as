@@ -19,18 +19,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.factory
 {
-    import actionScripts.interfaces.IClipboardBridge;
-    import actionScripts.interfaces.IVisualEditorBridge;
-
     import flash.system.ApplicationDomain;
-	
-	import actionScripts.interfaces.IAboutBridge;
-	import actionScripts.interfaces.IContextMenuBridge;
-	import actionScripts.interfaces.IFileBridge;
-	import actionScripts.interfaces.IFlexCoreBridge;
-	import actionScripts.interfaces.IJavaBridge;
-	import actionScripts.interfaces.ILanguageServerBridge;
-	import actionScripts.interfaces.IGroovyBridge;
+    
+    import actionScripts.interfaces.IAboutBridge;
+    import actionScripts.interfaces.IClipboardBridge;
+    import actionScripts.interfaces.IContextMenuBridge;
+    import actionScripts.interfaces.IFileBridge;
+    import actionScripts.interfaces.IFlexCoreBridge;
+    import actionScripts.interfaces.IGroovyBridge;
+    import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.ILanguageServerBridge;
+    import actionScripts.interfaces.IOSXBookmarkerBridge;
+    import actionScripts.interfaces.IVisualEditorBridge;
 	
 	/**
 	 * BridgeFactory
@@ -86,6 +86,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IFlexCoreBridgeImp");
 			var gb: IFlexCoreBridge = new clsToCreate();
+			return gb;
+		}
+		
+		public static function getOSXBookmarkerCoreInstance(): IOSXBookmarkerBridge 
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IOSXBookmarkerBridgeImp");
+			var gb: IOSXBookmarkerBridge = new clsToCreate();
 			return gb;
 		}
 
