@@ -1039,6 +1039,13 @@ package actionScripts.plugins.as3project
         private function setProjectType(templateName:String):void
         {
 			isJavaProject = false;
+            isVisualEditorProject = false;
+            isLibraryProject = false;
+            isFeathersProject = false;
+            isMobileProject = false;
+            isAway3DProject = false;
+            isFlexJSRoyalProject = false;
+            isJavaProject = false;
 
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
