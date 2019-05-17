@@ -63,7 +63,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		[Bindable] public var isLibraryProject:Boolean;
 		
 		public var fromTemplate:FileLocation;
-		public var sourceFolder:FileLocation;
 		public var visualEditorSourceFolder:FileLocation;
 		
 		public var swfOutput:SWFOutputVO;

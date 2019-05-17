@@ -18,7 +18,6 @@ package actionScripts.plugin.groovy.grailsproject.vo
 		private static const TARGET_BYTECODE_VALUES:Array = ["1.4", "1.5", "1.6", "1.7", "1.8", "9", "10", "11", "12", "13"];
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var sourceFolder:FileLocation;
 
 		public function GrailsProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true) 
 		{

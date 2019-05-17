@@ -44,6 +44,7 @@ package actionScripts.valueObjects
 		public var folderLocation: FileLocation;
 
 		public var projectFile: FileLocation;
+		public var sourceFolder:FileLocation;
 		public var projectRemotePath:String;
 		public var projectName:String;
 		public var fileNamesOnly:Vector.<String>;
