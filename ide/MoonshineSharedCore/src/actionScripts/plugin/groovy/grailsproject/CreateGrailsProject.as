@@ -74,11 +74,6 @@ package actionScripts.plugin.groovy.grailsproject
 
 			var lastSelectedProjectPath:String;
 			
-			CONFIG::OSX
-			{
-				if (OSXBookmarkerNotifiers.availableBookmarkedPaths == "") OSXBookmarkerNotifiers.removeFlashCookies();
-			}
-			
             cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			if (cookie.data.hasOwnProperty('recentProjectPath'))
 			{
