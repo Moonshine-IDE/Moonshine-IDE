@@ -4,6 +4,8 @@ package actionScripts.plugins.maven
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
     
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
@@ -12,17 +14,17 @@ package actionScripts.plugins.maven
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.build.MavenBuildStatus;
     import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
+    import actionScripts.utils.HelperUtils;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ComponentTypes;
+    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
-
-    import flash.utils.clearTimeout;
-
-    import flash.utils.setTimeout;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -31,6 +33,7 @@ package actionScripts.plugins.maven
 
         protected var buildId:String;
 		private var isProjectHasInvalidPaths:Boolean;
+		private var pathSetting:PathSetting;
 
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
@@ -73,10 +76,41 @@ package actionScripts.plugins.maven
 
         public function getSettingsList():Vector.<ISetting>
         {
+			onSettingsClose();
+			pathSetting = new PathSetting(this, 'mavenPath', 'Maven Home', true, mavenPath);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			
             return Vector.<ISetting>([
-                new PathSetting(this, 'mavenPath', 'Maven Home', true, mavenPath)
+				pathSetting
             ]);
         }
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_MAVEN);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_MAVEN, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					pathSetting.setMessage(null);
+				}
+			}
+		}
 
         override public function activate():void
         {

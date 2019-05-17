@@ -14,10 +14,14 @@ package actionScripts.plugins.gradle
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.build.MavenBuildStatus;
     import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.GradleBuildUtil;
+    import actionScripts.utils.HelperUtils;
+    import actionScripts.valueObjects.ComponentTypes;
+    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
@@ -29,6 +33,7 @@ package actionScripts.plugins.gradle
 
         protected var buildId:String;
 		private var isProjectHasInvalidPaths:Boolean;
+		private var pathSetting:PathSetting;
 
         private static const BUILD_SUCCESS:RegExp = /BUILD SUCCESS/;
         private static const WARNING:RegExp = /\[WARNING\]/;
@@ -71,10 +76,41 @@ package actionScripts.plugins.gradle
 
         public function getSettingsList():Vector.<ISetting>
         {
+			onSettingsClose();
+			pathSetting = new PathSetting(this, 'gradlePath', 'Gradle Home', true, gradlePath);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			
             return Vector.<ISetting>([
-                new PathSetting(this, 'gradlePath', 'Gradle Home', true, gradlePath)
+                pathSetting
             ]);
         }
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GRADLE);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_GRADLE, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					pathSetting.setMessage(null);
+				}
+			}
+		}
 
         override public function activate():void
         {

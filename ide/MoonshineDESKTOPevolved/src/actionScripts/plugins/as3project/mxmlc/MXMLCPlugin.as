@@ -18,10 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import actionScripts.locator.HelperModel;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.utils.EnvironmentUtils;
-
 	import com.adobe.utils.StringUtil;
 	
 	import flash.desktop.NativeProcess;
@@ -38,13 +34,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.utils.IDataOutput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
-	import flashx.textLayout.elements.LinkElement;
-
-	import flashx.textLayout.elements.ParagraphElement;
-	import flashx.textLayout.elements.SpanElement;
-	import flashx.textLayout.formats.TextDecoration;
-
+	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
@@ -57,13 +47,16 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.SdkEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.HelperModel;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -74,10 +67,14 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.EnvironmentUtils;
+	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
@@ -85,6 +82,11 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
+	
+	import flashx.textLayout.elements.LinkElement;
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
 	
 	import org.as3commons.asblocks.utils.FileUtil;
 	
@@ -106,6 +108,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
 		private var isLibraryProject:Boolean;
+		private var javaPathSetting:PathSetting;
 		
 		private var lastTarget:File;
 		private var targets:Dictionary;
@@ -281,13 +284,44 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
+			onSettingsClose();
+			javaPathSetting = new PathSetting(new JavaSettingsProvider(),
+				"currentJavaPath",
+				"Java Development Kit Path", true);
+			javaPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
+			
 			return Vector.<ISetting>([
 				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
-				new PathSetting(new JavaSettingsProvider(),
-						"currentJavaPath",
-						"Java Development Kit Path", true)
+				javaPathSetting
 			]);
+		}
+		
+		override public function onSettingsClose():void
+		{
+			if (javaPathSetting)
+			{
+				javaPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
+				javaPathSetting = null;
+			}
+		}
+		
+		private function onJavaPathSelected(event:Event):void
+		{
+			if (!javaPathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_OPENJAVA);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_OPENJAVA, javaPathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					javaPathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					javaPathSetting.setMessage(null);
+				}
+			}
 		}
 		
 		private function buildCommand(args:Array):void

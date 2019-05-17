@@ -47,7 +47,10 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
@@ -104,6 +107,7 @@ package actionScripts.plugins.git
 		private var gitBranchSelectionWindow:GitBranchSelectionPopup;
 		private var gitNewBranchWindow:GitNewBranchPopup;
 		private var isStartupTest:Boolean;
+		private var pathSetting:PathSetting;
 		
 		private var _processManager:GitProcessManager;
 		protected function get processManager():GitProcessManager
@@ -179,15 +183,49 @@ package actionScripts.plugins.git
 		
 		public function getSettingsList():Vector.<ISetting>
 		{
-			var tmpPathSetting:PathSetting = new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false);
-			if (ConstantsCoreVO.IS_MACOS) 
-			{
-				tmpPathSetting.setMessage("For most users, it will be easier to set this with \"Git > Grant Permission\"", AbstractSetting.MESSAGE_IMPORTANT);
-			}
+			onSettingsClose();
+			pathSetting = new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			setUsualMessage();
 			
 			return Vector.<ISetting>([
-				tmpPathSetting
+				pathSetting
 			]);
+		}
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					setUsualMessage();
+				}
+			}
+		}
+		
+		private function setUsualMessage():void
+		{
+			if (ConstantsCoreVO.IS_MACOS) 
+			{
+				pathSetting.setMessage("For most users, it will be easier to set this with \"Git > Grant Permission\"", AbstractSetting.MESSAGE_IMPORTANT);
+			}
 		}
 		
 		public function requestToAuthenticate():void
