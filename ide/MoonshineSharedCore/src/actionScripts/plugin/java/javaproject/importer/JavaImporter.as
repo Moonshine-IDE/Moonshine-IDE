@@ -110,9 +110,6 @@ package actionScripts.plugin.java.javaproject.importer
 				}
 
 				javaProject.mainClassName = MavenPomUtil.getMainClassName(pomFile);
-				addSourceDirectoryToProject(javaProject, sourceDirectory);
-
-				javaProject.classpaths.push(javaProject.sourceFolder);
 			}
 			else
 			{
@@ -120,16 +117,23 @@ package actionScripts.plugin.java.javaproject.importer
 				{
 					javaProject.gradleBuildOptions.parse(settingsData.gradleBuild);
 				}
-				
-				parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
-				javaProject.mainClassName = settingsData.build.option.@mainclass;
+
+				if (settingsData)
+				{
+					parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
+					javaProject.mainClassName = settingsData.build.option.@mainclass;
+				}
 
 				if (javaProject.classpaths.length > 0)
 				{
 					sourceDirectory = javaProject.classpaths[0].fileBridge.nativePath;
 				}
+			}
 
-				addSourceDirectoryToProject(javaProject, sourceDirectory);
+			addSourceDirectoryToProject(javaProject, sourceDirectory);
+			if (javaProject.classpaths.length == 0)
+			{
+				javaProject.classpaths.push(javaProject.sourceFolder);
 			}
 
 			if (!javaProject.mainClassName)
