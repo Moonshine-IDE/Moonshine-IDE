@@ -78,13 +78,36 @@ package actionScripts.plugin.project.vo
 
             for (var prop:String in this)
             {
-                if (project.hasOwnProperty(String(prop)))
+                if (project.hasOwnProperty(prop))
                 {
                     project[prop] = this[prop];
+                }
+
+                if (prop == "projectWithExistingSourcePaths")
+                {
+                    if (project.hasOwnProperty("mainClassName"))
+                    {
+                        project["mainClassName"] = this.getMainClass();
+                    }
                 }
             }
 
             return project;
+        }
+
+        private function getMainClass():String
+        {
+            var sourcePaths:Vector.<FileLocation> = this.projectWithExistingSourcePaths;
+
+            if (sourcePaths.length == 2)
+            {
+                if (!sourcePaths[1].fileBridge.isDirectory)
+                {
+                    return sourcePaths[1].fileBridge.nameWithoutExtension;
+                }
+            }
+
+            return null;
         }
     }
 }
