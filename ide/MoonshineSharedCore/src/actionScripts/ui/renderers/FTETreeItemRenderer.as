@@ -43,7 +43,6 @@ package actionScripts.ui.renderers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -53,7 +52,6 @@ package actionScripts.ui.renderers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	use namespace mx_internal;
 	
@@ -416,23 +414,16 @@ package actionScripts.ui.renderers
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
 				
-				if (activeProject is ProjectVO)
+				if (activeProject.projectFolder.projectReference.isTemplate)
 				{
-					//TODO: make a better set of menu types for Java
-					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_JAVACLASS);
+					item.enabled = true;
 				}
-				else if(activeProject is GrailsProjectVO)
+				else
 				{
-					//TODO: make a better set of menu types for Groovy
-					item.enabled = label == TemplatingHelper.getTemplateLabel(ConstantsCoreVO.TEMPLATE_GROOVYCLASS);
-				}
-				else if(activeProject is AS3ProjectVO)
-				{
-					var as3ProjectVO:AS3ProjectVO = activeProject as AS3ProjectVO;
 					enableTypes = TemplatingHelper.getTemplateMenuType(label);
 					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 					{
-						return as3ProjectVO.menuType.indexOf(item) != -1;
+						return activeProject.menuType.indexOf(item) != -1;
 					});
 				}
 				

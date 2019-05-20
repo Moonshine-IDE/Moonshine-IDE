@@ -898,7 +898,7 @@ package actionScripts.utils
 			else if (value.isActionScriptOnly) currentMenuType = ProjectMenuTypes.PURE_AS;
 			else currentMenuType = ProjectMenuTypes.FLEX_AS;
 			
-			if (value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
+			if (value.menuType && value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
 			
 			// version-control check
 			if (!value.hasVersionControlType)

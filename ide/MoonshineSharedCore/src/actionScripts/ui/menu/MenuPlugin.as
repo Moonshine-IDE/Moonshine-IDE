@@ -400,28 +400,18 @@ package actionScripts.ui.menu
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
-						if(currentProject is JavaProjectVO)
+						if (currentProject.projectFolder.projectReference.isTemplate)
+						{
+							enable = true;
+						}
+						else
 						{
 							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 							{
-								return item === ProjectMenuTypes.JAVA;
+								return currentProject.menuType.indexOf(item) != -1;
 							});
 						}
-						else if(currentProject is GrailsProjectVO)
-						{
-							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
-							{
-								return item === ProjectMenuTypes.GRAILS;
-							});
-						}
-						else if(currentProject is AS3ProjectVO)
-						{
-							var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
-							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
-							{
-								return as3Project.menuType.indexOf(item) != -1;
-							});
-						}
+						
 						menuItem.enabled = enable;
 					}
 				}
