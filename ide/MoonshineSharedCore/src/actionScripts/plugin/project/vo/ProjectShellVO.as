@@ -67,19 +67,13 @@ package actionScripts.plugin.project.vo
         {
             var project:ProjectVO = null;
 
-            if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1 ||
-                templateName.indexOf(ProjectTemplateType.LIBRARY_PROJECT) != -1 ||
-                templateName.indexOf(ProjectTemplateType.FEATHERS) != -1 ||
-                templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1 ||
-                templateName.indexOf(ProjectTemplateType.MOBILE) != -1 ||
-                templateName.indexOf(ProjectTemplateType.AWAY3D) != -1 ||
-                templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1)
+			if (templateName.indexOf(ProjectTemplateType.JAVA) != -1)
+			{
+				project = JavaImporter.parse(this.folderLocation, this.projectName);
+			}
+			else
             {
                 project = new AS3ProjectVO(this.folderLocation, this.projectName, false);
-            }
-            else if (templateName.indexOf(ProjectTemplateType.JAVA) != -1)
-            {
-                project = JavaImporter.parse(this.folderLocation, this.projectName);
             }
 
             for (var prop:String in this)
