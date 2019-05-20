@@ -1018,7 +1018,7 @@ package actionScripts.utils
 			var separator:String = model.fileCore.separator;
             var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
             var mavenBin:String = "bin" + separator;
-			if (mavenLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			if (mavenLocation.fileBridge.nativePath.lastIndexOf(model.fileCore.separator +"bin") > -1)
 			{
 				mavenBin = "";
 			}
@@ -1048,7 +1048,7 @@ package actionScripts.utils
 			
 			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
 			var gradleBin:String = "bin" + model.fileCore.separator;
-			if (gradleLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			if (gradleLocation.fileBridge.nativePath.lastIndexOf(model.fileCore.separator +"bin") > -1)
 			{
 				gradleBin = "";
 			}
@@ -1079,7 +1079,7 @@ package actionScripts.utils
 			var separator:String = model.fileCore.separator;
             var grailsLocation:FileLocation = new FileLocation(model.grailsPath);
             var grailsBin:String = "bin" + separator;
-			if (grailsLocation.fileBridge.nativePath.lastIndexOf("bin") > -1)
+			if (grailsLocation.fileBridge.nativePath.lastIndexOf(model.fileCore.separator +"bin") > -1)
 			{
 				grailsBin = "";
 			}
