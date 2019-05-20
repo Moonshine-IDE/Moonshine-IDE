@@ -151,6 +151,7 @@ package actionScripts.plugins.as3project
 				isCustomTemplateProject = true;
 			}
 
+            projectTemplateType = event.templateDir.name;
 			if (isCustomTemplateProject)
 			{
 				createCustomOrAway3DProject(event);
