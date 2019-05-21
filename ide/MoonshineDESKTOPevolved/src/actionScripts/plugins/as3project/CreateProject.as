@@ -21,7 +21,6 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.vo.ProjectShellVO;
-	import actionScripts.plugin.settings.renderers.PathRenderer;
 
 	import flash.display.DisplayObject;
     import flash.events.Event;
@@ -884,11 +883,11 @@ package actionScripts.plugins.as3project
 			var projectSettingsFile:String = projectName + ".as3proj";
 			if (isVisualEditorProject && !exportProject)
 			{
-				projectName+".veditorproj";
+				projectSettingsFile = projectName+".veditorproj";
 			}
 			else if (isJavaProject)
 			{
-				projectName+".javaproj";
+				projectSettingsFile = projectName+".javaproj";
 			}
 
 			// Figure out which one is the settings file
@@ -1049,7 +1048,9 @@ package actionScripts.plugins.as3project
             isFlexJSRoyalProject = false;
             isJavaProject = false;
 
-			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1 || 
+				templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES) != -1 || 
+				templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_FLEX) != -1)
 			{
 				isVisualEditorProject = true;
 			}
