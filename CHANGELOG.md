@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.3.0]
+
+### Added
+* Added option for restoring default repository entries.
+* Added support for creation file with arbitrary extension. 
+
+### Changed
+* **Reference** window has been moved to console area.
+
+### Fixed
+* Code Editor: Fixed issue where selecting text in Java Grails project caused exception.
+* Fixed issue where some project templates were missing on tab Home.
+* Fixed issue where modfying project template was not reflected when new project was created with usage of that template.
+* Getting Started: Fixed issue where Ant status was not updated when user setup it manually in Settings.
+* Fixed issue where opening same project cause launch of miltiple instance of language server.
+
 ## Moonshine IDE [2.2.0]
 
 ### Summary
