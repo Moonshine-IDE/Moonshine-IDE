@@ -58,6 +58,7 @@ package actionScripts.plugin.templating
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SerializeUtil;
@@ -71,10 +72,10 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewASFilePopup;
 	import components.popup.newFile.NewCSSFilePopup;
 	import components.popup.newFile.NewFilePopup;
+	import components.popup.newFile.NewGroovyFilePopup;
 	import components.popup.newFile.NewJavaFilePopup;
 	import components.popup.newFile.NewMXMLFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
-	import components.popup.newFile.NewGroovyFilePopup;
 
     /*
     Templating plugin
@@ -605,6 +606,7 @@ package actionScripts.plugin.templating
 			{
 				p.classpaths[0] = p.folderLocation;
 				p.projectFolder.projectReference.isTemplate = true;
+				p.menuType = ProjectMenuTypes.TEMPLATE;
 				dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.ADD_PROJECT, p)
 				);

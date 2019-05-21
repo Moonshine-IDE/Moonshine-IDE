@@ -38,7 +38,6 @@ package actionScripts.ui.menu
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -49,14 +48,12 @@ package actionScripts.ui.menu
 	import actionScripts.ui.menu.vo.CustomMenu;
 	import actionScripts.ui.menu.vo.CustomMenuItem;
 	import actionScripts.ui.menu.vo.MenuItem;
-	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.KeyboardShortcutManager;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
@@ -400,17 +397,10 @@ package actionScripts.ui.menu
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
-						if (currentProject.projectFolder.projectReference.isTemplate)
+						enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 						{
-							enable = true;
-						}
-						else
-						{
-							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
-							{
-								return currentProject.menuType.indexOf(item) != -1;
-							});
-						}
+							return currentProject.menuType.indexOf(item) != -1;
+						});
 						
 						menuItem.enabled = enable;
 					}

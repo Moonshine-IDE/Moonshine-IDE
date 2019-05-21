@@ -414,18 +414,11 @@ package actionScripts.ui.renderers
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
 				item.data = eventType;
 				
-				if (activeProject.projectFolder.projectReference.isTemplate)
+				enableTypes = TemplatingHelper.getTemplateMenuType(label);
+				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 				{
-					item.enabled = true;
-				}
-				else
-				{
-					enableTypes = TemplatingHelper.getTemplateMenuType(label);
-					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
-					{
-						return activeProject.menuType.indexOf(item) != -1;
-					});
-				}
+					return activeProject.menuType.indexOf(item) != -1;
+				});
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
