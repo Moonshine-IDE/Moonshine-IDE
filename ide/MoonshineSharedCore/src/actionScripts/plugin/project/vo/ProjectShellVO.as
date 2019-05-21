@@ -85,6 +85,26 @@ package actionScripts.plugin.project.vo
 
                 if (prop == "projectWithExistingSourcePaths")
                 {
+                    var sourceFolder:FileLocation = this.getSourceFolder();
+                    var classPathsProp:String = "classpaths";
+
+                    if (sourceFolder && project.hasOwnProperty(classPathsProp))
+                    {
+                        if(!project[classPathsProp])
+                        {
+                            project[classPathsProp] = Vector.<FileLocation>([]);
+                            project[classPathsProp].push(sourceFolder);
+                        }
+                        else if (project[classPathsProp].length == 0)
+                        {
+                            project[classPathsProp].push(sourceFolder);
+                        }
+                        else
+                        {
+                            project[classPathsProp][0] = sourceFolder;
+                        }
+                    }
+
                     if (project.hasOwnProperty("mainClassName"))
                     {
                         project["mainClassName"] = this.getMainClass();
@@ -104,6 +124,21 @@ package actionScripts.plugin.project.vo
                 if (!sourcePaths[1].fileBridge.isDirectory)
                 {
                     return sourcePaths[1].fileBridge.nameWithoutExtension;
+                }
+            }
+
+            return null;
+        }
+
+        private function getSourceFolder():FileLocation
+        {
+            var sourcePaths:Vector.<FileLocation> = this.projectWithExistingSourcePaths;
+
+            if (sourcePaths.length >= 1)
+            {
+                if (sourcePaths[0].fileBridge.isDirectory)
+                {
+                    return sourcePaths[0];
                 }
             }
 
