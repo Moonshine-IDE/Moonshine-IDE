@@ -247,7 +247,7 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var compilerArg:String = "gradle eclipse";
+				var compilerArg:String = GradleBuildUtil.GRADLE_ENVIRON_EXEC_PATH +" eclipse";
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,

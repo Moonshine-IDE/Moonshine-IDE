@@ -39,6 +39,7 @@ package actionScripts.plugins.clean
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.utils.GradleBuildUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -165,7 +166,7 @@ package actionScripts.plugins.clean
 			{
 				if (UtilsCore.isGradleAvailable())
 				{
-					start(Vector.<String>(["gradle clean"]), project.folderLocation);
+					start(Vector.<String>([GradleBuildUtil.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
 				}
 				else
 				{

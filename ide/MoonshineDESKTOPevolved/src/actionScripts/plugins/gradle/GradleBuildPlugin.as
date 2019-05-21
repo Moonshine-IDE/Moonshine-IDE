@@ -216,7 +216,7 @@ package actionScripts.plugins.gradle
                         preArguments.join(" && ").concat(" && ")
                         : "";
                 var commandLine:String = arguments.join(" ");
-                var fullCommandLine:String = preArgs.concat("gradle", " ", commandLine);
+                var fullCommandLine:String = preArgs.concat(GradleBuildUtil.GRADLE_ENVIRON_EXEC_PATH, " ", commandLine);
 
                 args.push(fullCommandLine);
             }
@@ -305,7 +305,7 @@ package actionScripts.plugins.gradle
 			if (model.gradlePath && GradleBuildUtil.IS_GRADLE_STARTED)
 			{
 				status = int.MAX_VALUE;
-				super.start(Vector.<String>(["gradle --stop"]), null);
+				super.start(Vector.<String>([GradleBuildUtil.GRADLE_ENVIRON_EXEC_PATH +" --stop"]), null);
 			}
 			else
 			{

@@ -1,9 +1,13 @@
 package actionScripts.utils
 {
     import actionScripts.factory.FileLocation;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 
     public class GradleBuildUtil
     {
+		public static const GRADLE_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
+															"$GRADLE_HOME/bin/gradle" : "%GRADLE_HOME%\\bin\\gradle";
+			
 		public static var IS_GRADLE_STARTED:Boolean;
 		
         public static function getProjectSourceDirectory(pomLocation:FileLocation):String
