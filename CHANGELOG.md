@@ -5,19 +5,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Moonshine IDE [2.3.0]
 
+### Summary
+
+Moonshine 2.3.0 now has support for Java Maven and Gradle projects.   You can import external Java projects, and Moonshine will use the existing pom.xml or build.gradle to build the project and determine the dependencies.
+
+In edition, we added initial support for Grails projects. Currently you can create and run new projects, and the projects have limited language server support.  We will add more functionality in the next release.
+
 ### Added
-* Added option for restoring default repository entries.
-* Added support for creation file with arbitrary extension. 
+* Import Java Gradle and Maven projects
+* Moonshine will load the Java project dependencies from pom.xml or build.gradle.  The classpath is determined by the build scripts only.  For Gradle projects, you can force the dependencies to update to the classpath with Project > Refresh Gradle Classpath.
+* Create Grails projects
+* Moonshine SDK Installer will now install the Gradle and Grails SDKs
 
 ### Changed
-* **Reference** window has been moved to console area.
+* The **Reference** window from View > Find References has been moved to the console area.
+* The default repository entries from the previous release can now be restored with Help > Restore Default Dependencies
+* New > File will now create a file with an arbitrary extension in any project type.
+* Added validation for manually setting SDK paths
+* File choosers will now automatically open to the last used path when possible.
 
 ### Fixed
-* Code Editor: Fixed issue where selecting text in Java Grails project caused exception.
-* Fixed issue where some project templates were missing on tab Home.
-* Fixed issue where modfying project template was not reflected when new project was created with usage of that template.
-* Getting Started: Fixed issue where Ant status was not updated when user setup it manually in Settings.
-* Fixed issue where opening same project cause launch of miltiple instance of language server.
+* Code Editor: Fixed issue where selecting text in a Java project caused exceptions on focus change
+* Fixed issue where some project templates were missing in the Home tab.
+* Fixed issue where modifications to the project templates were ignored when creating new projects.
+* Fixed issue where Getting Started entries did not update their status when set manually by the user.
+* Fixed issue where opening the same project more than once created multiple language server instances
+
 
 ## Moonshine IDE [2.2.0]
 
