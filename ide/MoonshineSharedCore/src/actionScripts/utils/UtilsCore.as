@@ -891,14 +891,39 @@ package actionScripts.utils
 		{
 			var currentMenuType:String;
 			
-			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS) currentMenuType = ProjectMenuTypes.JS_ROYALE;
-			else if (value.isLibraryProject) currentMenuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
-			else if (value.isPrimeFacesVisualEditorProject) currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
-			else if (value.isVisualEditorProject) currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
-			else if (value.isActionScriptOnly) currentMenuType = ProjectMenuTypes.PURE_AS;
-			else currentMenuType = ProjectMenuTypes.FLEX_AS;
-			
-			if (value.menuType && value.menuType.indexOf(currentMenuType) == -1) value.menuType += ","+ currentMenuType;
+			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS)
+			{
+				currentMenuType = ProjectMenuTypes.JS_ROYALE;
+			}
+			else if (value.isLibraryProject)
+			{
+				currentMenuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
+			}
+			else if (value.isPrimeFacesVisualEditorProject)
+			{
+				currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+			}
+			else if (value.isVisualEditorProject)
+			{
+				currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
+			}
+			else if (value.isActionScriptOnly)
+			{
+				currentMenuType = ProjectMenuTypes.PURE_AS;
+			}
+			else
+			{
+				currentMenuType = ProjectMenuTypes.FLEX_AS;
+			}
+
+			if (!value.menuType)
+			{
+				value.menuType = currentMenuType;
+			}
+			else if (value.menuType && value.menuType.indexOf(currentMenuType) == -1)
+			{
+				value.menuType += ","+ currentMenuType;
+			}
 			
 			// version-control check
 			if (!value.hasVersionControlType)
