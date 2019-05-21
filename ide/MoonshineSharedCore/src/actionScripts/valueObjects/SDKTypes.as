@@ -29,6 +29,7 @@ package actionScripts.valueObjects
 		public static const GIT:String = "git";
 		public static const MAVEN:String = "maven";
 		public static const GRADLE:String = "gradle";
+		public static const GRAILS:String = "grails";
 		public static const OPENJAVA:String = "openjava";
     }
 }

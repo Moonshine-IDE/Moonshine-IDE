@@ -191,6 +191,12 @@ package actionScripts.utils
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRADLE_HOME/bin:" : "%GRADLE_HOME%\\bin;");
 				isValidToExecute = true;
 			}
+			if (UtilsCore.isGrailsAvailable())
+			{
+				setCommand += getSetExportCommand("GRAILS_HOME", model.grailsPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRAILS_HOME/bin:" : "%GRAILS_HOME%\\bin;");
+				isValidToExecute = true;
+			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
 			{
 				// moonshine stores gir path with 'bin\git.exe' format 

@@ -4,6 +4,8 @@ package actionScripts.plugins.grails
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
     
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.SettingsEvent;
@@ -11,24 +13,25 @@ package actionScripts.plugins.grails
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
+    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
+    import actionScripts.utils.HelperUtils;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.ComponentTypes;
+    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
-    import flash.utils.clearTimeout;
-
-    import flash.utils.setTimeout;
-    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
-
+		private var pathSetting:PathSetting;
+		
         public function GrailsBuildPlugin()
         {
             super();
@@ -64,10 +67,41 @@ package actionScripts.plugins.grails
 
         public function getSettingsList():Vector.<ISetting>
         {
-            return Vector.<ISetting>([
-                new PathSetting(this, 'grailsPath', 'Grails Home', true, grailsPath)
-            ]);
+			onSettingsClose();
+			pathSetting = new PathSetting(this, 'grailsPath', 'Grails Home', true, grailsPath);
+			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			
+			return Vector.<ISetting>([
+				pathSetting
+			]);
         }
+		
+		override public function onSettingsClose():void
+		{
+			if (pathSetting)
+			{
+				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+				pathSetting = null;
+			}
+		}
+		
+		private function onSDKPathSelected(event:Event):void
+		{
+			if (!pathSetting.stringValue) return;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GRAILS);
+			if (tmpComponent)
+			{
+				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_GRAILS, pathSetting.stringValue, tmpComponent.pathValidation);
+				if (!isValidSDKPath)
+				{
+					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+				}
+				else
+				{
+					pathSetting.setMessage(null);
+				}
+			}
+		}
 
         override public function activate():void
         {

@@ -1005,7 +1005,7 @@ package actionScripts.utils
 			}
 			
 			var grailsLocation:FileLocation = new FileLocation(model.grailsPath);
-			return grailsLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.bat")).fileBridge.exists;
+			return grailsLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "grails" : "grails.bat")).fileBridge.exists;
 		}
 
         public static function getMavenBinPath():String
