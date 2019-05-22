@@ -39,6 +39,7 @@
 			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugins.ant.events.AntBuildEvent;
+			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			import components.popup.SDKDefinePopup;
@@ -96,10 +97,7 @@
 				_isFlexSDK = true;
 			else
 				_isFlexSDK = false;
-			if (model.antHomePath)
-				_isAntPath = true;
-			else
-				_isAntPath = false;
+			_isAntPath = UtilsCore.isAntAvailable();
 			if (model.antScriptFile)
 			{
 				_isAntConfigurPath = true;
@@ -116,10 +114,7 @@
 				_isFlexSDK = true;
 			else
 				_isFlexSDK = false;
-			if (model.antHomePath)
-				_isAntPath = true;
-			else
-				_isAntPath = false;
+			_isAntPath = UtilsCore.isAntAvailable();
 			if (model.antScriptFile)
 			{
 				_isAntConfigurPath = true;

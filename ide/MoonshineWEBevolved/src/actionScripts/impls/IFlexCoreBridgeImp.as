@@ -153,6 +153,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function getComponentByType(type:String):Object
+		{
+			return null;
+		}
+		
 		public function createAS3Project(event:NewProjectEvent):void
 		{
 			authPopup = new AuthenticationPopUp();

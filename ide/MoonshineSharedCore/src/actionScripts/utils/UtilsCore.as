@@ -52,6 +52,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
+	import actionScripts.valueObjects.SDKTypes;
 	
 	import components.popup.ModifiedFileListPopup;
 	import components.popup.SDKDefinePopup;
@@ -1007,8 +1008,13 @@ package actionScripts.utils
 				return false;
 			}
 			
-			var mavenLocation:FileLocation = new FileLocation(model.mavenPath);
-			return mavenLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd")).fileBridge.exists;
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.MAVEN);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.mavenPath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 
 		public static function isGradleAvailable():Boolean
@@ -1018,8 +1024,13 @@ package actionScripts.utils
 				return false;
 			}
 			
-			var gradleLocation:FileLocation = new FileLocation(model.gradlePath);
-			return gradleLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "gradle" : "gradle.bat")).fileBridge.exists;
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.GRADLE);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.gradlePath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 		
 		public static function isGrailsAvailable():Boolean
@@ -1029,8 +1040,13 @@ package actionScripts.utils
 				return false;
 			}
 			
-			var grailsLocation:FileLocation = new FileLocation(model.grailsPath);
-			return grailsLocation.resolvePath("bin/"+ (ConstantsCoreVO.IS_MACOS ? "grails" : "grails.bat")).fileBridge.exists;
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.GRAILS);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.grailsPath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 
         public static function getMavenBinPath():String
@@ -1137,10 +1153,15 @@ package actionScripts.utils
 		
 		public static function isJavaForTypeaheadAvailable():Boolean
 		{
-			var isJavaPathExists:Boolean = model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists;
-			if (!model.javaPathForTypeAhead || !isJavaPathExists)
+			if (!model.javaPathForTypeAhead || !model.javaPathForTypeAhead.fileBridge.exists)
 			{
 				return false;
+			}
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.OPENJAVA);
+			if (component && component.pathValidation)
+			{
+				return model.javaPathForTypeAhead.fileBridge.resolvePath(component.pathValidation).fileBridge.exists;
 			}
 			
 			return true;
@@ -1153,27 +1174,45 @@ package actionScripts.utils
 				return false;
 			}
 			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.ANT);
+			if (component && component.pathValidation)
+			{
+				return model.antHomePath.fileBridge.resolvePath(component.pathValidation).fileBridge.exists;
+			}
+			
 			return true;
 		}
 		
 		public static function isSVNPresent():Boolean
 		{
-			if (model.svnPath)
+			if (!model.svnPath || !model.fileCore.isPathExists(model.svnPath))
 			{
-				return (model.fileCore.isPathExists(model.svnPath));
+				return false;
 			}
 			
-			return false;
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.SVN);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.svnPath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 		
 		public static function isGitPresent():Boolean
 		{
-			if (model.gitPath)
+			if (!model.gitPath || !model.fileCore.isPathExists(model.gitPath))
 			{
-				return (model.fileCore.isPathExists(model.gitPath));
+				return false;
 			}
 			
-			return false;
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.gitPath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 		
 		public static function getLineBreakEncoding():String

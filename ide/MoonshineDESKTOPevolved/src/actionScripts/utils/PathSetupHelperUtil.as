@@ -115,7 +115,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)
+			if (!UtilsCore.isAntAvailable())
 			{
 				model.antHomePath = new FileLocation(path);
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
@@ -135,7 +135,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.mavenPath)
+			if (!UtilsCore.isMavenAvailable())
 			{
 				model.mavenPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
@@ -152,7 +152,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.gradlePath)
+			if (!UtilsCore.isGradleAvailable())
 			{
 				model.gradlePath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
@@ -169,7 +169,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.grailsPath)
+			if (!UtilsCore.isGrailsAvailable())
 			{
 				model.grailsPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
@@ -186,7 +186,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.javaPathForTypeAhead || !model.javaPathForTypeAhead.fileBridge.exists)
+			if (!UtilsCore.isJavaForTypeaheadAvailable())
 			{
 				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
 				javaSettingsProvider.currentJavaPath = path;
@@ -208,7 +208,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.svnPath)
+			if (!UtilsCore.isSVNPresent())
 			{
 				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent())
 				{
@@ -237,7 +237,7 @@ package actionScripts.utils
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!model.gitPath)
+			if (!UtilsCore.isGitPresent())
 			{
 				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 				{

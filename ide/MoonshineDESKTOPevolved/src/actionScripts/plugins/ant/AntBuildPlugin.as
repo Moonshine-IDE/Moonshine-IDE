@@ -253,7 +253,7 @@ package actionScripts.plugins.ant
                 currentSDK = model.defaultSDK;
             }
             //If Flex_HOME or ANT_HOME is missing
-            if (!currentSDK || !model.antHomePath)
+            if (!currentSDK || !UtilsCore.isAntAvailable())
             {
                 for each (var tab:IContentWindow in model.editors)
                 {

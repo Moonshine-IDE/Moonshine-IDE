@@ -22,7 +22,7 @@ package actionScripts.interfaces
     import flash.display.DisplayObject;
     
     import mx.core.IFlexDisplayObject;
-
+    
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -72,6 +72,7 @@ package actionScripts.interfaces
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
+		function getComponentByType(type:String):Object;
 
         /**
          *

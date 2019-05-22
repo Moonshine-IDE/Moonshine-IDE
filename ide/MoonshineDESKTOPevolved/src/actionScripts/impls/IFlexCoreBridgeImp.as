@@ -106,6 +106,7 @@ package actionScripts.impls
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
 	import actionScripts.utils.SoftwareVersionChecker;
@@ -449,6 +450,11 @@ package actionScripts.impls
 		public function getNewAntBuild():IFlexDisplayObject
 		{
 			return (new AntBuildScreen());
+		}
+		
+		public function getComponentByType(type:String):Object
+		{
+			return HelperUtils.getComponentByType(type);
 		}
 
 		public function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void
