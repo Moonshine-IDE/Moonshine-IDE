@@ -756,6 +756,14 @@ package actionScripts.plugins.as3project
 			th.templatingData["$MovieVersion"] = movieVersion;
 			th.templatingData["$pom"] = "pom";
 
+			var excludeFiles:Array = null;
+			if (isJavaProject)
+			{
+				excludeFiles = [];
+				excludeFiles.push("pom.xml");
+				excludeFiles.push("build.gradle");
+			}
+
 			if (_customSdk)
 			{
 				th.templatingData["${flexlib}"] = _customSdk;
@@ -765,7 +773,7 @@ package actionScripts.plugins.as3project
 				th.templatingData["${flexlib}"] = (model.defaultSDK) ? model.defaultSDK.fileBridge.nativePath : "${SDK_PATH}";
             }
 
-            th.projectTemplate(templateDir, targetFolder);
+            th.projectTemplate(templateDir, targetFolder, excludeFiles);
 
 			// we copy everything from template to target folder 
 			// in case of custom project template and terminate
@@ -934,7 +942,7 @@ package actionScripts.plugins.as3project
 
 			if (isJavaProject)
 			{
-				JavaExporter.export(pvo as JavaProjectVO);
+				JavaExporter.export(pvo as JavaProjectVO, true);
 			}
 			else
 			{

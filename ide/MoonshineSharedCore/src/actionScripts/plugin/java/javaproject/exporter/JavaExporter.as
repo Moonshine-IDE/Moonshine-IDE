@@ -8,7 +8,7 @@ package actionScripts.plugin.java.javaproject.exporter
 
     public class JavaExporter
     {
-        public static function export(project:JavaProjectVO):void
+        public static function export(project:JavaProjectVO, existingSource:Boolean = false):void
         {
             XML.ignoreWhitespace = true;
             XML.ignoreComments = false;
@@ -46,7 +46,7 @@ package actionScripts.plugin.java.javaproject.exporter
 
             projectSettings.fileBridge.save(projectXML.toXMLString());
 
-            if (!project.hasPom()) return;
+            if (!project.hasPom() || existingSource) return;
 
             var separator:String = project.projectFolder.file.fileBridge.separator;
             var pomFile:FileLocation = new FileLocation(project.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));

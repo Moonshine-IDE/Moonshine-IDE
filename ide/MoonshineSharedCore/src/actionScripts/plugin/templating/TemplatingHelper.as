@@ -44,13 +44,17 @@ package actionScripts.plugin.templating
 			}
 		}
 		
-		public function projectTemplate(fromDir:FileLocation, toDir:FileLocation):void
+		public function projectTemplate(fromDir:FileLocation, toDir:FileLocation, excludeFiles:Array = null):void
 		{
-			if (!fromDir.fileBridge.exists) return;
-			copyFiles(fromDir, toDir);
+			if (!fromDir.fileBridge.exists)
+			{
+				return;
+			}
+
+			copyFiles(fromDir, toDir, excludeFiles);
 		}
 		
-		protected function copyFiles(fromDir:FileLocation, toDir:FileLocation):void
+		protected function copyFiles(fromDir:FileLocation, toDir:FileLocation, excludedFiles:Array = null):void
 		{
 			var files:Array = fromDir.fileBridge.getDirectoryListing();
 			var newFile:FileLocation;
@@ -82,17 +86,24 @@ package actionScripts.plugin.templating
 					{
 						newFile = toDir.resolvePath(templatedFileName(file as FileLocation));
                     }
-					try
+
+					if (!excludedFiles || !excludedFiles.some(function(item:String, index:int, arr:Array):Boolean{
+						return item == newFile.name;
+					}))
 					{
-						if (template)
+						try
 						{
-							file.fileBridge.copyFileTemplate(newFile, templatingData);
-                        }
-						else
+							if(template)
+							{
+								file.fileBridge.copyFileTemplate(newFile, templatingData);
+							} else
+							{
+								copyFileContents(file as FileLocation, newFile);
+							}
+						} catch (e:Error)
 						{
-							copyFileContents(file as FileLocation, newFile);
-                        }
-					} catch(e:Error){}
+						}
+					}
 				}
 			}
 		}
