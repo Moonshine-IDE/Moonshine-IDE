@@ -24,11 +24,10 @@ package actionScripts.plugin.java.javaproject.importer
 			if (!srcMainJava.exists || !srcMainJava.isDirectory)
 			{
 				srcMainJava = file.resolvePath("src");
-			}
-
-			if (!srcMainJava.exists || !srcMainJava.isDirectory)
-			{
-				return null;
+				if (!srcMainJava.exists || !srcMainJava.isDirectory)
+				{
+					return null;
+				}
 			}
 
 			var listing:Array = file.getDirectoryListing();
