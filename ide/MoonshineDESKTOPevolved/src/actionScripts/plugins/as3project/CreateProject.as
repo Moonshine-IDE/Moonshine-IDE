@@ -760,8 +760,15 @@ package actionScripts.plugins.as3project
 			if (isJavaProject)
 			{
 				excludeFiles = [];
-				excludeFiles.push("pom.xml");
-				excludeFiles.push("build.gradle");
+				if (pvo.hasPom())
+				{
+					excludeFiles.push("pom.xml");
+				}
+
+				if (pvo.hasGradleBuild())
+				{
+					excludeFiles.push("build.gradle");
+				}
 			}
 
 			if (_customSdk)
