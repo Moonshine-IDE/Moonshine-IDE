@@ -226,7 +226,7 @@ package actionScripts.plugins.svn
 				if (isVersioned(event.project.folderLocation))
 				{
 					event.project.menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
-					(event.project as AS3ProjectVO).hasVersionControlType = VersionControlTypes.SVN;
+					event.project.hasVersionControlType = VersionControlTypes.SVN;
 					// following will enable/disable Moonshine top menus based on project
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 				}
@@ -309,7 +309,7 @@ package actionScripts.plugins.svn
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
+			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo, model.activeProject.isTrustServerCertificateSVN);
 		}
 		
 		protected function handleUpdateRequest(event:Event, user:String=null, password:String=null):void
@@ -318,7 +318,7 @@ package actionScripts.plugins.svn
 			
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, (model.activeProject as AS3ProjectVO).isTrustServerCertificateSVN);
+			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, model.activeProject.isTrustServerCertificateSVN);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean

@@ -52,6 +52,7 @@ package actionScripts.valueObjects
 		public var hasVersionControlType:String; // of VersionControlTypes
 		public var menuType:String = "";
 		public var projectWithExistingSourcePaths:Vector.<FileLocation>;
+		public var isTrustServerCertificateSVN:Boolean;
 
 		private var _projectFolder: FileWrapper;
 		
