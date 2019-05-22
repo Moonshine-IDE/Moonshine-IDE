@@ -34,7 +34,7 @@ package actionScripts.plugin.settings.vo
 		private var isDropDown:Boolean;
 		private var rdr:PathRenderer;
 
-		private var _isEditable:Boolean = true;
+		private var _editable:Boolean = true;
 		private var _path:String;
 
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean,
@@ -77,24 +77,24 @@ package actionScripts.plugin.settings.vo
 				rdr.setting = this;
 				rdr.isSDKPath = isSDKPath;
 				rdr.isDropDown = isDropDown;
-				rdr.enabled = _isEditable;
+				rdr.enabled = _editable;
 				rdr.setMessage(message, messageType);
 			}
 
 			return rdr;
 		}
 		
-		public function set isEditable(value:Boolean):void
+		public function set editable(value:Boolean):void
 		{
-			_isEditable = value;
+			_editable = value;
 			if (rdr) 
 			{
-				rdr.enabled = _isEditable;
+				rdr.enabled = _editable;
 			}
 		}
-		public function get isEditable():Boolean
+		public function get editable():Boolean
 		{
-			return _isEditable;
+			return _editable;
 		}
 	}
 }

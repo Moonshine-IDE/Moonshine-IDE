@@ -27,7 +27,7 @@ package actionScripts.plugin.settings.vo
         public static const VALUE_UPDATED:String = "valueUpdated";
 
 		private var immediateSave:Boolean;
-		
+
         public function BooleanSetting(provider:Object, name:String, label:String, immediateSave:Boolean=false)
         {
             super();
@@ -57,12 +57,33 @@ package actionScripts.plugin.settings.vo
 			if (immediateSave) commitChanges();
         }
 
+        private var _editable:Boolean;
+
+        public function set editable(value:Boolean):void
+        {
+            _editable = value;
+            if (_renderer)
+            {
+                _renderer.enabled = _editable;
+            }
+        }
+
+        public function get editable():Boolean
+        {
+            return _editable;
+        }
+
+        private var _renderer:BooleanRenderer;
+
         override public function get renderer():IVisualElement
         {
-            var rdr:BooleanRenderer = new BooleanRenderer();
-            rdr.setting = this;
+            if (!_renderer)
+            {
+                _renderer = new BooleanRenderer();
+                _renderer.setting = this;
+            }
 
-            return rdr;
+            return _renderer;
         }
 
     }

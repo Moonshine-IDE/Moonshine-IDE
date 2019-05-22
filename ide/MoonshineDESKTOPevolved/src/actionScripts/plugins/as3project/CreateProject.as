@@ -85,6 +85,7 @@ package actionScripts.plugins.as3project
 		private var newProjectTypeSetting:MultiOptionSetting;
 		private var customSdkPathSetting:PathSetting;
 		private var projectTemplateTypeSetting:DropDownListSetting;
+		private var projectWithExistingSourceSetting:BooleanSetting;
 
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
@@ -187,15 +188,17 @@ package actionScripts.plugins.as3project
 		{
 			_isProjectFromExistingSource = project.isProjectFromExistingSource = value;
 			onProjectPathChanged(null, false);
-			newProjectWithExistingSourcePathSetting.visible = _isProjectFromExistingSource;
-			
+
+			if (newProjectWithExistingSourcePathSetting)
+			{
+				newProjectWithExistingSourcePathSetting.editable = value;
+			}
+
 			// lets scroll-up the project creation dialog
 			// so user can see changed project path clearly - if
 			// s/he is working in a shorter frame where project path
 			// may cut-off in displaying frame
-			dispatcher.dispatchEvent(
-				new GeneralEvent(GeneralEvent.SCROLL_TO_TOP)
-			);
+			dispatcher.dispatchEvent(new GeneralEvent(GeneralEvent.SCROLL_TO_TOP));
 		}
 		
 		public function set projectTemplateType(value:String):void
@@ -312,8 +315,11 @@ package actionScripts.plugins.as3project
 
 			if (newProjectWithExistingSourcePathSetting)
             {
-                if (isOpenProjectCall) isProjectFromExistingSource = project.isProjectFromExistingSource;
-                newProjectWithExistingSourcePathSetting.visible = project.isProjectFromExistingSource;
+                if (isOpenProjectCall)
+				{
+					isProjectFromExistingSource = project.isProjectFromExistingSource;
+				}
+                newProjectWithExistingSourcePathSetting.editable = project.isProjectFromExistingSource;
             }
 			
             if (isActionScriptProject)
@@ -444,9 +450,6 @@ package actionScripts.plugins.as3project
                     newProjectPathSetting
                 ]));
             }
-
-            newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
-					"projectWithExistingSourcePaths", "Main source folder");
 			
             if (project.isVisualEditorProject && !eventObject.isExport)
             {
@@ -459,14 +462,21 @@ package actionScripts.plugins.as3project
             }
 
 			customSdkPathSetting = new PathSetting(this,'customSdk', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customSdk, true);
-            return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+			projectWithExistingSourceSetting = new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true);
+
+			var settingsProject:Vector.<ISetting> = Vector.<ISetting>([
 				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
 				newProjectNameSetting, // No space input either plx
 				newProjectPathSetting,
 				customSdkPathSetting,
-				new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true),
-				newProjectWithExistingSourcePathSetting
-			]));
+				projectWithExistingSourceSetting
+			]);
+
+			newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
+					"projectWithExistingSourcePaths", "Main source folder");
+			settingsProject.push(newProjectWithExistingSourcePathSetting);
+
+			return new SettingsWrapper("Name & Location", settingsProject);
 		}
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
@@ -509,10 +519,14 @@ package actionScripts.plugins.as3project
 		{
 			if (makeNull) project.projectFolder = null;
 			project.folderLocation = new FileLocation(newProjectPathSetting.stringValue);
-			if (_isProjectFromExistingSource)
+			if (isProjectFromExistingSource)
 			{
 				project.projectName = newProjectNameSetting.stringValue;
-				newProjectWithExistingSourcePathSetting.project = project;
+				if (newProjectWithExistingSourcePathSetting)
+				{
+					newProjectWithExistingSourcePathSetting.project = project;
+				}
+
 				newProjectPathSetting.label = "Existing Project Directory";
 				checkIfProjectDirectory(project.folderLocation);
 			}
@@ -558,6 +572,16 @@ package actionScripts.plugins.as3project
 		private function onProjectTemplateTypeChange(event:Event):void
 		{
 			projectTemplateTypeSetting.commitChanges();
+
+			if (projectWithExistingSourceSetting)
+			{
+				projectWithExistingSourceSetting.editable = projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+			}
+
+			if(newProjectWithExistingSourcePathSetting)
+			{
+				newProjectWithExistingSourcePathSetting.editable = projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+			}
 		}
 
 		private function onCreateProjectSave(event:Event):void
@@ -576,7 +600,7 @@ package actionScripts.plugins.as3project
 			//save  project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			var tmpParent:FileLocation;
-			if (_isProjectFromExistingSource)
+			if (isProjectFromExistingSource && !isJavaProject)
 			{
 				// validate if all requirement supplied
 				if (newProjectWithExistingSourcePathSetting.stringValue == "")
@@ -607,7 +631,7 @@ package actionScripts.plugins.as3project
             }
 			
 			// don't save this if from a open project call
-			if (!isOpenProjectCall && !_isProjectFromExistingSource)
+			if (!isOpenProjectCall && !isProjectFromExistingSource)
 			{
 				cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
 				cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
@@ -622,7 +646,7 @@ package actionScripts.plugins.as3project
                 exportVisualEditorProject(project, view.exportProject as AS3ProjectVO);
             }
 
-            if (!_isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
+            if (!isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
 			
 			// Close settings view
 			onCreateProjectClose(event);
@@ -673,15 +697,11 @@ package actionScripts.plugins.as3project
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
 			var pvo:Object = getProjectWithTemplate(shell, exportProject);
-			
+
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
-			var sourceFile:String = (_isProjectFromExistingSource && !isLibraryProject) ? pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0] : pvo.projectName;
-			var sourceFileWithExtension:String;
-			var sourcePath:String = _isProjectFromExistingSource ?
-									pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0]) :
-									"src";
-			if (!_isProjectFromExistingSource && isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+			var sourcePath:String = "src";
+			if (!isProjectFromExistingSource && isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
 			{
 				sourcePath = "src/main/webapp";
 			}
@@ -693,7 +713,7 @@ package actionScripts.plugins.as3project
             var movieVersion:String = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
 			
 			// Create project root directory
-			if (!_isProjectFromExistingSource)
+			if (!isProjectFromExistingSource)
 			{
 				CONFIG::OSX
 					{
@@ -710,10 +730,25 @@ package actionScripts.plugins.as3project
 			}
 
 			var th:TemplatingHelper = new TemplatingHelper();
+			var sourceFile:String = "";
+			var sourceFileWithExtension:String = "";
 
-			if (_isProjectFromExistingSource && !isLibraryProject)
+			if (isProjectFromExistingSource && pvo.projectWithExistingSourcePaths)
 			{
-				th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
+				sourcePath = pvo.folderLocation.fileBridge.getRelativePath(pvo.projectWithExistingSourcePaths[0])
+			}
+
+			if (isProjectFromExistingSource && !isLibraryProject)
+			{
+				if(pvo.projectWithExistingSourcePaths)
+				{
+					sourceFile = pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0];
+					th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
+				}
+				else
+				{
+					sourceFile = pvo.projectName;
+				}
 			}
 			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
 			{
@@ -738,7 +773,7 @@ package actionScripts.plugins.as3project
 			}
 
 			// Time to do the templating thing!
-			th.isProjectFromExistingSource = _isProjectFromExistingSource;
+			th.isProjectFromExistingSource = isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);

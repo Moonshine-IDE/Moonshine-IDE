@@ -59,7 +59,7 @@ package actionScripts.plugins.browser
 		public function set activeType(value:String):void
 		{
 			_activeType = value;
-			externalBrowserSettings.isEditable = (value == TYPE_EXTERNAL);
+			externalBrowserSettings.editable = (value == TYPE_EXTERNAL);
 		}
 		
 		private var isInternalBrowser:Boolean;
@@ -105,7 +105,7 @@ package actionScripts.plugins.browser
 			
 			externalBrowserSettings = new PathSetting(this, 'browserPath', 'Select or Decleare an External Browser', false, null, false, true);
 			externalBrowserSettings.dropdownListItems = browserList;
-			externalBrowserSettings.isEditable = false;
+			externalBrowserSettings.editable = false;
 			externalBrowserSettings.addEventListener(AbstractSetting.PATH_SELECTED, onExternalPathChanged, false, 0, true);
 			
 			return Vector.<ISetting>([

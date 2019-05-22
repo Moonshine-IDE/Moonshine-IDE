@@ -28,11 +28,9 @@ package actionScripts.plugin.actionscript.as3project.settings
 	public class NewProjectSourcePathListSetting extends AbstractSetting
 	{
 		public var relativeRoot:FileLocation;
-		
-		private var rdr:NewProjectSourcePathListSettingRenderer;
-		
+
 		private var _project:Object;
-		private var _visible:Boolean = true;
+		private var _editable:Boolean = true;
 
 		public function NewProjectSourcePathListSetting(provider:Object, name:String, label:String, 
 										relativeRoot:FileLocation=null)
@@ -58,32 +56,37 @@ package actionScripts.plugin.actionscript.as3project.settings
 			}
 			setPendingSetting(toRet);
 		}
-		
+
+		private var _renderer:NewProjectSourcePathListSettingRenderer;
+
 		override public function get renderer():IVisualElement
 		{
-			rdr = new NewProjectSourcePathListSettingRenderer();
-			rdr.setting = this;
-			rdr.enabled = _visible; 
-			return rdr;
+			_renderer = new NewProjectSourcePathListSettingRenderer();
+			_renderer.setting = this;
+			_renderer.enabled = _editable;
+			return _renderer;
 		}
 		
-		public function set visible(value:Boolean):void
+		public function set editable(value:Boolean):void
 		{
-			_visible = value;
-			if (rdr) rdr.enabled = _visible;
+			_editable = value;
+			if (_renderer)
+			{
+				_renderer.enabled = _editable;
+			}
 		}
 		
-		public function get visible():Boolean
+		public function get editable():Boolean
 		{
-			return _visible;
+			return _editable;
 		}
 
 		public function set project(value:Object):void
 		{
 			_project = value;
-			if (rdr)
+			if (_renderer)
 			{
-				rdr.resetAllProjectPaths();
+				_renderer.resetAllProjectPaths();
 			}
 		}
 		[Bindable]
