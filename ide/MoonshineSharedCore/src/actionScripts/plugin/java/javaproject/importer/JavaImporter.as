@@ -20,14 +20,10 @@ package actionScripts.plugin.java.javaproject.importer
 				return null;
 			}
 
-			var srcMainJava:File = file.resolvePath("src/main/java");
+			var srcMainJava:File = file.resolvePath("src");
 			if (!srcMainJava.exists || !srcMainJava.isDirectory)
 			{
-				srcMainJava = file.resolvePath("src");
-				if (!srcMainJava.exists || !srcMainJava.isDirectory)
-				{
-					return null;
-				}
+				return null;
 			}
 
 			var listing:Array = file.getDirectoryListing();
