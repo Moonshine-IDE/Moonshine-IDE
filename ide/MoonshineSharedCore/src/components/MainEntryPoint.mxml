@@ -117,7 +117,7 @@
 					   horizontalCenter="0" verticalCenter="0"
 					   includeInLayout="{ConstantsCoreVO.IS_APPLICATION_CLOSING}" visible="{ConstantsCoreVO.IS_APPLICATION_CLOSING}">
 		<s:backgroundFill>
-			<s:SolidColor color="0x373737"/>
+			<s:SolidColor color="0x333333"/>
 		</s:backgroundFill>
 		<s:Label text="Preparing to close.. Please wait."
 				 paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"

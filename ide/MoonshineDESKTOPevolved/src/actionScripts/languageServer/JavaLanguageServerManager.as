@@ -232,7 +232,10 @@ package actionScripts.languageServer
 		
 		private function onGradleClassPathRefresh(event:Event):void
 		{
-			restartLanguageServer()
+			if (_model.activeProject == _project)
+			{
+				restartLanguageServer();
+			}
 		}
 		
 		private function requireUpdateGradleClasspath():Boolean
