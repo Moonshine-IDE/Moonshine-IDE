@@ -2,6 +2,7 @@ package actionScripts.ui.tabNavigator
 {
     import spark.components.ButtonBarButton;
 
+    [Style(name="closeButtonVisible", type="Boolean", inherit="no", theme="spark")]
     public class ButtonBarButtonWithClose extends ButtonBarButton
     {
         public function ButtonBarButtonWithClose()

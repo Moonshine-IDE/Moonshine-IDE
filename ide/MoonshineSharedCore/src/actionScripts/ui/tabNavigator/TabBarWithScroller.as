@@ -1,7 +1,9 @@
 package actionScripts.ui.tabNavigator
 {
+    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
     import actionScripts.ui.tabNavigator.skin.TabBarWithScrollerSkin;
-    import actionScripts.ui.tabview.TabEvent;
+
+    import flash.events.MouseEvent;
 
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
@@ -16,6 +18,8 @@ package actionScripts.ui.tabNavigator
 	public class TabBarWithScroller extends TabBar 
 	{
         private var _maxElementCountWithoutScroller:int;
+
+        private var itemsNeedsUpdates:Boolean;
 
 		public function TabBarWithScroller()
 		{
@@ -111,6 +115,22 @@ package actionScripts.ui.tabNavigator
             if (collectionEvent.kind == CollectionEventKind.ADD || collectionEvent.kind == CollectionEventKind.REMOVE)
             {
                 this.invalidateSkinState();
+                if (collectionEvent.kind == CollectionEventKind.ADD)
+                {
+                    itemsNeedsUpdates = true;
+                    this.invalidateDisplayList();
+                }
+            }
+        }
+
+        override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+        {
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+            if (itemsNeedsUpdates)
+            {
+                addListenerToCloseButton();
+                itemsNeedsUpdates = false;
             }
         }
 
@@ -125,6 +145,29 @@ package actionScripts.ui.tabNavigator
                     this.invalidateSkinState();
                 }
             }
+        }
+
+        private function addListenerToCloseButton():void
+        {
+            const numElements:int = dataGroup.numElements;
+
+            for (var i:int = 0; i < numElements; i++)
+            {
+                var elt:Object = dataGroup.getElementAt(i);
+                if (elt)
+                {
+                    var closeTabButton:CloseTabButton = (elt as ButtonBarButtonWithClose).closeTabButton;
+                    if (!closeTabButton.hasEventListener("closeButtonClick"))
+                    {
+                        closeTabButton.addEventListener(MouseEvent.CLICK, onCloseButtonClick);
+                    }
+                }
+            }
+        }
+
+        private function onCloseButtonClick(event:MouseEvent):void
+        {
+            this.dispatchEvent(new ButtonBarButtonWithCloseEvent(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, event.target.itemIndex));
         }
     }
 }

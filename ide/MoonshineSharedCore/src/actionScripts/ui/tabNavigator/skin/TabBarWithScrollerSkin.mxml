@@ -49,11 +49,7 @@ created by the TabBarSkin use the TabBarButtonSkin class.
     </fx:Metadata> 
     
     <fx:Script>
-        <![CDATA[
-		import actionScripts.ui.tabNavigator.ButtonBarButtonWithClose;
-		import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
-
-		import mx.core.UIComponent;
+        <![CDATA[		
 		import mx.core.ScrollPolicy;
 		import mx.events.StateChangeEvent;
 
@@ -70,24 +66,6 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 		 */
 		override protected function updateDisplayList(unscaledWidth:Number, unscaleHeight:Number):void
 		{
-			const numElements:int = dataGroup.numElements;
-			const cornerRadius:int = hostComponent.getStyle("cornerRadius");
-			const closeButtonVisible:Boolean = hostComponent.getStyle("closeButtonVisible");
-
-			for (var i:int = 0; i < numElements; i++)
-			{
-				var elt:UIComponent = dataGroup.getElementAt(i) as UIComponent;
-				if (elt)
-				{
-					elt.setStyle("cornerRadius", cornerRadius);
-					elt.setStyle("closeButtonVisible", closeButtonVisible);
-					if (!elt.hasEventListener("closeButtonClick"))
-					{
-						(elt as ButtonBarButtonWithClose).closeTabButton.addEventListener(MouseEvent.CLICK, onCloseButtonClick);
-					}
-				}
-			}
-
 			super.updateDisplayList(unscaledWidth, unscaledHeight);
 		}
 
@@ -157,11 +135,6 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 				}
 			}
 		}
-
-		private function onCloseButtonClick(event:MouseEvent):void
-		{
-			hostComponent.dispatchEvent(new ButtonBarButtonWithCloseEvent(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, event.target.itemIndex));
-		}
 		]]>
     </fx:Script>
 
@@ -189,6 +162,8 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 				<fx:Component>
 					<tabnavigator:ButtonBarButtonWithClose color="#FFFFFF"
 														   minWidth="90" maxWidth="150"
+														   cornerRadius="{outerDocument.hostComponent.getStyle('cornerRadius')}"
+														   closeButtonVisible="{outerDocument.hostComponent.getStyle('closeButtonVisible')}"
 														   skinClass="components.skins.TabBarButtonSkin"/>
 				</fx:Component>
 			</s:itemRenderer>
