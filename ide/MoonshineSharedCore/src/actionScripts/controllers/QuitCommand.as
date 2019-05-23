@@ -144,6 +144,7 @@ package actionScripts.controllers
 		protected function onApplicationClosing():void
 		{
 			ConstantsCoreVO.IS_APPLICATION_CLOSING = true;
+			FlexGlobals.topLevelApplication.stage.mouseChildren = false;
 			
 			if(!timedOutClosingLanguageServers && model.languageServerCore.connectedProjectCount > 0)
 			{

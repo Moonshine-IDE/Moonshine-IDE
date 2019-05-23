@@ -24,8 +24,7 @@
 		 height="100%"
 		 backgroundColor="0x444444"
 		 verticalGap="0" xmlns:project="actionScripts.ui.project.*"
-		 preinitialize="onCreationCompletes()" remove="onRemoval()" xmlns:utils="actionScripts.utils.*"
-		 mouseChildren="{!ConstantsCoreVO.IS_APPLICATION_CLOSING}">
+		 preinitialize="onCreationCompletes()" remove="onRemoval()" xmlns:utils="actionScripts.utils.*">
 
 	<mx:Script>
 		<![CDATA[

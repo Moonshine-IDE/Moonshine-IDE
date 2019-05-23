@@ -23,15 +23,14 @@ package actionScripts.utils
 	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
-	import flash.events.TimerEvent;
 	import flash.filesystem.File;
-	import flash.utils.Timer;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
 	
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
@@ -44,12 +43,13 @@ package actionScripts.utils
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
 		private var isErrorClose:Boolean;
-		private var watchTimer:Timer;
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
 		private var customSDKPath:String;
 		private var isDelayRunInProcess:Boolean;
+		private var processQueus:Array = [];
+		private var isSingleProcessRunning:Boolean;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -59,50 +59,67 @@ package actionScripts.utils
 		
 		public function updateToCurrentEnvironmentVariable():void
 		{
-			// don't execute in a race condition
-			if (watchTimer && watchTimer.running) return;
-			if (!watchTimer)
+			if (isSingleProcessRunning)
 			{
-				watchTimer = new Timer(2000, 1);
-				watchTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
-				watchTimer.start();
+				processQueus.push("executeSetCommand");
+				return;
 			}
 			
-			/*
-			* @local
-			*/
-			function onWatchTimerCompletes(event:TimerEvent):void
-			{
-				watchTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onWatchTimerCompletes);
-				watchTimer.stop();
-				watchTimer = null;
-				
-				cleanUp();
-				execute();
-			}
+			executeSetCommand();
 		}
 		
 		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
 		{
-			cleanUp();
-			externalCallCompletionHandler = completion;
-			executeWithCommands = withCommands;
-			customSDKPath = customSDK;
-			execute();
+			if (isSingleProcessRunning)
+			{
+				// we'll call the method in our way later
+				processQueus.push(new MethodDescriptor(null, null, completion, customSDK, withCommands));
+				return;
+			}
+			
+			executeCommandWithSetLocalEnvironment(completion, customSDK, withCommands);
 		}
 		
-		private function cleanUp():void
+		private function flush():void
 		{
 			externalCallCompletionHandler = null;
 			executeWithCommands = null;
 			windowsBatchFile = null;
 			customSDKPath = null;
+			
+			if (processQueus.length != 0)
+			{
+				var tmpElement:Object = processQueus.shift();
+				if (tmpElement is String)
+				{
+					executeSetCommand();
+				}
+				else if (tmpElement is MethodDescriptor)
+				{
+					// we're not going to use methodDescriptor.callMethod()
+					// as the said method will require the calling method
+					// to be public; here we call the private one
+					executeCommandWithSetLocalEnvironment.apply(null, (tmpElement as MethodDescriptor).parameters);
+				}
+			}
 		}
 		
-		private function execute():void
+		private function executeSetCommand():void
 		{
+			isSingleProcessRunning = true;
+			
 			if (ConstantsCoreVO.IS_MACOS) executeOSX();
 			else executeWindows();
+		}
+		
+		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		{
+			isSingleProcessRunning = true;
+			
+			externalCallCompletionHandler = completion;
+			executeWithCommands = withCommands;
+			customSDKPath = customSDK;
+			executeSetCommand();
 		}
 		
 		private function executeWindows():void
@@ -113,6 +130,7 @@ package actionScripts.utils
 			if (!setCommand)
 			{
 				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				flush();
 				return;
 			}
 			
@@ -128,6 +146,9 @@ package actionScripts.utils
 			if (!setCommand)
 			{
 				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				
+				isSingleProcessRunning = false;
+				flush();
 				return;
 			}
 			
@@ -137,7 +158,8 @@ package actionScripts.utils
 				// bash script file path return the full command
 				// to execute by caller's own nativeProcess process
 				externalCallCompletionHandler(setCommand);
-				cleanUp();
+				isSingleProcessRunning = false;
+				flush();
 			}
 			else
 			{
@@ -261,7 +283,9 @@ package actionScripts.utils
 					// returns batch file path to be 
 					// executed by the caller's nativeProcess process
 					if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
-					cleanUp();
+
+					isSingleProcessRunning = false;
+					flush();
 				}
 				else if (windowsBatchFile)
 				{
@@ -285,6 +309,8 @@ package actionScripts.utils
 		private function onBatchFileWriteError(value:String):void
 		{
 			Alert.show("Local environment setup failed[1]!\n"+ value, "Error!");
+			isSingleProcessRunning = false;
+			flush();
 		}
 		
 		private function startShell(start:Boolean):void 
@@ -310,6 +336,9 @@ package actionScripts.utils
 				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 				customProcess = null;
 				isErrorClose = false;
+				
+				isSingleProcessRunning = false;
+				flush();
 			}
 		}
 		
