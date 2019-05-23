@@ -288,6 +288,15 @@ s|DataGroup
 	color: #eeeeee;
 }
 
+.referencesList
+{
+	contentBackgroundColor: #000000;
+	alternatingItemColors: #444444, #4d4c4c;
+	rollOverColor: #393939;
+	selectionColor: #393939;
+	color: #e0e0e0;
+}
+
 .completionList
 {
 	fontFamily: "DejaVuMono";

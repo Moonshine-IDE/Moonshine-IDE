@@ -49,11 +49,11 @@
 		}
 		]]></fx:Script>
 
-	<s:List id="lstReferences" styleName="multiLineList" width="100%" height="100%"
+	<s:List id="lstReferences" styleName="referencesList" width="100%" height="100%"
 			dataProvider="{references}" labelFunction="{itemToLabel}"
 			doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)">
 		<s:layout>
-			<layouts:VerticalLayout horizontalAlign="justify" useVirtualLayout="true"/>
+			<layouts:VerticalLayout horizontalAlign="justify" useVirtualLayout="true" gap="1"/>
 		</s:layout>
 	</s:List>
 </mx:VBox>
