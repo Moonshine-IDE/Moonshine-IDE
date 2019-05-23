@@ -26,6 +26,7 @@ package actionScripts.events
 		public static const DEVICE_UPDATED:String = "DEVICE_UPDATED";
 		public static const RESET_ALL_SETTINGS:String = "RESET_ALL_SETTINGS";
 		public static const SCROLL_TO_TOP:String = "SCROLL_TO_TOP";
+		public static const EVENT_FILE_BROWSED:String = "eventFileBrowsed";
 		
 		public var value:Object;
 		

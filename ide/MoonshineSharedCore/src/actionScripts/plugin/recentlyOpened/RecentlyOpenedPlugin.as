@@ -30,6 +30,7 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -82,6 +83,7 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
+			dispatcher.addEventListener(GeneralEvent.EVENT_FILE_BROWSED, onFileLocationBrowsed, false, 0, true);
 		}
 		
 		public function getMenu():MenuItem
@@ -190,6 +192,13 @@ package actionScripts.plugin.recentlyOpened
 					var tmpSDK:SDKReferenceVO = SDKReferenceVO.getNewReference(object);
 					if (new FileLocation(tmpSDK.path).fileBridge.exists) model.userSavedSDKs.addItem(tmpSDK);
 				}
+			}
+			
+			if (cookie.data.hasOwnProperty('lastBrowsedLocation')) 
+			{
+				ConstantsCoreVO.LAST_BROWSED_LOCATION = cookie.data.lastBrowsedLocation;
+				if (!model.fileCore.isPathExists(ConstantsCoreVO.LAST_BROWSED_LOCATION)) ConstantsCoreVO.LAST_BROWSED_LOCATION = null;
+				else model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
 			}
 			
 			if (cookie.data.hasOwnProperty('moonshineWorkspace')) OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(cookie.data.moonshineWorkspace);
@@ -304,6 +313,12 @@ package actionScripts.plugin.recentlyOpened
 			{
 				dispatcher.dispatchEvent(new Event(RECENT_FILES_LIST_UPDATED));
 			}, 300);
+		}
+		
+		private function onFileLocationBrowsed(event:GeneralEvent):void
+		{
+			cookie.data['lastBrowsedLocation'] = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+			cookie.flush();
 		}
 		
 		private function updateRecetProjectList(event:Event):void

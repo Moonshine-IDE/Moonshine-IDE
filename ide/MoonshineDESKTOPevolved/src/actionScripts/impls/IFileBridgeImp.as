@@ -46,6 +46,7 @@ package actionScripts.impls
 	import actionScripts.utils.FileUtils;
 	import actionScripts.locator.IDEModel;
 	import mx.controls.Alert;
+	import actionScripts.events.GeneralEvent;
 	
 	/**
 	 * IFileBridgeImp
@@ -803,6 +804,8 @@ package actionScripts.impls
 		{
 			if (FileUtils.isPathDirectory(value)) ConstantsCoreVO.LAST_BROWSED_LOCATION = value;
 			else ConstantsCoreVO.LAST_BROWSED_LOCATION = (new File(value)).parent.nativePath;
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new GeneralEvent(GeneralEvent.EVENT_FILE_BROWSED));
 			
 			IDEModel.getInstance().fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
 			_file.nativePath = value;
