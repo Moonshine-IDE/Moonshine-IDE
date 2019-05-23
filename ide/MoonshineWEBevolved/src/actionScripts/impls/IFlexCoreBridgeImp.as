@@ -433,6 +433,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		{
+			return false;
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS

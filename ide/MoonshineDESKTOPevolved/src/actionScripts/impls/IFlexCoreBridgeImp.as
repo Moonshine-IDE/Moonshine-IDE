@@ -456,6 +456,11 @@ package actionScripts.impls
 		{
 			return HelperUtils.getComponentByType(type);
 		}
+		
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		{
+			return HelperUtils.isValidExecutableBy(type, originPath, validationPath);
+		}
 
 		public function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void
 		{

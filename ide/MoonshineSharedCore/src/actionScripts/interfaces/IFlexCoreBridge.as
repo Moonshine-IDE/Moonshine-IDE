@@ -73,6 +73,7 @@ package actionScripts.interfaces
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
 		function getComponentByType(type:String):Object;
+		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 
         /**
          *

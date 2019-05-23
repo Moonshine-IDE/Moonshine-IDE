@@ -1193,7 +1193,14 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.SVN);
 			if (component && component.pathValidation)
 			{
-				return model.fileCore.isPathExists(model.svnPath + model.fileCore.separator + component.pathValidation);
+				if (ConstantsCoreVO.IS_MACOS) 
+				{
+					return model.flexCore.isValidExecutableBy(SDKTypes.SVN, model.svnPath, component.pathValidation);
+				}
+				else 
+				{
+					return model.fileCore.isPathExists(model.svnPath + model.fileCore.separator + component.pathValidation);
+				}
 			}
 			
 			return true;
@@ -1209,7 +1216,14 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
 			if (component && component.pathValidation)
 			{
-				return model.fileCore.isPathExists(model.gitPath + model.fileCore.separator + component.pathValidation);
+				if (ConstantsCoreVO.IS_MACOS) 
+				{
+					return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
+				}
+				else
+				{
+					return model.fileCore.isPathExists(model.gitPath + model.fileCore.separator + component.pathValidation);
+				}
 			}
 			
 			return true;
