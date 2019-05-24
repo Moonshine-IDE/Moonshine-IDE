@@ -65,14 +65,15 @@
 		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10">
 			<s:Image source="/elements/images/imgInstall.png"/>
 			<s:VGroup gap="10">
-				<s:Label text="Updates:"
+				<s:Label text="New Update Available"
 						 styleName="pathInputs"/>
-				<s:Label text="New version ({updater.updateVersion}) is available."
-						 styleName="smallText"/>
+				<s:Label text="A new version of Moonshine ({updater.updateVersion}) is available."
+						 styleName="textInputLabel" color="0x444444"/>
 				<s:VGroup width="100%"
-						  includeInLayout="{!isAppStoreVersion}" visible="{!isAppStoreVersion}">
+						  includeInLayout="{!isAppStoreVersion}" visible="{!isAppStoreVersion}"
+						  paddingTop="10">
 					<s:Label text="Do you want to download it and install?"
-							 styleName="smallText"/>
+							 styleName="textInputLabel" color="0x444444"/>
 					<mx:ProgressBar id="prgBar" source="{updater}" label="{(downlaoding)?'Downloading %3%':''}" alpha="{(downlaoding)?1:.3}" />
 					<s:HGroup width="100%">
 						<s:Button label="YES" 
@@ -84,9 +85,10 @@
 					</s:HGroup>
 				</s:VGroup>
 				<s:VGroup width="100%"
-						  includeInLayout="{isAppStoreVersion}" visible="{isAppStoreVersion}">
+						  includeInLayout="{isAppStoreVersion}" visible="{isAppStoreVersion}"
+						  paddingTop="10">
 					<s:Label text="You can download this update from the App Store."
-							 styleName="smallText" paddingBottom="20"/>
+							 styleName="textInputLabel" color="0x444444" paddingBottom="10"/>
 					<s:Button label="OK"
 							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
 							  width="60"/>
