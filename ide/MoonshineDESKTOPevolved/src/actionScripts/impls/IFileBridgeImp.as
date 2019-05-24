@@ -632,9 +632,7 @@ package actionScripts.impls
 				}
 				else
 				{
-					var errorMessage:String = value +" does not exist on the filesystem.\nOperation canceled.";
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-							new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, errorMessage, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					_file.nativePath = value;
 				}
 			}
 			catch (e:Error)

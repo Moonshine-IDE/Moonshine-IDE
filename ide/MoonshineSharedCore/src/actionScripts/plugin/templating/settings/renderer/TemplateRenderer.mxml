@@ -50,7 +50,7 @@
 				{
 					showRemove = true;
 				}
-				else if (setting.customTemplate.fileBridge.exists)
+				else if (setting.customTemplate && setting.customTemplate.fileBridge.exists)
 				{
 					showReset = true;
 				}

@@ -389,7 +389,6 @@ package actionScripts.plugin.templating
 			for each (var t:FileLocation in fileTemplates)
 			{
 				if (t.fileBridge.isHidden) continue;
-				
 				setting = getTemplateSetting(t);
 				settings.push(setting);
 			}
@@ -405,7 +404,6 @@ package actionScripts.plugin.templating
 			for each (var p:FileLocation in projectTemplates)
 			{
 				if (p.fileBridge.isHidden) continue;
-				
 				setting = getTemplateSetting(p);				
 				settings.push(setting);
 			}
