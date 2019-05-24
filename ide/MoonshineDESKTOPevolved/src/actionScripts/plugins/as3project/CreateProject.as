@@ -729,7 +729,7 @@ package actionScripts.plugins.as3project
 			}
 
 			var th:TemplatingHelper = new TemplatingHelper();
-			var sourceFile:String = "";
+			var sourceFile:String = pvo.projectName;
 			var sourceFileWithExtension:String = "";
 
 			if (isProjectFromExistingSource && pvo.projectWithExistingSourcePaths)
@@ -743,10 +743,6 @@ package actionScripts.plugins.as3project
 				{
 					sourceFile = pvo.projectWithExistingSourcePaths[1].fileBridge.name.split(".")[0];
 					th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
-				}
-				else
-				{
-					sourceFile = pvo.projectName;
 				}
 			}
 			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
