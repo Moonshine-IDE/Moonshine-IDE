@@ -159,7 +159,10 @@ package actionScripts.plugins.as3project.importer
 			project.mavenBuildOptions.parse(data.mavenBuild);
 
             project.swfOutput.parse(data.output, project);
-			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc") project.isLibraryProject = true;
+			if (project.swfOutput.path.fileBridge.extension && project.swfOutput.path.fileBridge.extension.toLowerCase() == "swc")
+			{
+				project.isLibraryProject = true;
+			}
 
 			project.jsOutputPath = SerializeUtil.deserializeString(data.jsOutput.option.@path);
 
