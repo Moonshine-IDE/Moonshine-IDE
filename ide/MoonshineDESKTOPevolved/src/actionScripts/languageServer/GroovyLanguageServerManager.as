@@ -19,17 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.languageServer.LanguageClient;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.GroovyTextEditor;
-    import actionScripts.utils.HtmlFormatter;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
-
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
@@ -38,15 +27,26 @@ package actionScripts.languageServer
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
-
-    import no.doomsday.console.ConsoleUtil;
+    
     import actionScripts.events.FilePluginEvent;
-    import actionScripts.utils.getProjectSDKPath;
-    import actionScripts.utils.GradleBuildUtil;
-	import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.languageServer.LanguageClient;
+    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.plugin.console.ConsoleOutputter;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.GroovyTextEditor;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.GradleBuildUtil;
+    import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.getProjectSDKPath;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
+    
+    import no.doomsday.console.ConsoleUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -205,7 +205,7 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var compilerArg:String = UtilsCore.getGradleBinPath() + " eclipse";
+				var compilerArg:String = EnvironmentSetupUtils.GRADLE_ENVIRON_EXEC_PATH + " eclipse";
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
