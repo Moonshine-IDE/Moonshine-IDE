@@ -57,6 +57,7 @@ package actionScripts.languageServer
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WorkspaceEdit;
@@ -250,7 +251,7 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var compilerArg:String = EnvironmentSetupUtils.GRADLE_ENVIRON_EXEC_PATH +" eclipse";
+				var compilerArg:String = EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" eclipse";
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,

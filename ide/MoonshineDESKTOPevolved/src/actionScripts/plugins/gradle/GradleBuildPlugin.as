@@ -18,12 +18,12 @@ package actionScripts.plugins.gradle
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
-    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.HelperUtils;
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
@@ -217,7 +217,7 @@ package actionScripts.plugins.gradle
                         preArguments.join(" && ").concat(" && ")
                         : "";
                 var commandLine:String = arguments.join(" ");
-                var fullCommandLine:String = preArgs.concat(EnvironmentSetupUtils.GRADLE_ENVIRON_EXEC_PATH, " ", commandLine);
+                var fullCommandLine:String = preArgs.concat(EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH, " ", commandLine);
 
                 args.push(fullCommandLine);
             }
@@ -306,7 +306,7 @@ package actionScripts.plugins.gradle
 			if (model.gradlePath && GradleBuildUtil.IS_GRADLE_STARTED)
 			{
 				status = int.MAX_VALUE;
-				super.start(Vector.<String>([EnvironmentSetupUtils.GRADLE_ENVIRON_EXEC_PATH +" --stop"]), null);
+				super.start(Vector.<String>([EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" --stop"]), null);
 			}
 			else
 			{

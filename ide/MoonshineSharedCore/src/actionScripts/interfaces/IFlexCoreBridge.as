@@ -72,6 +72,7 @@ package actionScripts.interfaces
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
+		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 

@@ -36,8 +36,8 @@ package actionScripts.plugin.groovy.grailsproject
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.Settings;
 
 	public class CreateGrailsProject extends ConsoleOutputter
@@ -250,8 +250,8 @@ package actionScripts.plugin.groovy.grailsproject
 
 		private function grailsCreateApp():void
 		{
-			var command:String = EnvironmentSetupUtils.GRAILS_ENVIRON_EXEC_PATH + " create-app " + project.name + " --inplace";
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [command]);
+			var command:String = EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH + " create-app " + project.name + " --inplace";
+			model.flexCore.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [command]);
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.PROJECT_BUILD_STARTED,

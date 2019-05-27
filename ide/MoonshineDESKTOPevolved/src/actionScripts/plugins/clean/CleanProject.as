@@ -39,9 +39,9 @@ package actionScripts.plugins.clean
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.popup.SelectOpenedFlexProject;
@@ -166,7 +166,7 @@ package actionScripts.plugins.clean
 			{
 				if (UtilsCore.isGradleAvailable())
 				{
-					start(Vector.<String>([EnvironmentSetupUtils.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
+					start(Vector.<String>([EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
 				}
 				else
 				{

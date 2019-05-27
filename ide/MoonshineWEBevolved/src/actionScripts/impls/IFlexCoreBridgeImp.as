@@ -438,6 +438,16 @@ package actionScripts.impls
 			return false;
 		}
 		
+		public function updateToCurrentEnvironmentVariable():void
+		{
+			
+		}
+		
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		{
+			
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS

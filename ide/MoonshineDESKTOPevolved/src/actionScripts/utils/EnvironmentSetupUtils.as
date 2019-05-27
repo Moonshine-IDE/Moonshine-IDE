@@ -37,11 +37,6 @@ package actionScripts.utils
 	
 	public class EnvironmentSetupUtils
 	{
-		public static const GRADLE_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
-			"$GRADLE_HOME/bin/gradle" : "%GRADLE_HOME%\\bin\\gradle";
-		public static const GRAILS_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
-			"$GRAILS_HOME/bin/grails" : "%GRAILS_HOME%\\bin\\grails";
-		
 		private static var instance:EnvironmentSetupUtils;
 		
 		private var model:IDEModel = IDEModel.getInstance();

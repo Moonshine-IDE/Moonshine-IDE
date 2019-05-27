@@ -491,5 +491,10 @@ package actionScripts.impls
 		{
 			EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 		}
+		
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		{
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDK, withCommands);
+		}
 	}
 }
