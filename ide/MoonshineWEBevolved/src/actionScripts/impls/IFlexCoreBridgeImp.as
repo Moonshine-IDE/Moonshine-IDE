@@ -428,11 +428,6 @@ package actionScripts.impls
 			return IDEModel.getInstance().version;
 		}
 		
-		public function updateToCurrentEnvironmentVariable():void
-		{
-			
-		}
-		
 		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
 		{
 			return false;
