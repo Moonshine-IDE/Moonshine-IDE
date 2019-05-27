@@ -1093,9 +1093,7 @@ package actionScripts.plugins.as3project
             isFlexJSRoyalProject = false;
             isJavaProject = false;
 
-			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1 || 
-				templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_FLEX) != -1 || 
-				templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES) != -1)
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
 				isVisualEditorProject = true;
 			}

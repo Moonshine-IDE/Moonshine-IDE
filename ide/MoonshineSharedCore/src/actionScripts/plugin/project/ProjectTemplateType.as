@@ -25,8 +25,8 @@ package actionScripts.plugin.project
 		public static const LIBRARY_PROJECT:String = "Library Project";
         public static const MOBILE:String = "Mobile Project";
         public static const VISUAL_EDITOR:String = "Visual Editor";
-		public static const VISUAL_EDITOR_FLEX:String = "Flex";
-		public static const VISUAL_EDITOR_PRIMEFACES:String = "PrimeFaces";
+		public static const VISUAL_EDITOR_FLEX:String = "Flex Visual Editor";
+		public static const VISUAL_EDITOR_PRIMEFACES:String = "PrimeFaces Visual Editor";
 		public static const AWAY3D:String = "Away3D Project";
         public static const JAVA:String = "Java";
         public static const GRAILS:String = "Grails";

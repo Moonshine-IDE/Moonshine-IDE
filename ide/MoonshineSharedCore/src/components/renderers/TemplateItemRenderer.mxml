@@ -70,16 +70,14 @@
 			fileIcon.source = e.currentTarget.content;
 		}
 
-		private function onLabelDisplayMouseOverOut(event:MouseEvent):void
+		private function onLabelDisplayMouseOver(event:MouseEvent):void
 		{
-			if(event.type == MouseEvent.MOUSE_OVER)
-			{
-				event.target.setStyle('color', 0XFFFFFF);
-			}
-			else if (event.type == MouseEvent.MOUSE_OUT)
-			{
-				event.target.setStyle('color', 0XD6D6D6);
-			}
+			event.target.setStyle('color', 0XFFFFFF);
+		}
+
+		private function onLabelDisplayMouseOut(event:MouseEvent):void
+		{
+			event.target.setStyle('color', 0XD6D6D6);
 		}
 		]]>
 	</fx:Script>
@@ -99,6 +97,7 @@
 			baseline="50"
 			height="100%"
 			verticalAlign="middle"
-			mouseOver="onLabelDisplayMouseOverOut(event)"
+			mouseOver="onLabelDisplayMouseOver(event)"
+			mouseOut="onLabelDisplayMouseOut(event)"
 			useHandCursor="true" buttonMode="true" mouseChildren="false"/>
 </s:ItemRenderer>
