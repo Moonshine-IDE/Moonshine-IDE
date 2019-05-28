@@ -60,7 +60,7 @@ package actionScripts.languageServer
 		private static const URI_SCHEME_FILE:String = "file";
 
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
-		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["groovy"];
+		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["groovy", "java"];
 
 		private var _project:GrailsProjectVO;
 		private var _languageClient:LanguageClient;
