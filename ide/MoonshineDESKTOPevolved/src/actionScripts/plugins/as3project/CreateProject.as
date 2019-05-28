@@ -477,7 +477,7 @@ package actionScripts.plugins.as3project
 
 			return new SettingsWrapper("Name & Location", settingsProject);
 		}
-		
+
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
 			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
@@ -696,6 +696,18 @@ package actionScripts.plugins.as3project
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
 			var pvo:Object = getProjectWithTemplate(shell, exportProject);
+
+			if (customSdkPathSetting)
+			{
+				if(customSdkPathSetting.stringValue)
+				{
+					setAutoSuggestSDKbyType();
+				}
+				else
+				{
+					customSdkPathSetting.commitChanges();
+				}
+			}
 
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
@@ -1005,7 +1017,6 @@ package actionScripts.plugins.as3project
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
-				setAutoSuggestSDKbyType();
 
 				var projectsTemplates:ArrayCollection = isFlexJSRoyalProject ?
 						ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
@@ -1061,7 +1072,7 @@ package actionScripts.plugins.as3project
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
 			}
-			else if (!isJavaProject)
+			else if (!isJavaProject && !isFlexJSRoyalProject)
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
 			}
