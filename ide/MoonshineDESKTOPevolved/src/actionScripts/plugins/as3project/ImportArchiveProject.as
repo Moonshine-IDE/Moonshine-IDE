@@ -258,6 +258,7 @@ package actionScripts.plugins.as3project
         {
             if (projectFileExtension == "as3proj") return "as3proj";
 			if (projectFileExtension == "veditorproj") return "veditorproj";
+            if (projectFileExtension == "grailsproj") return "grailsproj";
 			return null;
         }
 

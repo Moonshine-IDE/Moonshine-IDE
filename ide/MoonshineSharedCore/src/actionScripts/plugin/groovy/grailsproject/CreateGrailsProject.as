@@ -379,7 +379,7 @@ package actionScripts.plugin.groovy.grailsproject
 
 			var projectSettingsFileName:String = projectName + ".grailsproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
-			pvo = GrailsImporter.parse(settingsFile, projectName);
+			pvo = GrailsImporter.parse(targetFolder, projectName, settingsFile);
 
 			GrailsExporter.export(pvo);
 

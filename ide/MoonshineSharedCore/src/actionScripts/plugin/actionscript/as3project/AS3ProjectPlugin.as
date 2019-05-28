@@ -219,13 +219,19 @@ package actionScripts.plugin.actionscript.as3project
 			if (flashBuilderProjectFile) isFBProject = true;
 			if (flashDevelopProjectFile) isFDProject = true;
 			
-			// for Java projects
+			// for Java and Grails projects
 			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
 			{
 				flashDevelopProjectFile = model.javaCore.testJava(dir);
 				if (flashDevelopProjectFile)
 				{
 					importFDProject(flashDevelopProjectFile, false, model.javaCore.parseJava(new FileLocation(dir.nativePath)));
+					return;
+				}
+				flashDevelopProjectFile = model.groovyCore.testGrails(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath)));
 					return;
 				}
 			}

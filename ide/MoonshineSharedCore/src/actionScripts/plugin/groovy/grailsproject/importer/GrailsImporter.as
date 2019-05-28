@@ -6,10 +6,11 @@ package actionScripts.plugin.groovy.grailsproject.importer
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 
 	public class GrailsImporter extends FlashDevelopImporterBase
 	{
-		private static const FILE_EXTENSION_GRAILSPROJ:String = "grailsproj";
+		private static const FILE_EXTENSION_GRAILSPROJ:String = ".grailsproj";
 
 		public static function test(file:Object):FileLocation
 		{
@@ -21,7 +22,9 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			var listing:Array = file.getDirectoryListing();
 			for each (var i:Object in listing)
 			{
-				if (i.extension == FILE_EXTENSION_GRAILSPROJ)
+				var fileName:String = i.name;
+				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_GRAILSPROJ);
+				if(extensionIndex != -1 && extensionIndex == (fileName.length - FILE_EXTENSION_GRAILSPROJ.length))
 				{
 					return new FileLocation(i.nativePath);
 				}
@@ -30,26 +33,34 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			return null;
 		}
 
-		public static function parse(file:FileLocation, projectName:String=null):GrailsProjectVO
+		public static function parse(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):GrailsProjectVO
 		{
-			var folder:File = (file.fileBridge.getFile as File).parent;
+			if(!projectName)
+			{
+				var airFile:Object = projectFolder.fileBridge.getFile;
+				projectName = airFile.name;
+			}
 
-			var project:GrailsProjectVO = new GrailsProjectVO(new FileLocation(folder.nativePath), projectName);
+            if (!settingsFileLocation)
+            {
+                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + FILE_EXTENSION_GRAILSPROJ);
+            }
 
-			project.projectFile = file;
+			var project:GrailsProjectVO = new GrailsProjectVO(projectFolder, projectName);
+			project.menuType = ProjectMenuTypes.GRAILS;
 
-			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
+			project.projectFile = settingsFileLocation;
 
 			var stream:FileStream = new FileStream();
-			stream.open(file.fileBridge.getFile as File, FileMode.READ);
-			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
+			stream.open(settingsFileLocation.fileBridge.getFile as File, FileMode.READ);
+			var data:XML = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
 			stream.close();
 			
             project.classpaths.length = 0;
 			
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 
-			project.sourceFolder = new FileLocation(folder.resolvePath("src/main/groovy").nativePath);
+			project.sourceFolder = projectFolder.resolvePath("src/main/groovy");
 
 			return project;
 		}
