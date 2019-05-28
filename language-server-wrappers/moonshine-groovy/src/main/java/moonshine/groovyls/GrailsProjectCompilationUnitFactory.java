@@ -53,6 +53,7 @@ import net.prominic.groovyls.util.FileContentsTracker;
 
 public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFactory {
 	private static final String FILE_EXTENSION_GROOVY = ".groovy";
+	private static final String FILE_EXTENSION_JAVA = ".java";
 	private static final String FILE_ECLIPSE_CLASSPATH = ".classpath";
 
 	private Path storagePath;
@@ -85,7 +86,8 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		} else {
 			final Set<URI> urisToSkip = changedUris;
 			GroovyLSCompilationUnit oldUnit = compilationUnit;
-			compilationUnit = new GroovyLSCompilationUnit(oldUnit.getConfiguration());
+			CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
+			compilationUnit = new GroovyLSCompilationUnit(config);
 			oldUnit.iterator().forEachRemaining(sourceUnit -> {
 				URI uri = sourceUnit.getSource().getURI();
 				if (!urisToSkip.contains(uri)) {
@@ -235,7 +237,8 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		try {
 			if (Files.exists(dirPath)) {
 				Files.walk(dirPath).forEach((filePath) -> {
-					if (!filePath.toString().endsWith(FILE_EXTENSION_GROOVY)) {
+					if (!filePath.toString().endsWith(FILE_EXTENSION_GROOVY)
+							&& !filePath.toString().endsWith(FILE_EXTENSION_JAVA)) {
 						return;
 					}
 					URI fileURI = filePath.toUri();
