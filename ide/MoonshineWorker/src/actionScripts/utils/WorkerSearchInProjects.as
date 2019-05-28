@@ -15,7 +15,7 @@ package actionScripts.utils
 	public class WorkerSearchInProjects
 	{
 		public static const READABLE_FILES_PATTERNS:Array = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", 
-			"actionScriptProperties", "html", "js", "veditorproj", "javaproj", "java"];
+			"actionScriptProperties", "html", "js", "veditorproj", "javaproj", "java", "groovy", "gradle", "yml", "gsp", "properties", "sh", "ini"];
 		
 		public static var FILES_COUNT:int;
 		public static var FILE_PROCESSED_COUNT:int;

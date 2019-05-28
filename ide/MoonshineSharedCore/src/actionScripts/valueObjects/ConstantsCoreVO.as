@@ -276,7 +276,8 @@ package actionScripts.valueObjects
 	</fx:Declarations>
 </s:Group>]]></root>;
 			
-			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml"];
+			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
+								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
