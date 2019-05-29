@@ -195,10 +195,15 @@ package actionScripts.plugin.templating
 				case "AS3 Interface":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.TEMPLATE];
 				case "CSS File":
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, 
+						ProjectMenuTypes.TEMPLATE];
 				case "XML File":
-					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.TEMPLATE];
+					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, 
+						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS];
 				case "File":
-					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.TEMPLATE];
+					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, 
+						ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, 
+						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS];
 				case "Visual Editor Flex File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
