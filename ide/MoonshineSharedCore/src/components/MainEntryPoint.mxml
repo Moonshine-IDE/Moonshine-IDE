@@ -121,6 +121,6 @@
 		</s:backgroundFill>
 		<s:Label text="Preparing to close... Please wait"
 				 paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"
-				 styleName="textInputLabel"/>
+				 styleName="textInputLabel" color="0xffea00"/>
 	</s:BorderContainer>
 </s:Group>

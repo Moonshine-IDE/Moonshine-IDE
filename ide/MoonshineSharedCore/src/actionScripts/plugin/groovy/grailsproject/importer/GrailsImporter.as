@@ -61,6 +61,7 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 
 			project.sourceFolder = projectFolder.resolvePath("src/main/groovy");
+			project.classpaths[0] = project.sourceFolder;
 
 			return project;
 		}
