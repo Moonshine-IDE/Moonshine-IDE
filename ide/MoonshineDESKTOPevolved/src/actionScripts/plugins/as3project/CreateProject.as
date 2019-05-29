@@ -702,6 +702,7 @@ package actionScripts.plugins.as3project
 				if(customSdkPathSetting.stringValue)
 				{
 					setAutoSuggestSDKbyType();
+					customSdkPathSetting.commitChanges();
 				}
 				else
 				{
