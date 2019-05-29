@@ -67,6 +67,7 @@ package actionScripts.plugin.templating
 	import actionScripts.valueObjects.AS3ClassAttributes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.TemplateVO;
 	
 	import components.popup.newFile.NewASFilePopup;
@@ -632,7 +633,7 @@ package actionScripts.plugin.templating
 				if (custom.fileBridge.isDirectory) 
 				{
 					var isProjectOpen:Boolean = false;
-					for each (var i:AS3ProjectVO in model.projects)
+					for each (var i:ProjectVO in model.projects)
 					{
 						if (i.folderLocation.fileBridge.nativePath == custom.fileBridge.nativePath)
 						{
