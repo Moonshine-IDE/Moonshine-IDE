@@ -16,4 +16,9 @@ dependencies {
 task deploy(type: Copy) {
     from "build/libs/moonshine-groovy.jar"
     into "../../ide/MoonshineSharedCore/src/elements/groovy-language-server/"
-}   
+}
+
+task deployTest(type: Copy) {
+    from "build/libs/moonshine-groovy.jar"
+    into "../../ide/MoonshineDESKTOPevolved/bin-debug/elements/groovy-language-server/"
+}

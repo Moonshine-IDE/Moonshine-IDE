@@ -85,15 +85,14 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			changedUris = null;
 		} else {
 			final Set<URI> urisToSkip = changedUris;
-			GroovyLSCompilationUnit oldUnit = compilationUnit;
-			CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
-			compilationUnit = new GroovyLSCompilationUnit(config);
-			oldUnit.iterator().forEachRemaining(sourceUnit -> {
+			List<SourceUnit> sourcesToRemove = new ArrayList<>();
+			compilationUnit.iterator().forEachRemaining(sourceUnit -> {
 				URI uri = sourceUnit.getSource().getURI();
-				if (!urisToSkip.contains(uri)) {
-					compilationUnit.addSource(sourceUnit);
+				if (urisToSkip.contains(uri)) {
+					sourcesToRemove.add(sourceUnit);
 				}
 			});
+			compilationUnit.removeSources(sourcesToRemove);
 		}
 
 		if (classpathDocument != null) {
