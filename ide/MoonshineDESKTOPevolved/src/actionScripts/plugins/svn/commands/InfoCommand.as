@@ -100,6 +100,15 @@ package actionScripts.plugins.svn.commands
 				dispatchEvent(new Event(Event.CANCEL));
 			}
 			
+			removeListeners();
+		}
+		
+		protected function removeListeners():void
+		{
+			customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, svnError);
+			customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, svnOutput);
+			customProcess.removeEventListener(NativeProcessExitEvent.EXIT, svnExit);
+			
 			runningForFile = null;
 			customProcess = null;
 		}

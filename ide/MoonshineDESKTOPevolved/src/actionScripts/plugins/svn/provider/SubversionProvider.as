@@ -27,8 +27,10 @@ package actionScripts.plugins.svn.provider
 	import actionScripts.plugins.svn.commands.CheckoutCommand;
 	import actionScripts.plugins.svn.commands.CommitCommand;
 	import actionScripts.plugins.svn.commands.LoadRemoteListCommand;
+	import actionScripts.plugins.svn.commands.RepositoryTestCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
 	import actionScripts.plugins.svn.event.SVNEvent;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	
 	public class SubversionProvider extends ConsoleOutputter
@@ -73,6 +75,11 @@ package actionScripts.plugins.svn.provider
 		{
 			var remoteListCommand:LoadRemoteListCommand = new LoadRemoteListCommand(executable, root);
 			remoteListCommand.loadList(repository, completion, userName, userPassword);
+		}
+		
+		public function checkIfSVNRepository(project:ProjectVO):void
+		{
+			var testCommand:RepositoryTestCommand = new RepositoryTestCommand(project, executable, project.folderLocation.fileBridge.getFile as File);
 		}
 	}
 }

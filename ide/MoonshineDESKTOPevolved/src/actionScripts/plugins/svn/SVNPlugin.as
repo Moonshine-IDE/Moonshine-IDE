@@ -223,13 +223,9 @@ package actionScripts.plugins.svn
 			// don't go for a check if already decided as svn project
 			if (event.project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1) 
 			{
-				if (isVersioned(event.project.folderLocation))
-				{
-					event.project.menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
-					event.project.hasVersionControlType = VersionControlTypes.SVN;
-					// following will enable/disable Moonshine top menus based on project
-					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
-				}
+				var provider:SubversionProvider = new SubversionProvider();
+				provider.executable = new File(svnBinaryPath);
+				provider.checkIfSVNRepository(event.project);
 			}
 		}
 		
