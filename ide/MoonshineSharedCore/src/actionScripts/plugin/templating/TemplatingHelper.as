@@ -209,7 +209,7 @@ package actionScripts.plugin.templating
 				case "Visual Editor PrimeFaces File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
 				case "Java Class":
-					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE];
+					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE];
 				case "Groovy Class":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.TEMPLATE];
 			}
