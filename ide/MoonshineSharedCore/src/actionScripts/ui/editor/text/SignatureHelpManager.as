@@ -64,6 +64,11 @@ package actionScripts.ui.editor.text
 
 		public function showSignatureHelp(data:SignatureHelp):void
 		{
+			if(data == null)
+			{
+				closeSignatureHelp();
+				return;
+			}
 			var signatures:Vector.<SignatureInformation> = data.signatures;
 			var activeSignature:int = data.activeSignature;
 			var activeParameter:int = data.activeParameter;

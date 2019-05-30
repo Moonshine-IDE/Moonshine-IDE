@@ -33,14 +33,13 @@ package actionScripts.ui.editor.text
 
 		public function showHover(contents:Vector.<String>):void
 		{
-			var contentsCount:int = contents.length;
-			if(contentsCount == 0)
+			if(contents == null || contents.length == 0)
 			{
 				this.closeHover();
 				return;
 			}
 
-			contentsCount = contents.length;
+			var contentsCount:int = contents.length;
 			var hoverText:String = "";
 			for(var i:int = 0; i < contentsCount; i++)
 			{

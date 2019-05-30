@@ -25,11 +25,13 @@ package actionScripts.events
 		public static const EVENT_SHOW_HOVER:String = "newShowHover";
 		
 		public var contents:Vector.<String>;
+		public var uri:String;
 
-		public function HoverEvent(type:String, contents:Vector.<String>)
+		public function HoverEvent(type:String, contents:Vector.<String>, uri:String)
 		{
 			super(type, false, true);
 			this.contents = contents;
+			this.uri = uri;
 		}
 
 	}

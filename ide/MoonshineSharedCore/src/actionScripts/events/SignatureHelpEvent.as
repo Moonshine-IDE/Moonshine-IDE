@@ -27,11 +27,13 @@ package actionScripts.events
 		public static const EVENT_SHOW_SIGNATURE_HELP:String = "newShowSignatureHelp";
 
 		public var signatureHelp:SignatureHelp;
+		public var uri:String;
 
-		public function SignatureHelpEvent(type:String, signatureHelp:SignatureHelp)
+		public function SignatureHelpEvent(type:String, signatureHelp:SignatureHelp, uri:String)
 		{
 			super(type, false, true);
 			this.signatureHelp = signatureHelp;
+			this.uri = uri;
 		}
 
 	}

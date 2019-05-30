@@ -17,6 +17,7 @@ package actionScripts.ui.editor
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	import actionScripts.events.CodeActionsEvent;
+	import actionScripts.ui.tabview.TabEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -31,6 +32,7 @@ package actionScripts.ui.editor
 			
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
 			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			editor.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
 			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
 			editor.model.addEventListener(Event.CHANGE, editorModel_onChange);
 		}
@@ -51,6 +53,8 @@ package actionScripts.ui.editor
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			dispatcher.addEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
+			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 		}
 
 		protected function removeGlobalListeners():void
@@ -60,6 +64,15 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
+			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+		}
+
+		protected function closeAllPopups():void
+		{
+			editor.showSignatureHelp(null);
+			editor.showHover(null);
+			editor.showDefinitionLink(null, null);
 		}
 
 		protected function dispatchCompletionEvent():void
@@ -80,8 +93,6 @@ package actionScripts.ui.editor
 
 		protected function dispatchSignatureHelpEvent():void
 		{
-			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
-
 			var document:String = getTextDocument();			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
@@ -96,8 +107,6 @@ package actionScripts.ui.editor
 
 		protected function dispatchHoverEvent(charAndLine:Point):void
 		{
-			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
-
 			var document:String = getTextDocument();
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
@@ -109,8 +118,6 @@ package actionScripts.ui.editor
 
 		protected function dispatchGotoDefinitionEvent(charAndLine:Point):void
 		{
-			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
-
 			var document:String = getTextDocument();
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
@@ -159,6 +166,20 @@ package actionScripts.ui.editor
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
 				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
 		}
+
+		private function onRollOver(event:MouseEvent):void
+		{
+			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
+		}
+
+		private function onRollOut(event:MouseEvent):void
+		{
+			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
+			editor.showHover(null);
+			editor.showDefinitionLink(null, null);
+		}
 		
 		private function onMouseMove(event:MouseEvent):void
 		{
@@ -172,20 +193,15 @@ package actionScripts.ui.editor
 				}
 				else
 				{
-					editor.showDefinitionLink(new <Location>[], null);
+					editor.showDefinitionLink(null, null);
 					dispatchHoverEvent(charAndLine);
 				}
 			}
 			else
 			{
-				editor.showDefinitionLink(new <Location>[], null);
-				editor.showHover(new <String>[]);
+				editor.showDefinitionLink(null, null);
+				editor.showHover(null);
 			}
-		}
-		
-		private function onRollOut(event:MouseEvent):void
-		{
-			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 		}
 
 		private function onTextChange(event:ChangeEvent):void
@@ -249,19 +265,28 @@ package actionScripts.ui.editor
 
 		protected function showSignatureHelpHandler(event:SignatureHelpEvent):void
 		{
-			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
+			{
+				return;
+			}
 			editor.showSignatureHelp(event.signatureHelp);
 		}
 
 		protected function showHoverHandler(event:HoverEvent):void
 		{
-			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
+			{
+				return;
+			}
 			editor.showHover(event.contents);
 		}
 
 		protected function showDefinitionLinkHandler(event:GotoDefinitionEvent):void
 		{
-			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
+			{
+				return;
+			}
 			editor.showDefinitionLink(event.locations, event.position);
 		}
 
@@ -316,6 +341,14 @@ package actionScripts.ui.editor
 				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
 		}
 
+		protected function tabSelectHandler(event:TabEvent):void
+		{
+			if(event.child != this)
+			{
+				this.closeAllPopups();
+			}
+		}
+
 		private function addedToStageHandler(event:Event):void
 		{
 			this.addGlobalListeners();
@@ -324,6 +357,7 @@ package actionScripts.ui.editor
 		private function removedFromStageHandler(event:Event):void
 		{
 			this.removeGlobalListeners();
+			this.closeAllPopups();
 		}
 	}
 }

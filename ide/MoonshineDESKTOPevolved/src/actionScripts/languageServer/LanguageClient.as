@@ -220,6 +220,8 @@ package actionScripts.languageServer
 		private var _codeActionLookup:Dictionary = new Dictionary();
 		private var _resolveCompletionLookup:Dictionary = new Dictionary();
 		private var _completionLookup:Dictionary = new Dictionary();
+		private var _hoverLookup:Dictionary = new Dictionary();
+		private var _signatureHelpLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
@@ -899,11 +901,15 @@ package actionScripts.languageServer
 				}
 				else if(result && FIELD_SIGNATURES in result) //signature help
 				{
-					handleSignatureHelpResponse(result);
+					var uri:String = _signatureHelpLookup[requestID] as String;
+					delete _signatureHelpLookup[requestID];
+					handleSignatureHelpResponse(result, uri);
 				}
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
-					handleHoverResponse(result);
+					uri = _hoverLookup[requestID] as String;
+					delete _hoverLookup[requestID];
+					handleHoverResponse(result, uri);
 				}
 				else if(result && FIELD_DOCUMENT_CHANGES in result) //rename
 				{
@@ -922,13 +928,13 @@ package actionScripts.languageServer
 					}
 					else if(requestID in _definitionLinkLookup)
 					{
-						var position:Position = _definitionLinkLookup[requestID] as Position;
+						var definitionData:Object = _definitionLinkLookup[requestID];
 						delete _definitionLinkLookup[requestID];
-						handleDefinitionLinkResponse(result, position);
+						handleDefinitionLinkResponse(result, Position(definitionData.position), definitionData.uri as String);
 					}
 					else if(requestID in _gotoDefinitionLookup)
 					{
-						position = _gotoDefinitionLookup[requestID] as Position;
+						var position:Position = _gotoDefinitionLookup[requestID] as Position;
 						delete _gotoDefinitionLookup[requestID];
 						handleGotoDefinitionResponse(result, position);
 					}
@@ -1068,7 +1074,7 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, [original]));
 		}
 
-		private function handleSignatureHelpResponse(result:Object):void
+		private function handleSignatureHelpResponse(result:Object, uri:String):void
 		{
 			var resultSignatures:Array = result.signatures as Array;
 			if(resultSignatures && resultSignatures.length > 0)
@@ -1084,11 +1090,11 @@ package actionScripts.languageServer
 				signatureHelp.signatures = eventSignatures;
 				signatureHelp.activeSignature = result.activeSignature;
 				signatureHelp.activeParameter = result.activeParameter;
-				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
+				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp, uri));
 			}
 		}
 
-		private function handleHoverResponse(result:Object):void
+		private function handleHoverResponse(result:Object, uri:String):void
 		{
 			var resultContents:Object = result.contents;
 			var eventContents:Vector.<String> = new <String>[];
@@ -1106,7 +1112,7 @@ package actionScripts.languageServer
 			{
 				eventContents[0] = parseHover(resultContents);
 			}
-			_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents));
+			_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents, uri));
 		}
 
 		private function handleRenameResponse(result:Object):void
@@ -1140,10 +1146,10 @@ package actionScripts.languageServer
 			return eventLocations;
 		}
 
-		private function handleDefinitionLinkResponse(result:Object, position:Position):void
+		private function handleDefinitionLinkResponse(result:Object, position:Position, uri:String):void
 		{
 			var eventLocations:Vector.<Location> = handleLocationsResponse(result as Array);
-			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position));
+			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position, uri));
 		}
 
 		private function handleGotoDefinitionResponse(result:Object, position:Position):void
@@ -1548,16 +1554,17 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
 			if(!supportsSignatureHelp)
 			{
 				var signatureHelp:SignatureHelp = new SignatureHelp();
 				signatureHelp.signatures = new <SignatureInformation>[];
-				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp));
+				_globalDispatcher.dispatchEvent(new SignatureHelpEvent(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, signatureHelp, uri));
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -1567,7 +1574,8 @@ package actionScripts.languageServer
 			params.textDocument = textDocument;
 			params.position = position;
 			
-			this.sendRequest(METHOD_TEXT_DOCUMENT__SIGNATURE_HELP, params);
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__SIGNATURE_HELP, params);
+			_signatureHelpLookup[id] = uri;
 		}
 
 		private function hoverHandler(event:LanguageServerEvent):void
@@ -1581,14 +1589,15 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
 			if(!supportsHover)
 			{
-				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[]));
+				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[], uri));
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -1598,7 +1607,8 @@ package actionScripts.languageServer
 			params.textDocument = textDocument;
 			params.position = position;
 			
-			this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
+			_hoverLookup[id] = uri;
 		}
 
 		private function definitionLinkHandler(event:LanguageServerEvent):void
@@ -1612,15 +1622,17 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
-				_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, new <Location>[], positionVO));
+				_globalDispatcher.dispatchEvent(
+					new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, new <Location>[], positionVO, uri));
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -1631,7 +1643,7 @@ package actionScripts.languageServer
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
-			_definitionLinkLookup[id] = positionVO;
+			_definitionLinkLookup[id] = {uri: uri, position: positionVO };
 		}
 
 		private function gotoDefinitionHandler(event:MenuEvent):void

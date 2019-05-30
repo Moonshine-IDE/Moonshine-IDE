@@ -29,12 +29,14 @@ package actionScripts.events
 
 		public var locations:Vector.<Location>;
 		public var position:Position;
+		public var uri:String;
 
-		public function GotoDefinitionEvent(type:String, locations:Vector.<Location>, position:Position)
+		public function GotoDefinitionEvent(type:String, locations:Vector.<Location>, position:Position, uri:String)
 		{
 			super(type, false, true);
 			this.locations = locations;
 			this.position = position;
+			this.uri = uri;
 		}
 
 	}

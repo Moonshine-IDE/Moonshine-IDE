@@ -65,7 +65,7 @@ package actionScripts.ui.editor.text
 
 		public function showDefinitionLink(locations:Vector.<Location>, position:Position):void
 		{
-			if(locations.length === 0)
+			if(position == null || locations == null || locations.length === 0)
 			{
 				this.closeDefinitionLink();
 				return;
@@ -75,11 +75,6 @@ package actionScripts.ui.editor.text
 				PopUpManager.addPopUp(definitionOverlay, editor, false);
 			}
 
-			if(position === null)
-			{
-				this.closeDefinitionLink();
-				return;
-			}
 			savedLocation = locations[0];
 			var uri:String = savedLocation.uri;
 			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
