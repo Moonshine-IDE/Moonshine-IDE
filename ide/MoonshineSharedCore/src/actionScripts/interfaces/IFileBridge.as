@@ -95,6 +95,9 @@ package actionScripts.interfaces
 		function set modificationDate(value:Date):void;
 		function get data():Object;
 		function set data(value:Object):void;
+		function get userDirectory():Object;
+		function get desktopDirectory():Object;
+		function get documentsDirectory():Object;
 
 		function get nameWithoutExtension():String;
 	}

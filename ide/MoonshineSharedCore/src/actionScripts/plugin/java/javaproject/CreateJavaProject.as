@@ -81,6 +81,11 @@ package actionScripts.plugin.java.javaproject
                     lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
                 }
 			}
+			else
+			{
+				lastSelectedProjectPath = model.fileCore.documentsDirectory.nativePath;
+				if (!model.recentSaveProjectPath.contains(lastSelectedProjectPath)) model.recentSaveProjectPath.addItem(lastSelectedProjectPath);
+			}
 
 			// Remove spaces from project name
 			var bracketIndex:int = event.templateDir.fileBridge.name.indexOf("(");

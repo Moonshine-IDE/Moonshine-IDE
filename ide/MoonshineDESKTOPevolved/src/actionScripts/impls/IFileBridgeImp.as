@@ -725,6 +725,21 @@ package actionScripts.impls
 
 			return this.name;
 		}
+		
+		public function get userDirectory():Object
+		{
+			return File.userDirectory;
+		}
+		
+		public function get desktopDirectory():Object
+		{
+			return File.desktopDirectory;
+		}
+		
+		public function get documentsDirectory():Object
+		{
+			return File.documentsDirectory;
+		}
 
 		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{

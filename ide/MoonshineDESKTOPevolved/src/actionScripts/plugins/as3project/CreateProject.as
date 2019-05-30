@@ -262,7 +262,10 @@ package actionScripts.plugins.as3project
 			else if (!isOpenProjectCall)
 			{
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
-				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
+				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) 
+				{
+					model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
+				}
 			}
 			
 			// remove any ( or ) stuff

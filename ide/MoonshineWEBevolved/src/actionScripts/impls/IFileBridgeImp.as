@@ -385,6 +385,21 @@ package actionScripts.impls
 			return null;
 		}
 		
+		public function get userDirectory():Object
+		{
+			return null;
+		}
+		
+		public function get desktopDirectory():Object
+		{
+			return null;
+		}
+		
+		public function get documentsDirectory():Object
+		{
+			return null;
+		}
+		
 		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean
 		{
 			// this method has different importance and
