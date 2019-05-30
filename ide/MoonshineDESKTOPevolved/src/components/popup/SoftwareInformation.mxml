@@ -108,6 +108,14 @@
 							if(model.svnPath && FileUtils.isPathExists(model.svnPath))
 								component.installToPath = model.svnPath;
 							break;
+						case ComponentTypes.TYPE_GRADLE:
+							if(model.gradlePath && FileUtils.isPathExists(model.gradlePath))
+								component.installToPath = model.gradlePath;
+							break;
+						case ComponentTypes.TYPE_GRAILS:
+							if(model.grailsPath && FileUtils.isPathExists(model.grailsPath))
+								component.installToPath = model.grailsPath;
+							break;
 						case ComponentTypes.TYPE_ANT:
 							if(model.antHomePath && model.antHomePath.fileBridge.exists)
 								component.installToPath = model.antHomePath.fileBridge.nativePath;

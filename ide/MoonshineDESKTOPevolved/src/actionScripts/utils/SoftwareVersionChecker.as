@@ -46,6 +46,8 @@ package actionScripts.utils
 		private static const QUERY_ANT_VERSION:String = "getAntVersion";
 		private static const QUERY_MAVEN_VERSION:String = "getMavenVersion";
 		private static const QUERY_SVN_GIT_VERSION:String = "getSVNGitVersion";
+		private static const QUERY_GRADLE_VERSION:String = "getGradleVersion";
+		private static const QUERY_GRAILS_VERSION:String = "getGrailsVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
@@ -134,6 +136,16 @@ package actionScripts.utils
 							commands = '"'+ itemUnderCursor.installToPath+'" --version';
 							itemTypeUnderCursor = QUERY_SVN_GIT_VERSION;
 							break;
+						case ComponentTypes.TYPE_GRADLE:
+							executable = ConstantsCoreVO.IS_MACOS ? "gradle" : "gradle.bat";
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							itemTypeUnderCursor = QUERY_GRADLE_VERSION;
+							break;
+						case ComponentTypes.TYPE_GRAILS:
+							executable = ConstantsCoreVO.IS_MACOS ? "grails" : "grails.bat";
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							itemTypeUnderCursor = QUERY_GRAILS_VERSION;
+							break;
 					}
 					
 					environmentSetup.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [commands]);
@@ -221,6 +233,7 @@ package actionScripts.utils
 						components[tmpIndex].version = lastOutput;
 						break;
 					case QUERY_MAVEN_VERSION:
+					case QUERY_GRADLE_VERSION:	
 						components[tmpIndex].version = getVersionNumberedTypeLine(lastOutput);
 						break;
 				}
@@ -273,6 +286,7 @@ package actionScripts.utils
 						break;
 					case QUERY_JDK_VERSION:
 					case QUERY_ANT_VERSION:
+					case QUERY_GRAILS_VERSION:
 					case QUERY_SVN_GIT_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
@@ -283,6 +297,7 @@ package actionScripts.utils
 						break;
 					}
 					case QUERY_MAVEN_VERSION:
+					case QUERY_GRADLE_VERSION:
 						// in case of 'mvn -version' on OSX the process
 						// returns the full information in many shell-data
 						// so we need to prepare the full output first
