@@ -62,6 +62,10 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	public GrailsProjectCompilationUnitFactory() {
 	}
 
+	public void invalidateCompilationUnit() {
+		compilationUnit = null;
+	}
+
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
 		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
 		Document projectDocument = loadXMLDocument(projectFilePath);
