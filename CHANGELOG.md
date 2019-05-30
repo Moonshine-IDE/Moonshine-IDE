@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 Moonshine 2.3.0 now has support for Java Maven and Gradle projects.   You can import external Java projects, and Moonshine will use the existing pom.xml or build.gradle to build the project and determine the dependencies.
 
-In edition, we added initial support for Grails projects. Currently you can create and run new projects, and the projects have limited language server support.  We will add more functionality in the next release.
+In addition, we added initial support for Grails projects. Currently you can create and run new projects, and the projects have limited language server support.  We will add more functionality in the next release.
 
 ### Added
 * Import Java Gradle and Maven projects
