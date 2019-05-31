@@ -85,6 +85,11 @@ package actionScripts.plugin.groovy.grailsproject
 				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
 				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 			}
+			else
+			{
+				lastSelectedProjectPath = model.fileCore.documentsDirectory.nativePath;
+				if (!model.recentSaveProjectPath.contains(lastSelectedProjectPath)) model.recentSaveProjectPath.addItem(lastSelectedProjectPath);
+			}
 
 			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
 			var folderLocation:FileLocation = new FileLocation(tmpProjectSourcePath);

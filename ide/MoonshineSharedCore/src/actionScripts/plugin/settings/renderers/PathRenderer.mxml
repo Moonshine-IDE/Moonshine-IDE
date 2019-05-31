@@ -164,6 +164,8 @@
 			if(event.anObject.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
 			hideDefineSDKLink(event.anObject.name);
 			onSDKPopupClosed(null);
+			
+			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 		}
 
 		private function onSDKPopupClosed(event:CloseEvent):void

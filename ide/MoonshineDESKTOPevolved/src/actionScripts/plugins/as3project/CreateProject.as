@@ -18,61 +18,60 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.filesystem.File;
+	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	import mx.utils.ObjectUtil;
+	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.settings.NewLibraryProjectSetting;
+	import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.project.ProjectTemplateType;
+	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugin.project.vo.ProjectShellVO;
-
-	import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.filesystem.File;
-    import flash.net.SharedObject;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
-
-	import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    import mx.utils.ObjectUtil;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.NewProjectEvent;
-    import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.RefreshTreeEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.settings.NewLibraryProjectSetting;
-    import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
-    import actionScripts.plugin.project.ProjectTemplateType;
-    import actionScripts.plugin.project.ProjectType;
-    import actionScripts.plugin.settings.SettingsView;
-    import actionScripts.plugin.settings.vo.AbstractSetting;
-    import actionScripts.plugin.settings.vo.BooleanSetting;
-    import actionScripts.plugin.settings.vo.DropDownListSetting;
-    import actionScripts.plugin.settings.vo.ISetting;
-    import actionScripts.plugin.settings.vo.MultiOptionSetting;
-    import actionScripts.plugin.settings.vo.NameValuePair;
-    import actionScripts.plugin.settings.vo.PathSetting;
-    import actionScripts.plugin.settings.vo.SettingsWrapper;
-    import actionScripts.plugin.settings.vo.StaticLabelSetting;
-    import actionScripts.plugin.settings.vo.StringSetting;
-    import actionScripts.plugin.templating.TemplatingHelper;
-    import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-    import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-    import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
-    import actionScripts.ui.menu.vo.ProjectMenuTypes;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.OSXBookmarkerNotifiers;
-    import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.SharedObjectConst;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.SDKReferenceVO;
-    import actionScripts.valueObjects.SDKTypes;
-    import actionScripts.valueObjects.TemplateVO;
+	import actionScripts.plugin.settings.SettingsView;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+	import actionScripts.plugin.settings.vo.BooleanSetting;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.plugin.settings.vo.StaticLabelSetting;
+	import actionScripts.plugin.settings.vo.StringSetting;
+	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.SDKUtils;
+	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
+	import actionScripts.valueObjects.SDKTypes;
+	import actionScripts.valueObjects.TemplateVO;
 	
     public class CreateProject
 	{
@@ -105,6 +104,7 @@ package actionScripts.plugins.as3project
 		private var isJavaProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
+		private var filePathReg:RegExp = new RegExp("^(?:[\w]\:|.*/)([^\|/]*)$", "i");
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
@@ -208,7 +208,6 @@ package actionScripts.plugins.as3project
 				_projectTemplateType = value;
 
 				setProjectType(projectTemplateType);
-				setAutoSuggestSDKbyType();
 			}
 		}
 		public function get projectTemplateType():String
@@ -223,7 +222,10 @@ package actionScripts.plugins.as3project
 
 		public function set customSdk(value:String):void
 		{
-			_customSdk = value;
+			if (filePathReg.exec(value))
+			{
+				_customSdk = value;
+			}
 		}
 		
 		private function createAS3Project(event:NewProjectEvent):void
@@ -464,6 +466,7 @@ package actionScripts.plugins.as3project
             }
 
 			customSdkPathSetting = new PathSetting(this,'customSdk', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customSdk, true);
+			customSdkPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onCustomSDKPathChanged, false, 0, true);
 			projectWithExistingSourceSetting = new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true);
 
 			var settingsProject:Vector.<ISetting> = Vector.<ISetting>([
@@ -479,6 +482,15 @@ package actionScripts.plugins.as3project
 			settingsProject.push(newProjectWithExistingSourcePathSetting);
 
 			return new SettingsWrapper("Name & Location", settingsProject);
+		}
+		
+		private function onCustomSDKPathChanged(event:Event):void
+		{
+			var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(customSdkPathSetting.stringValue);
+			if (sdkReference)
+			{
+				customSdk = sdkReference.path;
+			}
 		}
 
 		private function checkIfProjectDirectory(value:FileLocation):void
@@ -562,6 +574,11 @@ package actionScripts.plugins.as3project
 			if (projectTemplateTypeSetting)
 			{
 				projectTemplateTypeSetting.removeEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+			}
+			
+			if (customSdkPathSetting)
+			{
+				customSdkPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onCustomSDKPathChanged);
 			}
 
 			delete templateLookup[settings.associatedData];
@@ -699,20 +716,6 @@ package actionScripts.plugins.as3project
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
 			var pvo:Object = getProjectWithTemplate(shell, exportProject);
-
-			if (customSdkPathSetting)
-			{
-				if(customSdkPathSetting.stringValue)
-				{
-					setAutoSuggestSDKbyType();
-					customSdkPathSetting.commitChanges();
-				}
-				else
-				{
-					customSdkPathSetting.commitChanges();
-				}
-			}
-
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
 			var sourcePath:String = "src";
