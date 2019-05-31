@@ -104,7 +104,8 @@ package actionScripts.plugins.as3project
 		private var isJavaProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
-		private var filePathReg:RegExp = new RegExp("^(?:[\w]\:|.*/)([^\|/]*)$", "i");
+		private var filePathReg:RegExp = ConstantsCoreVO.IS_MACOS ? 
+			new RegExp("^(?:[\w]\:|.*/)([^\|/]*)$", "i") : new RegExp(/^(?:[\w]\:|\\)(\\[a-z_\-\s0-9\.]+)+$/i);
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;
@@ -222,7 +223,7 @@ package actionScripts.plugins.as3project
 
 		public function set customSdk(value:String):void
 		{
-			if (filePathReg.exec(value))
+			if (filePathReg.test(value))
 			{
 				_customSdk = value;
 			}
@@ -594,12 +595,14 @@ package actionScripts.plugins.as3project
 
 			if (projectWithExistingSourceSetting)
 			{
-				projectWithExistingSourceSetting.editable = projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+				customSdkPathSetting.editable = projectWithExistingSourceSetting.editable = 
+					projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
 			}
 
 			if(newProjectWithExistingSourcePathSetting)
 			{
-				newProjectWithExistingSourcePathSetting.editable = projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+				customSdkPathSetting.editable = newProjectWithExistingSourcePathSetting.editable = 
+					projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
 			}
 		}
 

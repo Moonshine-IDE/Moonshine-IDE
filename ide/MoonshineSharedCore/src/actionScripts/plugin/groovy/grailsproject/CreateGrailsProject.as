@@ -88,7 +88,10 @@ package actionScripts.plugin.groovy.grailsproject
 			else
 			{
 				lastSelectedProjectPath = model.fileCore.documentsDirectory.nativePath;
-				if (!model.recentSaveProjectPath.contains(lastSelectedProjectPath)) model.recentSaveProjectPath.addItem(lastSelectedProjectPath);
+				if (!model.recentSaveProjectPath.contains(lastSelectedProjectPath)) 
+				{
+					model.recentSaveProjectPath.addItem(lastSelectedProjectPath);
+				}
 			}
 
 			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
