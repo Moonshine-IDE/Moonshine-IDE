@@ -46,6 +46,7 @@ package actionScripts.plugins.svn
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -218,7 +219,7 @@ package actionScripts.plugins.svn
 		protected function handleCheckSVNRepository(event:ProjectEvent):void
 		{
 			// Check if we have a SVN binary
-			if (!svnBinaryPath || svnBinaryPath == "") return;
+			if (!UtilsCore.isSVNPresent()) return;
 			
 			// don't go for a check if already decided as svn project
 			if (event.project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) == -1) 
@@ -242,7 +243,7 @@ package actionScripts.plugins.svn
 			// for Windows only
 			// @note SK
 			// Need to check OSX svn existence someway
-			if (!svnBinaryPath || svnBinaryPath == "")
+			if (!UtilsCore.isSVNPresent())
 			{
 				if (ConstantsCoreVO.IS_MACOS)
 				{
