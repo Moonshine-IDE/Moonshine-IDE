@@ -67,7 +67,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.utils.EnvironmentSetupUtils;
-	import actionScripts.utils.EnvironmentUtils;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -885,7 +885,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
             clearOutput();
 			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
-			print("Compiling "+pvo.projectName);
+			warning("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
 			if (pvo.targets.length == 0) 
@@ -1346,10 +1346,7 @@ package actionScripts.plugins.as3project.mxmlc
 					if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
                         //Let's wait with the reset because compiler may still have something to report
-                        timeoutValue = setTimeout(function():void {
-                            reset();
-                            clearTimeout(timeoutValue);
-                        }, 100);
+						resetAfterShellError();
                     }
 					return;
 				}
@@ -1361,10 +1358,7 @@ package actionScripts.plugins.as3project.mxmlc
 
                     if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
-                        timeoutValue = setTimeout(function():void {
-                            reset();
-                            clearTimeout(timeoutValue);
-                        }, 100);
+						resetAfterShellError();
                     }
 					return;
 				}
@@ -1376,7 +1370,17 @@ package actionScripts.plugins.as3project.mxmlc
                     warning(data);
 					return;
 				}
-
+				
+				// in case of failing by use of pure AIR SDK
+				if (data.toLowerCase().indexOf("\\bin\\..) was unexpected at this time") != -1)
+				{
+					resetAfterShellError();
+					
+					warning(data +"\nUpdating environment..");
+					fixCompilerBatchFileAndRunAgain();
+					return;
+				}
+				
 				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
 				if (javaToolsOptionsMatch)
 				{
@@ -1387,11 +1391,19 @@ package actionScripts.plugins.as3project.mxmlc
 				print(data);
                 if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                 {
-                    timeoutValue = setTimeout(function():void {
-                        reset();
-                        clearTimeout(timeoutValue);
-                    }, 100);
+					resetAfterShellError();
                 }
+			}
+			
+			/*
+			 * @local
+			 */
+			function resetAfterShellError():void
+			{
+				timeoutValue = setTimeout(function():void {
+					reset();
+					clearTimeout(timeoutValue);
+				}, 100);
 			}
 		}
 		
@@ -1402,6 +1414,19 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				exiting = false;
 				startShell();
+			}
+		}
+		
+		private function fixCompilerBatchFileAndRunAgain():void
+		{
+			var compilerBatchString:String = FileUtils.readFromFile(currentSDK.resolvePath(mxmlcPath)) as String;
+			if (compilerBatchString)
+			{
+				compilerBatchString = compilerBatchString.replace('AIR_SDK_HOME=%~dp0..', '"AIR_SDK_HOME=%~dp0.."');
+				FileUtils.writeToFile(currentSDK.resolvePath(mxmlcPath), compilerBatchString);
+				
+				// re-run the previous compilation command
+				proceedWithBuild(model.activeProject);
 			}
 		}
 	}

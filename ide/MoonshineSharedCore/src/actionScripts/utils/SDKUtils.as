@@ -222,6 +222,7 @@ package actionScripts.utils
 			if (!location) return null;
 
 			// lets load flex-sdk-description.xml to get it's label
+			var isPureAIRsdk:Boolean;
 			var description:FileLocation = location.fileBridge.resolvePath("royale-sdk-description.xml");
 			if (!description.fileBridge.exists)
 			{
@@ -230,6 +231,11 @@ package actionScripts.utils
 			if (!description.fileBridge.exists)
 			{
 				description = location.fileBridge.resolvePath("flex-sdk-description.xml");
+			}
+			if (!description.fileBridge.exists)
+			{
+				description = location.fileBridge.resolvePath("air-sdk-description.xml");
+				isPureAIRsdk = true;
 			}
 
 			if (description.fileBridge.exists)
@@ -244,7 +250,7 @@ package actionScripts.utils
 					outputTargets.push(new RoyaleOutputTarget(item.@name, item.@version, item.@AIR, item.@Flash));
 				}
 
-				var displayName:String = tmpXML["name"];
+				var displayName:String = isPureAIRsdk ? "Adobe "+ tmpXML["name"] +" (SDK & Compiler)" : tmpXML["name"];
 				if (description.fileBridge.name.indexOf("royale") > -1)
 				{
 					if (outputTargets.length == 1)
