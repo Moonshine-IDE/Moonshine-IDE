@@ -101,7 +101,7 @@ package actionScripts.plugins.as3project.mxmlc
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
 		private var fcshPath:String = "bin/fcsh";
-		private var mxmlcPath:String = "bin/mxmlc";
+		private var mxmlcPath:String = "bin/mxmlc_moonshine";
 		private var cmdFile:File;
 		private var _defaultFlexSDK:String;
 		private var fcsh:NativeProcess;
@@ -196,7 +196,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if (Settings.os == "win")
 			{
 				fcshPath = "fcsh_moonshine.bat";
-				mxmlcPath +=".bat";
+				mxmlcPath = "mxmlc_moonshine.bat";
 				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 			}
 			else
@@ -765,17 +765,6 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 				
-				var fschFile:File = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath(fcshPath) : File.applicationDirectory.resolvePath("elements/"+ fcshPath);
-				if (!fschFile.exists)
-				{
-					Alert.show("Invalid SDK - Please configure a Flex SDK instead.","Error!");
-					error("Invalid SDK - Please configure a Flex SDK instead.");
-					return;
-				}
-				
-				fschstr = fschFile.nativePath;
-				fschstr = UtilsCore.convertString(fschstr);
-				
 				SDKstr = currentSDK.nativePath;
 				SDKstr = UtilsCore.convertString(SDKstr);
 				
@@ -990,7 +979,9 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				
-				var mxmlcStr:String = '"'+ currentSDK.resolvePath(mxmlcPath).nativePath +'"'
+				mxmlcPath = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath("bin/mxmlc").nativePath : 
+														File.applicationDirectory.resolvePath("elements/mxmlc_moonshine.bat").nativePath;
+				var mxmlcStr:String = '"'+ mxmlcPath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs
 					+dbg
@@ -1371,16 +1362,6 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 				
-				// in case of failing by use of pure AIR SDK
-				if (data.toLowerCase().indexOf("\\bin\\..) was unexpected at this time") != -1)
-				{
-					resetAfterShellError();
-					
-					warning(data +"\nUpdating environment..");
-					fixCompilerBatchFileAndRunAgain();
-					return;
-				}
-				
 				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
 				if (javaToolsOptionsMatch)
 				{
@@ -1414,19 +1395,6 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				exiting = false;
 				startShell();
-			}
-		}
-		
-		private function fixCompilerBatchFileAndRunAgain():void
-		{
-			var compilerBatchString:String = FileUtils.readFromFile(currentSDK.resolvePath(mxmlcPath)) as String;
-			if (compilerBatchString)
-			{
-				compilerBatchString = compilerBatchString.replace('AIR_SDK_HOME=%~dp0..', '"AIR_SDK_HOME=%~dp0.."');
-				FileUtils.writeToFile(currentSDK.resolvePath(mxmlcPath), compilerBatchString);
-				
-				// re-run the previous compilation command
-				proceedWithBuild(model.activeProject);
 			}
 		}
 	}

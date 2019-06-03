@@ -241,6 +241,14 @@ package actionScripts.utils
 				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
 				setCommand += getSetExportCommand(flexRoyaleHomeType, defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
+				
+				if (!defaultSDKtype)
+				{
+					var airHomeType:String = "AIR_SDK_HOME";
+					setCommand += getSetExportCommand(airHomeType, defaultOrCustomSDKPath);
+					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
+				}
+				
 				isValidToExecute = true;
 			}
 			
