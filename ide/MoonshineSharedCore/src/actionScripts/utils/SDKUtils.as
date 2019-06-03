@@ -222,7 +222,6 @@ package actionScripts.utils
 			if (!location) return null;
 
 			// lets load flex-sdk-description.xml to get it's label
-			var isPureAIRsdk:Boolean;
 			var description:FileLocation = location.fileBridge.resolvePath("royale-sdk-description.xml");
 			if (!description.fileBridge.exists)
 			{
@@ -235,7 +234,6 @@ package actionScripts.utils
 			if (!description.fileBridge.exists)
 			{
 				description = location.fileBridge.resolvePath("air-sdk-description.xml");
-				isPureAIRsdk = true;
 			}
 
 			if (description.fileBridge.exists)
@@ -250,8 +248,12 @@ package actionScripts.utils
 					outputTargets.push(new RoyaleOutputTarget(item.@name, item.@version, item.@AIR, item.@Flash));
 				}
 
-				var displayName:String = isPureAIRsdk ? "Adobe "+ tmpXML["name"] +" (SDK & Compiler)" : tmpXML["name"];
-				if (description.fileBridge.name.indexOf("royale") > -1)
+				var displayName:String;
+				if (description.fileBridge.name.indexOf("air-sdk-description") > -1)
+				{
+					displayName = "Adobe "+ tmpXML["name"] +" (SDK & Compiler)";
+				}
+				else if (description.fileBridge.name.indexOf("royale") > -1)
 				{
 					if (outputTargets.length == 1)
 					{
@@ -261,6 +263,10 @@ package actionScripts.utils
 					{
 						displayName += " " + tmpXML.version;
 					}
+				}
+				else
+				{
+					displayName = tmpXML["name"];
 				}
 				
 				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
