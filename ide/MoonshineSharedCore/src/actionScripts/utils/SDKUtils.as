@@ -255,6 +255,7 @@ package actionScripts.utils
 				}
 				else if (description.fileBridge.name.indexOf("royale") > -1)
 				{
+					displayName = "Apache Royale";
 					if (outputTargets.length == 1)
 					{
 						displayName = displayName.concat(" ", tmpXML.version," (", outputTargets[0].name, " only)");
