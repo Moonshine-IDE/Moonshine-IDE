@@ -1,16 +1,17 @@
 package actionScripts.plugin.project.vo
 {
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+    
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
     import actionScripts.plugin.java.javaproject.importer.JavaImporter;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
-
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
 
     public dynamic class ProjectShellVO extends EventDispatcher
     {
@@ -70,6 +71,10 @@ package actionScripts.plugin.project.vo
 			if (templateName.indexOf(ProjectTemplateType.JAVA) != -1)
 			{
 				project = JavaImporter.parse(this.folderLocation, this.projectName);
+			}
+			else if (templateName.indexOf(ProjectTemplateType.GRAILS) != -1)
+			{
+				project = GrailsImporter.parse(this.folderLocation, this.projectName);
 			}
 			else
             {

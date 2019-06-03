@@ -50,15 +50,22 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			project.menuType = ProjectMenuTypes.GRAILS;
 
 			project.projectFile = settingsFileLocation;
-
-			var stream:FileStream = new FileStream();
-			stream.open(settingsFileLocation.fileBridge.getFile as File, FileMode.READ);
-			var data:XML = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
-			stream.close();
+			
+			var data:XML;
+			if (settingsFileLocation.fileBridge.exists)
+			{
+				var stream:FileStream = new FileStream();
+				stream.open(settingsFileLocation.fileBridge.getFile as File, FileMode.READ);
+				data = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
+				stream.close();
+			}
 			
             project.classpaths.length = 0;
 			
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+			if (data)
+			{
+				parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+			}
 
 			project.sourceFolder = projectFolder.resolvePath("src/main/groovy");
 			project.classpaths[0] = project.sourceFolder;

@@ -42,6 +42,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
+	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.ProjectTemplateType;
@@ -102,6 +104,7 @@ package actionScripts.plugins.as3project
 		private var isCustomTemplateProject:Boolean;
 		private var isFlexJSRoyalProject:Boolean;
 		private var isJavaProject:Boolean;
+		private var isGrailsProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
 		private var filePathReg:RegExp = ConstantsCoreVO.IS_MACOS ? 
@@ -592,17 +595,16 @@ package actionScripts.plugins.as3project
 		private function onProjectTemplateTypeChange(event:Event):void
 		{
 			projectTemplateTypeSetting.commitChanges();
-
+			
+			var isSourceSettingsAvailable:Boolean = ((projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1) && 
+														(projectTemplateType.indexOf(ProjectTemplateType.GRAILS) == -1));
 			if (projectWithExistingSourceSetting)
 			{
-				customSdkPathSetting.editable = projectWithExistingSourceSetting.editable = 
-					projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+				customSdkPathSetting.editable = projectWithExistingSourceSetting.editable = isSourceSettingsAvailable;
 			}
-
-			if(newProjectWithExistingSourcePathSetting)
+			if (newProjectWithExistingSourcePathSetting)
 			{
-				customSdkPathSetting.editable = newProjectWithExistingSourcePathSetting.editable = 
-					projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1;
+				customSdkPathSetting.editable = newProjectWithExistingSourcePathSetting.editable = isSourceSettingsAvailable;
 			}
 		}
 
@@ -622,7 +624,7 @@ package actionScripts.plugins.as3project
 			//save  project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			var tmpParent:FileLocation;
-			if (isProjectFromExistingSource && !isJavaProject)
+			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject)
 			{
 				// validate if all requirement supplied
 				if (newProjectWithExistingSourcePathSetting.stringValue == "")
@@ -678,7 +680,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject && !isLibraryProject && !isJavaProject)
+			if (!isCustomTemplateProject && !isLibraryProject && !isJavaProject && !isGrailsProject)
 			{
 				dispatcher.dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
@@ -956,6 +958,10 @@ package actionScripts.plugins.as3project
 			{
 				projectSettingsFile = projectName+".javaproj";
 			}
+			else if (isGrailsProject)
+			{
+				projectSettingsFile = projectName+".grailsproj";
+			}
 
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
@@ -963,7 +969,7 @@ package actionScripts.plugins.as3project
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 
-			if (!isJavaProject)
+			if (!isJavaProject && !isGrailsProject)
 			{
 				// Set some stuff to get the paths right
 				pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
@@ -1003,6 +1009,10 @@ package actionScripts.plugins.as3project
 			{
 				JavaExporter.export(pvo as JavaProjectVO, true);
 			}
+			else if (isGrailsProject)
+			{
+				GrailsExporter.export(pvo as GrailsProjectVO);
+			}
 			else
 			{
 				// Write settings
@@ -1036,7 +1046,7 @@ package actionScripts.plugins.as3project
 				{
 					if(template.title == projectTemplateType)
 					{
-						if (isJavaProject)
+						if (isJavaProject || isGrailsProject)
 						{
 							templateLookup[pvo] = template.file;
 							break;
@@ -1112,7 +1122,7 @@ package actionScripts.plugins.as3project
             isMobileProject = false;
             isAway3DProject = false;
             isFlexJSRoyalProject = false;
-            isJavaProject = false;
+            isGrailsProject = false;
 
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
@@ -1149,6 +1159,10 @@ package actionScripts.plugins.as3project
 			{
 				isJavaProject = true;
 			}
+			else if (templateName.indexOf(ProjectTemplateType.GRAILS) != -1)
+			{
+				isGrailsProject = true;
+			}
             else
             {
                 isActionScriptProject = false;
@@ -1169,20 +1183,21 @@ package actionScripts.plugins.as3project
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_FLEX;
 			}
-			
 			if (isLibraryProject)
 			{
 				return ProjectMenuTypes.LIBRARY_FLEX_AS;
 			}
-			
 			if (isFlexJSRoyalProject)
 			{
 				return ProjectMenuTypes.JS_ROYALE;
 			}
-
 			if (isJavaProject)
 			{
 				return ProjectMenuTypes.JAVA;
+			}
+			if (isGrailsProject)
+			{
+				return ProjectMenuTypes.GRAILS;
 			}
 
 			return ProjectMenuTypes.FLEX_AS;
