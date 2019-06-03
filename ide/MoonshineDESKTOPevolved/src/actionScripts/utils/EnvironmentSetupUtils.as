@@ -242,7 +242,7 @@ package actionScripts.utils
 				setCommand += getSetExportCommand(flexRoyaleHomeType, defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
 				
-				if (!defaultSDKtype)
+				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
 				{
 					var airHomeType:String = "AIR_SDK_HOME";
 					setCommand += getSetExportCommand(airHomeType, defaultOrCustomSDKPath);

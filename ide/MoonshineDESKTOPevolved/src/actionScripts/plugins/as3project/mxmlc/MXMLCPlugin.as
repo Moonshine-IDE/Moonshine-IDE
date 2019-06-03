@@ -766,7 +766,6 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				SDKstr = currentSDK.nativePath;
-				SDKstr = UtilsCore.convertString(SDKstr);
 				
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
@@ -822,7 +821,6 @@ package actionScripts.plugins.as3project.mxmlc
 			fschstr = UtilsCore.convertString(fschstr);
 			
 			SDKstr = currentSDK.nativePath;
-			SDKstr = UtilsCore.convertString(SDKstr);
 			
 			// update build config file
 			pvo.updateConfig();
