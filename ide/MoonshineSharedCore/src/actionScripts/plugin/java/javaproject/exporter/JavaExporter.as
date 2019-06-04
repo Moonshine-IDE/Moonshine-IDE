@@ -49,7 +49,7 @@ package actionScripts.plugin.java.javaproject.exporter
             if (!project.hasPom() || existingSource) return;
 
             var separator:String = project.projectFolder.file.fileBridge.separator;
-            var pomFile:FileLocation = new FileLocation(project.mavenBuildOptions.mavenBuildPath.concat(separator,"pom.xml"));
+            var pomFile:FileLocation = new FileLocation(project.mavenBuildOptions.buildPath.concat(separator,"pom.xml"));
             var fileContent:Object = pomFile.fileBridge.read();
             var pomXML:XML = new XML(fileContent);
 

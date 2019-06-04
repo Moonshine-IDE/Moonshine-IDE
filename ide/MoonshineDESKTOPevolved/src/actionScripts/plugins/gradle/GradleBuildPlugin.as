@@ -430,9 +430,9 @@ package actionScripts.plugins.gradle
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                if (project["gradleBuildOptions"].gradleBuildPath)
+                if (project["gradleBuildOptions"].buildPath)
                 {
-                    return new FileLocation(project["gradleBuildOptions"].gradleBuildPath);
+                    return new FileLocation(project["gradleBuildOptions"].buildPath);
                 }
             }
 
