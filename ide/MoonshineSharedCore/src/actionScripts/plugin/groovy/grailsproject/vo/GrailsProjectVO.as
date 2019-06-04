@@ -1,19 +1,12 @@
 package actionScripts.plugin.groovy.grailsproject.vo
 {
-	import mx.collections.ArrayList;
-	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.GrailsBuildOptions;
 	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
-	import actionScripts.plugin.settings.vo.DropDownListSetting;
-	import actionScripts.plugin.settings.vo.FileNameSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.valueObjects.ProjectVO;
 
 	public class GrailsProjectVO extends ProjectVO
