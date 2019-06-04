@@ -35,7 +35,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                 _buildActions = [
                     new BuildActionVO("Clean", "clean"),
                     new BuildActionVO("Compile Project", "compile"),
-                    new BuildActionVO("Run Project", "run-app"),
+                    new BuildActionVO("Compile and Run Project", "run-app"),
                     new BuildActionVO("Test Project", "test-app"),
 					new BuildActionVO("Release Project", "war")
                 ];
