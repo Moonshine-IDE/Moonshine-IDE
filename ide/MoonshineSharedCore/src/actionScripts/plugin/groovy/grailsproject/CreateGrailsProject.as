@@ -226,7 +226,6 @@ package actionScripts.plugin.groovy.grailsproject
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:GrailsProjectVO = view.associatedData as GrailsProjectVO;
-			var targetFolder:FileLocation = project.folderLocation;
 
 			//save project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -352,7 +351,6 @@ package actionScripts.plugin.groovy.grailsproject
 		{	
 			var templateDir:FileLocation = templateLookup[pvo];
 			var projectName:String = pvo.projectName;
-			var sourceFile:String = pvo.projectName;
 			var sourceFileWithExtension:String = pvo.projectName + ".groovy";
 			var sourcePath:String = "src" + File.separator + "main" + File.separator + "groovy";
 

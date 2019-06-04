@@ -29,232 +29,227 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
-			import mx.events.FlexEvent;
-			import mx.events.ListEvent;
-			import mx.managers.PopUpManager;
-			
-			import spark.events.TextOperationEvent;
-			
-			import actionScripts.events.DuplicateEvent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.extResources.com.validator.ValidatorType;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.utils.SimpleValidator;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			import actionScripts.valueObjects.FileWrapper;
+        import mx.controls.Alert;
+        import mx.events.FlexEvent;
+        import mx.events.ListEvent;
+        import mx.managers.PopUpManager;
 
-			[Bindable] public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
-			
-			public static var AS_XML:String = "AS_XML";
-			public static var AS_CUSTOM:String = "AS_CUSTOM";
-			public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";
+        import spark.events.TextOperationEvent;
 
-			[Bindable] public var openType:String;
-			
-			public var fileTemplate:FileLocation;
-			public var folderFileLocation:FileLocation;
+        import actionScripts.events.DuplicateEvent;
+        import actionScripts.events.GlobalEventDispatcher;
+        import actionScripts.events.NewFileEvent;
+        import actionScripts.extResources.com.validator.ValidatorType;
+        import actionScripts.factory.FileLocation;
+        import actionScripts.ui.menu.MenuPlugin;
+        import actionScripts.utils.SimpleValidator;
+        import actionScripts.utils.UtilsCore;
+        import actionScripts.valueObjects.ConstantsCoreVO;
+        import actionScripts.valueObjects.FileWrapper;
 
-			override protected function onBrowseButton(event:MouseEvent):void
-			{
-				super.onBrowseButton(event);
+        [Bindable]
+        public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
 
-				if (!projectSelectionWindow)
-				{
-					projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-						PopUpManager.centerPopUp(projectSelectionWindow);
-				}
-			}
+        public static var AS_XML:String = "AS_XML";
+        public static var AS_CUSTOM:String = "AS_CUSTOM";
+        public static var AS_DUPLICATE_FILE:String = "AS_DUPLICATE_FILE";
 
-			override protected function onProjectSelectionChanged(event:NewFileEvent):void
-			{
-				super.onProjectSelectionChanged(event);
+        [Bindable]
+        public var openType:String;
 
-				txtDestination.text = wrapperBelongToProject.projectName;
+        public var fileTemplate:FileLocation;
+        public var folderFileLocation:FileLocation;
 
-				var timeoutValue:uint = setTimeout(function():void {
-					parseFolders();
-					clearTimeout(timeoutValue);
-				}, 100);
-			}
+        override protected function onBrowseButton(event:MouseEvent):void
+        {
+            super.onBrowseButton(event);
 
-			protected function onCreateButton(event:MouseEvent):void
-			{
-				// validation check for Enter key
-				if (!btnCreate.enabled) return;
-				
-				// validation 2
-				var validateArr: Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
-				if (SimpleValidator.validate(validateArr))
-				{
-					if (openType == AS_XML)
-					{
-						fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
-					}
-					else if (openType == AS_PLAIN_TEXT)
-					{
-						// test if filename.extension
-						if (txtFileName.text.indexOf(".") != -1)
-						{
-							var tmpNameSplit:Array = txtFileName.text.split(".");
-							if (tmpNameSplit[tmpNameSplit.length - 1] == "")
-							{
-								Alert.show("Trailing '.' not permitted for file name", "Error!");
-								return;
-							}
-						}
-						
-						fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
-					}
+            if(!projectSelectionWindow)
+            {
+                projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
+                PopUpManager.centerPopUp(projectSelectionWindow);
+            }
+        }
 
-					if (openType == AS_DUPLICATE_FILE)
-					{
-						var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
-						tmpDuplicateEvent.fileName = txtFileName.text;
-						dispatchEvent(tmpDuplicateEvent);
-					}
-					else
-					{
-						var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
-						tmpEvent.fileName = txtFileName.text;
-						dispatchEvent(tmpEvent);
-					}
-					
-					doBeforeExit();
-					super.closeThis();
-				}
-			}
+        override protected function onProjectSelectionChanged(event:NewFileEvent):void
+        {
+            super.onProjectSelectionChanged(event);
 
-			protected function parseFolders():void
-			{
-				tree.expandItem(wrapperBelongToProject.projectFolder, true);
-				
-				// 1. expand all items to our fileWrapper object
-				// 2. select the fileWrapper object
-				// 3. scroll to the fileWrapper object
-				UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-				UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
-				tree.callLater(function():void
-				{
-					var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
-					for (var j:int=0; j < (wrappers.length - 1); j++)
-					{
-						tree.expandItem(wrappers[j], true);
-					}
-					
-					// selection
-					tree.selectedItem = wrapperOfFolderLocation;
-					// scroll-to
-					tree.callLater(function():void
-					{
-						tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
-					});
-				});
-			}
-			
-			protected function onNameChanged(event:TextOperationEvent):void
-			{
-				// @note
-				// for some reason PromptTextInput.text is not binding properly
-				// to other Flex UI component, i.e. Label
-				// it shows only the origianl set text to PromptTextInput.text if
-				// binded to a label component, thus:
-				modifiedName = txtFileName.text;
-				
-				if (txtFileName.text == "")
-				{
-					btnCreate.enabled = false;
-				}
-				else
-				{
-					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text);
-					targetFile.fileBridge.canonicalize();
+            txtDestination.text = wrapperBelongToProject.projectName;
 
-					btnCreate.enabled = !targetFile.fileBridge.exists;
-					if (!btnCreate.enabled)
-					{
-						warningMessage = modifiedName + lblExtension.text + " is already exists.";
-					}
-				}
-			}
-			
-			protected function onTreeItemClicked(event:ListEvent):void
-			{
-				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-						Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-						tree.selectedItem.nativePath);
-				
-				// re-validate upon folder location change
-				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-				isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
-				onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
-			}
+            var timeoutValue:uint = setTimeout(function ():void
+            {
+                parseFolders();
+                clearTimeout(timeoutValue);
+            }, 100);
+        }
 
-			override protected function onNewFileCreationComplete(event:FlexEvent):void
-			{
-				super.onNewFileCreationComplete(event);
+        protected function onCreateButton(event:MouseEvent):void
+        {
+            // validation check for Enter key
+            if(!btnCreate.enabled) return;
 
-				minHeight = height;
-				if (openType == AS_DUPLICATE_FILE)
-				{
-					title = "Duplicate File";
-					lblName.text = "New File Name:";
-					
-					var extension:String;
-					if (folderFileLocation.fileBridge.extension)
-					{
-						extension = folderFileLocation.fileBridge.extension.toLowerCase();
-						lblExtension.text = "."+ extension;
-					}
-					else
-					{
-						lblExtension.text = "";
-					}
-					
-					if (extension == "as" || extension == "mxml")
-					{
-						txtFileName.restrict = "0-9A-Za-z_.";
-					}
+            // validation 2
+            var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+            if(SimpleValidator.validate(validateArr))
+            {
+                if(openType == AS_XML)
+                {
+                    fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
+                } else if(openType == AS_PLAIN_TEXT)
+                {
+                    // test if filename.extension
+                    if(txtFileName.text.indexOf(".") != -1)
+                    {
+                        var tmpNameSplit:Array = txtFileName.text.split(".");
+                        if(tmpNameSplit[tmpNameSplit.length - 1] == "")
+                        {
+                            Alert.show("Trailing '.' not permitted for file name", "Error!");
+                            return;
+                        }
+                    }
 
-					var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
-					nameOnly.pop();
-					txtFileName.prompt = nameOnly.join(".");
-				}
-				else if (openType == AS_XML)
-				{
-					title = "New XML File";
-					lblExtension.text = ".xml";
-				}
-				else
-				{
-					title = "New File";
-					if (!fileTemplate)
-					{
-						txtFileName.text = ".txt";
-					}
-					else
-					{
-						var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
-						if (tmpArr.length >= 3) lblExtension.text = "."+ tmpArr[tmpArr.length - 2];
-					}
-				}
+                    fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
+                }
 
-				if (wrapperBelongToProject)
-				{
-					txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-							wrapperOfFolderLocation.nativePath);
-					txtFileName.setFocus();
-				}
+                if(openType == AS_DUPLICATE_FILE)
+                {
+                    var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
+                    tmpDuplicateEvent.fileName = txtFileName.text;
+                    dispatchEvent(tmpDuplicateEvent);
+                } else
+                {
+                    var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
+                    tmpEvent.fileName = txtFileName.text;
+                    dispatchEvent(tmpEvent);
+                }
 
-				tree.callLater(parseFolders);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
-			}
-			
-		]]>
+                doBeforeExit();
+                super.closeThis();
+            }
+        }
+
+        protected function parseFolders():void
+        {
+            tree.expandItem(wrapperBelongToProject.projectFolder, true);
+
+            // 1. expand all items to our fileWrapper object
+            // 2. select the fileWrapper object
+            // 3. scroll to the fileWrapper object
+            UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+            UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+            tree.callLater(function ():void
+            {
+                var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+                for (var j:int = 0; j < (wrappers.length - 1); j++)
+                {
+                    tree.expandItem(wrappers[j], true);
+                }
+
+                // selection
+                tree.selectedItem = wrapperOfFolderLocation;
+                // scroll-to
+                tree.callLater(function ():void
+                {
+                    tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+                });
+            });
+        }
+
+        protected function onNameChanged(event:TextOperationEvent):void
+        {
+            // @note
+            // for some reason PromptTextInput.text is not binding properly
+            // to other Flex UI component, i.e. Label
+            // it shows only the origianl set text to PromptTextInput.text if
+            // binded to a label component, thus:
+            modifiedName = txtFileName.text;
+
+            if(txtFileName.text == "")
+            {
+                btnCreate.enabled = false;
+            } else
+            {
+                var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text);
+                targetFile.fileBridge.canonicalize();
+
+                btnCreate.enabled = !targetFile.fileBridge.exists;
+                if(!btnCreate.enabled)
+                {
+                    warningMessage = modifiedName + lblExtension.text + " is already exists.";
+                }
+            }
+        }
+
+        protected function onTreeItemClicked(event:ListEvent):void
+        {
+            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                    tree.selectedItem.nativePath);
+
+            // re-validate upon folder location change
+            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+        }
+
+        override protected function onNewFileCreationComplete(event:FlexEvent):void
+        {
+            super.onNewFileCreationComplete(event);
+
+            minHeight = height;
+            if(openType == AS_DUPLICATE_FILE)
+            {
+                title = "Duplicate File";
+                lblName.text = "New File Name:";
+
+                var extension:String;
+                if(folderFileLocation.fileBridge.extension)
+                {
+                    extension = folderFileLocation.fileBridge.extension.toLowerCase();
+                    lblExtension.text = "." + extension;
+                } else
+                {
+                    lblExtension.text = "";
+                }
+
+                if(extension == "as" || extension == "mxml")
+                {
+                    txtFileName.restrict = "0-9A-Za-z_.";
+                }
+
+                var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
+                nameOnly.pop();
+                txtFileName.prompt = nameOnly.join(".");
+            } else if(openType == AS_XML)
+            {
+                title = "New XML File";
+                lblExtension.text = ".xml";
+            } else
+            {
+                title = "New File";
+                if(!fileTemplate)
+                {
+                    txtFileName.text = ".txt";
+                } else
+                {
+                    var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
+                    if(tmpArr.length >= 3) lblExtension.text = "." + tmpArr[tmpArr.length - 2];
+                }
+            }
+
+            if(wrapperBelongToProject)
+            {
+                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                        Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                        wrapperOfFolderLocation.nativePath);
+                txtFileName.setFocus();
+            }
+
+            tree.callLater(parseFolders);
+            GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+        }
+        ]]>
 	</fx:Script>
 	<s:VGroup width="100%">
 		<s:Label text="Source Folder:"/>

@@ -444,16 +444,31 @@ package actionScripts.utils
 		
 		/**
 		 * Validate a given path compared with a project's
-		 * default source path
+		 * default source path and class path
 		 */
-		public static function validatePathAgainstSourceFolder(project:ProjectVO, wrapperToCompare:FileWrapper=null, locationToCompare:FileLocation=null, pathToCompare:String=null):Boolean
+		public static function validatePathAgainstSources(project:ProjectVO, wrapperToCompare:FileWrapper):Boolean
 		{
-			if (wrapperToCompare) pathToCompare = wrapperToCompare.nativePath + project.folderLocation.fileBridge.separator;
-			else if (locationToCompare) pathToCompare = locationToCompare.fileBridge.nativePath + project.folderLocation.fileBridge.separator;
-			
+			var pathToCompare:String = wrapperToCompare.nativePath + project.folderLocation.fileBridge.separator;
+
 			// if no sourceFolder exists at all let add file anywhere
-			if (!project["sourceFolder"]) return true;
-			
+			if (!project["sourceFolder"])
+			{
+				return true;
+			}
+
+			if (project.hasOwnProperty("classpaths") && project["classpaths"])
+			{
+				var classPaths:Vector.<FileLocation> = project["classpaths"];
+				var hasPath:Boolean = classPaths.some(function(item:FileLocation, index:int, vector:Vector.<FileLocation>):Boolean{
+					return pathToCompare.indexOf(item.fileBridge.nativePath) != -1;
+				});
+
+				if (hasPath)
+				{
+					return true;
+				}
+			}
+
 			if (pathToCompare.indexOf(project["sourceFolder"].fileBridge.nativePath + project.folderLocation.fileBridge.separator) == -1)
 			{
 				return false;

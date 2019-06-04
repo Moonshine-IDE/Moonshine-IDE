@@ -65,7 +65,7 @@
 		{
 			super.onBrowseButton(event);
 
-			if (!projectSelectionWindow)
+			if(!projectSelectionWindow)
 			{
 				projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
 				PopUpManager.centerPopUp(projectSelectionWindow);
@@ -88,11 +88,11 @@
 		protected function onBtnCreateClick(event:MouseEvent):void
 		{
 			// validation check for Enter key
-			if (!btnCreate.enabled) return;
+			if(!btnCreate.enabled) return;
 
 			// validation 2
 			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
-			if (SimpleValidator.validate(validateArr))
+			if(SimpleValidator.validate(validateArr))
 			{
 				var attributes:AS3ClassAttributes = new AS3ClassAttributes();
 				attributes.modifierA = String(rgModifiersA.selectedValue);
@@ -106,7 +106,7 @@
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_AS3INTERFACE : ConstantsCoreVO.TEMPLATE_AS3CLASS, wrapperOfFolderLocation, attributes);
 				tmpEvent.fileName = txtFileName.text;
 				tmpEvent.ofProject = wrapperBelongToProject;
-                tmpEvent.fileExtension = this.createdFileExtension;
+				tmpEvent.fileExtension = this.createdFileExtension;
 
 				dispatchEvent(tmpEvent);
 
@@ -150,9 +150,9 @@
 			// it shows only the origianl set text to PromptTextInput.text if
 			// binded to a label component, thus:
 			modifiedName = txtFileName.text;
-			if (isDestinationValid) warningMessage = modifiedName + createdFileExtension + " is already exists.";
+			if(isDestinationValid) warningMessage = modifiedName + createdFileExtension + " is already exists.";
 
-			if (!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
+			if(!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
 			else
 			{
 				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + createdFileExtension);
@@ -170,7 +170,7 @@
 
 			// re-validate upon folder location change
 			wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-			isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
+			isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
 			onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
 		}
 
@@ -181,19 +181,15 @@
 			minHeight = height;
 			title = isInterfaceDialog ? "New Interface Class" : "New ActionScript Class";
 
-			if (folderLocation)
+			if(folderLocation)
 			{
 				txtDestination.text = wrapperBelongToProject.projectName;
 				txtFileName.setFocus();
 			}
 
 			// check if the file creation requested in the
-			// 'source folder' or not
-			isDestinationValid = UtilsCore.validatePathAgainstSourceFolder(wrapperBelongToProject, wrapperOfFolderLocation);
-			if (isDestinationValid)
-			{
-				hgExistingWarning.visible = false;
-			}
+			// 'source folder' or classpaths exists
+			isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
 
 			tree.callLater(parseFolders);
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
@@ -221,11 +217,10 @@
 			var completionListPosition:Point = this.txtSuperclass.localToGlobal(
 					new Point(this.txtSuperclass.x, this.txtSuperclass.y));
 
-			if (isInterfaceDialog)
+			if(isInterfaceDialog)
 			{
 				newAsFileCompletionManager.showCompletionListInterfaces(this.txtSuperclass.text, completionListPosition);
-			}
-			else
+			} else
 			{
 				newAsFileCompletionManager.showCompletionListClasses(this.txtSuperclass.text, completionListPosition);
 			}
