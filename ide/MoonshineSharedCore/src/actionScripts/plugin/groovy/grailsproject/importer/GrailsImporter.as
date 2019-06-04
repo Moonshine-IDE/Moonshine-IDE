@@ -67,8 +67,18 @@ package actionScripts.plugin.groovy.grailsproject.importer
 				parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 			}
 
-			project.sourceFolder = projectFolder.resolvePath("src/main/groovy");
-			project.classpaths[0] = project.sourceFolder;
+			var separator:String = projectFolder.fileBridge.separator;
+			project.sourceFolder = projectFolder.resolvePath("src" + separator + "main" + separator + "groovy");
+
+			var hasLocation:Boolean = project.classpaths.some(
+					function(item:FileLocation, index:int, vector:Vector.<FileLocation>):Boolean{
+						return item.fileBridge.nativePath == project.sourceFolder.fileBridge.nativePath;
+					});
+
+			if (project.classpaths.length == 0 || !hasLocation)
+			{
+				project.classpaths.push(project.sourceFolder);
+			}
 
 			return project;
 		}

@@ -19,6 +19,7 @@ package actionScripts.plugin.groovy.grailsproject.exporter
     import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
+    import actionScripts.utils.SerializeUtil;
 
     public class GrailsExporter extends FlashDevelopExporterBase
     {
@@ -39,6 +40,17 @@ package actionScripts.plugin.groovy.grailsproject.exporter
 		private static function toXML(project:GrailsProjectVO):XML
 		{
 			var projectXML:XML = <project/>;
+
+            var classPathsXML:XML = new XML(<classpaths></classpaths>);
+            for each (var path:FileLocation in project.classpaths)
+            {
+                classPathsXML.appendChild(SerializeUtil.serializePairs(
+                        {path: project.folderLocation.fileBridge.getRelativePath(path, true)},
+                        <class />));
+            }
+
+            projectXML.appendChild(classPathsXML);
+
 			return projectXML;
 		}
 	}

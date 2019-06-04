@@ -36,7 +36,12 @@ package actionScripts.plugin.groovy.grailsproject.vo
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 				new SettingsWrapper("Grails Build", Vector.<ISetting>([
 					new BuildActionsListSettings(this.grailsBuildOptions, grailsBuildOptions.buildActions, "commandLine", "Build Actions")
-				]))
+				])),
+				new SettingsWrapper("Paths",
+						Vector.<ISetting>([
+							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)
+						])
+				)
 			]);
 			settings.sort(order);
 			return settings;

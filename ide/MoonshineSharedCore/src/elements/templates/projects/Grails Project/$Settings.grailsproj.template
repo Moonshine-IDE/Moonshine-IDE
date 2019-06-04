@@ -3,4 +3,11 @@
 	<grailsBuild>
       <option commandLine="run-app"/>
     </grailsBuild>
+    <classpaths>
+       <class path="src/main/groovy"/>
+       <class path="grails-app/controllers"/>
+       <class path="grails-app/services"/>
+       <class path="grails-app/domain"/>
+       <class path="src/test/groovy"/>
+     </classpaths>
 </project>
