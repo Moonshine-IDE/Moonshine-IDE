@@ -222,7 +222,7 @@ package actionScripts.plugins.ui.editor
 			if (visualEditorProject.isPrimeFacesVisualEditorProject)
 			{
 				var separator:String = file.fileBridge.separator;
-				var mavenBuildPath:String = visualEditorProject.mavenBuildOptions.mavenBuildPath;
+				var mavenBuildPath:String = visualEditorProject.mavenBuildOptions.buildPath;
 				var mavenPomPath:String = mavenBuildPath.concat(separator, "pom.xml");
 				var targetPath:String = mavenBuildPath.concat(separator, "target");
 

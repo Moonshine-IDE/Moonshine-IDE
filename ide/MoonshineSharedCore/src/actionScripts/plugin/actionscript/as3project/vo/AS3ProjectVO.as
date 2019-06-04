@@ -471,7 +471,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                     new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
-                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
                     new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
@@ -560,7 +560,7 @@ package actionScripts.plugin.actionscript.as3project.vo
                     new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
                 ])),
                 new SettingsWrapper("Maven Build", Vector.<ISetting>([
-                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+                    new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
                     new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
                     new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
                 ])),
@@ -601,7 +601,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 							])
 					),
 					new SettingsWrapper("Maven Build", Vector.<ISetting>([
-						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 						new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
 						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
 					]))

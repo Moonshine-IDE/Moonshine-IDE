@@ -437,7 +437,7 @@ package actionScripts.plugins.visualEditor
         {
             if (!currentProject) return null;
 
-            var projectPomFile:FileLocation = new FileLocation(currentProject.mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
+            var projectPomFile:FileLocation = new FileLocation(currentProject.mavenBuildOptions.buildPath).resolvePath("pom.xml");
 
             var artifactId:String = MavenPomUtil.getProjectId(projectPomFile);
             var version:String = MavenPomUtil.getProjectVersion(projectPomFile);

@@ -410,9 +410,9 @@ package actionScripts.plugins.maven
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                if (project["mavenBuildOptions"].mavenBuildPath)
+                if (project["mavenBuildOptions"].buildPath)
                 {
-                    return new FileLocation(project["mavenBuildOptions"].mavenBuildPath);
+                    return new FileLocation(project["mavenBuildOptions"].buildPath);
                 }
             }
 

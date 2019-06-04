@@ -32,7 +32,7 @@ package actionScripts.plugin.java.javaproject.vo
 
 		public function hasPom():Boolean
 		{
-			var pomFile:FileLocation = new FileLocation(mavenBuildOptions.mavenBuildPath).resolvePath("pom.xml");
+			var pomFile:FileLocation = new FileLocation(mavenBuildOptions.buildPath).resolvePath("pom.xml");
 			return pomFile.fileBridge.exists;
 		}
 
@@ -73,7 +73,7 @@ package actionScripts.plugin.java.javaproject.vo
 			if (hasPom())
 			{
 				settings.push(new SettingsWrapper("Maven Build", Vector.<ISetting>([
-					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "mavenBuildPath", "Maven Build File", this.mavenBuildOptions.mavenBuildPath),
+					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions")
 				])));
 			}

@@ -60,7 +60,7 @@ package actionScripts.plugins.run
 				// maven project
 				warning("Starting application: " + tmpJavaProject.projectName);
 				
-				var pomPathLocation:FileLocation = new FileLocation(tmpJavaProject.mavenBuildOptions.mavenBuildPath)
+				var pomPathLocation:FileLocation = new FileLocation(tmpJavaProject.mavenBuildOptions.buildPath)
 					.resolvePath("pom.xml");
 				
 				var projectVersion:String = MavenPomUtil.getProjectVersion(pomPathLocation);

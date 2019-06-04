@@ -101,7 +101,7 @@ package actionScripts.plugin.java.javaproject.importer
 				}
 
 				var pomFile:FileLocation = new FileLocation(
-						javaProject.mavenBuildOptions.mavenBuildPath.concat(separator, FILE_NAME_POM_XML)
+						javaProject.mavenBuildOptions.buildPath.concat(separator, FILE_NAME_POM_XML)
 				);
 
 				sourceDirectory = MavenPomUtil.getProjectSourceDirectory(pomFile);

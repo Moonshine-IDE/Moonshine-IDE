@@ -21,11 +21,11 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.utils.SerializeUtil;
 
-    public class GradleBuildOptions extends JavaProjectBuildOptions
+    public class GrailsBuildOptions extends JavaProjectBuildOptions
     {
-        public function GradleBuildOptions(defaultGradleBuildPath:String)
+        public function GrailsBuildOptions(defaultGrailsBuildPath:String)
         {
-			super(defaultGradleBuildPath);
+			super(defaultGrailsBuildPath);
         }
 
         override public function get buildActions():Array
@@ -34,9 +34,10 @@ package actionScripts.plugin.actionscript.as3project.vo
             {
                 _buildActions = [
                     new BuildActionVO("Clean", "clean"),
-                    new BuildActionVO("Publish to Maven Local", "publishToMavenLocal"),
-                    new BuildActionVO("Clean and Run", "clean run"),
-                    new BuildActionVO("Clean and Build", "clean build")
+                    new BuildActionVO("Compile Project", "compile"),
+                    new BuildActionVO("Run Project", "run-app"),
+                    new BuildActionVO("Test Project", "test-app"),
+					new BuildActionVO("Release Project", "war")
                 ];
             }
 
@@ -45,7 +46,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         override public function toXML():XML
         {
-            var build:XML = <gradleBuild/>;
+            var build:XML = <grailsBuild/>;
 
             var pairs:Object = {
                 commandLine: SerializeUtil.serializeString(commandLine)
@@ -58,7 +59,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         override protected function parseOptions(options:XMLList):void
         {
-            buildPath = SerializeUtil.deserializeString(options.@gradleBuildPath);
+            buildPath = SerializeUtil.deserializeString(options.@grailsBuild);
             commandLine = SerializeUtil.deserializeString(options.@commandLine);
             settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
         }
