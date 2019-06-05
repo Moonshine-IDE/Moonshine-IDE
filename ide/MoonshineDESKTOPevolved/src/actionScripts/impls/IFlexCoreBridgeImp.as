@@ -272,8 +272,12 @@ package actionScripts.impls
 				new MenuItem(resourceManager.getString('resources','FILE'), [
 					new MenuItem(resourceManager.getString('resources','NEW'),[]),
 					new MenuItem(resourceManager.getString('resources','OPEN'), null, null, OpenFileEvent.OPEN_FILE,
+						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
+					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT,
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
+					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','OPEN_RECENT_PROJECTS'),[]),
 					new MenuItem(resourceManager.getString('resources','OPEN_RECENT_FILES'),[]),
 					new MenuItem(null),
@@ -333,7 +337,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS], ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW, "f7",[Keyboard.COMMAND], "f7", [Keyboard.ALTERNATE])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
-					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT),
+					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, 
+						'o', [Keyboard.COMMAND],
+						'o', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[

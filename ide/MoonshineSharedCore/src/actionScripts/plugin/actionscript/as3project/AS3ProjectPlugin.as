@@ -153,7 +153,7 @@ package actionScripts.plugin.actionscript.as3project
 			// for AIR
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				model.fileCore.browseForDirectory("Flex Project Directory", searchForProjectsByDirectory, onFileSelectionCancelled);
+				model.fileCore.browseForDirectory("Project Directory", searchForProjectsByDirectory, onFileSelectionCancelled);
 			}
 				// for WEB
 			else
