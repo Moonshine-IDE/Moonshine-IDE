@@ -297,12 +297,16 @@ package actionScripts.ui.editor.text
                 {
                     end = textLine.atomCount - 1;
                 }
+				else
+				{
+					end--;
+				}
 				
 				var endBounds:Rectangle = textLine.getAtomBounds(end);
 				selStart = Math.floor(textLine.getAtomBounds(start).x);
 				selWidth = MathUtils.ceil(endBounds.x + endBounds.width) - selStart;
             }
-
+			
 			drawSelectionRect(selStart, selWidth);
 		}
 		
@@ -393,7 +397,7 @@ package actionScripts.ui.editor.text
 		
 		public function getCharIndexFromPoint(globalX:int, returnNextAfterCenter:Boolean=true):int
 		{
-			var localPoint:Point = this.globalToLocal(new Point(globalX,0));
+			var localPoint:Point = this.globalToLocal(new Point(globalX));
 			var localPointX:Number = localPoint.x;
 			var modelTextLength:int = model.text.length;
 			
@@ -414,9 +418,12 @@ package actionScripts.ui.editor.text
 				if (atomIndexAtPoint > -1 && returnNextAfterCenter)
 				{
 					var bounds:Rectangle = textLine.getAtomBounds(atomIndexAtPoint);
-					var center:Number = lineNumberWidth + bounds.x + bounds.width/2;
+					var center:Number = lineNumberWidth + bounds.x + (bounds.width/2);
 					// If point falls after the center of the character, move to next one
-					if (localPointX >= center) atomIndexAtPoint++;
+					if (localPointX >= center) 
+					{
+						atomIndexAtPoint++;
+					}
 				}
 				
 				return atomIndexAtPoint;
