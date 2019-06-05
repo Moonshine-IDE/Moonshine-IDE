@@ -142,8 +142,10 @@
 			click="{dispatchEvent(new Event(EVENT_REMOVE_ITEM, true))}"
 			/>
 		<s:Image source="@Embed('/elements/images/tick_circle_frame.png')"
+				 toolTip="Path exists."
 				 visible="{isFileExists}" includeInLayout="{isFileExists}"/>
 		<s:Image source="@Embed('/elements/images/cross_circle_frame.png')"
+				 toolTip="Path is invalid or does not exists."
 				 visible="{!isFileExists &amp;&amp; data}" includeInLayout="{!isFileExists &amp;&amp; data}"/>
 	</s:HGroup>
 	

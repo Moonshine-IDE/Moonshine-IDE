@@ -41,8 +41,29 @@ package actionScripts.plugin.groovy.grailsproject.exporter
 		{
 			var projectXML:XML = <project/>;
 
+            var separator:String = project.folderLocation.fileBridge.separator;
+            var defaultClassPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+            defaultClassPaths.push(project.folderLocation.resolvePath("src" + separator + "main" + separator + "groovy"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("src" + separator + "main" + separator + "java"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("grails-app" + separator + "controllers"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("grails-app" + separator + "services"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("scripts"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("src" + separator + "test" + separator + "groovy"));
+            defaultClassPaths.push(project.folderLocation.resolvePath("src" + separator + "test" + separator + "java"));
+
+            var path:FileLocation = null;
+            for each (path in defaultClassPaths)
+            {
+                if (!project.classpaths.some(function(item:FileLocation, index:int, vector:Vector.<FileLocation>):Boolean{
+                    return path.fileBridge.nativePath == item.fileBridge.nativePath;
+                }))
+                {
+                    project.classpaths.push(path);
+                }
+            }
+
             var classPathsXML:XML = new XML(<classpaths></classpaths>);
-            for each (var path:FileLocation in project.classpaths)
+            for each (path in project.classpaths)
             {
                 classPathsXML.appendChild(SerializeUtil.serializePairs(
                         {path: project.folderLocation.fileBridge.getRelativePath(path, true)},

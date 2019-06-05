@@ -5,9 +5,12 @@
     </grailsBuild>
     <classpaths>
        <class path="src/main/groovy"/>
+       <class path="src/main/java"/>
        <class path="grails-app/controllers"/>
        <class path="grails-app/services"/>
        <class path="grails-app/domain"/>
+       <class path="scripts"/>
        <class path="src/test/groovy"/>
+       <class path="src/test/java"/>
      </classpaths>
 </project>
