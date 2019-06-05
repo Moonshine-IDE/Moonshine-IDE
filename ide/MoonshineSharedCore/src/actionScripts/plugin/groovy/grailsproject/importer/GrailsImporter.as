@@ -64,6 +64,7 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			
 			if (data)
 			{
+				project.grailsBuildOptions.parse(data.grailsBuild);
 				parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 			}
 

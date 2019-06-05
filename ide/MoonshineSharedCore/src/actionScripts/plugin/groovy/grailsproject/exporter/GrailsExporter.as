@@ -40,6 +40,10 @@ package actionScripts.plugin.groovy.grailsproject.exporter
 		private static function toXML(project:GrailsProjectVO):XML
 		{
 			var projectXML:XML = <project/>;
+			
+			projectXML.appendChild(
+				project.grailsBuildOptions.toXML()
+			);
 
             var separator:String = project.folderLocation.fileBridge.separator;
             var defaultClassPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
