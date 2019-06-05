@@ -569,11 +569,11 @@ package actionScripts.ui.menu
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
 			{
-				subItemsLength = menu.items[1].submenu.items[2].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				subItemsLength = menu.items[1].submenu.items[4].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
 			}
 			else
 			{
-				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[2]).data.items.length;
+				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[4]).data.items.length;
 			}
 			
 			if (subItemsLength != -1)
@@ -582,16 +582,16 @@ package actionScripts.ui.menu
 				{
 					if (buildingNativeMenu) 
 					{
-						menu.items[1].submenu.items[2].submenu.items[0]["menu"].removeItemAt(0);
+						menu.items[1].submenu.items[4].submenu.items[0]["menu"].removeItemAt(0);
 					}
 					else
 					{
-						CustomMenuItem(menu.items[0].submenu.items[2]).data.items.removeAt(0);
+						CustomMenuItem(menu.items[0].submenu.items[4]).data.items.removeAt(0);
 					}
 				}
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentProjectsMenu();
-				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[2].submenu : CustomMenuItem(menu.items[0].submenu.items[2]).submenu);
+				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[4].submenu : CustomMenuItem(menu.items[0].submenu.items[4]).submenu);
 			}
 		}
 		
@@ -601,11 +601,11 @@ package actionScripts.ui.menu
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
 			{
-				subItemsLength = menu.items[1].submenu.items[3].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				subItemsLength = menu.items[1].submenu.items[5].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
 			}
 			else
 			{
-				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[3]).data.items.length;
+				subItemsLength = CustomMenuItem(menu.items[0].submenu.items[5]).data.items.length;
 			}
 			
 			if (subItemsLength != -1)
@@ -614,16 +614,16 @@ package actionScripts.ui.menu
 				{
 					if (buildingNativeMenu) 
 					{
-						menu.items[1].submenu.items[3].submenu.items[0]["menu"].removeItemAt(0);
+						menu.items[1].submenu.items[5].submenu.items[0]["menu"].removeItemAt(0);
 					}
 					else
 					{
-						CustomMenuItem(menu.items[0].submenu.items[3]).data.items.removeAt(0);
+						CustomMenuItem(menu.items[0].submenu.items[5]).data.items.removeAt(0);
 					}
 				}
 				
 				var tmpMI:MenuItem = UtilsCore.getRecentFilesMenu();
-				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[3].submenu : CustomMenuItem(menu.items[0].submenu.items[3]).submenu);
+				addMenus(tmpMI.items, buildingNativeMenu ? menu.items[1].submenu.items[5].submenu : CustomMenuItem(menu.items[0].submenu.items[5]).submenu);
 			}
 		}
 		
