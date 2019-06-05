@@ -28,6 +28,8 @@ package actionScripts.plugins.versionControl
 	import mx.utils.ObjectUtil;
 	import mx.utils.UIDUtil;
 	
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.RepositoryItemVO;
@@ -82,8 +84,24 @@ package actionScripts.plugins.versionControl
 			fromPath = fromPath.resolvePath("moonshine-dependencies.xml")
 			if (fromPath.exists)
 			{
+				var dependencies:XML;
 				var readObject:Object = FileUtils.readFromFile(fromPath);
-				var dependencies:XML = new XML(readObject);
+				
+				try
+				{
+					dependencies = new XML(readObject);
+				}
+				catch (e:Error)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, 
+							"Error #"+ e.errorID +": While reading moonshine-dependencies.xml:\n"+ e.message, 
+							false, false, 
+							ConsoleOutputEvent.TYPE_ERROR)
+					);
+					return false;
+				}
+				
 				var tmpRepo:RepositoryItemVO;
 				var gitMetaRepository:RepositoryItemVO;
 				
@@ -140,6 +158,10 @@ package actionScripts.plugins.versionControl
 				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
 				return true;
+			}
+			else
+			{
+				ofRepository.children = null;
 			}
 			
 			SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);

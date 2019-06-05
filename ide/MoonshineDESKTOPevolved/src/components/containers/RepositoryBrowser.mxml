@@ -14,6 +14,7 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.TreeMenuItemEvent;
+			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
 			import actionScripts.valueObjects.RepositoryItemVO;
@@ -73,7 +74,14 @@
 					case RepositoryTreeItemRenderer.REFRESH:
 						// remove any previous items first
 						rendererData.children = [];
-						requestRemoteSvnList(rendererData);
+						if (rendererData.type == VersionControlTypes.SVN) 
+						{
+							requestRemoteSvnList(rendererData);
+						}
+						else
+						{
+							updateGitList(rendererData);
+						}
 						break;
 					case RepositoryTreeItemRenderer.COLLAPSE_ALL:
 						collapseAllItems();
@@ -141,6 +149,13 @@
 					dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.LOAD_REMOTE_SVN_LIST,
 						{repository: repoItem, onCompletion: onCallListingCompleted}));
 				}
+			}
+			
+			protected function updateGitList(repoItem:RepositoryItemVO):void
+			{
+				repoItem.isUpdating = true;
+				VersionControlUtils.updateDependentRepositories(repoItem);
+				repoItem.isUpdating = false;
 			}
 			
 			private function onCallListingCompleted(againstNodeItem:RepositoryItemVO, success:Boolean):void
