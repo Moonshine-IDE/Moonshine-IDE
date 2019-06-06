@@ -31,11 +31,13 @@ package actionScripts.plugins.clean
 	
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.events.RefreshTreeEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
@@ -156,7 +158,11 @@ package actionScripts.plugins.clean
 					currentCleanType = ProjectType.JAVA;
 					cleanJavaProject(project as JavaProjectVO);
 				}
-				//GrailsProjectVO is handled in GrailsBuildPlugin
+				else if (project is GrailsProjectVO)
+				{
+					currentCleanType = ProjectType.JAVA;
+					cleanGrailsProject(project as GrailsProjectVO);
+				}
 			}
 		}
 
@@ -166,6 +172,7 @@ package actionScripts.plugins.clean
 			{
 				if (UtilsCore.isGradleAvailable())
 				{
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
 					start(Vector.<String>([EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
 				}
 				else
@@ -191,9 +198,23 @@ package actionScripts.plugins.clean
 			}
 		}
 		
+		private function cleanGrailsProject(project:GrailsProjectVO):void
+		{
+			if (UtilsCore.isGrailsAvailable())
+			{
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+				start(Vector.<String>([EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean failed: Missing Grails configuration in Moonshine settings.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+			}
+		}
+		
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
 		{
 			super.onNativeProcessExit(event);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			
 			if (event.exitCode == 0)
 			{

@@ -146,17 +146,11 @@ package actionScripts.plugins.build
         protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             error("%s", event.text);
-
-            removeNativeProcessEventListeners();
-            running = false;
         }
 
         protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
             error("%s", getDataFromBytes(nativeProcess.standardError));
-
-            removeNativeProcessEventListeners();
-            running = false;
         }
 
         protected function onNativeProcessStandardInputClose(event:Event):void
@@ -193,6 +187,7 @@ package actionScripts.plugins.build
             nativeProcess.removeEventListener(IOErrorEvent.STANDARD_INPUT_IO_ERROR, onNativeProcessIOError);
             nativeProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, onNativeProcessIOError);
             nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
+			running = false;
         }
     }
 }

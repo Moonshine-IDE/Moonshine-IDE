@@ -30,6 +30,7 @@ package actionScripts.languageServer
     
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
@@ -78,6 +79,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
+			_dispatcher.addEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh, false, 0, true);
 
 			preTaskLanguageServer();
 		}
@@ -142,6 +144,14 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
+		}
+		
+		private function onGradleClassPathRefresh(event:Event):void
+		{
+			if (_model.activeProject == _project)
+			{
+				restartLanguageServer();
+			}
 		}
 
 		private function startNativeProcess():void

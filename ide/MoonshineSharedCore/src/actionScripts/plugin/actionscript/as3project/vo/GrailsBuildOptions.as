@@ -37,7 +37,10 @@ package actionScripts.plugin.actionscript.as3project.vo
                     new BuildActionVO("Compile Project", "compile"),
                     new BuildActionVO("Compile and Run Project", "run-app"),
                     new BuildActionVO("Test Project", "test-app"),
-					new BuildActionVO("Release Project", "war")
+					new BuildActionVO("Release Project", "war"),
+					new BuildActionVO("Create a Service", "create-service <name>"),
+					new BuildActionVO("Create a Domain", "create-domain <name>"),
+					new BuildActionVO("Create a Controller", "create-controller <name>")
                 ];
             }
 
