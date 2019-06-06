@@ -123,6 +123,7 @@ package actionScripts.plugin.java.javaproject.importer
 				{
 					parsePaths(settingsData.classpaths["class"], javaProject.classpaths, javaProject, "path");
 					javaProject.mainClassName = settingsData.build.option.@mainclass;
+					javaProject.mainClassPath = settingsData.build.option.@mainClassPath;
 				}
 
 				if (javaProject.classpaths.length > 0)

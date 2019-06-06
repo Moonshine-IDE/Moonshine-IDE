@@ -47,7 +47,6 @@
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.settings.vo.AbstractSetting;
 		import actionScripts.plugin.settings.vo.PathSetting;
-		import actionScripts.ui.tabview.CloseTabEvent;
 		import actionScripts.utils.SDKUtils;
 		import actionScripts.utils.UtilsCore;
 		import actionScripts.valueObjects.SDKReferenceVO;
@@ -123,14 +122,19 @@
 					sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
 					PopUpManager.centerPopUp(sdkPopup);
 				}
-			} else
+			}
+			else
 			{
+				var location:FileLocation = new FileLocation(setting.stringValue);
+				var startFromLocation:String = location.fileBridge.exists ? location.fileBridge.nativePath : setting.defaultPath;
+
 				if(setting.directory)
 				{
-					model.fileCore.browseForDirectory("Select directory", openFile, null, setting.stringValue);
-				} else
+					model.fileCore.browseForDirectory("Select directory", openFile, null, startFromLocation);
+				}
+				else
 				{
-					model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters);
+					model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters, startFromLocation);
 				} // for Balsmiq project we need only .xml file to get selected.
 			}
 		}
@@ -139,21 +143,6 @@
 		{
 			setting.stringValue = "";
 			lblMessage.text = "";
-		}
-
-		private function onDefineSDKClosed(event:Event):void
-		{
-			if(model.userSavedTempSDKPath)
-			{
-				var sdkVO:SDKReferenceVO = UtilsCore.getUserDefinedSDK(model.userSavedTempSDKPath, "path");
-				setting.stringValue = sdkVO.path;
-				lblValue.text = sdkVO.name;
-				hideDefineSDKLink(setting.stringValue);
-				model.userSavedTempSDKPath = null;
-			}
-
-			model.sdkInstallerView.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onDefineSDKClosed);
-			model.sdkInstallerView = null;
 		}
 
 		private function onFlexSDKUpdated(event:ProjectEvent):void

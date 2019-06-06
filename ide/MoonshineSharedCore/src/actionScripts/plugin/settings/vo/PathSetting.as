@@ -36,9 +36,10 @@ package actionScripts.plugin.settings.vo
 
 		private var _editable:Boolean = true;
 		private var _path:String;
+		private var _defaultPath:String;
 
 		public function PathSetting(provider:Object, name:String, label:String, directory:Boolean,
-									path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false)
+									path:String=null, isSDKPath:Boolean=false, isDropDown:Boolean = false, defaultPath:String = null)
 		{
 			super();
 			this.provider = provider;
@@ -47,13 +48,21 @@ package actionScripts.plugin.settings.vo
 			this.directory = directory;
 			this.isSDKPath = isSDKPath;
 			this.isDropDown = isDropDown;
-			this._path = path;
+
+			_path = path;
+			_defaultPath = defaultPath;
+
 			defaultValue = stringValue = (path != null) ? path : stringValue ? stringValue :"";
 		}
 
 		public function get path():String
 		{
 			return _path;
+		}
+
+		public function get defaultPath():String
+		{
+			return _defaultPath;
 		}
 
 		public function setMessage(value:String, type:String=MESSAGE_NORMAL):void

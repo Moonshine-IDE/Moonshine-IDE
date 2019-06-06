@@ -32,7 +32,8 @@ package actionScripts.plugin.java.javaproject.exporter
 
             var buildXML:XML = new XML(<build></build>);
             var build:Object = {
-                mainclass: project.mainClassName
+                mainclass: project.mainClassName,
+                mainClassPath: project.mainClassPath
             };
             buildXML.appendChild(SerializeUtil.serializePairs(build, <option/>));
 

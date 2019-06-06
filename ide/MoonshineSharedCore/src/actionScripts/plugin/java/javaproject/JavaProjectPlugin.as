@@ -129,6 +129,7 @@ package actionScripts.plugin.java.javaproject
 				if (javaProject.mainClassName != nameWithoutExtension)
 				{
 					javaProject.mainClassName = nameWithoutExtension;
+					javaProject.mainClassPath = event.defaultApplicationFile.fileBridge.nativePath;
 					javaProject.saveSettings();
 				}
 			}
