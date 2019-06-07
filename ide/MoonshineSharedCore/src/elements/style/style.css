@@ -207,6 +207,7 @@ global
 	focus-thickness: 0;
 	skinClass: ClassReference('actionScripts.plugin.findreplace.view.PromptTextInputSkin');
 }
+
 .textInputStatus
 {
 	contentBackgroundAlpha: 1;

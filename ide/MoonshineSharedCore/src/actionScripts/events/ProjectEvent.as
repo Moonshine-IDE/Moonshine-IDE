@@ -57,6 +57,8 @@ package actionScripts.events
 		public static const LANGUAGE_SERVER_OPENED:String = "languageServerOpenedAgainstProject";
 		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
 		
+		public static const OPEN_CUSTOM_COMMANDS_ON_SDK:String = "openCustomCommandsInterfaceForSDKtype";
+		
 		public var project:ProjectVO;
 		public var anObject:Object;
 		public var extras:Array;

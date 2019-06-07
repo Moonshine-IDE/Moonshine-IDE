@@ -28,8 +28,6 @@
     ]]>
     </fx:Metadata> 
     
- 
-    
     <fx:Script>
         <![CDATA[
         override public function get focusSkinExclusions():Array { return [ textDisplay ] };            
