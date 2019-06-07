@@ -33,6 +33,8 @@ package actionScripts.controllers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
@@ -40,10 +42,8 @@ package actionScripts.controllers
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
-    import actionScripts.valueObjects.URLDescriptorVO;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.valueObjects.URLDescriptorVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -91,7 +91,10 @@ package actionScripts.controllers
 			}
 			else if (ConstantsCoreVO.IS_AIR)
 			{
-				model.fileCore.browseForOpen("Open File", openFile, cancelOpenFile, ["*.as;*.mxml;*.css;*.txt;*.js;*.xml"]);
+				var tmpRedableFiles:Array = ConstantsCoreVO.READABLE_FILES.map(function(element:String, index:int, arr:Array):String {
+					return "*."+ element;
+				});
+				model.fileCore.browseForOpen("Open File", openFile, cancelOpenFile, [tmpRedableFiles.join(";")]);
 			}
 		}
 		
@@ -324,7 +327,8 @@ package actionScripts.controllers
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
 				}
-				else if(!lastOpenEvent.independentOpenFile && model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
+				else if((lastOpenEvent && !lastOpenEvent.independentOpenFile) && 
+					model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
 				{
 					editor = model.languageServerCore.getCustomTextEditorForUri(file.fileBridge.url, project);
 				}
