@@ -34,6 +34,7 @@ package actionScripts.plugins.grails
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.HelperUtils;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -130,19 +131,29 @@ package actionScripts.plugins.grails
         {
             super.activate();
 
-			//dispatcher.addEventListener(GrailsBuildEvent.BUILD, grailsBuildHandler);
-			//dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
-			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, startConsoleBuildHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
         }
 
         override public function deactivate():void
         {
             super.deactivate();
 
-			//dispatcher.removeEventListener(GrailsBuildEvent.BUILD, grailsBuildHandler);
-			//dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
-			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, startConsoleBuildHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
         }
+		
+		private function grailsBuildAndRunHandler(event:Event):void
+		{
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
+		}
+		
+		private function grailsBuildReleaseHandler(event:Event):void
+		{
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
+		}
 
         private function getConstantArguments():Vector.<String>
         {

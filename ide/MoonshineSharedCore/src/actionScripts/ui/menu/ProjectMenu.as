@@ -242,6 +242,7 @@ package actionScripts.ui.menu
 							'b', [Keyboard.COMMAND],
 							'b', [Keyboard.CONTROL]),
 						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
+						new MenuItem(null),
 						new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
 					]);
 				}
@@ -275,14 +276,15 @@ package actionScripts.ui.menu
 
                 grailsMenu = Vector.<MenuItem>([
                     new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.BUILD_AND_RUN,
-                            'b', [Keyboard.COMMAND],
-                            'b', [Keyboard.CONTROL]),
-                    /*new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, GrailsBuildEvent.BUILD_AND_RUN,
-                            "\n", [Keyboard.COMMAND],
-                            "\n", [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE),*/
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, GrailsBuildEvent.BUILD_AND_RUN,
+						'b', [Keyboard.COMMAND],
+						'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE,
+						"\n", [Keyboard.COMMAND],
+						"\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.RUN_COMMAND),
 					new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
                 ]);
                 grailsMenu.forEach(makeDynamic);

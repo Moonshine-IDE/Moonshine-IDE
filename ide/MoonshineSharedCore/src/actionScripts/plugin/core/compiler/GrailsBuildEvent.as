@@ -22,6 +22,7 @@ package actionScripts.plugin.core.compiler
 
 	public class GrailsBuildEvent extends Event
 	{
+		public static const RUN_COMMAND:String = "runGrailsCommand";
 		public static const BUILD_AND_RUN:String = "grailsBuildAndRun";
 		public static const BUILD:String = "grailsBuild";
 		public static const BUILD_RELEASE:String = "grailsBuildRelease";
