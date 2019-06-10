@@ -29,6 +29,7 @@ package actionScripts.plugin.project
 	import __AS3__.vec.Vector;
 	
 	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.CustomCommandsEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
@@ -94,7 +95,7 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(EVENT_PROJECT_SETTINGS, handleMenuShowSettings);
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
-			dispatcher.addEventListener(ProjectEvent.OPEN_CUSTOM_COMMANDS_ON_SDK, onCustomCommandInterface);
+			dispatcher.addEventListener(CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK, onCustomCommandInterface);
 		}
 
         private function handleScrollFromSource(event:ProjectEvent):void
@@ -130,11 +131,21 @@ package actionScripts.plugin.project
 			}
 		}
 		
-		private function onCustomCommandInterface(event:ProjectEvent):void
+		private function onCustomCommandInterface(event:CustomCommandsEvent):void
 		{
+			if (!model.activeProject) 
+			{
+				error("Error: Command is require to execute against a project.");
+				return;
+			}
+			
 			if (!customCommandPopup)
 			{
 				customCommandPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RunCommandPopup, true) as RunCommandPopup;
+				customCommandPopup.commands = event.commands;
+				customCommandPopup.selectedCommand = event.selectedCommand;
+				customCommandPopup.executableNameToDisplay = event.executableNameToDisplay;
+				customCommandPopup.origin = event.origin;
 				customCommandPopup.addEventListener(CloseEvent.CLOSE, onCustomRunCommandClosed);
 				PopUpManager.centerPopUp(customCommandPopup);
 			}
@@ -142,6 +153,7 @@ package actionScripts.plugin.project
 		
 		private function onCustomRunCommandClosed(event:CloseEvent):void
 		{
+			customCommandPopup.origin = null;
 			customCommandPopup.removeEventListener(CloseEvent.CLOSE, onCustomRunCommandClosed);
 			customCommandPopup = null;
 		}

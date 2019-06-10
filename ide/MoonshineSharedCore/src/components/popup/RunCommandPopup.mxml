@@ -25,7 +25,8 @@
 				   backgroundColor="0xf5f5f5"
 				   width="350" minWidth="150" autoLayout="true"
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin" title="Run Custom Command">
+				   skinClass="components.skins.ResizableTitleWindowSkin" title="Run Custom Command"
+				   creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
@@ -33,17 +34,52 @@
 			
 			import spark.events.IndexChangeEvent;
 			
-			[Bindable] public var commandsCollection:ArrayCollection = new ArrayCollection(["Option A", "Option B"]);
+			import actionScripts.interfaces.ICustomCommandRunProvider;
+			import actionScripts.plugin.build.vo.BuildActionVO;
+			
+			[Bindable] private var _commands:ArrayCollection;
+			public function set commands(value:Array):void
+			{
+				if (value)
+				{
+					_commands = new ArrayCollection(value);
+				}
+			}
+			
+			[Bindable] public var executableNameToDisplay:String;
+			[Bindable] public var selectedCommand:BuildActionVO;
+			
+			public var origin:ICustomCommandRunProvider;
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (selectedCommand)
+				{
+					cmbCommands.selectedItem = selectedCommand;
+				}
+			}
 			
 			protected function onRunButton(event:MouseEvent):void
 			{
+				if (origin)
+				{
+					origin.runOrUpdate(selectedCommand);
+				}
 				
 				super.closeThis();
 			}
 			
 			private function onCommandChange(event:IndexChangeEvent):void
 			{
-				
+				// in case user create a new command
+				if (cmbCommands.selectedItem is String)
+				{
+					selectedCommand = new BuildActionVO(txtName.text, cmbCommands.textInput.text);
+				}
+				else
+				{
+					selectedCommand = cmbCommands.selectedItem;
+				}
 			}
 			
 		]]>
@@ -51,16 +87,28 @@
 	<fx:Declarations>
 	</fx:Declarations>
 	
-	<s:HGroup width="100%" height="100%" paddingLeft="12" paddingBottom="10" paddingTop="9" paddingRight="13"
+	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="10" paddingTop="9" paddingRight="13"
 			  verticalAlign="middle">
-		<s:Label text="grails"/>
-		<s:ComboBox id="cmbCommands" 
-					width="100%" dataProvider="{commandsCollection}"
-					styleName="multiLineList"
-					requireSelection="true" focusEnabled="false" height="26"
-					change="onCommandChange(event)"
-					creationComplete="cmbCommands.textInput.editable=true; cmbCommands.textInput.styleName='textInput'"/>
-	</s:HGroup>
+		<s:HGroup width="100%"
+				  verticalAlign="middle">
+			<s:Label id="lblExecutableName" 
+					 text="{executableNameToDisplay}"
+					 fontStyle="italic" fontWeight="bold"/>
+			<s:ComboBox id="cmbCommands" 
+						width="100%" dataProvider="{_commands}"
+						styleName="multiLineList" labelField="action"
+						requireSelection="true" focusEnabled="false" height="26"
+						change="onCommandChange(event)"
+						creationComplete="cmbCommands.textInput.editable=true; cmbCommands.textInput.styleName='textInput'; cmbCommands.textInput.setFocus()"/>
+		</s:HGroup>
+		<s:HGroup width="100%"
+				  verticalAlign="middle">
+			<s:Spacer width="{lblExecutableName.width}"/>
+			<view:PromptTextInput id="txtName"
+								  width="100%" text="{selectedCommand.actionName}"
+								  styleName="textInput" prompt="Action Name"/>
+		</s:HGroup>
+	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button label="Run"

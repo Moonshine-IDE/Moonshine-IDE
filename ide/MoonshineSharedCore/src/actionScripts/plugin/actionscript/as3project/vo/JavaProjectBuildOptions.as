@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import actionScripts.plugin.build.vo.BuildActionVO;
     import mx.utils.StringUtil;
+    
+    import actionScripts.plugin.build.vo.BuildActionVO;
+    import actionScripts.utils.SerializeUtil;
 
     public class JavaProjectBuildOptions
     {
@@ -50,6 +52,19 @@ package actionScripts.plugin.actionscript.as3project.vo
             return _buildActions;
         }
 
+		public function get selectedCommand():BuildActionVO
+		{
+			for each (var item:BuildActionVO in this.buildActions)
+			{
+				if (item.action == commandLine)
+				{
+					return item;
+				}
+			}
+			
+			return null;
+		}
+		
         public function getCommandLine():Array
         {
             var commandLineOptions:Array = [];
@@ -82,6 +97,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
             return commandLineOptions;
         }
+		
 
         public function parse(build:XMLList):void
         {
@@ -93,6 +109,19 @@ package actionScripts.plugin.actionscript.as3project.vo
         {
             return null;
         }
+		
+		protected function getActionsXML():XML
+		{
+			var availableOptions:XML = <actions/>;
+			for each (var item:BuildActionVO in this.buildActions)
+			{
+				availableOptions.appendChild(SerializeUtil.serializeObjectPairs(
+					{action: item.action, actionName: item.actionName},
+					<action />));
+			}
+			
+			return availableOptions;
+		}
 
         protected function parseOptions(options:XMLList):void
         {

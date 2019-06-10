@@ -56,7 +56,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
-
+			build.appendChild(getActionsXML());
             return build;
         }
 

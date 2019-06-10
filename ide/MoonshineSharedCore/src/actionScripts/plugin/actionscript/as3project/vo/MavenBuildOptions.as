@@ -55,16 +55,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
-
-            var availableOptions:XML = <actions/>;
-            for each (var item:BuildActionVO in this.buildActions)
-            {
-                availableOptions.appendChild(SerializeUtil.serializeObjectPairs(
-                        {action: item.action, actionName: item.actionName},
-                        <action />));
-            }
-
-            build.appendChild(availableOptions);
+			build.appendChild(getActionsXML());
 
             return build;
         }

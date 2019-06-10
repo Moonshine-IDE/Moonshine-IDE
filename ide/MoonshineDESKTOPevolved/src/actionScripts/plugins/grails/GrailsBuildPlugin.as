@@ -23,11 +23,16 @@ package actionScripts.plugins.grails
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     
+    import actionScripts.events.CustomCommandsEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.ICustomCommandRunProvider;
+    import actionScripts.plugin.actionscript.as3project.vo.GrailsBuildOptions;
+    import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -42,7 +47,7 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
-    public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
+    public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
 		private var pathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
@@ -205,12 +210,38 @@ package actionScripts.plugins.grails
 		{
 			super.startConsoleBuildHandler(event);
 			
-			this.isProjectHasInvalidPaths = false;
-			var arguments:Array = this.getCommandLine(event);
-			prepareStart(arguments, model.activeProject.folderLocation);
+			dispatcher.dispatchEvent(new CustomCommandsEvent(
+				CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK,
+				"grails",
+				model.activeProject["grailsBuildOptions"].buildActions,
+				this,
+				model.activeProject["grailsBuildOptions"].selectedCommand
+				));
 		}
 		
-		private function getCommandLine(event:Event):Array
+		public function runOrUpdate(command:BuildActionVO):void
+		{
+			var hasChanges:Boolean;
+			var grailsBuildOptions:GrailsBuildOptions = (model.activeProject as GrailsProjectVO).grailsBuildOptions;
+			if (grailsBuildOptions.buildActions.indexOf(command) == -1)
+			{
+				hasChanges = true;
+				grailsBuildOptions.buildActions.push(command);
+			}
+			grailsBuildOptions.commandLine = command.action;
+			
+			this.isProjectHasInvalidPaths = false;
+			var arguments:Array = this.getCommandLine();
+			prepareStart(arguments, model.activeProject.folderLocation);
+			
+			// save the modified/updated list
+			if (hasChanges)
+			{
+				(model.activeProject as GrailsProjectVO).saveSettings();
+			}
+		}
+		
+		private function getCommandLine():Array
 		{
 			var project:ProjectVO = model.activeProject;
 			if (project)
