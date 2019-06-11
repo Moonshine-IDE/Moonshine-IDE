@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import flash.desktop.Clipboard;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+
+	import flash.desktop.Clipboard;
     import flash.desktop.ClipboardFormats;
     import flash.display.Sprite;
     import flash.events.Event;
@@ -223,7 +225,7 @@ package actionScripts.ui.renderers
 
 				contextMenu = model.contextMenuCore.getContextMenu();
 
-                var project:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper) as AS3ProjectVO;
+                var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
 
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
@@ -232,7 +234,8 @@ package actionScripts.ui.renderers
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
 						updateOverMultiSelectionOption, "displaying"));
 
-				if (project && project.isPrimeFacesVisualEditorProject)
+				var as3Project:AS3ProjectVO = (project as AS3ProjectVO);
+				if (as3Project && as3Project.isPrimeFacesVisualEditorProject)
 				{
                     model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(PREVIEW, redispatch, Event.SELECT));
 				}
@@ -285,18 +288,20 @@ package actionScripts.ui.renderers
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(RENAME, updateOverMultiSelectionOption, "displaying"));
                     }
-					
+
+					var javaProject:JavaProjectVO = (project as JavaProjectVO);
+
 					// avail only for .as and .mxml files
 					if (fwExtension == "as" || fwExtension == "mxml")
 					{
 						// make this option available for the files Only inside the source folder location
-						if (project && !project.isVisualEditorProject && !project.isLibraryProject && project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
+						if (as3Project && !as3Project.isVisualEditorProject && !as3Project.isLibraryProject && as3Project.targets[0].fileBridge.nativePath != fw.file.fileBridge.nativePath)
 						{
 							if (fw.file.fileBridge.nativePath.indexOf(project.sourceFolder.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
 								model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
 						}
 					}
-					else if (fwExtension == "java")
+					else if (fwExtension == "java" && javaProject && !javaProject.hasGradleBuild())
 					{
 						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(SET_AS_DEFAULT_APPLICATION, redispatch, Event.SELECT));
 					}
