@@ -122,6 +122,10 @@ package actionScripts.ui.editor.text
 					
 					startChar = newCaretPosition - TextUtil.wordBoundaryBackward(model.lines[startLine].text.substring(0, newCaretPosition));
 					endChar = newCaretPosition + TextUtil.wordBoundaryForward(model.lines[endLine].text.substring(newCaretPosition));
+					if (model.lines[endLine].text.charAt(endChar-1) == " ")
+					{
+						endChar--;
+					}
 				}
 				else if (clickCount == 3)
 				{
