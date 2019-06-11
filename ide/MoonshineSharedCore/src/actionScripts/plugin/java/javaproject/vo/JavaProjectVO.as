@@ -12,8 +12,6 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	import flash.events.Event;
-
 	public class JavaProjectVO extends ProjectVO
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
@@ -93,19 +91,22 @@ package actionScripts.plugin.java.javaproject.vo
 
 		private function getJavaSettings():Vector.<SettingsWrapper>
 		{
-			var defaultMainClassPath:String = this._mainClassPath;
-			if (!_mainClassPath)
+			var pathsSettings:Vector.<ISetting> = new Vector.<ISetting>();
+			pathsSettings.push(new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true));
+
+			if (!hasGradleBuild())
 			{
-				defaultMainClassPath = this.folderLocation.fileBridge.nativePath;
+				var defaultMainClassPath:String = this._mainClassPath;
+				if (!_mainClassPath)
+				{
+					defaultMainClassPath = this.folderLocation.fileBridge.nativePath;
+				}
+
+				pathsSettings.push(new PathSetting(this, "mainClassPath", "Main class", false, this.mainClassName, false, false, defaultMainClassPath));
 			}
 
 			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
-				new SettingsWrapper("Paths",
-						Vector.<ISetting>([
-							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
-							new PathSetting(this, "mainClassPath", "Main class", false, this.mainClassName, false, false, defaultMainClassPath)
-						])
-				)
+				new SettingsWrapper("Paths", pathsSettings)
 			]);
 
 			if (hasPom())
