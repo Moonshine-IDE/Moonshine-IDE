@@ -75,10 +75,24 @@
 				if (cmbCommands.selectedItem is String)
 				{
 					selectedCommand = new BuildActionVO(txtName.text, cmbCommands.textInput.text);
+					_commands.addItem(selectedCommand);
+					cmbCommands.callLater(function():void
+					{
+						cmbCommands.selectedItem = selectedCommand;
+					});
+					
 				}
 				else
 				{
 					selectedCommand = cmbCommands.selectedItem;
+				}
+			}
+			
+			protected function cmbCommands_keyUpHandler(event:KeyboardEvent):void
+			{
+				if (event.keyCode == Keyboard.TAB || event.keyCode == Keyboard.ENTER)
+				{
+					onCommandChange(null);
 				}
 			}
 			
@@ -95,10 +109,11 @@
 					 text="{executableNameToDisplay}"
 					 fontStyle="italic" fontWeight="bold"/>
 			<s:ComboBox id="cmbCommands" 
-						width="100%" dataProvider="{_commands}"
-						styleName="multiLineList" labelField="action"
-						requireSelection="true" focusEnabled="false" height="26"
-						change="onCommandChange(event)"
+						width="100%"
+						dataProvider="{_commands}" labelField="action"
+						styleName="multiLineList"
+						focusEnabled="false" height="26"
+						change="onCommandChange(event)" tabEnabled="true" keyUp="cmbCommands_keyUpHandler(event)"
 						creationComplete="cmbCommands.textInput.editable=true; cmbCommands.textInput.styleName='textInput'; cmbCommands.textInput.setFocus()"/>
 		</s:HGroup>
 		<s:HGroup width="100%"
