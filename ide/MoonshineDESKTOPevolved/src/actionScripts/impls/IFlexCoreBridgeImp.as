@@ -319,8 +319,8 @@ package actionScripts.impls
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS,
-						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
-						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
+						'i', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'i', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'DUPLICATE'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX], VisualEditorEvent.DUPLICATE_ELEMENT,
 						'u', [Keyboard.COMMAND], 'u', [Keyboard.CONTROL])
