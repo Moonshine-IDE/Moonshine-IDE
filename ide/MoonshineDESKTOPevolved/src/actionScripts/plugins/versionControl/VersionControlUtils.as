@@ -161,7 +161,14 @@ package actionScripts.plugins.versionControl
 			}
 			else
 			{
-				ofRepository.children = null;
+				if (ofRepository.type == VersionControlTypes.GIT)
+				{
+					ofRepository.children = null;
+				}
+				else if (ofRepository.type == VersionControlTypes.SVN)
+				{
+					ofRepository.children = [];
+				}
 			}
 			
 			SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
