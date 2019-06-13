@@ -36,7 +36,17 @@ package actionScripts.valueObjects
         public var version:String;
         public var build:String;
 		public var status:String;
-		public var isPureActionScriptSdk:Boolean;
+		
+		public function get isPureActionScriptSdk():Boolean
+		{
+			if (!fileLocation.fileBridge.isPathExists(path +"/flex-sdk-description.xml") && 
+				fileLocation.fileBridge.isPathExists(path +"/air-sdk-description.xml"))
+			{
+				return true;
+			}
+			
+			return false;
+		}
 		
         private var _path:String;
 		public function set path(value:String):void
@@ -123,7 +133,6 @@ package actionScripts.valueObjects
 			if (value.hasOwnProperty("path")) tmpRef.path = value.path;
 			if (value.hasOwnProperty("status")) tmpRef.status = value.status;
 			if (value.hasOwnProperty("version")) tmpRef.version = value.version;
-			if (value.hasOwnProperty("isPureActionScriptSdk")) tmpRef.isPureActionScriptSdk = value.isPureActionScriptSdk;
 			
 			return tmpRef;
 		}

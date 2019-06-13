@@ -129,6 +129,16 @@ package actionScripts.plugins.as3project.mxmlc
 			if (ConstantsCoreVO.IS_MACOS)
 				return currentSDK.resolvePath("bin/mxmlc").nativePath;
 			
+			// on Windows we need to know if it's a 
+			// pure AIR SDK or not so we can run a modified
+			// mxmlc to pass a compilation problem
+			var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(currentSDK.nativePath);
+			if (sdkReference.isPureActionScriptSdk)
+			{
+				return File.applicationDirectory.resolvePath("elements/mxmlc_moonshine.bat").nativePath;
+			}
+			
+			// else continue to return regular mxmlc path
 			return currentSDK.resolvePath("bin/mxmlc.bat").nativePath;
 		}
 		
