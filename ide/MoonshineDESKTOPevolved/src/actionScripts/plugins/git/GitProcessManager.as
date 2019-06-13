@@ -36,7 +36,6 @@ package actionScripts.plugins.git
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
@@ -131,7 +130,7 @@ package actionScripts.plugins.git
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 		}
 		
-		public function checkIfGitRepository(project:AS3ProjectVO):void
+		public function checkIfGitRepository(project:ProjectVO):void
 		{
 			queue = new Vector.<Object>();
 			
@@ -561,7 +560,7 @@ package actionScripts.plugins.git
 						if (tmpProject)
 						{
 							tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
-							(tmpProject as AS3ProjectVO).hasVersionControlType = VersionControlTypes.GIT;
+							(tmpProject as ProjectVO).hasVersionControlType = VersionControlTypes.GIT;
 							if (plugin.modelAgainstProject[tmpProject] == undefined) 
 							{
 								value.output = value.output.replace("\n", "");
@@ -587,7 +586,7 @@ package actionScripts.plugins.git
 						// consists of '.git' and do not have bookmark access
 						// the running command is tend to be fail, in that case
 						// a brute check
-						initiateSandboxGitRepositoryCheckBrute(tmpProject as AS3ProjectVO);
+						initiateSandboxGitRepositoryCheckBrute(tmpProject as ProjectVO);
 					}
 					else
 					{
@@ -700,7 +699,7 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function initiateSandboxGitRepositoryCheckBrute(value:AS3ProjectVO):void
+		private function initiateSandboxGitRepositoryCheckBrute(value:ProjectVO):void
 		{
 			var tmpFile:File = value.folderLocation.fileBridge.getFile as File;
 			do

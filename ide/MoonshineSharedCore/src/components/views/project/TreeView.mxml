@@ -1078,10 +1078,7 @@
 				if(model.activeProject != activeProject)
 				{
 					model.activeProject = activeProject;
-					if(activeProject is AS3ProjectVO)
-					{
-						UtilsCore.setProjectMenuType(activeProject as AS3ProjectVO);
-					}
+					UtilsCore.setProjectMenuType(activeProject);
 
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
 				}

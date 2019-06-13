@@ -35,7 +35,6 @@ package actionScripts.plugins.git
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
@@ -320,7 +319,7 @@ package actionScripts.plugins.git
 				// re-test
 				processManager.checkGitAvailability();
 				// if an opened project lets test it if Git repository
-				if (model.activeProject) processManager.pendingProcess.push(new MethodDescriptor(processManager, 'checkIfGitRepository', model.activeProject as AS3ProjectVO));
+				if (model.activeProject) processManager.pendingProcess.push(new MethodDescriptor(processManager, 'checkIfGitRepository', model.activeProject));
 			}
 			else
 			{
@@ -609,7 +608,7 @@ package actionScripts.plugins.git
 			
 			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
 				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
-			processManager.checkIfGitRepository(event.project as AS3ProjectVO);
+			processManager.checkIfGitRepository(event.project);
 		}
 		
 		private function onGitRepositoryTested(event:GeneralEvent):void
@@ -631,7 +630,7 @@ package actionScripts.plugins.git
 			gitRepositoryPermissionWindow.removeEventListener(Event.CLOSE, onGitRepositoryPermissionClosed);
 			
 			var isAccepted:Boolean = gitRepositoryPermissionWindow.isAccepted;
-			var tmpProject:AS3ProjectVO = gitRepositoryPermissionWindow.project;
+			var tmpProject:ProjectVO = gitRepositoryPermissionWindow.project;
 			
 			FlexGlobals.topLevelApplication.removeElement(gitRepositoryPermissionWindow);
 			gitRepositoryPermissionWindow = null;

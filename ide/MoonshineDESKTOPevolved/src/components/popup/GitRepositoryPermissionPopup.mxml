@@ -32,12 +32,11 @@
 			
 			import spark.utils.TextFlowUtil;
 			
-			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+			import actionScripts.valueObjects.ProjectVO;
 			
 			public var isAccepted:Boolean;
-			public var project:AS3ProjectVO;
+			public var project:ProjectVO;
 			public var gitRootLocation:File;
 			
 			private function onJavaPathSetupPopupCreationComplete(event:FlexEvent):void

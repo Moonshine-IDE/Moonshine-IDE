@@ -39,6 +39,8 @@ package actionScripts.utils
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -903,33 +905,44 @@ package actionScripts.utils
 		/**
 		 * Set project menu type based on possible field
 		 */
-		public static function setProjectMenuType(value:AS3ProjectVO):void
+		public static function setProjectMenuType(value:ProjectVO):void
 		{
 			var currentMenuType:String;
 			
-			if (value.isFlexJS || value.isRoyale || value.isMDLFlexJS)
+			if (value is AS3ProjectVO)
 			{
-				currentMenuType = ProjectMenuTypes.JS_ROYALE;
+				if ((value as AS3ProjectVO).isFlexJS || (value as AS3ProjectVO).isRoyale || (value as AS3ProjectVO).isMDLFlexJS)
+				{
+					currentMenuType = ProjectMenuTypes.JS_ROYALE;
+				}
+				else if ((value as AS3ProjectVO).isLibraryProject)
+				{
+					currentMenuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
+				}
+				else if ((value as AS3ProjectVO).isPrimeFacesVisualEditorProject)
+				{
+					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+				}
+				else if ((value as AS3ProjectVO).isVisualEditorProject)
+				{
+					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
+				}
+				else if ((value as AS3ProjectVO).isActionScriptOnly)
+				{
+					currentMenuType = ProjectMenuTypes.PURE_AS;
+				}
+				else
+				{
+					currentMenuType = ProjectMenuTypes.FLEX_AS;
+				}
 			}
-			else if (value.isLibraryProject)
+			else if (value is JavaProjectVO)
 			{
-				currentMenuType = ProjectMenuTypes.LIBRARY_FLEX_AS;
+				currentMenuType = ProjectMenuTypes.JAVA;
 			}
-			else if (value.isPrimeFacesVisualEditorProject)
+			else if (value is GrailsProjectVO)
 			{
-				currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
-			}
-			else if (value.isVisualEditorProject)
-			{
-				currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_FLEX;
-			}
-			else if (value.isActionScriptOnly)
-			{
-				currentMenuType = ProjectMenuTypes.PURE_AS;
-			}
-			else
-			{
-				currentMenuType = ProjectMenuTypes.FLEX_AS;
+				currentMenuType = ProjectMenuTypes.GRAILS;
 			}
 
 			if (!value.menuType)
