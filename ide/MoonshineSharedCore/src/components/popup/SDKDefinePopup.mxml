@@ -72,11 +72,11 @@
 			btnCreate.enabled = false;
 			file = new FileLocation(dir.nativePath);
 
-			var sdkDescription:SDKReferenceVO = SDKUtils.getSDKReference(file);
-			if (sdkDescription)
+			editedSDKPath = SDKUtils.getSDKReference(file);
+			if (editedSDKPath)
 			{
-				txtPath.text = sdkDescription.path;
-				txtLabel.text = sdkDescription.name;
+				txtPath.text = editedSDKPath.path;
+				txtLabel.text = editedSDKPath.name;
 				btnCreate.enabled = true;
 			}
 			else
@@ -98,10 +98,7 @@
 				editedSDKPath.name = txtLabel.text;
 			}
 
-			dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, editedSDKPath ? editedSDKPath : {
-				label: txtLabel.text,
-				path: txtPath.text
-			}));
+			dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, editedSDKPath));
 			onCloseWindow(null);
 		}
 

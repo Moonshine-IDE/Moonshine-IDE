@@ -101,7 +101,6 @@ package actionScripts.plugins.as3project.mxmlc
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
 		private var fcshPath:String = "bin/fcsh";
-		private var mxmlcPath:String = "bin/mxmlc_moonshine";
 		private var cmdFile:File;
 		private var _defaultFlexSDK:String;
 		private var fcsh:NativeProcess;
@@ -125,6 +124,14 @@ package actionScripts.plugins.as3project.mxmlc
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
 
+		private function get mxmlcPath():String
+		{
+			if (ConstantsCoreVO.IS_MACOS)
+				return currentSDK.resolvePath("bin/mxmlc").nativePath;
+			
+			return currentSDK.resolvePath("bin/mxmlc.bat").nativePath;
+		}
+		
 		public function get defaultFlexSDK():String
 		{
 			return _defaultFlexSDK;
@@ -196,7 +203,6 @@ package actionScripts.plugins.as3project.mxmlc
 			if (Settings.os == "win")
 			{
 				fcshPath = "fcsh_moonshine.bat";
-				mxmlcPath = "mxmlc_moonshine.bat";
 				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 			}
 			else
@@ -977,8 +983,6 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				
-				mxmlcPath = ConstantsCoreVO.IS_MACOS ? currentSDK.resolvePath("bin/mxmlc").nativePath : 
-														File.applicationDirectory.resolvePath("elements/mxmlc_moonshine.bat").nativePath;
 				var mxmlcStr:String = '"'+ mxmlcPath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs

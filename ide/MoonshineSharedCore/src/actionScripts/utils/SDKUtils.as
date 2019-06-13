@@ -242,6 +242,7 @@ package actionScripts.utils
 				var tmpXML:XML = XML(description.fileBridge.read());
 				var outputTargetsXml:XMLList = tmpXML["output-targets"]["output-target"];
 				var outputTargets:Array = [];
+				var isPureActionScriptSdk:Boolean;
 
 				for each (var item:XML in outputTargetsXml)
 				{
@@ -252,6 +253,7 @@ package actionScripts.utils
 				if (description.fileBridge.name.indexOf("air-sdk-description") > -1)
 				{
 					displayName = "Adobe "+ tmpXML["name"] +" (SDK & Compiler)";
+					isPureActionScriptSdk = true;
 				}
 				else if (description.fileBridge.name.indexOf("royale") > -1)
 				{
@@ -273,6 +275,7 @@ package actionScripts.utils
 				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
 				tmpSDK.path = description.fileBridge.parent.fileBridge.nativePath;
 				tmpSDK.name = displayName;
+				tmpSDK.isPureActionScriptSdk = isPureActionScriptSdk;
 				tmpSDK.version = String(tmpXML.version);
 				tmpSDK.build = String(tmpXML.build);
 				tmpSDK.outputTargets = outputTargets;
@@ -300,9 +303,7 @@ package actionScripts.utils
 			
 			if (!(sdkObject is SDKReferenceVO) && !isAlreadyAdded)
 			{
-				var tmp:SDKReferenceVO = new SDKReferenceVO();
-				tmp.name = sdkObject.label;
-				tmp.path = sdkObject.path;
+				var tmp:SDKReferenceVO = getSDKReference(new FileLocation(sdkObject.path));
 				model.userSavedSDKs.addItem(tmp);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, tmp));
 				return tmp;

@@ -80,27 +80,32 @@
 				// detects been new or edit situation
 				if (event.anObject is SDKReferenceVO)
 				{
-					// edit sdk
-					model.userSavedSDKs.refresh();
-					GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
-				}
-				else
-				{
-					// add sdk
-					// don't add if said sdk already added
-					var tmp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(event.anObject);
-					if (tmp)
+					// check if the sdk is new or one that edited
+					if (model.userSavedSDKs.getItemIndex(event.anObject) == -1)
 					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
-						dgSDKs.callLater(function():void
+						// add sdk
+						// don't add if said sdk already added
+						var tmp:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(event.anObject);
+						if (tmp)
 						{
-							dgSDKs.selectedItem = tmp;
-						});
+							GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+							dgSDKs.callLater(function():void
+							{
+								dgSDKs.selectedItem = tmp;
+							});
+						}
+						else
+						{
+							Alert.show("SDK is already added in the list.", "Note!");
+						}
 					}
 					else
 					{
-						Alert.show("SDK is already added in the list.", "Note!");
+						// edited sdk
+						model.userSavedSDKs.refresh();
 					}
+					
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
 				}
 			}
 			

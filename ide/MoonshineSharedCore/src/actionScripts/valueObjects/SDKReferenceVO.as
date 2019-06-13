@@ -19,7 +19,6 @@
 package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.utils.UtilsCore;
 
     [Bindable] public class SDKReferenceVO
@@ -37,6 +36,7 @@ package actionScripts.valueObjects
         public var version:String;
         public var build:String;
 		public var status:String;
+		public var isPureActionScriptSdk:Boolean;
 		
         private var _path:String;
 		public function set path(value:String):void
@@ -123,8 +123,22 @@ package actionScripts.valueObjects
 			if (value.hasOwnProperty("path")) tmpRef.path = value.path;
 			if (value.hasOwnProperty("status")) tmpRef.status = value.status;
 			if (value.hasOwnProperty("version")) tmpRef.version = value.version;
+			if (value.hasOwnProperty("isPureActionScriptSdk")) tmpRef.isPureActionScriptSdk = value.isPureActionScriptSdk;
 			
 			return tmpRef;
+		}
+		
+		public function getPlayerGlobalVersion():String
+		{
+			for each (var target:RoyaleOutputTarget in outputTargets)
+			{
+				if (target.flashVersion)
+				{
+					return target.flashVersion;
+				}
+			}
+			
+			return null;
 		}
 		
 		//--------------------------------------------------------------------------
@@ -217,19 +231,6 @@ package actionScripts.valueObjects
 				}
 			}
 			
-			return null;
-		}
-
-		public function getPlayerGlobalVersion():String
-		{
-			for each (var target:RoyaleOutputTarget in outputTargets)
-			{
-				if (target.flashVersion)
-				{
-					return target.flashVersion;
-				}
-			}
-
 			return null;
 		}
     }
