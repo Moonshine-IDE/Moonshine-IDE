@@ -18,25 +18,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+    import flash.ui.Keyboard;
+    
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.MavenBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
     import actionScripts.plugin.core.compiler.JavaBuildEvent;
     import actionScripts.plugin.core.compiler.ProjectActionEvent;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ProjectVO;
-
-    import flash.ui.Keyboard;
-
-    import mx.resources.IResourceManager;
-    import mx.resources.ResourceManager;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
 
     public class ProjectMenu
     {
@@ -285,6 +285,7 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.RUN_COMMAND),
+					new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, GradleBuildEvent.RUN_COMMAND),
 					new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
                 ]);
                 grailsMenu.forEach(makeDynamic);

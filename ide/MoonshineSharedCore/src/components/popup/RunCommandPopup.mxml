@@ -74,7 +74,7 @@
 				// in case user create a new command
 				if (cmbCommands.selectedItem is String)
 				{
-					selectedCommand = new BuildActionVO(txtName.text, cmbCommands.textInput.text);
+					selectedCommand = new BuildActionVO("Custom Command", cmbCommands.textInput.text);
 					_commands.addItem(selectedCommand);
 					cmbCommands.callLater(function():void
 					{
@@ -116,13 +116,13 @@
 						change="onCommandChange(event)" tabEnabled="true" keyUp="cmbCommands_keyUpHandler(event)"
 						creationComplete="cmbCommands.textInput.editable=true; cmbCommands.textInput.styleName='textInput'; cmbCommands.textInput.setFocus()"/>
 		</s:HGroup>
-		<s:HGroup width="100%"
+		<!--<s:HGroup width="100%"
 				  verticalAlign="middle">
 			<s:Spacer width="{lblExecutableName.width}"/>
 			<view:PromptTextInput id="txtName"
 								  width="100%" text="{selectedCommand.actionName}"
 								  styleName="textInput" prompt="Action Name"/>
-		</s:HGroup>
+		</s:HGroup>-->
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

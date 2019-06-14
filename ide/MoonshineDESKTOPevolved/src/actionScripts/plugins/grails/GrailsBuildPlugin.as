@@ -24,12 +24,15 @@ package actionScripts.plugins.grails
     import flash.events.ProgressEvent;
     
     import actionScripts.events.CustomCommandsEvent;
+    import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.ICustomCommandRunProvider;
+    import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
     import actionScripts.plugin.actionscript.as3project.vo.GrailsBuildOptions;
+    import actionScripts.plugin.build.vo.BuildActionType;
     import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
     import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
@@ -51,6 +54,7 @@ package actionScripts.plugins.grails
     {
 		private var pathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
+		private var runCommandType:String;
 		
         public function GrailsBuildPlugin()
         {
@@ -139,6 +143,7 @@ package actionScripts.plugins.grails
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
+			dispatcher.addEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
 
         override public function deactivate():void
@@ -148,6 +153,7 @@ package actionScripts.plugins.grails
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
+			dispatcher.removeEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
 		
 		private function grailsBuildAndRunHandler(event:Event):void
@@ -210,6 +216,7 @@ package actionScripts.plugins.grails
 		{
 			super.startConsoleBuildHandler(event);
 			
+			runCommandType = BuildActionType.BUILD_TYPE_GRAILS;
 			dispatcher.dispatchEvent(new CustomCommandsEvent(
 				CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK,
 				"grails",
@@ -219,20 +226,47 @@ package actionScripts.plugins.grails
 				));
 		}
 		
+		protected function startGradleConsoleBuildHandler(event:Event):void
+		{
+			runCommandType = BuildActionType.BUILD_TYPE_GRADLE;
+			dispatcher.dispatchEvent(new CustomCommandsEvent(
+				CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK,
+				"gradle",
+				model.activeProject["gradleBuildOptions"].buildActions,
+				this,
+				model.activeProject["gradleBuildOptions"].selectedCommand
+			));
+		}
+		
 		public function runOrUpdate(command:BuildActionVO):void
 		{
 			var hasChanges:Boolean;
-			var grailsBuildOptions:GrailsBuildOptions = (model.activeProject as GrailsProjectVO).grailsBuildOptions;
-			if (grailsBuildOptions.buildActions.indexOf(command) == -1)
+			
+			switch (runCommandType)
 			{
-				hasChanges = true;
-				grailsBuildOptions.buildActions.push(command);
+				case BuildActionType.BUILD_TYPE_GRAILS:
+					var grailsBuildOptions:GrailsBuildOptions = (model.activeProject as GrailsProjectVO).grailsBuildOptions;
+					if (grailsBuildOptions.buildActions.indexOf(command) == -1)
+					{
+						hasChanges = true;
+						grailsBuildOptions.buildActions.push(command);
+					}
+					grailsBuildOptions.commandLine = command.action;
+					break;
+				case BuildActionType.BUILD_TYPE_GRADLE:
+					var gradleBuildOptions:GradleBuildOptions = (model.activeProject as GrailsProjectVO).gradleBuildOptions;
+					if (gradleBuildOptions.buildActions.indexOf(command) == -1)
+					{
+						hasChanges = true;
+						gradleBuildOptions.buildActions.push(command);
+					}
+					gradleBuildOptions.commandLine = command.action;
+					break;
 			}
-			grailsBuildOptions.commandLine = command.action;
 			
 			this.isProjectHasInvalidPaths = false;
 			var arguments:Array = this.getCommandLine();
-			prepareStart(arguments, model.activeProject.folderLocation);
+			prepareStart(arguments, model.activeProject.folderLocation, runCommandType);
 			
 			// save the modified/updated list
 			if (hasChanges)
@@ -243,16 +277,18 @@ package actionScripts.plugins.grails
 		
 		private function getCommandLine():Array
 		{
-			var project:ProjectVO = model.activeProject;
-			if (project)
+			switch (runCommandType)
 			{
-				return project["grailsBuildOptions"].getCommandLine();
+				case BuildActionType.BUILD_TYPE_GRAILS:
+					return model.activeProject["grailsBuildOptions"].getCommandLine();
+				case BuildActionType.BUILD_TYPE_GRADLE:
+					return model.activeProject["gradleBuildOptions"].getCommandLine();
 			}
 			
 			return [];
 		}
 		
-		protected function prepareStart(arguments:Array, buildDirectory:FileLocation):void
+		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String=BuildActionType.BUILD_TYPE_GRAILS):void
 		{
 			if (!buildDirectory || !buildDirectory.fileBridge.exists)
 			{
@@ -277,8 +313,10 @@ package actionScripts.plugins.grails
 			var args:Vector.<String> = this.getConstantArguments();
 			if (arguments.length > 0)
 			{
+				var executable:String = (commandType == BuildActionType.BUILD_TYPE_GRAILS) ? 
+					EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH : EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH;
 				var commandLine:String = arguments.join(" ");
-				var fullCommandLine:String = [EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH, commandLine].join(" ");
+				var fullCommandLine:String = [executable, commandLine].join(" ");
 				
 				args.push(fullCommandLine);
 			}

@@ -44,6 +44,9 @@ package actionScripts.plugin.groovy.grailsproject.exporter
 			projectXML.appendChild(
 				project.grailsBuildOptions.toXML()
 			);
+			projectXML.appendChild(
+				project.gradleBuildOptions.toXML()
+			);
 
             var separator:String = project.folderLocation.fileBridge.separator;
             var defaultClassPaths:Vector.<FileLocation> = new Vector.<FileLocation>();

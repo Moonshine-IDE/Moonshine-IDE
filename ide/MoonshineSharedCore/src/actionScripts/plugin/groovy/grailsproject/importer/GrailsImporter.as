@@ -47,7 +47,7 @@ package actionScripts.plugin.groovy.grailsproject.importer
             }
 
 			var project:GrailsProjectVO = new GrailsProjectVO(projectFolder, projectName);
-			project.menuType = ProjectMenuTypes.GRAILS;
+			//project.menuType = ProjectMenuTypes.GRAILS;
 
 			project.projectFile = settingsFileLocation;
 			
@@ -65,6 +65,7 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			if (data)
 			{
 				project.grailsBuildOptions.parse(data.grailsBuild);
+				project.gradleBuildOptions.parse(data.gradleBuild);
 				parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 			}
 

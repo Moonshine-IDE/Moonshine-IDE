@@ -3,6 +3,9 @@
 	<grailsBuild>
       <option commandLine="run-app"/>
     </grailsBuild>
+    <gradleBuild>
+      <option commandLine="clean run"/>
+    </gradleBuild>
     <classpaths>
        <class path="src/main/groovy"/>
        <class path="src/main/java"/>

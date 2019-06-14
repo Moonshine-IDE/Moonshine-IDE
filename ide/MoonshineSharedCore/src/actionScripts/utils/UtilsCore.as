@@ -909,6 +909,7 @@ package actionScripts.utils
 		{
 			var currentMenuType:String;
 			
+			// the type-check ordering are important
 			if (value is AS3ProjectVO)
 			{
 				if ((value as AS3ProjectVO).isFlexJS || (value as AS3ProjectVO).isRoyale || (value as AS3ProjectVO).isMDLFlexJS)
@@ -936,13 +937,13 @@ package actionScripts.utils
 					currentMenuType = ProjectMenuTypes.FLEX_AS;
 				}
 			}
-			else if (value is JavaProjectVO)
-			{
-				currentMenuType = ProjectMenuTypes.JAVA;
-			}
 			else if (value is GrailsProjectVO)
 			{
 				currentMenuType = ProjectMenuTypes.GRAILS;
+			}
+			else if (value is JavaProjectVO)
+			{
+				currentMenuType = ProjectMenuTypes.JAVA;
 			}
 
 			if (!value.menuType)

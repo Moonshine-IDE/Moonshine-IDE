@@ -80,7 +80,7 @@ package actionScripts.plugin.java.javaproject.importer
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
-			javaProject.menuType = ProjectMenuTypes.JAVA;
+			//javaProject.menuType = ProjectMenuTypes.JAVA;
 
             var sourceDirectory:String = null;
 			var settingsData:XML = null;
