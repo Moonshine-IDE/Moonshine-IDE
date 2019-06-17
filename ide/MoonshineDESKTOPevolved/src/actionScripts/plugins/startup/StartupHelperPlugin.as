@@ -20,6 +20,7 @@ package actionScripts.plugins.startup
 {
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
+	import flash.filesystem.File;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -40,6 +41,7 @@ package actionScripts.plugins.startup
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.SDKInstallerPolling;
@@ -408,13 +410,13 @@ package actionScripts.plugins.startup
 		 */
 		private function onInvokeEventFired(event:InvokeEvent):void
 		{
-			var updateNotifierFile:FileLocation = model.fileCore.resolveApplicationStorageDirectoryPath("MoonshineHelperNewUpdate.xml");
-			if (updateNotifierFile.fileBridge.exists)
+			var updateNotifierFile:File = HelperConstants.HELPER_STORAGE.resolvePath(HelperConstants.MOONSHINE_NOTIFIER_FILE_NAME);
+			if (updateNotifierFile.exists)
 			{
 				var type:String;
 				var path:String;
 				var pathValidation:String;
-				var notifierValue:XML = new XML(updateNotifierFile.fileBridge.read() as String);
+				var notifierValue:XML = new XML(FileUtils.readFromFile(updateNotifierFile) as String);
 				for each (var item:XML in notifierValue.items.item)
 				{
 					type = String(item.@type);
