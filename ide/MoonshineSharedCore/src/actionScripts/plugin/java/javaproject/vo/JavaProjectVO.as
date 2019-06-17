@@ -25,6 +25,7 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MainClassSetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -57,10 +58,7 @@ package actionScripts.plugin.java.javaproject.vo
 
 		public function set mainClassName(value:String):void
 		{
-			if (_mainClassName != value)
-			{
-				_mainClassName = value;
-			}
+			_mainClassName = value;
 		}
 
 		public function get mainClassPath():String
@@ -70,11 +68,7 @@ package actionScripts.plugin.java.javaproject.vo
 
 		public function set mainClassPath(value:String):void
 		{
-			if (_mainClassPath != value)
-			{
-				mainClassName = new FileLocation(value).fileBridge.nameWithoutExtension;
-				_mainClassPath = value;
-			}
+			_mainClassPath = value;
 		}
 
 		public function hasPom():Boolean
@@ -120,7 +114,7 @@ package actionScripts.plugin.java.javaproject.vo
 					defaultMainClassPath = this.folderLocation.fileBridge.nativePath;
 				}
 
-				pathsSettings.push(new PathSetting(this, "mainClassPath", "Main class", false, this.mainClassName, false, false, defaultMainClassPath));
+				pathsSettings.push(new MainClassSetting(this, "mainClassName", "Main class", this.mainClassName, defaultMainClassPath));
 			}
 
 			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([

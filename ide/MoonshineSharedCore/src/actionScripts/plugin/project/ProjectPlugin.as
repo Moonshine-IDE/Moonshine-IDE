@@ -39,7 +39,6 @@ package actionScripts.plugin.project
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.SettingsInfoView;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -260,16 +259,6 @@ package actionScripts.plugin.project
 				}
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SAVE_PROJECT_SETTINGS, pvo));
 			}
-		}
-
-		private function settingsInfoClose(event:Event):void
-		{
-			var settings:SettingsInfoView = event.target as SettingsInfoView;
-
-			// Close the tab
-			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settings));
-
-			settings.removeEventListener(SettingsView.EVENT_CLOSE, settingsInfoClose);
 		}
 
 		private function handleAddProject(event:ProjectEvent):void
