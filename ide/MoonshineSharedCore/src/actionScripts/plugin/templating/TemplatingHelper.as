@@ -199,11 +199,11 @@ package actionScripts.plugin.templating
 						ProjectMenuTypes.TEMPLATE];
 				case "XML File":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, 
-						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS];
+						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
 				case "File":
 					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, 
 						ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, 
-						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS];
+						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
 				case "Visual Editor Flex File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
@@ -212,6 +212,8 @@ package actionScripts.plugin.templating
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE];
 				case "Groovy Class":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.TEMPLATE];
+				case "Haxe Class":
+					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
 			}
 			
 			return [];

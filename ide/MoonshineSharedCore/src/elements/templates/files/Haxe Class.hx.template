@@ -1,0 +1,9 @@
+package $packageName;
+
+$imports
+class $fileName $extends $implements
+{
+	public function new()
+	{
+	}
+}

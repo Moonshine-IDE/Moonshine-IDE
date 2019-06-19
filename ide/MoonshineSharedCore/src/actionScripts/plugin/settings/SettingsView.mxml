@@ -52,6 +52,7 @@
 			import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
 			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";
@@ -148,6 +149,10 @@
 				else if(associatedData is GrailsProjectVO)
 				{
 					projectPath += ".grailsproj";
+				}
+				else if(associatedData is HaxeProjectVO)
+				{
+					projectPath += ".hxproj";
 				}
 				else
 				{

@@ -67,6 +67,7 @@
 				ideModel.clipboardCore = BridgeFactory.getClipboardInstance();
 				ideModel.javaCore = BridgeFactory.getJavaInstance();
 				ideModel.groovyCore = BridgeFactory.getGroovyInstance();
+				ideModel.haxeCore = BridgeFactory.getHaxeInstance();
 			}
 			
 			/**

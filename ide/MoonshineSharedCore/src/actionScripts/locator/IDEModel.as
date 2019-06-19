@@ -36,6 +36,7 @@ package actionScripts.locator
     import actionScripts.ui.MainView;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.interfaces.IHaxeBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -55,6 +56,7 @@ package actionScripts.locator
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;
 		public var groovyCore:IGroovyBridge;
+		public var haxeCore:IHaxeBridge;
 		public var languageServerCore:ILanguageServerBridge;
 		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		
@@ -76,6 +78,8 @@ package actionScripts.locator
 		public var mavenPath:String;
 		public var gradlePath:String;
 		public var grailsPath:String;
+		public var haxePath:String;
+		public var nodePath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var svnPath:String;
 		public var gitPath:String;

@@ -319,6 +319,12 @@
 					{
 						return model.groovyCore.parseGrails(recentOpenedProjectObject as FileLocation);
 					}
+	
+					projectFileLocation = model.haxeCore.testHaxe(projectFile);
+					if (projectFileLocation)
+					{
+						return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
+					}
 				}
 	
 				return null;

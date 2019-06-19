@@ -33,6 +33,7 @@ package actionScripts.ui.menu.vo
 		public static const SVN_PROJECT:String = "svnProject";
 		public static const JAVA:String = "java";
 		public static const GRAILS:String = "grails";
+		public static const HAXE:String = "haxe";
 		public static const TEMPLATE:String = "template";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;

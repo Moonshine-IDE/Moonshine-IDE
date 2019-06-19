@@ -103,6 +103,7 @@ package actionScripts.plugin.settings
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.moonshine_internal;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.plugin.syntax.HaxeSyntaxPlugin;
 
 	use namespace moonshine_internal;
 
@@ -135,7 +136,8 @@ package actionScripts.plugin.settings
 			excludeFromSettings = excludeFromSettings.concat(
 				model.flexCore.getPluginsNotToShowInSettings(),
 				model.javaCore.getPluginsNotToShowInSettings(),
-				model.groovyCore.getPluginsNotToShowInSettings()
+				model.groovyCore.getPluginsNotToShowInSettings(),
+				model.haxeCore.getPluginsNotToShowInSettings()
 			);
 			
 			dispatcher.addEventListener(SettingsEvent.EVENT_OPEN_SETTINGS, openAppSettings);

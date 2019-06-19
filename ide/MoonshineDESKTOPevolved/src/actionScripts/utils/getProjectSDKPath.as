@@ -23,6 +23,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
 	{
@@ -53,6 +54,14 @@ package actionScripts.utils
 			if(model.javaPathForTypeAhead)
 			{
 				return model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+		}
+		else if(project is HaxeProjectVO)
+		{
+			var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
+			if(model.haxePath)
+			{
+				return model.haxePath;
 			}
 		}
 		return null;

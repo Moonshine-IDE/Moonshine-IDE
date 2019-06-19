@@ -31,6 +31,7 @@ package actionScripts.factory
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
+    import actionScripts.interfaces.IHaxeBridge;
 	
 	/**
 	 * BridgeFactory
@@ -121,6 +122,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IGroovyBridgeImpl");
 			var gb: IGroovyBridge = new clsToCreate();
+			return gb;
+		}
+
+		public static function getHaxeInstance(): IHaxeBridge 
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IHaxeBridgeImpl");
+			var gb: IHaxeBridge = new clsToCreate();
 			return gb;
 		}
 

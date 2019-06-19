@@ -74,6 +74,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 	import actionScripts.valueObjects.TemplateVO;
+	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	
     public class CreateProject
 	{
@@ -105,6 +107,7 @@ package actionScripts.plugins.as3project
 		private var isFlexJSRoyalProject:Boolean;
 		private var isJavaProject:Boolean;
 		private var isGrailsProject:Boolean;
+		private var isHaxeProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
 		private var filePathReg:RegExp = ConstantsCoreVO.IS_MACOS ? 
@@ -962,6 +965,10 @@ package actionScripts.plugins.as3project
 			{
 				projectSettingsFile = projectName+".grailsproj";
 			}
+			else if (isHaxeProject)
+			{
+				projectSettingsFile = projectName+".hxproj";
+			}
 
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
@@ -1012,6 +1019,10 @@ package actionScripts.plugins.as3project
 			else if (isGrailsProject)
 			{
 				GrailsExporter.export(pvo as GrailsProjectVO);
+			}
+			else if (isHaxeProject)
+			{
+				HaxeExporter.export(pvo as HaxeProjectVO);
 			}
 			else
 			{
@@ -1123,6 +1134,7 @@ package actionScripts.plugins.as3project
             isAway3DProject = false;
             isFlexJSRoyalProject = false;
             isGrailsProject = false;
+            isHaxeProject = false;
 
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
@@ -1163,6 +1175,10 @@ package actionScripts.plugins.as3project
 			{
 				isGrailsProject = true;
 			}
+			else if (templateName.indexOf(ProjectTemplateType.HAXE) != -1)
+			{
+				isHaxeProject = true;
+			}
             else
             {
                 isActionScriptProject = false;
@@ -1198,6 +1214,10 @@ package actionScripts.plugins.as3project
 			if (isGrailsProject)
 			{
 				return ProjectMenuTypes.GRAILS;
+			}
+			if (isHaxeProject)
+			{
+				return ProjectMenuTypes.HAXE;
 			}
 
 			return ProjectMenuTypes.FLEX_AS;

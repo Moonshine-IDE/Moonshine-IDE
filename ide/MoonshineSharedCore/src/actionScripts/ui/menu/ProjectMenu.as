@@ -37,6 +37,7 @@ package actionScripts.ui.menu
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
     public class ProjectMenu
     {
@@ -48,6 +49,7 @@ package actionScripts.ui.menu
         private var javaMenu:Vector.<MenuItem>;
 		private var javaMenuGradle:Vector.<MenuItem>;
         private var grailsMenu:Vector.<MenuItem>;
+        private var haxeMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
 
@@ -91,6 +93,12 @@ package actionScripts.ui.menu
             if (grailsProject)
             {
                 return getGrailsMenuItems();
+            }
+
+            var haxeProject:HaxeProjectVO = project as HaxeProjectVO;
+            if (haxeProject)
+            {
+                return getHaxeMenuItems();
             }
 
             return null;
@@ -292,6 +300,21 @@ package actionScripts.ui.menu
             }
 
             return grailsMenu;
+        }
+
+        private function getHaxeMenuItems():Vector.<MenuItem>
+        {
+            if (haxeMenu == null)
+            {
+                var enabledTypes:Array = [ProjectMenuTypes.HAXE];
+                var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+                haxeMenu = Vector.<MenuItem>([
+                ]);
+                haxeMenu.forEach(makeDynamic);
+            }
+
+            return haxeMenu;
         }
 
         private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void

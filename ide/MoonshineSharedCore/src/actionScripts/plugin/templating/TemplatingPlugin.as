@@ -318,6 +318,7 @@ package actionScripts.plugin.templating
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
+			var haxeProjectTemplates:ArrayCollection = new ArrayCollection();
 
 			allLoadedTemplates = [];
             for each (var templateConfig:XML in templateConfigs)
@@ -365,6 +366,11 @@ package actionScripts.plugin.templating
                         grailsProjectTemplates.addItem(template);
 					}
 
+					if (template.title.indexOf("Haxe") != -1)
+					{
+                        haxeProjectTemplates.addItem(template);
+					}
+
 					allLoadedTemplates.push(template);
                 }
             }
@@ -375,6 +381,7 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

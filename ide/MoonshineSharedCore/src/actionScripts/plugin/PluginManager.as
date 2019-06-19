@@ -50,7 +50,8 @@ package actionScripts.plugin
         	var allPlugins:Array = corePlugins.concat(defaultPlugins,
                     model.visualEditorCore.getDefaultPlugins(),
                     model.javaCore.getDefaultPlugins(),
-                    model.groovyCore.getDefaultPlugins());
+                    model.groovyCore.getDefaultPlugins(),
+                    model.haxeCore.getDefaultPlugins());
         	
             var plug:Class;
             for each (plug in allPlugins)

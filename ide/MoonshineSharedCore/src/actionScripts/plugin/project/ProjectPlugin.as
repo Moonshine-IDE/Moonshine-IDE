@@ -449,6 +449,15 @@ package actionScripts.plugin.project
 	                        project = model.groovyCore.parseGrails(projectLocation);
 	                    }
 					}
+					
+					if (!project)
+					{
+	                    projectFileLocation = model.haxeCore.testHaxe(projectFile);
+	                    if (projectFileLocation)
+	                    {
+	                        project = model.haxeCore.parseHaxe(projectLocation);
+	                    }
+					}
 
                     if (project)
                     {

@@ -48,6 +48,7 @@ package actionScripts.plugins.clean
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
@@ -163,6 +164,11 @@ package actionScripts.plugins.clean
 					currentCleanType = ProjectType.JAVA;
 					cleanGrailsProject(project as GrailsProjectVO);
 				}
+				else if (project is HaxeProjectVO)
+				{
+					currentCleanType = ProjectType.HAXE;
+					cleanHaxeProject(project as HaxeProjectVO);
+				}
 			}
 		}
 
@@ -209,6 +215,11 @@ package actionScripts.plugins.clean
 			{
 				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean failed: Missing Grails configuration in Moonshine settings.", false, false, ConsoleOutputEvent.TYPE_ERROR));
 			}
+		}
+
+		private function cleanHaxeProject(haxeProject:HaxeProjectVO):void
+		{
+			//TODO: clean haxe project
 		}
 		
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void

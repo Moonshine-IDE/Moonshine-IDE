@@ -44,6 +44,7 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -319,6 +320,10 @@ package actionScripts.controllers
 				if (!project)
 				{
 					project = model.activeProject as GrailsProjectVO;
+                }
+				if (!project)
+				{
+					project = model.activeProject as HaxeProjectVO;
                 }
 
 				if (project is AS3ProjectVO &&

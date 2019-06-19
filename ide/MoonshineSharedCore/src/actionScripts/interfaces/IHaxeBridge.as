@@ -16,21 +16,14 @@
 //  limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.project
+package actionScripts.interfaces
 {
-    public class ProjectTemplateType
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+
+    public interface IHaxeBridge extends IProject
     {
-        public static const FEATHERS:String = "Feathers";
-        public static const ACTIONSCRIPT:String = "ActionScript Project";
-		public static const LIBRARY_PROJECT:String = "Library Project";
-        public static const MOBILE:String = "Mobile Project";
-        public static const VISUAL_EDITOR:String = "Visual Editor";
-		public static const VISUAL_EDITOR_FLEX:String = "Flex Visual Editor";
-		public static const VISUAL_EDITOR_PRIMEFACES:String = "PrimeFaces Visual Editor";
-		public static const AWAY3D:String = "Away3D Project";
-        public static const JAVA:String = "Java";
-        public static const GRAILS:String = "Grails";
-        public static const ROYALE_PROJECT:String = "Royale Browser Project";
-        public static const HAXE:String = "Haxe";
+		function testHaxe(file:Object):FileLocation;
+		function parseHaxe(file:FileLocation):HaxeProjectVO;
     }
 }

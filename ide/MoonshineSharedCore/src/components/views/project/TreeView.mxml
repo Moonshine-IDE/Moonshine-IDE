@@ -75,6 +75,7 @@
 		
 		import components.popup.NewFolderPopup;
 		import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+		import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 		private var newFolderWindow:NewFolderPopup;
 
@@ -189,6 +190,11 @@
                 {
                     var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
                     sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
+                }
+                else if (project is HaxeProjectVO)
+                {
+                    var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
+                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
                 }
 				if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 			}
@@ -392,6 +398,11 @@
                         var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
 						if (grailsProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
                     }
+					else if (project is HaxeProjectVO)
+					{
+						var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
+						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
+					}
 					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
 					projectFolders.addItemAt(project.projectFolder, 0);

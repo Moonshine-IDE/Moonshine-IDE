@@ -40,6 +40,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
@@ -944,6 +945,10 @@ package actionScripts.utils
 			else if (value is JavaProjectVO)
 			{
 				currentMenuType = ProjectMenuTypes.JAVA;
+			}
+			else if (value is HaxeProjectVO)
+			{
+				currentMenuType = ProjectMenuTypes.HAXE;
 			}
 
 			if (!value.menuType)

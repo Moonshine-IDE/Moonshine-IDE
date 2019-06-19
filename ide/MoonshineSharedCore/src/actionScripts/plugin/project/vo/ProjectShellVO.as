@@ -12,6 +12,7 @@ package actionScripts.plugin.project.vo
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.plugin.haxe.hxproject.importer.HaxeImporter;
 
     public dynamic class ProjectShellVO extends EventDispatcher
     {
@@ -75,6 +76,10 @@ package actionScripts.plugin.project.vo
 			else if (templateName.indexOf(ProjectTemplateType.GRAILS) != -1)
 			{
 				project = GrailsImporter.parse(this.folderLocation, this.projectName);
+			}
+			else if (templateName.indexOf(ProjectTemplateType.HAXE) != -1)
+			{
+				project = HaxeImporter.parse(this.folderLocation, this.projectName);
 			}
 			else
             {

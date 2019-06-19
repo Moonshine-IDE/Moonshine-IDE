@@ -219,7 +219,7 @@ package actionScripts.plugin.actionscript.as3project
 			if (flashBuilderProjectFile) isFBProject = true;
 			if (flashDevelopProjectFile) isFDProject = true;
 			
-			// for Java and Grails projects
+			// for Java, Grails, and Haxe projects
 			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
 			{
 				flashDevelopProjectFile = model.javaCore.testJava(dir);
@@ -232,6 +232,12 @@ package actionScripts.plugin.actionscript.as3project
 				if (flashDevelopProjectFile)
 				{
 					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath)));
+					return;
+				}
+				flashDevelopProjectFile = model.haxeCore.testHaxe(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath)));
 					return;
 				}
 			}
@@ -381,7 +387,8 @@ package actionScripts.plugin.actionscript.as3project
 			var projectTemplateName:String = event.templateDir.fileBridge.name;
 			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
+				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void

@@ -14,6 +14,8 @@ package actionScripts.impls
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.languageServer.GroovyLanguageServerManager;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.languageServer.HaxeLanguageServerManager;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
@@ -199,6 +201,12 @@ package actionScripts.impls
 				var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
 				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(grailsProject);
 				manager = groovyManager;
+			}
+			if(project is HaxeProjectVO)
+			{
+				var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
+				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
+				manager = haxeManager;
 			}
 			managers.push(manager);
 			manager.addEventListener(Event.INIT, manager_initHandler);
