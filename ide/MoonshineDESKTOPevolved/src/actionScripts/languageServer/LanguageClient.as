@@ -660,6 +660,8 @@ package actionScripts.languageServer
 			sendNotification(METHOD_INITIALIZED, params);
 
 			this.dispatchEvent(new Event(Event.INIT));
+
+			sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, { settings: {} });
 			
 			var editors:ArrayCollection = _model.editors;
 			var count:int = editors.length;
