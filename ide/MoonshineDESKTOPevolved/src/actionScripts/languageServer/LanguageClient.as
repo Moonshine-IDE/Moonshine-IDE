@@ -116,6 +116,7 @@ package actionScripts.languageServer
 		private static const METHOD_TEXT_DOCUMENT__REFERENCES:String = "textDocument/references";
 		private static const METHOD_TEXT_DOCUMENT__RENAME:String = "textDocument/rename";
 		private static const METHOD_TEXT_DOCUMENT__CODE_ACTION:String = "textDocument/codeAction";
+		private static const METHOD_TEXT_DOCUMENT__CODE_LENS:String = "textDocument/codeLens";
 		private static const METHOD_WORKSPACE__APPLY_EDIT:String = "workspace/applyEdit";
 		private static const METHOD_WORKSPACE__SYMBOL:String = "workspace/symbol";
 		private static const METHOD_WORKSPACE__EXECUTE_COMMAND:String = "workspace/executeCommand";
@@ -123,6 +124,7 @@ package actionScripts.languageServer
 		private static const METHOD_WINDOW__LOG_MESSAGE:String = "window/logMessage";
 		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
+		private static const METHOD_CLIENT__UNREGISTER_CAPABILITY:String = "client/unregisterCapability";
 		private static const METHOD_TELEMETRY__EVENT:String = "telemetry/event";
 		private static const METHOD_COMPLETION_ITEM__RESOLVE:String = "completionItem/resolve";
 
@@ -226,6 +228,7 @@ package actionScripts.languageServer
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
 		private var _savedDiagnostics:Object = {};
+		private var _idToRequest:Object = {};
 
 		protected var _notificationListeners:Object = {};
 
@@ -248,6 +251,8 @@ package actionScripts.languageServer
 		private var supportedCommands:Vector.<String> = new <String>[];
 		private var supportsRename:Boolean = false;
 		private var supportsCodeAction:Boolean = false;
+		private var supportsCodeLens:Boolean = false;
+		private var supportsExecuteCommand:Boolean = false;
 
 		public function stop():void
 		{
@@ -357,6 +362,8 @@ package actionScripts.languageServer
 				contentPart.params = params;
 			}
 			var contentJSON:String = JSON.stringify(contentPart);
+
+			_idToRequest[id] = contentPart;
 
 			HELPER_BYTES.clear();
 			HELPER_BYTES.writeUTFBytes(contentJSON);
@@ -515,11 +522,11 @@ package actionScripts.languageServer
 					},
 					symbol:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					executeCommand:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					workspaceFolders: false,
 					configuration: false
@@ -535,7 +542,7 @@ package actionScripts.languageServer
 					},
 					completion:
 					{
-						dynamicRegistration: false,
+						dynamicRegistration: true,
 						completionItem:
 						{
 							snippetSupport: false,
@@ -551,12 +558,12 @@ package actionScripts.languageServer
 					},
 					hover:
 					{
-						dynamicRegistration: false,
+						dynamicRegistration: true,
 						contentFormat: ["plaintext"]
 					},
 					signatureHelp:
 					{
-						dynamicRegistration: false,
+						dynamicRegistration: true,
 						signatureInformation:
 						{
 							documentationFormat: ["plaintext"]
@@ -564,7 +571,7 @@ package actionScripts.languageServer
 					},
 					references:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					documentHighlight:
 					{
@@ -572,7 +579,7 @@ package actionScripts.languageServer
 					},
 					documentSymbol:
 					{
-						dynamicRegistration: false,
+						dynamicRegistration: true,
 						hierarchicalDocumentSymbolSupport: false,
 						symbolKind:
 						{
@@ -593,11 +600,11 @@ package actionScripts.languageServer
 					},
 					definition:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					typeDefinition:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					implementation:
 					{
@@ -605,7 +612,7 @@ package actionScripts.languageServer
 					},
 					codeAction:
 					{
-						dynamicRegistration: false,
+						dynamicRegistration: true,
 						codeActionLiteralSupport:
 						{
 							codeActionKind:
@@ -628,7 +635,7 @@ package actionScripts.languageServer
 					},
 					rename:
 					{
-						dynamicRegistration: false
+						dynamicRegistration: true
 					},
 					publishDiagnostics:
 					{
@@ -753,7 +760,7 @@ package actionScripts.languageServer
 				}
 				if(_contentLength == -1)
 				{
-					trace("Language client failed to parse Content-Length header");
+					trace("Error: Language client failed to parse Content-Length header");
 					return;
 				}
 				HELPER_BYTES.clear();
@@ -777,7 +784,7 @@ package actionScripts.languageServer
 			}
 			catch(error:Error)
 			{
-				trace("invalid JSON");
+				trace("Error: Language client failed to parse JSON.");
 				return;
 			}
 			parseMessage(object);
@@ -868,12 +875,18 @@ package actionScripts.languageServer
 			{
 				var result:Object = object.result;
 				var requestID:int = getMessageID(object);
+				var originalRequest:Object = _idToRequest[requestID];
+				delete _idToRequest[requestID];
 				if(_initializeID != -1 && _initializeID == requestID)
 				{
 					_initializeID = -1;
 					if(FIELD_ERROR in object)
 					{
-						trace("Error in language server. Initialize failed. Code: " + object.error.code + ", Message: " + object.error.message);
+						trace("Error: Language server request failed. Method: " + originalRequest.method + ", Error Code: " + object.error.code + ", Message: " + object.error.message);
+						if(debugMode)
+						{
+							trace("Failed Request: " + JSON.stringify(originalRequest));
+						}
 						cleanup();
 						sendExit();
 						return;
@@ -888,7 +901,11 @@ package actionScripts.languageServer
 				}
 				else if(FIELD_ERROR in object)
 				{
-					trace("Error in language server. Code: " + object.error.code + ", Message: " + object.error.message);
+					trace("Error: Language server request failed. Method: " + originalRequest.method + ", Error Code: " + object.error.code + ", Message: " + object.error.message);
+					if(debugMode)
+					{
+						trace("Failed Request: " + JSON.stringify(originalRequest));
+					}
 				}
 				else if(requestID in _resolveCompletionLookup) //resolve completion
 				{
@@ -998,7 +1015,13 @@ package actionScripts.languageServer
 				}
 				case METHOD_CLIENT__REGISTER_CAPABILITY:
 				{
-					//TODO: implement this
+					client__registerCapability(object)
+					sendResponse(object.id, {});
+					break;
+				}
+				case METHOD_CLIENT__UNREGISTER_CAPABILITY:
+				{
+					client__unregisterCapability(object)
 					sendResponse(object.id, {});
 					break;
 				}
@@ -1019,7 +1042,7 @@ package actionScripts.languageServer
 			}
 			if(!found)
 			{
-				trace("Unknown language server method:", method);
+				trace("Error: Unknown method requested by language server. Method: " + method);
 			}
 		}
 
@@ -1031,7 +1054,7 @@ package actionScripts.languageServer
 				capabilities.completionProvider.hasOwnProperty("resolveProvider") &&
 				capabilities.completionProvider.resolveProvider;
 			this.supportsHover = capabilities && (capabilities.hoverProvider as Boolean);
-			this.supportsSignatureHelp = capabilities && (capabilities.signatureHelpProvider !== undefined);
+			this.supportsSignatureHelp = capabilities && capabilities.signatureHelpProvider !== undefined;
 			this.supportsGotoDefinition = capabilities && (capabilities.definitionProvider as Boolean);
 			this.supportsGotoTypeDefinition = capabilities && capabilities.typeDefinitionProvider !== false && capabilities.typeDefinitionProvider !== undefined;
 			this.supportsReferences = capabilities && (capabilities.referencesProvider as Boolean);
@@ -1039,6 +1062,7 @@ package actionScripts.languageServer
 			this.supportsWorkspaceSymbols = capabilities && (capabilities.workspaceSymbolProvider as Boolean);
 			this.supportsRename = capabilities && capabilities.renameProvider !== false && capabilities.renameProvider !== undefined;
 			this.supportsCodeAction = capabilities && capabilities.codeActionProvider !== false && capabilities.codeActionProvider !== undefined;
+			this.supportsCodeLens = capabilities && capabilities.codeLensProvider !== undefined;
 			if(capabilities && capabilities.executeCommandProvider !== undefined)
 			{
 				this.supportedCommands = Vector.<String>(capabilities.executeCommandProvider.commands);
@@ -1345,6 +1369,110 @@ package actionScripts.languageServer
 			}
 			
 			Alert.show(message);
+		}
+
+		private function updateRegisteredCapability(jsonObject:Object, enable:Boolean):void
+		{
+			var id:String = jsonObject.id;
+			var method:String = jsonObject.method;
+			switch(method)
+			{
+				case METHOD_WORKSPACE__SYMBOL:
+				{
+					supportsWorkspaceSymbols = enable;
+					break;
+				}
+				case METHOD_WORKSPACE__EXECUTE_COMMAND:
+				{
+					if(enable)
+					{
+						this.supportedCommands = Vector.<String>(jsonObject.registerOptions.commands);
+					}
+					else
+					{
+						this.supportedCommands = new <String>[];
+					}
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__CODE_ACTION:
+				{
+					supportsCodeAction = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__CODE_LENS:
+				{
+					supportsCodeLens = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__COMPLETION:
+				{
+					supportsCompletion = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__DEFINITION:
+				{
+					supportsGotoDefinition = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL:
+				{
+					supportsDocumentSymbols = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__HOVER:
+				{
+					supportsHover = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__REFERENCES:
+				{
+					supportsReferences = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__RENAME:
+				{
+					supportsRename = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__SIGNATURE_HELP:
+				{
+					supportsSignatureHelp = enable;
+					break;
+				}
+				case METHOD_TEXT_DOCUMENT__TYPE_DEFINITION:
+				{
+					supportsGotoTypeDefinition = enable;
+					break;
+				}
+				default:
+				{
+					trace("Error: Failed to update language server capability. Unknown method: " + method);
+				}
+			}
+		}
+
+		private function client__registerCapability(jsonObject:Object):void
+		{
+			var regCapabilityParams:Object = jsonObject.params;
+			var jsonRegistrations:Array = regCapabilityParams.registrations as Array;
+			var regCount:int = jsonRegistrations.length;
+			for(var i:int = 0; i < regCount; i++)
+			{
+				var jsonRegistration:Object = jsonRegistrations[i];
+				updateRegisteredCapability(jsonRegistration, true);
+			}
+		}
+
+		private function client__unregisterCapability(jsonObject:Object):void
+		{
+			var regCapabilityParams:Object = jsonObject.params;
+			var jsonRegistrations:Array = regCapabilityParams.registrations as Array;
+			var regCount:int = jsonRegistrations.length;
+			for(var i:int = 0; i < regCount; i++)
+			{
+				var jsonRegistration:Object = jsonRegistrations[i];
+				updateRegisteredCapability(jsonRegistration, false);
+			}
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
