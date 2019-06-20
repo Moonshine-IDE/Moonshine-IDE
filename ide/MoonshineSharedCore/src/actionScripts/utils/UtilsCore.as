@@ -62,6 +62,7 @@ package actionScripts.utils
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
 	public class UtilsCore 
 	{
@@ -206,6 +207,14 @@ package actionScripts.utils
 			}
 			
 			return false;
+		}
+		
+		/**
+		 * Determines if a project is Lime type
+		 */
+		public static function isLime(project:HaxeProjectVO):Boolean
+		{
+			return project.haxeOutput.platform == HaxeOutputVO.PLATFORM_LIME;
 		}
 		
 		/**

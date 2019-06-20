@@ -7,6 +7,9 @@ package actionScripts.plugin.haxe.hxproject.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.utils.SerializeUtil;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
+	import actionScripts.utils.UtilsCore;
 
 	public class HaxeImporter extends FlashDevelopImporterBase
 	{
@@ -47,7 +50,6 @@ package actionScripts.plugin.haxe.hxproject.importer
             }
 
 			var project:HaxeProjectVO = new HaxeProjectVO(projectFolder, projectName);
-			//project.menuType = ProjectMenuTypes.HAXE;
 
 			project.projectFile = settingsFileLocation;
 			
@@ -59,9 +61,96 @@ package actionScripts.plugin.haxe.hxproject.importer
 				data = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
 				stream.close();
 			}
+			
+			// Parse XML file
+            project.classpaths.length = 0;
+            project.targets.length = 0;
+			
+            parsePaths(data.compileTargets.compile, project.targets, project, "path");
+            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");
+			
+			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+			
+			if (project.hiddenPaths.length > 0 && project.projectFolder)
+			{
+				project.projectFolder.updateChildren();
+			}
 
-			var separator:String = projectFolder.fileBridge.separator;
-			project.sourceFolder = projectFolder.resolvePath("src");
+            project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
+            project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
+            project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+
+            project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
+
+			if (project.targets.length > 0)
+			{
+				var target:FileLocation = project.targets[0];
+				
+				// determine source folder path
+				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + File.separator, "");
+				var pathSplit:Array = substrPath.split(File.separator);
+				// remove the last class file name
+				pathSplit.pop();
+				var finalPath:String = project.folderLocation.fileBridge.nativePath;
+				// loop through array if source folder level is
+				// deeper more than 1 level
+				for (var j:int=0; j < pathSplit.length; j++)
+				{
+					finalPath += File.separator + pathSplit[j];
+				}
+				
+				// even before deciding, go for some more checks -
+				// which needs in case user used 'set as default application'
+				// to a file exists in different path
+				for each (var i:FileLocation in project.classpaths)
+				{
+					if ((finalPath + File.separator).indexOf(i.fileBridge.nativePath + File.separator) != -1) project.sourceFolder = i;
+				}
+				
+				// if yet not decided from above approach
+				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
+			}
+			else if (project.classpaths.length > 0)
+			{
+				// its possible that a project do not have any default application (project.targets[0])
+				// i.e. library project where no default application maintains
+				// we shall try to select the source folder based on its classpaths
+				for each (var k:FileLocation in project.classpaths)
+				{
+					if (k.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + File.separator) != -1) 
+					{
+						project.sourceFolder = k;
+						break;
+					}
+				}
+			}
+
+            project.testMovie = data.options.option.@testMovie;
+
+            project.buildOptions.parse(data.build);
+
+            project.haxeOutput.parse(data.output, project);
+
+			project.isLime = UtilsCore.isLime(project);
+			
+			if (project.haxeOutput.platform == "")
+			{
+				project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+			}
+			
+			if (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			{
+                project.testMovieCommand = data.options.option.@testMovieCommand;
+			}
+			
+			var html:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
+			if (html) project.htmlPath = new FileLocation(html);
+			
+			var customHtml:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
+			if (customHtml) project.customHTMLPath = customHtml;
+			
+			UtilsCore.setProjectMenuType(project);
 
 			return project;
 		}

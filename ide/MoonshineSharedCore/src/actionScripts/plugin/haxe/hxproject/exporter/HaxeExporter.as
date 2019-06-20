@@ -40,6 +40,50 @@ package actionScripts.plugin.haxe.hxproject.exporter
 		private static function toXML(project:HaxeProjectVO):XML
 		{
 			var projectXML:XML = <project/>;
+			var tmpXML:XML;
+			
+			// Get output node with relative paths
+			var outputXML: XML = project.haxeOutput.toXML(project.folderLocation);
+			projectXML.appendChild(outputXML);
+
+			projectXML.appendChild(exportPaths(project.classpaths, <classpaths />, <class />, project));
+			
+			projectXML.appendChild(project.buildOptions.toXML());
+		
+            tmpXML = <haxelib/>;
+            for each(var haxelib:String in project.haxelibs)
+            {
+                tmpXML.appendChild(<library name={haxelib}/>);
+            }
+			projectXML.appendChild(tmpXML);
+			
+			projectXML.appendChild(exportPaths(project.targets, <compileTargets />, <compile />, project));
+			projectXML.appendChild(exportPaths(project.hiddenPaths, <hiddenPaths />, <hidden />, project));
+			
+			tmpXML = <preBuildCommand />;
+			tmpXML.appendChild(project.prebuildCommands);
+			projectXML.appendChild(tmpXML);
+			
+			tmpXML = <postBuildCommand />;
+			tmpXML.appendChild(project.postbuildCommands);
+			tmpXML.@alwaysRun = SerializeUtil.serializeBoolean(project.postbuildAlways);
+			projectXML.appendChild(tmpXML);
+			
+			var options:XML = <options />;
+			var optionPairs:Object = {
+				showHiddenPaths		:	SerializeUtil.serializeBoolean(project.showHiddenPaths),
+				testMovie			:	SerializeUtil.serializeString(project.testMovie),
+				testMovieCommand	:	SerializeUtil.serializeString(project.testMovieCommand)
+			}
+			if (project.testMovieCommand && project.testMovieCommand != "") 
+			{
+				optionPairs.testMovieCommand = project.testMovieCommand;
+			}
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
+			projectXML.appendChild(options);
+            
+            //TODO: store this on HaxeProjectVO
+            projectXML.appendChild(<storage/>);
 
 			return projectXML;
 		}
