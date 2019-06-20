@@ -49,6 +49,7 @@ package actionScripts.languageServer
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.events.SaveFileEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.events.ProjectEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -76,6 +77,8 @@ package actionScripts.languageServer
 		private var _limeProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
+		private var _previousTargetPlatform:String = null;
+		private var _displayArguments:String = null;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -84,6 +87,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 
 			getProjectSettingsThenStartNativeProcess();
 		}
@@ -136,6 +140,7 @@ package actionScripts.languageServer
 		protected function dispose():void
 		{
 			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			cleanupLanguageClient();
 		}
 
@@ -166,12 +171,14 @@ package actionScripts.languageServer
 		
 		private function getProjectSettings():void
 		{
+			this._displayArguments = "";
+
 			var sdkPath:String = getProjectSDKPath(_project, _model);
 			var limeFileName:String = (Settings.os == "win") ? "lime.exe" : "lime";
 			var cmdFile:File = new File(sdkPath).resolvePath(limeFileName);
 			var processArgs:Vector.<String> = new <String>[
 				"display",
-				"html5"
+				_project.targetPlatform
 			];
 
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -194,6 +201,7 @@ package actionScripts.languageServer
 			}
 			var haxePath:String = getProjectSDKPath(_project, _model);
 			_previousHaxePath = haxePath;
+			_previousTargetPlatform = _project.targetPlatform;
 			if(!_model.nodePath)
 			{
 				return;
@@ -238,8 +246,6 @@ package actionScripts.languageServer
 			trace("Haxe language server workspace root: " + project.folderPath);
 			trace("Haxe language server SDK: " + sdkPath);
 
-
-		trace("displayArguments:", displayArguments);
 			var sendMethodResults:Boolean = false;
 			var options:Object = 
 			{
@@ -332,7 +338,7 @@ package actionScripts.languageServer
 			{
 				var output:IDataInput = _limeProcess.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
-				startNativeProcess(data.split("\n"));
+				this._displayArguments += data;
 			}
 		}
 		
@@ -342,14 +348,16 @@ package actionScripts.languageServer
 			_limeProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeProcess_exitHandler);
 			_limeProcess.exit();
 			_limeProcess = null;
-		}
 
-		private function haxePathSaveHandler(event:FilePluginEvent):void
-		{
-			//restart only when the path has changed
-			if(getProjectSDKPath(_project, _model) != _previousHaxePath)
+			if(event.exitCode == 0)
 			{
-				restartLanguageServer();
+				startNativeProcess(this._displayArguments.split("\n"));
+			}
+			else
+			{
+				ConsoleOutputter.formatOutput(
+					"lime display exited with code: " + event.exitCode,
+					"error");
 			}
 		}
 
@@ -368,6 +376,26 @@ package actionScripts.languageServer
 			}
 
 			restartLanguageServer();
+		}
+
+		private function saveProjectSettingsHandler(event:ProjectEvent):void
+		{
+			var needsRestart:Boolean = false;
+
+			if(!needsRestart && getProjectSDKPath(_project, _model) != _previousHaxePath)
+			{
+				needsRestart = true;
+			}
+
+			if(!needsRestart && _project.targetPlatform != _previousTargetPlatform)
+			{
+				needsRestart = true;
+			}
+
+			if(needsRestart)
+			{
+				restartLanguageServer();
+			}
 		}
 
 		private function languageClient_initHandler(event:Event):void
