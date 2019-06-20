@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.4.0]
+
+### Summary
+
+### Added
+* Added ability to recognize pure Adobe AIR SDK.
+* Grails: Added rocognizing multiple default source folders.
+* Java Gradle: Add basic settings configuration. 
+* Menu: Added in menu File -> Open/Import Project
+
+### Changed
+* Remember last opened path for file chooser.
+* Change shortcut for opening File to CTRL+O (Windows), CMD+O (macOS).
+* Change shortcut for **Organize Imports** to CTRL+SHIFT+I (Windows), CMD+SHIFT+I (macOS).
+
+### Fixed
+* Fixed issue where selected text ommitted last character.
+* Fixed issue where Mac OS non sandbox IDE was not notified properly with newest installed SDK.
+* Fixed issue with failing CTRL/CMD + click on method. 
+
 ## Moonshine IDE [2.3.0]
 
 ### Summary
