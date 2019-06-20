@@ -29,6 +29,11 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import mx.collections.ArrayCollection;
+	import actionScripts.plugin.settings.vo.NameValuePair;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -36,10 +41,19 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
 		public static const TEST_MOVIE_OPEN_DOCUMENT:String = "OpenDocument";
 
+		public static const PLATFORM_HTML5:String = "html5";
+		public static const PLATFORM_WINDOWS:String = "windows";
+		public static const PLATFORM_MAC:String = "mac";
+		public static const PLATFORM_LINUX:String = "linux";
+		public static const PLATFORM_ANDROID:String = "android";
+		public static const PLATFORM_IOS:String = "ios";
+		public static const PLATFORM_TVOS:String = "tvos";
+		public static const PLATFORM_FLASH:String = "flash";
+		public static const PLATFORM_AIR:String = "air";
+
 		public var haxeOutput:HaxeOutputVO;
 		public var buildOptions:HaxeBuildOptions;
-		public var htmlPath:FileLocation;
-		public var customHTMLPath:String;
+		public var targetPlatform:String;
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var haxelibs:Vector.<String> = new Vector.<String>();
@@ -57,48 +71,21 @@ package actionScripts.plugin.haxe.hxproject.vo
 		
 		private var additional:StringSetting;
 		
-		private var _urlToLaunch:String;
-
-		public function get urlToLaunch():String
+		public function get platformTypes():ArrayCollection
 		{
-			if (!_urlToLaunch)
-			{
-                    var html:FileLocation = folderLocation.fileBridge.resolvePath(folderLocation.fileBridge.separator
-									+ "bin-debug" + folderLocation.fileBridge.separator +
-                                    haxeOutput.path.fileBridge.name.split(".")[0] + ".html");
-                    htmlPath = html;
-
-                    return html.fileBridge.nativePath;
-			}
-
-			return _urlToLaunch;
-		}
-
-		public function set urlToLaunch(value:String):void
-		{
-			if (value)
-			{
-                _urlToLaunch = value;
-            }
-			else
-			{
-
-			}
-		}
-		
-		public function get outputPath():String
-		{
-			var tmpPath:String = this.folderLocation.fileBridge.getRelativePath(haxeOutput.path.fileBridge.parent);
-			if (!tmpPath) tmpPath = haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
-			return tmpPath;
-		}
-
-		public function set outputPath(value:String):void
-		{
-			if (!value || value == "") return;
+			var tmpCollection:ArrayCollection = new ArrayCollection([
+					PLATFORM_HTML5,
+					PLATFORM_WINDOWS,
+					PLATFORM_MAC,
+					PLATFORM_LINUX,
+					PLATFORM_ANDROID,
+					PLATFORM_IOS,
+					PLATFORM_TVOS,
+					PLATFORM_AIR,
+					PLATFORM_FLASH,
+				]);
 			
-			var fileNameSplit:Array = haxeOutput.path.fileBridge.nativePath.split(folderLocation.fileBridge.separator);
-			haxeOutput.path = new FileLocation(value + folderLocation.fileBridge.separator + fileNameSplit[fileNameSplit.length - 1]);
+			return tmpCollection;
 		}
 
 		public function HaxeProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
@@ -107,6 +94,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 			
 			haxeOutput = new HaxeOutputVO();
 			buildOptions = new HaxeBuildOptions();
+			targetPlatform = PLATFORM_HTML5;
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
@@ -141,18 +129,26 @@ package actionScripts.plugin.haxe.hxproject.vo
 				return 0;
 			}
 		}
+		
+		override public function saveSettings():void
+		{
+			HaxeExporter.export(this);
+		}
 
 		private function getSettingsForLimeProject():Vector.<SettingsWrapper>
 		{
-			var projectFileSetting:StaticLabelSetting = new StaticLabelSetting("Edit project.xml to customize build options for OpenFL and Lime projects.", 14, 0x686868);
-
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
-                            projectFileSetting
+                            new StaticLabelSetting("Edit project.xml to customize build options for OpenFL and Lime projects.", 14, 0x686868)
                         ])
-                )
+                ),
+                new SettingsWrapper("Run",
+                        Vector.<ISetting>([
+                            new DropDownListSetting(this, "targetPlatform", "Platform", platformTypes)
+                        ])
+                ),
             ]);
 
 			return settings;

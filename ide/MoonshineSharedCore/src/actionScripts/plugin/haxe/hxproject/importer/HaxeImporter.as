@@ -144,12 +144,6 @@ package actionScripts.plugin.haxe.hxproject.importer
                 project.testMovieCommand = data.options.option.@testMovieCommand;
 			}
 			
-			var html:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
-			if (html) project.htmlPath = new FileLocation(html);
-			
-			var customHtml:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
-			if (customHtml) project.customHTMLPath = customHtml;
-			
 			UtilsCore.setProjectMenuType(project);
 
 			return project;
