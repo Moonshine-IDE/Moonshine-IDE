@@ -47,6 +47,8 @@ package actionScripts.languageServer
     import flash.utils.IDataInput;
 
     import no.doomsday.console.ConsoleUtil;
+    import actionScripts.events.SaveFileEvent;
+    import actionScripts.factory.FileLocation;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -71,6 +73,7 @@ package actionScripts.languageServer
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
+		private var _limeProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
 
@@ -80,9 +83,9 @@ package actionScripts.languageServer
 
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
-			//_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, haxePathSaveHandler);
+			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 
-			startNativeProcess();
+			getProjectSettingsThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -132,7 +135,7 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
-			//_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, haxePathSaveHandler);
+			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			cleanupLanguageClient();
 		}
 
@@ -148,8 +151,41 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
 		}
+		
+		private function getProjectSettingsThenStartNativeProcess():void
+		{
+			if(_project.isLime)
+			{
+				getProjectSettings();
+			}
+			else
+			{
+				startNativeProcess(["build.hxml"]);
+			}
+		}
+		
+		private function getProjectSettings():void
+		{
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			var limeFileName:String = (Settings.os == "win") ? "lime.exe" : "lime";
+			var cmdFile:File = new File(sdkPath).resolvePath(limeFileName);
+			var processArgs:Vector.<String> = new <String>[
+				"display",
+				"html5"
+			];
 
-		private function startNativeProcess():void
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+			
+			_limeProcess = new NativeProcess();
+			_limeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeProcess_standardOutputDataHandler);
+			_limeProcess.addEventListener(NativeProcessExitEvent.EXIT, limeProcess_exitHandler);
+			_limeProcess.start(processInfo);
+		}
+
+		private function startNativeProcess(displayArguments:Array):void
 		{
 			if(_languageServerProcess)
 			{
@@ -175,7 +211,8 @@ package actionScripts.languageServer
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var scriptFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_SCRIPT_PATH);
-			processArgs.push("--inspect");
+			//uncomment to allow devtools debugging of the Node.js script
+			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
 			processInfo.executable = cmdFile;
@@ -186,10 +223,10 @@ package actionScripts.languageServer
 			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.start(processInfo);
 
-			initializeLanguageServer(haxePath);
+			initializeLanguageServer(haxePath, displayArguments);
 		}
 		
-		private function initializeLanguageServer(sdkPath:String):void
+		private function initializeLanguageServer(sdkPath:String, displayArguments:Array):void
 		{
 			if(_languageClient)
 			{
@@ -201,6 +238,8 @@ package actionScripts.languageServer
 			trace("Haxe language server workspace root: " + project.folderPath);
 			trace("Haxe language server SDK: " + sdkPath);
 
+
+		trace("displayArguments:", displayArguments);
 			var sendMethodResults:Boolean = false;
 			var options:Object = 
 			{
@@ -209,7 +248,7 @@ package actionScripts.languageServer
 					arguments: [/*"-v"*/],
 					env: {}
 				},
-				displayArguments: ["build.hxml"],
+				displayArguments: displayArguments,
 				haxelibConfig: {},
 				sendMethodResults: sendMethodResults
 			};
@@ -251,7 +290,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				startNativeProcess();
+				getProjectSettingsThenStartNativeProcess();
 			}
 		}
 
@@ -283,8 +322,26 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
-				startNativeProcess();
+				getProjectSettingsThenStartNativeProcess();
 			}
+		}
+		
+		private function limeProcess_standardOutputDataHandler(e:ProgressEvent):void 
+		{
+			if(_limeProcess)
+			{
+				var output:IDataInput = _limeProcess.standardOutput;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				startNativeProcess(data.split("\n"));
+			}
+		}
+		
+		private function limeProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_limeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeProcess_standardOutputDataHandler);
+			_limeProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeProcess_exitHandler);
+			_limeProcess.exit();
+			_limeProcess = null;
 		}
 
 		private function haxePathSaveHandler(event:FilePluginEvent):void
@@ -294,6 +351,23 @@ package actionScripts.languageServer
 			{
 				restartLanguageServer();
 			}
+		}
+
+		private function fileSavedHandler(event:SaveFileEvent):void
+		{
+			var savedFile:FileLocation = event.file;
+			if(savedFile.name != "project.xml")
+			{
+				return;
+			}
+
+			var savedFileFolder:FileLocation = savedFile.fileBridge.parent;
+			if(savedFileFolder.fileBridge.nativePath != _project.folderLocation.fileBridge.nativePath)
+			{
+				return;
+			}
+
+			restartLanguageServer();
 		}
 
 		private function languageClient_initHandler(event:Event):void
