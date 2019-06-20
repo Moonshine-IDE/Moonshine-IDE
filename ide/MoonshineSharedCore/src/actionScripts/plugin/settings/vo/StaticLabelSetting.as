@@ -25,16 +25,17 @@ package actionScripts.plugin.settings.vo
 	public class StaticLabelSetting extends AbstractSetting
 	{
 		[Bindable] public var fontSize:int;
+		[Bindable] public var fontColor:uint;
 		
 		public var fakeSetting:String = "";
 		
-		public function StaticLabelSetting(label:String, fontSize:int=24)
+		public function StaticLabelSetting(label:String, fontSize:int=24, fontColor:uint=0xe252d3)
 		{
 			super();
 			this.name = "fakeSetting";
 			this.label = label;
 			this.fontSize = fontSize;
-			
+			this.fontColor = fontColor;
 		}
 		
 		override public function get renderer():IVisualElement

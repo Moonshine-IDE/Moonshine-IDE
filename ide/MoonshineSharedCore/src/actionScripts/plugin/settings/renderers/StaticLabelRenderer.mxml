@@ -48,6 +48,6 @@
 		styleName="uiText"
 		fontSize="{setting.fontSize}"
 		kerning="on"
-		color="0xe252d3" />
+		color="{setting.fontColor}"/>
 	
 </s:VGroup>
