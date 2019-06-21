@@ -1,4 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
 //
 //  Licensed to the Apache Software Foundation (ASF) under one or more
 //  contributor license agreements.  See the NOTICE file distributed with
@@ -94,10 +93,10 @@ package actionScripts.utils
 							}
 							
 							// sort the items
-							if (tmpRepository.children.length > 0)
+							/*if (tmpRepository.children.length > 0)
 							{
 								tmpRepository.children.sortOn("url", Array.CASEINSENSITIVE);
-							}
+							}*/
 						}
 						else
 						{
