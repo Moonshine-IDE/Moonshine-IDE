@@ -151,10 +151,10 @@ package actionScripts.plugins.versionControl
 				}
 				
 				// add sort
-				if (gitMetaRepository.children.length > 0)
+				/*if (gitMetaRepository.children.length > 0)
 				{
 					gitMetaRepository.children.sortOn("url", Array.CASEINSENSITIVE);
-				}
+				}*/
 				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
 				return true;
