@@ -64,7 +64,7 @@ package actionScripts.plugins.haxe
 
         override public function get description():String
         {
-            return "Haxe Build Plugin. Esc exits.";
+            return "Haxe Build Plugin.";
         }
 
         public function get haxePath():String
