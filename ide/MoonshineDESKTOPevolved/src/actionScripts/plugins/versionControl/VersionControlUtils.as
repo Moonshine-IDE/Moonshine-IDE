@@ -161,14 +161,7 @@ package actionScripts.plugins.versionControl
 			}
 			else
 			{
-				if (ofRepository.type == VersionControlTypes.GIT)
-				{
-					ofRepository.children = null;
-				}
-				else if (ofRepository.type == VersionControlTypes.SVN)
-				{
-					ofRepository.children = [];
-				}
+				setStateOfRepositoryIfNotExists(ofRepository);
 			}
 			
 			SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
@@ -208,6 +201,7 @@ package actionScripts.plugins.versionControl
 				var tmpMessage:String = "Following projects not found. You can remove the entries if the project has been deleted:\n";
 				for each (repo in nonExistingRepositories)
 				{
+					setStateOfRepositoryIfNotExists(repo);
 					if (repo.pathToDownloaded)
 					{
 						tmpMessage += "\n1. "+ repo.pathToDownloaded;
@@ -244,6 +238,18 @@ package actionScripts.plugins.versionControl
 			tmpCollection.addItem(tmpRepository);
 			
 			return tmpCollection;
+		}
+		
+		private static function setStateOfRepositoryIfNotExists(repo:RepositoryItemVO):void
+		{
+			if (repo.type == VersionControlTypes.GIT || repo.type == VersionControlTypes.XML)
+			{
+				repo.children = null;
+			}
+			else if (repo.type == VersionControlTypes.SVN)
+			{
+				repo.children = [];
+			}
 		}
 	}
 }
