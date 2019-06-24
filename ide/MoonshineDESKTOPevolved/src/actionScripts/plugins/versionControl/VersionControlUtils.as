@@ -180,6 +180,7 @@ package actionScripts.plugins.versionControl
 				if (repo.type == VersionControlTypes.XML)
 				{
 					ownerRepository = getRepositoryItemByUdid(repo.udid);
+					if (ownerRepository.type == VersionControlTypes.SVN) ownerRepository = selectedRepository;
 					if (ownerRepository && ownerRepository.pathToDownloaded)
 					{
 						// test the path existence
