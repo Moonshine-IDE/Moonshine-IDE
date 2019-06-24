@@ -49,7 +49,7 @@ package actionScripts.plugins.as3project
 		
 		override public function get name():String			{ return "Ant Build Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Ant Build Plugin. Esc exits."; }
+		override public function get description():String	{ return "Ant Build Plugin."; }
 		
 		public var certificateName:String;
 		

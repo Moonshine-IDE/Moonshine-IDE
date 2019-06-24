@@ -82,7 +82,7 @@ package actionScripts.plugins.grails
 
         override public function get description():String
         {
-            return "Grails Build Plugin. Esc exits.";
+            return "Grails Build Plugin.";
         }
 
         public function get grailsPath():String

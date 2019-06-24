@@ -83,7 +83,7 @@ package actionScripts.plugins.ant
 
         override public function get description():String
         {
-            return "Apache Ant® Build Plugin. Esc exits.";
+            return "Apache Ant® Build Plugin.";
         }
 
         private var cmdFile:File;

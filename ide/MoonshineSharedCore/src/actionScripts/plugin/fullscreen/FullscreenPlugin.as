@@ -33,7 +33,7 @@ package actionScripts.plugin.fullscreen
 		
 		override public function get name():String			{ return "Fullscreen Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Show edit in fullscreen. Esc exits."; }
+		override public function get description():String	{ return "Show edit in fullscreen."; }
 		
 		override public function activate():void
 		{

@@ -78,7 +78,7 @@ package actionScripts.plugins.git
 		
 		override public function get name():String			{ return "Git"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Git Plugin. Esc exits."; }
+		override public function get description():String	{ return "Git Plugin."; }
 		
 		private var _gitBinaryPathOSX:String;
 		public function get gitBinaryPathOSX():String

@@ -30,7 +30,7 @@ package actionScripts.plugins.run
 
         override public function get description():String
         {
-            return "Java build plugin. Esc exits.";
+            return "Java build plugin.";
         }
 
         override public function activate():void

@@ -60,7 +60,7 @@ package actionScripts.plugins.startup
 	{
 		override public function get name():String			{ return "Startup Helper Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Startup Helper Plugin. Esc exits."; }
+		override public function get description():String	{ return "Startup Helper Plugin."; }
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		

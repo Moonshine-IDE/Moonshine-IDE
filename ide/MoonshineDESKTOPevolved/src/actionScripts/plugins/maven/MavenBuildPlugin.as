@@ -58,7 +58,7 @@ package actionScripts.plugins.maven
 
         override public function get description():String
         {
-            return "Apache Maven® Build Plugin. Esc exits.";
+            return "Apache Maven® Build Plugin.";
         }
 
         public function get mavenPath():String
