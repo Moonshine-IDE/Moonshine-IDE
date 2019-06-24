@@ -1183,6 +1183,58 @@ package actionScripts.utils
 			
 			return null;
         }
+
+        public static function getHaxeBinPath():String
+        {
+			if (!model.haxePath || model.haxePath == "")
+			{
+				return null;
+			}
+
+			var separator:String = model.fileCore.separator;
+            var haxeLocation:FileLocation = new FileLocation(model.haxePath);
+			
+			if (!haxeLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return haxeLocation.resolvePath("haxe.exe").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(haxeLocation.resolvePath("haxe").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
+
+        public static function getLimeBinPath():String
+        {
+			if (!model.haxePath || model.haxePath == "")
+			{
+				return null;
+			}
+
+			var separator:String = model.fileCore.separator;
+            var haxeLocation:FileLocation = new FileLocation(model.haxePath);
+			
+			if (!haxeLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return haxeLocation.resolvePath("lime.exe").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(haxeLocation.resolvePath("lime").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
 		
 		public static function isDefaultSDKAvailable():Boolean
 		{

@@ -18,18 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.haxe
 {
-    import actionScripts.interfaces.ICustomCommandRunProvider;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.plugin.core.compiler.HaxeBuildEvent;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.HelperUtils;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.ProjectVO;
 
     import flash.events.Event;
+    import flash.events.IOErrorEvent;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -157,26 +165,69 @@ package actionScripts.plugins.haxe
         {
             super.activate();
 
-			/*dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
-			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);*/
+			//dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
+			dispatcher.addEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
+			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
         }
 
         override public function deactivate():void
         {
             super.deactivate();
 
-			/*dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
-			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);*/
+			//dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
+			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
+			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
         }
 		
 		/*private function haxeBuildAndRunHandler(event:Event):void
 		{
-			this.start(new <String>[[UtilsCore.getHaxeBinPath()].join(" ")], model.activeProject.folderLocation);
+            var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
+            if (!project)
+            {
+                return;
+            }
+            if(project.isLime)
+            {
+			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "test", project.targetPlatform].join(" ")], model.activeProject.folderLocation);
+            }
+            else
+            {
+                error("Haxe build without Lime not implemented yet");
+            }
+		}*/
+		
+		private function haxeBuildDebugHandler(event:Event):void
+		{
+            var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
+            if (!project)
+            {
+                return;
+            }
+            if(project.isLime)
+            {
+			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+            }
+            else
+            {
+                error("Haxe build without Lime not implemented yet");
+            }
 		}
 		
 		private function haxeBuildReleaseHandler(event:Event):void
 		{
-			this.start(new <String>[[UtilsCore.getHaxeBinPath()].join(" ")], model.activeProject.folderLocation);
+            var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
+            if (!project)
+            {
+                return;
+            }
+            if(project.isLime)
+            {
+			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+            }
+            else
+            {
+                error("Haxe build without Lime not implemented yet");
+            }
 		}
 
 		override public function start(args:Vector.<String>, buildDirectory:*):void
@@ -239,7 +290,6 @@ package actionScripts.plugins.haxe
 				success("Haxe build has completed successfully.");
 			}
 
-
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
@@ -247,6 +297,6 @@ package actionScripts.plugins.haxe
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
-        }*/
+        }
 	}
 }

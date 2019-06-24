@@ -38,6 +38,7 @@ package actionScripts.ui.menu
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+    import actionScripts.plugin.core.compiler.HaxeBuildEvent;
 
     public class ProjectMenu
     {
@@ -310,6 +311,11 @@ package actionScripts.ui.menu
                 var resourceManager:IResourceManager = ResourceManager.getInstance();
 
                 haxeMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, HaxeBuildEvent.BUILD_DEBUG,
+                            'b', [Keyboard.COMMAND],
+                            'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
                 ]);
                 haxeMenu.forEach(makeDynamic);
             }
