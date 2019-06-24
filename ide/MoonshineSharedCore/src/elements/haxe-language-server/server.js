@@ -14539,10 +14539,14 @@ haxeLanguageServer.features.HoverFeature = class haxeLanguageServer_features_Hov
 	handleJsonRpc(params,token,resolve,reject,doc,offset) {
 		var _gthis = this;
 		this.context.callHaxeMethod("display/hover",{ file : haxeLanguageServer.helper.DocumentUriHelper.toFsPath(doc.uri), contents : doc.content, offset : offset},token,function(hover) {
-			var tmp = _gthis.printContent(hover);
-			var tmp1 = haxeLanguageServer.protocol.helper.Helper.getDocumentation(hover.item);
-			var tmp2 = _gthis.createHover(tmp,tmp1,hover.range);
-			resolve(tmp2);
+			if(hover == null) {
+				resolve(null);
+			} else {
+				var tmp = _gthis.printContent(hover);
+				var tmp1 = haxeLanguageServer.protocol.helper.Helper.getDocumentation(hover.item);
+				var tmp2 = _gthis.createHover(tmp,tmp1,hover.range);
+				resolve(tmp2);
+			}
 			return null;
 		},haxeLanguageServer.helper.ResponseErrorHelper.handler(reject));
 	}
@@ -14804,8 +14808,12 @@ haxeLanguageServer.features.SignatureHelpFeature = class haxeLanguageServer_feat
 		var _gthis = this;
 		var params1 = { file : haxeLanguageServer.helper.DocumentUriHelper.toFsPath(doc.uri), contents : doc.content, offset : doc.offsetAt(params.position), wasAutoTriggered : true};
 		this.context.callHaxeMethod("display/signatureHelp",params1,token,function(result) {
-			var tmp = _gthis.createSignatureHelp(result);
-			resolve(tmp);
+			if(result == null) {
+				resolve(null);
+			} else {
+				var tmp = _gthis.createSignatureHelp(result);
+				resolve(tmp);
+			}
 			return null;
 		},haxeLanguageServer.helper.ResponseErrorHelper.handler(reject));
 	}
@@ -15147,19 +15155,23 @@ haxeLanguageServer.features.completion.CompletionFeature = class haxeLanguageSer
 		var characterDelta = -wordPattern.matched(0).length;
 		var replaceRange = { start : { line : pos.line, character : pos.character + characterDelta}, end : params.position};
 		this.context.callHaxeMethod("display/completion",haxeParams,token,function(result) {
-			if(result.mode.kind != 4 && wasAutoTriggered && StringTools.endsWith(StringTools.trim(textBefore),"->")) {
+			var hasResult = result != null;
+			var mode = hasResult ? result.mode.kind : null;
+			if(mode != 4 && wasAutoTriggered && StringTools.endsWith(StringTools.trim(textBefore),"->")) {
 				resolve([]);
 				return null;
 			}
 			var importPosition = haxeLanguageServer.helper.ImportHelper.getImportPosition(doc);
 			var indent = doc.indentAt(params.position.line);
-			var data = { replaceRange : replaceRange, mode : result.mode, doc : doc, indent : indent, lineAfter : lineAfter, params : params, importPosition : importPosition, tokenContext : tokenContext, isResolve : false};
-			var displayItems = result.items;
+			var data = { replaceRange : mode == 3 ? result.replaceRange : replaceRange, mode : hasResult ? result.mode : null, doc : doc, indent : indent, lineAfter : lineAfter, params : params, importPosition : importPosition, tokenContext : tokenContext, isResolve : false};
+			var displayItems = hasResult ? result.items : [];
 			var items = [];
-			var items1 = _gthis.postfixCompletion.createItems(data,displayItems);
-			items = items.concat(items1);
-			var items2 = _gthis.expectedTypeCompletion.createItems(data);
-			items = items.concat(items2);
+			if(hasResult) {
+				var items1 = _gthis.postfixCompletion.createItems(data,displayItems);
+				items = items.concat(items1);
+				var items2 = _gthis.expectedTypeCompletion.createItems(data);
+				items = items.concat(items2);
+			}
 			var items3 = _gthis.createFieldKeywordItems(tokenContext,replaceRange,lineAfter);
 			items = items.concat(items3);
 			var resolveItems = function() {
