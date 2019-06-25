@@ -70,7 +70,7 @@ package actionScripts.plugin.syntax
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "groovy")
+			if (event.fileExtension == "groovy" || event.fileExtension == "gradle")
 			{
 				event.editor.setParserAndStyles(new GroovyLineParser(), formats);
 			}
