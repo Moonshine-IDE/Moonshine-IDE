@@ -63,7 +63,12 @@
 			
 			private function onProjectDebugStarted(event:StatusBarEvent):void
 			{
-				lblDebugging.text = event.notificationSuffix + event.projectName;
+				var debugText:String = event.projectName;
+				if(event.notificationSuffix)
+				{
+					debugText = event.notificationSuffix + debugText;
+				}
+				lblDebugging.text = debugText;
 				hgProjectDebug.visible = true;
 			}
 			
