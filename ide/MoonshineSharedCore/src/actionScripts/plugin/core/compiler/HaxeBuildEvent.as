@@ -24,6 +24,7 @@ package actionScripts.plugin.core.compiler
 	{
 		public static const BUILD_DEBUG:String = "haxeBuildDebug";
 		public static const BUILD_RELEASE:String = "haxeBuildRelease";
+		public static const BUILD_AND_RUN:String = "haxeBuildAndRun";
 		
 		public function HaxeBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{

@@ -38,13 +38,18 @@ package actionScripts.plugins.haxe
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.events.ApplicationEvent;
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.filesystem.File;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
 		private var haxePathSetting:PathSetting;
 		private var nodePathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
-		private var runCommandType:String;
+		private var isDebugging:Boolean;
 		
         public function HaxeBuildPlugin()
         {
@@ -165,7 +170,7 @@ package actionScripts.plugins.haxe
         {
             super.activate();
 
-			//dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
+			dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
         }
@@ -174,12 +179,12 @@ package actionScripts.plugins.haxe
         {
             super.deactivate();
 
-			//dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
+			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
         }
 		
-		/*private function haxeBuildAndRunHandler(event:Event):void
+		private function haxeBuildAndRunHandler(event:Event):void
 		{
             var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
             if (!project)
@@ -188,13 +193,38 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "test", project.targetPlatform].join(" ")], model.activeProject.folderLocation);
+                var projectFolder:FileLocation = project.folderLocation;
+                if(project.targetPlatform == HaxeProjectVO.PLATFORM_HTML5)
+                {
+				    running = true;
+                    isDebugging = true;
+                    var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+                    processInfo.executable = new File(UtilsCore.getNpxBinPath());
+                    processInfo.arguments = new <String>[
+                        "http-server",
+                        "bin/html5/bin",
+                        "-p",
+                        "3000",
+                        "-o"
+                    ];
+                    processInfo.workingDirectory = new File(projectFolder.fileBridge.nativePath);
+                    nativeProcess = new NativeProcess();
+                    addNativeProcessEventListeners();
+                    nativeProcess.start(processInfo);
+                    dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Debug "));
+                    dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
+			        dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
+                }
+                else
+                {
+			        this.startDebug(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "test", project.targetPlatform, "-debug"].join(" ")], projectFolder);
+                }
             }
             else
             {
-                error("Haxe build without Lime not implemented yet");
+                error("Haxe debug without Lime not implemented yet");
             }
-		}*/
+		}
 		
 		private function haxeBuildDebugHandler(event:Event):void
 		{
@@ -205,7 +235,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
@@ -222,7 +252,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[[UtilsCore.getLimeBinPath(), "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
@@ -246,6 +276,7 @@ package actionScripts.plugins.haxe
                 return;
             }
 			
+            isDebugging = false;
             warning("Starting Haxe build...");
 
 			super.start(args, buildDirectory);
@@ -258,6 +289,36 @@ package actionScripts.plugins.haxe
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
                 dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+            }
+		}
+        
+        public function startDebug(args:Vector.<String>, buildDirectory:*):void
+		{
+            if (nativeProcess.running && running)
+            {
+                warning("Build is running. Wait for finish...");
+                return;
+            }
+
+            if (!haxePath)
+            {
+                error("Specify path to Haxe folder.");
+                stop(true);
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+                return;
+            }
+
+            isDebugging = true;
+			super.start(args, buildDirectory);
+			
+            print("Command: %s", args.join(" "));
+
+            var project:ProjectVO = model.activeProject;
+            if (project)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Debug "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
+			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
 		}
 
@@ -291,12 +352,26 @@ package actionScripts.plugins.haxe
 			}
 
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
-            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
+            if(isDebugging)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
+            }
+            else
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            }
+            isDebugging = false;
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
+        }
+
+        private function onApplicationExit(event:ApplicationEvent):void
+        {
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
         }
 	}
 }

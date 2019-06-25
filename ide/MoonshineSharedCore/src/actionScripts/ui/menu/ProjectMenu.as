@@ -313,8 +313,11 @@ package actionScripts.ui.menu
                 haxeMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, HaxeBuildEvent.BUILD_DEBUG,
-                            'b', [Keyboard.COMMAND],
-                            'b', [Keyboard.CONTROL]),
+                        'b', [Keyboard.COMMAND],
+                        'b', [Keyboard.CONTROL]),
+                    /*new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, HaxeBuildEvent.BUILD_AND_RUN,
+						'\n', [Keyboard.COMMAND],
+						'\n', [Keyboard.CONTROL]),*/
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
                 ]);
                 haxeMenu.forEach(makeDynamic);

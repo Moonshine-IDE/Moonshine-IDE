@@ -1184,6 +1184,78 @@ package actionScripts.utils
 			return null;
         }
 
+        public static function getNodeBinPath():String
+        {
+			if (!model.nodePath || model.nodePath == "")
+			{
+				return null;
+			}
+
+            var nodeLocation:FileLocation = new FileLocation(model.nodePath);			
+			if (!nodeLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return nodeLocation.resolvePath("node.exe").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
+
+        public static function getNpmBinPath():String
+        {
+			if (!model.nodePath || model.nodePath == "")
+			{
+				return null;
+			}
+
+            var nodeLocation:FileLocation = new FileLocation(model.nodePath);
+			if (!nodeLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return nodeLocation.resolvePath("npm.cmd").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(nodeLocation.resolvePath("npm").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
+
+        public static function getNpxBinPath():String
+        {
+			if (!model.nodePath || model.nodePath == "")
+			{
+				return null;
+			}
+
+            var nodeLocation:FileLocation = new FileLocation(model.nodePath);			
+			if (!nodeLocation.fileBridge.exists)
+			{
+				return null;
+			}
+			else if (!ConstantsCoreVO.IS_MACOS)
+            {
+                return nodeLocation.resolvePath("npx.cmd").fileBridge.nativePath;
+            }
+            else
+            {
+                return UtilsCore.convertString(nodeLocation.resolvePath("npx").fileBridge.nativePath);
+            }
+			
+			return null;
+        }
+
         public static function getHaxeBinPath():String
         {
 			if (!model.haxePath || model.haxePath == "")
@@ -1191,9 +1263,7 @@ package actionScripts.utils
 				return null;
 			}
 
-			var separator:String = model.fileCore.separator;
-            var haxeLocation:FileLocation = new FileLocation(model.haxePath);
-			
+            var haxeLocation:FileLocation = new FileLocation(model.haxePath);			
 			if (!haxeLocation.fileBridge.exists)
 			{
 				return null;
@@ -1217,9 +1287,7 @@ package actionScripts.utils
 				return null;
 			}
 
-			var separator:String = model.fileCore.separator;
-            var haxeLocation:FileLocation = new FileLocation(model.haxePath);
-			
+            var haxeLocation:FileLocation = new FileLocation(model.haxePath);			
 			if (!haxeLocation.fileBridge.exists)
 			{
 				return null;

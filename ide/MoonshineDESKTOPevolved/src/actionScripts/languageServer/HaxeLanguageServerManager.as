@@ -50,6 +50,7 @@ package actionScripts.languageServer
     import actionScripts.events.SaveFileEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.utils.UtilsCore;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -207,15 +208,6 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var nodeFolder:File = new File(_model.nodePath);
-
-			var nodeFileName:String = (Settings.os == "win") ? "node.exe" : "node";
-			var cmdFile:File = nodeFolder.resolvePath(nodeFileName);
-			if(!cmdFile.exists)
-			{
-				cmdFile = nodeFolder.resolvePath("bin/" + nodeFileName);
-			}
-
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var scriptFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_SCRIPT_PATH);
@@ -223,7 +215,7 @@ package actionScripts.languageServer
 			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
+			processInfo.executable = new File(UtilsCore.getNodeBinPath());
 			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
 			_languageServerProcess = new NativeProcess();
