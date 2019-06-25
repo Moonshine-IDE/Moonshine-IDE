@@ -118,8 +118,7 @@
 				// of its root/dependent repository
 				if (repositoryItem.type == VersionControlTypes.XML)
 				{
-					var ownerRepository:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
-					if (ownerRepository.type == VersionControlTypes.SVN) ownerRepository = repositoryItem as RepositoryItemVO;
+					var ownerRepository:RepositoryItemVO = repositoryItem as RepositoryItemVO;
 					if (ownerRepository && ownerRepository.pathToDownloaded)
 					{
 						// test the path existence

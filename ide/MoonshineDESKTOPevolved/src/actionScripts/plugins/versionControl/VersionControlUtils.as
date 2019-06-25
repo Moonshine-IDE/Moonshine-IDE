@@ -173,24 +173,21 @@ package actionScripts.plugins.versionControl
 			var tmpRepo:Object = REPOSITORIES;
 			var repositories:Array = selectedRepository ? [selectedRepository] : REPOSITORIES.source;
 			var nonExistingRepositories:Array = [];
-			var ownerRepository:RepositoryItemVO;
 			var repo:RepositoryItemVO;
 			for each (repo in repositories)
 			{
 				if (repo.type == VersionControlTypes.XML)
 				{
-					ownerRepository = getRepositoryItemByUdid(repo.udid);
-					if (ownerRepository.type == VersionControlTypes.SVN) ownerRepository = selectedRepository;
-					if (ownerRepository && ownerRepository.pathToDownloaded)
+					if (selectedRepository && selectedRepository.pathToDownloaded)
 					{
 						// test the path existence
-						if (!FileUtils.isPathExists(ownerRepository.pathToDownloaded)) 
+						if (!FileUtils.isPathExists(selectedRepository.pathToDownloaded)) 
 						{
 							nonExistingRepositories.push(repo);
 						}
 						else
 						{
-							parseRepositoryDependencies(repo, new File(ownerRepository.pathToDownloaded), false);
+							parseRepositoryDependencies(repo, new File(selectedRepository.pathToDownloaded), false);
 						}
 					}
 				}
