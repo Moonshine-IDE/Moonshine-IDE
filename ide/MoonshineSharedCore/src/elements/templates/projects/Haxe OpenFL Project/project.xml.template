@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-	<!-- NMML reference: https://gist.github.com/1763850 -->
+	<!-- project.xml reference: https://lime.software/docs/project-files/xml-format/ -->
 	
-	<!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
-	<meta title="$ProjectName" package="com.example" version="1.0.0" company="OpenFL Developer" />
+	<meta title="$ProjectName" package="com.example.$ProjectName" version="1.0.0" company="Company Name" />
 	
-	<!-- output -->
-	<app main="$ProjectName" file="$ProjectName" path="bin" />
+	<app main="$ProjectName" path="bin" file="$ProjectName" />
 	
-	<window background="#000000" fps="60" />
-	<window width="800" height="480" unless="mobile" />
-	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
-	
-	<!-- classpath, haxe libs -->
+	<!-- classpath -->
 	<source path="src" />
+
+	<!-- haxe libs -->
 	<haxelib name="openfl" />
 	
 	<!-- assets -->
