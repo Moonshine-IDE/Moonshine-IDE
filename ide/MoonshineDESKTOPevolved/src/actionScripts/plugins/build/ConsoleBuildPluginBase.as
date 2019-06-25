@@ -168,7 +168,7 @@ package actionScripts.plugins.build
             return data.readUTFBytes(data.bytesAvailable);
         }
 
-        private function addNativeProcessEventListeners():void
+        protected function addNativeProcessEventListeners():void
         {
             nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onNativeProcessStandardOutputData);
             nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onNativeProcessStandardErrorData);
