@@ -315,9 +315,9 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, HaxeBuildEvent.BUILD_DEBUG,
                         'b', [Keyboard.COMMAND],
                         'b', [Keyboard.CONTROL]),
-                    /*new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, HaxeBuildEvent.BUILD_AND_RUN,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, HaxeBuildEvent.BUILD_AND_RUN,
 						'\n', [Keyboard.COMMAND],
-						'\n', [Keyboard.CONTROL]),*/
+						'\n', [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
                 ]);
                 haxeMenu.forEach(makeDynamic);

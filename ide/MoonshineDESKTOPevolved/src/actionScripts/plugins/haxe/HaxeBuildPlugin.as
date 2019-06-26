@@ -198,26 +198,39 @@ package actionScripts.plugins.haxe
                 {
 				    running = true;
                     isDebugging = true;
-                    var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-                    processInfo.executable = new File(UtilsCore.getNpxBinPath());
-                    processInfo.arguments = new <String>[
-                        "http-server",
+                    //for some reason, we can't use super.start() here because
+                    //exiting the NativeProcess with stop() or stop(true) won't
+                    //work correctly. the server keeps running, and the port
+                    //cannot be used again.
+                    //similarly, if we launch npx.cmd directly on Windows, it
+                    //still will not exit the server.
+                    //instead, we need run Node directly and run the npx script
+                    //file. that seems to exit with stop(true).
+                    var nodeExePath:String = UtilsCore.getNodeBinPath();
+                    var args:Vector.<String> = new <String>[
+                        model.nodePath + "/node_modules/npm/bin/npx-cli.js",
+                        "http-server@0.9.0",
                         "bin/html5/bin",
                         "-p",
                         "3000",
                         "-o"
                     ];
+                    var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+                    processInfo.executable = new File(nodeExePath);
+                    processInfo.arguments = args
+			
+                    print("Command: %s", nodeExePath + " " + args.join(" "));
                     processInfo.workingDirectory = new File(projectFolder.fileBridge.nativePath);
                     nativeProcess = new NativeProcess();
                     addNativeProcessEventListeners();
                     nativeProcess.start(processInfo);
-                    dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Debug "));
+                    dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
                     dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
 			        dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
                 }
                 else
                 {
-			        this.startDebug(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "test", project.targetPlatform, "-debug"].join(" ")], projectFolder);
+			        this.startDebug(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "test", project.targetPlatform].join(" ")], projectFolder);
                 }
             }
             else
@@ -366,7 +379,16 @@ package actionScripts.plugins.haxe
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
-            stop();
+            if(isDebugging)
+            {
+                //this seems to be required to stop the http-server on Windows
+                //otherwise, it will keep running and the port won't be released
+                stop(true);
+            }
+            else
+            {
+                stop();
+            }
         }
 
         private function onApplicationExit(event:ApplicationEvent):void
