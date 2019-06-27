@@ -264,6 +264,12 @@
 			<description>Moonshine Java Project Configuration File</description>
 			<contentType>text/plain</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.4.File</name>
+			<extension>grailsproj</extension>
+			<description>Moonshine Grails Project Configuration File</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
