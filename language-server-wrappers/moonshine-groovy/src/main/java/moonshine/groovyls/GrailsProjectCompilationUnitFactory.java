@@ -67,8 +67,12 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	}
 
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
-		Path projectFilePath = getGrailsConfigurationPath(workspaceRoot);
-//		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
+		Path projectFilePath = getGrailsSettingsPath(workspaceRoot);
+		if (projectFilePath == null) {
+			System.err.println("Failed to find Groovy settings file.");
+			return null;
+		}
+		//Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
 		Document projectDocument = loadXMLDocument(projectFilePath);
 		if (projectDocument == null) {
 			return null;
@@ -162,19 +166,20 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		return result;
 	}
 
-	protected Path getGrailsConfigurationPath(Path workspaceRoot)
+	protected Path getGrailsSettingsPath(Path workspaceRoot)
 	{
 		File folder = workspaceRoot.toFile();
 		File[] fileNames = folder.listFiles();
         for(File file : fileNames){
-             // if not a directory
-             if(!file.isDirectory()){
+            // if not a directory
+            if(!file.isDirectory())
+			{
                 String extension = "";
 				int i = file.getName().lastIndexOf('.');
 				if (i > 0) {
 					extension = file.getName().substring(i+1);
 				}
-				if (extension == "grailsproj")
+				if (extension.equals("grailsproj"))
 				{
 					return file.toPath();
 				}
