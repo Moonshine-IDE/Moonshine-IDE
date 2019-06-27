@@ -446,7 +446,7 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.groovyCore.testGrails(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.groovyCore.parseGrails(projectLocation);
+	                        project = model.groovyCore.parseGrails(projectLocation, null, projectFileLocation);
 	                    }
 					}
 

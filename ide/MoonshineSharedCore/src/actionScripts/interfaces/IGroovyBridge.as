@@ -24,6 +24,6 @@ package actionScripts.interfaces
     public interface IGroovyBridge extends IProject
     {
 		    function testGrails(file:Object):FileLocation;
-		    function parseGrails(file:FileLocation):GrailsProjectVO;
+		    function parseGrails(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):GrailsProjectVO;
     }
 }
