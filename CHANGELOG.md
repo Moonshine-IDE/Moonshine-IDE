@@ -32,8 +32,8 @@ Moonshine also now supports configuration of an Adobe AIR SDK in addition to the
 * Miscellanous bugfixes and improvements to project dependencies interface
 * Updated selection error for adding breakpoints to make it less likely to click it by accident.
 * Removed obsolete "Exc exists" text from plugin descriptions
-* Fixed issue where language-server reports error to Grails project when root folder name differs to project's name
-* Fixed issue when "Go to Definition" throws error on macOS run
+* Fixed issue where the language server reported an error when the project file for a Grails project did not match the project directory name
+* Fixed error on Go To Definition and Go To Type Definition
 
 
 ## Moonshine IDE [2.3.0]
