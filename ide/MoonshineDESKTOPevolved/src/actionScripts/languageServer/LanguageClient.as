@@ -1818,7 +1818,7 @@ package actionScripts.languageServer
 			_gotoDefinitionLookup[id] = new Position(line, char);
 		}
 
-		private function gotoTypeDefinitionHandler(event:MenuEvent):void
+		private function gotoTypeDefinitionHandler(event:Event):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
