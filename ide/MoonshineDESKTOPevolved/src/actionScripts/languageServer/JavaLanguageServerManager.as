@@ -397,7 +397,15 @@ package actionScripts.languageServer
 				extendedClientCapabilities:
 				{
 					progressReportProvider: false,//getJavaConfiguration().get('progressReports.enabled'),
-					classFileContentsSupport: false
+					classFileContentsSupport: true,
+					overrideMethodsPromptSupport: true,
+					hashCodeEqualsPromptSupport: true,
+					advancedOrganizeImportsSupport: true,
+					generateToStringPromptSupport: true,
+					advancedGenerateAccessorsSupport: true,
+					generateConstructorsPromptSupport: true,
+					generateDelegateMethodsPromptSupport: true,
+					advancedExtractRefactoringSupport: true
 				}
 			};
 
