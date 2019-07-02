@@ -1,0 +1,87 @@
+<project name="moonshine-as3mxml" default="dist" basedir=".">
+    <description>
+        Build script for Bamboo
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="src/main/java"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+    <property name="lib" location="target"/>
+    <property name="jar.name" value="moonshine-as3mxml.jar" />
+    <property name="jar.path" value="${dist}/${jar.name}" />
+    <!-- define the parameter name, to avoid reproducing the name. -->
+    <property name="target.property" value="target.path" />
+    <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
+    <property name="target.path" value="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/" />
+    <property name="as3mxml.version" value="0.17.1" />
+    
+    <!-- classpath -->
+    <path id="default.classpath">
+      <fileset dir="${target.path}/bundled-compiler">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${target.path}/bin">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement location="${build}"/>
+    </path>
+    
+    <!-- debugging code for the classpath -->
+    <pathconvert property="classpath.string" refid="default.classpath" pathsep=" "/>
+    <echo>Classpath is ${classpath.string}</echo>
+    <!--
+    -->
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <delete dir="${build}"/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="init"
+            description="compile the source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac  destdir="${build}"
+                includeAntRuntime="false"
+                debug="true"
+                source="1.8"
+                target="1.8">
+            <src path="${src}"/>
+            <classpath>
+                <path refid="default.classpath" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="dist" depends="compile">
+        <jar destfile="${jar.path}" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="moonshine.Main"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Implementation-Version" value="${as3mxml.version}"/> 
+            </manifest>
+            <fileset dir="${build}"/>
+        </jar>
+    </target>
+    
+    <target name="deploy" depends="check-target-path, dist" 
+            description="Deploy the jar to the path specified by the user-specified ${target.property} property." >
+        <copy file="${jar.path}" toDir="${target.path}/bin" overwrite="true" failonerror="true" />
+    </target>
+    
+    
+    <target name="check-target-path" depends="" unless="${target.property}"
+            description="If the ${target.property} property does not exist, report an error and terminate the build." >
+        <fail message="Property ${target.property} is required." />
+    </target>
+
+
+    <target name="clean"
+            description="clean up">
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+</project>
