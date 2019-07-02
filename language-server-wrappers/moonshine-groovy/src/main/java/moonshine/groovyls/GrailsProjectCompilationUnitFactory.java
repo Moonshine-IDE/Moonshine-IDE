@@ -54,6 +54,7 @@ import net.prominic.groovyls.util.FileContentsTracker;
 public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFactory {
 	private static final String FILE_EXTENSION_GROOVY = ".groovy";
 	private static final String FILE_EXTENSION_JAVA = ".java";
+	private static final String FILE_EXTENSION_GRAILSPROJ = ".grailsproj";
 	private static final String FILE_ECLIPSE_CLASSPATH = ".classpath";
 
 	private Path storagePath;
@@ -72,7 +73,6 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			System.err.println("Failed to find Groovy settings file.");
 			return null;
 		}
-		//Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
 		Document projectDocument = loadXMLDocument(projectFilePath);
 		if (projectDocument == null) {
 			return null;
@@ -166,27 +166,17 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		return result;
 	}
 
-	protected Path getGrailsSettingsPath(Path workspaceRoot)
-	{
+	protected Path getGrailsSettingsPath(Path workspaceRoot) {
 		File folder = workspaceRoot.toFile();
-		File[] fileNames = folder.listFiles();
-        for(File file : fileNames){
-            // if not a directory
-            if(!file.isDirectory())
-			{
-                String extension = "";
-				int i = file.getName().lastIndexOf('.');
-				if (i > 0) {
-					extension = file.getName().substring(i+1);
-				}
-				if (extension.equals("grailsproj"))
-				{
-					return file.toPath();
-				}
-             }
-         }
-
-		 return null;
+		for (File file : folder.listFiles()) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (file.getName().endsWith(FILE_EXTENSION_GRAILSPROJ)) {
+				return file.toPath();
+			}
+		}
+		return null;
 	}
 
 	protected Path getStoragePath(Path workspaceRoot) {
