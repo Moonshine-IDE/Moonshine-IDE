@@ -323,13 +323,15 @@ package actionScripts.languageServer
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
+			//uncomment to allow connection to debugger
+			//processArgs.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044");
 			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
 			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
 			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
+			//uncomment for extra debug logging
+			//processArgs.push("-Dlog.level=ALL");
 			processArgs.push("-noverify");
 			processArgs.push("-Xmx1G");
-			processArgs.push("-XX:+UseG1GC");
-			processArgs.push("-XX:+UseStringDeduplication");
 			processArgs.push("-jar");
 			processArgs.push(jarFile.nativePath);
 			processArgs.push("-configuration");
