@@ -171,8 +171,7 @@ package actionScripts.languageServer
 
 		private function installDependencies():void
 		{
-			var libraries:Array = ["lime", "openfl"];
-			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, libraries));
+			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, _project));
 		}
 		
 		private function getProjectSettings():void

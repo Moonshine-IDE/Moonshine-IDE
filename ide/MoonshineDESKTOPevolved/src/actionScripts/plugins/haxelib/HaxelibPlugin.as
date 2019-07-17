@@ -20,6 +20,7 @@ package actionScripts.plugins.haxelib
 {
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugins.haxelib.events.HaxelibEvent;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentVO;
@@ -29,9 +30,13 @@ package actionScripts.plugins.haxelib
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 
 	public class HaxelibPlugin extends PluginBase
 	{
+		private static const HAXELIB_LIME:String = "lime";
+
 		public function HaxelibPlugin()
 		{
 		}
@@ -43,6 +48,7 @@ package actionScripts.plugins.haxelib
 		private var _checkStatusOfDependencyProcess:NativeProcess;
 		private var _installDependencyProcess:NativeProcess;
 		private var _dependencyIndex:int = 0;
+		private var _project:HaxeProjectVO;
 		private var _dependencies:Array = [];
 		private var _currentDependency:ComponentVO = null;
 		private var _haxelibFile:File;
@@ -90,7 +96,10 @@ package actionScripts.plugins.haxelib
 			_currentDependency = null;
 			if(_dependencyIndex >= _dependencies.length)
 			{
-				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, _dependencies));
+				_project = null;
+				_dependencies = null;
+				_dependencyIndex = 0;
+				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, _project));
 				return;
 			}
 			_currentDependency = _dependencies[_dependencyIndex];
@@ -103,8 +112,6 @@ package actionScripts.plugins.haxelib
 			}
 
 			ConsoleOutputter.formatOutput("Installing dependency " + _currentDependency.title + "...", "notice");
-
-			_currentDependency.isDownloading = true;
 
 			var processArgs:Vector.<String> = new <String>[
 				"install",
@@ -133,14 +140,54 @@ package actionScripts.plugins.haxelib
 				return;
 			}
 
-			_dependencies = event.libraries.map(function(name:String, index:int, source:Array):ComponentVO
+			_project = event.project;
+
+			var projectFile:File = _project.folderLocation.resolvePath("project.xml").fileBridge.getFile as File;
+			if(!projectFile.exists)
 			{
+				return;
+			}
+
+			var xml:XML = null;
+			try
+			{
+				var stream:FileStream = new FileStream();
+				stream.open(projectFile, FileMode.READ);
+				var content:String = stream.readUTFBytes(stream.bytesAvailable);
+				xml = new XML(content);
+			}
+			catch(e:Error)
+			{
+				return;
+			}
+
+			_dependencies = [];
+
+			var foundLime:Boolean = false;
+			var haxelibList:XMLList = xml.elements("haxelib");
+			var haxelibCount:int = haxelibList.length();
+			for(var i:int = 0; i < haxelibCount; i++)
+			{
+				var haxelibXML:XML = haxelibList[i];
+				var name:String = haxelibXML.attribute("name").toString();
+				if(!foundLime && name == HAXELIB_LIME)
+				{
+					foundLime = true;
+				}
 				var item:ComponentVO = new ComponentVO();
 				item.title = name;
-				item.isDownloading = true;
 				item.isDownloaded = false;
-				return item;
-			});
+				_dependencies.push(item);
+			}
+			if(_project.isLime && !foundLime)
+			{
+				//lime is always required for Lime projects, but some might not
+				//list it as a dependency
+				var limeItem:ComponentVO = new ComponentVO();
+				limeItem.title = HAXELIB_LIME;
+				limeItem.isDownloaded = false;
+				_dependencies.unshift(limeItem);
+			}
 
 			_dependencyIndex = 0;
 			checkStatusOfNextDependency();
@@ -155,12 +202,10 @@ package actionScripts.plugins.haxelib
 			if(event.exitCode == 0)
 			{
 				_currentDependency.isDownloaded = true;
-				_currentDependency.isDownloading = false;
 			}
 			else
 			{
 				_currentDependency.isDownloaded = false;
-				_currentDependency.isDownloading = false;
 			}
 
 			checkStatusOfNextDependency();
@@ -175,17 +220,15 @@ package actionScripts.plugins.haxelib
 			if(event.exitCode == 0)
 			{
 				_currentDependency.isDownloaded = true;
-				_currentDependency.isDownloading = false;
+				installNextDependency();
 			}
 			else
 			{
 				_currentDependency.isDownloaded = false;
-				_currentDependency.isDownloading = false;
-				_currentDependency.hasError = "Install Failed";
-			ConsoleOutputter.formatOutput("Installing dependency " + this._currentDependency.title + "...", "notice");
+				_currentDependency.hasError = "Failed to install dependency: " + this._currentDependency.title;
+				ConsoleOutputter.formatOutput(_currentDependency.hasError, "error");
 			}
 
-			installNextDependency();
 		}
 
 	}

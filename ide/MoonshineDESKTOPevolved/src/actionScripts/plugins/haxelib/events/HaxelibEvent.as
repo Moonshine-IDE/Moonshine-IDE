@@ -19,18 +19,19 @@
 package actionScripts.plugins.haxelib.events
 {
 	import flash.events.Event;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class HaxelibEvent extends Event
 	{
 		public static const HAXELIB_INSTALL:String = "haxelibInstall";
 		public static const HAXELIB_INSTALL_COMPLETE:String = "haxelibInstallComplete";
 
-		public var libraries:Array;
+		public var project:HaxeProjectVO;
 
-		public function HaxelibEvent(type:String, libraries:Array)
+		public function HaxelibEvent(type:String, project:HaxeProjectVO)
 		{
 			super(type, false, false);
-			this.libraries = libraries;
+			this.project = project;
 		}
 	}
 }
