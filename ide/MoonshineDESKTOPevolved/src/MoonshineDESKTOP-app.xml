@@ -235,9 +235,9 @@
 			<contentType>text/plain</contentType>
 		</fileType>
 		<fileType>
-			<name>Moonshine.HTML.2.File</name>
+			<name>Moonshine.HTML.File.2</name>
 			<extension>html</extension>
-			<description>Moonshine HTML.2 File</description>
+			<description>Moonshine HTML File 2</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 		<fileType>
@@ -247,25 +247,25 @@
 			<contentType>application/octet-stream</contentType>
 		</fileType>
 		<fileType>
-			<name>Moonshine.Project.Configuration.1.File</name>
+			<name>Moonshine.Project.Configuration.File.1</name>
 			<extension>as3proj</extension>
 			<description>Moonshine Project Configuration File 1</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 		<fileType>
-			<name>Moonshine.Project.Configuration.2.File</name>
+			<name>Moonshine.Project.Configuration.File.2</name>
 			<extension>veditorproj</extension>
 			<description>Moonshine Project Configuration File 2</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 		<fileType>
-			<name>Moonshine.Project.Configuration.3.File</name>
+			<name>Moonshine.Project.Configuration.File.3</name>
 			<extension>javaproj</extension>
 			<description>Moonshine Project Configuration File 3</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 		<fileType>
-			<name>Moonshine.Project.Configuration.4.File</name>
+			<name>Moonshine.Project.Configuration.File.4</name>
 			<extension>grailsproj</extension>
 			<description>Moonshine Project Configuration File 4</description>
 			<contentType>text/plain</contentType>

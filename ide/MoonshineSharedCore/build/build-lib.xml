@@ -387,6 +387,102 @@
 	<!-- Compile .pkg to distribute through app store -->
 	<target name="buildAppStorePKG" depends="compile app project" if="${Is.Keychain.Certificate.Defined}">
 		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${basedir}/elements/images/moonshineIcons.icns" overwrite="true"/>
+		<!-- Some Apple-required tags does not generates automatically
+			we'll add them here in a simple find/replace way as parsing info.plist in XML way
+			and determine the tag position to replace is a hard way -->
+		<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine ActionScript File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine ActionScript File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine CSS File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine CSS File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Text File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Text File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine MXML File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine MXML File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine XML File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine XML File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine JavaScript File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine JavaScript File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine HTML File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine HTML File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine HTML File 2</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine HTML File 2</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine AwayBuilder File</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine AwayBuilder File</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 1</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 1</string>
+				<key>LSHandlerRank</key>
+				<string>Default</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 2</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 2</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 3</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 3</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 4</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 4</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
 		<if>
@@ -394,25 +490,25 @@
 			<then>
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
-					<replacevalue><![CDATA[<string>Icon.icns</string>
-			<key>CFBundleName</key>
-			<string>MoonshineDevelopment</string>
-			<key>LSApplicationCategoryType</key>
-			<string>public.app-category.developer-tools</string>
-			<key>CFBundleVersion</key>
-			<string>52.0</string>]]></replacevalue>
+							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>CFBundleName</key>
+					<string>MoonshineDevelopment</string>
+					<key>LSApplicationCategoryType</key>
+					<string>public.app-category.developer-tools</string>
+					<key>CFBundleVersion</key>
+					<string>53.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
-					<replacevalue><![CDATA[<string>Icon.icns</string>
-			<key>CFBundleName</key>
-			<string>Moonshine</string>
-			<key>LSApplicationCategoryType</key>
-			<string>public.app-category.developer-tools</string>
-			<key>CFBundleVersion</key>
-			<string>52.0</string>]]></replacevalue>
+							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>CFBundleName</key>
+					<string>Moonshine</string>
+					<key>LSApplicationCategoryType</key>
+					<string>public.app-category.developer-tools</string>
+					<key>CFBundleVersion</key>
+					<string>53.0</string>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
