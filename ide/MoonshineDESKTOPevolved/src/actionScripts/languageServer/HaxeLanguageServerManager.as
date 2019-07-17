@@ -19,21 +19,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.SaveFileEvent;
+    import actionScripts.events.SdkEvent;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+    import actionScripts.plugins.haxelib.events.HaxelibEvent;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.HaxeTextEditor;
-    import actionScripts.utils.EnvironmentSetupUtils;
-    import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.HtmlFormatter;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.utils.getProjectSDKPath;
-    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
@@ -47,11 +48,6 @@ package actionScripts.languageServer
     import flash.utils.IDataInput;
 
     import no.doomsday.console.ConsoleUtil;
-    import actionScripts.events.SaveFileEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.events.SdkEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -76,8 +72,6 @@ package actionScripts.languageServer
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
-		private var _checkForLimeProcess:NativeProcess;
-		private var _installLimeProcess:NativeProcess;
 		private var _limeDisplayProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
@@ -93,6 +87,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
+			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
 
 			boostrapThenStartNativeProcess();
 		}
@@ -166,7 +161,7 @@ package actionScripts.languageServer
 		{
 			if(_project.isLime)
 			{
-				checkLime();
+				installDependencies();
 			}
 			else
 			{
@@ -174,60 +169,10 @@ package actionScripts.languageServer
 			}
 		}
 
-		private function checkLime():void
+		private function installDependencies():void
 		{
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
-			{
-				return;
-			}
-			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
-			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
-			if(!cmdFile.exists)
-			{
-				return;
-			}
-			var processArgs:Vector.<String> = new <String>[
-				"path",
-				"lime"
-			];
-
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-			
-			_checkForLimeProcess = new NativeProcess();
-			_checkForLimeProcess.addEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
-			_checkForLimeProcess.start(processInfo);
-		}
-
-		private function installLime():void
-		{
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
-			{
-				return;
-			}
-			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
-			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
-			if(!cmdFile.exists)
-			{
-				return;
-			}
-			var processArgs:Vector.<String> = new <String>[
-				"install",
-				"lime"
-			];
-
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-			
-			_installLimeProcess = new NativeProcess();
-			_installLimeProcess.addEventListener(NativeProcessExitEvent.EXIT, installLimeProcess_exitHandler);
-			_installLimeProcess.start(processInfo);
+			var libraries:Array = ["lime", "openfl"];
+			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, libraries));
 		}
 		
 		private function getProjectSettings():void
@@ -394,43 +339,6 @@ package actionScripts.languageServer
 				boostrapThenStartNativeProcess();
 			}
 		}
-
-		private function checkForLimeProcess_exitHandler(event:NativeProcessExitEvent):void
-		{
-			_checkForLimeProcess.removeEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
-			_checkForLimeProcess.exit();
-			_checkForLimeProcess = null;
-
-			if(event.exitCode == 0)
-			{
-				getProjectSettings();
-			}
-			else
-			{
-				ConsoleOutputter.formatOutput(
-					"Lime not found. Installing...",
-					"weak");
-				installLime();
-			}
-		}
-
-		private function installLimeProcess_exitHandler(event:NativeProcessExitEvent):void
-		{
-			_installLimeProcess.removeEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
-			_installLimeProcess.exit();
-			_installLimeProcess = null;
-
-			if(event.exitCode == 0)
-			{
-				getProjectSettings();
-			}
-			else
-			{
-				ConsoleOutputter.formatOutput(
-					"Lime install failed. Haxe code intelligence disabled.",
-					"error");
-			}
-		}
 		
 		private function limeDisplayProcess_standardOutputDataHandler(event:ProgressEvent):void 
 		{
@@ -493,6 +401,11 @@ package actionScripts.languageServer
 			{
 				restartLanguageServer();
 			}
+		}
+
+		private function haxelibInstallCompleteHandler(event:HaxelibEvent):void
+		{
+			getProjectSettings();
 		}
 
 		private function saveProjectSettingsHandler(event:ProjectEvent):void

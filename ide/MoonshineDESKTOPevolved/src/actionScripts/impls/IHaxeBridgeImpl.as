@@ -30,6 +30,7 @@ package actionScripts.impls
 
     import flash.filesystem.File;
     import actionScripts.plugin.haxe.hxproject.CreateHaxeProject;
+    import actionScripts.plugins.haxelib.HaxelibPlugin;
 
     public class IHaxeBridgeImpl extends ProjectBridgeImplBase implements IHaxeBridge
     {
@@ -50,6 +51,7 @@ package actionScripts.impls
 				HaxeSyntaxPlugin,
                 HaxeProjectPlugin,
 				HaxeBuildPlugin,
+                HaxelibPlugin,
             ];
         }
 
@@ -58,6 +60,7 @@ package actionScripts.impls
             return [
                 HaxeSyntaxPlugin,
                 HaxeProjectPlugin,
+                HaxelibPlugin,
             ];
         }
 
