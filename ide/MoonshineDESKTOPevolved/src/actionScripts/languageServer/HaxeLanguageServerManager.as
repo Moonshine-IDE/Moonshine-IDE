@@ -175,9 +175,19 @@ package actionScripts.languageServer
 			this._displayArguments = "";
 
 			var sdkPath:String = getProjectSDKPath(_project, _model);
-			var limeFileName:String = (Settings.os == "win") ? "lime.exe" : "lime";
+			if(!sdkPath)
+			{
+				return;
+			}
+			var limeFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
 			var cmdFile:File = new File(sdkPath).resolvePath(limeFileName);
+			if(!cmdFile.exists)
+			{
+				return;
+			}
 			var processArgs:Vector.<String> = new <String>[
+				"run",
+				"lime",
 				"display",
 				_project.targetPlatform
 			];
@@ -348,7 +358,7 @@ package actionScripts.languageServer
 			else
 			{
 				ConsoleOutputter.formatOutput(
-					"lime display exited with code: " + event.exitCode,
+					"haxelib run lime display exited with code: " + event.exitCode,
 					"error");
 			}
 		}

@@ -230,7 +230,7 @@ package actionScripts.plugins.haxe
                 }
                 else
                 {
-			        this.startDebug(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "test", project.targetPlatform].join(" ")], projectFolder);
+			        this.startDebug(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "test", project.targetPlatform].join(" ")], projectFolder);
                 }
             }
             else
@@ -248,7 +248,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
@@ -265,7 +265,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[["\"" + UtilsCore.getLimeBinPath() + "\"", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {

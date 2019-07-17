@@ -1280,7 +1280,7 @@ package actionScripts.utils
 			return null;
         }
 
-        public static function getLimeBinPath():String
+        public static function getHaxelibBinPath():String
         {
 			if (!model.haxePath || model.haxePath == "")
 			{
@@ -1294,11 +1294,11 @@ package actionScripts.utils
 			}
 			else if (!ConstantsCoreVO.IS_MACOS)
             {
-                return haxeLocation.resolvePath("lime.exe").fileBridge.nativePath;
+                return haxeLocation.resolvePath("haxelib.exe").fileBridge.nativePath;
             }
             else
             {
-                return UtilsCore.convertString(haxeLocation.resolvePath("lime").fileBridge.nativePath);
+                return UtilsCore.convertString(haxeLocation.resolvePath("haxelib").fileBridge.nativePath);
             }
 			
 			return null;
