@@ -51,6 +51,7 @@ package actionScripts.languageServer
     import actionScripts.factory.FileLocation;
     import actionScripts.events.ProjectEvent;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.events.SdkEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -87,6 +88,7 @@ package actionScripts.languageServer
 
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
+			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 
@@ -378,6 +380,14 @@ package actionScripts.languageServer
 			}
 
 			restartLanguageServer();
+		}
+
+		private function changeHaxeSDKHandler(event:SdkEvent):void
+		{
+			if(getProjectSDKPath(_project, _model) != _previousHaxePath)
+			{
+				restartLanguageServer();
+			}
 		}
 
 		private function saveProjectSettingsHandler(event:ProjectEvent):void

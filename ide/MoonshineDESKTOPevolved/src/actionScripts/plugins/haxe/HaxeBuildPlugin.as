@@ -43,6 +43,7 @@ package actionScripts.plugins.haxe
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.filesystem.File;
+    import actionScripts.events.SdkEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -90,6 +91,7 @@ package actionScripts.plugins.haxe
             if (model.haxePath != value)
             {
                 model.haxePath = value;
+			    dispatcher.dispatchEvent(new SdkEvent(SdkEvent.CHANGE_HAXE_SDK));
             }
         }
 

@@ -23,6 +23,7 @@ package actionScripts.events
 	public class SdkEvent extends Event
 	{
 		public static const CHANGE_SDK:String = "changeSdk";
+		public static const CHANGE_HAXE_SDK:String = "changeHaxeSdk";
 
 		public function SdkEvent(type:String)
 		{
