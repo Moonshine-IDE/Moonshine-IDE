@@ -76,7 +76,9 @@ package actionScripts.languageServer
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
-		private var _limeProcess:NativeProcess;
+		private var _checkForLimeProcess:NativeProcess;
+		private var _installLimeProcess:NativeProcess;
+		private var _limeDisplayProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
 		private var _previousTargetPlatform:String = null;
@@ -92,7 +94,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 
-			getProjectSettingsThenStartNativeProcess();
+			boostrapThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -160,16 +162,72 @@ package actionScripts.languageServer
 			_languageClient = null;
 		}
 		
-		private function getProjectSettingsThenStartNativeProcess():void
+		private function boostrapThenStartNativeProcess():void
 		{
 			if(_project.isLime)
 			{
-				getProjectSettings();
+				checkLime();
 			}
 			else
 			{
 				startNativeProcess(["build.hxml"]);
 			}
+		}
+
+		private function checkLime():void
+		{
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			if(!sdkPath)
+			{
+				return;
+			}
+			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
+			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
+			if(!cmdFile.exists)
+			{
+				return;
+			}
+			var processArgs:Vector.<String> = new <String>[
+				"path",
+				"lime"
+			];
+
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+			
+			_checkForLimeProcess = new NativeProcess();
+			_checkForLimeProcess.addEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
+			_checkForLimeProcess.start(processInfo);
+		}
+
+		private function installLime():void
+		{
+			var sdkPath:String = getProjectSDKPath(_project, _model);
+			if(!sdkPath)
+			{
+				return;
+			}
+			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
+			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
+			if(!cmdFile.exists)
+			{
+				return;
+			}
+			var processArgs:Vector.<String> = new <String>[
+				"install",
+				"lime"
+			];
+
+			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			processInfo.arguments = processArgs;
+			processInfo.executable = cmdFile;
+			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+			
+			_installLimeProcess = new NativeProcess();
+			_installLimeProcess.addEventListener(NativeProcessExitEvent.EXIT, installLimeProcess_exitHandler);
+			_installLimeProcess.start(processInfo);
 		}
 		
 		private function getProjectSettings():void
@@ -181,8 +239,8 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			var limeFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
-			var cmdFile:File = new File(sdkPath).resolvePath(limeFileName);
+			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
+			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
 			if(!cmdFile.exists)
 			{
 				return;
@@ -199,10 +257,11 @@ package actionScripts.languageServer
 			processInfo.executable = cmdFile;
 			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 			
-			_limeProcess = new NativeProcess();
-			_limeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeProcess_standardOutputDataHandler);
-			_limeProcess.addEventListener(NativeProcessExitEvent.EXIT, limeProcess_exitHandler);
-			_limeProcess.start(processInfo);
+			_limeDisplayProcess = new NativeProcess();
+			_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
+			_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
+			_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
+			_limeDisplayProcess.start(processInfo);
 		}
 
 		private function startNativeProcess(displayArguments:Array):void
@@ -300,7 +359,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				getProjectSettingsThenStartNativeProcess();
+				boostrapThenStartNativeProcess();
 			}
 		}
 
@@ -309,7 +368,7 @@ package actionScripts.languageServer
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			ConsoleUtil.print("shellError " + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), "weak");
 			trace(data);
 		}
 
@@ -332,26 +391,72 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
-				getProjectSettingsThenStartNativeProcess();
+				boostrapThenStartNativeProcess();
+			}
+		}
+
+		private function checkForLimeProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_checkForLimeProcess.removeEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
+			_checkForLimeProcess.exit();
+			_checkForLimeProcess = null;
+
+			if(event.exitCode == 0)
+			{
+				getProjectSettings();
+			}
+			else
+			{
+				ConsoleOutputter.formatOutput(
+					"Lime not found. Installing...",
+					"weak");
+				installLime();
+			}
+		}
+
+		private function installLimeProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_installLimeProcess.removeEventListener(NativeProcessExitEvent.EXIT, checkForLimeProcess_exitHandler);
+			_installLimeProcess.exit();
+			_installLimeProcess = null;
+
+			if(event.exitCode == 0)
+			{
+				getProjectSettings();
+			}
+			else
+			{
+				ConsoleOutputter.formatOutput(
+					"Lime install failed. Haxe code intelligence disabled.",
+					"error");
 			}
 		}
 		
-		private function limeProcess_standardOutputDataHandler(e:ProgressEvent):void 
+		private function limeDisplayProcess_standardOutputDataHandler(event:ProgressEvent):void 
 		{
-			if(_limeProcess)
+			if(_limeDisplayProcess)
 			{
-				var output:IDataInput = _limeProcess.standardOutput;
+				var output:IDataInput = _limeDisplayProcess.standardOutput;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				this._displayArguments += data;
 			}
 		}
 		
-		private function limeProcess_exitHandler(event:NativeProcessExitEvent):void
+		private function limeDisplayProcess_standardErrorDataHandler(event:ProgressEvent):void 
 		{
-			_limeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeProcess_standardOutputDataHandler);
-			_limeProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeProcess_exitHandler);
-			_limeProcess.exit();
-			_limeProcess = null;
+			var output:IDataInput = _limeDisplayProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			ConsoleOutputter.formatOutput(data, "error");
+			trace(data);
+		}
+		
+		private function limeDisplayProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
+			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardOutputDataHandler);
+			_limeDisplayProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
+			_limeDisplayProcess.exit();
+			_limeDisplayProcess = null;
 
 			if(event.exitCode == 0)
 			{
@@ -360,7 +465,7 @@ package actionScripts.languageServer
 			else
 			{
 				ConsoleOutputter.formatOutput(
-					"haxelib run lime display exited with code: " + event.exitCode,
+					"Failed to load Lime project settings. Haxe code intelligence disabled.",
 					"error");
 			}
 		}
