@@ -32,6 +32,7 @@ package actionScripts.plugins.haxelib
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
+	import flash.utils.Dictionary;
 
 	public class HaxelibPlugin extends PluginBase
 	{
@@ -45,13 +46,8 @@ package actionScripts.plugins.haxelib
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String { return "Manage Haxelib dependencies."; }
 
-		private var _checkStatusOfDependencyProcess:NativeProcess;
-		private var _installDependencyProcess:NativeProcess;
-		private var _dependencyIndex:int = 0;
-		private var _project:HaxeProjectVO;
-		private var _dependencies:Array = [];
-		private var _currentDependency:ComponentVO = null;
 		private var _haxelibFile:File;
+		private var _processToStatus:Dictionary = new Dictionary();
 
 		override public function activate():void
 		{
@@ -65,66 +61,63 @@ package actionScripts.plugins.haxelib
 			dispatcher.removeEventListener(HaxelibEvent.HAXELIB_INSTALL, haxelibInstallHandler);
 		}
 
-		private function checkStatusOfNextDependency():void
+		private function checkStatusOfNextDependency(status:ProjectInstallStatus):void
 		{
-			_currentDependency = null;
-			if(_dependencyIndex >= _dependencies.length)
+			if(status.currentIndex >= status.items.length)
 			{
-				_dependencyIndex = 0;
-				installNextDependency();
+				status.currentIndex = 0;
+				installNextDependency(status);
 				return;
 			}
-			_currentDependency = _dependencies[_dependencyIndex];
-			_dependencyIndex++;
+			var currentItem:ComponentVO = status.items[status.currentIndex];
 
 			var processArgs:Vector.<String> = new <String>[
 				"path",
-				_currentDependency.title
+				currentItem.title
 			];
 
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			processInfo.arguments = processArgs;
 			processInfo.executable = _haxelibFile;
 			
-			_checkStatusOfDependencyProcess = new NativeProcess();
-			_checkStatusOfDependencyProcess.addEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
-			_checkStatusOfDependencyProcess.start(processInfo);
+			var process:NativeProcess = new NativeProcess();
+			_processToStatus[process] = status;
+			process.addEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
+			process.start(processInfo);
 		}
 
-		private function installNextDependency():void
+		private function installNextDependency(status:ProjectInstallStatus):void
 		{
-			_currentDependency = null;
-			if(_dependencyIndex >= _dependencies.length)
+			if(status.currentIndex >= status.items.length)
 			{
-				_project = null;
-				_dependencies = null;
-				_dependencyIndex = 0;
-				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, _project));
+				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, status.project));
 				return;
 			}
-			_currentDependency = _dependencies[_dependencyIndex];
-			_dependencyIndex++;
+			var currentItem:ComponentVO = status.items[status.currentIndex];
 
-			if(_currentDependency.isDownloaded)
+			if(currentItem.isDownloaded)
 			{
-				installNextDependency();
+				//this dependency is already installed, so we can skip it
+				status.currentIndex++;
+				installNextDependency(status);
 				return;
 			}
 
-			ConsoleOutputter.formatOutput("Installing dependency " + _currentDependency.title + "...", "notice");
+			ConsoleOutputter.formatOutput("Installing dependency " + currentItem.title + "...", "notice");
 
 			var processArgs:Vector.<String> = new <String>[
 				"install",
-				_currentDependency.title
+				currentItem.title
 			];
 
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			processInfo.arguments = processArgs;
 			processInfo.executable = _haxelibFile;
 			
-			_installDependencyProcess = new NativeProcess();
-			_installDependencyProcess.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
-			_installDependencyProcess.start(processInfo);
+			var process:NativeProcess = new NativeProcess();
+			_processToStatus[process] = status;
+			process.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
+			process.start(processInfo);
 		}
 
 		private function haxelibInstallHandler(event:HaxelibEvent):void
@@ -140,9 +133,8 @@ package actionScripts.plugins.haxelib
 				return;
 			}
 
-			_project = event.project;
-
-			var projectFile:File = _project.folderLocation.resolvePath("project.xml").fileBridge.getFile as File;
+			var project:HaxeProjectVO = event.project;
+			var projectFile:File = project.folderLocation.resolvePath("project.xml").fileBridge.getFile as File;
 			if(!projectFile.exists)
 			{
 				return;
@@ -161,7 +153,7 @@ package actionScripts.plugins.haxelib
 				return;
 			}
 
-			_dependencies = [];
+			var items:Vector.<ComponentVO> = new <ComponentVO>[];
 
 			var foundLime:Boolean = false;
 			var haxelibList:XMLList = xml.elements("haxelib");
@@ -177,59 +169,86 @@ package actionScripts.plugins.haxelib
 				var item:ComponentVO = new ComponentVO();
 				item.title = name;
 				item.isDownloaded = false;
-				_dependencies.push(item);
+				items.push(item);
 			}
-			if(_project.isLime && !foundLime)
+			if(project.isLime && !foundLime)
 			{
 				//lime is always required for Lime projects, but some might not
 				//list it as a dependency
 				var limeItem:ComponentVO = new ComponentVO();
 				limeItem.title = HAXELIB_LIME;
 				limeItem.isDownloaded = false;
-				_dependencies.unshift(limeItem);
+				items.unshift(limeItem);
 			}
 
-			_dependencyIndex = 0;
-			checkStatusOfNextDependency();
+			var status:ProjectInstallStatus = new ProjectInstallStatus(project, items);
+			checkStatusOfNextDependency(status);
 		}
 
 		private function checkStatusOfDependencyProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
-			_checkStatusOfDependencyProcess.removeEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
-			_checkStatusOfDependencyProcess.exit();
-			_checkStatusOfDependencyProcess = null;
+			var process:NativeProcess = NativeProcess(event.currentTarget);
+			var status:ProjectInstallStatus = _processToStatus[process];
+			delete _processToStatus[status];
+			process.removeEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
+			process.exit();
+
+			var currentItem:ComponentVO = status.items[status.currentIndex];
+			status.currentIndex++;
 
 			if(event.exitCode == 0)
 			{
-				_currentDependency.isDownloaded = true;
+				currentItem.isDownloaded = true;
 			}
 			else
 			{
-				_currentDependency.isDownloaded = false;
+				currentItem.isDownloaded = false;
 			}
 
-			checkStatusOfNextDependency();
+			checkStatusOfNextDependency(status);
 		}
 
 		private function installDependencyProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
-			_installDependencyProcess.removeEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
-			_installDependencyProcess.exit();
-			_installDependencyProcess = null;
+			var process:NativeProcess = NativeProcess(event.currentTarget);
+			var status:ProjectInstallStatus = _processToStatus[process];
+			delete _processToStatus[status];
+			process.removeEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
+			process.exit();
+
+			var currentItem:ComponentVO = status.items[status.currentIndex];
+			status.currentIndex++;
 
 			if(event.exitCode == 0)
 			{
-				_currentDependency.isDownloaded = true;
-				installNextDependency();
+				currentItem.isDownloaded = true;
+				installNextDependency(status);
 			}
 			else
 			{
-				_currentDependency.isDownloaded = false;
-				_currentDependency.hasError = "Failed to install dependency: " + this._currentDependency.title;
-				ConsoleOutputter.formatOutput(_currentDependency.hasError, "error");
+				currentItem.isDownloaded = false;
+				currentItem.hasError = "Failed to install dependency: " + currentItem.title;
+				ConsoleOutputter.formatOutput(currentItem.hasError, "error");
 			}
 
 		}
 
 	}
+}
+
+import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+import actionScripts.valueObjects.ComponentVO;
+
+class ProjectInstallStatus
+{
+	public function ProjectInstallStatus(project:HaxeProjectVO, items:Vector.<ComponentVO>)
+	{
+		this.project = project;
+		this.items = items;
+	}
+
+	public var project:HaxeProjectVO;
+	public var items:Vector.<ComponentVO>;
+	public var currentIndex:int = 0;
+
 }

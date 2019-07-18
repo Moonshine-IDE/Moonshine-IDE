@@ -404,7 +404,22 @@ package actionScripts.languageServer
 
 		private function haxelibInstallCompleteHandler(event:HaxelibEvent):void
 		{
-			getProjectSettings();
+			if(event.project != _project)
+			{
+				return;
+			}
+			if(_languageServerProcess)
+			{
+				//if this happened while the language server was running, then
+				//start from scratch
+				restartLanguageServer();
+			}
+			else
+			{
+				//if no language server is running, we can continue with the
+				//next step of the process
+				getProjectSettings();
+			}
 		}
 
 		private function saveProjectSettingsHandler(event:ProjectEvent):void
