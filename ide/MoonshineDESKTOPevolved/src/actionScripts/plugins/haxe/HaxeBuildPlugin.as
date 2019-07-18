@@ -111,11 +111,10 @@ package actionScripts.plugins.haxe
         public function getSettingsList():Vector.<ISetting>
         {
 			onSettingsClose();
+
 			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
-			haxePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onHaxeSDKPathSelected, false, 0, true);
             
 			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath);
-			nodePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onNodePathSelected, false, 0, true);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,
@@ -127,44 +126,11 @@ package actionScripts.plugins.haxe
 		{
 			if (haxePathSetting)
 			{
-				haxePathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onHaxeSDKPathSelected);
 				haxePathSetting = null;
 			}
-		}
-		
-		private function onHaxeSDKPathSelected(event:Event):void
-		{
-			if (!haxePathSetting.stringValue) return;
-			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_HAXE);
-			if (tmpComponent)
+			if (nodePathSetting)
 			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_HAXE, haxePathSetting.stringValue, tmpComponent.pathValidation);
-				if (!isValidSDKPath)
-				{
-					haxePathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
-				}
-				else
-				{
-					haxePathSetting.setMessage(null);
-				}
-			}
-		}
-		
-		private function onNodePathSelected(event:Event):void
-		{
-			if (!nodePathSetting.stringValue) return;
-			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_NODE);
-			if (tmpComponent)
-			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_NODE, nodePathSetting.stringValue, tmpComponent.pathValidation);
-				if (!isValidSDKPath)
-				{
-					nodePathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
-				}
-				else
-				{
-					nodePathSetting.setMessage(null);
-				}
+				nodePathSetting = null;
 			}
 		}
 
