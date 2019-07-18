@@ -249,6 +249,7 @@ package actionScripts.languageServer
 				trace("Error: Haxe language client already exists!");
 				return;
 			}
+			var haxeFileName:String = (Settings.os == "win") ? "haxe.exe" : "haxe";
 
 			trace("Haxe language server workspace root: " + project.folderPath);
 			trace("Haxe language server SDK: " + sdkPath);
@@ -257,7 +258,7 @@ package actionScripts.languageServer
 			var options:Object = 
 			{
 				displayServerConfig: {
-					path: "c:\\HaxeToolkit\\haxe\\haxe.exe",
+					path: new File(sdkPath).resolvePath(haxeFileName).nativePath,
 					arguments: [/*"-v"*/],
 					env: {}
 				},
