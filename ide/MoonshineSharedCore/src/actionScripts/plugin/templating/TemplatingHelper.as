@@ -213,6 +213,7 @@ package actionScripts.plugin.templating
 				case "Groovy Class":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.TEMPLATE];
 				case "Haxe Class":
+				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
 			}
 			

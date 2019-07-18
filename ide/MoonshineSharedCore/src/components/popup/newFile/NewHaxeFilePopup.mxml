@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<newfile:NewASFilePopup xmlns:fx="http://ns.adobe.com/mxml/2009"
+                        xmlns:newfile="components.popup.newFile.*">
+    <fx:Script><![CDATA[
+        import actionScripts.events.NewFileEvent;
+        import actionScripts.extResources.com.validator.ValidatorType;
+        import actionScripts.utils.SimpleValidator;
+        import actionScripts.valueObjects.AS3ClassAttributes;
+        import actionScripts.valueObjects.ConstantsCoreVO;
+
+        import mx.events.FlexEvent;
+
+        override protected function onBtnCreateClick(event:MouseEvent):void
+        {
+            // validation check for Enter key
+            if (!btnCreate.enabled) return;
+
+            // validation 2
+            var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+            if (SimpleValidator.validate(validateArr))
+            {
+                var attributes:AS3ClassAttributes = new AS3ClassAttributes();
+                attributes.modifierA = "public";
+                attributes.extendsClassInterface = txtSuperclass.text;
+                attributes.implementsInterface = txtInterfaces.text;
+                attributes.modifierB = "";
+                attributes.modifierC = cbFinal.selected ? "final" : "";
+
+                attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
+
+                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_HAXEINTERFACE : ConstantsCoreVO.TEMPLATE_HAXECLASS, wrapperOfFolderLocation, attributes);
+                tmpEvent.fileName = txtFileName.text;
+                tmpEvent.ofProject = wrapperBelongToProject;
+                tmpEvent.fileExtension = this.createdFileExtension;
+
+                dispatchEvent(tmpEvent);
+
+                doBeforeExit();
+                super.closeThis();
+            }
+        }
+
+        override protected function onNewFileCreationComplete(event:FlexEvent):void
+        {
+            super.onNewFileCreationComplete(event);
+
+            hasInternalClasses = false;
+            cbDynamic.visible = cbDynamic.includeInLayout = false;
+            title = isInterfaceDialog ? "New Haxe Interface" : "New Haxe Class";
+            createdFileExtension = ".hx";
+        }
+        ]]></fx:Script>
+</newfile:NewASFilePopup>
