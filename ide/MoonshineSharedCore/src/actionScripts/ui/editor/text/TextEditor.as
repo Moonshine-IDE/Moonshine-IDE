@@ -818,6 +818,11 @@ package actionScripts.ui.editor.text
 
 		public function showSignatureHelp(data:SignatureHelp):void
 		{
+			if (!signatureHelpManager)
+			{
+				return;
+			}
+
 			signatureHelpManager.showSignatureHelp(data);
 		}
 

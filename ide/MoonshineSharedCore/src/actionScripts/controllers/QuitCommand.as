@@ -267,6 +267,7 @@ package actionScripts.controllers
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, onLanguageServerClosed);
 			languageServerTimeoutID = uint.MAX_VALUE;
 			timedOutClosingLanguageServers = true;
+			trace("Error: Timed out while closing language servers.");
 			this.onApplicationClosing();
 		}
 		

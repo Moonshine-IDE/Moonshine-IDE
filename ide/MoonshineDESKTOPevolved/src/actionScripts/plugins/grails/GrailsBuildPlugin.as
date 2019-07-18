@@ -49,12 +49,14 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.events.ApplicationEvent;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
 		private var pathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
 		private var runCommandType:String;
+		private var isDebugging:Boolean;
 		
         public function GrailsBuildPlugin()
         {
@@ -82,7 +84,7 @@ package actionScripts.plugins.grails
 
         override public function get description():String
         {
-            return "Grails Build Plugin. Esc exits.";
+            return "Grails Build Plugin.";
         }
 
         public function get grailsPath():String
@@ -158,7 +160,7 @@ package actionScripts.plugins.grails
 		
 		private function grailsBuildAndRunHandler(event:Event):void
 		{
-			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
+			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
 		}
 		
 		private function grailsBuildReleaseHandler(event:Event):void
@@ -197,6 +199,7 @@ package actionScripts.plugins.grails
                 return;
             }
 			
+			isDebugging = false;
             warning("Starting Grails build...");
 
 			super.start(args, buildDirectory);
@@ -209,6 +212,40 @@ package actionScripts.plugins.grails
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
                 dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
+            }
+		}
+
+		public function startDebug(args:Vector.<String>, buildDirectory:*):void
+		{
+            if (nativeProcess.running && running)
+            {
+                warning("Build is running. Wait for finish...");
+                return;
+            }
+
+            if (!grailsPath)
+            {
+                error("Specify path to Grails folder.");
+                stop(true);
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
+                return;
+            }
+			
+			isDebugging = true;
+            warning("Starting Grails build...");
+
+			super.start(args, buildDirectory);
+			
+            print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
+            print("Command: %s", args.join(" "));
+
+            var project:ProjectVO = model.activeProject;
+            if (project)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             }
 		}
 		
@@ -355,12 +392,28 @@ package actionScripts.plugins.grails
 
 
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
-            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
+            if(isDebugging)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
+			}
+			else
+			{
+            	dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			}
+			isDebugging = false;
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
         {
             stop();
         }
+
+        private function onApplicationExit(event:ApplicationEvent):void
+        {
+			//if anything is still running, stop it before we exit to avoid
+			//orphaned processes
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
+		}
 	}
 }

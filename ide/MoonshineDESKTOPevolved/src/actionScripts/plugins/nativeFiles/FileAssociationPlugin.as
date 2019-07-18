@@ -41,7 +41,7 @@ package actionScripts.plugins.nativeFiles
 	{
 		override public function get name():String			{ return "FileAssociationPlugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "File Association Plugin. Esc exits."; }
+		override public function get description():String	{ return "File Association Plugin."; }
 		
 		private static var projectFileTypes:Array = ["as3proj", "veditorproj", "grailsproj", "javaproj"];
 		

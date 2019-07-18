@@ -49,7 +49,7 @@ package actionScripts.plugin.help
 		
 		override public function get name():String			{ return "Help Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Help Plugin. Esc exits."; }
+		override public function get description():String	{ return "Help Plugin."; }
 
 		private var tourdeContentView: IPanelWindow;
 

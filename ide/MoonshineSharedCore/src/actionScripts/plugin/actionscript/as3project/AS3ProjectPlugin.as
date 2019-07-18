@@ -231,7 +231,7 @@ package actionScripts.plugin.actionscript.as3project
 				flashDevelopProjectFile = model.groovyCore.testGrails(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath)));
+					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
 					return;
 				}
 				flashDevelopProjectFile = model.haxeCore.testHaxe(dir);

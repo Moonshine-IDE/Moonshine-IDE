@@ -12,8 +12,9 @@ ide/MoonshineWEBevolved/obj/
 ide/MoonshineWorker/obj/
 library/ApacheFlexSDKInstallerLib/obj/
 .idea/
-vscode-nextgenas_MoonshineModifications/vscode-nextgenas_MoonshineModifications.iml
-vscode-nextgenas_MoonshineModifications/dist/
+language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml
+language-server-wrappers/moonshine-as3mxml/dist/
+language-server-wrappers/moonshine-as3mxml/build/
 .DS_Store
 *.code-workspace
 .vscode/

@@ -88,6 +88,7 @@
 			{
 				// check and update dependency repositories
 				VersionControlUtils.updateDependentRepositories(selectedRepository);
+				selectedRepository.isUpdating = false;
 				
 				// continue to browsing
 				onBrowseRepository(selectedRepository);
@@ -117,7 +118,7 @@
 				// of its root/dependent repository
 				if (repositoryItem.type == VersionControlTypes.XML)
 				{
-					var ownerRepository:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
+					var ownerRepository:RepositoryItemVO = repositoryItem as RepositoryItemVO;
 					if (ownerRepository && ownerRepository.pathToDownloaded)
 					{
 						// test the path existence

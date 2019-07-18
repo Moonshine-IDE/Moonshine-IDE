@@ -106,6 +106,7 @@ package actionScripts.ui.editor.text
 			if (!rdr) return;
 			
 			var newCaretPosition:int = rdr.getCharIndexFromPoint(stagePoint.x);
+			var safeBreakpointHitAreaSize:int = editor.lineNumberWidth - 4;
 			if (newCaretPosition > -1)
 			{
 				if (clickCount == 1)
@@ -134,15 +135,15 @@ package actionScripts.ui.editor.text
 					startChar = 0;
 					endChar = model.lines[startLine].text.length;
 				}
-				if(localPoint.x <= 41)
+				if(localPoint.x <= safeBreakpointHitAreaSize)
 				{
 					toggleBreakpoint(rdr.dataIndex);
 				}
 			}
-			else if (localPoint.x < editor.lineNumberWidth && localPoint.x > 16)
+			else if (localPoint.x < safeBreakpointHitAreaSize && localPoint.x > 16)
 			{
 				// set breakpoint when click on line number sprite
-				if(localPoint.x <= 41)
+				if(localPoint.x <= safeBreakpointHitAreaSize)
 				{
 					toggleBreakpoint(rdr.dataIndex);
 					return;

@@ -77,7 +77,7 @@ package actionScripts.plugins.gradle
 
         override public function get description():String
         {
-            return "Apache Gradle® Build Plugin. Esc exits.";
+            return "Apache Gradle® Build Plugin.";
         }
 
         public function get gradlePath():String

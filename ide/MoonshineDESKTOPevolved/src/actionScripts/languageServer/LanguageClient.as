@@ -1,35 +1,5 @@
 package actionScripts.languageServer
 {
-	import actionScripts.events.ApplicationEvent;
-	import actionScripts.events.CompletionItemsEvent;
-	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.ExecuteLanguageServerCommandEvent;
-	import actionScripts.events.GotoDefinitionEvent;
-	import actionScripts.events.HoverEvent;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.ReferencesEvent;
-	import actionScripts.events.SignatureHelpEvent;
-	import actionScripts.events.SymbolsEvent;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.valueObjects.Command;
-	import actionScripts.valueObjects.CompletionItem;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.ParameterInformation;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.SignatureHelp;
-	import actionScripts.valueObjects.SignatureInformation;
-	import actionScripts.valueObjects.SymbolInformation;
-	import actionScripts.valueObjects.TextEdit;
-
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -39,24 +9,54 @@ package actionScripts.languageServer
 	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
-
+	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
-	import actionScripts.events.OpenLocationEvent;
+	
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.CodeActionsEvent;
+	import actionScripts.events.CompletionItemsEvent;
+	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GotoDefinitionEvent;
+	import actionScripts.events.HoverEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
-	import actionScripts.events.CodeActionsEvent;
-	import actionScripts.valueObjects.CodeAction;
+	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.ReferencesEvent;
+	import actionScripts.events.ResolveCompletionItemEvent;
+	import actionScripts.events.SignatureHelpEvent;
+	import actionScripts.events.SymbolsEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.LSPUtil;
-	import actionScripts.valueObjects.DocumentSymbol;
-	import actionScripts.valueObjects.WorkspaceEdit;
 	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.valueObjects.CodeAction;
+	import actionScripts.valueObjects.Command;
+	import actionScripts.valueObjects.CompletionItem;
+	import actionScripts.valueObjects.CreateFile;
+	import actionScripts.valueObjects.DeleteFile;
+	import actionScripts.valueObjects.Diagnostic;
+	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.valueObjects.Location;
+	import actionScripts.valueObjects.ParameterInformation;
+	import actionScripts.valueObjects.Position;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Range;
+	import actionScripts.valueObjects.RenameFile;
+	import actionScripts.valueObjects.SignatureHelp;
+	import actionScripts.valueObjects.SignatureInformation;
+	import actionScripts.valueObjects.SymbolInformation;
 	import actionScripts.valueObjects.TextDocumentEdit;
 	import actionScripts.valueObjects.TextDocumentIdentifier;
-	import actionScripts.valueObjects.RenameFile;
-	import actionScripts.valueObjects.DeleteFile;
-	import actionScripts.valueObjects.CreateFile;
-	import actionScripts.events.ResolveCompletionItemEvent;
+	import actionScripts.valueObjects.TextEdit;
+	import actionScripts.valueObjects.WorkspaceEdit;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1776,7 +1776,7 @@ package actionScripts.languageServer
 			_definitionLinkLookup[id] = {uri: uri, position: positionVO };
 		}
 
-		private function gotoDefinitionHandler(event:MenuEvent):void
+		private function gotoDefinitionHandler(event:Event):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1818,7 +1818,7 @@ package actionScripts.languageServer
 			_gotoDefinitionLookup[id] = new Position(line, char);
 		}
 
-		private function gotoTypeDefinitionHandler(event:MenuEvent):void
+		private function gotoTypeDefinitionHandler(event:Event):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{

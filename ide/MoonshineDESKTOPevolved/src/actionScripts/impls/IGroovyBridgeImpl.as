@@ -82,9 +82,9 @@ package actionScripts.impls
 			return GrailsImporter.test(file as File);
 		}
 
-		public function parseGrails(file:FileLocation):GrailsProjectVO
+		public function parseGrails(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):GrailsProjectVO
 		{
-			return GrailsImporter.parse(file);
+			return GrailsImporter.parse(file, projectName, settingsFileLocation);
 		}
     }
 }

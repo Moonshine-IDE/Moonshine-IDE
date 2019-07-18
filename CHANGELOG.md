@@ -3,6 +3,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.4.0]
+
+### Summary
+
+Moonshine 2.4.0 adds some improvements for Grails, including project imports and menu actions to run Grails or Gradle commands.
+
+Moonshine also now supports configuration of an Adobe AIR SDK in addition to the Flex, Feathers, and Royale SDKs.
+
+### Added
+* Added interface to run Grails and Gradle commands on Grails projects
+* Added support for configuring the Adobe AIR SDK.
+* Grails:  Automatically configure the standard classpath folders
+* Grails:  Import Grails projects
+* Java Gradle: Add basic settings interface. 
+
+### Changed
+* Remember last opened path for file chooser.
+* Changed shortcut for Open File to CTRL+Shift+O (Windows), CMD+Shift+O (macOS).
+* Changed shortcut for Open Project to CTRL+O (Windows), CMD+O (macOS).
+* Changed shortcut for **Organize Imports** to CTRL+SHIFT+I (Windows), CMD+SHIFT+I (macOS).
+
+### Fixed
+* Fixed bug which broke compilation for Flex projects
+* Fixed issue where the last character was ommitted from a text selection.
+* Fixed issue where the macOS non-App Store build did not immediately configure the SDKs installed by Moonshine SDK Installer
+* Fixed issue which prevented CTRL/CMD + click from working on method reference. 
+* Miscellanous bugfixes and improvements to project dependencies interface
+* Updated selection error for adding breakpoints to make it less likely to click it by accident.
+* Removed obsolete "Exc exists" text from plugin descriptions
+* Fixed issue where the language server reported an error when the project file for a Grails project did not match the project directory name
+* Fixed error on Go To Definition and Go To Type Definition
+
+
 ## Moonshine IDE [2.3.0]
 
 ### Summary

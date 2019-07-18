@@ -39,7 +39,7 @@ package actionScripts.plugins.nativeFiles
 	{
 		override public function get name():String			{ return "FilesCopyPlugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Files Copy/Paste Plugin. Esc exits."; }
+		override public function get description():String	{ return "Files Copy/Paste Plugin."; }
 		
 		private var filesToBeCopied:Array;
 		private var foldersOnlyToBeCopied:Array = [];

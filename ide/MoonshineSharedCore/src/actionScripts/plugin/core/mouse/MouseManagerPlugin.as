@@ -33,7 +33,7 @@ package actionScripts.plugin.core.mouse
 	{
 		override public function get name():String			{ return "Mouse Manager Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Mouse Manager Plugin. Esc exits."; }
+		override public function get description():String	{ return "Mouse Manager Plugin."; }
 		
 		private var lastKnownEditor:TextEditor;
 		private var isApplicationDeactivated:Boolean;

@@ -54,6 +54,7 @@ import net.prominic.groovyls.util.FileContentsTracker;
 public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFactory {
 	private static final String FILE_EXTENSION_GROOVY = ".groovy";
 	private static final String FILE_EXTENSION_JAVA = ".java";
+	private static final String FILE_EXTENSION_GRAILSPROJ = ".grailsproj";
 	private static final String FILE_ECLIPSE_CLASSPATH = ".classpath";
 
 	private Path storagePath;
@@ -67,7 +68,11 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	}
 
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
-		Path projectFilePath = workspaceRoot.resolve(workspaceRoot.getFileName().toString() + ".grailsproj");
+		Path projectFilePath = getGrailsSettingsPath(workspaceRoot);
+		if (projectFilePath == null) {
+			System.err.println("Failed to find Groovy settings file.");
+			return null;
+		}
 		Document projectDocument = loadXMLDocument(projectFilePath);
 		if (projectDocument == null) {
 			return null;
@@ -159,6 +164,19 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			return null;
 		}
 		return result;
+	}
+
+	protected Path getGrailsSettingsPath(Path workspaceRoot) {
+		File folder = workspaceRoot.toFile();
+		for (File file : folder.listFiles()) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (file.getName().endsWith(FILE_EXTENSION_GRAILSPROJ)) {
+				return file.toPath();
+			}
+		}
+		return null;
 	}
 
 	protected Path getStoragePath(Path workspaceRoot) {

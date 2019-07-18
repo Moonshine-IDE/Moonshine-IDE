@@ -128,7 +128,8 @@ package actionScripts.plugin.syntax
 		{
 			if (event.fileExtension == "html" ||
 				event.fileExtension == "htm" ||
-				event.fileExtension == "xhtml")
+				event.fileExtension == "xhtml" ||
+				event.fileExtension == "gsp")
 			{
 				var lineParser:XMLContextSwitchLineParser = new XMLContextSwitchLineParser();
 				

@@ -151,24 +151,17 @@ package actionScripts.plugins.versionControl
 				}
 				
 				// add sort
-				if (gitMetaRepository.children.length > 0)
+				/*if (gitMetaRepository.children.length > 0)
 				{
 					gitMetaRepository.children.sortOn("url", Array.CASEINSENSITIVE);
-				}
+				}*/
 				
 				SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
 				return true;
 			}
 			else
 			{
-				if (ofRepository.type == VersionControlTypes.GIT)
-				{
-					ofRepository.children = null;
-				}
-				else if (ofRepository.type == VersionControlTypes.SVN)
-				{
-					ofRepository.children = [];
-				}
+				setStateOfRepositoryIfNotExists(ofRepository);
 			}
 			
 			SharedObjectUtil.saveRepositoriesToSO(REPOSITORIES);
@@ -180,23 +173,21 @@ package actionScripts.plugins.versionControl
 			var tmpRepo:Object = REPOSITORIES;
 			var repositories:Array = selectedRepository ? [selectedRepository] : REPOSITORIES.source;
 			var nonExistingRepositories:Array = [];
-			var ownerRepository:RepositoryItemVO;
 			var repo:RepositoryItemVO;
 			for each (repo in repositories)
 			{
 				if (repo.type == VersionControlTypes.XML)
 				{
-					ownerRepository = getRepositoryItemByUdid(repo.udid);
-					if (ownerRepository && ownerRepository.pathToDownloaded)
+					if (selectedRepository && selectedRepository.pathToDownloaded)
 					{
 						// test the path existence
-						if (!FileUtils.isPathExists(ownerRepository.pathToDownloaded)) 
+						if (!FileUtils.isPathExists(selectedRepository.pathToDownloaded)) 
 						{
 							nonExistingRepositories.push(repo);
 						}
 						else
 						{
-							parseRepositoryDependencies(repo, new File(ownerRepository.pathToDownloaded), false);
+							parseRepositoryDependencies(repo, new File(selectedRepository.pathToDownloaded), false);
 						}
 					}
 				}
@@ -208,6 +199,7 @@ package actionScripts.plugins.versionControl
 				var tmpMessage:String = "Following projects not found. You can remove the entries if the project has been deleted:\n";
 				for each (repo in nonExistingRepositories)
 				{
+					setStateOfRepositoryIfNotExists(repo);
 					if (repo.pathToDownloaded)
 					{
 						tmpMessage += "\n1. "+ repo.pathToDownloaded;
@@ -244,6 +236,18 @@ package actionScripts.plugins.versionControl
 			tmpCollection.addItem(tmpRepository);
 			
 			return tmpCollection;
+		}
+		
+		private static function setStateOfRepositoryIfNotExists(repo:RepositoryItemVO):void
+		{
+			if (repo.type == VersionControlTypes.GIT || repo.type == VersionControlTypes.XML)
+			{
+				repo.children = null;
+			}
+			else if (repo.type == VersionControlTypes.SVN)
+			{
+				repo.children = [];
+			}
 		}
 	}
 }
