@@ -15,7 +15,7 @@ We build Moonshine IDE with [Apache Flex® SDK 4.16.1](https://flex.apache.org/i
 
 First, build and deploy codecompletion.jar
 
-    cd vscode-nextgenas_MoonshineModifications/
+    cd language-server-wrappers/moonshine-as3mxml
     ant deploy
 
 
