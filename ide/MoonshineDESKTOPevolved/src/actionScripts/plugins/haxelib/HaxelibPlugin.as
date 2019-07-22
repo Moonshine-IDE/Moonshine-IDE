@@ -35,6 +35,7 @@ package actionScripts.plugins.haxelib
 	import flash.utils.Dictionary;
 	import flash.events.ProgressEvent;
 	import flash.utils.IDataInput;
+	import actionScripts.events.StatusBarEvent;
 
 	public class HaxelibPlugin extends PluginBase
 	{
@@ -68,6 +69,10 @@ package actionScripts.plugins.haxelib
 			if(status.currentIndex >= status.items.length)
 			{
 				status.currentIndex = 0;
+				dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					"Haxe", "Installing Haxe dependencies...", false
+				));
 				installNextDependency(status);
 				return;
 			}
@@ -94,6 +99,9 @@ package actionScripts.plugins.haxelib
 		{
 			if(status.currentIndex >= status.items.length)
 			{
+				dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS
+				));
 				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, status.project));
 				return;
 			}
@@ -253,6 +261,10 @@ package actionScripts.plugins.haxelib
 			}
 			else
 			{
+				dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS
+				));
+
 				currentItem.isDownloaded = false;
 				currentItem.hasError = "Failed to install dependency: " + currentItem.title;
 				ConsoleOutputter.formatOutput(currentItem.hasError, "error");
