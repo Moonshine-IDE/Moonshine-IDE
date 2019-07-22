@@ -111,7 +111,8 @@ package actionScripts.plugins.haxelib
 
 			var processArgs:Vector.<String> = new <String>[
 				"install",
-				currentItem.title
+				currentItem.title,
+				"--quiet"
 			];
 
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -120,6 +121,7 @@ package actionScripts.plugins.haxelib
 			
 			var process:NativeProcess = new NativeProcess();
 			_processToStatus[process] = status;
+			process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, installDependencyProcess_standardOutputDataHandler);
 			process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, installDependencyProcess_standardErrorDataHandler);
 			process.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
 			process.start(processInfo);
@@ -213,6 +215,15 @@ package actionScripts.plugins.haxelib
 			checkStatusOfNextDependency(status);
 		}
 
+		private function installDependencyProcess_standardOutputDataHandler(event:ProgressEvent):void
+		{
+			var process:NativeProcess = NativeProcess(event.currentTarget);
+			var output:IDataInput = process.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			ConsoleOutputter.formatOutput(data, "notice");
+			trace(data);
+		}
+
 		private function installDependencyProcess_standardErrorDataHandler(event:ProgressEvent):void
 		{
 			var process:NativeProcess = NativeProcess(event.currentTarget);
@@ -227,6 +238,7 @@ package actionScripts.plugins.haxelib
 			var process:NativeProcess = NativeProcess(event.currentTarget);
 			var status:ProjectInstallStatus = _processToStatus[process];
 			delete _processToStatus[status];
+			process.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, installDependencyProcess_standardOutputDataHandler);
 			process.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, installDependencyProcess_standardErrorDataHandler);
 			process.removeEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
 			process.exit();
