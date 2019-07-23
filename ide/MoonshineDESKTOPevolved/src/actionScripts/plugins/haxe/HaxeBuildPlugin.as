@@ -321,8 +321,9 @@ package actionScripts.plugins.haxe
         private function startLimeHTMLDebugServer(project:HaxeProjectVO):void
         {
             var nodeExePath:String = UtilsCore.getNodeBinPath();
+            var npxPath:String = (ConstantsCoreVO.IS_MACOS ? "/usr/local/lib" : model.nodePath) + "/node_modules/npm/bin/npx-cli.js";
             var args:Vector.<String> = new <String>[
-                model.nodePath + "/node_modules/npm/bin/npx-cli.js",
+                npxPath,
                 "http-server@0.9.0",
                 "bin/html5/bin",
                 "-p",
@@ -331,7 +332,7 @@ package actionScripts.plugins.haxe
             ];
             var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
             processInfo.executable = new File(nodeExePath);
-            processInfo.arguments = args
+            processInfo.arguments = args;
     
             print("Command: %s", nodeExePath + " " + args.join(" "));
             processInfo.workingDirectory = new File(project.projectFolder.nativePath);
