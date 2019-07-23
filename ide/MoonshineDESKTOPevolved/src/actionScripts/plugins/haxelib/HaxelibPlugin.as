@@ -36,10 +36,14 @@ package actionScripts.plugins.haxelib
 	import flash.events.ProgressEvent;
 	import flash.utils.IDataInput;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.valueObjects.Settings;
+	import actionScripts.valueObjects.EnvironmentExecPaths;
 
 	public class HaxelibPlugin extends PluginBase
 	{
 		private static const HAXELIB_LIME:String = "lime";
+		private static const FILE_NAME_PROJECT_XML:String = "project.xml";
 
 		public function HaxelibPlugin()
 		{
@@ -49,7 +53,6 @@ package actionScripts.plugins.haxelib
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String { return "Manage Haxelib dependencies."; }
 
-		private var _haxelibFile:File;
 		private var _processToStatus:Dictionary = new Dictionary();
 
 		override public function activate():void
@@ -76,23 +79,38 @@ package actionScripts.plugins.haxelib
 				installNextDependency(status);
 				return;
 			}
+
 			var currentItem:ComponentVO = status.items[status.currentIndex];
 
-			var processArgs:Vector.<String> = new <String>[
-				"path",
-				currentItem.title
-			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processInfo.arguments = processArgs;
-			processInfo.executable = _haxelibFile;
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
 			
-			var process:NativeProcess = new NativeProcess();
-			_processToStatus[process] = status;
-			//we don't care about ProgressEvent.STANDARD_ERROR_DATA here
-			//it only matters if the installation fails later
-			process.addEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
-			process.start(processInfo);
+				var process:NativeProcess = new NativeProcess();
+				_processToStatus[process] = status;
+				//we don't care about ProgressEvent.STANDARD_ERROR_DATA here
+				//it only matters if the installation fails later
+				process.addEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
+				process.start(processInfo);
+			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " path " + currentItem.title]);
 		}
 
 		private function installNextDependency(status:ProjectInstallStatus):void
@@ -116,40 +134,46 @@ package actionScripts.plugins.haxelib
 			}
 
 			ConsoleOutputter.formatOutput("Installing dependency " + currentItem.title + "...", "notice");
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			var processArgs:Vector.<String> = new <String>[
-				"install",
-				currentItem.title,
-				"--quiet"
-			];
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
 
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processInfo.arguments = processArgs;
-			processInfo.executable = _haxelibFile;
-			
-			var process:NativeProcess = new NativeProcess();
-			_processToStatus[process] = status;
-			process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, installDependencyProcess_standardOutputDataHandler);
-			process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, installDependencyProcess_standardErrorDataHandler);
-			process.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
-			process.start(processInfo);
+				var process:NativeProcess = new NativeProcess();
+				_processToStatus[process] = status;
+				process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, installDependencyProcess_standardOutputDataHandler);
+				process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, installDependencyProcess_standardErrorDataHandler);
+				process.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
+				process.start(processInfo);
+			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " install " + currentItem.title + " --quiet"]);
 		}
 
 		private function haxelibInstallHandler(event:HaxelibEvent):void
 		{
-			var haxelibPath:String = UtilsCore.getHaxelibBinPath();
-			if(!haxelibPath)
-			{
-				return;
-			}
-			_haxelibFile = new File(haxelibPath);
-			if(!_haxelibFile.exists)
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
 			{
 				return;
 			}
 
 			var project:HaxeProjectVO = event.project;
-			var projectFile:File = project.folderLocation.resolvePath("project.xml").fileBridge.getFile as File;
+			var projectFile:File = project.folderLocation.resolvePath(FILE_NAME_PROJECT_XML).fileBridge.getFile as File;
 			if(!projectFile.exists)
 			{
 				return;

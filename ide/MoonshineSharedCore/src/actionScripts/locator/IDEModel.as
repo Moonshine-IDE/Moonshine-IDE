@@ -79,6 +79,7 @@ package actionScripts.locator
 		public var gradlePath:String;
 		public var grailsPath:String;
 		public var haxePath:String;
+		public var nekoPath:String;
 		public var nodePath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var svnPath:String;

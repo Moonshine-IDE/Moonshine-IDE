@@ -1091,6 +1091,30 @@ package actionScripts.utils
 			
 			return true;
 		}
+		
+		public static function isHaxeAvailable():Boolean
+		{
+			if (!model.haxePath || model.haxePath == "")
+			{
+				return false;
+			}
+			
+			//TODO: use path validation with SDKTypes
+			var haxeName:String = ConstantsCoreVO.IS_MACOS ? "haxe" : "haxe.exe";
+			return model.fileCore.isPathExists(model.haxePath + model.fileCore.separator + haxeName);
+		}
+		
+		public static function isNekoAvailable():Boolean
+		{
+			if (!model.nekoPath || model.nekoPath == "")
+			{
+				return false;
+			}
+
+			//TODO: use path validation with SDKTypes
+			var nekoName:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			return model.fileCore.isPathExists(model.nekoPath + model.fileCore.separator + nekoName);
+		}
 
         public static function getMavenBinPath():String
         {
@@ -1203,102 +1227,6 @@ package actionScripts.utils
             else
             {
                 return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
-            }
-			
-			return null;
-        }
-
-        public static function getNpmBinPath():String
-        {
-			if (!model.nodePath || model.nodePath == "")
-			{
-				return null;
-			}
-
-            var nodeLocation:FileLocation = new FileLocation(model.nodePath);
-			if (!nodeLocation.fileBridge.exists)
-			{
-				return null;
-			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return nodeLocation.resolvePath("npm.cmd").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(nodeLocation.resolvePath("npm").fileBridge.nativePath);
-            }
-			
-			return null;
-        }
-
-        public static function getNpxBinPath():String
-        {
-			if (!model.nodePath || model.nodePath == "")
-			{
-				return null;
-			}
-
-            var nodeLocation:FileLocation = new FileLocation(model.nodePath);			
-			if (!nodeLocation.fileBridge.exists)
-			{
-				return null;
-			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return nodeLocation.resolvePath("npx.cmd").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(nodeLocation.resolvePath("npx").fileBridge.nativePath);
-            }
-			
-			return null;
-        }
-
-        public static function getHaxeBinPath():String
-        {
-			if (!model.haxePath || model.haxePath == "")
-			{
-				return null;
-			}
-
-            var haxeLocation:FileLocation = new FileLocation(model.haxePath);			
-			if (!haxeLocation.fileBridge.exists)
-			{
-				return null;
-			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return haxeLocation.resolvePath("haxe.exe").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(haxeLocation.resolvePath("haxe").fileBridge.nativePath);
-            }
-			
-			return null;
-        }
-
-        public static function getHaxelibBinPath():String
-        {
-			if (!model.haxePath || model.haxePath == "")
-			{
-				return null;
-			}
-
-            var haxeLocation:FileLocation = new FileLocation(model.haxePath);			
-			if (!haxeLocation.fileBridge.exists)
-			{
-				return null;
-			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return haxeLocation.resolvePath("haxelib.exe").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(haxeLocation.resolvePath("haxelib").fileBridge.nativePath);
             }
 			
 			return null;

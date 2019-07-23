@@ -219,6 +219,18 @@ package actionScripts.utils
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRAILS_HOME/bin:" : "%GRAILS_HOME%\\bin;");
 				isValidToExecute = true;
 			}
+			if (UtilsCore.isHaxeAvailable())
+			{
+				setCommand += getSetExportCommand("HAXE_HOME", model.haxePath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$HAXE_HOME:" : "%HAXE_HOME%;");
+				isValidToExecute = true;
+			}
+			if (UtilsCore.isNekoAvailable())
+			{
+				setCommand += getSetExportCommand("NEKO_HOME", model.nekoPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
+				isValidToExecute = true;
+			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
 			{
 				// moonshine stores gir path with 'bin\git.exe' format 

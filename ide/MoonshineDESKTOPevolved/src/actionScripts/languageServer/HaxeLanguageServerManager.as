@@ -48,6 +48,8 @@ package actionScripts.languageServer
     import flash.utils.IDataInput;
 
     import no.doomsday.console.ConsoleUtil;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -159,6 +161,10 @@ package actionScripts.languageServer
 		
 		private function boostrapThenStartNativeProcess():void
 		{
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			{
+				return;
+			}
 			if(_project.isLime)
 			{
 				installDependencies();
@@ -176,36 +182,42 @@ package actionScripts.languageServer
 		
 		private function getProjectSettings():void
 		{
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			{
+				return;
+			}
+
 			this._displayArguments = "";
-
-			var sdkPath:String = getProjectSDKPath(_project, _model);
-			if(!sdkPath)
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
-				return;
-			}
-			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
-			var cmdFile:File = new File(sdkPath).resolvePath(haxelibFileName);
-			if(!cmdFile.exists)
-			{
-				return;
-			}
-			var processArgs:Vector.<String> = new <String>[
-				"run",
-				"lime",
-				"display",
-				_project.targetPlatform
-			];
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-			
-			_limeDisplayProcess = new NativeProcess();
-			_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
-			_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
-			_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
-			_limeDisplayProcess.start(processInfo);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_limeDisplayProcess = new NativeProcess();
+				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
+				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
+				_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
+				_limeDisplayProcess.start(processInfo);
+			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run lime display " + _project.targetPlatform]);
+
 		}
 
 		private function startNativeProcess(displayArguments:Array):void
@@ -215,6 +227,11 @@ package actionScripts.languageServer
 				trace("Error: Haxe language server process already exists!");
 				return;
 			}
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			{
+				return;
+			}
+
 			var haxePath:String = getProjectSDKPath(_project, _model);
 			_previousHaxePath = haxePath;
 			_previousTargetPlatform = _project.targetPlatform;

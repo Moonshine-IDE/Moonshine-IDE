@@ -44,10 +44,12 @@ package actionScripts.plugins.haxe
     import flash.desktop.NativeProcessStartupInfo;
     import flash.filesystem.File;
     import actionScripts.events.SdkEvent;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
 		private var haxePathSetting:PathSetting;
+		private var nekoPathSetting:PathSetting;
 		private var nodePathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
         private var limeHTMLServerNativeProcess:NativeProcess;
@@ -96,6 +98,20 @@ package actionScripts.plugins.haxe
             }
         }
 
+        public function get nekoPath():String
+        {
+            return model ? model.nekoPath : null;
+        }
+
+        public function set nekoPath(value:String):void
+        {
+            if (model.nekoPath != value)
+            {
+                model.nekoPath = value;
+			    dispatcher.dispatchEvent(new SdkEvent(SdkEvent.CHANGE_HAXE_SDK));
+            }
+        }
+
         public function get nodePath():String
         {
             return model ? model.nodePath : null;
@@ -114,11 +130,12 @@ package actionScripts.plugins.haxe
 			onSettingsClose();
 
 			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
-            
+			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath);
 			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,
+                nekoPathSetting,
                 nodePathSetting
 			]);
         }
@@ -128,6 +145,10 @@ package actionScripts.plugins.haxe
 			if (haxePathSetting)
 			{
 				haxePathSetting = null;
+			}
+			if (nekoPathSetting)
+			{
+				nekoPathSetting = null;
 			}
 			if (nodePathSetting)
 			{
@@ -174,11 +195,11 @@ package actionScripts.plugins.haxe
                     //instead, we need run Node directly and run the npx script
                     //file. that seems to exit with stop(true).
                     projectWaitingToStartHTMLDebugServer = project;
-			        this.start(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
                 }
                 else
                 {
-			        this.startDebug(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "test", project.targetPlatform].join(" ")], projectFolder);
+			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.targetPlatform].join(" ")], projectFolder);
                 }
             }
             else
@@ -196,7 +217,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
@@ -213,7 +234,7 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[["\"" + UtilsCore.getHaxelibBinPath() + "\"", "run", "lime", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
@@ -232,6 +253,14 @@ package actionScripts.plugins.haxe
             if (!haxePath)
             {
                 error("Specify path to Haxe folder.");
+                stop(true);
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+                return;
+            }
+
+            if (!nekoPath)
+            {
+                error("Specify path to Neko folder.");
                 stop(true);
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
                 return;
@@ -263,6 +292,14 @@ package actionScripts.plugins.haxe
             if (!haxePath)
             {
                 error("Specify path to Haxe folder.");
+                stop(true);
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+                return;
+            }
+
+            if (!nekoPath)
+            {
+                error("Specify path to Neko folder.");
                 stop(true);
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
                 return;
