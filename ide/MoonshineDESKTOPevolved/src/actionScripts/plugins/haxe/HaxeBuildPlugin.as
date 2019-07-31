@@ -18,33 +18,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.haxe
 {
+    import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.SdkEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.compiler.HaxeBuildEvent;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
-    import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
-    import actionScripts.utils.HelperUtils;
+    import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ComponentTypes;
-    import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
 
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.events.ApplicationEvent;
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
     import flash.filesystem.File;
-    import actionScripts.events.SdkEvent;
-    import actionScripts.valueObjects.EnvironmentExecPaths;
+    import flash.utils.IDataInput;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -54,6 +53,8 @@ package actionScripts.plugins.haxe
 		private var isProjectHasInvalidPaths:Boolean;
         private var limeHTMLServerNativeProcess:NativeProcess;
         private var projectWaitingToStartHTMLDebugServer:HaxeProjectVO = null;
+        private var limeLibpathProcess:NativeProcess;
+        private var limeLibPath:String = null;
 		
         public function HaxeBuildPlugin()
         {
@@ -244,7 +245,7 @@ package actionScripts.plugins.haxe
 
 		override public function start(args:Vector.<String>, buildDirectory:*):void
 		{
-            if (nativeProcess.running && running)
+            if (running)
             {
                 warning("Build is running. Wait for finish...");
                 return;
@@ -283,7 +284,7 @@ package actionScripts.plugins.haxe
         
         public function startDebug(args:Vector.<String>, buildDirectory:*):void
 		{
-            if (nativeProcess.running && running)
+            if (running)
             {
                 warning("Build is running. Wait for finish...");
                 return;
@@ -318,13 +319,50 @@ package actionScripts.plugins.haxe
             }
 		}
 
+        private function findLimeLibpath():void
+        {
+			this.limeLibPath = "";
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+
+                running = true;
+
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = projectWaitingToStartHTMLDebugServer.folderLocation.fileBridge.getFile as File;
+				
+				limeLibpathProcess = new NativeProcess();
+				limeLibpathProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
+				limeLibpathProcess.addEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
+				limeLibpathProcess.start(processInfo);
+			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " libpath lime"]);
+        }
+
         private function startLimeHTMLDebugServer(project:HaxeProjectVO):void
         {
+            running = true;
+
             var nodeExePath:String = UtilsCore.getNodeBinPath();
-            var npxPath:String = (ConstantsCoreVO.IS_MACOS ? "/usr/local/lib" : model.nodePath) + "/node_modules/npm/bin/npx-cli.js";
+            var limeFolder:File = new File(this.limeLibPath);
+            var httpServerPath:String = limeFolder.resolvePath("templates/bin/node/http-server/bin/http-server").nativePath;
             var args:Vector.<String> = new <String>[
-                npxPath,
-                "http-server@0.9.0",
+                httpServerPath,
                 "bin/html5/bin",
                 "-p",
                 "3000",
@@ -340,7 +378,6 @@ package actionScripts.plugins.haxe
             limeHTMLServerNativeProcess = nativeProcess;
             addNativeProcessEventListeners();
             nativeProcess.start(processInfo);
-            running = true;
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
             dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
             dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
@@ -404,11 +441,13 @@ package actionScripts.plugins.haxe
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
             }
 
-            var project:HaxeProjectVO = projectWaitingToStartHTMLDebugServer;
-            projectWaitingToStartHTMLDebugServer = null;
             if(allowLimeHTMLServerLaunch)
             {
-                startLimeHTMLDebugServer(project);
+                findLimeLibpath();
+            }
+            else
+            {
+                projectWaitingToStartHTMLDebugServer = null;
             }
         }
 
@@ -429,6 +468,37 @@ package actionScripts.plugins.haxe
         private function onApplicationExit(event:ApplicationEvent):void
         {
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
+        }
+
+        private function limeLibpathProcess_standardOutputDataHandler(event:ProgressEvent):void
+        {
+            var process:NativeProcess = NativeProcess(event.currentTarget);
+            var output:IDataInput = process.standardOutput;
+            var data:String = output.readUTFBytes(output.bytesAvailable);
+            this.limeLibPath += data.replace(/[\r\n]/g, "");
+        }
+		
+		private function limeLibpathProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+            running = false;
+
+            var project:HaxeProjectVO = projectWaitingToStartHTMLDebugServer;
+            projectWaitingToStartHTMLDebugServer = null;
+
+			limeLibpathProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
+			limeLibpathProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
+			limeLibpathProcess.exit();
+			limeLibpathProcess = null;
+
+			if(event.exitCode == 0)
+			{
+				startLimeHTMLDebugServer(project);
+			}
+			else
+			{
+                this.limeLibPath = "";
+				error("Failed to load Lime libpath. Run cancelled.");
+			}
         }
 	}
 }
