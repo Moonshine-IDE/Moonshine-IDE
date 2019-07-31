@@ -4,13 +4,13 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.as3mxml.vscode.ActionScriptTextDocumentService;
+import com.as3mxml.vscode.ActionScriptServices;
 import com.as3mxml.vscode.project.WorkspaceFolderData;
 
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 
-public class MoonshineTextDocumentService extends ActionScriptTextDocumentService
+public class MoonshineActionScriptServices extends ActionScriptServices
 {
 	@JsonNotification(value="moonshine/didChangeProjectConfiguration")
 	public void didChangeProjectConfiguration(Object rawData) throws Exception

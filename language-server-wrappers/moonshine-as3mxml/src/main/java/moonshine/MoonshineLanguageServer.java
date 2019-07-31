@@ -4,6 +4,7 @@ import com.as3mxml.vscode.ActionScriptLanguageServer;
 import com.as3mxml.vscode.project.IProjectConfigStrategyFactory;
 
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.eclipse.lsp4j.services.WorkspaceService;
 
 public class MoonshineLanguageServer extends ActionScriptLanguageServer
 {
@@ -15,14 +16,20 @@ public class MoonshineLanguageServer extends ActionScriptLanguageServer
     @Override
     public TextDocumentService getTextDocumentService()
     {
-        if (textDocumentService == null)
+        if (actionScriptServices == null)
         {
-            textDocumentService = new MoonshineTextDocumentService();
-            if (workspaceService != null)
-            {
-                workspaceService.textDocumentService = textDocumentService;
-            }
+            actionScriptServices = new MoonshineActionScriptServices();
         }
-        return textDocumentService;
+        return actionScriptServices;
+    }
+
+    @Override
+    public WorkspaceService getWorkspaceService()
+    {
+        if (actionScriptServices == null)
+        {
+            actionScriptServices = new MoonshineActionScriptServices();
+        }
+        return actionScriptServices;
     }
 }
