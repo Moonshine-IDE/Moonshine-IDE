@@ -40,6 +40,7 @@ package actionScripts.ui.editor.text
 	import no.doomsday.utilities.math.MathUtils;
 	import org.apache.flex.collections.VectorCollection;
 	import mx.managers.PopUpManager;
+	import flash.events.Event;
 
     public class TextLineRenderer extends Sprite
 	{	
@@ -192,6 +193,7 @@ package actionScripts.ui.editor.text
 		{
 			super();
 			init();
+			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
 		}
 
 		private function init():void 
@@ -774,6 +776,15 @@ package actionScripts.ui.editor.text
 		private function markerBlink(event:TimerEvent):void
 		{
 			marker.visible = !marker.visible;
+		}
+
+		private function removedFromStageHandler(event:Event):void
+		{
+			if(codeActionView)
+			{
+				PopUpManager.removePopUp(codeActionView);
+				codeActionView = null;
+			}
 		}
 		
 	}
