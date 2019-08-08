@@ -62,9 +62,10 @@ package actionScripts.ui.editor
 			var fromCharCode:String = String.fromCharCode(event.charCode);
 			var ctrlSpace:Boolean = event.keyCode == Keyboard.SPACE && event.ctrlKey;
 			var memberAccess:Boolean = fromCharCode == ".";
+			var typeAnnotation:Boolean = fromCharCode == ":";
 			var enterKey:Boolean = event.keyCode == 13;
 			
-			if (ctrlSpace || memberAccess)
+			if (ctrlSpace || memberAccess || typeAnnotation)
 			{
 				if(!ctrlSpace)
 				{
