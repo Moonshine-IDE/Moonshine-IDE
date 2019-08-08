@@ -187,12 +187,13 @@ package actionScripts.ui.editor.text
 		{
             var startIndex:int = caret - menuStr.length;
 			var endIndex:int = caret;
-			var text:String = item.insertText;
-			if(!text)
+			var baseText:String = item.insertText;
+			if(!baseText)
 			{
-				text = item.label;
+				baseText = item.label;
 			}
 
+			var text:String = baseText;
             var hasSelectedLineAutoCloseAttr:Boolean = false;
 			if (item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
             {
@@ -207,14 +208,14 @@ package actionScripts.ui.editor.text
 
                     if (hasSelectedLineAutoCloseAttr)
                     {
-                        text = item.label + "=\"\"";
+                        text = baseText + "=\"\"";
                     }
                 }
             }
 
 			if (!hasSelectedLineAutoCloseAttr && item.kind == CompletionItemKind.METHOD)
 			{
-				text = item.label + "()";
+				text = baseText + "()";
 			}
 
             editor.setCompletionData(startIndex, endIndex, text);
