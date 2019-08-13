@@ -47,6 +47,13 @@
 	color: #ffffff;
 }
 
+.toolTipButton
+{
+	skinClass: ClassReference("elements.skins.ToolTipButtonSkin");
+	fontFamily: 'DejaVuSans';
+	fontSize: 12;
+}
+
 .consoleFixedWidthTexts
 {
 	fontFamily: Courier, "_typewriter";

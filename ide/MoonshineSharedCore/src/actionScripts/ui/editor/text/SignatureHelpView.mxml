@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009"
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009"
 	xmlns:mx="library://ns.adobe.com/flex/mx"
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	styleName="toolTip" focusEnabled="false">
 
 	<s:RichText textFlow="{this.getTextFlow(signatures, activeSignature, activeParameter)}"/>
+
+	<mx:HBox
+		visible="{signatures.length > 1}"
+		includeInLayout="{signatures.length > 1}">
+		<s:Button styleName="toolTipButton"
+			label="◀"
+			enabled="{activeSignature &gt; 0}"
+			click="prevSignatureButton_onClick(event)"/>
+		<s:Button styleName="toolTipButton"
+			label="▶"
+			enabled="{activeSignature &lt; signatures.length - 1}"
+			click="nextSignatureButton_onClick(event)"/>
+	</mx:HBox>
 
 	<fx:Script>
 		<![CDATA[
@@ -12,9 +25,11 @@
 			import actionScripts.valueObjects.SignatureInformation;
 			import flashx.textLayout.conversion.TextConverter;
 			import flashx.textLayout.elements.TextFlow;
+			import flash.events.MouseEvent;
+			import mx.collections.ListCollectionView;
 
 			[Bindable]
-			public var signatures:Vector.<SignatureInformation>;
+			public var signatures:ListCollectionView;
 
 			[Bindable]
 			public var activeSignature:int = -1;
@@ -22,13 +37,13 @@
 			[Bindable]
 			public var activeParameter:int = -1;
 
-			private function getTextFlow(signatures:Vector.<SignatureInformation>, activeSignature:int, activeParameter:int):TextFlow
+			private function getTextFlow(signatures:ListCollectionView, activeSignature:int, activeParameter:int):TextFlow
 			{
 				if(signatures == null || signatures.length == 0 || activeSignature == -1 || activeParameter == -1)
 				{
 					return null;
 				}
-				var signature:SignatureInformation = signatures[activeSignature];
+				var signature:SignatureInformation = signatures.getItemAt(activeSignature) as SignatureInformation;
 				var parameters:Vector.<ParameterInformation> = signature.parameters;
 				var signatureParts:Array = signature.label.split(/[\(\)]/);
 				var signatureHelpText:String = signatureParts[0] + "(";
@@ -59,6 +74,16 @@
 				}
 				return TextConverter.importToFlow(signatureHelpText, TextConverter.TEXT_FIELD_HTML_FORMAT);
 			}
+
+			private function prevSignatureButton_onClick(event:MouseEvent):void
+			{
+				activeSignature--;
+			}
+
+			private function nextSignatureButton_onClick(event:MouseEvent):void
+			{
+				activeSignature++;
+			}
 		]]>
 	</fx:Script>
-</mx:HBox>
+</mx:VBox>

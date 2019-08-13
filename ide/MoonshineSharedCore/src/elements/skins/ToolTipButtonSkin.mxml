@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkButtonSkin 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark"  
+    alpha.disabled="0.5"
+	creationComplete="labelDisplay.text=hostComponent.label"> 
+ 
+     <fx:Metadata> 
+        [HostComponent("spark.components.Button")] 
+    </fx:Metadata> 
+  
+    <s:states> 
+        <s:State name="up" /> 
+        <s:State name="over" /> 
+        <s:State name="down" /> 
+        <s:State name="disabled" /> 
+    </s:states>  
+ 
+ 	<fx:Script> 
+        <![CDATA[         
+            static private const exclusions:Array = ["iconDisplay", "labelDisplay"]; 
+            override public function get colorizeExclusions():Array
+            {
+            	return exclusions;
+            } 
+        ]]>        
+    </fx:Script>
+	
+	<s:Rect top="0" right="0" bottom="0" left="0">
+		
+		<s:stroke>
+			<s:SolidColorStroke
+				color="#ffffff" 
+				weight="1" />
+		</s:stroke>
+		
+		<s:fill>
+			<s:SolidColor color="0xbd60b9" alpha="1" />
+		</s:fill>
+	</s:Rect>
+
+    <s:Label id="labelDisplay"
+    	width="100%" height="100%"
+    	paddingLeft="4" paddingRight="4"
+    	paddingTop="2" paddingBottom="2"
+    	color="#ffffff"
+    	fontFamily="DejaVuSans" /> 
+ 
+</s:SparkButtonSkin>

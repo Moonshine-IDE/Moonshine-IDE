@@ -33,6 +33,8 @@ package actionScripts.ui.editor.text
 	import actionScripts.valueObjects.SignatureInformation;
 	
 	import flashx.textLayout.conversion.TextConverter;
+	import mx.collections.ArrayCollection;
+	import org.apache.flex.collections.VectorCollection;
 
 	public class SignatureHelpManager
 	{
@@ -65,7 +67,7 @@ package actionScripts.ui.editor.text
 			var signatures:Vector.<SignatureInformation> = data.signatures;
 			var activeSignature:int = data.activeSignature;
 			var activeParameter:int = data.activeParameter;
-			view.signatures = signatures;
+			view.signatures = new VectorCollection(signatures);
 			view.activeSignature = activeSignature;
 			view.activeParameter = activeParameter;
 			if(activeSignature >= 0 && !view.isPopUp)
