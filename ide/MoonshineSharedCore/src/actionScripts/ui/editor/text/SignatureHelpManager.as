@@ -39,13 +39,12 @@ package actionScripts.ui.editor.text
 		protected var editor:TextEditor;
 		protected var model:TextEditorModel;
 
-		private var tooltip:HBox;
-		private var tooltipText:RichText;
+		private var view:SignatureHelpView;
 		private var tooltipCaret:int;
 
 		public function get isActive():Boolean
 		{
-			return tooltip.isPopUp;
+			return view.isPopUp;
 		}
 
 		public function SignatureHelpManager(editor:TextEditor, model:TextEditorModel)
@@ -53,13 +52,7 @@ package actionScripts.ui.editor.text
 			this.editor = editor;
 			this.model = model;
 
-			tooltip = new HBox();
-			tooltip.styleName = "toolTip";
-			tooltipText = new RichText();
-			tooltip.focusEnabled = false;
-			tooltip.mouseEnabled = false;
-			tooltip.mouseChildren = false;
-			tooltip.addElement(tooltipText);
+			view = new SignatureHelpView();
 		}
 
 		public function showSignatureHelp(data:SignatureHelp):void
@@ -72,60 +65,30 @@ package actionScripts.ui.editor.text
 			var signatures:Vector.<SignatureInformation> = data.signatures;
 			var activeSignature:int = data.activeSignature;
 			var activeParameter:int = data.activeParameter;
-			if(activeSignature >= 0)
+			view.signatures = signatures;
+			view.activeSignature = activeSignature;
+			view.activeParameter = activeParameter;
+			if(activeSignature >= 0 && !view.isPopUp)
 			{
-				var signature:SignatureInformation = signatures[activeSignature];
-				var parameters:Vector.<ParameterInformation> = signature.parameters;
-				var signatureParts:Array = signature.label.split(/[\(\)]/);
-				var signatureHelpText:String = signatureParts[0] + "(";
-				var parametersText:String = signatureParts[1];
-				var parameterParts:Array = parametersText.split(",");
-				var parameterCount:int = parameters.length;
-				for(var i:int = 0; i < parameterCount; i++)
+				PopUpManager.addPopUp(view, editor, false);
+				var lineText:String = model.lines[model.selectedLineIndex].text;
+				tooltipCaret = lineText.lastIndexOf("(", model.caretIndex);
+				view.validateNow();
+				var position:Point = editor.getPointForIndex(model.caretIndex);
+				var tooltipX:Number = position.x + editor.horizontalScrollBar.scrollPosition;
+				var tooltipY:Number = position.y - (view.height + 15);
+				var maxTooltipX:Number = view.stage.stageWidth - view.width;
+				if(tooltipX > maxTooltipX)
 				{
-					if(i > 0)
-					{
-						signatureHelpText += ",";
-					}
-					var partText:String = parameterParts[i];
-					if(i === activeParameter)
-					{
-						signatureHelpText += "<b>";
-					}
-					signatureHelpText += partText;
-					if(i === activeParameter)
-					{
-						signatureHelpText += "</b>";
-					}
+					tooltipX = maxTooltipX;
 				}
-				signatureHelpText += ")";
-				if(signatureParts.length > 2)
+				if(tooltipY < 0)
 				{
-					signatureHelpText += signatureParts[2];
+					tooltipY = 0;
 				}
-				tooltipText.textFlow = TextConverter.importToFlow(signatureHelpText, TextConverter.TEXT_FIELD_HTML_FORMAT);
-				if(!tooltip.isPopUp)
-				{
-					PopUpManager.addPopUp(tooltip, editor, false);
-					var lineText:String = model.lines[model.selectedLineIndex].text;
-					tooltipCaret = lineText.lastIndexOf("(", model.caretIndex);
-					tooltip.validateNow();
-					var position:Point = editor.getPointForIndex(model.caretIndex);
-					var tooltipX:Number = position.x + editor.horizontalScrollBar.scrollPosition;
-					var tooltipY:Number = position.y - (tooltip.height + 15);
-					var maxTooltipX:Number = tooltip.stage.stageWidth - tooltip.width;
-					if(tooltipX > maxTooltipX)
-					{
-						tooltipX = maxTooltipX;
-					}
-					if(tooltipY < 0)
-					{
-						tooltipY = 0;
-					}
-					tooltip.move(tooltipX, tooltipY);
-					editor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-					editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-				}
+				view.move(tooltipX, tooltipY);
+				editor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+				editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			}
 		}
 
@@ -137,7 +100,7 @@ package actionScripts.ui.editor.text
 			}
 			editor.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			editor.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-			PopUpManager.removePopUp(tooltip);
+			PopUpManager.removePopUp(view);
 		}
 
 		private function onMouseDown(event:MouseEvent):void

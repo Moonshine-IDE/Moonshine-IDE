@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	styleName="toolTip" focusEnabled="false">
+
+	<s:RichText textFlow="{this.getTextFlow(signatures, activeSignature, activeParameter)}"/>
+
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.valueObjects.ParameterInformation;
+			import actionScripts.valueObjects.SignatureInformation;
+			import flashx.textLayout.conversion.TextConverter;
+			import flashx.textLayout.elements.TextFlow;
+
+			[Bindable]
+			public var signatures:Vector.<SignatureInformation>;
+
+			[Bindable]
+			public var activeSignature:int = -1;
+
+			[Bindable]
+			public var activeParameter:int = -1;
+
+			private function getTextFlow(signatures:Vector.<SignatureInformation>, activeSignature:int, activeParameter:int):TextFlow
+			{
+				if(signatures == null || signatures.length == 0 || activeSignature == -1 || activeParameter == -1)
+				{
+					return null;
+				}
+				var signature:SignatureInformation = signatures[activeSignature];
+				var parameters:Vector.<ParameterInformation> = signature.parameters;
+				var signatureParts:Array = signature.label.split(/[\(\)]/);
+				var signatureHelpText:String = signatureParts[0] + "(";
+				var parametersText:String = signatureParts[1];
+				var parameterParts:Array = parametersText.split(",");
+				var parameterCount:int = parameters.length;
+				for(var i:int = 0; i < parameterCount; i++)
+				{
+					if(i > 0)
+					{
+						signatureHelpText += ",";
+					}
+					var partText:String = parameterParts[i];
+					if(i === activeParameter)
+					{
+						signatureHelpText += "<b>";
+					}
+					signatureHelpText += partText;
+					if(i === activeParameter)
+					{
+						signatureHelpText += "</b>";
+					}
+				}
+				signatureHelpText += ")";
+				if(signatureParts.length > 2)
+				{
+					signatureHelpText += signatureParts[2];
+				}
+				return TextConverter.importToFlow(signatureHelpText, TextConverter.TEXT_FIELD_HTML_FORMAT);
+			}
+		]]>
+	</fx:Script>
+</mx:HBox>
