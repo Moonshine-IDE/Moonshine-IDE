@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://www.adobe.com/2006/mxml"
+		 xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:s="spark.components.*" xmlns:layouts="spark.layouts.*"
+		 width="100%"
+		 height="100%"
+		 backgroundColor="0x444444"
+		 verticalGap="0"
+		 implements="actionScripts.interfaces.IViewWithTitle"
+		 verticalScrollPolicy="off">
+
+	<fx:Script><![CDATA[
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.valueObjects.Location;
+		import actionScripts.valueObjects.Position;
+
+		import mx.collections.ArrayCollection;
+
+		import spark.components.Alert;
+
+		[Bindable]
+		public var references:ArrayCollection = new ArrayCollection();
+
+		public function get title():String
+		{
+			return "References";
+		}
+
+		private function itemToLabel(item:Location):String
+		{
+			var start:Position = item.range.start;
+			return "(" + start.line + ", " + start.character + ") " + new File(item.uri).nativePath;
+		}
+
+		protected function onListDoubleClicked(event:MouseEvent):void
+		{
+			if(!lstReferences.selectedItem)
+			{
+				Alert.show("Please select an item to open.");
+				return;
+			}
+
+			var location:Location = lstReferences.selectedItem as Location;
+			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
+				[new FileLocation(location.uri, true)], location.range.start.line);
+			openEvent.atChar = location.range.start.character;
+			GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
+		}
+		]]></fx:Script>
+
+	<s:List id="lstReferences" styleName="referencesList" width="100%" height="100%"
+			dataProvider="{references}" labelFunction="{itemToLabel}"
+			doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)">
+		<s:layout>
+			<layouts:VerticalLayout horizontalAlign="justify" useVirtualLayout="true" gap="1"/>
+		</s:layout>
+	</s:List>
+</mx:VBox>

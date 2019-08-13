@@ -54,9 +54,11 @@ package actionScripts.impls
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
+	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.plugin.project.ProjectPlugin;
 	import actionScripts.plugin.projectPanel.ProjectPanelPlugin;
 	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+	import actionScripts.plugin.references.ReferencesPlugin;
 	import actionScripts.plugin.rename.RenamePlugin;
 	import actionScripts.plugin.search.SearchPlugin;
 	import actionScripts.plugin.settings.SettingsPlugin;
@@ -87,8 +89,6 @@ package actionScripts.impls
 	import actionScripts.plugins.maven.MavenBuildPlugin;
 	import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
 	import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
-	import actionScripts.plugins.problems.ProblemsPlugin;
-	import actionScripts.plugins.references.ReferencesPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
 	import actionScripts.plugins.startup.StartupHelperPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;

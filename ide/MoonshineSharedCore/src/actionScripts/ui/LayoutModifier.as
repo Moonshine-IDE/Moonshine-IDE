@@ -22,15 +22,17 @@ package actionScripts.ui
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
-	
+
 	import mx.core.FlexGlobals;
-	
+
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.interfaces.IViewWithTitle;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
+
 	import components.views.project.TreeView;
 
 	public class LayoutModifier
@@ -42,17 +44,21 @@ package actionScripts.ui
 		public static const IS_MAIN_WINDOW_MAXIMIZED:String = "isMainWindowMaximized";
 		public static const MAIN_WINDOW_WIDTH_HEIGHT:String = "MAIN_WINDOW_WIDTH_HEIGHT";
 		public static const SIDEBAR_CHILDREN:String = "sidebarChildren";
+		public static const PROJECT_PANEL_CHILDREN:String = "projectPanelChildren";
 		
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private static const model:IDEModel = IDEModel.getInstance();
 		
 		public static var sidebarChildren:Array;
+		public static var projectPanelChildren:Array;
 		
 		private static var sectionStatesDict:Dictionary = new Dictionary();
 		private static var applicationSize:String;
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
 		private static var isSidebarCreated:Boolean;
+		private static var isProjectPanelCreated:Boolean;
+		private static var projectPanelViews:Array = [];
 		
 		public static function parseCookie(value:SharedObject):void
 		{
@@ -62,6 +68,7 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(MAIN_WINDOW_WIDTH_HEIGHT)) applicationSize = value.data[MAIN_WINDOW_WIDTH_HEIGHT];
 			if (value.data.hasOwnProperty(SIDEBAR_WIDTH)) sidebarWidth = value.data[SIDEBAR_WIDTH];
 			if (value.data.hasOwnProperty(SIDEBAR_CHILDREN)) sidebarChildren = value.data[SIDEBAR_CHILDREN];
+			if (value.data.hasOwnProperty(PROJECT_PANEL_CHILDREN)) projectPanelChildren = value.data[PROJECT_PANEL_CHILDREN];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
 			else if (applicationSize)
@@ -194,6 +201,22 @@ package actionScripts.ui
 			
 			if (sectionGoingToAcquireNewHeight) sectionGoingToAcquireNewHeight.percentHeight += sectionPercentageHeight;
 		}
+
+		public static function addToProjectPanel(section:IViewWithTitle):void
+		{
+			projectPanelViews.push({className: section["className"]});
+			saveLastProjectPanelState();
+		}
+
+		public static function removeFromProjectPanel(section:IViewWithTitle):void
+		{
+			var className:String = section["className"];
+			projectPanelViews = projectPanelViews.filter(function(item:Object, index:int, source:Array):Boolean
+			{
+				return item.className != className;
+			});
+			saveLastProjectPanelState();
+		}
 		
 		public static function justifyHeights(section:IPanelWindow):void
 		{
@@ -215,6 +238,35 @@ package actionScripts.ui
 				childWithLargestHeight.percentHeight = childWithLargestHeight.percentHeight / 2;
 				section.percentHeight = childWithLargestHeight.percentHeight;
 			}
+		}
+
+        private static function saveLastProjectPanelState():void
+        {
+			// saving sidebar last state
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:PROJECT_PANEL_CHILDREN, value: projectPanelViews}));
+        }
+		
+		public static function attachProjectPanelSections():void
+		{
+			// if restarted for next time
+			if (projectPanelChildren)
+			{
+				for (var i:int = 0; i < projectPanelChildren.length; i++)
+				{
+					switch (projectPanelChildren[i].className)
+					{
+						case "ProblemsView":
+							dispatcher.dispatchEvent(new GeneralEvent(ProblemsPlugin.EVENT_PROBLEMS));
+							break;
+					}
+				}
+				
+				isProjectPanelCreated = true;
+				return;
+			}
+			
+			projectPanelChildren = null;
+			isProjectPanelCreated = true;
 		}
 		
 		private static var _isProjectPanelCollapsed:Boolean;

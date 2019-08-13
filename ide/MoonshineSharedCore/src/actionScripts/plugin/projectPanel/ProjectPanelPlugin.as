@@ -1,16 +1,17 @@
 package actionScripts.plugin.projectPanel
 {
     import flash.events.MouseEvent;
-    
+
     import mx.containers.dividedBoxClasses.BoxDivider;
     import mx.core.UIComponent;
     import mx.events.DividerEvent;
     import mx.events.FlexEvent;
     import mx.managers.CursorManager;
     import mx.managers.CursorManagerPriority;
-    
+
     import spark.components.NavigatorContent;
-    
+
+    import actionScripts.interfaces.IViewWithTitle;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
@@ -109,6 +110,8 @@ package actionScripts.plugin.projectPanel
                 views.push(event.view.title);
 
                 view.selectedIndex = view.numElements - 1;
+                
+                LayoutModifier.addToProjectPanel(event.view);
             }
         }
 
@@ -130,13 +133,16 @@ package actionScripts.plugin.projectPanel
                         break;
                     }
                 }
+                
+                LayoutModifier.removeFromProjectPanel(event.view);
             }
         }
 
         private function onViewTabClose(event:TabNavigatorEvent):void
         {
-            view.removeElementAt(event.tabIndex);
-            views.removeAt(event.tabIndex);
+            var navContent:NavigatorContent = NavigatorContent(view.getElementAt(event.tabIndex));
+            var tab:IViewWithTitle = IViewWithTitle(navContent.getElementAt(0));
+            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, tab));
         }
 
         private function onViewCreationComplete(event:FlexEvent):void
@@ -152,6 +158,8 @@ package actionScripts.plugin.projectPanel
             {
                 setProjectPanelHeight(-1);
             }
+
+            LayoutModifier.attachProjectPanelSections();
         }
 
         private function onProjectPanelDividerRelease(event:DividerEvent):void
