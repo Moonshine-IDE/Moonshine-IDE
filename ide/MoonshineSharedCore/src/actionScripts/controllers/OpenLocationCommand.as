@@ -67,14 +67,18 @@ package actionScripts.controllers
 				if (start.line > -1)
 				{
 					var editorComponent:TextEditor = editor.getEditorComponent();
-					var textEditorModel:TextEditorModel = editorComponent.model;
-					textEditorModel.selectedLineIndex = start.line;
+					editorComponent.scrollTo(start.line, OpenFileEvent.OPEN_FILE);
+					editorComponent.selectLine(start.line);
 					if(start.character > -1)
 					{
-						textEditorModel.caretIndex = start.character;
+						editorComponent.model.caretIndex = start.character;
 					}
-					editorComponent.scrollTo(start.line);
 				}
+				editor.callLater(function():void
+				{
+					//for some reason this does not work immediately
+					editor.setFocus();
+				});
 			}
 		}
 	}

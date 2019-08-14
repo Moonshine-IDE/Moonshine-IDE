@@ -197,6 +197,7 @@ package actionScripts.controllers
 							ed.getEditorComponent().model.caretIndex = atChar;
 						}
 					}
+					ed.setFocus();
 					return;
 				}
 			}
