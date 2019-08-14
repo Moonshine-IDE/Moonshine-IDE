@@ -30,6 +30,7 @@ package actionScripts.ui
 	import actionScripts.interfaces.IViewWithTitle;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -114,6 +115,9 @@ package actionScripts.ui
 							break;
 						case "ProblemsView":
 							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, sidebarChildren[i].height));
+							break;
+						case "OutlineView":
+							dispatcher.dispatchEvent(new GeneralEvent(OutlinePlugin.EVENT_OUTLINE, sidebarChildren[i].height));
 							break;
 					}
 				}

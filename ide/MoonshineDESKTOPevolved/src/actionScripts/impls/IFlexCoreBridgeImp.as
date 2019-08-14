@@ -120,6 +120,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
+	import actionScripts.plugin.outline.OutlinePlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -231,6 +232,7 @@ package actionScripts.impls
 				SVNPlugin,
 				VSCodeDebugProtocolPlugin,
 				SaveFilesPlugin,
+				OutlinePlugin,
 				ProblemsPlugin,
 				SymbolsPlugin,
 				ReferencesPlugin,
@@ -245,7 +247,7 @@ package actionScripts.impls
 		public function getPluginsNotToShowInSettings():Array
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
-					MXMLCJavaScriptPlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
+					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
 		}
 		
@@ -328,6 +330,7 @@ package actionScripts.impls
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, null, ProjectEvent.SHOW_PROJECT_VIEW),
 					new MenuItem(resourceManager.getString('resources','FULLSCREEN'), null, null, FullscreenPlugin.EVENT_FULLSCREEN),
+					new MenuItem(resourceManager.getString('resources','OUTLINE_VIEW'), null, null, OutlinePlugin.EVENT_OUTLINE),
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, null, ProblemsPlugin.EVENT_PROBLEMS),
 					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], VSCodeDebugProtocolPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
