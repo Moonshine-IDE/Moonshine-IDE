@@ -582,7 +582,7 @@ package actionScripts.languageServer
 					documentSymbol:
 					{
 						dynamicRegistration: true,
-						hierarchicalDocumentSymbolSupport: false,
+						hierarchicalDocumentSymbolSupport: true,
 						symbolKind:
 						{
 							//valueSet: []
