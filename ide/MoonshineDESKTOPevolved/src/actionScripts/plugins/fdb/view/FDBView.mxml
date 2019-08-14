@@ -21,11 +21,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:sidebar="actionScripts.ui.sidebar.*"
 	implements="actionScripts.ui.IPanelWindow"
 	width="100%"
 	height="100%" 
 	backgroundColor="0x444444"
-	verticalGap="0" xmlns:view="actionScripts.plugins.fdb.view.*"
+	verticalGap="0"
 	>
 	<mx:Style>
 		.headerStyle  
@@ -88,7 +89,7 @@
 		]]>
 	</mx:Script>
 	
-	<view:DebugViewHeader
+	<sidebar:SidebarViewHeader
 		id="header"
 		label="Debug" 
 		width="100%"

@@ -17,7 +17,7 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.fdb.view
+package actionScripts.ui.sidebar
 {
 	import flash.events.MouseEvent;
 	import flash.filters.DropShadowFilter;
@@ -26,9 +26,9 @@ package actionScripts.plugins.fdb.view
 	
 	import actionScripts.ui.tabview.TabViewTab;
 	
-	public class DebugViewHeader extends TabViewTab
+	public class SidebarViewHeader extends TabViewTab
 	{
-		public function DebugViewHeader()
+		public function SidebarViewHeader()
 		{
 			super();
 			percentWidth = 100;
