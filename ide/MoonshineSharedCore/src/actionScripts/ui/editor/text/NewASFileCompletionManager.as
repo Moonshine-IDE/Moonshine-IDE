@@ -40,9 +40,10 @@ package actionScripts.ui.editor.text
     import spark.components.TitleWindow;
     import actionScripts.valueObjects.SymbolKind;
     import actionScripts.valueObjects.DocumentSymbol;
+    import actionScripts.utils.symbolKindToCompletionItemKind;
 
     [Event(name="itemSelected", type="flash.events.Event")]
-    public class NewASFileCompletionManager
+    public class NewASFileCompletionManager extends EventDispatcher
     {
         private static const CLASSES_LIST:String = "classesList";
         private static const INTERFACES_LIST:String = "interfacesList";
@@ -67,7 +68,7 @@ package actionScripts.ui.editor.text
             menuCollection = new ArrayCollection();
             completionList.dataProvider = menuCollection;
 
-            dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
+            dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowWorkspaceSymbols);
             view.addEventListener(MouseEvent.CLICK, onViewClick);
             view.addEventListener(CloseEvent.CLOSE, onViewClose);
             view.addEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
@@ -103,7 +104,7 @@ package actionScripts.ui.editor.text
             this.internalShowCompletionList(text, position);
         }
 
-        private function handleShowSymbols(event:SymbolsEvent):void
+        private function handleShowWorkspaceSymbols(event:SymbolsEvent):void
         {
             menuCollection.source.splice(0, menuCollection.length);
             if (event.symbols.length == 0)
@@ -143,7 +144,7 @@ package actionScripts.ui.editor.text
                     continue;
                 }
                 var packageName:String = symbolInformation.containerName ? symbolInformation.containerName + "." + symbolInformation.name : "";
-                var completionItemKind:int = getCompletionItemType(symbolInformation.kind);
+                var completionItemKind:int = symbolKindToCompletionItemKind(symbolInformation.kind);
 
                 menuCollection.source.push(new CompletionItem(symbolInformation.name,
                         "", completionItemKind, packageName));
@@ -156,7 +157,7 @@ package actionScripts.ui.editor.text
 
         private function onViewClose(event:Event):void
         {
-            dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
+            dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowWorkspaceSymbols);
             view.removeEventListener(MouseEvent.CLICK, onViewClick);
             view.removeEventListener(CloseEvent.CLOSE, onViewClose);
             view.removeEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
@@ -279,16 +280,6 @@ package actionScripts.ui.editor.text
                 return documentSymbol.kind == SymbolKind.INTERFACE;
             }
             return false;
-        }
-
-        private function getCompletionItemType(symbolKind:int):int
-        {
-            if (SymbolKind.CLASS == symbolKind)
-            {
-                return CompletionItemKind.CLASS;
-            }
-
-            return CompletionItemKind.INTERFACE;
         }
     }
 }

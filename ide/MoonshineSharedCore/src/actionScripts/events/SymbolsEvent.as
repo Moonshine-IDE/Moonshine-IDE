@@ -6,7 +6,8 @@ package actionScripts.events
 
 	public class SymbolsEvent extends Event
 	{
-		public static const EVENT_SHOW_SYMBOLS:String = "newShowSymbols";
+		public static const EVENT_SHOW_DOCUMENT_SYMBOLS:String = "newShowDocumentSymbols";
+		public static const EVENT_SHOW_WORKSPACE_SYMBOLS:String = "newShowWorkspaceSymbols";
 
 		//contains SymbolInformation or DocumentSymbol
 		public var symbols:Array;

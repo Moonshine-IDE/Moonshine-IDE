@@ -224,6 +224,8 @@ package actionScripts.languageServer
 		private var _completionLookup:Dictionary = new Dictionary();
 		private var _hoverLookup:Dictionary = new Dictionary();
 		private var _signatureHelpLookup:Dictionary = new Dictionary();
+		private var _documentSymbolsLookup:Dictionary = new Dictionary();
+		private var _workspaceSymbolsLookup:Dictionary = new Dictionary();
 		private var _previousActiveFilePath:String = null;
 		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
@@ -973,9 +975,19 @@ package actionScripts.languageServer
 						delete _codeActionLookup[requestID];
 						handleCodeActionResponse(result);
 					}
-					else //document or workspace symbols
+					else if(requestID in _documentSymbolsLookup)
 					{
-						handleSymbolsResponse(result);
+						delete _documentSymbolsLookup[requestID];
+						handleDocumentSymbolsResponse(result);
+					}
+					else if(requestID in _workspaceSymbolsLookup)
+					{
+						delete _workspaceSymbolsLookup[requestID];
+						handleWorkspaceSymbolsResponse(result);
+					}
+					else
+					{
+						trace("Unknown language server response: " + JSON.stringify(object))
 					}
 				}
 			}
@@ -1245,7 +1257,20 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, eventCodeActions));
 		}
 
-		private function handleSymbolsResponse(result:Object):void
+		private function handleWorkspaceSymbolsResponse(result:Object):void
+		{
+			var resultSymbolInfos:Array = result as Array;
+			var eventSymbolInfos:Array = [];
+			var resultSymbolInfosCount:int = resultSymbolInfos.length;
+			for(var i:int = 0; i < resultSymbolInfosCount; i++)
+			{
+				var resultSymbolInfo:Object = resultSymbolInfos[i];
+				eventSymbolInfos[i] = SymbolInformation.parse(resultSymbolInfo);
+			}
+			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, eventSymbolInfos));
+		}
+
+		private function handleDocumentSymbolsResponse(result:Object):void
 		{
 			var resultSymbolInfos:Array = result as Array;
 			var eventSymbolInfos:Array = [];
@@ -1264,7 +1289,7 @@ package actionScripts.languageServer
 					eventSymbolInfos[i] = DocumentSymbol.parse(resultSymbolInfo);
 				}
 			}
-			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, eventSymbolInfos));
+			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, eventSymbolInfos));
 		}
 
 		private function handleNotification(object:Object):Boolean
@@ -1878,7 +1903,7 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsWorkspaceSymbols)
 			{
-				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, []));
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, []));
 				return;
 			}
 
@@ -1887,7 +1912,8 @@ package actionScripts.languageServer
 			var params:Object = new Object();
 			params.query = query;
 			
-			this.sendRequest(METHOD_WORKSPACE__SYMBOL, params);
+			var id:int = this.sendRequest(METHOD_WORKSPACE__SYMBOL, params);
+			_workspaceSymbolsLookup[id] = true;
 		}
 
 		private function documentSymbolsHandler(event:LanguageServerEvent):void
@@ -1903,7 +1929,7 @@ package actionScripts.languageServer
 			event.preventDefault();
 			if(!supportsDocumentSymbols)
 			{
-				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_SYMBOLS, []));
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, []));
 				return;
 			}
 
@@ -1913,7 +1939,8 @@ package actionScripts.languageServer
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			
-			this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
+			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
+			_documentSymbolsLookup[id] = true;
 		}
 
 		private function findReferencesHandler(event:LanguageServerEvent):void

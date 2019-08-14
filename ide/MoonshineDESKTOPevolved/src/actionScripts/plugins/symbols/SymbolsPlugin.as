@@ -40,8 +40,8 @@ package actionScripts.plugins.symbols
 		public static const EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW:String = "openDocumentSymbolsView";
 		public static const EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW:String = "openWorkspaceSymbolsView";
 
-		private static const TITLE_DOCUMENT:String = "Document Symbols";
-		private static const TITLE_WORKSPACE:String = "Workspace Symbols";
+		private static const TITLE_DOCUMENT:String = "Find Symbol in Document";
+		private static const TITLE_WORKSPACE:String = "Find Symbol in Workspace";
 
 		public function SymbolsPlugin()
 		{
@@ -60,7 +60,8 @@ package actionScripts.plugins.symbols
 			symbolsView.addEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
 			dispatcher.addEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.addEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
-			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
+			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
+			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowSymbols);
 		}
 
 		override public function deactivate():void
@@ -68,7 +69,8 @@ package actionScripts.plugins.symbols
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.removeEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
-			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_SYMBOLS, handleShowSymbols);
+			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
+			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowSymbols);
 		}
 		
 		private function handleQueryChange(event:Event):void
