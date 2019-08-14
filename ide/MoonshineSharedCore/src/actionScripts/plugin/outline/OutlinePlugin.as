@@ -135,33 +135,33 @@ package actionScripts.plugin.outline
 				if(symbol is SymbolInformation)
 				{
 					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
-					collection.addItem(symbolInfo);
+					collection.addItem({label: symbolInfo.name, symbol: symbolInfo});
 				}
 				else if(symbol is DocumentSymbol)
 				{
 					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
-					collection.addItem(documentSymbol);
-					this.addDocumentSymbolChildren(documentSymbol, collection);
+					var item:Object = this.getDocumentSymbolItem(documentSymbol);
+					collection.addItem(item);
 				}
 			}
-			collection.filterFunction = null;
-			collection.refresh();
 		}
 
-		private function addDocumentSymbolChildren(documentSymbol:DocumentSymbol, collection:ArrayCollection):void
+		private function getDocumentSymbolItem(documentSymbol:DocumentSymbol):Object
 		{
-			if(!documentSymbol.children)
+			var item:Object = {label: documentSymbol.name, symbol: documentSymbol, children: null};
+			var symbolChildren:Vector.<DocumentSymbol> = documentSymbol.children;
+			if(documentSymbol.children)
 			{
-				return;
+				var children:Array = [];
+				var childCount:int = symbolChildren.length;
+				for(var i:int = 0; i < childCount; i++)
+				{
+					var child:DocumentSymbol = symbolChildren[i];
+					children[i] = this.getDocumentSymbolItem(child);
+				}
+				item.children = children;
 			}
-			var children:Vector.<DocumentSymbol> = documentSymbol.children;
-			var childCount:int = children.length;
-			for(var j:int = 0; j < childCount; j++)
-			{
-				var child:DocumentSymbol = children[j];
-				collection.addItem(child);
-				this.addDocumentSymbolChildren(child, collection);
-			}
+			return item;
 		}
 
 		private function refreshSymbols():void

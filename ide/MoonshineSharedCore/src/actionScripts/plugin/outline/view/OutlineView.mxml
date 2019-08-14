@@ -24,11 +24,12 @@
     xmlns:mx="library://ns.adobe.com/flex/mx" 
     xmlns:s="library://ns.adobe.com/flex/spark"  
 	xmlns:sidebar="actionScripts.ui.sidebar.*"
+	implements="actionScripts.ui.IPanelWindow"
 	width="100%"
 	height="100%" 
 	backgroundColor="0x444444"
 	verticalGap="0"
-	implements="actionScripts.ui.IPanelWindow">
+	creationComplete="handleCreationComplete(event)">
 
 	<sidebar:SidebarViewHeader
 		id="header"
@@ -38,7 +39,7 @@
 	
 	<mx:Tree id="outlineTree"
 		dataProvider="{outline}"
-		labelFunction="{getItemLabel}"
+		labelField="label"
 			
 		color="0xe0e0e0"
 		contentBackgroundColor="0x0"
@@ -58,7 +59,7 @@
 		iconFunction="{getItemIcon}"
 			
 		width="100%" height="100%" 
-		showRoot="false" labelField="@label" 
+		showRoot="false"
 		borderStyle="none"
 		itemClick="onTreeItemClick(event)"/>
 
@@ -72,18 +73,34 @@
 			import actionScripts.valueObjects.DocumentSymbol;
 			import actionScripts.valueObjects.SymbolKind;
 			import actionScripts.valueObjects.CompletionItemKind;
+			import mx.events.CollectionEvent;
+			import flash.events.Event;
+			import mx.events.CollectionEventKind;
 
 			[Bindable]
 			public var outline:ArrayCollection = new ArrayCollection();
 
 			public function get selectedSymbol():Object
 			{
-				return this.outlineTree.selectedItem;
+				return this.outlineTree.selectedItem.symbol;
 			}
 
 			private function initHeader():void
 			{
 				header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
+			}
+
+			private function handleCreationComplete(event:Event):void
+			{
+				outline.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleCollectionChange);
+			}
+
+			private function handleCollectionChange(event:CollectionEvent):void
+			{
+				if(event.kind == CollectionEventKind.ADD && event.location == 0)
+				{
+					this.outlineTree.expandItem(event.items[0], true);
+				}
 			}
 
 			private function getItemLabel(item:Object):String
