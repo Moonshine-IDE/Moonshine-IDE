@@ -86,6 +86,7 @@ package actionScripts.languageServer
 		private static const PROTOCOL_HEADER_FIELD_CONTENT_LENGTH:String = "Content-Length: ";
 		private static const PROTOCOL_HEADER_DELIMITER:String = "\r\n";
 		private static const PROTOCOL_END_OF_HEADER:String = "\r\n\r\n";
+		private static const WRITE_BUFFER_SIZE:int = 512;
 		private static const FIELD_METHOD:String = "method";
 		private static const FIELD_RESULT:String = "result";
 		private static const FIELD_ERROR:String = "error";
@@ -305,7 +306,23 @@ package actionScripts.languageServer
 			
 			try
 			{
-				_output.writeUTFBytes(message);
+				var remaining:String = message;
+				var remainingSize:int = remaining.length;
+				while(remainingSize > 0)
+				{
+					//we break this up into smaller messages because the
+					//IDataOutput can be overwhelmed by larger messages and
+					//throw an error
+					var currentSize:int = WRITE_BUFFER_SIZE;
+					if(currentSize > remainingSize)
+					{
+						currentSize = remainingSize;
+					}
+					var current:String = remaining.substr(0, currentSize);
+					remaining = remaining.substr(currentSize);
+					remainingSize -= currentSize;
+					_output.writeUTFBytes(current);
+				}
 			}
 			catch(error:Error)
 			{
