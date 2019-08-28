@@ -318,6 +318,8 @@ package actionScripts.impls
 						'l', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','GO_TO_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION),
 					new MenuItem(resourceManager.getString('resources','GO_TO_TYPE_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION),
+					//TODO: enable this once there's a UI for multiple locations
+					//new MenuItem(resourceManager.getString('resources','GO_TO_IMPLEMENTATION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS,

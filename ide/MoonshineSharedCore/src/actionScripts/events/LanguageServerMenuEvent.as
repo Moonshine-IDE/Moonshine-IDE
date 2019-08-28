@@ -22,6 +22,7 @@ package actionScripts.events
 	{
 		public static const EVENT_MENU_GO_TO_DEFINITION:String = "menuGoToDefinitionEvent";
 		public static const EVENT_MENU_GO_TO_TYPE_DEFINITION:String = "menuGoToTypeDefinitionEvent";
+		public static const EVENT_MENU_GO_TO_IMPLEMENTATION:String = "menuGoToImplementationEvent";
 		public static const EVENT_MENU_ORGANIZE_IMPORTS:String = "menuOrganizeImportsEvent";
 	}
 }
