@@ -57,6 +57,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.TextDocumentIdentifier;
 	import actionScripts.valueObjects.TextEdit;
 	import actionScripts.valueObjects.WorkspaceEdit;
+	import actionScripts.utils.getProjectSDKPath;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -858,6 +859,16 @@ package actionScripts.languageServer
 					var sourcePath:FileLocation = sourcePaths[i];
 					var sourcePathFile:File = new File(sourcePath.fileBridge.nativePath);
 					if(sourcePathFile.getRelativePath(activeFile, false) !== null)
+					{
+						_previousActiveResult = true;
+						return _previousActiveResult;
+					}
+				}
+				var sdkPath:String = getProjectSDKPath(_project, _model);
+				if(sdkPath != null)
+				{
+					var sdkFile:File = new File(sdkPath);
+					if(sdkFile.getRelativePath(activeFile, false) !== null)
 					{
 						_previousActiveResult = true;
 						return _previousActiveResult;
