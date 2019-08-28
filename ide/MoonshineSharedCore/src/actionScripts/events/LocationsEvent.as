@@ -20,13 +20,18 @@ package actionScripts.events
 {
 	import actionScripts.valueObjects.Location;
 
-	public class ReferencesEvent extends LocationsEvent
-	{
-		public static const EVENT_SHOW_REFERENCES:String = "newShowReferences";
+	import flash.events.Event;
 
-		public function ReferencesEvent(type:String, locations:Vector.<Location>)
+	public class LocationsEvent extends Event
+	{
+		public static const EVENT_SHOW_LOCATIONS:String = "newShowLocations";
+		
+		public var locations:Vector.<Location>;
+		
+		public function LocationsEvent(type:String, locations:Vector.<Location>)
 		{
-			super(type, locations);
+			super(type, false, false);
+			this.locations = locations;
 		}
 	}
 }

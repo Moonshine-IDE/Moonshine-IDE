@@ -25,7 +25,7 @@ package actionScripts.languageServer
 	import actionScripts.events.MenuEvent;
 	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.ReferencesEvent;
+	import actionScripts.events.LocationsEvent;
 	import actionScripts.events.ResolveCompletionItemEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.SymbolsEvent;
@@ -58,6 +58,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.TextEdit;
 	import actionScripts.valueObjects.WorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.events.ReferencesEvent;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1207,14 +1208,27 @@ package actionScripts.languageServer
 			applyWorkspaceEdit(workspaceEdit);
 		}
 
-		private function handleLocationsResponse(result:Array):Vector.<Location>
+		private function getLocations(result:Object):Vector.<Location>
 		{
 			var eventLocations:Vector.<Location> = new <Location>[];
-			var resultLocationsCount:int = result.length;
-			for(var i:int = 0; i < resultLocationsCount; i++)
+
+			var arrayResult:Array = result as Array;
+			if(arrayResult)
 			{
-				var resultLocation:Object = result[i];
-				var eventLocation:Location = handleSingleLocationResponse(resultLocation);
+				var resultLocationsCount:int = result.length;
+				for(var i:int = 0; i < resultLocationsCount; i++)
+				{
+					var resultLocation:Object = result[i];
+					var eventLocation:Location = handleSingleLocationResponse(resultLocation);
+					if(eventLocation != null)
+					{
+						eventLocations.push(eventLocation);
+					}
+				}
+			}
+			else
+			{
+				eventLocation = handleSingleLocationResponse(resultLocation);
 				if(eventLocation != null)
 				{
 					eventLocations.push(eventLocation);
@@ -1243,80 +1257,29 @@ package actionScripts.languageServer
 
 		private function handleDefinitionLinkResponse(result:Object, position:Position, uri:String):void
 		{
-			var eventLocations:Vector.<Location> = handleLocationsResponse(result as Array);
+			var eventLocations:Vector.<Location> = getLocations(result);
 			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position, uri));
 		}
 
 		private function handleGotoDefinitionResponse(result:Object, position:Position):void
 		{
-			var arrayResult:Array = result as Array;
-			if(arrayResult)
-			{
-				var eventLocations:Vector.<Location> = handleLocationsResponse(arrayResult);
-				if(eventLocations.length > 0)
-				{
-					var location:Location = eventLocations[0];
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
-			else
-			{
-				location = handleSingleLocationResponse(result);
-				if(location != null)
-				{
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
+			var eventLocations:Vector.<Location> = getLocations(result);
+			_globalDispatcher.dispatchEvent(
+				new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, eventLocations));
 		}
 
 		private function handleGotoTypeDefinitionResponse(result:Object, position:Position):void
 		{
-			var arrayResult:Array = result as Array;
-			if(arrayResult)
-			{
-				var eventLocations:Vector.<Location> = handleLocationsResponse(arrayResult);
-				if(eventLocations.length > 0)
-				{
-					var location:Location = eventLocations[0];
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
-			else
-			{
-				location = handleSingleLocationResponse(result);
-				if(location != null)
-				{
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
+			var eventLocations:Vector.<Location> = getLocations(result);
+			_globalDispatcher.dispatchEvent(
+				new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, eventLocations));
 		}
 
 		private function handleGotoImplementationResponse(result:Object, position:Position):void
 		{
-			var arrayResult:Array = result as Array;
-			if(arrayResult)
-			{
-				var eventLocations:Vector.<Location> = handleLocationsResponse(arrayResult);
-				if(eventLocations.length > 0)
-				{
-					var location:Location = eventLocations[0];
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
-			else
-			{
-				location = handleSingleLocationResponse(result);
-				if(location != null)
-				{
-					_globalDispatcher.dispatchEvent(
-						new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-				}
-			}
+			var eventLocations:Vector.<Location> = getLocations(result);
+			_globalDispatcher.dispatchEvent(
+				new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, eventLocations));
 		}
 
 		private function handleReferencesResponse(result:Object):void

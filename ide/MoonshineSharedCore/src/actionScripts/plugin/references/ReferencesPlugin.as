@@ -81,7 +81,7 @@ package actionScripts.plugin.references
 		{
 			var collection:ArrayCollection = referencesView.references;
 			collection.removeAll();
-			var references:Vector.<Location> = event.references;
+			var references:Vector.<Location> = event.locations;
 			var itemCount:int = references.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
