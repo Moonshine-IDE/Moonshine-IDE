@@ -63,6 +63,7 @@ package actionScripts.impls
 	import actionScripts.plugin.search.SearchPlugin;
 	import actionScripts.plugin.settings.SettingsPlugin;
 	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
+	import actionScripts.plugin.symbols.SymbolsPlugin;
 	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
@@ -93,7 +94,6 @@ package actionScripts.impls
 	import actionScripts.plugins.startup.StartupHelperPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
-	import actionScripts.plugins.symbols.SymbolsPlugin;
 	import actionScripts.plugins.ui.editor.TourDeTextEditor;
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;

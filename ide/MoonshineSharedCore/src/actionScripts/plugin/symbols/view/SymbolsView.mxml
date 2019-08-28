@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizabletitlewindow:ResizableTitleWindow
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:resizabletitlewindow="actionScripts.ui.resizableTitleWindow.*"
+	skinClass="components.skins.ResizableTitleWindowSkin"
+	width="600" height="500" minWidth="300" minHeight="300"
+	addedToStage="addedToStageHandler(event)">
+
+	<fx:Declarations>
+		<s:ArrayCollection id="symbols"/>
+	</fx:Declarations>
+
+	<fx:Script><![CDATA[
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.OpenFileEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.valueObjects.SymbolInformation;
+
+		import spark.components.Alert;
+		import actionScripts.ui.editor.BasicTextEditor;
+		import actionScripts.events.AddTabEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.interfaces.ILanguageServerBridge;
+		import actionScripts.valueObjects.ProjectVO;
+		import actionScripts.valueObjects.Position;
+		import actionScripts.ui.editor.text.TextEditorModel;
+		import actionScripts.ui.editor.text.TextEditor;
+		import actionScripts.events.OpenLocationEvent;
+		import actionScripts.valueObjects.DocumentSymbol;
+		import actionScripts.valueObjects.Location;
+		import actionScripts.valueObjects.Range;
+
+		public static const EVENT_QUERY_CHANGE:String = "queryChange";
+
+		private var _query:String = "";
+
+		public function get query():String
+		{
+			return this._query;
+		}
+
+		private function updateQuery():void
+		{
+			this._query = this.txt_query.text;
+			this.dispatchEvent(new Event(EVENT_QUERY_CHANGE));
+		}
+
+		private function addedToStageHandler(event:Event):void
+		{
+			this.symbols.filterFunction = null;
+			this.symbols.refresh();
+			//remove after clearing the filter or items might not be removed
+			this.symbols.removeAll();
+			if(this.txt_query)
+			{
+				//it may not be created yet
+				this.txt_query.text = "";
+				this.txt_query.setFocus();
+			}
+		}
+
+		protected function onListDoubleClicked(event:MouseEvent):void
+		{
+			if(!lstSymbols.selectedItem)
+			{
+				Alert.show("Please select an item to open.");
+				return;
+			}
+
+			var selectedItem:Object = lstSymbols.selectedItem;
+			if(selectedItem is SymbolInformation)
+			{
+				var symbolInfo:SymbolInformation = selectedItem as SymbolInformation;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, symbolInfo.location));
+			}
+			else if(selectedItem is DocumentSymbol)
+			{
+				var documentSymbol:DocumentSymbol = selectedItem as DocumentSymbol;
+				var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var range:Range = documentSymbol.range;
+				var location:Location = new Location(uri, range);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
+			}
+
+			super.closeThis();
+		}
+		]]></fx:Script>
+
+	<s:VGroup height="100%" width="100%"
+		gap="10" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+		horizontalAlign="center">
+		<s:VGroup width="100%">
+			<s:Label text="Search for symbol by name:"/>
+			<s:TextInput id="txt_query"
+				width="100%" styleName="textInput"
+				maxChars="129"
+				change="updateQuery()"
+				creationComplete="txt_query.setFocus()"/>
+		</s:VGroup>
+	
+		<s:VGroup width="100%" height="100%">
+			<s:Label text="Matching items:"/>
+			<s:List id="lstSymbols" styleName="multiLineList" width="100%" height="100%"
+				dataProvider="{symbols}" labelField="name"
+				doubleClickEnabled="true" doubleClick="onListDoubleClicked(event)"/>
+		</s:VGroup>
+	</s:VGroup>
+	
+	<resizabletitlewindow:controlBarContent>
+		<s:Button label="Open"
+			styleName="darkButton"
+			click="onListDoubleClicked(null)"/>
+	</resizabletitlewindow:controlBarContent>
+</resizabletitlewindow:ResizableTitleWindow>
