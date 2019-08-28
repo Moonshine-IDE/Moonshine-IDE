@@ -1,4 +1,5 @@
 {
+	"config": "air",
 	"compilerOptions": {
 		"output": "bin/MoonshineSharedCore.swc",
 		"source-path": [
