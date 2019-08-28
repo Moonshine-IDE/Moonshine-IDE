@@ -40,7 +40,7 @@
 				/*
 				 * @local
 				 */
-				function showError():void
+				function showError(value:String):void
 				{
 					lblMess.text = value;
 					lblMess.setStyle("color", 0xff0000);
