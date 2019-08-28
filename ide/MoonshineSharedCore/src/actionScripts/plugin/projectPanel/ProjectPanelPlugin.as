@@ -158,8 +158,6 @@ package actionScripts.plugin.projectPanel
             {
                 setProjectPanelHeight(-1);
             }
-
-            LayoutModifier.attachProjectPanelSections();
         }
 
         private function onProjectPanelDividerRelease(event:DividerEvent):void

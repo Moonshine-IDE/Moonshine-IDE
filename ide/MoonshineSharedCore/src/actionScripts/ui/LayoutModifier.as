@@ -113,9 +113,6 @@ package actionScripts.ui
 							dispatcher.dispatchEvent(new GeneralEvent(HelpPlugin.EVENT_TOURDEFLEX, sidebarChildren[i].height));
 							isTourDeOnceOpened = true;
 							break;
-						case "ProblemsView":
-							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_PROBLEMS, sidebarChildren[i].height));
-							break;
 						case "OutlineView":
 							dispatcher.dispatchEvent(new GeneralEvent(OutlinePlugin.EVENT_OUTLINE, sidebarChildren[i].height));
 							break;
