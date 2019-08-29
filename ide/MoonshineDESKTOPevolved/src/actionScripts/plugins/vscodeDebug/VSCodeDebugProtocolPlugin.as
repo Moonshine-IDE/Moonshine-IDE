@@ -65,6 +65,8 @@ package actionScripts.plugins.vscodeDebug
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
     import flash.errors.IllegalOperationError;
+    import actionScripts.valueObjects.ProjectVO;
+    import flash.utils.getQualifiedClassName;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -95,6 +97,8 @@ package actionScripts.plugins.vscodeDebug
 		private static const EVENT_STOPPED:String = "stopped";
 		private static const EVENT_TERMINATED:String = "terminated";
 		private static const REQUEST_LAUNCH:String = "launch";
+		private static const REQUEST_ATTACH:String = "attach";
+		private static const DEBUG_TYPE_SWF:String = "swf";
 		private static const OUTPUT_CATEGORY_STDERR:String = "stderr";
 		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
 		
@@ -117,7 +121,7 @@ package actionScripts.plugins.vscodeDebug
 		private var _stackFrames:ArrayCollection;
 		private var _scopesAndVars:VariablesReferenceHierarchicalData;
 		private var _variablesLookup:Dictionary = new Dictionary();
-		private var _currentProject:AS3ProjectVO;
+		private var _currentProject:ProjectVO;
 		private var isStartupCall:Boolean = true;
 		private var isDebugViewVisible:Boolean;
 		private var _debugMode:Boolean = false;
@@ -457,59 +461,80 @@ package actionScripts.plugins.vscodeDebug
 				return;
 			}
 			_receivedInitializeResponse = true;
-			if(_currentProject.isMobile && !_currentProject.buildOptions.isMobileRunOnSimulator)
+
+			var as3Project:AS3ProjectVO = _currentProject as AS3ProjectVO;
+			if(!as3Project)
 			{
-				sendAttachCommand();
+				throw new IllegalOperationError("Debug failed. Debugging not supported for project of type: " + getQualifiedClassName(_currentProject));
+			}
+			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
+			{
+				var attachArgs:Object =
+				{
+					"type": DEBUG_TYPE_SWF,
+					"name": "Moonshine Device Attach",
+					"request": REQUEST_ATTACH
+				};
+				sendAttachCommand(attachArgs);
 			}
 			else
 			{
-				sendLaunchCommand();
+				//try to figure out which "program" to launch, whether it's an
+				//AIR application descriptor, an HTML file, or a SWF
+				var launchArgs:Object =
+				{
+					"type": DEBUG_TYPE_SWF,
+					"name": "Moonshine Launch",
+					"request": REQUEST_LAUNCH,
+					"program": as3Project.swfOutput.path.fileBridge.nativePath
+				};
+				var binLocation:FileLocation = as3Project.swfOutput.path.fileBridge.parent;
+				var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
+				if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
+				{
+					launchArgs.program = findAndCopyApplicationDescriptor(swfFile, as3Project, binLocation.fileBridge.getFile as File);
+					
+					if(as3Project.isMobile)
+					{
+						launchArgs.profile = "mobileDevice";
+						
+						//these options need to be configurable somehow
+						//but these are reasonable defaults until then
+						launchArgs.screensize = "NexusOne";
+						launchArgs.screenDPI = 252;
+						launchArgs.versionPlatform = "AND";
+					}
+				}
+				else
+				{
+					var htmlFile:File = binLocation.resolvePath(as3Project.swfOutput.path.fileBridge.name.split(".")[0] + ".html").fileBridge.getFile as File;
+					if(htmlFile.exists)
+					{
+						launchArgs.program = htmlFile.nativePath;
+					}
+				}
+				sendLaunchCommand(launchArgs);
 			}
 		}
 
-		private function sendAttachCommand():void
+		private function sendAttachCommand(args:Object = null):void
 		{
+			if(!args)
+			{
+				args = {};
+			}
 			this._waitingForLaunchOrAttach = true;
-			this.sendRequest(COMMAND_ATTACH, {});
+			this.sendRequest(COMMAND_ATTACH, args);
 		}
 		
-		private function sendLaunchCommand():void
+		private function sendLaunchCommand(args:Object = null):void
 		{
-			//try to figure out which "program" to launch, whether it's an
-			//AIR application descriptor, an HTML file, or a SWF
-			//var project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-			var body:Object =
+			if(!args)
 			{
-				"request": REQUEST_LAUNCH,
-				"program": _currentProject.swfOutput.path.fileBridge.nativePath
-			};
-			var binLocation:FileLocation = _currentProject.swfOutput.path.fileBridge.parent;
-			var swfFile:File = _currentProject.swfOutput.path.fileBridge.getFile as File;
-			if(_currentProject.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
-			{
-				body.program = findAndCopyApplicationDescriptor(swfFile, _currentProject, binLocation.fileBridge.getFile as File);
-				
-				if(_currentProject.isMobile)
-				{
-					body.profile = "mobileDevice";
-					
-					//these options need to be configurable somehow
-					//but these are reasonable defaults until then
-					body.screensize = "NexusOne";
-					body.screenDPI = 252;
-					body.versionPlatform = "AND";
-				}
-			}
-			else
-			{
-				var htmlFile:File = binLocation.resolvePath(_currentProject.swfOutput.path.fileBridge.name.split(".")[0] + ".html").fileBridge.getFile as File;
-				if(htmlFile.exists)
-				{
-					body.program = htmlFile.nativePath;
-				}
+				args = {};
 			}
 			this._waitingForLaunchOrAttach = true;
-			this.sendRequest(COMMAND_LAUNCH, body);
+			this.sendRequest(COMMAND_LAUNCH, args);
 		}
 		
 		private function parseContinueResponse(response:Object):void
@@ -951,7 +976,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function dispatcher_postBuildHandler(event:ProjectEvent):void
 		{
-			this._currentProject = event.project as AS3ProjectVO;
+			this._currentProject = event.project;
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
 			if(_nativeProcess)
