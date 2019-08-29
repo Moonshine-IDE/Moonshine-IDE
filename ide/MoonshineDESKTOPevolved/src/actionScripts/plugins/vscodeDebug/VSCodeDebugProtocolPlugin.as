@@ -64,6 +64,7 @@ package actionScripts.plugins.vscodeDebug
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
+    import flash.errors.IllegalOperationError;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -119,8 +120,11 @@ package actionScripts.plugins.vscodeDebug
 		private var _currentProject:AS3ProjectVO;
 		private var isStartupCall:Boolean = true;
 		private var isDebugViewVisible:Boolean;
+		private var _debugMode:Boolean = false;
 
 		private var _connected:Boolean = false;
+		private var _receivedInitializeResponse:Boolean = false;
+		private var _waitingForLaunchOrAttach:Boolean = false;
 		public function set connected(value:Boolean):void {	DebugHighlightManager.IS_DEBUGGER_CONNECTED = _connected = value;	}
 		public function get connected():Boolean {	return _connected;	}
 		
@@ -252,6 +256,10 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function sendRequest(command:String, args:Object = null):void
 		{
+			if(command != COMMAND_INITIALIZE && !_receivedInitializeResponse)
+			{
+				throw new IllegalOperationError("Send request failed. Must wait for initialize response before sending request of type '" + command + "' to the debug adapter.");
+			}
 			_seq++;
 			var message:Object =
 				{
@@ -269,6 +277,10 @@ package actionScripts.plugins.vscodeDebug
 		private function sendProtocolMessage(message:Object):void
 		{
 			var string:String = JSON.stringify(message);
+			if(_debugMode)
+			{
+				trace("<<< ", string);
+			}
 			_byteArray.clear();
 			_byteArray.writeUTFBytes(string);
 			var contentLength:String = _byteArray.length.toString();
@@ -310,6 +322,10 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function parseResponse(response:Object):void
 		{
+			if(_debugMode)
+			{
+				trace(">>> (RESPONSE) ", JSON.stringify(response));
+			}
 			if("command" in response)
 			{
 				switch(response.command)
@@ -381,6 +397,10 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function parseEvent(event:Object):void
 		{
+			if(_debugMode)
+			{
+				trace(">>> (EVENT) ", JSON.stringify(event));
+			}
 			if("event" in event)
 			{
 				switch(event.event)
@@ -428,8 +448,15 @@ package actionScripts.plugins.vscodeDebug
 			if(!response.success)
 			{
 				trace("initialize command not successful!");
+				this.handleDisconnectOrTerminated();
+				if(_nativeProcess)
+				{
+					//the process won't exit automatically
+					_nativeProcess.exit(true);
+				}
 				return;
 			}
+			_receivedInitializeResponse = true;
 			if(_currentProject.isMobile && !_currentProject.buildOptions.isMobileRunOnSimulator)
 			{
 				sendAttachCommand();
@@ -442,6 +469,7 @@ package actionScripts.plugins.vscodeDebug
 
 		private function sendAttachCommand():void
 		{
+			this._waitingForLaunchOrAttach = true;
 			this.sendRequest(COMMAND_ATTACH, {});
 		}
 		
@@ -480,6 +508,7 @@ package actionScripts.plugins.vscodeDebug
 					body.program = htmlFile.nativePath;
 				}
 			}
+			this._waitingForLaunchOrAttach = true;
 			this.sendRequest(COMMAND_LAUNCH, body);
 		}
 		
@@ -621,6 +650,8 @@ package actionScripts.plugins.vscodeDebug
 				this._socket.close();
 			}
 			this.cleanupSocket();
+			_receivedInitializeResponse = false;
+			_waitingForLaunchOrAttach = false;
 			connected = false;
 			refreshView();
 		}
@@ -930,6 +961,8 @@ package actionScripts.plugins.vscodeDebug
 			}
 			
 			connected = false;
+			_receivedInitializeResponse = false;
+			_waitingForLaunchOrAttach = false;
 			refreshView();
 			_port = findOpenPort();
 			
@@ -974,7 +1007,7 @@ package actionScripts.plugins.vscodeDebug
 		protected function socket_connectHandler(event:Event):void
 		{
 			connected = true;
-			refreshView();
+			//wait to call refreshView() because it might not be visible yet
 			_socket.removeEventListener(IOErrorEvent.IO_ERROR, socketConnect_ioErrorHandler);
 			_socket.addEventListener(IOErrorEvent.IO_ERROR, socket_ioErrorHandler);
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, socket_socketDataHandler);
@@ -983,6 +1016,9 @@ package actionScripts.plugins.vscodeDebug
             dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
+			//see above for why we call refreshView() instead of immediately
+			//after connected is set to true
+			refreshView();
 			
 			sendRequest(COMMAND_INITIALIZE,
 				{
@@ -1028,6 +1064,8 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function socket_closeHandler(event:Event):void
 		{
+			_receivedInitializeResponse = false;
+			_waitingForLaunchOrAttach = false;
 			connected = false;
 			refreshView();
 			cleanupSocket();
@@ -1070,7 +1108,23 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function stopButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_DISCONNECT);
+			if(_receivedInitializeResponse && !_waitingForLaunchOrAttach)
+			{
+				this.sendRequest(COMMAND_DISCONNECT);
+			}
+			else
+			{
+				//if we haven't yet received a response to the initialize
+				//request or if we're waiting for a response to attach/launch,
+				//then we need to force the debug adapter to stop because it
+				//won't be able to handle the disconnect request
+				this.handleDisconnectOrTerminated();
+				if(_nativeProcess)
+				{
+					//the process won't exit automatically
+					_nativeProcess.exit(true);
+				}
+			}
 			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 		}
 		
