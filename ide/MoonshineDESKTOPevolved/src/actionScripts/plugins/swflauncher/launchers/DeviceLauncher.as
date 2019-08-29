@@ -169,7 +169,14 @@ package actionScripts.plugins.swflauncher.launchers
 			
 			addToQueue({com:adtPackagingCom, showInConsole:true});
 			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"{{DEVICE}}-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			addToQueue({com:adtPath +"-launchApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"&&-appid&&"+ appID, showInConsole:true});
+			if (isAndroid)
+			{
+				addToQueue({com:adtPath +"-launchApp&&-platform&&android&&-appid&&"+ appID, showInConsole:true});
+			}
+			else
+			{
+				addToQueue({message: "Debugger ready to attach. You must launch your application manually on the iOS device.", type: "success"});
+			}
 			
 			if (customProcess) startShell(false);
 			startShell(true);
@@ -211,6 +218,47 @@ package actionScripts.plugins.swflauncher.launchers
 			if (queue.length == 0) 
 			{
 				startShell(false);
+				return;
+			}
+
+			if (queue[0].message)
+			{
+				var func:Function = null;
+				switch(queue[0].type)
+				{
+					case "success":
+					{
+						func = success;
+						break;
+					}
+					case "notice":
+					{
+						func = notice;
+						break;
+					}
+					case "warning":
+					{
+						func = warning;
+						break;
+					}
+					case "error":
+					{
+						func = error;
+						break;
+					}
+					case "debug":
+					{
+						func = debug;
+						break;
+					}
+					default:
+					{
+						func = print;
+					}
+				}
+				func(queue[0].message);
+				queue.shift();
+				flush();
 				return;
 			}
 			
