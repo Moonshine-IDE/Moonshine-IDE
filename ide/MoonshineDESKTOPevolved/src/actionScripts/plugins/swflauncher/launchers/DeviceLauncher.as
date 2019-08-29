@@ -103,10 +103,10 @@ package actionScripts.plugins.swflauncher.launchers
 			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
 			var debugOptions:String = "";
-			if(runAsDebugger)
+			/*if(runAsDebugger && )
 			{
 				debugOptions = "&&-connect";
-			}
+			}*/
 
 			var adtPackagingCom:String;
 			if (isAndroid) 
