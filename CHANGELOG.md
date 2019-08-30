@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.4.1]
+
+### Added
+* Getting Started: Added Apache Royale Nightly build.
+* Added USB device debugging on Mobile.
+* Added Go To for interfaces.
+* Added CTRL+Click on Flex SDK items parent classes.
+* Added Outline View with symbols in current view.
+* Signature Help: Add buttons to see other overloaded signatures.
+* Added basic Haxe support.
+
+### Changed
+
+### Fixed
+* Fixed Error #3218 - Error while writing data to NativeProcess.standardInput.
+* Fixed issue where Java method does not complete properly.
+
 ## Moonshine IDE [2.4.0]
 
 ### Summary
