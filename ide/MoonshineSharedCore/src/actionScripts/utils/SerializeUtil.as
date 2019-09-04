@@ -19,6 +19,18 @@ package actionScripts.utils
         }
 
         /**
+         * Serialize a delimited String value
+         */
+        public static function serializeDelimitedString(collection:Vector.<String>, delimiter:String = "\n"):String
+        {
+            if(!collection || collection.length == 0)
+            {
+                return "";
+            }
+            return collection.join(delimiter);
+        }
+
+        /**
          * Serialize key-value pairs to FD-like XML elements using a template element
          *  Example:
          *		<option accessible="True" />
@@ -77,6 +89,29 @@ package actionScripts.utils
             if (str.length == 0) return null;
             if (str == "null") return null;
             return str;
+        }
+
+        /**
+         * Deserialize a delimited String value
+         */
+        public static function deserializeDelimitedString(o:Object, delimiter:String = "\n"):Vector.<String>
+        {
+            var str:String = deserializeString(o);
+            if(str == null)
+            {
+                return null;
+            }
+            var parts:Array = str.split(delimiter);
+
+            //convert to vector
+            var result:Vector.<String> = new <String>[];
+            for(var i:int = 0, count:int = parts.length; i < count; i++)
+            {
+                var part:String = parts[i] as String;
+                result[i] = part;
+            }
+
+            return result;
         }
     }
 }
