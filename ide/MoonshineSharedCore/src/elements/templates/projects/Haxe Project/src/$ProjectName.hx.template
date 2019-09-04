@@ -1,0 +1,6 @@
+class $ProjectName
+{
+	static function main():Void {
+		trace("Hello, Haxe!");
+	} 
+}

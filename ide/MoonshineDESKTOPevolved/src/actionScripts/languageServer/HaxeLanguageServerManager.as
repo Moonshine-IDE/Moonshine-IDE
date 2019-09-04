@@ -209,7 +209,7 @@ package actionScripts.languageServer
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 				_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
 				_limeDisplayProcess.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run lime display " + _project.targetPlatform]);
+			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run lime display " + _project.limeTargetPlatform]);
 
 		}
 
@@ -227,7 +227,14 @@ package actionScripts.languageServer
 
 			var haxePath:String = getProjectSDKPath(_project, _model);
 			_previousHaxePath = haxePath;
-			_previousTargetPlatform = _project.targetPlatform;
+			if(_project.isLime)
+			{
+				_previousTargetPlatform = _project.limeTargetPlatform;
+			}
+			else
+			{
+				_previousTargetPlatform = _project.haxeOutput.platform;
+			}
 			if(!_model.nodePath)
 			{
 				return;
@@ -435,7 +442,7 @@ package actionScripts.languageServer
 				}
 				else
 				{
-					startNativeProcess(["build.hxml"]);
+					startNativeProcess(_project.getHXML().split("\n"));
 				}
 			}
 		}
@@ -449,7 +456,12 @@ package actionScripts.languageServer
 				needsRestart = true;
 			}
 
-			if(!needsRestart && _project.targetPlatform != _previousTargetPlatform)
+			if(!needsRestart && _project.isLime && _project.limeTargetPlatform != _previousTargetPlatform)
+			{
+				needsRestart = true;
+			}
+
+			if(!needsRestart && !_project.isLime && _project.haxeOutput.platform != _previousTargetPlatform)
 			{
 				needsRestart = true;
 			}

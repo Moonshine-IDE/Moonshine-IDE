@@ -134,11 +134,24 @@ package actionScripts.plugin.haxe.hxproject.importer
             project.haxeOutput.parse(data.output, project);
 
 			project.isLime = UtilsCore.isLime(project);
-			
-			if (project.haxeOutput.platform == "")
+
+			if(project.isLime)
 			{
-				project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+				if (project.haxeOutput.platform == "")
+				{
+					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+				}
+				project.limeTargetPlatform = HaxeProjectVO.LIME_PLATFORM_HTML5;
 			}
+			else
+			{
+				if (project.haxeOutput.platform == "")
+				{
+					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_JAVASCRIPT;
+				}
+				project.limeTargetPlatform = null;
+			}
+			
 			
 			if (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
 			{

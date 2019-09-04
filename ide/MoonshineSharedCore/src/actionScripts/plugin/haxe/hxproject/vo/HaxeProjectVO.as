@@ -34,6 +34,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
+	import mx.utils.StringUtil;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -41,19 +42,44 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
 		public static const TEST_MOVIE_OPEN_DOCUMENT:String = "OpenDocument";
 
-		public static const PLATFORM_HTML5:String = "html5";
-		public static const PLATFORM_WINDOWS:String = "windows";
-		public static const PLATFORM_MAC:String = "mac";
-		public static const PLATFORM_LINUX:String = "linux";
-		public static const PLATFORM_ANDROID:String = "android";
-		public static const PLATFORM_IOS:String = "ios";
-		public static const PLATFORM_TVOS:String = "tvos";
-		public static const PLATFORM_FLASH:String = "flash";
-		public static const PLATFORM_AIR:String = "air";
+		public static const LIME_PLATFORM_HTML5:String = "html5";
+		public static const LIME_PLATFORM_WINDOWS:String = "windows";
+		public static const LIME_PLATFORM_MAC:String = "mac";
+		public static const LIME_PLATFORM_LINUX:String = "linux";
+		public static const LIME_PLATFORM_ANDROID:String = "android";
+		public static const LIME_PLATFORM_IOS:String = "ios";
+		public static const LIME_PLATFORM_TVOS:String = "tvos";
+		public static const LIME_PLATFORM_FLASH:String = "flash";
+		public static const LIME_PLATFORM_AIR:String = "air";
+
+		public static const HAXE_TARGET_AS3:String = "as3";
+		public static const HAXE_TARGET_CPP:String = "cpp";
+		public static const HAXE_TARGET_CS:String = "cs";
+		public static const HAXE_TARGET_SWF:String = "swf";
+		public static const HAXE_TARGET_HL:String = "hl";
+		public static const HAXE_TARGET_JAVA:String = "java";
+		public static const HAXE_TARGET_JS:String = "js";
+		public static const HAXE_TARGET_LUA:String = "lua";
+		public static const HAXE_TARGET_NEKO:String = "neko";
+		public static const HAXE_TARGET_PHP:String = "php";
+		public static const HAXE_TARGET_PYTHON:String = "python";
+
+		private static const OUTPUT_PLATFORM_TO_HAXE_TARGET:Object = {};
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_AIR] = HAXE_TARGET_SWF;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_AIR_MOBILE] = HAXE_TARGET_SWF;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_CPP] = HAXE_TARGET_CPP;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_CSHARP] = HAXE_TARGET_CS;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_FLASH_PLAYER] = HAXE_TARGET_SWF;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_HASHLINK] = HAXE_TARGET_HL;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_JAVASCRIPT] = HAXE_TARGET_JS;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_JAVA] = HAXE_TARGET_JAVA;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_NEKO] = HAXE_TARGET_NEKO;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PHP] = HAXE_TARGET_PHP;
+		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PYTHON] = HAXE_TARGET_PYTHON;
 
 		public var haxeOutput:HaxeOutputVO;
 		public var buildOptions:HaxeBuildOptions;
-		public var targetPlatform:String;
+		public var limeTargetPlatform:String;
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var haxelibs:Vector.<String> = new Vector.<String>();
@@ -70,22 +96,70 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var testMovieCommand:String;
 		
 		private var additional:StringSetting;
+
+		public function getHXML():String
+		{
+			var result:String = "";
+			for each(var fileLocation:FileLocation in classpaths)
+			{
+				result += "-cp " + fileLocation.fileBridge.nativePath + "\n";
+			}
+			for each(var haxelib:String in haxelibs)
+			{
+				result += "-lib " + haxelib + "\n";
+			}
+			var haxeTarget:String = getHaxeTarget(haxeOutput.platform);
+			result += "--" + haxeTarget + " " + haxeOutput.path.fileBridge.nativePath + "\n";
+			
+			var buildArgs:String = StringUtil.trim(buildOptions.getArguments());
+			if(buildArgs.length > 0)
+			{
+				//split into multiple lines
+				buildArgs = buildArgs.replace(/ \-/g, "\n-");
+				result += buildArgs + "\n";
+			}
+			return result;
+		}
 		
-		public function get platformTypes():ArrayCollection
+		public function get limePlatformTypes():ArrayCollection
 		{
 			var tmpCollection:ArrayCollection = new ArrayCollection([
-					PLATFORM_HTML5,
-					PLATFORM_WINDOWS,
-					PLATFORM_MAC,
-					PLATFORM_LINUX,
-					PLATFORM_ANDROID,
-					PLATFORM_IOS,
-					PLATFORM_TVOS,
-					PLATFORM_AIR,
-					PLATFORM_FLASH,
+					LIME_PLATFORM_HTML5,
+					LIME_PLATFORM_WINDOWS,
+					LIME_PLATFORM_MAC,
+					LIME_PLATFORM_LINUX,
+					LIME_PLATFORM_ANDROID,
+					LIME_PLATFORM_IOS,
+					LIME_PLATFORM_TVOS,
+					LIME_PLATFORM_AIR,
+					LIME_PLATFORM_FLASH,
 				]);
 			
 			return tmpCollection;
+		}
+		
+		public function get haxePlatformTypes():ArrayCollection
+		{
+			var tmpCollection:ArrayCollection = new ArrayCollection([
+					HaxeOutputVO.PLATFORM_AIR,
+					HaxeOutputVO.PLATFORM_AIR_MOBILE,
+					HaxeOutputVO.PLATFORM_CPP,
+					HaxeOutputVO.PLATFORM_CSHARP,
+					HaxeOutputVO.PLATFORM_FLASH_PLAYER,
+					HaxeOutputVO.PLATFORM_HASHLINK,
+					HaxeOutputVO.PLATFORM_JAVASCRIPT,
+					HaxeOutputVO.PLATFORM_JAVA,
+					HaxeOutputVO.PLATFORM_NEKO,
+					HaxeOutputVO.PLATFORM_PHP,
+					HaxeOutputVO.PLATFORM_PYTHON
+				]);
+			
+			return tmpCollection;
+		}
+
+		public function getHaxeTarget(outputPlatform:String):String
+		{
+			return OUTPUT_PLATFORM_TO_HAXE_TARGET[outputPlatform];
 		}
 
 		public function HaxeProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
@@ -94,7 +168,6 @@ package actionScripts.plugin.haxe.hxproject.vo
 			
 			haxeOutput = new HaxeOutputVO();
 			buildOptions = new HaxeBuildOptions();
-			targetPlatform = PLATFORM_HTML5;
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
@@ -141,14 +214,10 @@ package actionScripts.plugin.haxe.hxproject.vo
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
-                            new StaticLabelSetting("Edit project.xml to customize build options for OpenFL and Lime projects.", 14, 0x686868)
+                            new DropDownListSetting(this, "targetPlatform", "Platform", limePlatformTypes),
+                            new StaticLabelSetting("Edit project.xml to customize other build options for OpenFL and Lime projects.", 14, 0x686868)
                         ])
-                ),
-                new SettingsWrapper("Run",
-                        Vector.<ISetting>([
-                            new DropDownListSetting(this, "targetPlatform", "Platform", platformTypes)
-                        ])
-                ),
+                )
             ]);
 
 			return settings;
@@ -156,10 +225,13 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		private function getSettingsForHaxeProject():Vector.<SettingsWrapper>
 		{
+			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
+
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
+                            new DropDownListSetting(haxeOutput, "platform", "Platform", haxePlatformTypes),
                             additional
                         ])
                 )

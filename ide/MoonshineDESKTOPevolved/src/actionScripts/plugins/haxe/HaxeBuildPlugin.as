@@ -185,7 +185,7 @@ package actionScripts.plugins.haxe
             if(project.isLime)
             {
                 var projectFolder:FileLocation = project.folderLocation;
-                if(project.targetPlatform == HaxeProjectVO.PLATFORM_HTML5)
+                if(project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
                 {
                     //for some reason, we can't use startDebug() here because
                     //exiting the NativeProcess with stop() or stop(true) won't
@@ -196,11 +196,11 @@ package actionScripts.plugins.haxe
                     //instead, we need run Node directly and run the npx script
                     //file. that seems to exit with stop(true).
                     projectWaitingToStartHTMLDebugServer = project;
-			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
                 }
                 else
                 {
-			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.targetPlatform].join(" ")], projectFolder);
+			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], projectFolder);
                 }
             }
             else
@@ -218,11 +218,11 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
-                error("Haxe build without Lime not implemented yet");
+			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", project.getHXML().split("\n").join(" ")].join(" ")], model.activeProject.folderLocation);
             }
 		}
 		
@@ -235,11 +235,11 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.targetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
             }
             else
             {
-                error("Haxe build without Lime not implemented yet");
+			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ")], model.activeProject.folderLocation);
             }
 		}
 
