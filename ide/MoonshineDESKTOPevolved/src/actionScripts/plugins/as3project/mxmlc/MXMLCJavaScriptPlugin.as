@@ -428,7 +428,7 @@ package actionScripts.plugins.as3project.mxmlc
 					compilerPathHomeArg = "ROYALE_COMPILER_HOME=\"" + SDKstr +"\"";
                 }
 
-				jsCompilationArg += " -js-output=".concat(project.jsOutputPath);
+				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
 			}
 
             if(Settings.os == "win")
