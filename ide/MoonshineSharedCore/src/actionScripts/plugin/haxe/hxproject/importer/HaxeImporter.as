@@ -67,9 +67,10 @@ package actionScripts.plugin.haxe.hxproject.importer
             project.targets.length = 0;
 			
             parsePaths(data.compileTargets.compile, project.targets, project, "path");
-            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");
-			
+            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
+			parsePathString(data.haxelib["library"], project.haxelibs, project, "name");
+	
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)
