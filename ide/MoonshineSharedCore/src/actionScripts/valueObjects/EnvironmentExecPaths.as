@@ -24,6 +24,8 @@ package actionScripts.valueObjects
 			"$GRADLE_HOME/bin/gradle" : "%GRADLE_HOME%\\bin\\gradle";
 		public static const GRAILS_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
 			"$GRAILS_HOME/bin/grails" : "%GRAILS_HOME%\\bin\\grails";
+		public static const HAXE_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
+			"$HAXE_HOME/haxe" : "%HAXE_HOME%\\haxe.exe";
 		public static const HAXELIB_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
 			"$HAXE_HOME/haxelib" : "%HAXE_HOME%\\haxelib.exe";
 	}
