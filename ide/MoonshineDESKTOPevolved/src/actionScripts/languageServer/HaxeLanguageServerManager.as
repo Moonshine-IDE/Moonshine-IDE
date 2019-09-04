@@ -165,14 +165,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(_project.isLime)
-			{
-				installDependencies();
-			}
-			else
-			{
-				startNativeProcess(["build.hxml"]);
-			}
+			installDependencies();
 		}
 
 		private function installDependencies():void
@@ -436,7 +429,14 @@ package actionScripts.languageServer
 			{
 				//if no language server is running, we can continue with the
 				//next step of the process
-				getProjectSettings();
+				if(_project.isLime)
+				{
+					getProjectSettings();
+				}
+				else
+				{
+					startNativeProcess(["build.hxml"]);
+				}
 			}
 		}
 
