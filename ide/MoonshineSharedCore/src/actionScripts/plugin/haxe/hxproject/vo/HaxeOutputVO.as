@@ -27,7 +27,18 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 	public class HaxeOutputVO 
 	{
+		public static const PLATFORM_AIR:String = "AIR";
+		public static const PLATFORM_AIR_MOBILE:String = "AIR Mobile";
+		public static const PLATFORM_CSHARP:String = "C#";
+		public static const PLATFORM_CPP:String = "C++";
+		public static const PLATFORM_FLASH_PLAYER:String = "Flash Player";
+		public static const PLATFORM_HASHLINK:String = "HashLink";
+		public static const PLATFORM_JAVASCRIPT:String = "JavaScript";
+		public static const PLATFORM_JAVA:String = "Java";
 		public static const PLATFORM_LIME:String = "Lime";
+		public static const PLATFORM_NEKO:String = "Neko";
+		public static const PLATFORM_PHP:String = "PHP";
+		public static const PLATFORM_PYTHON:String = "Python";
 		
 		public var disabled:Boolean = false;
 		public var path:FileLocation;
