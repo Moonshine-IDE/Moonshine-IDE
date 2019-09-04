@@ -7,12 +7,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 * Getting Started: Added Apache Royale Nightly build.
-* Added USB device debugging on Mobile.
-* Added Go To for interfaces.
-* Added CTRL+Click on Flex SDK items parent classes.
+* Added USB device debugging on mobile for Adobe AIR.
+* Added Go To Implementation for interfaces.
+* Added Ctrl+Click on Flex SDK items parent classes.
 * Added Outline View with symbols in current view.
 * Signature Help: Add buttons to see other overloaded signatures.
-* Added basic Haxe support.
+* Added basic OpenFL/Haxe project support.
 
 ### Changed
 
