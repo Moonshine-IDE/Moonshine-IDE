@@ -364,13 +364,13 @@ package actionScripts.impls
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)
 				]),
 				new MenuItem(resourceManager.getString('resources','GITHUB'), [
-					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES),
+					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT),
 					/*new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','CHECKOUT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHECKOUT_REQUEST),*/
 					new MenuItem(null),

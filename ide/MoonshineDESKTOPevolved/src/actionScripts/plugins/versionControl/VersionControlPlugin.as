@@ -34,6 +34,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.utils.SharedObjectUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
@@ -54,7 +55,8 @@ package actionScripts.plugins.versionControl
 		{
 			super.activate();
 			
-			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN, handleOpenManageRepositories, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT, handleOpenManageRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories, false, 0, true);
 		}
@@ -63,7 +65,8 @@ package actionScripts.plugins.versionControl
 		{
 			super.deactivate();
 			
-			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES, handleOpenManageRepositories);
+			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN, handleOpenManageRepositories);
+			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT, handleOpenManageRepositories);
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository);
 			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
 		}
@@ -76,7 +79,7 @@ package actionScripts.plugins.versionControl
 		
 		protected function handleOpenManageRepositories(event:Event):void
 		{
-			if (!continueIfSVNSupported()) return;
+			if (!continueIfSVNSupported(event)) return;
 			
 			openManageRepoWindow();
 		}
@@ -203,10 +206,9 @@ package actionScripts.plugins.versionControl
 		//
 		//--------------------------------------------------------------------------
 		
-		private function continueIfSVNSupported():Boolean
+		private function continueIfSVNSupported(event:Event):Boolean
 		{
-			// check if svn path exists
-			if (!model.svnPath || model.svnPath == "")
+			if (!UtilsCore.isSVNPresent() || !UtilsCore.isGitPresent())
 			{
 				if (ConstantsCoreVO.IS_MACOS) 
 				{
@@ -214,7 +216,8 @@ package actionScripts.plugins.versionControl
 				}
 				else 
 				{
-					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+					else if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
 				}
 				return false;
 			}

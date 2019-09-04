@@ -22,7 +22,8 @@ package actionScripts.plugins.versionControl.event
 	
 	public class VersionControlEvent extends Event
 	{
-		public static const OPEN_MANAGE_REPOSITORIES:String = "openManageRepositories";
+		public static const OPEN_MANAGE_REPOSITORIES_GIT:String = "openManageRepositoriesGit";
+		public static const OPEN_MANAGE_REPOSITORIES_SVN:String = "openManageRepositoriesSVN";
 		public static const CLOSE_MANAGE_REPOSITORIES:String = "closeManageRepositories";
 		public static const OPEN_ADD_REPOSITORY:String = "openAddRepositoryView";
 		public static const ADD_EDIT_REPOSITORY:String = "addOrEditRepository";
