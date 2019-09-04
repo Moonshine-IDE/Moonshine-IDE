@@ -39,6 +39,7 @@ package actionScripts.plugins.haxelib
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.valueObjects.Settings;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
 	public class HaxelibPlugin extends PluginBase
 	{
@@ -188,6 +189,28 @@ package actionScripts.plugins.haxelib
 		{
 			var items:Vector.<ComponentVO> = new <ComponentVO>[];
 
+			var requiredPlatformHaxelib:String = null;
+			//some platforms require certain haxelib dependencies to be
+			//installed, and they may not necessarily be specified
+			switch(project.haxeOutput.platform)
+			{
+				case HaxeOutputVO.PLATFORM_CPP:
+				{
+					requiredPlatformHaxelib = "hxcpp";
+					break;
+				}
+				case HaxeOutputVO.PLATFORM_CSHARP:
+				{
+					requiredPlatformHaxelib = "hxcs";
+					break;
+				}
+				case HaxeOutputVO.PLATFORM_JAVA:
+				{
+					requiredPlatformHaxelib = "hxjava";
+					break;
+				}
+			}
+
 			var haxelibs:Vector.<String> = project.haxelibs;
 			var haxelibCount:int = project.haxelibs.length;
 			for(var i:int = 0; i < haxelibCount; i++)
@@ -195,6 +218,19 @@ package actionScripts.plugins.haxelib
 				var name:String = haxelibs[i];
 				var item:ComponentVO = new ComponentVO();
 				item.title = name;
+				item.isDownloaded = false;
+				items.push(item);
+				if(name == requiredPlatformHaxelib)
+				{
+					//no need to add this one manually because it's already a
+					//dependency
+					requiredPlatformHaxelib = null;
+				}
+			}
+			if(requiredPlatformHaxelib != null)
+			{
+				item = new ComponentVO();
+				item.title = requiredPlatformHaxelib;
 				item.isDownloaded = false;
 				items.push(item);
 			}
