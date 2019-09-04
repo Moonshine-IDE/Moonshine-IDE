@@ -103,7 +103,6 @@ package actionScripts.valueObjects
 		public static var FLEXDESKTOP_PROJECT:FileLocation;
 		public static var FLEXMOBILE_PROJECT:FileLocation;
 		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
-		public static var HAXESWF_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
@@ -384,11 +383,6 @@ public class $fileName
 			FLEXMOBILE_PROJECT.fileBridge.name = "Flex Mobile Project (iOS, Android)";
 			FLEXMOBILE_PROJECT.fileBridge.isDirectory = true;
 			FLEXMOBILE_PROJECT.fileBridge.data = "Create a project that will create an application designed for mobile devices.";
-			
-			HAXESWF_PROJECT = new FileLocation("HaXe SWF Project");
-			HAXESWF_PROJECT.fileBridge.name = "HaXe SWF Project";
-			HAXESWF_PROJECT.fileBridge.isDirectory = true;
-			HAXESWF_PROJECT.fileBridge.data = "Create a HaXe-based project that will generate a SWF file only.";
 
 			VISUALEDITOR_FLEX_PROJECT = new FileLocation(resourceManager.getString('resources', 'VE_PROJECT'));
 			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = resourceManager.getString('resources', 'VE_PROJECT');
@@ -408,7 +402,7 @@ public class $fileName
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
-			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT,HAXESWF_PROJECT]);
+			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},
 				{label:"Find previous",tooltip:"Find Previous Text"},{label:"Find Resource",tooltip:"Find File Resource"},{label:"Project view",tooltip:"Display Project View"},{label:"Fullscreen",tooltip:"Set Fuulscreen View"},
