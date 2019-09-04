@@ -173,6 +173,38 @@ package actionScripts.plugins.haxelib
 			}
 
 			var project:HaxeProjectVO = event.project;
+			if(project.isLime)
+			{
+				//for lime projects, haxelibs need to be read from project.xml
+				installLimeDependencies(project);
+			}
+			else
+			{
+				installHaxeDependencies(project);
+			}
+		}
+
+		private function installHaxeDependencies(project:HaxeProjectVO):void
+		{
+			var items:Vector.<ComponentVO> = new <ComponentVO>[];
+
+			var haxelibs:Vector.<String> = project.haxelibs;
+			var haxelibCount:int = project.haxelibs.length;
+			for(var i:int = 0; i < haxelibCount; i++)
+			{
+				var name:String = haxelibs[i];
+				var item:ComponentVO = new ComponentVO();
+				item.title = name;
+				item.isDownloaded = false;
+				items.push(item);
+			}
+
+			var status:ProjectInstallStatus = new ProjectInstallStatus(project, items);
+			checkStatusOfNextDependency(status);
+		}
+
+		private function installLimeDependencies(project:HaxeProjectVO):void
+		{
 			var projectFile:File = project.folderLocation.resolvePath(FILE_NAME_PROJECT_XML).fileBridge.getFile as File;
 			if(!projectFile.exists)
 			{
