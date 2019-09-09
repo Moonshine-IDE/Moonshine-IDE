@@ -232,17 +232,17 @@ package actionScripts.ui.menu.renderers
 
 		moonshine_internal function getLabelWidth():Number
 		{
-			return getLabelWidth(labelView);
+			return getLabelWidthInternal(labelView);
 		}
 
 		moonshine_internal function getShortcutLabelWidth():Number
 		{
 			if (!_shortcut)
 				return 0;
-			return getLabelWidth(shortcutView)
+			return getLabelWidthInternal(shortcutView)
 		}
 
-		private function getLabelWidth(label:Label):Number
+		private function getLabelWidthInternal(label:Label):Number
 		{
 			if (!label)
 				return 0;
