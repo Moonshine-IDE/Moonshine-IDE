@@ -56,9 +56,9 @@ package actionScripts.plugin.run
 			{
 				var toRet:Vector.<FileLocation> = new Vector.<FileLocation>();
 				var values:Array = v.split(",");
-				for each (var v:String in values)
+				for each (var value:String in values)
 				{
-					toRet.push( new FileLocation(v) );
+					toRet.push( new FileLocation(value) );
 				}
 			}
 			setPendingSetting(toRet);
