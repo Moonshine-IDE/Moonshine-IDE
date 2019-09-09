@@ -461,7 +461,7 @@ package actionScripts.languageServer
 				needsRestart = true;
 			}
 
-			if(!needsRestart && !_project.isLime && _project.haxeOutput.platform != _previousTargetPlatform)
+			if(!needsRestart && !_project.isLime)
 			{
 				needsRestart = true;
 			}
@@ -495,7 +495,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStart(message:Object):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				"Haxe", message.params.message, false
 			));
@@ -503,7 +503,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStop(message:Object):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS
 			));
 		}

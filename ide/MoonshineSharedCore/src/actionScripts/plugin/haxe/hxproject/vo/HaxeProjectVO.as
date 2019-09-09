@@ -35,6 +35,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
 	import mx.utils.StringUtil;
+	import actionScripts.plugin.settings.vo.StringListSetting;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -77,6 +78,15 @@ package actionScripts.plugin.haxe.hxproject.vo
 		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PHP] = HAXE_TARGET_PHP;
 		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PYTHON] = HAXE_TARGET_PYTHON;
 
+		private static const OUTPUT_PLATFORM_TO_FILE_EXTENSION:Object = {};
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_AIR] = ".swf";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_AIR_MOBILE] = ".swf";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_FLASH_PLAYER] = ".swf";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_HASHLINK] = ".hl";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_JAVASCRIPT] = ".js";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_NEKO] = ".n";
+		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_PYTHON] = ".py";
+
 		public var haxeOutput:HaxeOutputVO;
 		public var buildOptions:HaxeBuildOptions;
 		public var limeTargetPlatform:String;
@@ -95,7 +105,61 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var testMovie:String = TEST_MOVIE_WEBSERVER;
 		public var testMovieCommand:String;
 		
-		private var additional:StringSetting;
+		public function get outputPath():String
+		{
+			var fileExtension:String = getHaxeOutputFileExtension(haxePlatform);
+			if(fileExtension == null)
+			{
+				//if there's no file extension, then the output path is already
+				//a folder, and we return it as-is
+				return haxeOutput.path.fileBridge.nativePath;
+			}
+			//otherwise, we return the parent folder
+			var tmpPath:String = this.folderLocation.fileBridge.getRelativePath(haxeOutput.path.fileBridge.parent);
+			if (!tmpPath) tmpPath = haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
+			return tmpPath;
+		}
+
+		public function set outputPath(value:String):void
+		{
+			if (!value || value == "") return;
+
+			//make sure that the path is absolute (if it's already absolute,
+			//calling resolvePath() from another folder won't change anything)
+			var resolvedFolder:FileLocation = this.folderLocation.fileBridge.resolvePath(value);
+			
+			//on some platforms, the output path is a file, and on others, it's
+			//a folder instead. if we have a defined extension, it's a file.
+			//otherwise, it's a folder.
+			var fileExtension:String = getHaxeOutputFileExtension(haxeOutput.platform);
+			if(fileExtension == null)
+			{
+				haxeOutput.path = resolvedFolder;
+				return;
+			}
+			
+			//when there is a file extension, resolve the output file from the
+			//folder that gets passed in
+			haxeOutput.path = resolvedFolder.resolvePath(projectName + fileExtension);
+		}
+		
+		public function get haxePlatform():String
+		{
+			return haxeOutput.platform;
+		}
+
+		public function set haxePlatform(value:String):void
+		{
+			//this will always be a folder
+			var savedOutputFolderPath:String = outputPath;
+
+			haxeOutput.platform = value;
+
+			//this will ensure that the correct output path will be saved
+			//it could either be a folder or a file with extension specific to
+			//the target platform
+			outputPath = savedOutputFolderPath;
+		}
 
 		public function getHXML():String
 		{
@@ -162,6 +226,15 @@ package actionScripts.plugin.haxe.hxproject.vo
 			return OUTPUT_PLATFORM_TO_HAXE_TARGET[outputPlatform];
 		}
 
+		public function getHaxeOutputFileExtension(outputPlatform:String):String
+		{
+			if(OUTPUT_PLATFORM_TO_FILE_EXTENSION.hasOwnProperty(outputPlatform))
+			{
+				return OUTPUT_PLATFORM_TO_FILE_EXTENSION[outputPlatform];
+			}
+			return null;
+		}
+
 		public function HaxeProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
 			super(folder, projectName, updateToTreeView);
@@ -177,8 +250,6 @@ package actionScripts.plugin.haxe.hxproject.vo
 		{
 			// TODO more categories / better setting UI
 			var settings:Vector.<SettingsWrapper>;
-			
-			if (additional) additional = null;
 
 			if(isLime)
 			{
@@ -214,7 +285,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
-                            new DropDownListSetting(this, "targetPlatform", "Platform", limePlatformTypes),
+                            new DropDownListSetting(this, "limeTargetPlatform", "Platform", limePlatformTypes),
                             new StaticLabelSetting("Edit project.xml to customize other build options for OpenFL and Lime projects.", 14, 0x686868)
                         ])
                 )
@@ -225,15 +296,24 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		private function getSettingsForHaxeProject():Vector.<SettingsWrapper>
 		{
-			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
-
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
-
+				new SettingsWrapper("Output",
+                        new <ISetting>[
+                            new DropDownListSetting(this, "haxePlatform", "Platform", haxePlatformTypes),
+							new PathSetting(this, "outputPath", "Output Path", true, outputPath),
+                        ]
+                ),
                 new SettingsWrapper("Build options",
-                        Vector.<ISetting>([
-                            new DropDownListSetting(haxeOutput, "platform", "Platform", haxePlatformTypes),
-                            additional
-                        ])
+                        new <ISetting>[
+                            new StringListSetting(buildOptions, "directives", "Conditional compilation directives", "a-zA-Z0-9\\-=<>()!&|."),
+                            new StringSetting(buildOptions, "additional", "Additional compiler options")
+                        ]
+                ),
+                new SettingsWrapper("Paths",
+                        new <ISetting>[
+                            new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
+                            new StringListSetting(this, "haxelibs", "Haxelibs", "a-zA-Z0-9"),
+                        ]
                 )
             ]);
 

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	width="100%"
+  	autoDrawBackground="false">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.plugin.settings.vo.StringListItemVO;
+			import actionScripts.plugin.settings.renderers.StringListRenderer;
+			
+			public static const EVENT_REMOVE_ITEM:String = "removeItem";
+			public static const EVENT_MANUAL_UPDATE:String = "manualUpdate";
+			
+			[Bindable] public var showRemove:Boolean = true;
+			[Bindable] public var restrict:String = null;
+						
+			protected function onPathManualChange(event:TextOperationEvent):void
+			{
+				if (data)
+				{
+					var item:StringListItemVO = data as StringListItemVO;
+					item.string = stringInput.text;
+				}
+			}
+
+			override public function set data(value:Object):void
+			{
+				var changed:Boolean = this.data != value;
+				super.data = value;
+				if(changed && value)
+				{
+					var item:StringListItemVO = data as StringListItemVO;
+					if(item.string == null || item.string.length == 0)
+					{
+						this.stringInput.setFocus();
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:HGroup 
+		width="100%" 
+		paddingLeft="15"
+		verticalAlign="middle">
+		<s:Image id="icoMainSourceFolder"
+				 source="@Embed('/elements/images/icoSource.png')"
+				 includeInLayout="false" visible="false"/>
+		<s:TextInput id="stringInput"
+					 width="100%"
+					 styleName="uiTextSettingsValue"
+					 height="100%"
+					 borderVisible="false"
+					 contentBackgroundAlpha="0"
+					 focusAlpha="0"
+					 text="{data ? (data as StringListItemVO).string : StringListRenderer.NOT_SET_STRING_MESSAGE}"
+					 restrict="{restrict}"
+					 change="onPathManualChange(event)"/>
+		
+		<s:Spacer width="10"/>
+	
+		<s:Button 
+			width="20"
+			label="–"
+			styleName="lightButtonTight"
+			visible="{showRemove}"
+			click="{dispatchEvent(new Event(EVENT_REMOVE_ITEM, true))}"
+			/>
+	</s:HGroup>
+	
+</s:ItemRenderer>

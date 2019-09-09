@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:renderers="actionScripts.plugin.settings.renderers.*"
+		  width="100%" gap="0" paddingTop="15" paddingBottom="5" paddingLeft="15" paddingRight="15">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.utils.OSXBookmarkerNotifiers;
+			import actionScripts.plugin.settings.vo.StringListSetting;
+			import actionScripts.plugin.settings.vo.AbstractSetting;
+			import actionScripts.plugin.settings.vo.StringListItemVO;
+			
+			public static const NOT_SET_STRING_MESSAGE:String = "Click to add";
+		
+			[Bindable]
+			public var setting:StringListSetting;
+
+			public var restrict:String = null;
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			protected function init():void
+			{
+				// Add listeners
+				var factory:ClassFactory = new ClassFactory(StringListItemRenderer);
+				factory.properties = {
+					restrict: restrict
+				};
+				stringList.itemRenderer = factory;
+				stringList.dataProvider = setting.strings;
+				
+				stringList.addEventListener(StringListItemRenderer.EVENT_REMOVE_ITEM, removeItem, false, 0, true);
+			}
+			
+			protected function removeItem(event:Event):void
+			{
+				var item:StringListItemVO = StringListItemVO(event.target.data);
+				setting.strings.removeItem(item);
+			}
+			
+			protected function addItem():void
+			{
+				setting.strings.addItem(new StringListItemVO(null, NOT_SET_STRING_MESSAGE));
+			}
+
+			public function setMessage(value:String, type:String):void
+			{
+				if (!lblMessage || !value)
+				{
+					return;
+				}
+				
+				lblMessage.includeInLayout = lblMessage.visible = true;
+				switch(type)
+				{
+					case AbstractSetting.MESSAGE_CRITICAL:
+						lblMessage.setStyle("color", 0xff0000);
+						break;
+					case AbstractSetting.MESSAGE_IMPORTANT:
+						lblMessage.setStyle("color", 0x0099ff);
+						break;
+					default:
+						lblMessage.setStyle("color", 0x666666);
+						break;
+				}
+				
+				lblMessage.text = value;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label text="{setting.label}"
+			 styleName="uiTextSettingsLabel"/>
+		
+	<s:DataGroup id="stringList"
+				width="100%"
+				creationComplete="init()">
+		<s:layout>
+			<s:VerticalLayout gap="5" />
+		</s:layout>
+	</s:DataGroup>
+	
+	<renderers:StringListItemRenderer id="stringRenderer"
+							width="100%"
+							alpha="0.7"
+							mouseChildren="false"
+							buttonMode="true"
+							showRemove="false"
+							click="addItem()"/>
+	
+	<s:Label id="lblMessage" 
+			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
+			 fontSize="12" includeInLayout="false" visible="false" paddingLeft="15"/>
+	
+</s:VGroup>
