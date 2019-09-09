@@ -45,7 +45,10 @@
 			{
 				cmbOption.callLater(function ():void
 				{
-					if (cmbOption.dataProvider.getItemAt(0) is String) cmbOption.selectedItem = setting.provider[setting.name];
+					if (cmbOption.dataProvider.getItemAt(0) is String)
+					{
+						cmbOption.selectedItem = setting.provider[setting.name];
+					}
 					else
 					{
 						for (var i:int = 0; i < setting.dataProvider.length; i++)
@@ -57,6 +60,9 @@
 							}
 						}
 					}
+					//changing the selectedItem does not immediately update the
+					//selectedIndex, but this will force it to happen
+					cmbOption.validateProperties();
 
 					// default value
 					setting.stringValue = setting.labelField ? setting.dataProvider.getItemAt(cmbOption.selectedIndex)[setting.labelField] : setting.dataProvider.getItemAt(cmbOption.selectedIndex).toString();
