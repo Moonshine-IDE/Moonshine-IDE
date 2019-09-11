@@ -642,8 +642,8 @@ package actionScripts.plugins.git
 				}
 				case GIT_PUSH:
 				{
-					match = value.output.toLowerCase().match(/fatal.*username/);
-					if (match)
+					if (value.output.toLowerCase().match(/fatal.*username/) || 
+						value.output.toLowerCase().match(/permission.*denied/))
 					{
 						// we'll need user to authenticate
 						plugin.requestToAuthenticate();
