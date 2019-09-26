@@ -19,10 +19,8 @@
 package actionScripts.plugin.haxe.hxproject.vo
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.SerializeUtil;
-    import actionScripts.utils.TextUtil;
+	import actionScripts.utils.SerializeUtil;
+	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 
 	public class HaxeOutputVO 

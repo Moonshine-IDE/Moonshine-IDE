@@ -1,14 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.haxe.hxproject
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.net.SharedObject;
-	import flash.utils.IDataInput;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -20,7 +33,6 @@ package actionScripts.plugin.haxe.hxproject
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SettingsEvent;
-	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
@@ -37,8 +49,6 @@ package actionScripts.plugin.haxe.hxproject
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
-	import actionScripts.valueObjects.EnvironmentExecPaths;
-	import actionScripts.valueObjects.Settings;
 
 	public class CreateHaxeProject extends ConsoleOutputter
 	{

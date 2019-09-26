@@ -18,24 +18,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.haxe.hxproject.vo
 {
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.settings.vo.StringSetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.settings.vo.IntSetting;
-	import actionScripts.plugin.settings.vo.ColorSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
-	import actionScripts.plugin.settings.vo.StaticLabelSetting;
-	import actionScripts.plugin.settings.vo.DropDownListSetting;
 	import mx.collections.ArrayCollection;
-	import actionScripts.plugin.settings.vo.NameValuePair;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
 	import mx.utils.StringUtil;
+
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.plugin.settings.vo.StaticLabelSetting;
 	import actionScripts.plugin.settings.vo.StringListSetting;
+	import actionScripts.plugin.settings.vo.StringSetting;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public class HaxeProjectVO extends ProjectVO
 	{

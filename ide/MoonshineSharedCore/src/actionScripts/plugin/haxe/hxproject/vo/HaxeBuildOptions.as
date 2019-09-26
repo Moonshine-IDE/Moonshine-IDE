@@ -18,13 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.haxe.hxproject.vo
 {
-    import mx.utils.StringUtil;
-    
-    import actionScripts.factory.FileLocation;
     import actionScripts.utils.SerializeUtil;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.MobileDeviceVO;
-    import actionScripts.valueObjects.SDKReferenceVO;
+
+    import mx.utils.StringUtil;
 
 	public class HaxeBuildOptions 
 	{
