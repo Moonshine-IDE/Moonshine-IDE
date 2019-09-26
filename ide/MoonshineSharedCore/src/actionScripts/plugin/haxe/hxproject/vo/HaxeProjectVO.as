@@ -32,6 +32,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import actionScripts.plugin.settings.vo.StringListSetting;
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputFileExtension;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectTarget;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputPath;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -61,28 +64,6 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public static const HAXE_TARGET_PHP:String = "php";
 		public static const HAXE_TARGET_PYTHON:String = "python";
 
-		private static const OUTPUT_PLATFORM_TO_HAXE_TARGET:Object = {};
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_AIR] = HAXE_TARGET_SWF;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_AIR_MOBILE] = HAXE_TARGET_SWF;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_CPP] = HAXE_TARGET_CPP;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_CSHARP] = HAXE_TARGET_CS;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_FLASH_PLAYER] = HAXE_TARGET_SWF;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_HASHLINK] = HAXE_TARGET_HL;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_JAVASCRIPT] = HAXE_TARGET_JS;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_JAVA] = HAXE_TARGET_JAVA;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_NEKO] = HAXE_TARGET_NEKO;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PHP] = HAXE_TARGET_PHP;
-		OUTPUT_PLATFORM_TO_HAXE_TARGET[HaxeOutputVO.PLATFORM_PYTHON] = HAXE_TARGET_PYTHON;
-
-		private static const OUTPUT_PLATFORM_TO_FILE_EXTENSION:Object = {};
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_AIR] = ".swf";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_AIR_MOBILE] = ".swf";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_FLASH_PLAYER] = ".swf";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_HASHLINK] = ".hl";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_JAVASCRIPT] = ".js";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_NEKO] = ".n";
-		OUTPUT_PLATFORM_TO_FILE_EXTENSION[HaxeOutputVO.PLATFORM_PYTHON] = ".py";
-
 		public var haxeOutput:HaxeOutputVO;
 		public var buildOptions:HaxeBuildOptions;
 		public var limeTargetPlatform:String;
@@ -103,7 +84,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 		
 		public function get outputPath():String
 		{
-			var fileExtension:String = getHaxeOutputFileExtension(haxePlatform);
+			var fileExtension:String = getHaxeProjectOutputFileExtension(this);
 			if(fileExtension == null)
 			{
 				//if there's no file extension, then the output path is already
@@ -122,21 +103,13 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 			//make sure that the path is absolute (if it's already absolute,
 			//calling resolvePath() from another folder won't change anything)
-			var resolvedFolder:FileLocation = this.folderLocation.fileBridge.resolvePath(value);
+			haxeOutput.path = this.folderLocation.fileBridge.resolvePath(value);
 			
-			//on some platforms, the output path is a file, and on others, it's
-			//a folder instead. if we have a defined extension, it's a file.
-			//otherwise, it's a folder.
-			var fileExtension:String = getHaxeOutputFileExtension(haxeOutput.platform);
-			if(fileExtension == null)
-			{
-				haxeOutput.path = resolvedFolder;
-				return;
-			}
-			
-			//when there is a file extension, resolve the output file from the
-			//folder that gets passed in
-			haxeOutput.path = resolvedFolder.resolvePath(projectName + fileExtension);
+			//we set this twice because some Haxe projects have a folder, and
+			//some have a file name. the first time we set a folder, and then
+			//getHaxeProjectOutputPath() populates the file name, if necessary.
+			//this keeps the behavior consistent with HaxeDevelop.
+			haxeOutput.path = new FileLocation(getHaxeProjectOutputPath(this));
 		}
 		
 		public function get haxePlatform():String
@@ -146,15 +119,12 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		public function set haxePlatform(value:String):void
 		{
-			//this will always be a folder
-			var savedOutputFolderPath:String = outputPath;
-
 			haxeOutput.platform = value;
 
 			//this will ensure that the correct output path will be saved
 			//it could either be a folder or a file with extension specific to
 			//the target platform
-			outputPath = savedOutputFolderPath;
+			haxeOutput.path = new FileLocation(getHaxeProjectOutputPath(this));
 		}
 
 		public function getHXML():String
@@ -168,7 +138,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 			{
 				result += "-lib " + haxelib + "\n";
 			}
-			var haxeTarget:String = getHaxeTarget(haxeOutput.platform);
+			var haxeTarget:String = getHaxeProjectTarget(this);
 			result += "--" + haxeTarget + " " + haxeOutput.path.fileBridge.nativePath + "\n";
 			
 			var buildArgs:String = StringUtil.trim(buildOptions.getArguments());
@@ -215,20 +185,6 @@ package actionScripts.plugin.haxe.hxproject.vo
 				]);
 			
 			return tmpCollection;
-		}
-
-		public function getHaxeTarget(outputPlatform:String):String
-		{
-			return OUTPUT_PLATFORM_TO_HAXE_TARGET[outputPlatform];
-		}
-
-		public function getHaxeOutputFileExtension(outputPlatform:String):String
-		{
-			if(OUTPUT_PLATFORM_TO_FILE_EXTENSION.hasOwnProperty(outputPlatform))
-			{
-				return OUTPUT_PLATFORM_TO_FILE_EXTENSION[outputPlatform];
-			}
-			return null;
 		}
 
 		public function HaxeProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)

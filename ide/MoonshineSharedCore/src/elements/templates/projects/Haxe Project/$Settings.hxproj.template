@@ -4,13 +4,13 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin/$ProjectName.js" />
+    <movie path="$ProjectOutput" />
     <movie fps="0" />
     <movie width="0" />
     <movie height="0" />
     <movie version="1" />
     <movie minorVersion="0" />
-    <movie platform="JavaScript" />
+    <movie platform="$ProjectPlatform" />
     <movie background="#FFFFFF" />
     <movie preferredSDK="" />
   </output>

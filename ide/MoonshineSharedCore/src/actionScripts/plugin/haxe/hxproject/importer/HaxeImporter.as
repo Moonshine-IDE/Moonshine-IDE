@@ -165,7 +165,7 @@ package actionScripts.plugin.haxe.hxproject.importer
 			{
 				if (project.haxeOutput.platform == "")
 				{
-					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_JAVASCRIPT;
+					project.haxePlatform = HaxeOutputVO.PLATFORM_JAVASCRIPT;
 				}
 				project.limeTargetPlatform = null;
 			}

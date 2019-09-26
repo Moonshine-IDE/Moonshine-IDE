@@ -49,6 +49,8 @@ package actionScripts.plugin.haxe.hxproject
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputPath;
 
 	public class CreateHaxeProject extends ConsoleOutputter
 	{
@@ -60,6 +62,7 @@ package actionScripts.plugin.haxe.hxproject
 		private var project:HaxeProjectVO;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
+		private var newProjectPlatformSetting:DropDownListSetting;
 		private var isInvalidToSave:Boolean;
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
@@ -112,6 +115,8 @@ package actionScripts.plugin.haxe.hxproject
 			projectName = "New" + projectName.replace(/ /g, "");
 
 			project = new HaxeProjectVO(folderLocation, projectName);
+			//this seems kind of hacky, but other indicators haven't been populated yet
+			project.isLime = projectName.indexOf("OpenFL") != -1 || projectName.indexOf("Lime") != -1;;
 
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
@@ -149,21 +154,36 @@ package actionScripts.plugin.haxe.hxproject
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
 			newProjectNameSetting.addEventListener(StringSetting.VALUE_UPDATED, onProjectNameChanged);
 
+			if(!project.isLime)
+			{
+				newProjectPlatformSetting = new DropDownListSetting(project, "haxePlatform", "Platform", project.haxePlatformTypes);
+			}
+
 			if (eventObject.isExport)
 			{
 				//newProjectNameSetting.isEditable = false;
-                return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+                var settings:SettingsWrapper = new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
                     newProjectPathSetting
                 ]));
+				if(newProjectPlatformSetting)
+				{
+					settings.getSettingsList().push(newProjectPlatformSetting);
+				}
+				return settings;
 			}
 
-            return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+            settings = new SettingsWrapper("Name & Location", Vector.<ISetting>([
 				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
 				newProjectNameSetting, // No space input either plx
-				newProjectPathSetting,
+				newProjectPathSetting
 			]));
+			if(newProjectPlatformSetting)
+			{
+				settings.getSettingsList().push(newProjectPlatformSetting);
+			}
+			return settings;
 		}
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
@@ -293,6 +313,11 @@ package actionScripts.plugin.haxe.hxproject
 			
 			targetFolder = targetFolder.resolvePath(projectName);
 			targetFolder.fileBridge.createDirectory();
+
+			//setting these values ensures that getHaxeProjectOutputPath()
+			//returns the correct value
+			pvo.folderLocation = targetFolder;
+			pvo.haxeOutput.path = targetFolder.resolvePath("bin");
 			
 			// Time to do the templating thing!
 			var th:TemplatingHelper = new TemplatingHelper();
@@ -304,6 +329,9 @@ package actionScripts.plugin.haxe.hxproject
 			th.templatingData["$Settings"] = projectName;
 			th.templatingData["$SourcePath"] = sourcePath;
 			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			
+			th.templatingData["$ProjectPlatform"] = project.haxeOutput.platform;
+			th.templatingData["$ProjectOutput"] = getHaxeProjectOutputPath(project);
 
             th.projectTemplate(templateDir, targetFolder);
 

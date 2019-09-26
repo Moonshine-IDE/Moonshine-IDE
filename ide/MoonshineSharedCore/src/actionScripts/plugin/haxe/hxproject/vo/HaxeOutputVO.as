@@ -39,13 +39,13 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public static const PLATFORM_PYTHON:String = "Python";
 		
 		public var disabled:Boolean = false;
-		public var path:FileLocation;
+		public var path:FileLocation = null;
 		public var frameRate:Number = 0;
 		public var swfVersion:uint = 0;
 		public var swfMinorVersion:uint = 0;
 		public var width:int = 0;
 		public var height:int = 0;
-		public var platform:String;
+		public var platform:String = PLATFORM_JAVASCRIPT;
 		
 		// TODO What is this? It's present as <movie input="" /> in FD .hxproj
 		/** Not sure what this is */
