@@ -50,6 +50,8 @@ package actionScripts.languageServer
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.valueObjects.EnvironmentExecPaths;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.events.SettingsEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -239,6 +241,16 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
+			if(!cmdFile.exists)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					HtmlFormatter.sprintfa("Invalid path to Node.js executable: " + cmdFile.nativePath, null), false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+				return;
+			}
 
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -247,7 +259,7 @@ package actionScripts.languageServer
 			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
-			processInfo.executable = new File(UtilsCore.getNodeBinPath());
+			processInfo.executable = cmdFile;
 			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
 			_languageServerProcess = new NativeProcess();
