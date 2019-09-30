@@ -47,6 +47,7 @@
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+			import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 			
 			[Bindable] public var wrapperBelongToProject:FileWrapper;
 			
@@ -126,6 +127,14 @@
 				{
 					var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
 					filesList.unshift(grailsProject.classpaths);
+				}
+				else if(project is HaxeProjectVO)
+				{
+					var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
+					filesList.unshift(haxeProject.haxeOutput.path,
+						haxeProject.folderLocation.resolvePath("bin"),
+						haxeProject.folderLocation.resolvePath(project.name +".hxproj"),
+						haxeProject.classpaths);
 				}
 				
 				for (var i:int; i < filesList.length; i++)
