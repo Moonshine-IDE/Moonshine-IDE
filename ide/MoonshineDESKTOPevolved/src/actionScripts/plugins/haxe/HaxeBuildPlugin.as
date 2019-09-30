@@ -44,6 +44,7 @@ package actionScripts.plugins.haxe
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
+    import actionScripts.events.RefreshTreeEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -52,6 +53,7 @@ package actionScripts.plugins.haxe
 		private var nodePathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
         private var limeHTMLServerNativeProcess:NativeProcess;
+        private var currentProject:HaxeProjectVO;
         private var projectWaitingToStartHTMLDebugServer:HaxeProjectVO = null;
         private var limeLibpathProcess:NativeProcess;
         private var limeLibPath:String = null;
@@ -233,6 +235,7 @@ package actionScripts.plugins.haxe
             {
                 return;
             }
+            currentProject = project;
             if(project.isLime)
             {
 			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
@@ -267,6 +270,7 @@ package actionScripts.plugins.haxe
                 return;
             }
 			
+            currentProject = model.activeProject as HaxeProjectVO;
             warning("Starting Haxe build...");
 
 			super.start(args, buildDirectory);
@@ -306,6 +310,7 @@ package actionScripts.plugins.haxe
                 return;
             }
 
+            currentProject = model.activeProject as HaxeProjectVO;
 			super.start(args, buildDirectory);
 			
             print("Command: %s", args.join(" "));
@@ -429,6 +434,10 @@ package actionScripts.plugins.haxe
                 {
                     allowLimeHTMLServerLaunch = projectWaitingToStartHTMLDebugServer != null;
                     success("Haxe build has completed successfully.");
+                    if(currentProject)
+                    {
+					    dispatcher.dispatchEvent(new RefreshTreeEvent(currentProject.haxeOutput.path.fileBridge.parent));
+                    }
                 }
             }
 
@@ -449,6 +458,7 @@ package actionScripts.plugins.haxe
             {
                 projectWaitingToStartHTMLDebugServer = null;
             }
+            currentProject = null;
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
