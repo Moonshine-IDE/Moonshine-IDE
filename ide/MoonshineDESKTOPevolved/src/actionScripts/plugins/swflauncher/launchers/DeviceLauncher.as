@@ -64,7 +64,11 @@ package actionScripts.plugins.swflauncher.launchers
 			isRunAsDebugger = runAsDebugger;
 			
 			// checks if the credentials are present
-			if (!ensureCredentialsPresent(project)) return;
+			if (!ensureCredentialsPresent(project))
+			{
+				error("Launch cancelled.");
+				return;
+			}
 			
 			// We need the application ID; without pre-guessing any
 			// lets read and find it
@@ -172,6 +176,7 @@ package actionScripts.plugins.swflauncher.launchers
 			if (isAndroid)
 			{
 				addToQueue({com:adtPath +"-launchApp&&-platform&&android&&-appid&&"+ appID, showInConsole:true});
+				addToQueue({message: "Install and launch successful.", type: "success"});
 			}
 			else
 			{
@@ -194,7 +199,7 @@ package actionScripts.plugins.swflauncher.launchers
 				return true;
 			}
 			
-			Alert.show("Insufficient information. Process terminates.", "Error!", Alert.OK, null, onProcessTerminatesDueToCredentials);
+			Alert.show("Missing signing options.", "Error!", Alert.OK, null, onProcessTerminatesDueToCredentials);
 			return false;
 			
 			/*

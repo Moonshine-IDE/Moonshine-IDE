@@ -88,11 +88,13 @@ package actionScripts.plugins.swflauncher
 			// Find project if we can (otherwise we can't open AIR swfs)
 			if (!event.project) event.project = findProjectForFile(event.file);
 			
+			var showStartedMessage:Boolean = true;
+
 			// Do we have an AIR project on our hands?
 			if (event.project is AS3ProjectVO
 				&& AS3ProjectVO(event.project).testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
-				launchAIR(event.file, AS3ProjectVO(event.project), event.sdk);
+				showStartedMessage = launchAIR(event.file, AS3ProjectVO(event.project), event.sdk);
 			}
 			else
 			{
@@ -100,7 +102,10 @@ package actionScripts.plugins.swflauncher
 				launchExternal(event.url || event.file);
 			}
 
-			warning("Application " + event.project.name + " started.");
+			if(showStartedMessage)
+			{
+				warning("Application " + event.project.name + " started.");
+			}
 		}
 		
 		// when user has already one session ins progress and tries to build/run the application again- close current session and start new one
@@ -127,7 +132,7 @@ package actionScripts.plugins.swflauncher
 			return null;
 		}
 		
-		protected function launchAIR(file:File, project:AS3ProjectVO, sdk:File):void
+		protected function launchAIR(file:File, project:AS3ProjectVO, sdk:File):Boolean
 		{
 			if(customProcess)
 			{
@@ -137,7 +142,7 @@ package actionScripts.plugins.swflauncher
 			}
 			
 			// Need project opened to run
-			if (!project) return;
+			if (!project) return false;
 			
 			// Can't open files without an SDK set
 			if (!sdk && !project.buildOptions.customSDK)
@@ -146,7 +151,7 @@ package actionScripts.plugins.swflauncher
 				var event:RequestSettingEvent = new RequestSettingEvent(MXMLCPlugin, 'defaultFlexSDK');
 				dispatcher.dispatchEvent(event);
 				// None found, abort
-				if (event.value == "" || event.value == null) return;
+				if (event.value == "" || event.value == null) return false;
 				
 				// Default SDK found, let's use that
 				sdk = new File(event.value.toString());
@@ -159,7 +164,11 @@ package actionScripts.plugins.swflauncher
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
 			{
 				deviceLauncher.runOnDevice(project, sdk, file, appXML, RUN_AS_DEBUGGER);
-				return;
+				//this return false doesn't indicate failure. it just stops the
+				//"started" message from being displayed too early. we'll
+				//display our own confirmation after installation and everything
+				//is done.
+				return false;
 			}
 			
 			var customInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -234,6 +243,7 @@ package actionScripts.plugins.swflauncher
 			customProcess = new NativeProcess();
 			addRemoveShellListeners(true);
 			customProcess.start(customInfo);
+			return true;
 		}
 		
 		private function addRemoveShellListeners(add:Boolean):void 
