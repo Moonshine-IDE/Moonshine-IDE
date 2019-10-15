@@ -164,10 +164,10 @@ package actionScripts.plugins.swflauncher
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
 			{
 				deviceLauncher.runOnDevice(project, sdk, file, appXML, RUN_AS_DEBUGGER);
-				//this return false doesn't indicate failure. it just stops the
-				//"started" message from being displayed too early. we'll
-				//display our own confirmation after installation and everything
-				//is done.
+				//this return false doesn't necessarily indicate failure. it
+				//simply stops the "started" message from being displayed too
+				//early. DeviceLauncher will display its own confirmation after
+				//installation and everything is done.
 				return false;
 			}
 			

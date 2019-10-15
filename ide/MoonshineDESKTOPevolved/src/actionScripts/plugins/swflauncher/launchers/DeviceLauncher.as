@@ -46,13 +46,14 @@ package actionScripts.plugins.swflauncher.launchers
 	{
 		private var customProcess:NativeProcess;
 		private var customInfo:NativeProcessStartupInfo;
-		private var queue:Vector.<Object> = new Vector.<Object>();
+		private var queue:Vector.<Object> = new <Object>[];
+		private var allowedExitCode:Number = -1;
+		private var savedStderr:String = null;
 		private var connectedDevices:Vector.<String>;
 		private var windowsAutoJavaLocation:File;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var isAndroid:Boolean;
 		private var isRunAsDebugger:Boolean;
-		private var isErrorClose:Boolean;
 		
 		public function DeviceLauncher()
 		{
@@ -64,9 +65,10 @@ package actionScripts.plugins.swflauncher.launchers
 			isRunAsDebugger = runAsDebugger;
 			
 			// checks if the credentials are present
-			if (!ensureCredentialsPresent(project))
+			if(!ensureCredentialsPresent(project))
 			{
 				error("Launch cancelled.");
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
 				return;
 			}
 			
@@ -83,37 +85,51 @@ package actionScripts.plugins.swflauncher.launchers
 			// STEP 1
 			//var executableFile:File = (Settings.os == "win") ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			var executableFile:File;
-			if (!ConstantsCoreVO.IS_MACOS && windowsAutoJavaLocation) executableFile = windowsAutoJavaLocation;
+			if(!ConstantsCoreVO.IS_MACOS && windowsAutoJavaLocation)
+			{
+				executableFile = windowsAutoJavaLocation;
+			}
 			else 
 			{
 				var tmpExecutableJava:FileLocation = UtilsCore.getExecutableJavaLocation();
-				if (tmpExecutableJava) executableFile = tmpExecutableJava.fileBridge.getFile as File;
-				if (!ConstantsCoreVO.IS_MACOS && !windowsAutoJavaLocation) windowsAutoJavaLocation = executableFile;
+				if(tmpExecutableJava)
+				{
+					executableFile = tmpExecutableJava.fileBridge.getFile as File;
+				}
+				if(!ConstantsCoreVO.IS_MACOS && !windowsAutoJavaLocation)
+				{
+					windowsAutoJavaLocation = executableFile;
+				}
 			}
 			
-			if (!executableFile || !executableFile.exists)
+			if(!executableFile || !executableFile.exists)
 			{
 				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
 				return;
 			}
 			
-			if (customProcess) startShell(false);
+			if(customProcess)
+			{
+				stopShell();
+			}
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executableFile;
 			customInfo.workingDirectory = swf.parent;
 			
-			queue = new Vector.<Object>();
+			queue = new <Object>[];
 			
 			addToQueue({com:adtPath +"-devices&&-platform&&"+ (isAndroid ? "android" : "ios"), showInConsole:false});
 			
 			var debugOptions:String = "";
-			/*if(runAsDebugger && )
+			if(runAsDebugger)
 			{
-				debugOptions = "&&-connect";
-			}*/
+				//-connect tells the debugger to run over USB
+				//debugOptions = "&&-connect";
+			}
 
 			var adtPackagingCom:String;
-			if (isAndroid) 
+			if(isAndroid) 
 			{
 				var androidPackagingMode:String = null;
 				if(runAsDebugger)
@@ -162,18 +178,22 @@ package actionScripts.plugins.swflauncher.launchers
 			}
 			
 			// extensions and resources
-			if (project.nativeExtensions && project.nativeExtensions.length > 0) adtPackagingCom+= '&&-extdir&&'+ project.nativeExtensions[0].fileBridge.nativePath;
-			if (project.resourcePaths)
+			if(project.nativeExtensions && project.nativeExtensions.length > 0)
 			{
-				for each (var i:FileLocation in project.resourcePaths)
+				adtPackagingCom+= '&&-extdir&&'+ project.nativeExtensions[0].fileBridge.nativePath;
+			}
+			if(project.resourcePaths)
+			{
+				for each(var i:FileLocation in project.resourcePaths)
 				{
 					adtPackagingCom += '&&'+ i.fileBridge.nativePath;
 				}
 			}
 			
 			addToQueue({com:adtPackagingCom, showInConsole:true});
-			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") +"{{DEVICE}}-package&&"+ project.name +(isAndroid ? ".apk" : ".ipa"), showInConsole:true});
-			if (isAndroid)
+			addToQueue({allowedExitCode: 14, com:adtPath +"-uninstallApp&&-platform&&"+ (isAndroid ? "android" : "ios") + "{{DEVICE}}-appid&&" + appID, showInConsole:true});
+			addToQueue({com:adtPath +"-installApp&&-platform&&"+ (isAndroid ? "android" : "ios") + "{{DEVICE}}-package&&" + project.name + (isAndroid ? ".apk" : ".ipa"), showInConsole:true});
+			if(isAndroid)
 			{
 				addToQueue({com:adtPath +"-launchApp&&-platform&&android&&-appid&&"+ appID, showInConsole:true});
 				addToQueue({message: "Install and launch successful.", type: "success"});
@@ -183,18 +203,21 @@ package actionScripts.plugins.swflauncher.launchers
 				addToQueue({message: "Debugger ready to attach. You must launch your application manually on the iOS device.", type: "success"});
 			}
 			
-			if (customProcess) startShell(false);
-			startShell(true);
+			if(customProcess)
+			{
+				stopShell();
+			}
+			startShell();
 			flush();
 		}
 		
 		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
 		{
-			if (isAndroid && (project.buildOptions.certAndroid && project.buildOptions.certAndroid != "") && (project.buildOptions.certAndroidPassword && project.buildOptions.certAndroidPassword != ""))
+			if(isAndroid && (project.buildOptions.certAndroid && project.buildOptions.certAndroid != "") && (project.buildOptions.certAndroidPassword && project.buildOptions.certAndroidPassword != ""))
 			{
 				return true;
 			}
-			else if (!isAndroid && (project.buildOptions.certIos && project.buildOptions.certIos != "") && (project.buildOptions.certIosPassword && project.buildOptions.certIosPassword != "") && (project.buildOptions.certIosProvisioning && project.buildOptions.certIosProvisioning != ""))
+			else if(!isAndroid && (project.buildOptions.certIos && project.buildOptions.certIos != "") && (project.buildOptions.certIosPassword && project.buildOptions.certIosPassword != "") && (project.buildOptions.certIosProvisioning && project.buildOptions.certIosProvisioning != ""))
 			{
 				return true;
 			}
@@ -220,13 +243,13 @@ package actionScripts.plugins.swflauncher.launchers
 		
 		private function flush():void
 		{
-			if (queue.length == 0) 
+			if(queue.length == 0) 
 			{
-				startShell(false);
+				stopShell();
 				return;
 			}
 
-			if (queue[0].message)
+			if(queue[0].message)
 			{
 				var func:Function = null;
 				switch(queue[0].type)
@@ -267,7 +290,21 @@ package actionScripts.plugins.swflauncher.launchers
 				return;
 			}
 			
-			if (queue[0].showInConsole) debug("Sending to adt: %s", queue[0].com);
+			if(queue[0].showInConsole)
+			{
+				debug("Sending to adt: %s", queue[0].com);
+			}
+			
+			if(queue[0].allowedExitCode)
+			{
+				allowedExitCode = queue[0].allowedExitCode;
+				savedStderr = "";
+			}
+			else
+			{
+				allowedExitCode = -1;
+				savedStderr = null;
+			}
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			customInfo.arguments = Vector.<String>(tmpArr);
@@ -276,73 +313,76 @@ package actionScripts.plugins.swflauncher.launchers
 			customProcess.start(customInfo);
 		}
 		
-		private function startShell(start:Boolean):void 
+		private function startShell():void 
 		{
-			if (start)
+			customProcess = new NativeProcess();
+			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
+			customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
+			customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
+		}
+
+		private function stopShell():void
+		{
+			if(!customProcess)
 			{
-				customProcess = new NativeProcess();
-				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
+				return;
 			}
-			else
+			if(customProcess.running)
 			{
-				if (!customProcess) return;
-				if (customProcess.running) customProcess.exit();
-				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				customProcess = null;
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
+				customProcess.exit();
 			}
+			customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
+			customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
+			customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			customProcess = null;
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
 		}
 		
 		private function shellError(e:ProgressEvent):void 
 		{
-			if (customProcess)
+			var output:IDataInput = customProcess.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			if(allowedExitCode != -1)
 			{
-				var output:IDataInput = customProcess.standardError;
-				var data:String = output.readUTFBytes(output.bytesAvailable);
-				
-				var syntaxMatch:Array;
-				var generalMatch:Array;
-				var initMatch:Array;
-				
-				syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
-				if (syntaxMatch) {
-					var pathStr:String = syntaxMatch[1];
-					var lineNum:int = syntaxMatch[2];
-					var colNum:int = syntaxMatch[3];
-					var errorStr:String = syntaxMatch[4];
-				}
-				
-				generalMatch = data.match(/(.*?): Error: (.*).*/);
-				if (!syntaxMatch && generalMatch)
-				{ 
-					pathStr = generalMatch[1];
-					errorStr  = generalMatch[2];
-					pathStr = pathStr.substr(pathStr.lastIndexOf("/")+1);
-					debug("%s", data);
-				}
-				else if (!isRunAsDebugger)
-				{
-					debug("%s", data);
-				}
-				
-				isErrorClose = true;
-				startShell(false)
+				savedStderr += data;
+			}
+			else
+			{
+				error(data);
 			}
 		}
 		
-		private function shellExit(e:NativeProcessExitEvent):void 
+		private function shellExit(event:NativeProcessExitEvent):void 
 		{
-			if (customProcess) 
+			if(isNaN(event.exitCode))
 			{
-				if (!isErrorClose) flush();
+				error("adt terminated.");
+				stopShell();
+			}
+			else if(event.exitCode != 0)
+			{
+				if(allowedExitCode != -1 && event.exitCode == allowedExitCode)
+				{
+					flush();
+				}
+				else
+				{
+					if(savedStderr != null)
+					{
+						error(savedStderr);
+						savedStderr = null;
+					}
+					error("adt terminated with exit code: " + event.exitCode);
+					stopShell();
+				}
+			}
+			else if(customProcess)
+			{
+				flush();
 			}
 		}
 		
@@ -353,14 +393,14 @@ package actionScripts.plugins.swflauncher.launchers
 			var match:Array;
 			
 			match = data.match(/set flex_home/);
-			if (match)
+			if(match)
 			{
 				return;
 			}
 			
 			// osx return
 			match = data.match(/list of attached devices/);
-			if (match)
+			if(match)
 			{
 				onDeviceListFound();
 				return;
@@ -368,26 +408,24 @@ package actionScripts.plugins.swflauncher.launchers
 			
 			// windows return
 			match = data.match(/list of devices attached/);
-			if (match)
+			if(match)
 			{
 				onDeviceListFound();
 				return;
 			}
 			
 			match = data.match(/password/);
-			if (match)
+			if(match)
 			{
 				return;
 			}
 			
 			match = data.match(/the application has been packaged with a shared runtime/);
-			if (match) 
+			if(match) 
 			{
 				print("NOTE: The application has been packaged with a shared runtime.");
 				return;
 			}
-			
-			isErrorClose = false;
 			
 			/*
 			 * @local
@@ -408,16 +446,19 @@ package actionScripts.plugins.swflauncher.launchers
 				
 				var devicesLines:Array = data.split("\n");
 				devicesLines.shift(); // one
-				if (!isAndroid) devicesLines.shift(); // two
-				connectedDevices = new Vector.<String>();
-				for (var i:String in devicesLines)
+				if(!isAndroid)
 				{
-					if (StringUtil.trim(devicesLines[i]).length != 0)
+					devicesLines.shift(); // two
+				}
+				connectedDevices = new Vector.<String>();
+				for(var i:String in devicesLines)
+				{
+					if(StringUtil.trim(devicesLines[i]).length != 0)
 					{
 						var newDevice:DeviceVO = new DeviceVO();
 						var breakups:Array = devicesLines[i].split("\t");
 						
-						if (!isAndroid)
+						if(!isAndroid)
 						{
 							newDevice.deviceID = int(StringUtil.trim(breakups[0]));
 							newDevice.deviceUDID = StringUtil.trim(breakups[2]);
@@ -436,16 +477,24 @@ package actionScripts.plugins.swflauncher.launchers
 				}
 				
 				// probable termination if no device found connected
-				if (connectedDevices.length == 0)
+				if(connectedDevices.length == 0)
 				{
 					Alert.show("Please make sure your device is connected.", "Error!");
-					startShell(false);
+					stopShell();
 					return;
 				}
 				else
 				{
 					var deviceString:String = isAndroid ? "&&" : "&&-device&&" + newDevice.deviceID +"&&";
-					queue[1].com = queue[1].com.replace("{{DEVICE}}", deviceString);
+					var queueLength:int = queue.length;
+					for(var j:int = 1; j < queueLength; j++)
+					{
+						var command:String = queue[j].com;
+						if(command)
+						{
+							queue[j].com = command.replace("{{DEVICE}}", deviceString);
+						}
+					}
 				}
 			}
 		}
