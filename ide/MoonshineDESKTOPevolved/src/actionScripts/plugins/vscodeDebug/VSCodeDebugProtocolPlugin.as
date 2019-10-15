@@ -126,7 +126,7 @@ package actionScripts.plugins.vscodeDebug
 		private var _currentProject:ProjectVO;
 		private var isStartupCall:Boolean = true;
 		private var isDebugViewVisible:Boolean;
-		private var _debugMode:Boolean = true;
+		private var _debugMode:Boolean = false;
 
 		private var _connected:Boolean = false;
 		private var _receivedInitializeResponse:Boolean = false;
@@ -347,6 +347,16 @@ package actionScripts.plugins.vscodeDebug
 						this.parseInitializeResponse(response);
 						break;
 					}
+					case COMMAND_ATTACH:
+					{
+						this.parseAttachResponse(response);
+						break;
+					}
+					case COMMAND_LAUNCH:
+					{
+						this.parseLaunchResponse(response);
+						break;
+					}
 					case COMMAND_CONTINUE:
 					{
 						this.parseContinueResponse(response);
@@ -382,8 +392,6 @@ package actionScripts.plugins.vscodeDebug
 						this.parseDisconnectResponse(response);
 						break;
 					}
-					case COMMAND_ATTACH:
-					case COMMAND_LAUNCH:
 					case COMMAND_PAUSE:
 					case COMMAND_STEP_IN:
 					case COMMAND_STEP_OUT:
@@ -844,6 +852,28 @@ package actionScripts.plugins.vscodeDebug
 				return;
 			}
 			this.handleDisconnectOrTerminated();
+		}
+		
+		private function parseLaunchResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("launch command not successful!");
+				return;
+			}
+			this._waitingForLaunchOrAttach = false;
+			this.refreshView();
+		}
+		
+		private function parseAttachResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("attach command not successful!");
+				return;
+			}
+			this._waitingForLaunchOrAttach = false;
+			this.refreshView();
 		}
 		
 		private function parseInitializedEvent(event:Object):void
