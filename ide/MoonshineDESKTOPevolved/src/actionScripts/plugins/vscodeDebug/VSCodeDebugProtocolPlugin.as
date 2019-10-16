@@ -124,8 +124,9 @@ package actionScripts.plugins.vscodeDebug
 		private var _scopesAndVars:VariablesReferenceHierarchicalData;
 		private var _variablesLookup:Dictionary = new Dictionary();
 		private var _currentProject:ProjectVO;
-		private var isStartupCall:Boolean = true;
 		private var isDebugViewVisible:Boolean;
+		
+		//change to true to enable more detailed debug logs
 		private var _debugMode:Boolean = false;
 
 		private var _connected:Boolean = false;
@@ -485,11 +486,29 @@ package actionScripts.plugins.vscodeDebug
 			}
 			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
 			{
+				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
+				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
+				var descriptorPath:String = as3Project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
+				var descriptorFile:FileLocation = as3Project.folderLocation.fileBridge.resolvePath(descriptorPath);
+				var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
+				var xmlns:Namespace = new Namespace(descriptorXML.namespace());
+				var appID:String = descriptorXML.xmlns::id;
+
+				var bundle:String = as3Project.swfOutput.path.fileBridge.parent.resolvePath(as3Project.name + (isAndroid ? ".apk" : ".ipa")).fileBridge.nativePath;
 				var attachArgs:Object =
 				{
 					"type": DEBUG_TYPE_SWF,
 					"name": "Moonshine Device Attach",
-					"request": REQUEST_ATTACH
+					"request": REQUEST_ATTACH,
+					"platform": isAndroid ? "android" : "ios",
+					//connect to the device over USB
+					"connect": true,
+					//the port to connect over
+					"port": 7936,
+					//uninstall/launch this app ID
+					"applicationID": appID,
+					//install this bundle
+					"bundle": bundle
 				};
 				sendAttachCommand(attachArgs);
 			}
@@ -561,6 +580,11 @@ package actionScripts.plugins.vscodeDebug
 				return;
 			}
 			this._paused = false;
+			
+			//we're no longer paused, so clear this until we pause again
+			this._stackFrames.removeAll();
+			this._scopesAndVars.removeAll();
+
 			refreshView();
 		}
 		
@@ -653,9 +677,9 @@ package actionScripts.plugins.vscodeDebug
 			var nextSeq:int = _seq + 1;
 			this._variablesLookup[nextSeq] = scopeOrVar;
 			this.sendRequest(COMMAND_VARIABLES,
-				{
-					variablesReference: scopeOrVar.variablesReference
-				});
+			{
+				variablesReference: scopeOrVar.variablesReference
+			});
 		}
 		
 		private function gotoStackFrame(stackFrame:StackFrame):void
@@ -675,9 +699,9 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.dispatchEvent(openEvent);
 			
 			this.sendRequest(COMMAND_SCOPES,
-				{
-					frameId: stackFrame.id
-				});
+			{
+				frameId: stackFrame.id
+			});
 		}
 
 		private function stop():void
@@ -971,11 +995,12 @@ package actionScripts.plugins.vscodeDebug
 			{
 				return;
 			}
-			_debugPanel.playButton.enabled = this.connected && !this._waitingForLaunchOrAttach && this._receivedInitializeResponse && this._paused;
-			_debugPanel.pauseButton.enabled = this.connected && !this._waitingForLaunchOrAttach && this._receivedInitializeResponse && !this._paused;
-			_debugPanel.stepOverButton.enabled = this.connected && !this._waitingForLaunchOrAttach && this._receivedInitializeResponse && this._paused;
-			_debugPanel.stepIntoButton.enabled = this.connected && !this._waitingForLaunchOrAttach && this._receivedInitializeResponse && this._paused;
-			_debugPanel.stepOutButton.enabled = this.connected && !this._waitingForLaunchOrAttach && this._receivedInitializeResponse && this._paused;
+			var launchedOrAttached:Boolean = this.connected && this._receivedInitializeResponse && !this._waitingForLaunchOrAttach;
+			_debugPanel.playButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.pauseButton.enabled = launchedOrAttached && !this._paused;
+			_debugPanel.stepOverButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.stepIntoButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.stepOutButton.enabled = launchedOrAttached && this._paused;
 			_debugPanel.stopButton.enabled = this.connected;
 			_debugPanel.stackFrames = this._stackFrames;
 			_debugPanel.scopesAndVars = this._scopesAndVars;
@@ -995,10 +1020,10 @@ package actionScripts.plugins.vscodeDebug
 				return { line: item + 1 };
 			});
 			this.sendRequest(COMMAND_SET_BREAKPOINTS,
-				{
-					source: { path: path },
-					breakpoints: breakpoints
-				});
+			{
+				source: { path: path },
+				breakpoints: breakpoints
+			});
 		}
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
@@ -1015,7 +1040,6 @@ package actionScripts.plugins.vscodeDebug
                 cleanupDebugViewEventHandlers();
 				isDebugViewVisible = false;
 			}
-			isStartupCall = false;
 		}
 		
 		private function stepOverExecutionHandler(event:Event):void
@@ -1141,10 +1165,10 @@ package actionScripts.plugins.vscodeDebug
 			refreshView();
 			
 			sendRequest(COMMAND_INITIALIZE,
-				{
-					"clientID": "moonshine",
-					"adapterID": "swf"
-				});
+			{
+				"clientID": "moonshine",
+				"adapterID": "swf"
+			});
 		}
 		
 		protected function socketConnect_ioErrorHandler(event:IOErrorEvent):void
