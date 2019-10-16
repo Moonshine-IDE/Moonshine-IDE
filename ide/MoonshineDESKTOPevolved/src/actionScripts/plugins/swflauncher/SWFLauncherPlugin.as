@@ -37,12 +37,12 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.plugins.swflauncher.launchers.DeviceLauncher;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
+	import flash.errors.IllegalOperationError;
 	
 	public class SWFLauncherPlugin extends PluginBase
 	{	
@@ -54,7 +54,6 @@ package actionScripts.plugins.swflauncher
 		
 		private var customProcess:NativeProcess;
 		private var currentAIRNamespaceVersion:String;
-		private var deviceLauncher:DeviceLauncher = new DeviceLauncher();
 		
 		override public function activate():void 
 		{
@@ -87,14 +86,12 @@ package actionScripts.plugins.swflauncher
 		{
 			// Find project if we can (otherwise we can't open AIR swfs)
 			if (!event.project) event.project = findProjectForFile(event.file);
-			
-			var showStartedMessage:Boolean = true;
 
 			// Do we have an AIR project on our hands?
 			if (event.project is AS3ProjectVO
 				&& AS3ProjectVO(event.project).testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
-				showStartedMessage = launchAIR(event.file, AS3ProjectVO(event.project), event.sdk);
+				launchAIR(event.file, AS3ProjectVO(event.project), event.sdk);
 			}
 			else
 			{
@@ -102,10 +99,7 @@ package actionScripts.plugins.swflauncher
 				launchExternal(event.url || event.file);
 			}
 
-			if(showStartedMessage)
-			{
-				warning("Application " + event.project.name + " started.");
-			}
+			warning("Application " + event.project.name + " started.");
 		}
 		
 		// when user has already one session ins progress and tries to build/run the application again- close current session and start new one
@@ -132,7 +126,7 @@ package actionScripts.plugins.swflauncher
 			return null;
 		}
 		
-		protected function launchAIR(file:File, project:AS3ProjectVO, sdk:File):Boolean
+		protected function launchAIR(file:File, project:AS3ProjectVO, sdk:File):void
 		{
 			if(customProcess)
 			{
@@ -142,7 +136,7 @@ package actionScripts.plugins.swflauncher
 			}
 			
 			// Need project opened to run
-			if (!project) return false;
+			if (!project) return;
 			
 			// Can't open files without an SDK set
 			if (!sdk && !project.buildOptions.customSDK)
@@ -151,7 +145,7 @@ package actionScripts.plugins.swflauncher
 				var event:RequestSettingEvent = new RequestSettingEvent(MXMLCPlugin, 'defaultFlexSDK');
 				dispatcher.dispatchEvent(event);
 				// None found, abort
-				if (event.value == "" || event.value == null) return false;
+				if (event.value == "" || event.value == null) return;
 				
 				// Default SDK found, let's use that
 				sdk = new File(event.value.toString());
@@ -163,12 +157,7 @@ package actionScripts.plugins.swflauncher
 			// In case of mobile project and device-run, lets divert
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
 			{
-				deviceLauncher.runOnDevice(project, sdk, file, appXML, RUN_AS_DEBUGGER);
-				//this return false doesn't necessarily indicate failure. it
-				//simply stops the "started" message from being displayed too
-				//early. DeviceLauncher will display its own confirmation after
-				//installation and everything is done.
-				return false;
+				throw new IllegalOperationError("SWFLauncherPlugin cannot launch Adobe AIR application on a mobile device.");
 			}
 			
 			var customInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -243,7 +232,6 @@ package actionScripts.plugins.swflauncher
 			customProcess = new NativeProcess();
 			addRemoveShellListeners(true);
 			customProcess.start(customInfo);
-			return true;
 		}
 		
 		private function addRemoveShellListeners(add:Boolean):void 
