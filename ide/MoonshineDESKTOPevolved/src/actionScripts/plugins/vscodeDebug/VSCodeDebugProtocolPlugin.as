@@ -120,8 +120,8 @@ package actionScripts.plugins.vscodeDebug
 		private var _bodyLength:int = -1;
 		private var mainThreadID:int = -1;
 		private var connectTimeout:uint = uint.MAX_VALUE;
-		private var _stackFrames:ArrayCollection;
-		private var _scopesAndVars:VariablesReferenceHierarchicalData;
+		private var _stackFrames:ArrayCollection = new ArrayCollection();
+		private var _scopesAndVars:VariablesReferenceHierarchicalData = new VariablesReferenceHierarchicalData();
 		private var _variablesLookup:Dictionary = new Dictionary();
 		private var _currentProject:ProjectVO;
 		private var isDebugViewVisible:Boolean;
