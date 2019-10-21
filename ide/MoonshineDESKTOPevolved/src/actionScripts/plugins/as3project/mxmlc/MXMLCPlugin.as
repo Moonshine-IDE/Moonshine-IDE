@@ -1143,19 +1143,26 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (!isLibraryProject)
 					{
-						if (this.runAfterBuild && !this.debugAfterBuild)
+						if (runAfterBuild && !debugAfterBuild)
 						{
-							testMovie();
+							if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
+							{
+								packageAIR(false);
+								//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+							}
+							else
+							{
+								testMovie();
+							}
 						}
 						else if (debugAfterBuild)
 						{
 							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							if (currentSuccessfullProject.resourcePaths.length == 0)
 							{
-								var pvo:AS3ProjectVO = AS3ProjectVO(currentProject);
-								if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
+								if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
 								{
-									packageAIR(debugAfterBuild);
+									packageAIR(true);
 									//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
 								}
 								else
@@ -1454,7 +1461,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else
 			{
-				if(debugAfterBuild)
+				if(runAfterBuild || debugAfterBuild)
 				{
 					launchDebuggingAfterBuild();
 				}
@@ -1502,7 +1509,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
 				{
-					packageAIR(debugAfterBuild);
+					packageAIR(true);
 					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
 				}
 				else
@@ -1513,7 +1520,15 @@ package actionScripts.plugins.as3project.mxmlc
             else if (runAfterBuild)
             {
                 dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.swfOutput.path.fileBridge.parent));
-                testMovie();
+				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
+				{
+					packageAIR(false);
+					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+				}
+				else
+				{
+                	testMovie();
+				}
             }
             else
             {
