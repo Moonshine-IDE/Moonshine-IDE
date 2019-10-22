@@ -49,6 +49,7 @@ package actionScripts.languageServer
     
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -225,8 +226,11 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var compilerArg:String = EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH + " eclipse";
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+				var eclipseCommand:Vector.<String> = new <String>[
+					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
+					"eclipse"
+				];
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(eclipseCommand)]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					null, "Updating Gradle classpath", false

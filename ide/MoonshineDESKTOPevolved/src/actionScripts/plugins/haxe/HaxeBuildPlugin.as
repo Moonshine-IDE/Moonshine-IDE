@@ -44,6 +44,7 @@ package actionScripts.plugins.haxe
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
+    import actionScripts.utils.CommandLineUtil;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -322,6 +323,11 @@ package actionScripts.plugins.haxe
         private function findLimeLibpath():void
         {
 			this.limeLibPath = "";
+            var libpathCommand:Vector.<String> = new <String>[
+                EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
+                "libpath",
+                "lime"
+            ];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -351,7 +357,7 @@ package actionScripts.plugins.haxe
 				limeLibpathProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
 				limeLibpathProcess.addEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
 				limeLibpathProcess.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " libpath lime"]);
+			}, null, [CommandLineUtil.joinOptions(libpathCommand)]);
         }
 
         private function startLimeHTMLDebugServer(project:HaxeProjectVO):void

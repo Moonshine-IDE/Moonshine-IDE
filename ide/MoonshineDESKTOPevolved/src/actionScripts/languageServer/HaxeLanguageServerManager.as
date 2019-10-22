@@ -52,6 +52,7 @@ package actionScripts.languageServer
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.events.SettingsEvent;
+    import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -190,6 +191,13 @@ package actionScripts.languageServer
 			}
 
 			this._displayArguments = "";
+			var limeDisplayCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
+				"run",
+				"lime",
+				"display",
+				_project.targetPlatform
+			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -218,7 +226,7 @@ package actionScripts.languageServer
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 				_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
 				_limeDisplayProcess.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run lime display " + _project.targetPlatform]);
+			}, null, [CommandLineUtil.joinOptions(limeDisplayCommand)]);
 
 		}
 

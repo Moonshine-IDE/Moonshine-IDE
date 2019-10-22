@@ -57,6 +57,7 @@ package actionScripts.plugin.groovy.grailsproject
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.utils.CommandLineUtil;
 
 	public class CreateGrailsProject extends ConsoleOutputter
 	{
@@ -275,8 +276,13 @@ package actionScripts.plugin.groovy.grailsproject
 
 		private function grailsCreateApp():void
 		{
-			var command:String = EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH + " create-app " + project.name + " --inplace";
-			model.flexCore.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [command]);
+			var createAppCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH,
+				"create-app",
+				project.name,
+				"--inplace"
+			];
+			model.flexCore.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(createAppCommand)]);
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.PROJECT_BUILD_STARTED,
