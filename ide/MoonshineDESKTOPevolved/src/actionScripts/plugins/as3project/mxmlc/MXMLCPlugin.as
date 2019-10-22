@@ -92,6 +92,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.utils.CommandLineUtil;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -1290,7 +1291,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 			var projectFolder:File = project.folderLocation.fileBridge.getFile as File;
 			var outputFolder:File = swfFile.parent;
-			var adtPackagingOptions:Array = [adtPath];
+			var adtPackagingOptions:Vector.<String> = new <String>[adtPath];
 			if(isAndroid) 
 			{
 				var androidPackagingMode:String = null;
@@ -1378,7 +1379,8 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 			}
 
-			debug("Sending to adt: %s", adtPackagingOptions.join(" "));
+			var adtCommand:String = CommandLineUtil.joinOptions(adtPackagingOptions);
+			debug("Sending to adt: %s", adtCommand);
 			
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
@@ -1404,7 +1406,7 @@ package actionScripts.plugins.as3project.mxmlc
 				adtProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, adtProcess_standardErrorDataHandler);
 				adtProcess.addEventListener(NativeProcessExitEvent.EXIT, adtProcess_exitHandler);
 				adtProcess.start(adtProcessInfo);
-			}, SDKstr, [adtPackagingOptions.join(" ")]);
+			}, SDKstr, [adtCommand]);
 		}
 		
 		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
