@@ -45,11 +45,14 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SdkEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.HelperModel;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
@@ -66,6 +69,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
+	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
@@ -73,6 +77,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -89,10 +94,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	
 	import org.as3commons.asblocks.utils.FileUtil;
-	import actionScripts.events.ShowSettingsEvent;
-	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-	import actionScripts.events.SettingsEvent;
-	import actionScripts.utils.CommandLineUtil;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -1275,10 +1276,13 @@ package actionScripts.plugins.as3project.mxmlc
 				error("Launch cancelled.");
 				return;
 			}
-
+			
 			var swfFile:File = project.swfOutput.path.fileBridge.getFile as File;
 			var descriptorName:String = swfFile.name.split(".")[0] + "-app.xml";
 			var descriptorPath:String = project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
+			
+			// copy the descriptor file to build directory
+			findAndCopyApplicationDescriptor(swfFile, project, swfFile.parent);
 			
 			// We need the application ID; without pre-guessing any
 			// lets read and find it
@@ -1492,7 +1496,7 @@ package actionScripts.plugins.as3project.mxmlc
 			(fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 			(fl.fileBridge.getFile as File).copyToAsync(destination.resolvePath(fl.fileBridge.name), true);
 		}
-
+		
         private function onResourcesCopyingComplete(event:Event):void
         {
             event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
