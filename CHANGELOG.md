@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Moonshine IDE [2.4.1]
 
+### Summary
+
+Moonshine 2.4.1 adds some small features which improves development workflow like Outline View or Go To implementation for interfaces. Additionally Moonshine SDK Installer provides ability to download Apache Royale 0.9.6 JS only version with patch fix for broken royale-config.xml. More information can be found in following [discussion](http://apache-royale-development.20373.n8.nabble.com/Broken-royale-config-in-JS-only-build-of-released-Apache-Royale-SDK-0-9-6-td12515.html) on Royale development mailing list.
+
 ### Added
-* Getting Started: Added Apache Royale Nightly build.
 * Added USB device debugging on mobile for Adobe AIR.
 * Added Go To Implementation for interfaces.
 * Added Ctrl+Click on Flex SDK items parent classes.
