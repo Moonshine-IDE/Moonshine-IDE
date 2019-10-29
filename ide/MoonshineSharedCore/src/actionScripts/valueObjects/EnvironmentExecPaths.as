@@ -28,5 +28,7 @@ package actionScripts.valueObjects
 			"$HAXE_HOME/haxe" : "%HAXE_HOME%\\haxe.exe";
 		public static const HAXELIB_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
 			"$HAXE_HOME/haxelib" : "%HAXE_HOME%\\haxelib.exe";
+		public static const NEKO_ENVIRON_EXEC_PATH:String = ConstantsCoreVO.IS_MACOS ? 
+			"$NEKO_HOME/neko" : "%NEKO_HOME%\\neko.exe";
 	}
 }

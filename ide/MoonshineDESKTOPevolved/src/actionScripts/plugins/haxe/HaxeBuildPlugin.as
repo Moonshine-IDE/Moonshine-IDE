@@ -46,6 +46,7 @@ package actionScripts.plugins.haxe
     import flash.utils.IDataInput;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.utils.CommandLineUtil;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -55,7 +56,9 @@ package actionScripts.plugins.haxe
 		private var isProjectHasInvalidPaths:Boolean;
         private var limeHTMLServerNativeProcess:NativeProcess;
         private var currentProject:HaxeProjectVO;
-        private var projectWaitingToStartHTMLDebugServer:HaxeProjectVO = null;
+        private var pendingRunProject:HaxeProjectVO = null;
+        private var pendingRunCommand:String = null;
+        private var pendingRunFolder:String = null;
         private var limeLibpathProcess:NativeProcess;
         private var limeLibPath:String = null;
 		
@@ -185,6 +188,10 @@ package actionScripts.plugins.haxe
             {
                 return;
             }
+            pendingRunProject = null;
+            pendingRunCommand = null;
+            pendingRunFolder = null;
+
             if(project.isLime)
             {
                 var projectFolder:FileLocation = project.folderLocation;
@@ -198,8 +205,10 @@ package actionScripts.plugins.haxe
                     //still will not exit the server.
                     //instead, we need run Node directly and run the npx script
                     //file. that seems to exit with stop(true).
-                    projectWaitingToStartHTMLDebugServer = project;
-			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+                    pendingRunProject = project;
+                    pendingRunCommand = null;
+                    pendingRunFolder = null;
+			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                 }
                 else
                 {
@@ -208,7 +217,35 @@ package actionScripts.plugins.haxe
             }
             else
             {
-                error("Haxe debug without Lime not implemented yet");
+                var buildCommand:String = [EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ");
+                switch(project.haxeOutput.platform)
+                {
+                    case HaxeOutputVO.PLATFORM_NEKO:
+                    {
+                        pendingRunProject = project;
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.NEKO_ENVIRON_EXEC_PATH, project.haxeOutput.path.fileBridge.nativePath]);
+                        pendingRunFolder = project.haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
+			            this.start(new <String>[buildCommand], project.folderLocation);
+                        break;
+                    }
+                    case HaxeOutputVO.PLATFORM_CPP:
+                    {
+                        var executableName:String = project.name;
+                        if(Settings.os == "win")
+                        {
+                            executableName += ".exe";
+                        }
+                        pendingRunProject = project;
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.nativePath + File.separator + executableName]);
+                        pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
+			            this.start(new <String>[buildCommand], project.folderLocation);
+                        break;
+                    }
+                    default:
+                    {
+                        error("Haxe build and run failed. This command is not supported on platform \"" + project.haxeOutput.platform + "\".");
+                    }
+                }
             }
 		}
 		
@@ -219,13 +256,17 @@ package actionScripts.plugins.haxe
             {
                 return;
             }
+            pendingRunProject = null;
+            pendingRunCommand = null;
+            pendingRunFolder = null;
+
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
             }
             else
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", project.getHXML().split("\n").join(" ")].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
             }
 		}
 		
@@ -236,14 +277,17 @@ package actionScripts.plugins.haxe
             {
                 return;
             }
-            currentProject = project;
+            pendingRunProject = null;
+            pendingRunCommand = null;
+            pendingRunFolder = null;
+
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], project.folderLocation);
             }
             else
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ")], model.activeProject.folderLocation);
+			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
             }
 		}
 
@@ -325,6 +369,67 @@ package actionScripts.plugins.haxe
             }
 		}
 
+        private function runAfterBuild():void
+        {
+            if(pendingRunProject == null)
+            {
+                return;
+            }
+
+            warning("Launching Haxe project...");
+            if(pendingRunProject.isLime && pendingRunProject.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
+            {
+                findLimeLibpath();
+            }
+            else if(pendingRunCommand)
+            {
+                var runProject:HaxeProjectVO = pendingRunProject;
+                var runFolder:String = pendingRunFolder;
+                EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+                {
+                    var cmdFile:File = null;
+                    var processArgs:Vector.<String> = new <String>[];
+                    
+                    if (Settings.os == "win")
+                    {
+                        cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+                        processArgs.push("/c");
+                        processArgs.push(value);
+                    }
+                    else
+                    {
+                        cmdFile = new File("/bin/bash");
+                        processArgs.push("-c");
+                        processArgs.push(value);
+                    }
+
+                    running = true;
+
+                    var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+                    processInfo.arguments = processArgs;
+                    processInfo.executable = cmdFile;
+                    if(runFolder)
+                    {
+                        processInfo.workingDirectory = new File(runFolder);
+                    }
+                    
+                    var process:NativeProcess = new NativeProcess();
+                    process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, runProjectProcess_standardOutputDataHandler);
+                    process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, runProjectProcess_standardErrorDataHandler);
+                    process.addEventListener(NativeProcessExitEvent.EXIT, runProjectProcess_exitHandler);
+                    process.start(processInfo);
+                }, null, [pendingRunCommand]);
+
+                pendingRunProject = null;
+                pendingRunCommand = null;
+                pendingRunFolder = null;
+            }
+            else
+            {
+                error("Unknown debug command for project: " + pendingRunProject.name);
+            }
+        }
+
         private function findLimeLibpath():void
         {
 			this.limeLibPath = "";
@@ -356,7 +461,7 @@ package actionScripts.plugins.haxe
 				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
-				processInfo.workingDirectory = projectWaitingToStartHTMLDebugServer.folderLocation.fileBridge.getFile as File;
+				processInfo.workingDirectory = pendingRunProject.folderLocation.fileBridge.getFile as File;
 				
 				limeLibpathProcess = new NativeProcess();
 				limeLibpathProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
@@ -409,21 +514,24 @@ package actionScripts.plugins.haxe
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
             super.onNativeProcessExit(event);
+
             var isLimeHTMLServer:Boolean = event.currentTarget == limeHTMLServerNativeProcess;
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 
-            var allowLimeHTMLServerLaunch:Boolean = false;
+            var project:HaxeProjectVO = currentProject;
+            currentProject = null;
+
             if(isLimeHTMLServer)
             {
                 limeHTMLServerNativeProcess = null;
                 if(isNaN(event.exitCode))
                 {
-                    warning("Haxe debug has been terminated.");
+                    warning("Haxe HTML5 server has been terminated.");
                 }
                 else if(event.exitCode != 0)
                 {
-                    warning("Haxe debug has been terminated with exit code: " + event.exitCode);
+                    warning("Haxe HTML5 server has been terminated with exit code: " + event.exitCode);
                 }
             }
             else
@@ -438,11 +546,10 @@ package actionScripts.plugins.haxe
                 }
                 else
                 {
-                    allowLimeHTMLServerLaunch = projectWaitingToStartHTMLDebugServer != null;
                     success("Haxe build has completed successfully.");
-                    if(currentProject)
+                    if(project != null)
                     {
-					    dispatcher.dispatchEvent(new RefreshTreeEvent(currentProject.haxeOutput.path.fileBridge.parent));
+                        dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                     }
                 }
             }
@@ -456,15 +563,7 @@ package actionScripts.plugins.haxe
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
             }
 
-            if(allowLimeHTMLServerLaunch)
-            {
-                findLimeLibpath();
-            }
-            else
-            {
-                projectWaitingToStartHTMLDebugServer = null;
-            }
-            currentProject = null;
+            runAfterBuild();
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
@@ -498,8 +597,10 @@ package actionScripts.plugins.haxe
 		{
             running = false;
 
-            var project:HaxeProjectVO = projectWaitingToStartHTMLDebugServer;
-            projectWaitingToStartHTMLDebugServer = null;
+            var runProject:HaxeProjectVO = pendingRunProject;
+            pendingRunProject = null;
+            pendingRunCommand = null;
+            pendingRunFolder = null;
 
 			limeLibpathProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
 			limeLibpathProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
@@ -508,13 +609,47 @@ package actionScripts.plugins.haxe
 
 			if(event.exitCode == 0)
 			{
-				startLimeHTMLDebugServer(project);
+				startLimeHTMLDebugServer(runProject);
 			}
 			else
 			{
                 this.limeLibPath = "";
 				error("Failed to load Lime libpath. Run cancelled.");
 			}
+        }
+
+        private function runProjectProcess_standardOutputDataHandler(event:ProgressEvent):void
+        {
+            var process:NativeProcess = NativeProcess(event.currentTarget);
+            var output:IDataInput = process.standardOutput;
+            var data:String = output.readUTFBytes(output.bytesAvailable);
+            notice(data);
+        }
+
+        private function runProjectProcess_standardErrorDataHandler(event:ProgressEvent):void
+        {
+            var process:NativeProcess = NativeProcess(event.currentTarget);
+            var output:IDataInput = process.standardError;
+            var data:String = output.readUTFBytes(output.bytesAvailable);
+            error(data);
+        }
+
+        private function runProjectProcess_exitHandler(event:NativeProcessExitEvent):void
+        {
+            running = false;
+
+            if(isNaN(event.exitCode))
+            {
+                warning("Haxe project has been terminated.");
+            }
+            else if(event.exitCode != 0)
+            {
+                warning("Haxe project has been terminated with exit code: " + event.exitCode);
+            }
+            else
+            {
+                success("Haxe project has been terminated with exit code: 0");
+            }
         }
 	}
 }
