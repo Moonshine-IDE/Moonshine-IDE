@@ -51,6 +51,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public static const LIME_PLATFORM_TVOS:String = "tvos";
 		public static const LIME_PLATFORM_FLASH:String = "flash";
 		public static const LIME_PLATFORM_AIR:String = "air";
+		public static const LIME_PLATFORM_NEKO:String = "neko";
+		public static const LIME_PLATFORM_HASHLINK:String = "hashlink";
 
 		public static const HAXE_TARGET_AS3:String = "as3";
 		public static const HAXE_TARGET_CPP:String = "cpp";
@@ -163,6 +165,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 					LIME_PLATFORM_TVOS,
 					LIME_PLATFORM_AIR,
 					LIME_PLATFORM_FLASH,
+					LIME_PLATFORM_NEKO,
+					LIME_PLATFORM_HASHLINK
 				]);
 			
 			return tmpCollection;
