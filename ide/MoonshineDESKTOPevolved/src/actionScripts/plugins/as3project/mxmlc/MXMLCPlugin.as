@@ -45,11 +45,14 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SdkEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.HelperModel;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
@@ -66,6 +69,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
+	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
@@ -73,6 +77,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -108,6 +113,8 @@ package actionScripts.plugins.as3project.mxmlc
 		private var shellInfo:NativeProcessStartupInfo;
 		private var isLibraryProject:Boolean;
 		private var javaPathSetting:PathSetting;
+		private var adtProcess:NativeProcess
+		private var adtProcessInfo:NativeProcessStartupInfo;
 		
 		private var lastTarget:File;
 		private var targets:Dictionary;
@@ -1138,16 +1145,32 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (!isLibraryProject)
 					{
-						if (this.runAfterBuild && !this.debugAfterBuild)
+						if (runAfterBuild && !debugAfterBuild)
 						{
-							testMovie();
+							if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
+							{
+								packageAIR(false);
+								//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+							}
+							else
+							{
+								testMovie();
+							}
 						}
 						else if (debugAfterBuild)
 						{
 							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							if (currentSuccessfullProject.resourcePaths.length == 0)
 							{
-                                launchDebuggingAfterBuild();
+								if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
+								{
+									packageAIR(true);
+									//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+								}
+								else
+								{
+									launchDebuggingAfterBuild();
+								}
 							}
 							else
                             {
@@ -1192,25 +1215,14 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function launchDebuggingAfterBuild():void
 		{
-            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-
-            if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
-            {
-                dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
-                //install and launch on device
-                testMovie();
-            }
-			else
-			{
-                projectBuildSuccessfully();
-                dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
-			}
+            projectBuildSuccessfully();
+            dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
 		}
 
 		private function testMovie():void 
 		{
 			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = (currentProject as AS3ProjectVO).swfOutput.path.fileBridge.getFile as File;
+			var swfFile:File = pvo.swfOutput.path.fileBridge.getFile as File;
 			
 			// before test movie lets copy the resource folder(s)
 			// to debug folder if any
@@ -1253,6 +1265,219 @@ package actionScripts.plugins.as3project.mxmlc
 			currentProject = null;
 		}
 		
+		public function packageAIR(debugBuild:Boolean):void
+		{
+			var project:AS3ProjectVO = AS3ProjectVO(currentProject)
+			var isAndroid:Boolean = project.buildOptions.targetPlatform == "Android";
+			
+			// checks if the credentials are present
+			if(!ensureCredentialsPresent(project))
+			{
+				error("Launch cancelled.");
+				return;
+			}
+			
+			var swfFile:File = project.swfOutput.path.fileBridge.getFile as File;
+			var descriptorName:String = swfFile.name.split(".")[0] + "-app.xml";
+			var descriptorPath:String = project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
+			
+			// copy the descriptor file to build directory
+			findAndCopyApplicationDescriptor(swfFile, project, swfFile.parent);
+			
+			// We need the application ID; without pre-guessing any
+			// lets read and find it
+			var descriptorFile:FileLocation = project.folderLocation.fileBridge.resolvePath(descriptorPath);
+			var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
+			var xmlns:Namespace = new Namespace(descriptorXML.namespace());
+			var appID:String = descriptorXML.xmlns::id;
+			
+			var adtPath:String = currentSDK.resolvePath("bin/adt").nativePath;
+
+			var projectFolder:File = project.folderLocation.fileBridge.getFile as File;
+			var outputFolder:File = swfFile.parent;
+			var adtPackagingOptions:Vector.<String> = new <String>[adtPath];
+			if(isAndroid) 
+			{
+				var androidPackagingMode:String = null;
+				if(debugBuild)
+				{
+					androidPackagingMode = "apk-debug";
+				}
+				else
+				{
+					androidPackagingMode = "apk";
+				}
+
+				adtPackagingOptions.push("-package", "-target", androidPackagingMode);
+				if(debugBuild)
+				{
+					//-connect tells the app to connect over wifi
+					//adtPackagingOptions.push("-connect");
+
+					//-listen tells the app to wait for a connection over USB
+					adtPackagingOptions.push("-listen");
+					adtPackagingOptions.push("7936")
+
+					//must use one of -connect or -listen, but not both!
+				}
+				adtPackagingOptions.push("-storetype", "pkcs12", "-keystore", project.buildOptions.certAndroid, "-storepass", project.buildOptions.certAndroidPassword, project.name + ".apk", descriptorName, swfFile.name);
+			}
+			else
+			{
+				var iOSPackagingMode:String = null;
+				if(debugBuild)
+				{
+					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
+					{
+						//fast bypasses bytecode translation interprets the SWF
+						iOSPackagingMode = "ipa-debug-interpreter";
+					}
+					else
+					{
+						//standard takes longer to package
+						//debug builds aren't meant for the app store, though
+						iOSPackagingMode = "ipa-debug";
+					}
+				}
+				else //release
+				{
+					if(project.buildOptions.iosPackagingMode == BuildOptions.IOS_PACKAGING_FAST)
+					{
+						//fast bypasses bytecode translation interprets the SWF
+						iOSPackagingMode = "ipa-test-interpreter";
+					}
+					else
+					{
+						//standard takes longer to package
+						//release builds are suitable for the app store
+						iOSPackagingMode = "ipa-app-store";
+					}
+				}
+					
+				adtPackagingOptions.push("-package", "-target", iOSPackagingMode);
+				if(debugBuild)
+				{
+					//-connect tells the app to connect over wifi
+					//adtPackagingOptions.push("-connect");
+
+					//-listen tells the app to wait for a connection over USB
+					adtPackagingOptions.push("-listen");
+					adtPackagingOptions.push("7936")
+
+					//must use one of -connect or -listen, but not both!
+
+				}
+				adtPackagingOptions.push("-storetype", "pkcs12", "-keystore", project.buildOptions.certIos, "-storepass", project.buildOptions.certIosPassword, "-provisioning-profile", project.buildOptions.certIosProvisioning, project.name + ".ipa", descriptorName, swfFile.name);
+			}
+			
+			// extensions and resources
+			if(project.nativeExtensions && project.nativeExtensions.length > 0)
+			{
+				adtPackagingOptions.push("-extdir", project.nativeExtensions[0].fileBridge.nativePath);
+			}
+			if(project.resourcePaths)
+			{
+				for each(var i:FileLocation in project.resourcePaths)
+				{
+					adtPackagingOptions.push(i.fileBridge.nativePath);
+				}
+			}
+
+			var adtCommand:String = CommandLineUtil.joinOptions(adtPackagingOptions);
+			debug("Sending to adt: %s", adtCommand);
+			
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var processArgs:Vector.<String> = new <String>[];
+				if (Settings.os == "win")
+				{
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+				
+				adtProcessInfo = new NativeProcessStartupInfo();
+				adtProcessInfo.arguments = processArgs;
+				adtProcessInfo.executable = cmdFile;
+				adtProcessInfo.workingDirectory = outputFolder;
+				
+				adtProcess = new NativeProcess();
+				adtProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, adtProcess_standardOutputDataHandler);
+				adtProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, adtProcess_standardErrorDataHandler);
+				adtProcess.addEventListener(NativeProcessExitEvent.EXIT, adtProcess_exitHandler);
+				adtProcess.start(adtProcessInfo);
+			}, SDKstr, [adtCommand]);
+		}
+		
+		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
+		{
+			var isAndroid:Boolean = project.buildOptions.targetPlatform == "Android";
+			if(isAndroid && (project.buildOptions.certAndroid && project.buildOptions.certAndroid != "") && (project.buildOptions.certAndroidPassword && project.buildOptions.certAndroidPassword != ""))
+			{
+				return true;
+			}
+			else if(!isAndroid && (project.buildOptions.certIos && project.buildOptions.certIos != "") && (project.buildOptions.certIosPassword && project.buildOptions.certIosPassword != "") && (project.buildOptions.certIosProvisioning && project.buildOptions.certIosProvisioning != ""))
+			{
+				return true;
+			}
+			
+			Alert.show("Missing signing options.", "Error!", Alert.OK, null, onProcessTerminatesDueToCredentials);
+			return false;
+			
+			/*
+			 * @local
+			 */
+			function onProcessTerminatesDueToCredentials(event:CloseEvent):void
+			{
+				dispatcher.dispatchEvent(
+					new ShowSettingsEvent(project, "run")
+				);
+			}
+		}
+
+		private function adtProcess_standardOutputDataHandler(event:ProgressEvent):void
+		{
+			var process:NativeProcess = NativeProcess(event.currentTarget);
+			var output:IDataInput = process.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			notice(data);
+		}
+
+		private function adtProcess_standardErrorDataHandler(event:ProgressEvent):void
+		{
+			var process:NativeProcess = NativeProcess(event.currentTarget);
+			var output:IDataInput = process.standardError;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			error(data);
+		}
+
+		private function adtProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			if(isNaN(event.exitCode))
+			{
+				error("Adobe AIR package build has been terminated.");
+			}
+			else if(event.exitCode != 0)
+			{
+				error("Adobe AIR package build has been terminated with exit code: " + event.exitCode);
+			}
+			else
+			{
+				if(runAfterBuild || debugAfterBuild)
+				{
+					launchDebuggingAfterBuild();
+				}
+				else
+				{
+					projectBuildSuccessfully();
+				}
+			}
+		}
+		
 		private var resourceCopiedIndex:int;
 		private function copyingResources():void
 		{
@@ -1271,7 +1496,7 @@ package actionScripts.plugins.as3project.mxmlc
 			(fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 			(fl.fileBridge.getFile as File).copyToAsync(destination.resolvePath(fl.fileBridge.name), true);
 		}
-
+		
         private function onResourcesCopyingComplete(event:Event):void
         {
             event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
@@ -1288,12 +1513,28 @@ package actionScripts.plugins.as3project.mxmlc
             }
 			else if (debugAfterBuild)
 			{
-				launchDebuggingAfterBuild();
+				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
+				{
+					packageAIR(true);
+					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+				}
+				else
+				{
+					launchDebuggingAfterBuild();
+				}
 			}
             else if (runAfterBuild)
             {
                 dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.swfOutput.path.fileBridge.parent));
-                testMovie();
+				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
+				{
+					packageAIR(false);
+					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
+				}
+				else
+				{
+                	testMovie();
+				}
             }
             else
             {

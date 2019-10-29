@@ -13,5 +13,7 @@
 		<true/>
     	<key>com.apple.security.files.downloads.read-only</key>
     	<true/>
+    	<key>com.apple.security.device.usb</key>
+    	<true/>
 	</dict>
 </plist>

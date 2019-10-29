@@ -40,6 +40,7 @@ package actionScripts.plugins.haxelib
 	import actionScripts.valueObjects.Settings;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
+	import actionScripts.utils.CommandLineUtil;
 
 	public class HaxelibPlugin extends PluginBase
 	{
@@ -83,6 +84,11 @@ package actionScripts.plugins.haxelib
 
 			var currentItem:ComponentVO = status.items[status.currentIndex];
 
+			var pathCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
+				"path",
+				currentItem.title
+			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -111,7 +117,7 @@ package actionScripts.plugins.haxelib
 				//it only matters if the installation fails later
 				process.addEventListener(NativeProcessExitEvent.EXIT, checkStatusOfDependencyProcess_exitHandler);
 				process.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " path " + currentItem.title]);
+			}, null, [CommandLineUtil.joinOptions(pathCommand)]);
 		}
 
 		private function installNextDependency(status:ProjectInstallStatus):void
@@ -135,6 +141,12 @@ package actionScripts.plugins.haxelib
 			}
 
 			ConsoleOutputter.formatOutput("Installing dependency " + currentItem.title + "...", "notice");
+			var installCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
+				"install",
+				currentItem.title,
+				"--quiet"
+			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -163,7 +175,7 @@ package actionScripts.plugins.haxelib
 				process.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, installDependencyProcess_standardErrorDataHandler);
 				process.addEventListener(NativeProcessExitEvent.EXIT, installDependencyProcess_exitHandler);
 				process.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " install " + currentItem.title + " --quiet"]);
+			}, null, [CommandLineUtil.joinOptions(installCommand)]);
 		}
 
 		private function haxelibInstallHandler(event:HaxelibEvent):void

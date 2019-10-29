@@ -65,6 +65,8 @@ package actionScripts.languageServer
     import components.popup.StandardPopup;
     
     import no.doomsday.console.ConsoleUtil;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -251,8 +253,11 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var compilerArg:String = EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" eclipse";
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [compilerArg]);
+				var eclipseCommand:Vector.<String> = new <String>[
+					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
+					"eclipse"
+				];
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(eclipseCommand)]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					null, "Updating Gradle classpath", false
@@ -317,6 +322,15 @@ package actionScripts.languageServer
 			if(!cmdFile.exists)
 			{
 				cmdFile = jdkFolder.resolvePath("bin/" + javaFileName);
+			}
+			if(!cmdFile.exists)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					HtmlFormatter.sprintfa("Invalid path to Java Development Kit: " + cmdFile.nativePath, null), false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				return;
 			}
 
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);

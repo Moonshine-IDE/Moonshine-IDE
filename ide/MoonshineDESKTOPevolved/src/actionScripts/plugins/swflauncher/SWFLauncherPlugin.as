@@ -37,12 +37,12 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.plugins.swflauncher.launchers.DeviceLauncher;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
+	import flash.errors.IllegalOperationError;
 	
 	public class SWFLauncherPlugin extends PluginBase
 	{	
@@ -54,7 +54,6 @@ package actionScripts.plugins.swflauncher
 		
 		private var customProcess:NativeProcess;
 		private var currentAIRNamespaceVersion:String;
-		private var deviceLauncher:DeviceLauncher = new DeviceLauncher();
 		
 		override public function activate():void 
 		{
@@ -87,7 +86,7 @@ package actionScripts.plugins.swflauncher
 		{
 			// Find project if we can (otherwise we can't open AIR swfs)
 			if (!event.project) event.project = findProjectForFile(event.file);
-			
+
 			// Do we have an AIR project on our hands?
 			if (event.project is AS3ProjectVO
 				&& AS3ProjectVO(event.project).testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
@@ -158,8 +157,7 @@ package actionScripts.plugins.swflauncher
 			// In case of mobile project and device-run, lets divert
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)
 			{
-				deviceLauncher.runOnDevice(project, sdk, file, appXML, RUN_AS_DEBUGGER);
-				return;
+				throw new IllegalOperationError("SWFLauncherPlugin cannot launch Adobe AIR application on a mobile device.");
 			}
 			
 			var customInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();

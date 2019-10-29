@@ -50,6 +50,9 @@ package actionScripts.languageServer
     import no.doomsday.console.ConsoleUtil;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.valueObjects.EnvironmentExecPaths;
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -181,6 +184,13 @@ package actionScripts.languageServer
 			}
 
 			this._displayArguments = "";
+			var limeDisplayCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
+				"run",
+				"lime",
+				"display",
+				_project.limeTargetPlatform
+			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -209,7 +219,7 @@ package actionScripts.languageServer
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 				_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
 				_limeDisplayProcess.start(processInfo);
-			}, null, [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run lime display " + _project.limeTargetPlatform]);
+			}, null, [CommandLineUtil.joinOptions(limeDisplayCommand)]);
 
 		}
 
@@ -239,6 +249,16 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
+			if(!cmdFile.exists)
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_OUTPUT, 
+					HtmlFormatter.sprintfa("Invalid path to Node.js executable: " + cmdFile.nativePath, null), false, false, 
+					ConsoleOutputEvent.TYPE_ERROR));
+                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+				return;
+			}
 
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -247,7 +267,7 @@ package actionScripts.languageServer
 			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
-			processInfo.executable = new File(UtilsCore.getNodeBinPath());
+			processInfo.executable = cmdFile;
 			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
 			_languageServerProcess = new NativeProcess();

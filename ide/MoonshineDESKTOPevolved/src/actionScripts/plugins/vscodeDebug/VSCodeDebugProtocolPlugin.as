@@ -67,6 +67,7 @@ package actionScripts.plugins.vscodeDebug
     import flash.errors.IllegalOperationError;
     import actionScripts.valueObjects.ProjectVO;
     import flash.utils.getQualifiedClassName;
+    import flash.utils.clearTimeout;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -118,12 +119,14 @@ package actionScripts.plugins.vscodeDebug
 		private var _messageBuffer:String = "";
 		private var _bodyLength:int = -1;
 		private var mainThreadID:int = -1;
-		private var _stackFrames:ArrayCollection;
-		private var _scopesAndVars:VariablesReferenceHierarchicalData;
+		private var connectTimeout:uint = uint.MAX_VALUE;
+		private var _stackFrames:ArrayCollection = new ArrayCollection();
+		private var _scopesAndVars:VariablesReferenceHierarchicalData = new VariablesReferenceHierarchicalData();
 		private var _variablesLookup:Dictionary = new Dictionary();
 		private var _currentProject:ProjectVO;
-		private var isStartupCall:Boolean = true;
 		private var isDebugViewVisible:Boolean;
+		
+		//change to true to enable more detailed debug logs
 		private var _debugMode:Boolean = false;
 
 		private var _connected:Boolean = false;
@@ -145,16 +148,16 @@ package actionScripts.plugins.vscodeDebug
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.POSTBUILD, dispatcher_postBuildHandler);
-			///dispatcher.addEventListener(ActionScriptBuildEvent.PREBUILD, handleCompile);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
-			/*dispatcher.addEventListener(MenuPlugin.MENU_SAVE_EVENT, handleEditorSave);
-			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);*/
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER, stepOverExecutionHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION, continueExecutionHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, terminateExecutionHandler);
-			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
+			dispatcher.addEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
+			//if you add any new listeners here, before sure that you remove
+			//them in deactivate()
 			
 			DebugHighlightManager.init();
 		}
@@ -168,6 +171,11 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER, stepOverExecutionHandler);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION, continueExecutionHandler);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, terminateExecutionHandler);
+			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 		}
 		
 		private function saveEditorBreakpoints(editor:BasicTextEditor):void
@@ -207,6 +215,7 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function connectToProcess():void
 		{
+			connectTimeout = uint.MAX_VALUE;
 			if(!_nativeProcess)
 			{
 				Alert.show("Could not connect to the SWF debugger. Debugger stopped before connection completed.", "Debug Error", Alert.OK);
@@ -339,6 +348,16 @@ package actionScripts.plugins.vscodeDebug
 						this.parseInitializeResponse(response);
 						break;
 					}
+					case COMMAND_ATTACH:
+					{
+						this.parseAttachResponse(response);
+						break;
+					}
+					case COMMAND_LAUNCH:
+					{
+						this.parseLaunchResponse(response);
+						break;
+					}
 					case COMMAND_CONTINUE:
 					{
 						this.parseContinueResponse(response);
@@ -374,8 +393,6 @@ package actionScripts.plugins.vscodeDebug
 						this.parseDisconnectResponse(response);
 						break;
 					}
-					case COMMAND_ATTACH:
-					case COMMAND_LAUNCH:
 					case COMMAND_PAUSE:
 					case COMMAND_STEP_IN:
 					case COMMAND_STEP_OUT:
@@ -469,11 +486,29 @@ package actionScripts.plugins.vscodeDebug
 			}
 			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
 			{
+				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
+				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
+				var descriptorPath:String = as3Project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
+				var descriptorFile:FileLocation = as3Project.folderLocation.fileBridge.resolvePath(descriptorPath);
+				var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
+				var xmlns:Namespace = new Namespace(descriptorXML.namespace());
+				var appID:String = descriptorXML.xmlns::id;
+
+				var bundle:String = as3Project.swfOutput.path.fileBridge.parent.resolvePath(as3Project.name + (isAndroid ? ".apk" : ".ipa")).fileBridge.nativePath;
 				var attachArgs:Object =
 				{
 					"type": DEBUG_TYPE_SWF,
 					"name": "Moonshine Device Attach",
-					"request": REQUEST_ATTACH
+					"request": REQUEST_ATTACH,
+					"platform": isAndroid ? "android" : "ios",
+					//connect to the device over USB
+					"connect": true,
+					//the port to connect over
+					"port": 7936,
+					//uninstall/launch this app ID
+					"applicationID": appID,
+					//install this bundle
+					"bundle": bundle
 				};
 				sendAttachCommand(attachArgs);
 			}
@@ -545,6 +580,11 @@ package actionScripts.plugins.vscodeDebug
 				return;
 			}
 			this._paused = false;
+			
+			//we're no longer paused, so clear this until we pause again
+			this._stackFrames.removeAll();
+			this._scopesAndVars.removeAll();
+
 			refreshView();
 		}
 		
@@ -637,9 +677,9 @@ package actionScripts.plugins.vscodeDebug
 			var nextSeq:int = _seq + 1;
 			this._variablesLookup[nextSeq] = scopeOrVar;
 			this.sendRequest(COMMAND_VARIABLES,
-				{
-					variablesReference: scopeOrVar.variablesReference
-				});
+			{
+				variablesReference: scopeOrVar.variablesReference
+			});
 		}
 		
 		private function gotoStackFrame(stackFrame:StackFrame):void
@@ -659,9 +699,72 @@ package actionScripts.plugins.vscodeDebug
 			dispatcher.dispatchEvent(openEvent);
 			
 			this.sendRequest(COMMAND_SCOPES,
+			{
+				frameId: stackFrame.id
+			});
+		}
+
+		private function stop():void
+		{
+			if(connectTimeout != uint.MAX_VALUE)
+			{
+				clearTimeout(connectTimeout);
+				connectTimeout = uint.MAX_VALUE;
+			}
+			if(_receivedInitializeResponse && !_waitingForLaunchOrAttach)
+			{
+				this.sendRequest(COMMAND_DISCONNECT);
+			}
+			else
+			{
+				//if we haven't yet received a response to the initialize
+				//request or if we're waiting for a response to attach/launch,
+				//then we need to force the debug adapter to stop because it
+				//won't be able to handle the disconnect request
+				this.handleDisconnectOrTerminated();
+				if(_nativeProcess)
 				{
-					frameId: stackFrame.id
-				});
+					//the process won't exit automatically
+					_nativeProcess.exit(true);
+				}
+			}
+			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
+		}
+
+		private function play():void
+		{
+            if (!connected || !_debugPanel.playButton.enabled) return;
+
+			this.sendRequest(COMMAND_CONTINUE);
+			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
+		}
+
+		private function pause():void
+		{
+            if (!connected || !_debugPanel.pauseButton.enabled) return;
+
+			this.sendRequest(COMMAND_PAUSE);
+		}
+
+		private function stepOver():void
+		{
+            if (!connected || !_debugPanel.stepOverButton.enabled) return;
+
+			this.sendRequest(COMMAND_NEXT);
+		}
+
+		private function stepInto():void
+		{
+            if (!connected || !_debugPanel.stepIntoButton.enabled) return;
+
+			this.sendRequest(COMMAND_STEP_IN);
+		}
+
+		private function stepOut():void
+		{
+            if (!connected || !_debugPanel.stepOutButton.enabled) return;
+
+			this.sendRequest(COMMAND_STEP_OUT);
 		}
 		
 		private function handleDisconnectOrTerminated():void
@@ -775,6 +878,28 @@ package actionScripts.plugins.vscodeDebug
 			this.handleDisconnectOrTerminated();
 		}
 		
+		private function parseLaunchResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("launch command not successful!");
+				return;
+			}
+			this._waitingForLaunchOrAttach = false;
+			this.refreshView();
+		}
+		
+		private function parseAttachResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("attach command not successful!");
+				return;
+			}
+			this._waitingForLaunchOrAttach = false;
+			this.refreshView();
+		}
+		
 		private function parseInitializedEvent(event:Object):void
 		{
 			var hasBreakpoints:Boolean = false;
@@ -870,11 +995,12 @@ package actionScripts.plugins.vscodeDebug
 			{
 				return;
 			}
-			_debugPanel.playButton.enabled = this.connected && this._paused;
-			_debugPanel.pauseButton.enabled = this.connected && !this._paused;
-			_debugPanel.stepOverButton.enabled = this.connected && this._paused;
-			_debugPanel.stepIntoButton.enabled = this.connected && this._paused;
-			_debugPanel.stepOutButton.enabled = this.connected && this._paused;
+			var launchedOrAttached:Boolean = this.connected && this._receivedInitializeResponse && !this._waitingForLaunchOrAttach;
+			_debugPanel.playButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.pauseButton.enabled = launchedOrAttached && !this._paused;
+			_debugPanel.stepOverButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.stepIntoButton.enabled = launchedOrAttached && this._paused;
+			_debugPanel.stepOutButton.enabled = launchedOrAttached && this._paused;
 			_debugPanel.stopButton.enabled = this.connected;
 			_debugPanel.stackFrames = this._stackFrames;
 			_debugPanel.scopesAndVars = this._scopesAndVars;
@@ -894,10 +1020,10 @@ package actionScripts.plugins.vscodeDebug
 				return { line: item + 1 };
 			});
 			this.sendRequest(COMMAND_SET_BREAKPOINTS,
-				{
-					source: { path: path },
-					breakpoints: breakpoints
-				});
+			{
+				source: { path: path },
+				breakpoints: breakpoints
+			});
 		}
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
@@ -914,28 +1040,21 @@ package actionScripts.plugins.vscodeDebug
                 cleanupDebugViewEventHandlers();
 				isDebugViewVisible = false;
 			}
-			isStartupCall = false;
 		}
 		
 		private function stepOverExecutionHandler(event:Event):void
 		{
-            if (!connected) return;
-			
-			if (_debugPanel.stepOverButton.enabled) stepOverButton_clickHandler(null);
+			this.stepOver();
 		}
 		
 		private function continueExecutionHandler(event:Event):void
 		{
-            if (!connected) return;
-
-			if (_debugPanel.playButton.enabled) playButton_clickHandler(null);
+			this.play();
 		}
 		
 		private function terminateExecutionHandler(event:Event):void
 		{
-			if (!connected) return;
-
-			if (_debugPanel.stopButton.enabled) stopButton_clickHandler(null);
+			this.stop();
 		}
 		
 		private function dispatcher_editorOpenHandler(event:EditorPluginEvent):void
@@ -1026,7 +1145,7 @@ package actionScripts.plugins.vscodeDebug
 			//been started by the process
 			_retryCount = 0;
 			mainThreadID = -1;
-			setTimeout(connectToProcess, 100);
+			connectTimeout = setTimeout(connectToProcess, 100);
 		}
 		
 		protected function socket_connectHandler(event:Event):void
@@ -1046,10 +1165,10 @@ package actionScripts.plugins.vscodeDebug
 			refreshView();
 			
 			sendRequest(COMMAND_INITIALIZE,
-				{
-					"clientID": "moonshine",
-					"adapterID": "swf"
-				});
+			{
+				"clientID": "moonshine",
+				"adapterID": "swf"
+			});
 		}
 		
 		protected function socketConnect_ioErrorHandler(event:IOErrorEvent):void
@@ -1114,11 +1233,18 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function dispatcher_quitHandler(event:Event):void
 		{
+			//force quit because we don't have time to clean up when the whole
+			//app is exiting?
 			if(!_nativeProcess)
 			{
 				return;
 			}
 			_nativeProcess.exit(true);
+		}
+
+		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
+		{
+			this.stop();
 		}
 		
 		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
@@ -1133,50 +1259,32 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function stopButton_clickHandler(event:MouseEvent):void
 		{
-			if(_receivedInitializeResponse && !_waitingForLaunchOrAttach)
-			{
-				this.sendRequest(COMMAND_DISCONNECT);
-			}
-			else
-			{
-				//if we haven't yet received a response to the initialize
-				//request or if we're waiting for a response to attach/launch,
-				//then we need to force the debug adapter to stop because it
-				//won't be able to handle the disconnect request
-				this.handleDisconnectOrTerminated();
-				if(_nativeProcess)
-				{
-					//the process won't exit automatically
-					_nativeProcess.exit(true);
-				}
-			}
-			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
+			this.stop();
 		}
 		
 		protected function pauseButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_PAUSE);
+			this.pause();
 		}
 		
 		protected function playButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_CONTINUE);
-			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
+			this.play();
 		}
 		
 		protected function stepOverButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_NEXT);
+			this.stepOver();
 		}
 		
 		protected function stepIntoButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_STEP_IN);
+			this.stepInto();
 		}
 		
 		protected function stepOutButton_clickHandler(event:MouseEvent):void
 		{
-			this.sendRequest(COMMAND_STEP_OUT);
+			this.stepOut();
 		}
 
         private function debugPanel_RemovedFromStage(event:Event):void

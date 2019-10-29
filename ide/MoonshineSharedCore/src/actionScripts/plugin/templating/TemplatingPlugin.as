@@ -791,15 +791,15 @@ package actionScripts.plugin.templating
 			if (event.location)
 			{
 				// Request additional data for templating
-				var event:TemplateEvent = new TemplateEvent(TemplateEvent.REQUEST_ADDITIONAL_DATA, event.template, event.location);
-				dispatcher.dispatchEvent(event);
+				var newEvent:TemplateEvent = new TemplateEvent(TemplateEvent.REQUEST_ADDITIONAL_DATA, event.template, event.location);
+				dispatcher.dispatchEvent(newEvent);
 				
 				var helper:TemplatingHelper = new TemplatingHelper();
-				helper.templatingData = event.templatingData;
-				helper.fileTemplate(event.template, event.location);
+				helper.templatingData = newEvent.templatingData;
+				helper.fileTemplate(newEvent.template, newEvent.location);
 				
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [event.location])
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [newEvent.location])
 				);
 			}
 			else
