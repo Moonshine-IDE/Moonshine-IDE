@@ -49,7 +49,7 @@ package actionScripts.plugins.haxe
     import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.events.ProjectEvent;
-    import actionScripts.plugins.vscodeDebug.events.DebugAdapterEvent;
+    import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {

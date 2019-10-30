@@ -102,7 +102,7 @@ package actionScripts.ui
 							isTreeViewAttempted = true;
 							treeView.percentHeight = sidebarChildren[i].height;
 							break;
-						case "VSCodeDebugProtocolView":
+						case "DebugAdapterView":
 							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, sidebarChildren[i].height));
 							break;
 						case "AS3DocsView":

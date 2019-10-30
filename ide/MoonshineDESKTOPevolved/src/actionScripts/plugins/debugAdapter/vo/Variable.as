@@ -16,27 +16,16 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.vscodeDebug.events
+package actionScripts.plugins.debugAdapter.vo
 {
-	import flash.events.Event;
-	import actionScripts.valueObjects.ProjectVO;
-
-	public class DebugAdapterEvent extends Event
+	public class Variable extends BaseVariablesReference
 	{
-		public static const START_DEBUG_ADAPTER:String = "startDebugAdapter";
-
-		public function DebugAdapterEvent(eventType:String, project:ProjectVO, adapterID:String, request:String, additionalProperties:Object)
+		public function Variable()
 		{
-			super(eventType, false, false);
-			this.project = project;
-			this.adapterID = adapterID;
-			this.request = request;
-			this.additionalProperties = additionalProperties;
 		}
 		
-		public var project:ProjectVO;
-		public var adapterID:String;
-		public var request:String;
-		public var additionalProperties:Object;
+		public var name:String;
+		public var value:String;
+		public var type:String;
 	}
 }

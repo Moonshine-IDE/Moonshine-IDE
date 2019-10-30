@@ -94,7 +94,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	
 	import org.as3commons.asblocks.utils.FileUtil;
-	import actionScripts.plugins.vscodeDebug.events.DebugAdapterEvent;
+	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{

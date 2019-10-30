@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.swflauncher
 {
-	import actionScripts.plugins.vscodeDebug.IDebugAdapterLauncher;
+	import actionScripts.plugins.debugAdapter.IDebugAdapterLauncher;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.filesystem.File;
 	import actionScripts.valueObjects.Settings;

@@ -99,7 +99,7 @@ package actionScripts.impls
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
-	import actionScripts.plugins.vscodeDebug.VSCodeDebugProtocolPlugin;
+	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -231,7 +231,7 @@ package actionScripts.impls
 				CleanProject,
 				VersionControlPlugin,
 				SVNPlugin,
-				VSCodeDebugProtocolPlugin,
+				DebugAdapterPlugin,
 				SaveFilesPlugin,
 				OutlinePlugin,
 				ProblemsPlugin,
@@ -248,7 +248,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, VSCodeDebugProtocolPlugin,
+			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
 		}
@@ -335,7 +335,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','FULLSCREEN'), null, null, FullscreenPlugin.EVENT_FULLSCREEN),
 					new MenuItem(resourceManager.getString('resources','OUTLINE_VIEW'), null, null, OutlinePlugin.EVENT_OUTLINE),
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, null, ProblemsPlugin.EVENT_PROBLEMS),
-					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], VSCodeDebugProtocolPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
+					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], DebugAdapterPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),

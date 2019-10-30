@@ -16,13 +16,10 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.vscodeDebug
+package actionScripts.plugins.debugAdapter.vo
 {
-	import flash.desktop.NativeProcessStartupInfo;
-	import actionScripts.valueObjects.ProjectVO;
-
-	public interface IDebugAdapterLauncher
+	public class BaseVariablesReference
 	{
-		function getStartupInfo(project:ProjectVO):NativeProcessStartupInfo;
+		public var variablesReference:Number = -1;
 	}
 }

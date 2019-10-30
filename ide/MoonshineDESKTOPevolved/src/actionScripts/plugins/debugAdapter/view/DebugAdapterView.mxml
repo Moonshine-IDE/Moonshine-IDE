@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:containers="spark.containers.*"
+		 implements="actionScripts.interfaces.IViewWithTitle"
+		 horizontalGap="2"
+		 width="100%" height="100%" backgroundColor="0x444444">
+	<mx:Metadata>
+		[Event(name="loadVariables",type="actionScripts.plugins.debugAdapter.events.LoadVariablesEvent")]
+	</mx:Metadata>
+
+	<mx:Script><![CDATA[
+		import mx.collections.ICollectionView;
+		import mx.collections.IHierarchicalData;
+		import mx.events.AdvancedDataGridEvent;
+		import mx.events.ListEvent;
+		import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
+		import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
+		import actionScripts.plugins.debugAdapter.vo.BaseVariablesReference;
+		import actionScripts.plugins.debugAdapter.vo.StackFrame;
+		import actionScripts.plugins.debugAdapter.vo.Variable;
+
+		[Bindable]
+		public var stackFrames:ICollectionView;
+
+		[Bindable]
+		public var scopesAndVars:IHierarchicalData;
+
+		public function get title():String
+		{
+			return "Debug";
+		}
+
+		private function variablesValueLabelFunction(item:Object, column:AdvancedDataGridColumn = null):String
+		{
+			if(item is Variable)
+			{
+				return Variable(item).value;
+			}
+			return "";
+		}
+
+		private function lineLabelFunction(item:StackFrame, column:DataGridColumn = null):String
+		{
+			if(item.source)
+			{
+				return item.line.toString();
+			}
+			return "";
+		}
+
+		private function nameDataTipFunction(item:StackFrame):String
+		{
+			var result:String = item.name;
+			if(item.source)
+			{
+				result += " (" + item.line + "," + item.column + ")";
+				result += "\n" + item.source.path;
+			}
+			return result;
+		}
+
+		private function variablesTree_itemOpenHandler(event:AdvancedDataGridEvent):void
+		{
+			var item:BaseVariablesReference = BaseVariablesReference(event.item);
+			if(this.scopesAndVars.hasChildren(item))
+			{
+				this.dispatchEvent(new LoadVariablesEvent(LoadVariablesEvent.LOAD_VARIABLES, item));
+			}
+		}
+
+		private function callStackList_itemClickHandler(event:ListEvent):void
+		{
+			var stackFrame:StackFrame = StackFrame(event.itemRenderer.data);
+			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, stackFrame));
+		}
+		]]></mx:Script>
+	
+	<mx:Style>
+		.variablesTreeHeaderStyles
+		{
+			color: #e0e0e0;
+			horizontalAlign: left;
+			horizontalGap: 0;
+		}
+	</mx:Style>
+
+	<s:VGroup gap="4" horizontalAlign="center" verticalAlign="top"
+	          percentHeight="100" width="35" paddingTop="4">
+		<s:Button id="playButton" styleName="debugPlayButton" toolTip="Play"
+			enabled="false"/>
+		<s:Button id="pauseButton" styleName="debugPauseButton" toolTip="Pause"
+			enabled="false"/>
+		<s:Button id="stepOverButton" styleName="debugStepOverButton" toolTip="Step Over"
+			enabled="false"/>
+		<s:Button id="stepIntoButton" styleName="debugStepIntoButton" toolTip="Step Into"
+			enabled="false"/>
+		<s:Button id="stepOutButton" styleName="debugStepOutButton" toolTip="Step Out"
+			enabled="false"/>
+		<s:Button id="stopButton" styleName="debugStopButton" toolTip="Stop"
+			enabled="false"/>
+	</s:VGroup>
+
+	<containers:HDividerGroup gap="1" percentWidth="100" percentHeight="100">
+			<mx:AdvancedDataGrid id="variablesTree"
+								 percentWidth="50" percentHeight="100"
+				draggableColumns="false"
+				sortableColumns="false"
+				color="0xe0e0e0"
+				fontSize="11"
+				verticalScrollBarStyleName="black"
+				contentBackgroundColor="0x0"
+				textRollOverColor="0xFFFFFF"
+				rollOverColor="0x393939"
+				selectionColor="0x393939"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+				textSelectedColor="0xe0e0e0"
+				borderVisible="false"
+				useRollOver="true"
+				headerColors="[0x6a6a6a,0x303030]"
+				headerStyleName="variablesTreeHeaderStyles"
+				sortExpertMode="true"
+				headerSortSeparatorSkin="mx.skins.ProgrammaticSkin"
+				sortItemRenderer="mx.core.UIComponent"
+				chromeColor="#393939"
+				dataProvider="{scopesAndVars}"
+				itemOpen="variablesTree_itemOpenHandler(event)">
+				<mx:columns>
+					<mx:AdvancedDataGridColumn headerText="Variables"
+						dataField="name" headerWordWrap=""
+						showDataTips="true" dataTipField="type"/>
+					<mx:AdvancedDataGridColumn headerText="Values"
+						labelFunction="{variablesValueLabelFunction}"
+						showDataTips="true" dataTipFunction="{variablesValueLabelFunction}"/>
+				</mx:columns>
+			</mx:AdvancedDataGrid>
+			<mx:DataGrid id="callStackList"
+						 percentWidth="50" percentHeight="100"
+						 draggableColumns="false"
+						 sortableColumns="false"
+						 color="0xe0e0e0"
+						 fontSize="11"
+						 contentBackgroundColor="0x0"
+						 textRollOverColor="0xFFFFFF"
+						 rollOverColor="0x393939"
+						 selectionColor="0x393939"
+						 alternatingItemColors="[0x444444, 0x4d4c4c]"
+						 textSelectedColor="0xe0e0e0"
+						 borderVisible="false"
+						 useRollOver="true"
+						 chromeColor="#393939"
+						 verticalScrollBarStyleName="black"
+						 dataProvider="{stackFrames}"
+						 itemClick="callStackList_itemClickHandler(event)">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Frames" dataField="name"
+									   dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
+					<mx:DataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
+				</mx:columns>
+			</mx:DataGrid>
+	</containers:HDividerGroup>
+</mx:HBox>
