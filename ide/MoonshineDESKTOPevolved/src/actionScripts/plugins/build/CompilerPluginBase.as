@@ -25,6 +25,7 @@ package actionScripts.plugins.build
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class CompilerPluginBase extends PluginBase implements IPlugin
 	{
@@ -39,6 +40,10 @@ package actionScripts.plugins.build
 			else if (project is JavaProjectVO)
 			{
 				validateJavaVOPaths(project as JavaProjectVO);
+			}
+			else if (project is HaxeProjectVO)
+			{
+				validateHaxeVOPaths(project as HaxeProjectVO);
 			}
 		}
 		
@@ -90,6 +95,22 @@ package actionScripts.plugins.build
 		}
 		
 		private function validateJavaVOPaths(project:JavaProjectVO):void
+		{
+			var tmpLocation:FileLocation;
+			invalidPaths = [];
+			
+			checkPathFileLocation(project.folderLocation, "Location");
+			if (project.sourceFolder) checkPathFileLocation(project.sourceFolder, "Source Folder");
+			
+			for each (tmpLocation in project.classpaths)
+			{
+				checkPathFileLocation(tmpLocation, "Classpath");
+			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
+		}
+		
+		private function validateHaxeVOPaths(project:HaxeProjectVO):void
 		{
 			var tmpLocation:FileLocation;
 			invalidPaths = [];

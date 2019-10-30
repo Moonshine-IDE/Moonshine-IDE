@@ -22,7 +22,6 @@ package actionScripts.plugins.haxe
     import actionScripts.events.SdkEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.StatusBarEvent;
-    import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.compiler.HaxeBuildEvent;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
@@ -48,6 +47,8 @@ package actionScripts.plugins.haxe
     import actionScripts.utils.CommandLineUtil;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
     import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+    import actionScripts.events.ProjectEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -60,6 +61,7 @@ package actionScripts.plugins.haxe
         private var pendingRunProject:HaxeProjectVO = null;
         private var pendingRunCommand:String = null;
         private var pendingRunFolder:String = null;
+        private var debugAfterBuild:Boolean = false;
         private var limeLibpathProcess:NativeProcess;
         private var limeLibPath:String = null;
 		
@@ -168,6 +170,7 @@ package actionScripts.plugins.haxe
         {
             super.activate();
 
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
@@ -177,9 +180,56 @@ package actionScripts.plugins.haxe
         {
             super.deactivate();
 
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
+        }
+		
+		private function haxeBuildAndDebugHandler(event:Event):void
+		{
+            var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
+            if (!project)
+            {
+                return;
+            }
+            
+            pendingRunProject = null;
+            pendingRunCommand = null;
+            pendingRunFolder = null;
+            debugAfterBuild = false;
+            if(project.isLime)
+            {
+                switch(project.limeTargetPlatform)
+                {
+                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
+                    {
+                        debugAfterBuild = true;
+			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
+                    }
+                    default:
+                    {
+                        error("Haxe Lime/OpenFL build and debug failed. This command is not supported on platform \"" + project.limeTargetPlatform + "\".");
+                    }
+                }
+            }
+            else
+            {
+                switch(project.haxeOutput.platform)
+                {
+                    case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
+                    {
+                        debugAfterBuild = true;
+                        this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", "-D", "fdb", project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
+                        break;
+                    }
+                    default:
+                    {
+                        error("Haxe build and debug failed. This command is not supported on platform \"" + project.haxeOutput.platform + "\".");
+                    }
+                }
+            }
         }
 		
 		private function haxeBuildAndRunHandler(event:Event):void
@@ -192,10 +242,10 @@ package actionScripts.plugins.haxe
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
+            debugAfterBuild = false;
 
             if(project.isLime)
             {
-                var projectFolder:FileLocation = project.folderLocation;
                 if(project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
                 {
                     //for some reason, we can't use startDebug() here because
@@ -213,7 +263,7 @@ package actionScripts.plugins.haxe
                 }
                 else
                 {
-			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], projectFolder);
+			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], project.folderLocation);
                 }
             }
             else
@@ -288,6 +338,7 @@ package actionScripts.plugins.haxe
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
+            debugAfterBuild = false;
 
             if(project.isLime)
             {
@@ -295,7 +346,15 @@ package actionScripts.plugins.haxe
             }
             else
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
+                var buildCommand:String = [EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", project.getHXML().split("\n").join(" ")].join(" ");
+                if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER ||
+                    project.haxeOutput.platform == HaxeOutputVO.PLATFORM_AIR ||
+                    project.haxeOutput.platform == HaxeOutputVO.PLATFORM_AIR_MOBILE)
+                {
+                    //required for Flash/AIR debugger
+                    buildCommand += " -D fdb";
+                }
+			    this.start(new <String>[buildCommand], project.folderLocation);
             }
 		}
 		
@@ -309,6 +368,7 @@ package actionScripts.plugins.haxe
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
+            debugAfterBuild = false;
 
             if(project.isLime)
             {
@@ -416,6 +476,7 @@ package actionScripts.plugins.haxe
                 pendingRunProject = null;
                 pendingRunCommand = null;
                 pendingRunFolder = null;
+                debugAfterBuild = false;
                 var swfFile:File = runFlashProject.haxeOutput.path.fileBridge.getFile as File;
 				dispatcher.dispatchEvent(
 					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, runFlashProject)
@@ -463,6 +524,7 @@ package actionScripts.plugins.haxe
                 pendingRunProject = null;
                 pendingRunCommand = null;
                 pendingRunFolder = null;
+                debugAfterBuild = false;
             }
             else
             {
@@ -564,6 +626,7 @@ package actionScripts.plugins.haxe
 
             if(isLimeHTMLServer)
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
                 limeHTMLServerNativeProcess = null;
                 if(isNaN(event.exitCode))
                 {
@@ -576,12 +639,21 @@ package actionScripts.plugins.haxe
             }
             else
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
                 if(isNaN(event.exitCode))
                 {
+                    pendingRunProject = null;
+                    pendingRunCommand = null;
+                    pendingRunFolder = null;
+                    debugAfterBuild = false;
                     warning("Haxe build has been terminated.");
                 }
                 else if(event.exitCode != 0)
                 {
+                    pendingRunProject = null;
+                    pendingRunCommand = null;
+                    pendingRunFolder = null;
+                    debugAfterBuild = false;
                     warning("Haxe build has been terminated with exit code: " + event.exitCode);
                 }
                 else
@@ -591,19 +663,20 @@ package actionScripts.plugins.haxe
                     {
                         dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                     }
+                    if(debugAfterBuild)
+                    {
+                        pendingRunProject = null;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        debugAfterBuild = false;
+                        dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, project));
+                    }
+                    else
+                    {
+                        runAfterBuild();
+                    }
                 }
             }
-
-            if(isLimeHTMLServer)
-            {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
-            }
-            else
-            {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-            }
-
-            runAfterBuild();
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
@@ -641,6 +714,7 @@ package actionScripts.plugins.haxe
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
+            debugAfterBuild = false;
 
 			limeLibpathProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
 			limeLibpathProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
