@@ -47,6 +47,7 @@ package actionScripts.plugins.haxe
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.utils.CommandLineUtil;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
+    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -220,24 +221,43 @@ package actionScripts.plugins.haxe
                 var buildCommand:String = [EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ");
                 switch(project.haxeOutput.platform)
                 {
-                    case HaxeOutputVO.PLATFORM_NEKO:
+                    case HaxeOutputVO.PLATFORM_CSHARP:
                     {
+                        var csharpExecutableName:String = project.name + "-Debug";
+                        if(Settings.os == "win")
+                        {
+                            csharpExecutableName += ".exe";
+                        }
                         pendingRunProject = project;
-                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.NEKO_ENVIRON_EXEC_PATH, project.haxeOutput.path.fileBridge.nativePath]);
-                        pendingRunFolder = project.haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath("bin" + File.separator + csharpExecutableName).fileBridge.nativePath]);
+                        pendingRunFolder = project.haxeOutput.path.fileBridge.resolvePath("bin").fileBridge.nativePath;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     case HaxeOutputVO.PLATFORM_CPP:
                     {
-                        var executableName:String = project.name;
+                        var cppExecutableName:String = project.name;
                         if(Settings.os == "win")
                         {
-                            executableName += ".exe";
+                            cppExecutableName += ".exe";
                         }
                         pendingRunProject = project;
-                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.nativePath + File.separator + executableName]);
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath(cppExecutableName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
+			            this.start(new <String>[buildCommand], project.folderLocation);
+                        break;
+                    }
+                    case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
+                    {
+                        pendingRunProject = project;
+			            this.start(new <String>[buildCommand], project.folderLocation);
+                        break;
+                    }
+                    case HaxeOutputVO.PLATFORM_NEKO:
+                    {
+                        pendingRunProject = project;
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.NEKO_ENVIRON_EXEC_PATH, project.haxeOutput.path.fileBridge.nativePath]);
+                        pendingRunFolder = project.haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
@@ -380,6 +400,17 @@ package actionScripts.plugins.haxe
             if(pendingRunProject.isLime && pendingRunProject.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
             {
                 findLimeLibpath();
+            }
+            else if(pendingRunProject.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
+            {
+                var runFlashProject:HaxeProjectVO = pendingRunProject;
+                pendingRunProject = null;
+                pendingRunCommand = null;
+                pendingRunFolder = null;
+                var swfFile:File = runFlashProject.haxeOutput.path.fileBridge.getFile as File;
+				dispatcher.dispatchEvent(
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, runFlashProject)
+				);
             }
             else if(pendingRunCommand)
             {
