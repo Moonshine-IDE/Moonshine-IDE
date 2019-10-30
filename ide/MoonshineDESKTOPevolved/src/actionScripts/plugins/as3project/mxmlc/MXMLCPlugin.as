@@ -94,6 +94,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	
 	import org.as3commons.asblocks.utils.FileUtil;
+	import actionScripts.plugins.vscodeDebug.events.DebugAdapterEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -1217,6 +1218,74 @@ package actionScripts.plugins.as3project.mxmlc
 		{
             projectBuildSuccessfully();
             dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
+
+			var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
+			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
+			{
+				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
+				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
+				var descriptorPath:String = as3Project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
+				var descriptorFile:FileLocation = as3Project.folderLocation.fileBridge.resolvePath(descriptorPath);
+				var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
+				var xmlns:Namespace = new Namespace(descriptorXML.namespace());
+				var appID:String = descriptorXML.xmlns::id;
+
+				var bundle:String = as3Project.swfOutput.path.fileBridge.parent.resolvePath(as3Project.name + (isAndroid ? ".apk" : ".ipa")).fileBridge.nativePath;
+				var attachArgs:Object =
+				{
+					"name": "Moonshine SWF Device Attach",
+					"platform": isAndroid ? "android" : "ios",
+					//connect to the device over USB
+					"connect": true,
+					//the port to connect over
+					"port": 7936,
+					//uninstall/launch this app ID
+					"applicationID": appID,
+					//install this bundle
+					"bundle": bundle
+				};
+				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "attach", attachArgs));
+			}
+			else if(as3Project)
+			{
+				var launchArgs:Object =
+				{
+					"name": "Moonshine SWF Launch"
+				};
+				if(as3Project)
+				{
+					var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
+					if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
+					{
+						//switch to the Adobe AIR application descriptor XML file
+						launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
+						if(as3Project.isMobile)
+						{
+							launchArgs["profile"] = "mobileDevice";
+							
+							//these options need to be configurable somehow
+							//but these are reasonable defaults until then
+							launchArgs["screensize"] = "NexusOne";
+							launchArgs["screenDPI"] = 252;
+							launchArgs["versionPlatform"] = "AND";
+						}
+					}
+					else
+					{
+						//default to the .swf file, unless an .html file exists in the output folder
+						var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
+						if(htmlFile.exists)
+						{
+							launchArgs["program"] = htmlFile.nativePath;
+						}
+						else
+						{
+							launchArgs["program"] = swfFile.nativePath;
+						}
+					}
+				}
+				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "launch", launchArgs));
+			}
 		}
 
 		private function testMovie():void 

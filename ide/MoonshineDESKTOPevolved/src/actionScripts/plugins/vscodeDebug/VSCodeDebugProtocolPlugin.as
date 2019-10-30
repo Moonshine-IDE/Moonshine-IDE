@@ -20,31 +20,25 @@ package actionScripts.plugins.vscodeDebug
 {
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
+    import flash.errors.IllegalOperationError;
     import flash.events.Event;
-    import flash.events.IOErrorEvent;
     import flash.events.MouseEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
-    import flash.events.SecurityErrorEvent;
-    import flash.filesystem.File;
-    import flash.net.Socket;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     import flash.utils.IDataInput;
-    import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    
+    import flash.utils.clearTimeout;
+
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+    import actionScripts.plugins.swflauncher.SWFDebugAdapterLauncher;
+    import actionScripts.plugins.vscodeDebug.events.DebugAdapterEvent;
     import actionScripts.plugins.vscodeDebug.events.LoadVariablesEvent;
     import actionScripts.plugins.vscodeDebug.events.StackFrameEvent;
     import actionScripts.plugins.vscodeDebug.view.VSCodeDebugProtocolView;
@@ -58,17 +52,10 @@ package actionScripts.plugins.vscodeDebug
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.events.DebugLineEvent;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.utils.findAndCopyApplicationDescriptor;
-    import actionScripts.utils.findOpenPort;
-    import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.Settings;
-    import flash.errors.IllegalOperationError;
     import actionScripts.valueObjects.ProjectVO;
-    import flash.utils.getQualifiedClassName;
-    import flash.utils.clearTimeout;
-    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-    import actionScripts.events.SettingsEvent;
+
+    import mx.collections.ArrayCollection;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -102,7 +89,7 @@ package actionScripts.plugins.vscodeDebug
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const DEBUG_TYPE_SWF:String = "swf";
 		private static const OUTPUT_CATEGORY_STDERR:String = "stderr";
-		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
+		private static const CLIENT_ID:String = "moonshine";
 		
 		override public function get name():String 			{ return "VSCode Debug Protocol Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -111,9 +98,7 @@ package actionScripts.plugins.vscodeDebug
 		private var _breakpoints:Object = {};
 		private var _debugPanel:VSCodeDebugProtocolView;
 		private var _nativeProcess:NativeProcess;
-		private var _socket:Socket;
 		private var _byteArray:ByteArray;
-		private var _port:int;
 		private var _retryCount:int;
 		private var _paused:Boolean = true;
 		private var _seq:int = 0;
@@ -125,6 +110,7 @@ package actionScripts.plugins.vscodeDebug
 		private var _scopesAndVars:VariablesReferenceHierarchicalData = new VariablesReferenceHierarchicalData();
 		private var _variablesLookup:Dictionary = new Dictionary();
 		private var _currentProject:ProjectVO;
+		private var _currentRequest:PendingRequest;
 		private var isDebugViewVisible:Boolean;
 		
 		//change to true to enable more detailed debug logs
@@ -133,8 +119,6 @@ package actionScripts.plugins.vscodeDebug
 		private var _connected:Boolean = false;
 		private var _receivedInitializeResponse:Boolean = false;
 		private var _waitingForLaunchOrAttach:Boolean = false;
-		public function set connected(value:Boolean):void {	DebugHighlightManager.IS_DEBUGGER_CONNECTED = _connected = value;	}
-		public function get connected():Boolean {	return _connected;	}
 		
 		public function VSCodeDebugProtocolPlugin()
 		{
@@ -148,7 +132,7 @@ package actionScripts.plugins.vscodeDebug
 			this._debugPanel = new VSCodeDebugProtocolView();
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.POSTBUILD, dispatcher_postBuildHandler);
+			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
@@ -168,7 +152,7 @@ package actionScripts.plugins.vscodeDebug
 			super.deactivate();
 
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.POSTBUILD, dispatcher_postBuildHandler);
+			dispatcher.removeEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
@@ -197,37 +181,6 @@ package actionScripts.plugins.vscodeDebug
 			}
 			
 			this._breakpoints[path] = editor.getEditorComponent().breakpoints;
-		}
-		
-		private function cleanupSocket():void
-		{
-			if(!_socket)
-			{
-				return;
-			}
-			_socket.removeEventListener(Event.CONNECT, socket_connectHandler);
-			_socket.removeEventListener(IOErrorEvent.IO_ERROR, socketConnect_ioErrorHandler);
-			_socket.removeEventListener(IOErrorEvent.IO_ERROR, socket_ioErrorHandler);
-			_socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, socketConnect_securityErrorHandler);
-			_socket.removeEventListener(ProgressEvent.SOCKET_DATA, socket_socketDataHandler);
-			_socket.removeEventListener(Event.CLOSE, socket_closeHandler);
-			_socket = null;
-		}
-		
-		private function connectToProcess():void
-		{
-			connectTimeout = uint.MAX_VALUE;
-			if(!_nativeProcess)
-			{
-				Alert.show("Could not connect to the SWF debugger. Debugger stopped before connection completed.", "Debug Error", Alert.OK);
-				return;
-			}
-			cleanupSocket();
-			_socket = new Socket();
-			_socket.addEventListener(Event.CONNECT, socket_connectHandler);
-			_socket.addEventListener(IOErrorEvent.IO_ERROR, socketConnect_ioErrorHandler);
-			_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, socketConnect_securityErrorHandler);
-			_socket.connect("localhost", _port);
 		}
 		
 		private function parseMessageBuffer():void
@@ -299,11 +252,10 @@ package actionScripts.plugins.vscodeDebug
 			_byteArray.writeUTFBytes(string);
 			var contentLength:String = _byteArray.length.toString();
 			_byteArray.clear();
-			_socket.writeUTFBytes(CONTENT_LENGTH_PREFIX);
-			_socket.writeUTFBytes(contentLength);
-			_socket.writeUTFBytes(TWO_CRLF);
-			_socket.writeUTFBytes(string);
-			_socket.flush();
+			_nativeProcess.standardInput.writeUTFBytes(CONTENT_LENGTH_PREFIX);
+			_nativeProcess.standardInput.writeUTFBytes(contentLength);
+			_nativeProcess.standardInput.writeUTFBytes(TWO_CRLF);
+			_nativeProcess.standardInput.writeUTFBytes(string);
 		}
 		
 		private function parseProtocolMessage(message:Object):void
@@ -480,130 +432,22 @@ package actionScripts.plugins.vscodeDebug
 			}
 			_receivedInitializeResponse = true;
 
-			var as3Project:AS3ProjectVO = _currentProject as AS3ProjectVO;
-			var haxeProject:HaxeProjectVO = _currentProject as HaxeProjectVO;
-			if(!as3Project && !haxeProject)
+			//the request and command are the same constant
+			var command:String = this._currentRequest.request;
+			var args:Object =
 			{
-				error("Debug failed. Debugging not supported for project of type: " + getQualifiedClassName(_currentProject));
-				this.stop();
-				return;
-			}
-			if(as3Project && as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
+				"request": this._currentRequest.request,
+				"type": this._currentRequest.adapterID
+			};
+			if(this._currentRequest.additionalProperties)
 			{
-				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
-				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
-				var descriptorPath:String = as3Project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
-				var descriptorFile:FileLocation = as3Project.folderLocation.fileBridge.resolvePath(descriptorPath);
-				var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
-				var xmlns:Namespace = new Namespace(descriptorXML.namespace());
-				var appID:String = descriptorXML.xmlns::id;
-
-				var bundle:String = as3Project.swfOutput.path.fileBridge.parent.resolvePath(as3Project.name + (isAndroid ? ".apk" : ".ipa")).fileBridge.nativePath;
-				var attachArgs:Object =
+				for(var key:String in this._currentRequest.additionalProperties)
 				{
-					"type": DEBUG_TYPE_SWF,
-					"name": "Moonshine Device Attach",
-					"request": REQUEST_ATTACH,
-					"platform": isAndroid ? "android" : "ios",
-					//connect to the device over USB
-					"connect": true,
-					//the port to connect over
-					"port": 7936,
-					//uninstall/launch this app ID
-					"applicationID": appID,
-					//install this bundle
-					"bundle": bundle
-				};
-				sendAttachCommand(attachArgs);
-			}
-			else if(as3Project || haxeProject)
-			{
-				var launchArgs:Object =
-				{
-					"type": DEBUG_TYPE_SWF,
-					"name": "Moonshine Launch",
-					"request": REQUEST_LAUNCH
-				};
-				if(as3Project)
-				{
-					var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
-					if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
-					{
-						//switch to the Adobe AIR application descriptor XML file
-						launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
-						if(as3Project.isMobile)
-						{
-							launchArgs["profile"] = "mobileDevice";
-							
-							//these options need to be configurable somehow
-							//but these are reasonable defaults until then
-							launchArgs["screensize"] = "NexusOne";
-							launchArgs["screenDPI"] = 252;
-							launchArgs["versionPlatform"] = "AND";
-						}
-					}
-					else
-					{
-						//default to the .swf file, unless an .html file exists in the output folder
-						var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
-						if(htmlFile.exists)
-						{
-							launchArgs["program"] = htmlFile.nativePath;
-						}
-						else
-						{
-							launchArgs["program"] = swfFile.nativePath;
-						}
-					}
+					args[key] = this._currentRequest.additionalProperties[key];
 				}
-				else if(haxeProject)
-				{
-					if(haxeProject.isLime)
-					{
-						if(haxeProject.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_AIR)
-						{
-							//switch to the Adobe AIR application descriptor XML file
-							swfFile = haxeProject.folderLocation.fileBridge
-								.resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
-							var appDescriptorFile:File = swfFile.parent.resolvePath("application.xml");
-							var generatedAppDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
-							generatedAppDescriptorFile.copyTo(appDescriptorFile, true);
-							launchArgs["program"] = appDescriptorFile.nativePath;
-						}
-						else //flash
-						{
-							swfFile = haxeProject.folderLocation.fileBridge
-								.resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
-							launchArgs["program"] = swfFile.nativePath;
-						}
-					}
-					else // plain Haxe project
-					{
-						launchArgs["program"] = haxeProject.haxeOutput.path.fileBridge.nativePath;
-					}
-				}
-				sendLaunchCommand(launchArgs);
-			}
-		}
-
-		private function sendAttachCommand(args:Object = null):void
-		{
-			if(!args)
-			{
-				args = {};
 			}
 			this._waitingForLaunchOrAttach = true;
-			this.sendRequest(COMMAND_ATTACH, args);
-		}
-		
-		private function sendLaunchCommand(args:Object = null):void
-		{
-			if(!args)
-			{
-				args = {};
-			}
-			this._waitingForLaunchOrAttach = true;
-			this.sendRequest(COMMAND_LAUNCH, args);
+			this.sendRequest(command, args);
 		}
 		
 		private function parseContinueResponse(response:Object):void
@@ -767,7 +611,7 @@ package actionScripts.plugins.vscodeDebug
 
 		private function play():void
 		{
-            if (!connected || !_debugPanel.playButton.enabled) return;
+            if (!_receivedInitializeResponse || !_debugPanel.playButton.enabled) return;
 
 			this.sendRequest(COMMAND_CONTINUE);
 			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
@@ -775,28 +619,28 @@ package actionScripts.plugins.vscodeDebug
 
 		private function pause():void
 		{
-            if (!connected || !_debugPanel.pauseButton.enabled) return;
+            if (!_receivedInitializeResponse || !_debugPanel.pauseButton.enabled) return;
 
 			this.sendRequest(COMMAND_PAUSE);
 		}
 
 		private function stepOver():void
 		{
-            if (!connected || !_debugPanel.stepOverButton.enabled) return;
+            if (!_receivedInitializeResponse || !_debugPanel.stepOverButton.enabled) return;
 
 			this.sendRequest(COMMAND_NEXT);
 		}
 
 		private function stepInto():void
 		{
-            if (!connected || !_debugPanel.stepIntoButton.enabled) return;
+            if (!_receivedInitializeResponse || !_debugPanel.stepIntoButton.enabled) return;
 
 			this.sendRequest(COMMAND_STEP_IN);
 		}
 
 		private function stepOut():void
 		{
-            if (!connected || !_debugPanel.stepOutButton.enabled) return;
+            if (!_receivedInitializeResponse || !_debugPanel.stepOutButton.enabled) return;
 
 			this.sendRequest(COMMAND_STEP_OUT);
 		}
@@ -810,14 +654,9 @@ package actionScripts.plugins.vscodeDebug
 			this._variablesLookup = new Dictionary();
 			this._scopesAndVars.removeAll();
 			this._stackFrames.removeAll();
-			if(_socket && _socket.connected)
-			{
-				this._socket.close();
-			}
-			this.cleanupSocket();
 			_receivedInitializeResponse = false;
 			_waitingForLaunchOrAttach = false;
-			connected = false;
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			refreshView();
 		}
 		
@@ -1036,15 +875,15 @@ package actionScripts.plugins.vscodeDebug
 			{
 				return;
 			}
-			var launchedOrAttached:Boolean = this.connected && this._receivedInitializeResponse && !this._waitingForLaunchOrAttach;
-			_debugPanel.playButton.enabled = launchedOrAttached && this._paused;
-			_debugPanel.pauseButton.enabled = launchedOrAttached && !this._paused;
-			_debugPanel.stepOverButton.enabled = launchedOrAttached && this._paused;
-			_debugPanel.stepIntoButton.enabled = launchedOrAttached && this._paused;
-			_debugPanel.stepOutButton.enabled = launchedOrAttached && this._paused;
-			_debugPanel.stopButton.enabled = this.connected;
-			_debugPanel.stackFrames = this._stackFrames;
-			_debugPanel.scopesAndVars = this._scopesAndVars;
+			var launchedOrAttached:Boolean = _receivedInitializeResponse && !_waitingForLaunchOrAttach;
+			_debugPanel.playButton.enabled = launchedOrAttached && _paused;
+			_debugPanel.pauseButton.enabled = launchedOrAttached && !_paused;
+			_debugPanel.stepOverButton.enabled = launchedOrAttached && _paused;
+			_debugPanel.stepIntoButton.enabled = launchedOrAttached && _paused;
+			_debugPanel.stepOutButton.enabled = launchedOrAttached && _paused;
+			_debugPanel.stopButton.enabled = _receivedInitializeResponse;
+			_debugPanel.stackFrames = _stackFrames;
+			_debugPanel.scopesAndVars = _scopesAndVars;
 		}
 		
 		private function sendSetBreakpointsRequestForPath(path:String):void
@@ -1127,36 +966,43 @@ package actionScripts.plugins.vscodeDebug
 		{
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 			saveEditorBreakpoints(editor);
-			if(connected)
+			if(_receivedInitializeResponse)
 			{
 				var path:String = editor.currentFile.fileBridge.nativePath;
 				sendSetBreakpointsRequestForPath(path);
 			}
 		}
 		
-		protected function dispatcher_postBuildHandler(event:ProjectEvent):void
+		protected function dispatcher_startDebugAdapterHandler(event:DebugAdapterEvent):void
 		{
-			this._currentProject = event.project;
-
-			var sdkFile:File = null;
-			if(_currentProject is AS3ProjectVO)
+			if(event.request != REQUEST_LAUNCH && event.request != REQUEST_ATTACH)
 			{
-				sdkFile = new File(getProjectSDKPath(_currentProject, model));
-			}
-			else if(_currentProject is HaxeProjectVO)
-			{
-				if(model.defaultSDK)
-				{
-					sdkFile = model.defaultSDK.fileBridge.getFile as File;
-				}
-			}
-
-			if(!sdkFile)
-			{
-				error("Debug session cancelled. An ActionScript SDK must be defined to debug SWF files.");
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				error("Unknown request to start debugger: " + event.request);
 				return;
 			}
+
+			var launcher:IDebugAdapterLauncher = null;
+			switch(event.adapterID)
+			{
+				case "swf":
+				{
+					launcher = new SWFDebugAdapterLauncher();
+					break;
+				}
+				default:
+				{
+					error("Unknown debug adapter: " + event.adapterID);
+					return;
+				}
+			}
+			var startupInfo:NativeProcessStartupInfo = launcher.getStartupInfo(event.project);
+			if(!startupInfo)
+			{
+				return;
+			}
+
+			this._currentProject = event.project;
+			this._currentRequest = new PendingRequest(event.adapterID, event.request, event.additionalProperties);
 
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
@@ -1166,42 +1012,13 @@ package actionScripts.plugins.vscodeDebug
 				_nativeProcess.exit(true);
 			}
 			
-			connected = false;
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			_receivedInitializeResponse = false;
 			_waitingForLaunchOrAttach = false;
 			refreshView();
-			_port = findOpenPort();
-			
-			var processArgs:Vector.<String> = new <String>[];
-			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
-			processArgs.push("-Dworkspace=" + _currentProject.folderLocation.fileBridge.nativePath);
-			processArgs.push("-cp");
-			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
-			if (Settings.os == "win")
-			{
-				cp += ";"
-			}
-			else
-			{
-				cp += ":";
-			}
-			cp += sdkFile.resolvePath("lib/*").nativePath;
-			processArgs.push(cp);
-			processArgs.push("com.as3mxml.vscode.SWFDebug");
-			processArgs.push("--server=" + _port);
-			var cwd:File = new File(_currentProject.folderLocation.fileBridge.nativePath);
-			if(!cwd.exists)
-			{
-				error("Cannot find folder for debugging: " + cwd.nativePath);
-				return;
-			}
-			startupInfo.workingDirectory = cwd;
-			startupInfo.arguments = processArgs;
-			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
-			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			startupInfo.executable = javaFile.resolvePath("bin/" + javaFileName);
+
 			_nativeProcess = new NativeProcess();
+			_nativeProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, nativeProcess_standardOutputDataHandler);
 			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, nativeProcess_standardErrorDataHandler);
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, nativeProcess_exitHandler);
 			_nativeProcess.start(startupInfo);
@@ -1210,17 +1027,8 @@ package actionScripts.plugins.vscodeDebug
 			//been started by the process
 			_retryCount = 0;
 			mainThreadID = -1;
-			connectTimeout = setTimeout(connectToProcess, 100);
-		}
-		
-		protected function socket_connectHandler(event:Event):void
-		{
-			connected = true;
-			//wait to call refreshView() because it might not be visible yet
-			_socket.removeEventListener(IOErrorEvent.IO_ERROR, socketConnect_ioErrorHandler);
-			_socket.addEventListener(IOErrorEvent.IO_ERROR, socket_ioErrorHandler);
-			_socket.addEventListener(ProgressEvent.SOCKET_DATA, socket_socketDataHandler);
-			_socket.addEventListener(Event.CLOSE, socket_closeHandler);
+
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = true;
 
             dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
             initializeDebugViewEventHandlers(event);
@@ -1231,53 +1039,16 @@ package actionScripts.plugins.vscodeDebug
 			
 			sendRequest(COMMAND_INITIALIZE,
 			{
-				"clientID": "moonshine",
-				"adapterID": "swf"
+				"clientID": CLIENT_ID,
+				"adapterID": this._currentRequest.adapterID
 			});
 		}
 		
-		protected function socketConnect_ioErrorHandler(event:IOErrorEvent):void
+		protected function nativeProcess_standardOutputDataHandler(event:ProgressEvent):void
 		{
-			if(_nativeProcess)
-			{
-				_retryCount++;
-				if(_retryCount === MAX_RETRY_COUNT)
-				{
-					Alert.show("Could not connect to the SWF debugger Retried " + _retryCount + " times.", "Debug Error", Alert.OK);
-					cleanupSocket();
-					return;
-				}
-				//try again if the process is still running
-				setTimeout(connectToProcess, 100);
-				return;
-			}
-			cleanupSocket();
-		}
-		
-		protected function socketConnect_securityErrorHandler(event:SecurityErrorEvent):void
-		{
-			Alert.show("Could not connect to the SWF debugger. Internal error.", "Debug Error", Alert.OK);
-			cleanupSocket();
-		}
-		
-		protected function socket_ioErrorHandler(event:IOErrorEvent):void
-		{
-			error("Socket connection problem: %s", event.toString());
-		}
-		
-		protected function socket_socketDataHandler(event:ProgressEvent):void
-		{
-			this._messageBuffer += _socket.readUTFBytes(_socket.bytesAvailable);
+			var output:IDataInput = _nativeProcess.standardOutput;
+			this._messageBuffer += output.readUTFBytes(output.bytesAvailable);
 			this.parseMessageBuffer();
-		}
-		
-		protected function socket_closeHandler(event:Event):void
-		{
-			_receivedInitializeResponse = false;
-			_waitingForLaunchOrAttach = false;
-			connected = false;
-			refreshView();
-			cleanupSocket();
 		}
 		
 		protected function nativeProcess_standardErrorDataHandler(event:ProgressEvent):void
@@ -1290,10 +1061,16 @@ package actionScripts.plugins.vscodeDebug
 		
 		protected function nativeProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
+			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, nativeProcess_standardOutputDataHandler);
 			_nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, nativeProcess_standardErrorDataHandler);
 			_nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, nativeProcess_exitHandler);
 			_nativeProcess.exit();
 			_nativeProcess = null;
+			
+			_receivedInitializeResponse = false;
+			_waitingForLaunchOrAttach = false;
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
+			refreshView();
 		}
 		
 		protected function dispatcher_quitHandler(event:Event):void
@@ -1357,4 +1134,18 @@ package actionScripts.plugins.vscodeDebug
             isDebugViewVisible = false;
         }
     }
+}
+
+class PendingRequest
+{
+	public function PendingRequest(adapterID:String, request:String, additionalProperties:Object)
+	{
+		this.adapterID = adapterID;
+		this.request = request;
+		this.additionalProperties = additionalProperties;
+	}
+
+	public var request:String;
+	public var adapterID:String;
+	public var additionalProperties:Object;
 }
