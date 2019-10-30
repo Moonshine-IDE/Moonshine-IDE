@@ -54,7 +54,6 @@ package actionScripts.plugins.vscodeDebug
     import actionScripts.plugins.vscodeDebug.vo.StackFrame;
     import actionScripts.plugins.vscodeDebug.vo.Variable;
     import actionScripts.plugins.vscodeDebug.vo.VariablesReferenceHierarchicalData;
-    import actionScripts.ui.LayoutModifier;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.events.DebugLineEvent;
@@ -68,6 +67,8 @@ package actionScripts.plugins.vscodeDebug
     import actionScripts.valueObjects.ProjectVO;
     import flash.utils.getQualifiedClassName;
     import flash.utils.clearTimeout;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+    import actionScripts.events.SettingsEvent;
 	
 	public class VSCodeDebugProtocolPlugin extends PluginBase
 	{
@@ -400,7 +401,7 @@ package actionScripts.plugins.vscodeDebug
 					{
 						if(response.success === false)
 						{
-							trace(response.command + " command not successful!");
+							trace("debug adapter \"" + response.command + "\" command not successful");
 						}
 						break;
 					}
@@ -468,7 +469,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("initialize command not successful!");
+				error("debug adapter \"initialize\" command not successful");
 				this.handleDisconnectOrTerminated();
 				if(_nativeProcess)
 				{
@@ -480,11 +481,14 @@ package actionScripts.plugins.vscodeDebug
 			_receivedInitializeResponse = true;
 
 			var as3Project:AS3ProjectVO = _currentProject as AS3ProjectVO;
-			if(!as3Project)
+			var haxeProject:HaxeProjectVO = _currentProject as HaxeProjectVO;
+			if(!as3Project && !haxeProject)
 			{
-				throw new IllegalOperationError("Debug failed. Debugging not supported for project of type: " + getQualifiedClassName(_currentProject));
+				error("Debug failed. Debugging not supported for project of type: " + getQualifiedClassName(_currentProject));
+				this.stop();
+				return;
 			}
-			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
+			if(as3Project && as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
 			{
 				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
 				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
@@ -512,8 +516,24 @@ package actionScripts.plugins.vscodeDebug
 				};
 				sendAttachCommand(attachArgs);
 			}
-			else
+			else if(as3Project || haxeProject)
 			{
+				var swfFile:File = null;
+				if(as3Project)
+				{
+					swfFile = as3Project.swfOutput.path.fileBridge.getFile as File;
+				}
+				else if(haxeProject)
+				{
+					if(haxeProject.isLime)
+					{
+						swfFile = haxeProject.folderLocation.fileBridge.resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
+					}
+					else
+					{
+						swfFile = haxeProject.haxeOutput.path.fileBridge.getFile as File;
+					}
+				}
 				//try to figure out which "program" to launch, whether it's an
 				//AIR application descriptor, an HTML file, or a SWF
 				var launchArgs:Object =
@@ -521,13 +541,11 @@ package actionScripts.plugins.vscodeDebug
 					"type": DEBUG_TYPE_SWF,
 					"name": "Moonshine Launch",
 					"request": REQUEST_LAUNCH,
-					"program": as3Project.swfOutput.path.fileBridge.nativePath
+					"program": swfFile.nativePath
 				};
-				var binLocation:FileLocation = as3Project.swfOutput.path.fileBridge.parent;
-				var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
-				if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
+				if(as3Project && as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
 				{
-					launchArgs.program = findAndCopyApplicationDescriptor(swfFile, as3Project, binLocation.fileBridge.getFile as File);
+					launchArgs.program = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
 					
 					if(as3Project.isMobile)
 					{
@@ -542,7 +560,8 @@ package actionScripts.plugins.vscodeDebug
 				}
 				else
 				{
-					var htmlFile:File = binLocation.resolvePath(as3Project.swfOutput.path.fileBridge.name.split(".")[0] + ".html").fileBridge.getFile as File;
+					//default to the .swf file, unless an .html file exists in the output folder
+					var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
 					if(htmlFile.exists)
 					{
 						launchArgs.program = htmlFile.nativePath;
@@ -576,7 +595,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("continue command not successful!");
+				trace("debug adapter \"continue\" command not successful");
 				return;
 			}
 			this._paused = false;
@@ -592,7 +611,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("threads command not successful!");
+				trace("debug adapter \"threads\" command not successful");
 				return;
 			}
 			this._paused = false;
@@ -610,7 +629,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("setbreakpoints command not successful!");
+				trace("debug adapter \"setbreakpoints\" command not successful");
 				return;
 			}
 			if(mainThreadID === -1)
@@ -623,7 +642,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("stackTrace command not successful!");
+				trace("debug adapter \"stackTrace\" command not successful");
 				return;
 			}
 			var body:Object = response.body;
@@ -769,6 +788,9 @@ package actionScripts.plugins.vscodeDebug
 		
 		private function handleDisconnectOrTerminated():void
 		{
+			//this function may be called when the debug adapter is in a bad
+			//state. it may not have even started, or it may not be connected.
+			//be careful what variables you access because some may be null.
 			_paused = true;
 			this._variablesLookup = new Dictionary();
 			this._scopesAndVars.removeAll();
@@ -788,7 +810,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("scopes command not successful!");
+				trace("debug adapter \"scopes\" command not successful");
 				return;
 			}
 			var body:Object = response.body;
@@ -824,7 +846,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("variables command not successful!");
+				trace("debug adapter \"variables\" command not successful");
 				return;
 			}
 			var body:Object = response.body;
@@ -872,7 +894,7 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("disconnect command not successful!");
+				trace("debug adapter \"disconnect\" command not successful");
 				return;
 			}
 			this.handleDisconnectOrTerminated();
@@ -882,7 +904,8 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("launch command not successful!");
+				trace("debug adapter \"launch\" command not successful");
+				this.stop();
 				return;
 			}
 			this._waitingForLaunchOrAttach = false;
@@ -893,7 +916,8 @@ package actionScripts.plugins.vscodeDebug
 		{
 			if(!response.success)
 			{
-				trace("attach command not successful!");
+				trace("debug adapter \"attach\" command not successful");
+				this.stop();
 				return;
 			}
 			this._waitingForLaunchOrAttach = false;
@@ -1096,6 +1120,27 @@ package actionScripts.plugins.vscodeDebug
 		protected function dispatcher_postBuildHandler(event:ProjectEvent):void
 		{
 			this._currentProject = event.project;
+
+			var sdkFile:File = null;
+			if(_currentProject is AS3ProjectVO)
+			{
+				sdkFile = new File(getProjectSDKPath(_currentProject, model));
+			}
+			else if(_currentProject is HaxeProjectVO)
+			{
+				if(model.defaultSDK)
+				{
+					sdkFile = model.defaultSDK.fileBridge.getFile as File;
+				}
+			}
+
+			if(!sdkFile)
+			{
+				error("Debug session cancelled. An ActionScript SDK must be defined to debug SWF files.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				return;
+			}
+
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
 			if(_nativeProcess)
@@ -1112,8 +1157,6 @@ package actionScripts.plugins.vscodeDebug
 			
 			var processArgs:Vector.<String> = new <String>[];
 			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			//var project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-			var sdkFile:File = new File(getProjectSDKPath(_currentProject, model));
 			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
 			processArgs.push("-Dworkspace=" + _currentProject.folderLocation.fileBridge.nativePath);
 			processArgs.push("-cp");
@@ -1130,7 +1173,12 @@ package actionScripts.plugins.vscodeDebug
 			processArgs.push(cp);
 			processArgs.push("com.as3mxml.vscode.SWFDebug");
 			processArgs.push("--server=" + _port);
-			var cwd:File = new File(_currentProject.folderLocation.resolvePath("bin-debug").fileBridge.nativePath);
+			var cwd:File = new File(_currentProject.folderLocation.fileBridge.nativePath);
+			if(!cwd.exists)
+			{
+				error("Cannot find folder for debugging: " + cwd.nativePath);
+				return;
+			}
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
 			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
