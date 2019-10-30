@@ -253,6 +253,15 @@ package actionScripts.plugins.haxe
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
+                    case HaxeOutputVO.PLATFORM_JAVA:
+                    {
+                        var jarName:String = project.name + "-Debug.jar";
+                        pendingRunProject = project;
+                        pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.JAVA_ENVIRON_EXEC_PATH, "-jar", project.haxeOutput.path.fileBridge.resolvePath(jarName).fileBridge.nativePath]);
+                        pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
+			            this.start(new <String>[buildCommand], project.folderLocation);
+                        break;
+                    }
                     case HaxeOutputVO.PLATFORM_NEKO:
                     {
                         pendingRunProject = project;
