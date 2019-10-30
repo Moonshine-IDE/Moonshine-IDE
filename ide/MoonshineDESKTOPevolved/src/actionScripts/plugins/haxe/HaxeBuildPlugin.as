@@ -193,15 +193,17 @@ package actionScripts.plugins.haxe
             {
                 return;
             }
-            
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
             debugAfterBuild = false;
+            clearOutput();
+
             if(project.isLime)
             {
                 switch(project.limeTargetPlatform)
                 {
+                    case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
                         debugAfterBuild = true;
@@ -243,6 +245,7 @@ package actionScripts.plugins.haxe
             pendingRunCommand = null;
             pendingRunFolder = null;
             debugAfterBuild = false;
+            clearOutput();
 
             if(project.isLime)
             {
@@ -339,6 +342,7 @@ package actionScripts.plugins.haxe
             pendingRunCommand = null;
             pendingRunFolder = null;
             debugAfterBuild = false;
+            clearOutput();
 
             if(project.isLime)
             {
@@ -369,6 +373,7 @@ package actionScripts.plugins.haxe
             pendingRunCommand = null;
             pendingRunFolder = null;
             debugAfterBuild = false;
+            clearOutput();
 
             if(project.isLime)
             {

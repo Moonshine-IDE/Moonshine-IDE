@@ -518,53 +518,68 @@ package actionScripts.plugins.vscodeDebug
 			}
 			else if(as3Project || haxeProject)
 			{
-				var swfFile:File = null;
+				var launchArgs:Object =
+				{
+					"type": DEBUG_TYPE_SWF,
+					"name": "Moonshine Launch",
+					"request": REQUEST_LAUNCH
+				};
 				if(as3Project)
 				{
-					swfFile = as3Project.swfOutput.path.fileBridge.getFile as File;
+					var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
+					if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
+					{
+						//switch to the Adobe AIR application descriptor XML file
+						launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
+						if(as3Project.isMobile)
+						{
+							launchArgs["profile"] = "mobileDevice";
+							
+							//these options need to be configurable somehow
+							//but these are reasonable defaults until then
+							launchArgs["screensize"] = "NexusOne";
+							launchArgs["screenDPI"] = 252;
+							launchArgs["versionPlatform"] = "AND";
+						}
+					}
+					else
+					{
+						//default to the .swf file, unless an .html file exists in the output folder
+						var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
+						if(htmlFile.exists)
+						{
+							launchArgs["program"] = htmlFile.nativePath;
+						}
+						else
+						{
+							launchArgs["program"] = swfFile.nativePath;
+						}
+					}
 				}
 				else if(haxeProject)
 				{
 					if(haxeProject.isLime)
 					{
-						swfFile = haxeProject.folderLocation.fileBridge.resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
+						if(haxeProject.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_AIR)
+						{
+							//switch to the Adobe AIR application descriptor XML file
+							swfFile = haxeProject.folderLocation.fileBridge
+								.resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
+							var appDescriptorFile:File = swfFile.parent.resolvePath("application.xml");
+							var generatedAppDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
+							generatedAppDescriptorFile.copyTo(appDescriptorFile, true);
+							launchArgs["program"] = appDescriptorFile.nativePath;
+						}
+						else //flash
+						{
+							swfFile = haxeProject.folderLocation.fileBridge
+								.resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + haxeProject.name + ".swf").fileBridge.getFile as File;
+							launchArgs["program"] = swfFile.nativePath;
+						}
 					}
-					else
+					else // plain Haxe project
 					{
-						swfFile = haxeProject.haxeOutput.path.fileBridge.getFile as File;
-					}
-				}
-				//try to figure out which "program" to launch, whether it's an
-				//AIR application descriptor, an HTML file, or a SWF
-				var launchArgs:Object =
-				{
-					"type": DEBUG_TYPE_SWF,
-					"name": "Moonshine Launch",
-					"request": REQUEST_LAUNCH,
-					"program": swfFile.nativePath
-				};
-				if(as3Project && as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
-				{
-					launchArgs.program = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
-					
-					if(as3Project.isMobile)
-					{
-						launchArgs.profile = "mobileDevice";
-						
-						//these options need to be configurable somehow
-						//but these are reasonable defaults until then
-						launchArgs.screensize = "NexusOne";
-						launchArgs.screenDPI = 252;
-						launchArgs.versionPlatform = "AND";
-					}
-				}
-				else
-				{
-					//default to the .swf file, unless an .html file exists in the output folder
-					var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
-					if(htmlFile.exists)
-					{
-						launchArgs.program = htmlFile.nativePath;
+						launchArgs["program"] = haxeProject.haxeOutput.path.fileBridge.nativePath;
 					}
 				}
 				sendLaunchCommand(launchArgs);
@@ -905,6 +920,7 @@ package actionScripts.plugins.vscodeDebug
 			if(!response.success)
 			{
 				trace("debug adapter \"launch\" command not successful");
+				error("Debug launch failed.");
 				this.stop();
 				return;
 			}
@@ -917,6 +933,7 @@ package actionScripts.plugins.vscodeDebug
 			if(!response.success)
 			{
 				trace("debug adapter \"attach\" command not successful");
+				error("Debug attach failed.");
 				this.stop();
 				return;
 			}
