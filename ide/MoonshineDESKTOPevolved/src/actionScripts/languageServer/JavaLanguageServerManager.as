@@ -76,7 +76,7 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar";
+		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.500.v20190715-1310.jar";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
@@ -407,7 +407,13 @@ package actionScripts.languageServer
 			{
 				bundles: [],
 				workspaceFolders: [_project.projectFolder.file.fileBridge.url],
-				settings: { /*java: getJavaConfiguration()*/ },
+				settings: {
+					java: {
+						autobuild: {
+							enabled: false
+						}
+					}
+				},
 				extendedClientCapabilities:
 				{
 					progressReportProvider: false,//getJavaConfiguration().get('progressReports.enabled'),
