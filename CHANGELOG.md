@@ -18,7 +18,7 @@ Moonshine 2.4.1 adds some small features which improves development workflow lik
 * Added basic OpenFL/Haxe project support.
 
 ### Changed
-* Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.21.0.
+* Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.23.2.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.39.0.
 
 ### Fixed
