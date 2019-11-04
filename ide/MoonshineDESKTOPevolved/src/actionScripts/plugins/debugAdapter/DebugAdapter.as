@@ -216,7 +216,7 @@ package actionScripts.plugins.debugAdapter
 
 		public function resume():void
 		{
-            if (!_receivedInitializeResponse || !_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -227,7 +227,7 @@ package actionScripts.plugins.debugAdapter
 
 		public function pause():void
 		{
-            if (!_receivedInitializeResponse || !_receivedInitializeResponse || _waitingForLaunchOrAttach || _paused)
+            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || _paused)
 			{
 				return;
 			}
@@ -237,7 +237,7 @@ package actionScripts.plugins.debugAdapter
 
 		public function stepOver():void
 		{
-            if (!_receivedInitializeResponse || !_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -247,7 +247,7 @@ package actionScripts.plugins.debugAdapter
 
 		public function stepInto():void
 		{
-            if (!_receivedInitializeResponse || !_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -257,7 +257,7 @@ package actionScripts.plugins.debugAdapter
 
 		public function stepOut():void
 		{
-            if (!_receivedInitializeResponse || !_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
