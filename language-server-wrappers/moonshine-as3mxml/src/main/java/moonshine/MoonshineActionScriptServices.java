@@ -30,6 +30,6 @@ public class MoonshineActionScriptServices extends ActionScriptServices
 		}
         MoonshineProjectConfigStrategy projectConfigStrategy = (MoonshineProjectConfigStrategy) folderData.config;
         projectConfigStrategy.setConfigParams(config);
-        checkForProblemsNow();
+        checkForProblemsNow(true);
 	}
 }

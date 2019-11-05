@@ -16,7 +16,6 @@ limitations under the License.
 package moonshine;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import com.google.gson.JsonArray;
