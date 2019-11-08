@@ -24,6 +24,7 @@ Moonshine 2.4.1 adds some small features which improves development workflow lik
 ### Fixed
 * Fixed Error #3218 - Error while writing data to NativeProcess.standardInput.
 * Fixed issue where Java method does not complete properly.
+* Fixed issue where **Custom URL to Launch** for application launch was not used in **Build and Run as JavaScript**
 
 ## Moonshine IDE [2.4.0]
 
