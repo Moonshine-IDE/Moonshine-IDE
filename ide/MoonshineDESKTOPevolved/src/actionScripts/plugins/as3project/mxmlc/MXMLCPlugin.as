@@ -45,7 +45,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SdkEvent;
-	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
@@ -71,7 +70,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
-	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -1258,7 +1256,11 @@ package actionScripts.plugins.as3project.mxmlc
                 warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher runs SWF file
 				var tmpLaunchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo);
-				tmpLaunchEvent.url = (pvo.customHTMLPath && (StringUtil.trim(pvo.customHTMLPath).length != 0)) ? pvo.customHTMLPath : null;
+
+				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
+				{
+					tmpLaunchEvent.url = pvo.customHTMLPath;
+				}
 				dispatcher.dispatchEvent(tmpLaunchEvent);
 			}
 			
