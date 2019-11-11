@@ -103,7 +103,7 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
-			dispatcher.addEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.addEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -116,7 +116,7 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
-			dispatcher.removeEventListener(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.removeEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -198,9 +198,9 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		protected function onOSXodePermission(event:SVNEvent):void
+		protected function onOSXodePermission(event:VersionControlEvent):void
 		{
-			svnBinaryPath = event.url;
+			svnBinaryPath = String(event.value) +"/usr/bin/svn";
 			
 			// save the settings
 			var thisSettings: Vector.<ISetting> = getSettingsList();

@@ -47,6 +47,7 @@ package actionScripts.plugins.git
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
@@ -136,6 +137,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
 			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 			
@@ -157,6 +159,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
 			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
+			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
 		}
@@ -259,6 +262,15 @@ package actionScripts.plugins.git
 			checkOSXGitAccess(ProjectMenuTypes.SVN_PROJECT);
 		}
 		
+		protected function onOSXodePermission(event:VersionControlEvent):void
+		{
+			gitBinaryPathOSX = String(event.value) + "/usr/bin/git";
+			
+			var thisSettings: Vector.<ISetting> = getSettingsList();
+			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+		}
+		
 		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
@@ -306,20 +318,15 @@ package actionScripts.plugins.git
 			{
 				isGranted = true;
 				
-				var svnBinaryPathOSX:String = xCodePermissionWindow.xCodePath + "/usr/bin/svn";
-				
-				gitBinaryPathOSX = xCodePermissionWindow.xCodePath + "/usr/bin/git";
+				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
 				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
-				
-				var thisSettings: Vector.<ISetting> = getSettingsList();
-				var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
-				dispatcher.dispatchEvent(new SVNEvent(SVNEvent.OSX_XCODE_PERMISSION_GIVEN, null, svnBinaryPathOSX));
 				
 				// re-test
 				processManager.checkGitAvailability();
 				// if an opened project lets test it if Git repository
 				if (model.activeProject) processManager.pendingProcess.push(new MethodDescriptor(processManager, 'checkIfGitRepository', model.activeProject));
+				// save the xcode-only path for later use
+				PathSetupHelperUtil.updateXCodePath(xCodePermissionWindow.xCodePath);
 			}
 			else
 			{
