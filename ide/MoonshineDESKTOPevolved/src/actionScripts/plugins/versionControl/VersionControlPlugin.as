@@ -37,6 +37,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.UtilsCore;
@@ -248,6 +249,10 @@ package actionScripts.plugins.versionControl
 						// re-update both Git and SVN with common 
 						// XCode/Command-line path
 						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xcodePath));
+						
+						ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
+						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 						return true;
 					}
 				}
