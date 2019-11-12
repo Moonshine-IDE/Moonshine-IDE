@@ -698,11 +698,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				else
 				{
-					var urlToLaunch:FileLocation = pvo.htmlPath;
-					if (!urlToLaunch)
-					{
-						launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
-					}
+					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
 				}
 
 				dispatcher.dispatchEvent(launchEvent);

@@ -1255,13 +1255,26 @@ package actionScripts.plugins.as3project.mxmlc
 
                 warning("Launching application " + pvo.name + ".");
 				// Let SWFLauncher runs SWF file
-				var tmpLaunchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, htmlWrapperFile.exists ? htmlWrapperFile : swfFile, pvo);
+				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
 
 				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
 				{
-					tmpLaunchEvent.url = pvo.customHTMLPath;
+					launchEvent.url = pvo.customHTMLPath;
 				}
-				dispatcher.dispatchEvent(tmpLaunchEvent);
+				else
+				{
+					var urlToLaunch:FileLocation = new FileLocation(pvo.urlToLaunch);
+					if (urlToLaunch.fileBridge.exists)
+					{
+						launchEvent.file = urlToLaunch.fileBridge.getFile as File;
+					}
+					else
+					{
+						launchEvent.file = htmlWrapperFile;
+					}
+				}
+
+				dispatcher.dispatchEvent(launchEvent);
 			}
 			
 			currentProject = null;
