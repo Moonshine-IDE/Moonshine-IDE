@@ -113,14 +113,15 @@ package actionScripts.plugin.groovy.grailsproject
 				}
 			}
 
-			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
-			var folderLocation:FileLocation = new FileLocation(tmpProjectSourcePath);
-
 			// Remove spaces from project name
 			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
 			projectName = "New" + projectName.replace(/ /g, "");
 
-			project = new GrailsProjectVO(folderLocation, projectName);
+			project = new GrailsProjectVO(event.templateDir, projectName);
+
+			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
+					lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+			project.folderLocation = new FileLocation(tmpProjectSourcePath);
 
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
