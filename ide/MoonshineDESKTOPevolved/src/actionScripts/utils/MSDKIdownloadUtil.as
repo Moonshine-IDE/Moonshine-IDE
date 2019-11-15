@@ -44,6 +44,8 @@ package actionScripts.utils
 
 	public class MSDKIdownloadUtil extends EventDispatcher
 	{
+		public static const EVENT_NEW_VERSION_DETECTED:String = "eventNewVersionDetected";
+		
 		private var downloadingFile:File;
 		private var fileStream:FileStream;
 		private var urlStream:URLStream;
@@ -295,6 +297,7 @@ package actionScripts.utils
 			
 			if (isNewerVersionFunction(updateVersion, currentVersion))
 			{
+				dispatchEvent(new Event(EVENT_NEW_VERSION_DETECTED));
 				// initiate new download
 				initiate64BitDownloadProcess(updateVersionUrl);
 			}
