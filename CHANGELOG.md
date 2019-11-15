@@ -20,7 +20,7 @@ Additionally, Moonshine SDK Installer will now download Apache Royale 0.9.6 (JS-
 * Added basic OpenFL/Haxe project support.
 
 ### Changed
-* Default Apache Royale SDK for Moonshine SDK Installer is not 0.9.6.  See notes above.
+* Default Apache Royale SDK for Moonshine SDK Installer is now 0.9.6.  See notes above.
 * Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.23.2.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.43.0.
 
