@@ -258,17 +258,18 @@ package actionScripts.plugins.versionControl
 				}
 				else 
 				{
-					if (!isSVNPresent && 
-						(event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN)) 
+					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) 
 					{
-						dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+						else return true;
 					}
-					else if (!isGitPresent && 
-						(event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT)) 
+					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) 
 					{
-						dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
+						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
+						else return true;
 					}
 				}
+				
 				return false;
 			}
 			
