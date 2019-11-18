@@ -97,7 +97,7 @@
 			
 			private function browse():void
 			{
-				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected);
+				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected, null, isPathMapped ? mappedPath : null);
 			}
 			
 			private function onDirectorySelected(fileObj:Object):void
