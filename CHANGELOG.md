@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Summary
 
-Moonshine 2.5.0 adds some small features which improves development workflow like the Outline View or Go To Implementation for interfaces. 
+Moonshine 2.5.0 adds some small features which improve development workflow, including the Outline View and Go To Implementation for interfaces. 
 
 Additionally, Moonshine SDK Installer will now download Apache Royale 0.9.6 (JS-only version) and apply a patch fix for the broken royale-config.xml. More information can be found in the [this discussion](http://apache-royale-development.20373.n8.nabble.com/Broken-royale-config-in-JS-only-build-of-released-Apache-Royale-SDK-0-9-6-td12515.html) on the Royale development mailing list.
 
@@ -29,6 +29,7 @@ Additionally, Moonshine SDK Installer will now download Apache Royale 0.9.6 (JS-
 * Fixed Error #3218 - Error while writing data to NativeProcess.standardInput.
 * Fixed issue where Java method does not complete properly.
 * Fixed issue where **Custom URL to Launch** for application launch was not used in **Build and Run as JavaScript**
+* Fixed behavior with the Parent Directory field in the Checkout form.
 
 ## Moonshine IDE [2.4.0]
 
