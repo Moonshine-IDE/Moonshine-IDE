@@ -32,7 +32,6 @@ package actionScripts.languageServer
     import actionScripts.plugins.haxelib.events.HaxelibEvent;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.HaxeTextEditor;
-    import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ProjectVO;
@@ -48,7 +47,6 @@ package actionScripts.languageServer
 
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.valueObjects.EnvironmentExecPaths;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.utils.CommandLineUtil;
     import com.adobe.utils.StringUtil;
@@ -328,10 +326,7 @@ package actionScripts.languageServer
 			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
 			if(!cmdFile.exists)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_OUTPUT, 
-					HtmlFormatter.sprintfa("Invalid path to Node.js executable: " + cmdFile.nativePath, null), false, false, 
-					ConsoleOutputEvent.TYPE_ERROR));
+				error("Invalid path to Node.js executable: " + cmdFile.nativePath);
                 _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
 				return;
 			}

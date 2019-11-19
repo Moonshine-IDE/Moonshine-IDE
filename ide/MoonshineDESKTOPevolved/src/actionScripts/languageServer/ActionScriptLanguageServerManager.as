@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-	import actionScripts.events.SdkEvent;
-
 	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
@@ -29,30 +27,26 @@ package actionScripts.languageServer
     import flash.filesystem.File;
     import flash.utils.IDataInput;
     
+	import actionScripts.events.SdkEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.ProjectEvent;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
     import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.Settings;
-    
-    import no.doomsday.console.ConsoleUtil;
     import actionScripts.valueObjects.ProjectVO;
-    import flash.events.EventDispatcher;
     import actionScripts.ui.editor.ActionScriptTextEditor;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.events.FilePluginEvent;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.events.SettingsEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
-	public class ActionScriptLanguageServerManager extends EventDispatcher implements ILanguageServerManager
+	public class ActionScriptLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
 		private static const BUNDLED_COMPILER_PATH:String = "elements/as3mxml-language-server/bundled-compiler/";
@@ -222,10 +216,7 @@ package actionScripts.languageServer
 			}
 			if(!cmdFile.exists)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_OUTPUT, 
-					HtmlFormatter.sprintfa("Invalid path to Java Development Kit: " + cmdFile.nativePath, null), false, false, 
-					ConsoleOutputEvent.TYPE_ERROR));
+				error("Invalid path to Java Development Kit: " + cmdFile.nativePath);
                 _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
@@ -411,8 +402,7 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleUtil.print("shellError " + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			error(data);
 			trace(data);
 		}
 
@@ -424,9 +414,7 @@ package actionScripts.languageServer
 				//abnormally, it might not have
 				_languageClient.stop();
 				
-				ConsoleOutputter.formatOutput(
-					"ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
-					"warning");
+				warning("ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);

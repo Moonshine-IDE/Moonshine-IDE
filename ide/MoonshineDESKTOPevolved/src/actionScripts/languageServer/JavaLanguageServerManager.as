@@ -23,7 +23,6 @@ package actionScripts.languageServer
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.events.MouseEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
@@ -46,14 +45,12 @@ package actionScripts.languageServer
     import actionScripts.events.StatusBarEvent;
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.GradleBuildUtil;
-    import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -64,14 +61,13 @@ package actionScripts.languageServer
     
     import components.popup.StandardPopup;
     
-    import no.doomsday.console.ConsoleUtil;
     import actionScripts.events.SettingsEvent;
     import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
 
-	public class JavaLanguageServerManager extends EventDispatcher implements ILanguageServerManager
+	public class JavaLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
@@ -226,10 +222,7 @@ package actionScripts.languageServer
 			if(showStorageError || !storageFolder.exists || !jarFile.exists)
 			{
 				//something went wrong!
-				var message:String = "Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath;
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, ConsoleOutputEvent.TYPE_ERROR)
-				);
+				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
 			}
 		}
 		
@@ -325,10 +318,7 @@ package actionScripts.languageServer
 			}
 			if(!cmdFile.exists)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_OUTPUT, 
-					HtmlFormatter.sprintfa("Invalid path to Java Development Kit: " + cmdFile.nativePath, null), false, false, 
-					ConsoleOutputEvent.TYPE_ERROR));
+				error("Invalid path to Java Development Kit: " + cmdFile.nativePath);
                 _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
@@ -477,8 +467,8 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleUtil.print("shellError " + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			error(data);
+			trace(data);
 		}
 
 		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
@@ -489,9 +479,7 @@ package actionScripts.languageServer
 				//abnormally, it might not have
 				_languageClient.stop();
 				
-				ConsoleOutputter.formatOutput(
-					"Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
-					"warning");
+				warning("Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
@@ -512,7 +500,7 @@ package actionScripts.languageServer
 			}
 			var output:IDataInput = _gradleProcess.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), 'weak');
+			print(data);
 		}
 		
 		private function gradleProcess_standardErrorDataHandler(e:ProgressEvent):void
@@ -526,20 +514,11 @@ package actionScripts.languageServer
 			
 			if (data.match(/'eclipse' not found in root project/))
 			{
-				data = _project.name +": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct."; 
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_OUTPUT, 
-					data, 
-					false, false, 
-					ConsoleOutputEvent.TYPE_ERROR));
+				error(_project.name + ": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct.");
 			}
 			else
 			{
-				data = "shellError while updating Gradle classpath" + data + ".";
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_OUTPUT, 
-					HtmlFormatter.sprintfa(data, null), false, false, 
-					ConsoleOutputEvent.TYPE_ERROR));
+				error("shellError while updating Gradle classpath: " + data);
 			}
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
@@ -678,9 +657,7 @@ package actionScripts.languageServer
 
 			if(severity == 4) //log
 			{
-				_dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, ConsoleOutputEvent.TYPE_INFO)
-				);
+				print(message);
 				trace(message);
 				return;
 			}
