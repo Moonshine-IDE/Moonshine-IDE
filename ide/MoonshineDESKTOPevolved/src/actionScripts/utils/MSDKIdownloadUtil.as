@@ -82,12 +82,6 @@ package actionScripts.utils
 				if ((!executableFile.exists && !isUpdateChecking && !isDownloading) || 
 					(!isUpdateChecking && !isDownloading)) 
 				{
-					// prevent multi-execution
-					/*if (isDownloading) return;
-					initiate64BitDownloadProcess();
-				}
-				else if (!isUpdateChecking && !isDownloading) 
-				{*/
 					// make sure we does this check once
 					// in an application lifecycle
 					if (!isUpdateChecked)
