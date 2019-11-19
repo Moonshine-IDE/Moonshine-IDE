@@ -41,23 +41,22 @@ package actionScripts.languageServer
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
 
-    import no.doomsday.console.ConsoleUtil;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.utils.CommandLineUtil;
+    import com.adobe.utils.StringUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
 
-	public class HaxeLanguageServerManager extends EventDispatcher implements ILanguageServerManager
+	public class HaxeLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_ROOT_PATH:String = "elements/haxe-language-server";
 		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/server.js";
@@ -78,10 +77,12 @@ package actionScripts.languageServer
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
 		private var _limeDisplayProcess:NativeProcess;
+		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
 		private var _previousTargetPlatform:String = null;
 		private var _displayArguments:String = null;
+		private var _haxeVersion:String = null;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -161,6 +162,34 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
 		}
+
+		private function isHaxeVersionSupported(version:String):Boolean
+		{
+			var parts:Array = version.split("-");
+			var versionNumber:String = parts[0];
+			var versionNumberParts:Array = versionNumber.split(".");
+			if(versionNumberParts.length != 3)
+			{
+				return false;
+			}
+			var major:Number = parseInt(versionNumberParts[0], 10);
+			var minor:Number = parseInt(versionNumberParts[1], 10);
+			var revision:Number = parseInt(versionNumberParts[2], 10);
+			if(isNaN(major) || isNaN(minor) || isNaN(revision))
+			{
+				return false;
+			}
+			if(major < 4)
+			{
+				return false;
+			}
+			if(major == 4 && minor == 0 && revision == 0 && parts.length > 1
+				&& (parts[1].indexOf("-rc.") == 0 || parts[1].indexOf("-preview.")))
+			{
+				return false;
+			}
+			return true;
+		}
 		
 		private function boostrapThenStartNativeProcess():void
 		{
@@ -176,8 +205,56 @@ package actionScripts.languageServer
 			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, _project));
 		}
 		
+		private function checkHaxeVersion():void
+		{
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			{
+				return;
+			}
+
+			this._haxeVersion = "";
+			var haxeVersionCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH,
+				"--version"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_haxeVersionProcess = new NativeProcess();
+				_haxeVersionProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
+				_haxeVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
+				_haxeVersionProcess.start(processInfo);
+			}, null, [CommandLineUtil.joinOptions(haxeVersionCommand)]);
+		}
+		
 		private function getProjectSettings():void
 		{
+			if(!_project.isLime)
+			{
+				startNativeProcess(_project.getHXML().split("\n"));
+				return;
+			}
+
 			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
 			{
 				return;
@@ -220,7 +297,6 @@ package actionScripts.languageServer
 				_limeDisplayProcess.addEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
 				_limeDisplayProcess.start(processInfo);
 			}, null, [CommandLineUtil.joinOptions(limeDisplayCommand)]);
-
 		}
 
 		private function startNativeProcess(displayArguments:Array):void
@@ -349,8 +425,7 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleUtil.print("shellError " + data + ".");
-			ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(data, null), "weak");
+			error(data);
 			trace(data);
 		}
 
@@ -362,9 +437,7 @@ package actionScripts.languageServer
 				//abnormally, it might not have
 				_languageClient.stop();
 				
-				ConsoleOutputter.formatOutput(
-					"Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.",
-					"warning");
+				warning("Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
@@ -391,14 +464,14 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _limeDisplayProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleOutputter.formatOutput(data, "error");
+			error(data);
 			trace(data);
 		}
 		
 		private function limeDisplayProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
 			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
-			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardOutputDataHandler);
+			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 			_limeDisplayProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
 			_limeDisplayProcess.exit();
 			_limeDisplayProcess = null;
@@ -409,9 +482,41 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				ConsoleOutputter.formatOutput(
-					"Failed to load Lime project settings. Haxe code intelligence disabled.",
-					"error");
+				error("Failed to load Lime project settings. Haxe code intelligence disabled.");
+			}
+		}
+		
+		private function haxeVersionProcess_standardOutputDataHandler(event:ProgressEvent):void 
+		{
+			if(_haxeVersionProcess)
+			{
+				var output:IDataInput = _haxeVersionProcess.standardOutput;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				this._haxeVersion += data;
+			}
+		}
+		
+		private function haxeVersionProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_haxeVersionProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
+			_haxeVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
+			_haxeVersionProcess.exit();
+			_haxeVersionProcess = null;
+
+			if(event.exitCode == 0)
+			{
+				this._haxeVersion = StringUtil.trim(this._haxeVersion);
+				trace("Haxe version: " + this._haxeVersion);
+				if(!isHaxeVersionSupported(this._haxeVersion))
+				{
+					error("Haxe version 4.0.0 or newer is required. Version not supported: " + this._haxeVersion + ". Haxe code intelligence disabled.");
+					return;
+				}
+				getProjectSettings();
+			}
+			else
+			{
+				error("Failed to load Haxe version. Haxe code intelligence disabled.");
 			}
 		}
 
@@ -456,14 +561,7 @@ package actionScripts.languageServer
 			{
 				//if no language server is running, we can continue with the
 				//next step of the process
-				if(_project.isLime)
-				{
-					getProjectSettings();
-				}
-				else
-				{
-					startNativeProcess(_project.getHXML().split("\n"));
-				}
+				checkHaxeVersion();
 			}
 		}
 
