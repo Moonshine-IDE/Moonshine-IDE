@@ -220,6 +220,7 @@ package actionScripts.languageServer
 		private var _documentVersion:int = 1;
 		private var _contentLength:int = -1;
 		private var _socketBuffer:String = "";
+		private var _socketBytes:ByteArray = new ByteArray();
 		private var _gotoDefinitionLookup:Dictionary = new Dictionary();
 		private var _definitionLinkLookup:Dictionary = new Dictionary();
 		private var _findReferencesLookup:Dictionary = new Dictionary();
@@ -797,19 +798,22 @@ package actionScripts.languageServer
 					trace("Error: Language client failed to parse Content-Length header");
 					return;
 				}
-				HELPER_BYTES.clear();
-				HELPER_BYTES.writeUTFBytes(_socketBuffer);
-				if(HELPER_BYTES.length < _contentLength)
+				//keep adding to the byte array until we have the full content
+				_socketBytes.writeUTFBytes(_socketBuffer);
+				_socketBuffer = "";
+				if(_socketBytes.length < _contentLength)
 				{
-					HELPER_BYTES.clear();
-					//we don't have the full content part of the message yet
+					//we don't have the full content part of the message yet,
+					//so we'll try again the next time we have new data
 					return;
 				}
-				HELPER_BYTES.position = 0;
-				var message:String = HELPER_BYTES.readUTFBytes(_contentLength);
-				HELPER_BYTES.clear();
+				_socketBytes.position = 0;
+				var message:String = _socketBytes.readUTFBytes(_contentLength);
+				//add any remaining bytes back into the buffer because they are
+				//the beginning of the next message
+				_socketBuffer = _socketBytes.readUTFBytes(_socketBytes.length - _contentLength);
+				_socketBytes.clear();
 				_contentLength = -1;
-				_socketBuffer = _socketBuffer.substr(message.length);
 				if(debugMode)
 				{
 					trace("<<<", message);
