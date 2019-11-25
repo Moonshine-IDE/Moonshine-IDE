@@ -806,6 +806,11 @@ package actionScripts.ui.editor.text
 			return searchManager.search(search, replace, all);
 		}
 		
+		public function get completionActive():Boolean
+		{
+			return completionManager.isActive;
+		}
+		
 		public function showCompletionList(items:Array):void
 		{
 			completionManager.showCompletionList(items);

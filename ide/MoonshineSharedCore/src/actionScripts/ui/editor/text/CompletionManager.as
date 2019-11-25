@@ -119,16 +119,19 @@ package actionScripts.ui.editor.text
 
 			menuRefY = position.y;
 
-			PopUpManager.addPopUp(completionList, editor, false);
-			completionList.x = position.x;
-			completionList.y = position.y;
+			if(!completionList.isPopUp)
+			{
+				PopUpManager.addPopUp(completionList, editor, false);
+				completionList.x = position.x;
+				completionList.y = position.y;
+				completionList.addEventListener(Event.REMOVED_FROM_STAGE, onMenuRemoved);
+				completionList.addEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
+				completionList.addEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
+				completionList.addEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
+				completionList.addEventListener(Event.CHANGE, onMenuChange);
+			}
 			completionList.setFocus();
 			completionList.selectedIndex = 0;
-			completionList.addEventListener(Event.REMOVED_FROM_STAGE, onMenuRemoved);
-			completionList.addEventListener(KeyboardEvent.KEY_DOWN, onMenuKey);
-			completionList.addEventListener(FocusEvent.FOCUS_OUT, onMenuFocusOut);
-			completionList.addEventListener(MouseEvent.DOUBLE_CLICK, onMenuDoubleClick);
-			completionList.addEventListener(Event.CHANGE, onMenuChange);
 			rePositionMenu();
 
 			filterMenu();
