@@ -46,6 +46,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import groovy.lang.GroovyClassLoader;
 import net.prominic.groovyls.compiler.control.GroovyLSCompilationUnit;
 import net.prominic.groovyls.compiler.control.io.StringReaderSourceWithURI;
 import net.prominic.groovyls.config.ICompilationUnitFactory;
@@ -61,6 +62,16 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 	private GroovyLSCompilationUnit compilationUnit;
 
 	public GrailsProjectCompilationUnitFactory() {
+	}
+
+	public List<String> getAdditionalClasspathList() {
+		return null;
+	}
+
+	public void setAdditionalClasspathList(List<String> additionalClasspathList) {
+		if (additionalClasspathList != null && additionalClasspathList.size() > 0) {
+			throw new RuntimeException("Additional classpaths not supported");
+		}
 	}
 
 	public void invalidateCompilationUnit() {
@@ -87,20 +98,27 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 			return null;
 		}
 
+		CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
+		GroovyClassLoader classLoader = new GroovyClassLoader(ClassLoader.getSystemClassLoader().getParent(), config,
+				true);
+
 		Set<URI> changedUris = fileContentsTracker.getChangedURIs();
 		if (compilationUnit == null) {
-			CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
-			compilationUnit = new GroovyLSCompilationUnit(config);
+			compilationUnit = new GroovyLSCompilationUnit(config, null, classLoader);
+			//we don't care about changed URIs if there's no compilation unit yet
 			changedUris = null;
 		} else {
-			final Set<URI> urisToSkip = changedUris;
+			compilationUnit.setClassLoader(classLoader);
+			final Set<URI> urisToRemove = changedUris;
 			List<SourceUnit> sourcesToRemove = new ArrayList<>();
 			compilationUnit.iterator().forEachRemaining(sourceUnit -> {
 				URI uri = sourceUnit.getSource().getURI();
-				if (urisToSkip.contains(uri)) {
+				if (urisToRemove.contains(uri)) {
 					sourcesToRemove.add(sourceUnit);
 				}
 			});
+			//if an URI has changed, we remove it from the compilation unit so
+			//that a new version can be built from the updated source file
 			compilationUnit.removeSources(sourcesToRemove);
 		}
 
@@ -286,11 +304,16 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 				return;
 			}
 			String contents = fileContentsTracker.getContents(uri);
-			SourceUnit sourceUnit = new SourceUnit(openPath.toString(),
-					new StringReaderSourceWithURI(contents, uri, compilationUnit.getConfiguration()),
-					compilationUnit.getConfiguration(), compilationUnit.getClassLoader(),
-					compilationUnit.getErrorCollector());
-			compilationUnit.addSource(sourceUnit);
+			addOpenFileToCompilationUnit(uri, contents, compilationUnit);
 		});
+	}
+
+	protected void addOpenFileToCompilationUnit(URI uri, String contents, GroovyLSCompilationUnit compilationUnit) {
+		Path filePath = Paths.get(uri);
+		SourceUnit sourceUnit = new SourceUnit(filePath.toString(),
+				new StringReaderSourceWithURI(contents, uri, compilationUnit.getConfiguration()),
+				compilationUnit.getConfiguration(), compilationUnit.getClassLoader(),
+				compilationUnit.getErrorCollector());
+		compilationUnit.addSource(sourceUnit);
 	}
 }
