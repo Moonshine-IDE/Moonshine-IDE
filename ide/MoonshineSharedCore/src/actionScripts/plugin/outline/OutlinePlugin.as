@@ -185,7 +185,8 @@ package actionScripts.plugin.outline
 				//to display
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS));
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
+				editor.currentFile.fileBridge.url));
 		}
 
 		private function handleTabSelect(event:TabEvent):void

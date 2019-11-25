@@ -36,6 +36,9 @@ package actionScripts.events
 		public static const EVENT_FIND_REFERENCES:String = "newFindReferences";
 		public static const EVENT_RENAME:String = "newRename";
 		public static const EVENT_CODE_ACTION:String = "newCodeAction";
+		public static const EVENT_GO_TO_DEFINITION:String = "newGoToDefinition";
+		public static const EVENT_GO_TO_TYPE_DEFINITION:String = "newGoToTypeDefinition";
+		public static const EVENT_GO_TO_IMPLEMENTATION:String = "newGoToImplementation";
 		
 		public var startLinePos:Number;
 		public var endLinePos:Number;
@@ -46,17 +49,16 @@ package actionScripts.events
 		public var version:Number;
 		public var uri:String;
 		
-		public function LanguageServerEvent(type:String, startLinePos:Number=0,startLineNumber:Number=0,
+		public function LanguageServerEvent(type:String, uri:String = null,
+			startLinePos:Number = 0,startLineNumber:Number = 0,
 			endLinePos:Number = 0, endLineNumber:Number = 0,
-			newText:String = null, textlen:Number =0 , version:Number=0,
-			uri:String = null)
+			newText:String = null, version:Number=0)
 		{
 			this.startLinePos = startLinePos;
 			this.endLinePos = endLinePos;
 			this.startLineNumber = startLineNumber;
 			this.endLineNumber = endLineNumber;
 			this.newText = newText;
-			this.textlen = textlen;
 			this.version = version;
 			this.uri = uri;
 			super(type, false, true);

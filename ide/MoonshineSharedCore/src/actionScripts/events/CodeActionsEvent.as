@@ -7,13 +7,13 @@ package actionScripts.events
 	{
 		public static const EVENT_SHOW_CODE_ACTIONS:String = "newShowCodeActions";
 		
-		public var path:String;
+		public var uri:String;
 		public var codeActions:Vector.<CodeAction>;
 		
-		public function CodeActionsEvent(type:String, path:String, codeActions:Vector.<CodeAction>)
+		public function CodeActionsEvent(type:String, uri:String, codeActions:Vector.<CodeAction>)
 		{
 			super(type, false, false);
-			this.path = path;
+			this.uri = uri;
 			this.codeActions = codeActions;
 		}
 	}

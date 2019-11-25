@@ -47,6 +47,7 @@ package actionScripts.ui.editor.text
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.events.ResolveCompletionItemEvent;
+    import actionScripts.ui.editor.LanguageServerTextEditor;
 
     public class CompletionManager
 	{
@@ -134,9 +135,13 @@ package actionScripts.ui.editor.text
 			
 			if(items.length > 0)
 			{
-				var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
-					ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, items[0]);
-				GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
+				var activeEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+				if(activeEditor.getEditorComponent() == editor)
+				{
+					var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
+						ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, activeEditor.currentFile.fileBridge.url, items[0]);
+					GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
+				}
 			}
 		}
 
@@ -265,8 +270,13 @@ package actionScripts.ui.editor.text
 			{
 				return;
 			}
+			var activeEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+			if(activeEditor.getEditorComponent() != editor)
+			{
+				return;
+			}
 			var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
-				ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, item);
+				ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, activeEditor.currentFile.fileBridge.url, item);
 			GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
 		}
 

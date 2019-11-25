@@ -74,7 +74,7 @@ package actionScripts.plugin.references
 			var endLine:int = editor.editor.model.selectedLineIndex;
 			var endChar:int = editor.editor.model.caretIndex;
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_FIND_REFERENCES,
-				startChar, startLine, endChar, endLine));
+				editor.currentFile.fileBridge.url, startChar, startLine, endChar, endLine));
 		}
 
 		private function handleShowReferences(event:ReferencesEvent):void

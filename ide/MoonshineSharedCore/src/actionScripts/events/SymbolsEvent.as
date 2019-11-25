@@ -11,11 +11,13 @@ package actionScripts.events
 
 		//contains SymbolInformation or DocumentSymbol
 		public var symbols:Array;
+		public var uri:String;
 
-		public function SymbolsEvent(type:String, symbols:Array)
+		public function SymbolsEvent(type:String, symbols:Array, uri:String = null)
 		{
 			super(type, false, false);
 			this.symbols = symbols;
+			this.uri = uri;
 		}
 	}
 }

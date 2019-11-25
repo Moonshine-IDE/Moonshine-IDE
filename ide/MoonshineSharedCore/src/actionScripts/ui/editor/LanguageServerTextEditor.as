@@ -18,6 +18,8 @@ package actionScripts.ui.editor
 	import flash.utils.setTimeout;
 	import actionScripts.events.CodeActionsEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.events.LanguageServerMenuEvent;
+	import actionScripts.events.MenuEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -48,6 +50,7 @@ package actionScripts.ui.editor
 
 		protected function addGlobalListeners():void
 		{
+			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.addEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
@@ -55,10 +58,14 @@ package actionScripts.ui.editor
 			dispatcher.addEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
+			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
+			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 		}
 
 		protected function removeGlobalListeners():void
 		{
+			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.removeEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
@@ -66,6 +73,9 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
+			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
+			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 		}
 
 		protected function closeAllPopups():void
@@ -77,9 +87,6 @@ package actionScripts.ui.editor
 
 		protected function dispatchCompletionEvent():void
 		{
-			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,showCompletionListHandler);
-
-			var document:String = getTextDocument();
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -87,13 +94,12 @@ package actionScripts.ui.editor
 			var endChar:int = editor.model.caretIndex;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_COMPLETION,
-				startChar, startLine, endChar,endLine,
-				document, len, 1));
+				currentFile.fileBridge.url,
+				startChar, startLine, endChar, endLine));
 		}
 
 		protected function dispatchSignatureHelpEvent():void
 		{
-			var document:String = getTextDocument();			
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -101,30 +107,50 @@ package actionScripts.ui.editor
 			var endChar:int = editor.model.caretIndex;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_SIGNATURE_HELP,
-				startChar, startLine, endChar,endLine,
-				document, len, 1));
+				currentFile.fileBridge.url,
+				startChar, startLine, endChar, endLine));
 		}
 
 		protected function dispatchHoverEvent(charAndLine:Point):void
 		{
-			var document:String = getTextDocument();
 			var line:int = charAndLine.y;
 			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_HOVER,
-				char, line, char, line,
-				document, 0, 1));
+				currentFile.fileBridge.url,
+				char, line, char, line));
 		}
 
-		protected function dispatchGotoDefinitionEvent(charAndLine:Point):void
+		protected function dispatchDefinitionLinkEvent(line:int, char:int):void
 		{
-			var document:String = getTextDocument();
-			var line:int = charAndLine.y;
-			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_DEFINITION_LINK,
-				char, line, char, line,
-				document, 0, 1));
+				currentFile.fileBridge.url,
+				char, line, char, line));
+		}
+
+		protected function dispatchGotoDefinitionEvent(line:int, char:int):void
+		{
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_GO_TO_DEFINITION,
+				currentFile.fileBridge.url,
+				char, line, char, line));
+		}
+
+		protected function dispatchGotoTypeDefinitionEvent(line:int, char:int):void
+		{
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION,
+				currentFile.fileBridge.url,
+				char, line, char, line));
+		}
+
+		protected function dispatchGotoImplementationEvent(line:int, char:int):void
+		{
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_GO_TO_IMPLEMENTATION,
+				currentFile.fileBridge.url,
+				char, line, char, line));
 		}
 
 		protected function getTextDocument():String
@@ -153,7 +179,9 @@ package actionScripts.ui.editor
 				return;
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+				currentFile.fileBridge.url,
+				0, 0, 0, 0,
+				editor.dataProvider, 0));
 		}
 
 		override protected function openHandler(event:Event):void
@@ -164,7 +192,9 @@ package actionScripts.ui.editor
 				return;
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-				0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+				currentFile.fileBridge.url,
+				0, 0, 0, 0,
+				editor.dataProvider, 0));
 		}
 
 		private function onRollOver(event:MouseEvent):void
@@ -189,7 +219,7 @@ package actionScripts.ui.editor
 			{
 				if(event.ctrlKey)
 				{
-					dispatchGotoDefinitionEvent(charAndLine);
+					dispatchDefinitionLinkEvent(charAndLine.x, charAndLine.y);
 				}
 				else
 				{
@@ -211,7 +241,10 @@ package actionScripts.ui.editor
 				return;
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_DIDCHANGE, 0, 0, 0, 0, editor.dataProvider, 0, 0, currentFile.fileBridge.url));
+				LanguageServerEvent.EVENT_DIDCHANGE,
+				currentFile.fileBridge.url,
+				0, 0, 0, 0,
+				editor.dataProvider, 0));
 		}
 
 		private function editorModel_onChange(event:Event):void
@@ -228,7 +261,6 @@ package actionScripts.ui.editor
 		private function dispatchCodeActionEvent():void
 		{
 			_codeActionTimeoutID = -1;
-			var document:String = getTextDocument();
 			var startLine:int = editor.model.getSelectionLineStart();
 			var startChar:int = editor.model.getSelectionCharStart();
 			if(startChar == -1)
@@ -239,12 +271,61 @@ package actionScripts.ui.editor
 			var endChar:int = editor.model.getSelectionCharEnd();
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_CODE_ACTION,
-				startChar, startLine, endChar,endLine));
+				currentFile.fileBridge.url,
+				startChar, startLine, endChar, endLine));
+		}
+
+		protected function menuGoToDefinitionHandler(event:MenuEvent):void
+		{
+			if(model.activeEditor != this)
+			{
+				return;
+			}
+			var startLine:int = editor.model.getSelectionLineStart();
+			var startChar:int = editor.model.getSelectionCharStart();
+			if(startChar == -1)
+			{
+				startChar = editor.model.caretIndex;
+			}
+			dispatchGotoDefinitionEvent(startLine, startChar);
+		}
+
+		protected function menuGoToTypeDefinitionHandler(event:MenuEvent):void
+		{
+			if(model.activeEditor != this)
+			{
+				return;
+			}
+			var startLine:int = editor.model.getSelectionLineStart();
+			var startChar:int = editor.model.getSelectionCharStart();
+			if(startChar == -1)
+			{
+				startChar = editor.model.caretIndex;
+			}
+			dispatchGotoTypeDefinitionEvent(startLine, startChar);
+		}
+
+		protected function menuGoToImplementationHandler(event:MenuEvent):void
+		{
+			if(model.activeEditor != this)
+			{
+				return;
+			}
+			var startLine:int = editor.model.getSelectionLineStart();
+			var startChar:int = editor.model.getSelectionCharStart();
+			if(startChar == -1)
+			{
+				startChar = editor.model.caretIndex;
+			}
+			dispatchGotoImplementationEvent(startLine, startChar);
 		}
 
 		protected function showCompletionListHandler(event:CompletionItemsEvent):void
 		{
-            dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
+			{
+				return;
+			}
 			if (event.items.length == 0)
 			{
 				return;
@@ -255,6 +336,10 @@ package actionScripts.ui.editor
 
 		protected function updateResolvedCompletionItemHandler(event:CompletionItemsEvent):void
 		{
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
+			{
+				return;
+			}
 			if (event.items.length == 0)
 			{
 				return;
@@ -301,7 +386,7 @@ package actionScripts.ui.editor
 
 		protected function showCodeActionsHandler(event:CodeActionsEvent):void
 		{
-			if(!currentFile || event.path !== currentFile.fileBridge.nativePath)
+			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
 			{
 				return;
 			}
@@ -320,7 +405,7 @@ package actionScripts.ui.editor
 				return;
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
+				currentFile.fileBridge.url));
 		}
 
 		protected function fileSavedHandler(event:SaveFileEvent):void
@@ -335,10 +420,10 @@ package actionScripts.ui.editor
 				return;
 			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_WILLSAVE,
-				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
+				currentFile.fileBridge.url));
 			
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDSAVE,
-				0, 0, 0, 0, null, 0, 0, currentFile.fileBridge.url));
+				currentFile.fileBridge.url));
 		}
 
 		protected function tabSelectHandler(event:TabEvent):void

@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
 	import flash.errors.IllegalOperationError;
@@ -21,9 +39,6 @@ package actionScripts.languageServer
 	import actionScripts.events.GotoDefinitionEvent;
 	import actionScripts.events.HoverEvent;
 	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.events.LanguageServerMenuEvent;
-	import actionScripts.events.MenuEvent;
-	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.LocationsEvent;
 	import actionScripts.events.ResolveCompletionItemEvent;
@@ -40,22 +55,15 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.CodeAction;
 	import actionScripts.valueObjects.Command;
 	import actionScripts.valueObjects.CompletionItem;
-	import actionScripts.valueObjects.CreateFile;
-	import actionScripts.valueObjects.DeleteFile;
 	import actionScripts.valueObjects.Diagnostic;
 	import actionScripts.valueObjects.DocumentSymbol;
 	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.ParameterInformation;
 	import actionScripts.valueObjects.Position;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.RenameFile;
 	import actionScripts.valueObjects.SignatureHelp;
 	import actionScripts.valueObjects.SignatureInformation;
 	import actionScripts.valueObjects.SymbolInformation;
-	import actionScripts.valueObjects.TextDocumentEdit;
-	import actionScripts.valueObjects.TextDocumentIdentifier;
-	import actionScripts.valueObjects.TextEdit;
 	import actionScripts.valueObjects.WorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.events.ReferencesEvent;
@@ -166,9 +174,9 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
-			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, gotoDefinitionHandler);
-			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
-			_globalDispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, gotoImplementationHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_IMPLEMENTATION, gotoImplementationHandler);
 			_globalDispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_RENAME, renameHandler);
 			_globalDispatcher.addEventListener(ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, resolveCompletionHandler);
@@ -370,9 +378,9 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
-			_globalDispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, gotoDefinitionHandler);
-			_globalDispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
-			_globalDispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, gotoImplementationHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_IMPLEMENTATION, gotoImplementationHandler);
 			_globalDispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeCommandHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_RENAME, renameHandler);
 			_globalDispatcher.removeEventListener(ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, resolveCompletionHandler);
@@ -957,18 +965,19 @@ package actionScripts.languageServer
 				}
 				else if(requestID in _resolveCompletionLookup) //resolve completion
 				{
-					var original:CompletionItem = CompletionItem(_resolveCompletionLookup[requestID]);
+					var uriAndCompletionItem:UriAndCompletionItem = UriAndCompletionItem(_resolveCompletionLookup[requestID]);
 					delete _resolveCompletionLookup[requestID];
-					handleCompletionResolveResponse(original, result);
+					handleCompletionResolveResponse(result, uriAndCompletionItem.uri, uriAndCompletionItem.item);
 				}
 				else if(result && FIELD_ITEMS in result) //completion (CompletionList)
 				{
+					var uri:String = _completionLookup[requestID] as String;
 					delete _completionLookup[requestID];
-					handleCompletionResponse(result);
+					handleCompletionResponse(result, uri);
 				}
 				else if(result && FIELD_SIGNATURES in result) //signature help
 				{
-					var uri:String = _signatureHelpLookup[requestID] as String;
+					uri = _signatureHelpLookup[requestID] as String;
 					delete _signatureHelpLookup[requestID];
 					handleSignatureHelpResponse(result, uri);
 				}
@@ -990,32 +999,33 @@ package actionScripts.languageServer
 				{
 					if(requestID in _completionLookup) //completion (CompletionItem[])
 					{
+						uri = _completionLookup[requestID] as String;
 						delete _completionLookup[requestID];
-						handleCompletionResponse(result);
+						handleCompletionResponse(result, uri);
 					}
 					else if(requestID in _definitionLinkLookup)
 					{
-						var definitionData:Object = _definitionLinkLookup[requestID];
+						var uriAndPosition:UriAndPosition = _definitionLinkLookup[requestID] as UriAndPosition;
 						delete _definitionLinkLookup[requestID];
-						handleDefinitionLinkResponse(result, Position(definitionData.position), definitionData.uri as String);
+						handleDefinitionLinkResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
 					else if(requestID in _gotoDefinitionLookup)
 					{
-						var position:Position = _gotoDefinitionLookup[requestID] as Position;
+						uriAndPosition = _gotoDefinitionLookup[requestID] as UriAndPosition;
 						delete _gotoDefinitionLookup[requestID];
-						handleGotoDefinitionResponse(result, position);
+						handleGotoDefinitionResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
 					else if(requestID in _gotoTypeDefinitionLookup)
 					{
-						position = _gotoTypeDefinitionLookup[requestID] as Position;
+						uriAndPosition = _gotoTypeDefinitionLookup[requestID] as UriAndPosition;
 						delete _gotoTypeDefinitionLookup[requestID];
-						handleGotoTypeDefinitionResponse(result, position);
+						handleGotoTypeDefinitionResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
 					else if(requestID in _gotoImplementationLookup)
 					{
-						position = _gotoImplementationLookup[requestID] as Position;
+						uriAndPosition = _gotoImplementationLookup[requestID] as UriAndPosition;
 						delete _gotoImplementationLookup[requestID];
-						handleGotoImplementationResponse(result, position);
+						handleGotoImplementationResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
 					else if(requestID in _findReferencesLookup)
 					{
@@ -1024,13 +1034,15 @@ package actionScripts.languageServer
 					}
 					else if(requestID in _codeActionLookup)
 					{
+						uri = _codeActionLookup[requestID] as String;
 						delete _codeActionLookup[requestID];
-						handleCodeActionResponse(result);
+						handleCodeActionResponse(result, uri);
 					}
 					else if(requestID in _documentSymbolsLookup)
 					{
+						uri = _documentSymbolsLookup[requestID] as String;
 						delete _documentSymbolsLookup[requestID];
-						handleDocumentSymbolsResponse(result);
+						handleDocumentSymbolsResponse(result, uri);
 					}
 					else if(requestID in _workspaceSymbolsLookup)
 					{
@@ -1134,8 +1146,9 @@ package actionScripts.languageServer
 			}
 		}
 
-		private function handleCompletionResponse(result:Object):void
+		private function handleCompletionResponse(result:Object, uri:String):void
 		{
+			var incomplete:Boolean = false;
 			var resultCompletionItems:Array = null;
 			if(result is Array)
 			{
@@ -1143,6 +1156,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
+				incomplete = result.isIncomplete === true;
 				resultCompletionItems = result.items as Array;
 			}
 			if(!resultCompletionItems)
@@ -1156,13 +1170,15 @@ package actionScripts.languageServer
 				var resultItem:Object = resultCompletionItems[i];
 				eventCompletionItems[i] = CompletionItem.parse(resultItem);
 			}
-			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,eventCompletionItems));
+			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST,
+				eventCompletionItems, uri, incomplete));
 		}
 
-		private function handleCompletionResolveResponse(original:CompletionItem, result:Object):void
+		private function handleCompletionResolveResponse(result:Object, uri:String, original:CompletionItem):void
 		{
 			CompletionItem.resolve(original, result);
-			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, [original]));
+			_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM,
+				[original], uri));
 		}
 
 		private function handleSignatureHelpResponse(result:Object, uri:String):void
@@ -1259,27 +1275,27 @@ package actionScripts.languageServer
 			return eventLocation;
 		}
 
-		private function handleDefinitionLinkResponse(result:Object, position:Position, uri:String):void
+		private function handleDefinitionLinkResponse(result:Object, uri:String, position:Position):void
 		{
 			var eventLocations:Vector.<Location> = getLocations(result);
 			_globalDispatcher.dispatchEvent(new GotoDefinitionEvent(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, eventLocations, position, uri));
 		}
 
-		private function handleGotoDefinitionResponse(result:Object, position:Position):void
+		private function handleGotoDefinitionResponse(result:Object, uri:String, position:Position):void
 		{
 			var eventLocations:Vector.<Location> = getLocations(result);
 			_globalDispatcher.dispatchEvent(
 				new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, eventLocations));
 		}
 
-		private function handleGotoTypeDefinitionResponse(result:Object, position:Position):void
+		private function handleGotoTypeDefinitionResponse(result:Object, uri:String, position:Position):void
 		{
 			var eventLocations:Vector.<Location> = getLocations(result);
 			_globalDispatcher.dispatchEvent(
 				new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, eventLocations));
 		}
 
-		private function handleGotoImplementationResponse(result:Object, position:Position):void
+		private function handleGotoImplementationResponse(result:Object, uri:String, position:Position):void
 		{
 			var eventLocations:Vector.<Location> = getLocations(result);
 			_globalDispatcher.dispatchEvent(
@@ -1299,7 +1315,7 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, eventReferences));
 		}
 
-		private function handleCodeActionResponse(result:Object):void
+		private function handleCodeActionResponse(result:Object, uri:String):void
 		{	
 			var resultCodeActions:Array = result as Array;
 			var eventCodeActions:Vector.<CodeAction> = new <CodeAction>[];
@@ -1322,13 +1338,7 @@ package actionScripts.languageServer
 					eventCodeActions[i] = codeAction;
 				}
 			}
-			var editor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
-			{
-				return;
-			}
-			var path:String = editor.currentFile.fileBridge.nativePath;
-			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, eventCodeActions));
+			_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, uri, eventCodeActions));
 		}
 
 		private function handleWorkspaceSymbolsResponse(result:Object):void
@@ -1344,7 +1354,7 @@ package actionScripts.languageServer
 			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, eventSymbolInfos));
 		}
 
-		private function handleDocumentSymbolsResponse(result:Object):void
+		private function handleDocumentSymbolsResponse(result:Object, uri:String):void
 		{
 			var resultSymbolInfos:Array = result as Array;
 			var eventSymbolInfos:Array = [];
@@ -1363,7 +1373,7 @@ package actionScripts.languageServer
 					eventSymbolInfos[i] = DocumentSymbol.parse(resultSymbolInfo);
 				}
 			}
-			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, eventSymbolInfos));
+			_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, eventSymbolInfos, uri));
 		}
 
 		private function handleNotification(object:Object):Boolean
@@ -1661,7 +1671,7 @@ package actionScripts.languageServer
 			var contentChangesArr:Array = new Array();
 			var contentChanges:Object = new Object();
 			contentChanges.range = null;//range;
-			contentChanges.rangeLength = 0;//evt.textlen;
+			contentChanges.rangeLength = 0;
 			contentChanges.text = event.newText;
 
 			var params:Object = new Object();
@@ -1736,14 +1746,15 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = event.uri;
 			if(!supportsCompletion)
 			{
-				_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, []));
+				_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, [], uri));
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -1754,7 +1765,7 @@ package actionScripts.languageServer
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__COMPLETION, params);
-			_completionLookup[id] = true;
+			_completionLookup[id] = uri;
 		}
 
 		private function resolveCompletionHandler(event:ResolveCompletionItemEvent):void
@@ -1774,7 +1785,7 @@ package actionScripts.languageServer
 			}
 			
 			var id:int = this.sendRequest(METHOD_COMPLETION_ITEM__RESOLVE, event.item);
-			_resolveCompletionLookup[id] = event.item;
+			_resolveCompletionLookup[id] = new UriAndCompletionItem(event.uri, event.item);
 		}
 
 		private function signatureHelpHandler(event:LanguageServerEvent):void
@@ -1788,7 +1799,7 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
-			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			var uri:String = event.uri;
 			if(!supportsSignatureHelp)
 			{
 				var signatureHelp:SignatureHelp = new SignatureHelp();
@@ -1823,7 +1834,7 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
-			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			var uri:String = event.uri;
 			if(!supportsHover)
 			{
 				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[], uri));
@@ -1856,7 +1867,7 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
-			var uri:String = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			var uri:String = event.uri;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
@@ -1869,18 +1880,18 @@ package actionScripts.languageServer
 			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = event.endLineNumber;
-			position.character = event.endLinePos;
+			position.line = positionVO.line;
+			position.character = positionVO.character;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
-			_definitionLinkLookup[id] = {uri: uri, position: positionVO };
+			_definitionLinkLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
-		private function gotoDefinitionHandler(event:Event):void
+		private function gotoDefinitionHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1890,39 +1901,31 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_model.activeEditor || !_model.activeEditor is LanguageServerTextEditor)
-			{
-				//no valid editor is open
-				return;
-			}
 			event.preventDefault();
+			var uri:String = event.uri;
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
 				//nothing that we can do
 				return;
 			}
 
-			var activeEditor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor)
-			var uri:String = activeEditor.currentFile.fileBridge.url;
-			var line:int = activeEditor.editor.model.selectedLineIndex;
-			var char:int = activeEditor.editor.model.caretIndex;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = line;
-			position.character = char;
+			position.line = positionVO.line;
+			position.character = positionVO.character;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DEFINITION, params);
-			_gotoDefinitionLookup[id] = new Position(line, char);
+			_gotoDefinitionLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
-		private function gotoTypeDefinitionHandler(event:Event):void
+		private function gotoTypeDefinitionHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1932,39 +1935,31 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_model.activeEditor || !_model.activeEditor is LanguageServerTextEditor)
-			{
-				//no valid editor is open
-				return;
-			}
 			event.preventDefault();
+			var uri:String = event.uri;
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoTypeDefinition)
 			{
 				//nothing that we can do
 				return;
 			}
 
-			var activeEditor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor)
-			var uri:String = activeEditor.currentFile.fileBridge.url;
-			var line:int = activeEditor.editor.model.selectedLineIndex;
-			var char:int = activeEditor.editor.model.caretIndex;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = line;
-			position.character = char;
+			position.line = positionVO.line;
+			position.character = positionVO.character;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__TYPE_DEFINITION, params);
-			_gotoTypeDefinitionLookup[id] = new Position(line, char);
+			_gotoTypeDefinitionLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
-		private function gotoImplementationHandler(event:Event):void
+		private function gotoImplementationHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
@@ -1974,36 +1969,28 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_model.activeEditor || !_model.activeEditor is LanguageServerTextEditor)
-			{
-				//no valid editor is open
-				return;
-			}
 			event.preventDefault();
+			var uri:String = event.uri;
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoImplementation)
 			{
 				//nothing that we can do
 				return;
 			}
 
-			var activeEditor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor)
-			var uri:String = activeEditor.currentFile.fileBridge.url;
-			var line:int = activeEditor.editor.model.selectedLineIndex;
-			var char:int = activeEditor.editor.model.caretIndex;
-
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = line;
-			position.character = char;
+			position.line = positionVO.line;
+			position.character = positionVO.character;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__IMPLEMENTATION, params);
-			_gotoImplementationLookup[id] = new Position(line, char);
+			_gotoImplementationLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
 		private function workspaceSymbolsHandler(event:LanguageServerEvent):void
@@ -2048,20 +2035,21 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = event.uri;
 			if(!supportsDocumentSymbols)
 			{
-				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, []));
+				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, [], uri));
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__DOCUMENT_SYMBOL, params);
-			_documentSymbolsLookup[id] = true;
+			_documentSymbolsLookup[id] = uri;
 		}
 
 		private function findReferencesHandler(event:LanguageServerEvent):void
@@ -2075,6 +2063,7 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = event.uri;
 			if(!supportsReferences)
 			{
 				_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, new <Location>[]));
@@ -2082,7 +2071,7 @@ package actionScripts.languageServer
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -2111,15 +2100,12 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
-			var editor:LanguageServerTextEditor = LanguageServerTextEditor(_model.activeEditor);
+			var uri:String = event.uri;
 			if(!supportsCodeAction)
 			{
-				var path:String = editor.currentFile.fileBridge.nativePath;
-				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, path, new <CodeAction>[]));
+				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, uri, new <CodeAction>[]));
 				return;
 			}
-
-			var uri:String = editor.currentFile.fileBridge.url;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
@@ -2163,7 +2149,7 @@ package actionScripts.languageServer
 			params.context = context;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__CODE_ACTION, params);
-			_codeActionLookup[id] = true;
+			_codeActionLookup[id] = uri;
 		}
 
 		private function renameHandler(event:LanguageServerEvent):void
@@ -2177,13 +2163,14 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var uri:String = event.uri;
 			if(!supportsRename)
 			{
 				return;
 			}
 
 			var textDocument:Object = new Object();
-			textDocument.uri = (_model.activeEditor as LanguageServerTextEditor).currentFile.fileBridge.url;
+			textDocument.uri = uri;
 
 			var position:Object = new Object();
 			position.line = event.endLineNumber;
@@ -2220,5 +2207,32 @@ package actionScripts.languageServer
 			
 			this.sendRequest(METHOD_WORKSPACE__EXECUTE_COMMAND, params);
 		}
+	}
+}
+
+import actionScripts.valueObjects.Position;
+import actionScripts.valueObjects.CompletionItem;
+
+class UriAndPosition
+{
+	public var uri:String;
+	public var position:Position;
+
+	public function UriAndPosition(uri:String, position:Position)
+	{
+		this.uri = uri;
+		this.position = position;
+	}
+}
+
+class UriAndCompletionItem
+{
+	public var uri:String;
+	public var item:CompletionItem;
+
+	public function UriAndCompletionItem(uri:String, item:CompletionItem)
+	{
+		this.uri = uri;
+		this.item = item;
 	}
 }
