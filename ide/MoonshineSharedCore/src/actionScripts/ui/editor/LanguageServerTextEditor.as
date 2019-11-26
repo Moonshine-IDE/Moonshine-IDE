@@ -37,6 +37,8 @@ package actionScripts.ui.editor
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.utils.isUriInProject;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -79,6 +81,7 @@ package actionScripts.ui.editor
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 		}
 
 		protected function removeGlobalListeners():void
@@ -94,6 +97,7 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 		}
 
 		protected function closeAllPopups():void
@@ -101,6 +105,14 @@ package actionScripts.ui.editor
 			editor.showSignatureHelp(null);
 			editor.showHover(null);
 			editor.showDefinitionLink(null, null);
+		}
+
+		protected function dispatchDidOpenEvent():void
+		{
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
+				currentFile.fileBridge.url,
+				0, 0, 0, 0,
+				editor.dataProvider, 0));
 		}
 
 		protected function dispatchCompletionEvent():void
@@ -171,6 +183,23 @@ package actionScripts.ui.editor
 				char, line, char, line));
 		}
 
+		private function dispatchCodeActionEvent():void
+		{
+			_codeActionTimeoutID = -1;
+			var startLine:int = editor.model.getSelectionLineStart();
+			var startChar:int = editor.model.getSelectionCharStart();
+			if(startChar == -1)
+			{
+				startChar = editor.model.caretIndex;
+			}
+			var endLine:int = editor.model.getSelectionLineEnd();
+			var endChar:int = editor.model.getSelectionCharEnd();
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_CODE_ACTION,
+				currentFile.fileBridge.url,
+				startChar, startLine, endChar, endLine));
+		}
+
 		protected function getTextDocument():String
 		{
 			var document:String;
@@ -196,10 +225,7 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-				currentFile.fileBridge.url,
-				0, 0, 0, 0,
-				editor.dataProvider, 0));
+			dispatchDidOpenEvent();
 		}
 
 		override protected function openHandler(event:Event):void
@@ -282,23 +308,6 @@ package actionScripts.ui.editor
 			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
 		}
 
-		private function dispatchCodeActionEvent():void
-		{
-			_codeActionTimeoutID = -1;
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
-			var endLine:int = editor.model.getSelectionLineEnd();
-			var endChar:int = editor.model.getSelectionCharEnd();
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_CODE_ACTION,
-				currentFile.fileBridge.url,
-				startChar, startLine, endChar, endLine));
-		}
-
 		protected function menuGoToDefinitionHandler(event:MenuEvent):void
 		{
 			if(model.activeEditor != this)
@@ -342,6 +351,15 @@ package actionScripts.ui.editor
 				startChar = editor.model.caretIndex;
 			}
 			dispatchGotoImplementationEvent(startLine, startChar);
+		}
+
+		protected function languageServerOpenedHandler(event:ProjectEvent):void
+		{
+			if(!currentFile || !isUriInProject(currentFile.fileBridge.url, event.project))
+			{
+				return;
+			}
+			dispatchDidOpenEvent();
 		}
 
 		protected function showCompletionListHandler(event:CompletionItemsEvent):void

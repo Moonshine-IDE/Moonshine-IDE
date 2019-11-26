@@ -28,7 +28,6 @@ package actionScripts.languageServer
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	
-	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	
 	import actionScripts.events.ApplicationEvent;
@@ -44,12 +43,8 @@ package actionScripts.languageServer
 	import actionScripts.events.ResolveCompletionItemEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.events.SymbolsEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.LSPUtil;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.valueObjects.CodeAction;
@@ -65,8 +60,9 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.SignatureInformation;
 	import actionScripts.valueObjects.SymbolInformation;
 	import actionScripts.valueObjects.WorkspaceEdit;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.events.ReferencesEvent;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.utils.isUriInProject;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -160,7 +156,6 @@ package actionScripts.languageServer
 			
 			_globalDispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
-			_globalDispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCLOSE, didCloseCall);
@@ -241,8 +236,6 @@ package actionScripts.languageServer
 		private var _signatureHelpLookup:Dictionary = new Dictionary();
 		private var _documentSymbolsLookup:Dictionary = new Dictionary();
 		private var _workspaceSymbolsLookup:Dictionary = new Dictionary();
-		private var _previousActiveFilePath:String = null;
-		private var _previousActiveResult:Boolean = false;
 		private var _schemes:Vector.<String> = new <String>[]
 		private var _savedDiagnostics:Object = {};
 		private var _idToRequest:Object = {};
@@ -364,7 +357,6 @@ package actionScripts.languageServer
 
 			_globalDispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_globalDispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
-			_globalDispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDOPEN, didOpenCall);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCHANGE, didChangeCall);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCLOSE, didCloseCall);
@@ -712,22 +704,6 @@ package actionScripts.languageServer
 			this.dispatchEvent(new Event(Event.INIT));
 
 			sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, { settings: {} });
-			
-			var editors:ArrayCollection = _model.editors;
-			var count:int = editors.length;
-			for(var i:int = 0; i < count; i++)
-			{
-				var editor:IContentWindow = IContentWindow(editors.getItemAt(i));
-				if(editor is LanguageServerTextEditor)
-				{
-					var lspEditor:LanguageServerTextEditor = LanguageServerTextEditor(editor);
-					if(isEditorInProject(lspEditor))
-					{
-						var uri:String = lspEditor.currentFile.fileBridge.url;
-						sendDidOpenNotification(uri, lspEditor.text);
-					}
-				}
-			}
 		}
 
 		private function sendExit():void
@@ -856,69 +832,6 @@ package actionScripts.languageServer
 				return untypedID as Number
 			}
 			return id;
-		}
-
-		private function isActiveEditorInProject():Boolean
-		{
-			var editor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
-			{
-				return false;
-			}
-			return isEditorInProject(editor);
-		}
-
-		private function isEditorInProject(editor:LanguageServerTextEditor):Boolean
-		{
-			if(!editor.currentFile)
-			{
-				return false;
-			}
-			var nativePath:String = editor.currentFile.fileBridge.nativePath;
-			if(_previousActiveFilePath === nativePath)
-			{
-				//optimization: don't check this path multiple times when we
-				//probably already know the result from last time.
-				return _previousActiveResult;
-			}
-			_previousActiveFilePath = nativePath;
-			_previousActiveResult = false;
-			var activeFile:File = new File(nativePath);
-			var projectFile:File = new File(_project.folderPath);
-			//getRelativePath() will return null if activeFile is not in the
-			//projectFile directory
-			if(projectFile.getRelativePath(activeFile, false) !== null)
-			{
-				_previousActiveResult = true;
-				return _previousActiveResult;
-			}
-			if(_project is AS3ProjectVO)
-			{
-				var as3Project:AS3ProjectVO = AS3ProjectVO(_project);
-				var sourcePaths:Vector.<FileLocation> = as3Project.classpaths;
-				var sourcePathCount:int = sourcePaths.length;
-				for(var i:int = 0; i < sourcePathCount; i++)
-				{
-					var sourcePath:FileLocation = sourcePaths[i];
-					var sourcePathFile:File = new File(sourcePath.fileBridge.nativePath);
-					if(sourcePathFile.getRelativePath(activeFile, false) !== null)
-					{
-						_previousActiveResult = true;
-						return _previousActiveResult;
-					}
-				}
-				var sdkPath:String = getProjectSDKPath(_project, _model);
-				if(sdkPath != null)
-				{
-					var sdkFile:File = new File(sdkPath);
-					if(sdkFile.getRelativePath(activeFile, false) !== null)
-					{
-						_previousActiveResult = true;
-						return _previousActiveResult;
-					}
-				}
-			}
-			return _previousActiveResult;
 		}
 
 		private function parseMessage(object:Object):void
@@ -1603,26 +1516,20 @@ package actionScripts.languageServer
 			this.stop();
 		}
 
-		private function saveProjectSettingsHandler(event:ProjectEvent):void
-		{
-			//this result may no longer be valid after project settings changes
-			_previousActiveFilePath = null;
-			_previousActiveResult = false;
-		}
-
 		private function didOpenCall(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
 
-			sendDidOpenNotification(event.uri, event.newText);
+			sendDidOpenNotification(uri, event.newText);
 		}
 
 		private function didCloseCall(event:LanguageServerEvent):void
@@ -1631,13 +1538,14 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
 
-			sendDidCloseNotification(event.uri);
+			sendDidCloseNotification(uri);
 		}
 
 		private function didChangeCall(event:LanguageServerEvent):void
@@ -1646,7 +1554,8 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
@@ -1654,7 +1563,7 @@ package actionScripts.languageServer
 
 			var textDocument:Object = new Object();
 			textDocument.version = _documentVersion;
-			textDocument.uri = event.uri;
+			textDocument.uri = uri;
 			_documentVersion++;
 
 			var range:Object = new Object();
@@ -1687,13 +1596,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-
-			var uri:String = event.uri;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
@@ -1711,13 +1619,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-
-			var uri:String = event.uri;
 
 			var textDocument:Object = new Object();
 			textDocument.uri = uri;
@@ -1741,12 +1648,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsCompletion)
 			{
 				_globalDispatcher.dispatchEvent(new CompletionItemsEvent(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, [], uri));
@@ -1774,7 +1681,8 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
@@ -1785,7 +1693,7 @@ package actionScripts.languageServer
 			}
 			
 			var id:int = this.sendRequest(METHOD_COMPLETION_ITEM__RESOLVE, event.item);
-			_resolveCompletionLookup[id] = new UriAndCompletionItem(event.uri, event.item);
+			_resolveCompletionLookup[id] = new UriAndCompletionItem(uri, event.item);
 		}
 
 		private function signatureHelpHandler(event:LanguageServerEvent):void
@@ -1794,12 +1702,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsSignatureHelp)
 			{
 				var signatureHelp:SignatureHelp = new SignatureHelp();
@@ -1829,12 +1737,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsHover)
 			{
 				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[], uri));
@@ -1862,12 +1770,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
@@ -1897,12 +1805,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoDefinition)
 			{
@@ -1931,12 +1839,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoTypeDefinition)
 			{
@@ -1965,12 +1873,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsGotoImplementation)
 			{
@@ -2004,7 +1912,12 @@ package actionScripts.languageServer
 				return;
 			}
 			//TODO: fix this to properly merge symbols from all projects
-			if(!isActiveEditorInProject() && _model.projects.length != 1)
+			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
+			if(!activeEditor)
+			{
+				return;
+			}
+			if(!isUriInProject(activeEditor.currentFile.fileBridge.url, _project) && _model.projects.length != 1)
 			{
 				return;
 			}
@@ -2030,12 +1943,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsDocumentSymbols)
 			{
 				_globalDispatcher.dispatchEvent(new SymbolsEvent(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, [], uri));
@@ -2058,12 +1971,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsReferences)
 			{
 				_globalDispatcher.dispatchEvent(new ReferencesEvent(ReferencesEvent.EVENT_SHOW_REFERENCES, new <Location>[]));
@@ -2095,12 +2008,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsCodeAction)
 			{
 				_globalDispatcher.dispatchEvent(new CodeActionsEvent(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, uri, new <CodeAction>[]));
@@ -2158,12 +2071,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var uri:String = event.uri;
+			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
 			{
 				return;
 			}
 			event.preventDefault();
-			var uri:String = event.uri;
 			if(!supportsRename)
 			{
 				return;
@@ -2190,7 +2103,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(event.isDefaultPrevented() || !isActiveEditorInProject())
+			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
+			if(!activeEditor)
+			{
+				return;
+			}
+			if(event.isDefaultPrevented() || !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
 			{
 				return;
 			}
