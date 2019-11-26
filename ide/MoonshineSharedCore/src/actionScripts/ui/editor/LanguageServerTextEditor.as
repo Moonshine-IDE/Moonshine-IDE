@@ -109,7 +109,34 @@ package actionScripts.ui.editor
 
 		protected function dispatchDidOpenEvent():void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
+				currentFile.fileBridge.url,
+				0, 0, 0, 0,
+				editor.dataProvider, 0));
+		}
+
+		protected function dispatchDidCloseEvent():void
+		{
+			if(!currentFile)
+			{
+				return;
+			}
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
+				currentFile.fileBridge.url));
+		}
+
+		protected function dispatchDidChangeEvent():void
+		{
+			if(!currentFile)
+			{
+				return;
+			}
+			dispatcher.dispatchEvent(new LanguageServerEvent(
+				LanguageServerEvent.EVENT_DIDCHANGE,
 				currentFile.fileBridge.url,
 				0, 0, 0, 0,
 				editor.dataProvider, 0));
@@ -117,6 +144,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchCompletionEvent():void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -130,6 +161,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchSignatureHelpEvent():void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			var len:Number = editor.model.caretIndex - editor.startPos;
 			var startLine:int = editor.model.selectedLineIndex;
 			var startChar:int = editor.startPos;
@@ -143,6 +178,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchHoverEvent(line:int, char:int):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_HOVER,
 				currentFile.fileBridge.url,
@@ -151,6 +190,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchDefinitionLinkEvent(line:int, char:int):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_DEFINITION_LINK,
 				currentFile.fileBridge.url,
@@ -159,6 +202,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchGotoDefinitionEvent(line:int, char:int):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_GO_TO_DEFINITION,
 				currentFile.fileBridge.url,
@@ -167,6 +214,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchGotoTypeDefinitionEvent(line:int, char:int):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION,
 				currentFile.fileBridge.url,
@@ -175,6 +226,10 @@ package actionScripts.ui.editor
 
 		protected function dispatchGotoImplementationEvent(line:int, char:int):void
 		{
+			if(!currentFile)
+			{
+				return;
+			}
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_GO_TO_IMPLEMENTATION,
 				currentFile.fileBridge.url,
@@ -184,6 +239,10 @@ package actionScripts.ui.editor
 		private function dispatchCodeActionEvent():void
 		{
 			_codeActionTimeoutID = -1;
+			if(!currentFile)
+			{
+				return;
+			}
 			var startLine:int = editor.model.getSelectionLineStart();
 			var startChar:int = editor.model.getSelectionCharStart();
 			if(startChar == -1)
@@ -219,24 +278,13 @@ package actionScripts.ui.editor
 		override protected function openFileAsStringHandler(data:String):void
 		{
 			super.openFileAsStringHandler(data);
-			if(!currentFile)
-			{
-				return;
-			}
 			dispatchDidOpenEvent();
 		}
 
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
-			if(!currentFile)
-			{
-				return;
-			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-				currentFile.fileBridge.url,
-				0, 0, 0, 0,
-				editor.dataProvider, 0));
+			dispatchDidOpenEvent();
 		}
 
 		private function onRollOver(event:MouseEvent):void
@@ -280,15 +328,7 @@ package actionScripts.ui.editor
 		{
 			var completionIncomplete:Boolean = _completionIncomplete && editor.completionActive;
 			_completionIncomplete = false;
-			if(!currentFile)
-			{
-				return;
-			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_DIDCHANGE,
-				currentFile.fileBridge.url,
-				0, 0, 0, 0,
-				editor.dataProvider, 0));
+			dispatchDidChangeEvent();
 			if(completionIncomplete)
 			{
 				dispatchCompletionEvent();
@@ -441,12 +481,7 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			if(!currentFile)
-			{
-				return;
-			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-				currentFile.fileBridge.url));
+			dispatchDidCloseEvent();
 		}
 
 		protected function fileSavedHandler(event:SaveFileEvent):void
