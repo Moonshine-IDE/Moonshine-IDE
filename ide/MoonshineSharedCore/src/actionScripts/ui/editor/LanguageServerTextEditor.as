@@ -141,10 +141,8 @@ package actionScripts.ui.editor
 				startChar, startLine, endChar, endLine));
 		}
 
-		protected function dispatchHoverEvent(charAndLine:Point):void
+		protected function dispatchHoverEvent(line:int, char:int):void
 		{
-			var line:int = charAndLine.y;
-			var char:int = charAndLine.x;
 			dispatcher.dispatchEvent(new LanguageServerEvent(
 				LanguageServerEvent.EVENT_HOVER,
 				currentFile.fileBridge.url,
@@ -263,12 +261,12 @@ package actionScripts.ui.editor
 			{
 				if(event.ctrlKey)
 				{
-					dispatchDefinitionLinkEvent(charAndLine.x, charAndLine.y);
+					dispatchDefinitionLinkEvent(charAndLine.y, charAndLine.x);
 				}
 				else
 				{
 					editor.showDefinitionLink(null, null);
-					dispatchHoverEvent(charAndLine);
+					dispatchHoverEvent(charAndLine.y, charAndLine.x);
 				}
 			}
 			else
