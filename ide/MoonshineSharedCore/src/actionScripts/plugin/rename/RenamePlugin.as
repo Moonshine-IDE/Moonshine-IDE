@@ -105,6 +105,7 @@ package actionScripts.plugin.rename
 		
 		private function renameView_closeHandler(event:CloseEvent):void
 		{
+			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
 			renameView.removeEventListener(CloseEvent.CLOSE, renameView_closeHandler);
 			if (event.detail !== Alert.OK)
 			{
@@ -112,7 +113,9 @@ package actionScripts.plugin.rename
 			}
 			
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
-				this._startChar, this._line, this._endChar, this._line, renameView.newName));
+				editor.currentFile.fileBridge.url,
+				this._startChar, this._line, this._endChar, this._line,
+				renameView.newName));
 		}
 		
 		private function handleOpenRenameFileView(event:RenameEvent):void

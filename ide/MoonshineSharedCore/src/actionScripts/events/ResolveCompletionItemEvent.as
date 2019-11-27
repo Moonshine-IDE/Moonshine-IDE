@@ -25,12 +25,14 @@ package actionScripts.events
 	{
 		public static const EVENT_RESOLVE_COMPLETION_ITEM:String = "resolveCompletionItem";
 
-		public function ResolveCompletionItemEvent(type:String, item:CompletionItem)
+		public function ResolveCompletionItemEvent(type:String, uri:String, item:CompletionItem)
 		{
 			super(type, false, true);
+			this.uri = uri;
 			this.item = item;
 		}
 
+		public var uri:String;
 		public var item:CompletionItem;
 	}
 }

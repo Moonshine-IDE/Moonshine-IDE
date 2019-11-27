@@ -136,7 +136,7 @@ package actionScripts.plugins.as3project.exporter
 			optionPairs = {
 				projectType		:	projType,
 				targetPlatform	:	platform,
-				urlToLaunch		:	p.htmlPath ? p.htmlPath.fileBridge.nativePath : "",
+				urlToLaunch		:	p.urlToLaunch ? p.urlToLaunch : "",
 				customUrlToLaunch:	p.customHTMLPath ? p.customHTMLPath : "",
 				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
 				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null

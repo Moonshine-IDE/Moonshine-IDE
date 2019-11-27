@@ -44,6 +44,8 @@ package actionScripts.utils
 
 	public class MSDKIdownloadUtil extends EventDispatcher
 	{
+		public static const EVENT_NEW_VERSION_DETECTED:String = "eventNewVersionDetected";
+		
 		private var downloadingFile:File;
 		private var fileStream:FileStream;
 		private var urlStream:URLStream;
@@ -77,13 +79,8 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS) runAppStoreHelperOSX();
 			else
 			{
-				if (!executableFile.exists) 
-				{
-					// prevent multi-execution
-					if (isDownloading) return;
-					initiate64BitDownloadProcess();
-				}
-				else if (!isUpdateChecking && !isDownloading) 
+				if ((!executableFile.exists && !isUpdateChecking && !isDownloading) || 
+					(!isUpdateChecking && !isDownloading)) 
 				{
 					// make sure we does this check once
 					// in an application lifecycle
@@ -92,7 +89,10 @@ package actionScripts.utils
 						isUpdateChecking = true;
 						checkForUpdates();
 					}
-					else runAppStoreHelperWindows();
+					else if (executableFile.exists)
+					{
+						runAppStoreHelperWindows();
+					}
 				}
 			}
 		}
@@ -144,10 +144,8 @@ package actionScripts.utils
 			process.start(npInfo);
 		}
 		
-		private function initiate64BitDownloadProcess(downloadUrl:String=null):void
+		private function initiate64BitDownloadProcess(downloadUrl:String):void
 		{
-			downloadUrl = downloadUrl || HelperConstants.WINDOWS_64BIT_DOWNLOAD_URL;
-			
 			var fileName:String = downloadUrl.substr(downloadUrl.lastIndexOf("/") + 1)
 			downloadingFile = new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY);
 			if (!downloadingFile.exists) downloadingFile.createDirectory();
@@ -278,23 +276,28 @@ package actionScripts.utils
 			var updateDescriptor:XML = new XML(updateDescriptorLoader.data);
 			var updateVersion:String = String(updateDescriptor.exe.version);
 			var updateVersionUrl:String = String(updateDescriptor.exe.url);
+			var currentVersion:String;
 			
 			updateDescriptorLoader = null;
 			
-			// load local information
+			// if only any previous installation is present
+			// we will able to compare its version with
 			var localDescriptor:File = new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY).resolvePath("META-INF/AIR/application.xml");
-			if (!localDescriptor.exists) return;
-			var currentVersion:String;
-			var applicationDescriptor:XML = new XML(FileUtils.readFromFile(localDescriptor));
-			var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
-			
-			if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
-				currentVersion = applicationDescriptor.xmlns::version;
-			else
-				currentVersion = applicationDescriptor.xmlns::versionNumber;
-			
-			if (isNewerVersionFunction(updateVersion, currentVersion))
+			if (localDescriptor.exists)
 			{
+				// load local information
+				var applicationDescriptor:XML = new XML(FileUtils.readFromFile(localDescriptor));
+				var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
+				
+				if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
+					currentVersion = applicationDescriptor.xmlns::version;
+				else
+					currentVersion = applicationDescriptor.xmlns::versionNumber;
+			}
+			
+			if (!localDescriptor.exists || isNewerVersionFunction(updateVersion, currentVersion))
+			{
+				dispatchEvent(new Event(EVENT_NEW_VERSION_DETECTED));
 				// initiate new download
 				initiate64BitDownloadProcess(updateVersionUrl);
 			}

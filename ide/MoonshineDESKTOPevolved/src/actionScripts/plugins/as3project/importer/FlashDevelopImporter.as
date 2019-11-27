@@ -191,7 +191,10 @@ package actionScripts.plugins.as3project.importer
 			else if (platform == AS3ProjectPlugin.AS3PROJ_AS_IOS) project.buildOptions.targetPlatform = "iOS";
 			
 			var html:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@urlToLaunch);
-			if (html) project.htmlPath = new FileLocation(html);
+			if (html)
+			{
+				project.urlToLaunch = html;
+			}
 			
 			var customHtml:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@customUrlToLaunch);
 			if (customHtml) project.customHTMLPath = customHtml;

@@ -114,6 +114,11 @@ package actionScripts.plugin.problems
 			for(i = 0; i < itemCount; i++)
 			{
 				item = diagnostics[i];
+				if(item.severity == Diagnostic.SEVERITY_HINT)
+				{
+					//hints aren't meant to be displayed in the list of problems
+					continue;
+				}
 				objectTree.addItem(item);
 			}
 		}

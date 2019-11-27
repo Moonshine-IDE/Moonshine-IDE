@@ -128,9 +128,12 @@ function handleRenameFile(renameFile:RenameFile):void
 		}
 		editor.currentFile = renameNewLocation;
 		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-			0, 0, 0, 0, null, 0, 0, renameOldLocation.fileBridge.url));
+			renameOldLocation.fileBridge.url,
+			0, 0, 0, 0));
 		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-			0, 0, 0, 0, editor.getEditorComponent().dataProvider, 0, 0, renameNewLocation.fileBridge.url));
+			renameNewLocation.fileBridge.url,
+			0, 0, 0, 0,
+			editor.getEditorComponent().dataProvider, 0));
 	}
 }
 

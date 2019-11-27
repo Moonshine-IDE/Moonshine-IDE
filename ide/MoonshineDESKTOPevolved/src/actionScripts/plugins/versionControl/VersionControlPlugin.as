@@ -31,8 +31,14 @@ package actionScripts.plugins.versionControl
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -42,7 +48,7 @@ package actionScripts.plugins.versionControl
 	import components.popup.AddRepositoryPopup;
 	import components.popup.ManageRepositoriesPopup;
 
-	public class VersionControlPlugin extends PluginBase
+	public class VersionControlPlugin extends PluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "Version Control"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -50,6 +56,16 @@ package actionScripts.plugins.versionControl
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
+		
+		private var _xcodePath:String;
+		public function get xcodePath():String
+		{
+			return _xcodePath;
+		}
+		public function set xcodePath(value:String):void
+		{
+			_xcodePath = value;
+		}
 		
 		override public function activate():void
 		{
@@ -71,6 +87,15 @@ package actionScripts.plugins.versionControl
 			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
 		}
 		
+		public function getSettingsList():Vector.<ISetting>
+		{
+			onSettingsClose();
+			
+			return Vector.<ISetting>([
+				new PathSetting(this,'xcodePath', 'XCode-Command-line', true, xcodePath, false)
+			]);
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  MANAGE REPOSITORIES
@@ -79,7 +104,7 @@ package actionScripts.plugins.versionControl
 		
 		protected function handleOpenManageRepositories(event:Event):void
 		{
-			if (!continueIfSVNSupported(event)) return;
+			if (!continueIfVersionControlSupported(event)) return;
 			
 			openManageRepoWindow();
 		}
@@ -206,19 +231,45 @@ package actionScripts.plugins.versionControl
 		//
 		//--------------------------------------------------------------------------
 		
-		private function continueIfSVNSupported(event:Event):Boolean
+		private function continueIfVersionControlSupported(event:Event):Boolean
 		{
-			if (!UtilsCore.isSVNPresent() || !UtilsCore.isGitPresent())
+			var isSVNPresent:Boolean = UtilsCore.isSVNPresent();
+			var isGitPresent:Boolean = UtilsCore.isGitPresent();
+			if (!isSVNPresent || !isGitPresent)
 			{
 				if (ConstantsCoreVO.IS_MACOS) 
 				{
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					if ((!xcodePath && !isSVNPresent && !isGitPresent) || 
+						(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
+					{
+						dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					}
+					else
+					{
+						// re-update both Git and SVN with common 
+						// XCode/Command-line path
+						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xcodePath));
+						
+						ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
+						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
+						return true;
+					}
 				}
 				else 
 				{
-					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
-					else if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
+					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) 
+					{
+						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+						else return true;
+					}
+					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) 
+					{
+						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
+						else return true;
+					}
 				}
+				
 				return false;
 			}
 			

@@ -13,7 +13,7 @@
     <property name="target.property" value="target.path" />
     <!-- default a default path for deployment.  Use -Dtarget.path=... to override -->
     <property name="target.path" value="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/" />
-    <property name="as3mxml.version" value="0.17.1" />
+    <property name="as3mxml.version" value="0.23.2" />
     
     <!-- classpath -->
     <path id="default.classpath">

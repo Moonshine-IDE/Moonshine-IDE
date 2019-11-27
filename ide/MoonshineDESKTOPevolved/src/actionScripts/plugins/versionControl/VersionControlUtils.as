@@ -38,6 +38,7 @@ package actionScripts.plugins.versionControl
 	public class VersionControlUtils
 	{
 		public static var IS_CHECKOUT_BROWSED_ONCE:Boolean;
+		public static var LAST_CHECKOUT_BROWSED_LOCATION:String;
 		
 		private static var _REPOSITORIES:ArrayCollection;
 		public static function get REPOSITORIES():ArrayCollection

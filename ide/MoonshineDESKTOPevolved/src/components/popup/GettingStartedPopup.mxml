@@ -127,6 +127,8 @@
 			{
 				viewHelper.dependencyCheckUtil = dependencyCheckUtil;
 				viewHelper.environmentUtil = environmentUtil;
+				
+				msdkiDownloadUtil.addEventListener(MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected, false, 0, true);
 			}
 			
 			protected function onCreationCompletes():void
@@ -150,8 +152,14 @@
 			//
 			//--------------------------------------------------------------------------
 			
+			private function onNewVersionDetected(event:Event):void
+			{
+				sdkInstallerInstallingMess = "Found new version - Moonshine SDK Installer is downloading. Please wait.";
+			}
+			
 			private function onTabClosed(event:CloseTabEvent):void
 			{
+				msdkiDownloadUtil.removeEventListener(MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected);
 				dispatcher.removeEventListener(StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshRequest);
 				this.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onTabClosed);
 			}

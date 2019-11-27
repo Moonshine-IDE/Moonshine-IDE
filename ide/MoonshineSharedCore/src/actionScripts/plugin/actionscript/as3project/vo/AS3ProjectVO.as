@@ -68,7 +68,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
-		public var htmlPath:FileLocation;
 		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -239,17 +238,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (!_urlToLaunch)
 			{
-                if (!air && !isLibraryProject)
-                {
-                    var html:FileLocation = !isRoyale ?
-                            folderLocation.fileBridge.resolvePath(folderLocation.fileBridge.separator
+				if (!air && !isLibraryProject)
+				{
+					var html:FileLocation = !isRoyale ?
+							folderLocation.fileBridge.resolvePath(folderLocation.fileBridge.separator
 									+ "bin-debug" + folderLocation.fileBridge.separator +
-                                    swfOutput.path.fileBridge.name.split(".")[0] + ".html")
-                            : new FileLocation(getRoyaleDebugPath());
-                    htmlPath = html;
+									swfOutput.path.fileBridge.name.split(".")[0] + ".html")
+							: new FileLocation(getRoyaleDebugPath());
 
-                    return html.fileBridge.nativePath;
-                }
+					_urlToLaunch = html.fileBridge.nativePath;
+				}
 			}
 
 			return _urlToLaunch;
@@ -257,14 +255,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		public function set urlToLaunch(value:String):void
 		{
-			if (value)
-			{
-                _urlToLaunch = value;
-            }
-			else
-			{
-
-			}
+			_urlToLaunch = value;
 		}
 		
 		public function get outputPath():String
@@ -647,9 +638,9 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.swfOutput = this.swfOutput;
             as3Project.buildOptions = this.buildOptions;
 
-			if (this.htmlPath)
+			if (this.urlToLaunch)
             {
-                as3Project.htmlPath = new FileLocation(this.htmlPath.fileBridge.nativePath);
+                as3Project.urlToLaunch = this.urlToLaunch;
             }
 			
 			as3Project.customHTMLPath = this.customHTMLPath;

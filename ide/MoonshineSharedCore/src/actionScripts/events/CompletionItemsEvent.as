@@ -25,12 +25,16 @@ package actionScripts.events
 		public static const EVENT_SHOW_COMPLETION_LIST:String = "newShowCompletionList";
 		public static const EVENT_UPDATE_RESOLVED_COMPLETION_ITEM:String = "newUpdateResolvedCompletionItem";
 		
+		public var uri:String;
 		public var items:Array;
+		public var incomplete:Boolean;
 		
-		public function CompletionItemsEvent(type:String, items:Array)
+		public function CompletionItemsEvent(type:String, items:Array, uri:String = null, incomplete:Boolean = false)
 		{
 			super(type, false, true);
 			this.items = items;
+			this.uri = uri;
+			this.incomplete = incomplete;
 		}
 		
 	}

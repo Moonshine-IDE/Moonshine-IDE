@@ -217,7 +217,7 @@ package actionScripts.plugins.debugAdapter
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
 			
-			var debugMode:Boolean = true;
+			var debugMode:Boolean = false;
 			_debugAdapter = new DebugAdapter(CLIENT_ID, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);

@@ -123,7 +123,8 @@ package actionScripts.plugin.symbols
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
 			PopUpManager.addPopUp(symbolsView, DisplayObject(parentApp), true);
 			PopUpManager.centerPopUp(symbolsView);
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS));
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
+				editor.currentFile.fileBridge.url));
 			symbolsView.focusManager.setFocus(symbolsView.txt_query);
 		}
 

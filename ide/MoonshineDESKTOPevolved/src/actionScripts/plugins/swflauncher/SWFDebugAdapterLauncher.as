@@ -32,7 +32,8 @@ package actionScripts.plugins.swflauncher
 
 	public class SWFDebugAdapterLauncher extends ConsoleOutputter implements IDebugAdapterLauncher
 	{
-		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
+		private static const DEBUG_ADAPTER_BIN_PATH:String = "elements/swf-debug-adapter/bin/";
+		private static const BUNDLED_DEBUGGER_PATH:String = "elements/swf-debug-adapter/bundled-debugger/";
 
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
@@ -55,7 +56,7 @@ package actionScripts.plugins.swflauncher
 			if(!sdkFile)
 			{
 				error("Debug session cancelled. An ActionScript SDK must be defined to debug SWF files.");
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return null;
 			}
 
@@ -64,7 +65,7 @@ package actionScripts.plugins.swflauncher
 			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
 			processArgs.push("-Dworkspace=" + project.folderLocation.fileBridge.nativePath);
 			processArgs.push("-cp");
-			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
+			var cp:String = File.applicationDirectory.resolvePath(DEBUG_ADAPTER_BIN_PATH).nativePath + File.separator + "*";
 			if (Settings.os == "win")
 			{
 				cp += ";"
@@ -73,7 +74,7 @@ package actionScripts.plugins.swflauncher
 			{
 				cp += ":";
 			}
-			cp += sdkFile.resolvePath("lib/*").nativePath;
+			cp += File.applicationDirectory.resolvePath(BUNDLED_DEBUGGER_PATH).nativePath + File.separator + "*";
 			processArgs.push(cp);
 			processArgs.push("com.as3mxml.vscode.SWFDebug");
 			var cwd:File = new File(project.folderLocation.fileBridge.nativePath);

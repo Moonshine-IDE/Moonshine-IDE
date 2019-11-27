@@ -6,7 +6,7 @@
 	<node label="API Docs">
 		<node label="Apache Flex API Docs" link="https://flex.apache.org/asdoc"/>
 		<node label="ActionScript 3 Docs" link="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/"/>
-		<node label="Royale API Docs (Nightly)" link="http://apacheroyaleci.westus2.cloudapp.azure.com:8080/job/Royale_ASDoc_Example/lastSuccessfulBuild/artifact/examples/royale/ASDoc/bin/js-debug/index.html"/>
+		<node label="Royale API Docs (Nightly)" link="http://apacheroyaleci2.westus2.cloudapp.azure.com:8080/job/Royale_ASDoc_Example/lastSuccessfulBuild/artifact/examples/royale/ASDoc/bin/js-release/index.html"/>
 	</node>
 	<node label="ActionScript Frameworks">
 		<node label="Starling" link="https://gamua.com/starling/"/>
@@ -23,6 +23,7 @@
 	<node label="Resources">
 		<node label="Apache Flex" link="http://flex.apache.org/"/>
 		<node label="Apache Royale" link="https://royale.apache.org"/>
+		<node label="Apache Royale SDK (JS-only, Nightly)" link="http://apacheroyaleci2.westus2.cloudapp.azure.com:8080/job/royale-asjs_jsonly/"/>
 		<node label="Tour de Jewel" link="https://royale.apache.org/tourdejewel"/>
 		<node label="FlexJS Summit at ApacheCon Miami 2017" link="https://www.youtube.com/playlist?list=PL4EsaSA9xpnnraJX7NzpX6eh_P95RO8Pj"/>
 		<node label="Awesome ActionScript 3 (1)" link="https://github.com/robinrodricks/awesome-actionscript3"/>

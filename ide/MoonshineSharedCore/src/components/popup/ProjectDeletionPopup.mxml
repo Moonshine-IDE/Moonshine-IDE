@@ -31,7 +31,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.clearTimeout;
+		import actionScripts.factory.FileLocation;
+
+		import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
 			import mx.events.FlexEvent;
@@ -106,7 +108,7 @@
 				if (project is AS3ProjectVO)
 				{
 					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-					filesList.unshift(as3Project.swfOutput.path, as3Project.htmlPath, new FileLocation(as3Project.buildOptions.antBuildPath),
+					filesList.unshift(as3Project.swfOutput.path, new FileLocation(as3Project.urlToLaunch), new FileLocation(as3Project.buildOptions.antBuildPath),
 						as3Project.folderLocation.fileBridge.resolvePath("bin"), as3Project.folderLocation.fileBridge.resolvePath("bin-debug"), as3Project.folderLocation.fileBridge.resolvePath("html-template"),
 						as3Project.folderLocation.fileBridge.resolvePath("build"), as3Project.libraries, as3Project.includeLibraries, as3Project.externalLibraries, as3Project.nativeExtensions, 
 						as3Project.runtimeSharedLibraries, as3Project.hiddenPaths, as3Project.resourcePaths, 

@@ -265,6 +265,17 @@ package actionScripts.utils
 			}
 		}
 		
+		public static function updateXCodePath(path:String):void
+		{
+			var settings:Vector.<ISetting> = Vector.<ISetting>([
+				new PathSetting({xcodePath: path}, 'xcodePath', 'Xocde-CommandLine', true)
+			]);
+			
+			// save as moonshine settings
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+				null, "actionScripts.plugins.versionControl::VersionControlPlugin", settings));
+		}
+		
 		public static function addProgramingSDK(path:String):void
 		{
 			var sdkPath:FileLocation = new FileLocation(path);

@@ -24,6 +24,8 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.valueObjects.SDKReferenceVO;
 
+	import com.adobe.utils.StringUtil;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -687,20 +689,21 @@ package actionScripts.plugins.as3project.mxmlc
 			} 
 			else 
 			{
-				var urlToLaunch:FileLocation = pvo.htmlPath;
-				if (!pvo.htmlPath)
-				{
-                    urlToLaunch = new FileLocation(pvo.urlToLaunch);
-                }
-
                 warning("Launching application " + pvo.name + ".");
-				// Let SWFLauncher deal with playin' the swf
-				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, urlToLaunch.fileBridge.getFile as File, pvo)
-				);
+
+				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
+				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
+				{
+					launchEvent.url = pvo.customHTMLPath;
+				}
+				else
+				{
+					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
+				}
+
+				dispatcher.dispatchEvent(launchEvent);
 			}
 			currentProject = null;
-			//deactivate();
 		}
 		
 		private var resourceCopiedIndex:int;

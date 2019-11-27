@@ -97,12 +97,12 @@
 			
 			private function browse():void
 			{
-				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected);
+				model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected, null, isPathMapped ? mappedPath : null);
 			}
 			
 			private function onDirectorySelected(fileObj:Object):void
 			{
-				mappedPath = (fileObj as File).nativePath;
+				mappedPath = VersionControlUtils.LAST_CHECKOUT_BROWSED_LOCATION = (fileObj as File).nativePath;
 				
 				VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE = true;
 				isPathMapped = true;
@@ -163,7 +163,7 @@
 				}
 				if (VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE)
 				{
-					mappedPath = model.fileCore.nativePath;
+					mappedPath = VersionControlUtils.LAST_CHECKOUT_BROWSED_LOCATION;
 					isPathMapped = true;
 				}
 				

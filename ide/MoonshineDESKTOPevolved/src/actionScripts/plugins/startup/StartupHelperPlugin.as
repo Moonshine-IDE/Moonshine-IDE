@@ -460,8 +460,6 @@ package actionScripts.plugins.startup
 		 */
 		private function updateGitAndSVN(path:String):void
 		{
-			var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
-			var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
 			if (!gettingStartedPopup)
 			{
 				PathSetupHelperUtil.updateFieldPath(ComponentTypes.TYPE_GIT, path);
