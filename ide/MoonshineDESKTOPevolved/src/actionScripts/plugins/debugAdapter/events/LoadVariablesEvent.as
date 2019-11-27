@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter.events
 {
-	import actionScripts.plugins.debugAdapter.vo.BaseVariablesReference;
+	import actionScripts.debugAdapter.vo.BaseVariablesReference;
 
 	import flash.events.Event;
 

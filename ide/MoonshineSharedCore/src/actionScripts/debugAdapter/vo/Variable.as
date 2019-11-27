@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.debugAdapter.vo
+package actionScripts.debugAdapter.vo
 {
 	public class Variable extends BaseVariablesReference
 	{

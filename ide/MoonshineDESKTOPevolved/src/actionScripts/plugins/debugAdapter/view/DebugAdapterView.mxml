@@ -37,9 +37,9 @@
 		import mx.events.ListEvent;
 		import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
 		import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
-		import actionScripts.plugins.debugAdapter.vo.BaseVariablesReference;
-		import actionScripts.plugins.debugAdapter.vo.StackFrame;
-		import actionScripts.plugins.debugAdapter.vo.Variable;
+		import actionScripts.debugAdapter.vo.BaseVariablesReference;
+		import actionScripts.debugAdapter.vo.StackFrame;
+		import actionScripts.debugAdapter.vo.Variable;
 
 		[Bindable]
 		public var stackFrames:ICollectionView;

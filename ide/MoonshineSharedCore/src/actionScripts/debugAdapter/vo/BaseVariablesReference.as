@@ -16,16 +16,10 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.debugAdapter.vo
+package actionScripts.debugAdapter.vo
 {
-	public class Source
+	public class BaseVariablesReference
 	{
-		public function Source()
-		{
-		}
-		
-		public var name:String;
-		public var path:String;
-		public var sourceReference:Number;
+		public var variablesReference:Number = -1;
 	}
 }

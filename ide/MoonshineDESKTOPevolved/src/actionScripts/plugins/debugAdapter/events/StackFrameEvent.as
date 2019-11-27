@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter.events
 {
-	import actionScripts.plugins.debugAdapter.vo.StackFrame;
+	import actionScripts.debugAdapter.vo.StackFrame;
 
 	import flash.events.Event;
 

@@ -16,18 +16,15 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.debugAdapter.vo
+package actionScripts.debugAdapter.vo
 {
-	public class StackFrame
+	public class Scope extends BaseVariablesReference
 	{
-		public function StackFrame()
+		public function Scope()
 		{
 		}
 		
-		public var id:int;
 		public var name:String;
-		public var line:int;
-		public var column:int;
-		public var source:Source;
+		public var expensive:Boolean;
 	}
 }

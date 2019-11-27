@@ -41,6 +41,7 @@ package actionScripts.plugins.debugAdapter
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
+    import actionScripts.debugAdapter.DebugAdapter;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{

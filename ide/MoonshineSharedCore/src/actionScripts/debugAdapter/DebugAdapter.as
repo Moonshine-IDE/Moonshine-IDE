@@ -16,18 +16,18 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.debugAdapter
+package actionScripts.debugAdapter
 {
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.debugAdapter.vo.BaseVariablesReference;
-	import actionScripts.plugins.debugAdapter.vo.Scope;
-	import actionScripts.plugins.debugAdapter.vo.Source;
-	import actionScripts.plugins.debugAdapter.vo.StackFrame;
-	import actionScripts.plugins.debugAdapter.vo.Variable;
-	import actionScripts.plugins.debugAdapter.vo.VariablesReferenceHierarchicalData;
+	import actionScripts.debugAdapter.vo.BaseVariablesReference;
+	import actionScripts.debugAdapter.vo.Scope;
+	import actionScripts.debugAdapter.vo.Source;
+	import actionScripts.debugAdapter.vo.StackFrame;
+	import actionScripts.debugAdapter.vo.Variable;
+	import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
 
