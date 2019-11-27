@@ -131,6 +131,10 @@ package actionScripts.ui.editor.text
 			var char:int = charAndLine.x;
 			var filtered:Vector.<Diagnostic> = savedDiagnostics.filter(function(item:Diagnostic, index:int, source:Vector.<Diagnostic>):Boolean
 			{
+				if(item.severity === Diagnostic.SEVERITY_HINT)
+				{
+					return false;
+				}
 				var range:Range = item.range;
 				var start:Position = range.start;
 				var end:Position = range.end;
