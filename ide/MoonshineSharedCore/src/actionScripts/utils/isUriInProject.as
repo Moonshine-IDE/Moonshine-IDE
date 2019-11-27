@@ -19,19 +19,17 @@
 package actionScripts.utils
 {
 	import actionScripts.valueObjects.ProjectVO;
-	import flash.filesystem.File;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 
 	public function isUriInProject(uri:String, project:ProjectVO):Boolean
 	{
-		var fileForUri:File = new File();
-		fileForUri.url = uri;
-		var projectFile:File = new File(project.folderPath);
+		var fileForUri:FileLocation = new FileLocation(uri, true);
+		var projectFile:FileLocation = new FileLocation(project.folderPath, false);
 		//getRelativePath() will return null if fileForUri is not in the
 		//projectFile directory
-		if(projectFile.getRelativePath(fileForUri, false) !== null)
+		if(projectFile.fileBridge.getRelativePath(fileForUri, false) !== null)
 		{
 			return true;
 		}
@@ -43,8 +41,7 @@ package actionScripts.utils
 			for(var i:int = 0; i < sourcePathCount; i++)
 			{
 				var sourcePath:FileLocation = sourcePaths[i];
-				var sourcePathFile:File = new File(sourcePath.fileBridge.nativePath);
-				if(sourcePathFile.getRelativePath(fileForUri, false) !== null)
+				if(sourcePath.fileBridge.getRelativePath(fileForUri, false) !== null)
 				{
 					return true;
 				}
@@ -52,8 +49,8 @@ package actionScripts.utils
 			var sdkPath:String = getProjectSDKPath(project, IDEModel.getInstance());
 			if(sdkPath != null)
 			{
-				var sdkFile:File = new File(sdkPath);
-				if(sdkFile.getRelativePath(fileForUri, false) !== null)
+				var sdkFile:FileLocation = new FileLocation(sdkPath, false);
+				if(sdkFile.fileBridge.getRelativePath(fileForUri, false) !== null)
 				{
 					return true;
 				}

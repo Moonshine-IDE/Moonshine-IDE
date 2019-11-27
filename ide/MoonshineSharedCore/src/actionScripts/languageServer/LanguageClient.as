@@ -22,7 +22,6 @@ package actionScripts.languageServer
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.filesystem.File;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.IDataInput;
@@ -63,6 +62,7 @@ package actionScripts.languageServer
 	import actionScripts.events.ReferencesEvent;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.isUriInProject;
+	import actionScripts.factory.FileLocation;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -349,7 +349,7 @@ package actionScripts.languageServer
 			//clear any remaining diagnostics
 			for(var uri:String in this._savedDiagnostics)
 			{
-				var path:String = (new File(uri)).nativePath;
+				var path:String = (new FileLocation(uri, true)).fileBridge.nativePath;
 				delete this._savedDiagnostics[uri];
 				var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
 				_globalDispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, path, diagnostics));
@@ -1327,7 +1327,7 @@ package actionScripts.languageServer
 		{
 			var diagnosticsParams:Object = jsonObject.params;
 			var uri:String = diagnosticsParams.uri;
-			var path:String = (new File(uri)).nativePath;
+			var path:String = (new FileLocation(uri, true)).fileBridge.nativePath;
 			var resultDiagnostics:Array = diagnosticsParams.diagnostics;
 			this._savedDiagnostics[uri] = resultDiagnostics;
 			var diagnostics:Vector.<Diagnostic> = new <Diagnostic>[];
