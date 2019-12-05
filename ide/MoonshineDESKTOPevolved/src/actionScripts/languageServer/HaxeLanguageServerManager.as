@@ -358,6 +358,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var haxeFileName:String = (Settings.os == "win") ? "haxe.exe" : "haxe";
+			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
 
 			trace("Haxe language server workspace root: " + project.folderPath);
 			trace("Haxe language server SDK: " + sdkPath);
@@ -365,13 +366,17 @@ package actionScripts.languageServer
 			var sendMethodResults:Boolean = false;
 			var options:Object = 
 			{
+				displayArguments: displayArguments,
 				displayServerConfig: {
 					path: new File(sdkPath).resolvePath(haxeFileName).nativePath,
 					arguments: [/*"-v"*/],
-					env: {}
+					env: {},
+					print: {completion: false, reusing: false},
+					useSocket: false
 				},
-				displayArguments: displayArguments,
-				haxelibConfig: {},
+				haxelibConfig: {
+					executable: new File(sdkPath).resolvePath(haxelibFileName).nativePath
+				},
 				sendMethodResults: sendMethodResults
 			};
 
