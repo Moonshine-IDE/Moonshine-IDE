@@ -224,7 +224,8 @@ package actionScripts.plugins.debugAdapter
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
 			
-			var debugMode:Boolean = true;
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
+			var debugMode:Boolean = false;
 			_debugAdapter = new DebugAdapter(CLIENT_ID, CLIENT_NAME, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);
@@ -237,6 +238,7 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_initHandler(event:Event):void
 		{
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = true;
 			for(var path:String in _breakpoints)
 			{
 				_debugAdapter.setBreakpoints(path, _breakpoints[path] as Array);
@@ -245,6 +247,7 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_closeHandler(event:Event):void
 		{
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			_debugAdapter = null;
 			if(_nativeProcess)
 			{

@@ -28,7 +28,6 @@ package actionScripts.debugAdapter
 	import actionScripts.debugAdapter.vo.StackFrame;
 	import actionScripts.debugAdapter.vo.Variable;
 	import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
 
 	import flash.errors.IllegalOperationError;
@@ -153,11 +152,12 @@ package actionScripts.debugAdapter
 		private var _variablesLookup:Dictionary = new Dictionary();
 
 		private var _receivedInitializeResponse:Boolean = false;
+		private var _receivedInitializedEvent:Boolean = false;
 		private var _waitingForLaunchOrAttach:Boolean = false;
 
 		public function get initialized():Boolean
 		{
-			return _receivedInitializeResponse;
+			return _receivedInitializedEvent;
 		}
 
 		public function get launchedOrAttached():Boolean
@@ -184,13 +184,11 @@ package actionScripts.debugAdapter
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
 			
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			_receivedInitializeResponse = false;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
 			
 			mainThreadID = -1;
-			
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = true;
 			
 			sendRequest(COMMAND_INITIALIZE,
 			{
@@ -233,7 +231,7 @@ package actionScripts.debugAdapter
 
 		public function resume():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -244,7 +242,7 @@ package actionScripts.debugAdapter
 
 		public function pause():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || _paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || _paused)
 			{
 				return;
 			}
@@ -254,7 +252,7 @@ package actionScripts.debugAdapter
 
 		public function stepOver():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -264,7 +262,7 @@ package actionScripts.debugAdapter
 
 		public function stepInto():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -274,7 +272,7 @@ package actionScripts.debugAdapter
 
 		public function stepOut():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -292,8 +290,8 @@ package actionScripts.debugAdapter
 			this._scopesAndVars.removeAll();
 			this._stackFrames.removeAll();
 			_receivedInitializeResponse = false;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			
 			_inputDispatcher.removeEventListener(_inputEvent, input_onData);
 
@@ -368,6 +366,10 @@ package actionScripts.debugAdapter
 			if(command != COMMAND_INITIALIZE && !_receivedInitializeResponse)
 			{
 				throw new IllegalOperationError("Send request failed. Must wait for initialize response before sending request of type '" + command + "' to the debug adapter.");
+			}
+			if(command != COMMAND_LAUNCH && command != COMMAND_ATTACH && _receivedInitializeResponse && !_receivedInitializedEvent)
+			{
+				throw new IllegalOperationError("Send request failed. Must wait for initialized event before sending request of type '" + command + "' to the debug adapter.");
 			}
 			_seq++;
 			var message:Object =
@@ -584,6 +586,7 @@ package actionScripts.debugAdapter
 			var body:Object = response.body;
 			_supportsConfigurationDoneRequest = body && body.supportsConfigurationDoneRequest === true;
 			_receivedInitializeResponse = true;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
 
 			//the request and command are the same constant
@@ -887,6 +890,7 @@ package actionScripts.debugAdapter
 		
 		private function parseInitializedEvent(event:Object):void
 		{
+			_receivedInitializedEvent = true;
 			this.dispatchEvent(new Event(Event.INIT));
 			if(this._supportsConfigurationDoneRequest)
 			{
