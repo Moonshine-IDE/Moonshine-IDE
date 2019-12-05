@@ -187,7 +187,14 @@ package actionScripts.debugAdapter
 			sendRequest(COMMAND_INITIALIZE,
 			{
 				"clientID": this._clientID,
-				"adapterID": adapterID
+				"adapterID": adapterID,
+				"pathFormat": "path",
+				"linesStartAt1": true,
+				"columnsStartAt1": true,
+				"supportsVariableType": false,
+				"supportsVariablePaging": false,
+				"supportsRunInTerminalRequest": false,
+				"supportsMemoryReferences": false
 			});
 		}
 
