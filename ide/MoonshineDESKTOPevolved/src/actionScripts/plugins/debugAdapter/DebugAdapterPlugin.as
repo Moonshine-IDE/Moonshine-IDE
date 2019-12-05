@@ -42,6 +42,7 @@ package actionScripts.plugins.debugAdapter
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
     import actionScripts.debugAdapter.DebugAdapter;
+    import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
@@ -189,6 +190,11 @@ package actionScripts.plugins.debugAdapter
 				case "swf":
 				{
 					launcher = new SWFDebugAdapterLauncher();
+					break;
+				}
+				case "chrome":
+				{
+					launcher = new ChromeDebugAdapterLauncher();
 					break;
 				}
 				default:

@@ -1,0 +1,115 @@
+parameters:
+  name: ''
+  vmImage: ''
+
+jobs:
+- job: ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  steps:
+  - task: NodeTool@0
+    displayName: Use Node 10.x
+    inputs:
+      versionSpec: 10.x
+      checkLatest: true
+
+  - ${{ if eq(parameters.name, 'Windows') }}:
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+      displayName: 'Run CredScan'
+      inputs:
+        verboseOutput: true
+        debugMode: false
+      continueOnError: true
+
+  - task: Npm@1
+    displayName: npm install
+    inputs:
+      command: custom
+      customCommand: install --unsafe-perms
+      verbose: false
+
+  - ${{ if eq(parameters.name, 'Linux') }}:
+    - script: |
+        cd '$(Build.SourcesDirectory)'
+
+        export npm_package_engines_vscode='^1.19.0'
+        node ./node_modules/vscode/bin/install
+
+  - task: Npm@1
+    displayName: npm build
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run build'
+
+  - task: Npm@1
+    displayName: npm test
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: test
+
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    inputs:
+      ignoreDirectories: 'testdata'
+
+  - task: Npm@1
+    displayName: Integration tests
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run allIntTest'
+
+  - task: Npm@1
+    displayName: npm lint
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run lint'
+
+  - ${{ if eq(parameters.name, 'Windows') }}:
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+      displayName: 'TSA upload to Codebase: vscode-chrome-debug_master Version: TsaV2'
+      inputs:
+        tsaVersion: TsaV2
+        codebase: NewOrUpdate
+        codeBaseName: 'vscode-chrome-debug_master'
+        notificationAlias: 'webdiag-extensions@microsoft.com'
+        instanceUrlForTsaV2: DEVDIV
+        projectNameDEVDIV: DevDiv
+        areaPath: 'DevDiv\TypeScript\HTML Experiences\Diagnostics\Debugger'
+        uploadAPIScan: false
+        uploadBinSkim: false
+        uploadFortifySCA: false
+        uploadFxCop: false
+        uploadModernCop: false
+        uploadPoliCheck: false
+        uploadPREfast: false
+        uploadRoslyn: false
+        uploadTSLint: false
+
+
+  - ${{ if eq(parameters.name, 'Windows') }}:
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+      displayName: 'Publish Security Analysis Logs'
+
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+      testResultsFiles: '**/test-*.xml'
+      publishRunAttachments: true
+
+  - task: PublishPipelineArtifact@0
+    condition: eq('${{ parameters.name }}', 'Windows')
+    inputs:
+      artifactName: 'testsOnWindows'
+      targetPath: 'logs/'
+
+  - ${{ if eq(parameters.name, 'MacOS') }}:
+    - task: PublishPipelineArtifact@0
+      condition: always()
+      inputs:
+        artifactName: 'testsOnMacOS'
+        targetPath: 'logs/'

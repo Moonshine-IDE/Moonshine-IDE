@@ -1,0 +1,465 @@
+{
+  "name": "debugger-for-chrome",
+  "displayName": "Debugger for Chrome",
+  "version": "4.12.2",
+  "icon": "images/icon.png",
+  "description": "%extension.description%",
+  "author": {
+    "name": "Microsoft Corporation"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-chrome-debug"
+  },
+  "publisher": "msjsdiag",
+  "bugs": "https://github.com/microsoft/vscode-chrome-debug/issues",
+  "extensionKind": [
+    "ui"
+  ],
+  "engines": {
+    "vscode": "^1.17.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "keywords": [
+    "multi-root ready"
+  ],
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "dependencies": {
+    "vscode-chrome-debug-core": "^6.8.6",
+    "vscode-debugadapter": "^1.37.1",
+    "vscode-nls": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/chai-string": "^1.4.1",
+    "@types/lodash": "^4.14.120",
+    "@types/mocha": "^2.2.48",
+    "@types/mockery": "^1.4.29",
+    "@types/node": "^8.10.39",
+    "@types/puppeteer": "^1.12.3",
+    "@types/source-map": "^0.1.27",
+    "@types/tmp": "0.0.32",
+    "chai": "^4.2.0",
+    "chai-string": "^1.5.0",
+    "concurrently": "^3.1.0",
+    "del": "^3.0.0",
+    "event-stream": "^3.3.4",
+    "get-port": "^5.0.0",
+    "glob": "^7.1.1",
+    "gulp": "^4.0.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-tslint": "^8.1.3",
+    "gulp-typescript": "^4.0.1",
+    "gulp-util": "^3.0.8",
+    "http-server": "0.9.0",
+    "lodash": "^4.17.11",
+    "minimist": "^1.2.0",
+    "mocha": "^6.1.4",
+    "mocha-junit-reporter": "^1.21.0",
+    "mocha-multi-reporters": "^1.1.7",
+    "mockery": "^1.7.0",
+    "puppeteer": "^1.17.0",
+    "request-promise-native": "^1.0.7",
+    "source-map-support": "^0.5.11",
+    "tmp": "0.0.31",
+    "ts-loader": "^1.0.0",
+    "tslint": "^5.7.0",
+    "typemoq": "^2.1.0",
+    "typescript": "^3.5.2",
+    "vsce": "^1.48.0",
+    "vscode": "^1.1.30",
+    "vscode-chrome-debug-core-testsupport": "^4.0.0",
+    "vscode-debugadapter-testsupport": "^1.33.0",
+    "vscode-debugprotocol": "^1.37.0",
+    "vscode-nls-dev": "^3.2.6"
+  },
+  "main": "./out/src/extension",
+  "activationEvents": [
+    "onDebugInitialConfigurations",
+    "onDebugResolve:chrome",
+    "onCommand:extension.chrome-debug.toggleSkippingFile",
+    "onCommand:extension.chrome-debug.toggleSmartStep"
+  ],
+  "scripts": {
+    "build": "gulp build",
+    "watch": "gulp watch",
+    "start": "node out/src/chromeDebug.js --server=4712",
+    "test": "mocha --exit --timeout 20000 -s 2000 -u tdd --colors \"./out/test/*.test.js\"",
+    "intTest": "mocha --exit --timeout 20000 -s 3500 -u tdd --colors --reporter node_modules/vscode-chrome-debug-core-testsupport/out/loggingReporter.js ./out/test/int/*.test.js",
+    "frameworkTest": "mocha --require source-map-support/register --exit --timeout 20000 -s 3500 -u tdd --colors --reporter mocha-multi-reporters --reporter-options configFile=test/int/testConfig.json ./out/test/int/framework/*.test.js",
+    "allIntTest": "mocha --require source-map-support/register --exit --timeout 20000 -s 3500 -u tdd --colors --reporter mocha-multi-reporters --reporter-options configFile=test/int/testConfig.json \"./out/test/int/**/*.test.js\"",
+    "lint": "gulp tslint",
+    "vscode:prepublish": "gulp verify-no-linked-modules",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "patch": "npm version patch -m '%s'",
+    "minor": "npm version minor -m '%s'",
+    "major": "npm version major -m '%s'",
+    "package": "gulp package"
+  },
+  "contributes": {
+    "breakpoints": [
+      {
+        "language": "javascript"
+      },
+      {
+        "language": "typescriptreact"
+      },
+      {
+        "language": "javascriptreact"
+      },
+      {
+        "language": "fsharp"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "chrome",
+        "label": "Chrome",
+        "program": "./out/src/chromeDebug.js",
+        "runtime": "node",
+        "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+        "languages": [
+          "javascript",
+          "typescript",
+          "javascriptreact",
+          "typescriptreact"
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Chrome: Launch",
+            "description": "Launch Chrome to debug a URL",
+            "body": {
+              "type": "chrome",
+              "request": "launch",
+              "name": "Launch Chrome",
+              "url": "http://localhost:8080",
+              "webRoot": "^\"${2:\\${workspaceFolder\\}}\""
+            }
+          },
+          {
+            "label": "Chrome: Attach",
+            "description": "Attach to an instance of Chrome already in debug mode",
+            "body": {
+              "type": "chrome",
+              "request": "attach",
+              "name": "Attach to Chrome",
+              "port": 9222,
+              "webRoot": "^\"${2:\\${workspaceFolder\\}}\""
+            }
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "port": {
+                "type": "number",
+                "description": "%chrome.port.description%",
+                "default": 9222
+              },
+              "address": {
+                "type": "string",
+                "description": "%chrome.address.description%",
+                "default": "127.0.0.1"
+              },
+              "file": {
+                "type": "string",
+                "description": "%chrome.file.description%",
+                "default": "${workspaceFolder}/index.html"
+              },
+              "url": {
+                "type": "string",
+                "description": "%chrome.url.description%",
+                "default": "http://localhost:8080"
+              },
+              "webRoot": {
+                "type": "string",
+                "description": "%chrome.webRoot.description%",
+                "default": "${workspaceFolder}"
+              },
+              "pathMapping": {
+                "type": "object",
+                "description": "%chrome.pathMapping.description%",
+                "default": {
+                  "/": "${workspaceFolder}"
+                }
+              },
+              "runtimeExecutable": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "%chrome.runtimeExecutable.description%",
+                "default": null
+              },
+              "runtimeArgs": {
+                "type": "array",
+                "description": "%chrome.runtimeArgs.description%",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "env": {
+                "type": "object",
+                "description": "%chrome.env.description%",
+                "default": {}
+              },
+              "cwd": {
+                "type": "string",
+                "description": "%chrome.cwd.description%",
+                "default": null
+              },
+              "sourceMaps": {
+                "type": "boolean",
+                "description": "%chrome.sourceMaps.description%",
+                "default": true
+              },
+              "diagnosticLogging": {
+                "type": "boolean",
+                "description": "%chrome.diagnosticLogging.description%",
+                "default": true,
+                "deprecationMessage": "'diagnosticLogging' is deprecated. Use 'trace' instead."
+              },
+              "verboseDiagnosticLogging": {
+                "type": "boolean",
+                "description": "%chrome.verboseDiagnosticLogging.description%",
+                "default": true,
+                "deprecationMessage": "'verboseDiagnosticLogging' is deprecated. Use 'trace' instead."
+              },
+              "trace": {
+                "type": [
+                  "boolean",
+                  "string"
+                ],
+                "enum": [
+                  "verbose",
+                  true
+                ],
+                "default": true,
+                "description": "%chrome.trace.description%"
+              },
+              "userDataDir": {
+                "type": [
+                  "string",
+                  "boolean"
+                ],
+                "description": "%chrome.userDataDir.description%",
+                "default": true
+              },
+              "sourceMapPathOverrides": {
+                "type": "object",
+                "description": "%chrome.sourceMapPathOverrides.description%",
+                "default": {
+                  "webpack:///./*": "${webRoot}/*",
+                  "webpack:///src/*": "${webRoot}/*",
+                  "webpack:///*": "*",
+                  "webpack:///./~/*": "${webRoot}/node_modules/*",
+                  "meteor://💻app/*": "${webRoot}/*"
+                }
+              },
+              "smartStep": {
+                "type": "boolean",
+                "description": "%chrome.smartStep.description%",
+                "default": true
+              },
+              "skipFiles": {
+                "type": "array",
+                "description": "%chrome.skipFiles.description%",
+                "default": []
+              },
+              "timeout": {
+                "type": "number",
+                "description": "%chrome.timeout.description%",
+                "default": 10000
+              },
+              "disableNetworkCache": {
+                "type": "boolean",
+                "description": "%chrome.disableNetworkCache.description%",
+                "default": true
+              },
+              "urlFilter": {
+                "type": "string",
+                "description": "%chrome.urlFilter.description%",
+                "default": ""
+              },
+              "showAsyncStacks": {
+                "type": "boolean",
+                "description": "%chrome.showAsyncStacks.description%",
+                "default": true
+              },
+              "breakOnLoad": {
+                "type": "boolean",
+                "description": "%chrome.breakOnLoad.description%",
+                "default": true
+              },
+              "breakOnLoadStrategy": {
+                "type": "string",
+                "enum": [
+                  "instrument",
+                  "regex"
+                ],
+                "enumDescriptions": [
+                  "%chrome.breakOnLoadStrategy.instrument.description%",
+                  "%chrome.breakOnLoadStrategy.regex.description%"
+                ],
+                "description": "%chrome.breakOnLoadStrategy.description%",
+                "default": "instrument"
+              },
+              "targetTypes": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "description": "%chrome.targetTypes.description%",
+                "default": [
+                  "page"
+                ]
+              }
+            }
+          },
+          "attach": {
+            "required": [
+              "port"
+            ],
+            "properties": {
+              "port": {
+                "type": "number",
+                "description": "%chrome.port.description%",
+                "default": 9222
+              },
+              "address": {
+                "type": "string",
+                "description": "%chrome.address.description%",
+                "default": "127.0.0.1"
+              },
+              "sourceMaps": {
+                "type": "boolean",
+                "description": "%chrome.sourceMaps.description%",
+                "default": true
+              },
+              "diagnosticLogging": {
+                "type": "boolean",
+                "description": "%chrome.diagnosticLogging.description%",
+                "default": true,
+                "deprecationMessage": "'diagnosticLogging' is deprecated. Use 'trace' instead."
+              },
+              "verboseDiagnosticLogging": {
+                "type": "boolean",
+                "description": "%chrome.verboseDiagnosticLogging.description%",
+                "default": true,
+                "deprecationMessage": "'verboseDiagnosticLogging' is deprecated. Use 'trace' instead."
+              },
+              "trace": {
+                "type": [
+                  "boolean",
+                  "string"
+                ],
+                "enum": [
+                  "verbose",
+                  true
+                ],
+                "default": true,
+                "description": "%chrome.trace.description%"
+              },
+              "url": {
+                "type": "string",
+                "description": "%chrome.url.description%",
+                "default": "http://localhost:8080"
+              },
+              "webRoot": {
+                "type": "string",
+                "description": "%chrome.webRoot.description%",
+                "default": "${workspaceFolder}"
+              },
+              "pathMapping": {
+                "type": "object",
+                "description": "%chrome.pathMapping.description%",
+                "default": {}
+              },
+              "sourceMapPathOverrides": {
+                "type": "object",
+                "description": "%chrome.sourceMapPathOverrides.description%",
+                "default": {}
+              },
+              "smartStep": {
+                "type": "boolean",
+                "description": "%chrome.smartStep.description%",
+                "default": true
+              },
+              "skipFiles": {
+                "type": "array",
+                "description": "%chrome.skipFiles.description%",
+                "default": []
+              },
+              "timeout": {
+                "type": "number",
+                "description": "%chrome.timeout.description%",
+                "default": 10000
+              },
+              "disableNetworkCache": {
+                "type": "boolean",
+                "description": "%chrome.disableNetworkCache.description%",
+                "default": true
+              },
+              "urlFilter": {
+                "type": "string",
+                "description": "%chrome.urlFilter.description%",
+                "default": ""
+              },
+              "targetTypes": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "description": "%chrome.targetTypes.description%",
+                "default": [
+                  "page"
+                ]
+              },
+              "showAsyncStacks": {
+                "type": "boolean",
+                "description": "%chrome.showAsyncStacks.description%",
+                "default": true
+              }
+            }
+          }
+        }
+      }
+    ],
+    "menus": {
+      "debug/callstack/context": [
+        {
+          "command": "extension.chrome-debug.toggleSkippingFile",
+          "group": "navigation",
+          "when": "inDebugMode && debugType == 'chrome' && callStackItemType == 'stackFrame'"
+        },
+        {
+          "command": "extension.chrome-debug.toggleSmartStep",
+          "group": "navigation",
+          "when": "inDebugMode && debugType == 'chrome' && callStackItemType == 'stackFrame'"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.chrome-debug.toggleSkippingFile",
+        "title": "%chrome.toggleSkipping.title%"
+      },
+      {
+        "command": "extension.chrome-debug.toggleSmartStep",
+        "title": "%chrome.toggleSmartStep.title%"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.node-debug.pickLoadedScript",
+        "key": "ctrl+f4",
+        "mac": "cmd+f4",
+        "when": "debugType == 'chrome'"
+      }
+    ]
+  }
+}

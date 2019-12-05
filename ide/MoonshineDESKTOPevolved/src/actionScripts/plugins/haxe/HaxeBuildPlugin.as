@@ -50,6 +50,8 @@ package actionScripts.plugins.haxe
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
+    import flash.errors.IllegalOperationError;
+    import actionScripts.factory.FileLocation;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -204,6 +206,7 @@ package actionScripts.plugins.haxe
             {
                 switch(project.limeTargetPlatform)
                 {
+                    case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
@@ -466,34 +469,76 @@ package actionScripts.plugins.haxe
 
         private function debugAfterBuild(project:HaxeProjectVO):void
         {
-            var launchArgs:Object =
-            {
-                "name": "Moonshine Haxe SWF Launch"
-            };
+            var debugCommand:String = "launch";
+            var debugAdapterType:String = null;
+            var launchArgs:Object = {};
             if(project.isLime)
             {
-                if(project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_AIR)
+                switch(project.limeTargetPlatform)
                 {
-                    //switch to the Adobe AIR application descriptor XML file
-                    var swfFile:File = project.folderLocation.fileBridge
-                        .resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
-                    var appDescriptorFile:File = swfFile.parent.resolvePath("application.xml");
-                    var generatedAppDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
-                    generatedAppDescriptorFile.copyTo(appDescriptorFile, true);
-                    launchArgs["program"] = appDescriptorFile.nativePath;
-                }
-                else //flash
-                {
-                    swfFile = project.folderLocation.fileBridge
-                        .resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
-                    launchArgs["program"] = swfFile.nativePath;
+                    case HaxeProjectVO.LIME_PLATFORM_HTML5:
+                    {
+                        var webRoot:FileLocation = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
+                        launchArgs["name"] = "Moonshine Chrome Launch";
+                        launchArgs["file"] = webRoot.resolvePath("index.html").fileBridge.nativePath;
+                        //launchArgs["url"] = "http://localhost:3000";
+			            //launchArgs["webRoot"] = webRoot.fileBridge.nativePath;
+                        //enable for debug logging to a file
+                        //launchArgs["trace"] = true;
+                        debugAdapterType = "chrome";
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_AIR:
+                    {
+                        //switch to the Adobe AIR application descriptor XML file
+                        var swfFile:File = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
+                        var appDescriptorFile:File = swfFile.parent.resolvePath("application.xml");
+                        var generatedAppDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
+                        generatedAppDescriptorFile.copyTo(appDescriptorFile, true);
+
+                        launchArgs["name"] = "Moonshine Lime Adobe AIR Launch";
+                        launchArgs["program"] = appDescriptorFile.nativePath;
+                        debugAdapterType = "swf";
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
+                    {
+                        swfFile = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
+                        launchArgs["name"] = "Moonshine Lime Flash Player Launch";
+                        launchArgs["program"] = swfFile.nativePath;
+                        debugAdapterType = "swf";
+                        break;
+                    }
+                    default:
+                    {
+                        throw new IllegalOperationError("Debugging not supported on Lime target platform: " + project.limeTargetPlatform);
+                    }
                 }
             }
             else // plain Haxe project
             {
-                launchArgs["program"] = project.haxeOutput.path.fileBridge.nativePath;
+                switch(project.haxeOutput.platform)
+                {
+                    case HaxeOutputVO.PLATFORM_AIR:
+                    case HaxeOutputVO.PLATFORM_AIR_MOBILE:
+                    case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
+                    {
+                        launchArgs["name"] = "Moonshine Haxe Launch";
+                        launchArgs["program"] = project.haxeOutput.path.fileBridge.nativePath;
+                        debugAdapterType = "swf";
+                        break;
+                    }
+                    default:
+                    {
+                        throw new IllegalOperationError("Debugging not supported on Haxe target platform: " + project.haxeOutput.platform);
+                    }
+                }
             }
-            dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, project, "swf", "launch", launchArgs));
+            dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
+                project, debugAdapterType, debugCommand, launchArgs));
         }
 
         private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String):void
