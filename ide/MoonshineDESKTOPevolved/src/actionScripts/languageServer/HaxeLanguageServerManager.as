@@ -210,6 +210,11 @@ package actionScripts.languageServer
 				return;
 			}
 
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Haxe: Checking version...", false
+			));
+
 			this._haxeVersion = "";
 			var haxeVersionCommand:Vector.<String> = new <String>[
 				EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH,
@@ -257,6 +262,11 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Haxe: Loading project...", false
+			));
 
 			this._displayArguments = "";
 			var limeDisplayCommand:Vector.<String> = new <String>[
@@ -470,6 +480,11 @@ package actionScripts.languageServer
 		
 		private function limeDisplayProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
 			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
 			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 			_limeDisplayProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
@@ -498,6 +513,11 @@ package actionScripts.languageServer
 		
 		private function haxeVersionProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
 			_haxeVersionProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
 			_haxeVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
 			_haxeVersionProcess.exit();
@@ -615,14 +635,15 @@ package actionScripts.languageServer
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				"Haxe", message.params.message, false
+				project.name, message.params.title, false
 			));
 		}
 
 		private function haxe__progressStop(message:Object):void
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
 			));
 		}
 	}
