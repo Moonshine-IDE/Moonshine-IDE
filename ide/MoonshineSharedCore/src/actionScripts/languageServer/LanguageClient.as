@@ -1566,22 +1566,9 @@ package actionScripts.languageServer
 			textDocument.uri = uri;
 			_documentVersion++;
 
-			var range:Object = new Object();
-			var startposition:Object = new Object();
-			startposition.line = event.startLineNumber;
-			startposition.character = event.startLinePos;
-			range.start = startposition;
-
-			var endposition:Object = new Object();
-			endposition.line = event.endLineNumber;
-			endposition.character = event.endLinePos;
-			range.end = endposition;
-
-			var contentChangesArr:Array = new Array();
-			var contentChanges:Object = new Object();
-			contentChanges.range = null;//range;
-			contentChanges.rangeLength = 0;
-			contentChanges.text = event.newText;
+			var change:Object = new Object();
+			change.text = event.newText;
+			var contentChanges:Array = [change];
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
