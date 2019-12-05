@@ -83,6 +83,7 @@ package actionScripts.debugAdapter
 		private static const COMMAND_SCOPES:String = "scopes";
 		private static const COMMAND_STACK_TRACE:String = "stackTrace";
 		private static const COMMAND_VARIABLES:String = "variables";
+		private static const COMMAND_CONFIGURATION_DONE:String = "configurationDone";
 		private static const EVENT_INITIALIZED:String = "initialized";
 		private static const EVENT_BREAKPOINT:String = "breakpoint";
 		private static const EVENT_OUTPUT:String = "output";
@@ -96,11 +97,12 @@ package actionScripts.debugAdapter
 		private static const OUTPUT_CATEGORY_STDERR:String = "stderr";
 		private static const OUTPUT_CATEGORY_TELEMETRY:String = "telemetry";
 
-		public function DebugAdapter(clientID:String, debugMode:Boolean, dispatcher:IEventDispatcher,
+		public function DebugAdapter(clientID:String, clientName:String, debugMode:Boolean, dispatcher:IEventDispatcher,
 			input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String,
 			output:IDataOutput, outputFlushCallback:Function = null)
 		{
 			_clientID = clientID;
+			_clientName = clientName;
 			_debugMode = debugMode;
 			_dispatcher = dispatcher;
 			_input = input;
@@ -113,6 +115,7 @@ package actionScripts.debugAdapter
 		}
 
 		private var _clientID:String;
+		private var _clientName:String;
 		private var _debugMode:Boolean = false;
 		private var _dispatcher:IEventDispatcher;
 		private var _input:IDataInput;
@@ -121,6 +124,8 @@ package actionScripts.debugAdapter
 		private var _inputEvent:String;
 		private var _outputFlushCallback:Function;
 		private var _model:IDEModel = IDEModel.getInstance();
+
+		private var _supportsConfigurationDoneRequest:Boolean = false;
 
 		private var _seq:int = 0;
 		private var _byteArray:ByteArray = new ByteArray();
@@ -188,6 +193,7 @@ package actionScripts.debugAdapter
 			sendRequest(COMMAND_INITIALIZE,
 			{
 				"clientID": this._clientID,
+				"clientName": this._clientName,
 				"adapterID": adapterID,
 				"pathFormat": "path",
 				"linesStartAt1": true,
@@ -195,7 +201,8 @@ package actionScripts.debugAdapter
 				"supportsVariableType": false,
 				"supportsVariablePaging": false,
 				"supportsRunInTerminalRequest": false,
-				"supportsMemoryReferences": false
+				"supportsMemoryReferences": false,
+				"locale": "en-us"
 			});
 		}
 
@@ -425,6 +432,11 @@ package actionScripts.debugAdapter
 						this.parseLaunchResponse(response);
 						break;
 					}
+					case COMMAND_CONFIGURATION_DONE:
+					{
+						this.parseConfigurationDoneResponse(response);
+						break;
+					}
 					case COMMAND_CONTINUE:
 					{
 						this.parseContinueResponse(response);
@@ -544,6 +556,8 @@ package actionScripts.debugAdapter
 				this.handleDisconnectOrTerminated();
 				return;
 			}
+			var body:Object = response.body;
+			_supportsConfigurationDoneRequest = body && body.supportsConfigurationDoneRequest === true;
 			_receivedInitializeResponse = true;
 			_waitingForLaunchOrAttach = false;
 
@@ -594,6 +608,18 @@ package actionScripts.debugAdapter
 			this.dispatchEvent(new Event(Event.CONNECT));
 			this.dispatchEvent(new Event(Event.CHANGE));
 		}
+
+		private function parseConfigurationDoneResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("debug adapter \"configurationDone\" command not successful");
+				error("Debug attach failed.");
+				this.stop();
+				return;
+			}
+			this.sendRequest(COMMAND_THREADS);
+		}
 		
 		private function parseContinueResponse(response:Object):void
 		{
@@ -633,7 +659,7 @@ package actionScripts.debugAdapter
 		{
 			if(!response.success)
 			{
-				trace("debug adapter \"setbreakpoints\" command not successful");
+				trace("debug adapter \"setBreakpoints\" command not successful");
 				return;
 			}
 			if(mainThreadID === -1)
@@ -838,7 +864,14 @@ package actionScripts.debugAdapter
 		
 		private function parseInitializedEvent(event:Object):void
 		{
-			this.sendRequest(COMMAND_THREADS);
+			if(this._supportsConfigurationDoneRequest)
+			{
+				this.sendRequest(COMMAND_CONFIGURATION_DONE, {});
+			}
+			else
+			{
+				this.sendRequest(COMMAND_THREADS);
+			}
 		}
 		
 		private function parseOutputEvent(event:Object):void

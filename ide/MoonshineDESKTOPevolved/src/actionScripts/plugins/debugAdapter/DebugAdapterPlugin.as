@@ -47,8 +47,8 @@ package actionScripts.plugins.debugAdapter
 	{
 		public static const EVENT_SHOW_HIDE_DEBUG_VIEW:String = "EVENT_SHOW_HIDE_DEBUG_VIEW";
 		private static const MAX_RETRY_COUNT:int = 5;
-		private static const DEBUG_TYPE_SWF:String = "swf";
 		private static const CLIENT_ID:String = "moonshine";
+		private static const CLIENT_NAME:String = "Moonshine IDE";
 		
 		override public function get name():String 			{ return "Debug Adapter Protocol Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -218,8 +218,8 @@ package actionScripts.plugins.debugAdapter
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
 			
-			var debugMode:Boolean = false;
-			_debugAdapter = new DebugAdapter(CLIENT_ID, debugMode, dispatcher,
+			var debugMode:Boolean = true;
+			_debugAdapter = new DebugAdapter(CLIENT_ID, CLIENT_NAME, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);
 			_debugAdapter.addEventListener(Event.CLOSE, debugAdapter_closeHandler);
