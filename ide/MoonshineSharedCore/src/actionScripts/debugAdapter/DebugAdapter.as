@@ -88,6 +88,7 @@ package actionScripts.debugAdapter
 		private static const EVENT_OUTPUT:String = "output";
 		private static const EVENT_STOPPED:String = "stopped";
 		private static const EVENT_TERMINATED:String = "terminated";
+		private static const EVENT_LOADED_SOURCE:String = "loadedSource";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const OUTPUT_CATEGORY_CONSOLE:String = "console";
@@ -506,6 +507,11 @@ package actionScripts.debugAdapter
 					{
 						//we don't currently indicate if a breakpoint is verified or
 						//not so, we can ignore this one.
+						break;
+					}
+					case EVENT_LOADED_SOURCE:
+					{
+						//we don't currently do anything with this event.
 						break;
 					}
 					case EVENT_STOPPED:
