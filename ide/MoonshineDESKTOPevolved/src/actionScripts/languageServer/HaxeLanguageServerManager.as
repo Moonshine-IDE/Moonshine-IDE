@@ -50,6 +50,7 @@ package actionScripts.languageServer
     import actionScripts.events.SettingsEvent;
     import actionScripts.utils.CommandLineUtil;
     import com.adobe.utils.StringUtil;
+    import actionScripts.ui.tabview.TabEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -92,6 +93,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
+			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 
 			boostrapThenStartNativeProcess();
 		}
@@ -563,6 +565,20 @@ package actionScripts.languageServer
 			{
 				restartLanguageServer();
 			}
+		}
+
+		private function tabSelectHandler(event:TabEvent):void
+		{
+			var textEditor:BasicTextEditor = event.child as BasicTextEditor;
+			if(!textEditor)
+			{
+				return;
+			}
+			if(!_languageClient)
+			{
+				return;
+			}
+			_languageClient.sendNotification("haxe/didChangeActiveTextEditor", {uri: textEditor.currentFile.fileBridge.url});
 		}
 
 		private function haxelibInstallCompleteHandler(event:HaxelibEvent):void
