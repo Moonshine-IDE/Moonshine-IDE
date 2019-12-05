@@ -586,8 +586,6 @@ package actionScripts.debugAdapter
 			_receivedInitializeResponse = true;
 			_waitingForLaunchOrAttach = false;
 
-			this.dispatchEvent(new Event(Event.INIT));
-
 			//the request and command are the same constant
 			var command:String = this._currentRequest.request;
 			var args:Object =
@@ -889,6 +887,7 @@ package actionScripts.debugAdapter
 		
 		private function parseInitializedEvent(event:Object):void
 		{
+			this.dispatchEvent(new Event(Event.INIT));
 			if(this._supportsConfigurationDoneRequest)
 			{
 				this.sendRequest(COMMAND_CONFIGURATION_DONE, {});
