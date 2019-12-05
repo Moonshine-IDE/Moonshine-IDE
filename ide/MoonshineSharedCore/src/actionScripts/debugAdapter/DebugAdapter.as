@@ -64,8 +64,10 @@ package actionScripts.debugAdapter
 
 	public class DebugAdapter extends ConsoleOutputter
 	{
-		private static const TWO_CRLF:String = "\r\n\r\n";
-		private static const CONTENT_LENGTH_PREFIX:String = "Content-Length: ";
+		private static const HELPER_BYTES:ByteArray = new ByteArray();
+		private static const PROTOCOL_HEADER_FIELD_CONTENT_LENGTH:String = "Content-Length: ";
+		private static const PROTOCOL_END_OF_HEADER:String = "\r\n\r\n";
+		private static const PROTOCOL_HEADER_DELIMITER:String = "\r\n";
 		private static const MESSAGE_TYPE_REQUEST:String = "request";
 		private static const MESSAGE_TYPE_RESPONSE:String = "response";
 		private static const MESSAGE_TYPE_EVENT:String = "event";
@@ -128,9 +130,9 @@ package actionScripts.debugAdapter
 		private var _supportsConfigurationDoneRequest:Boolean = false;
 
 		private var _seq:int = 0;
-		private var _byteArray:ByteArray = new ByteArray();
 		private var _messageBuffer:String = "";
-		private var _bodyLength:int = -1;
+		private var _messageBytes:ByteArray = new ByteArray();
+		private var _contentLength:int = -1;
 		private var mainThreadID:int = -1;
 		private var _currentRequest:PendingRequest;
 
@@ -302,40 +304,63 @@ package actionScripts.debugAdapter
 		
 		private function parseMessageBuffer():void
 		{
-			if(this._bodyLength !== -1)
+			var object:Object = null;
+			try
 			{
-				if(this._messageBuffer.length < this._bodyLength)
+				var needsHeaderPart:Boolean = _contentLength == -1;
+				if(needsHeaderPart && _messageBuffer.indexOf(PROTOCOL_END_OF_HEADER) == -1)
 				{
-					//we don't have the full body yet
+					//not enough data for the header yet
 					return;
 				}
-				var body:String = this._messageBuffer.substr(0, this._bodyLength);
-				this._messageBuffer = this._messageBuffer.substr(this._bodyLength);
-				this._bodyLength = -1;
-				var message:Object = JSON.parse(body);
-				this.parseProtocolMessage(message);
-			}
-			else if(this._messageBuffer.length > CONTENT_LENGTH_PREFIX.length)
-			{
-				//start with a new header
-				var index:int = this._messageBuffer.indexOf(TWO_CRLF, CONTENT_LENGTH_PREFIX.length);
-				if(index === -1)
+				while(needsHeaderPart)
 				{
-					//we don't have a full header yet
+					var index:int = _messageBuffer.indexOf(PROTOCOL_HEADER_DELIMITER);
+					var headerField:String = _messageBuffer.substr(0, index);
+					_messageBuffer = _messageBuffer.substr(index + PROTOCOL_HEADER_DELIMITER.length);
+					if(index == 0)
+					{
+						//this is the end of the header
+						needsHeaderPart = false;
+					}
+					else if(headerField.indexOf(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH) == 0)
+					{
+						var contentLengthAsString:String = headerField.substr(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH.length);
+						_contentLength = parseInt(contentLengthAsString, 10);
+					}
+				}
+				if(_contentLength == -1)
+				{
+					trace("Error: Debug adapter client failed to parse Content-Length header");
 					return;
 				}
-				var lengthString:String = this._messageBuffer.substr(CONTENT_LENGTH_PREFIX.length, index - CONTENT_LENGTH_PREFIX.length);
-				this._bodyLength = parseInt(lengthString, 10);
-				this._messageBuffer = this._messageBuffer.substr(index + TWO_CRLF.length);
+				//keep adding to the byte array until we have the full content
+				_messageBytes.writeUTFBytes(_messageBuffer);
+				_messageBuffer = "";
+				if(_messageBytes.length < _contentLength)
+				{
+					//we don't have the full content part of the message yet,
+					//so we'll try again the next time we have new data
+					return;
+				}
+				_messageBytes.position = 0;
+				var message:String = _messageBytes.readUTFBytes(_contentLength);
+				//add any remaining bytes back into the buffer because they are
+				//the beginning of the next message
+				_messageBuffer = _messageBytes.readUTFBytes(_messageBytes.length - _contentLength);
+				_messageBytes.clear();
+				_contentLength = -1;
+				object = JSON.parse(message);
 			}
-			else
+			catch(error:Error)
 			{
-				//we don't have a full header yet
+				trace("Error: Debug adapter client failed to parse JSON.");
 				return;
 			}
-			//keep trying to parse until we hit one of the return statements
-			//above
-			this.parseMessageBuffer();
+			parseProtocolMessage(object);
+
+			//check if there's another message in the buffer
+			parseMessageBuffer();
 		}
 		
 		private function sendRequest(command:String, args:Object = null):void
@@ -360,19 +385,19 @@ package actionScripts.debugAdapter
 		
 		private function sendProtocolMessage(message:Object):void
 		{
-			var string:String = JSON.stringify(message);
+			var contentJSON:String = JSON.stringify(message);
 			if(_debugMode)
 			{
-				trace("<<< ", string);
+				trace("<<< ", contentJSON);
 			}
-			_byteArray.clear();
-			_byteArray.writeUTFBytes(string);
-			var contentLength:String = _byteArray.length.toString();
-			_byteArray.clear();
-			_output.writeUTFBytes(CONTENT_LENGTH_PREFIX);
-			_output.writeUTFBytes(contentLength);
-			_output.writeUTFBytes(TWO_CRLF);
-			_output.writeUTFBytes(string);
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+			_output.writeUTFBytes(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH);
+			_output.writeUTFBytes(contentLength.toString());
+			_output.writeUTFBytes(PROTOCOL_END_OF_HEADER);
+			_output.writeUTFBytes(contentJSON);
 			if(_outputFlushCallback != null)
 			{
 				_outputFlushCallback();
