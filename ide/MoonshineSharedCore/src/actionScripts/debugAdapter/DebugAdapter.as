@@ -851,13 +851,13 @@ package actionScripts.debugAdapter
 					category = body.category as String;
 				}
 			}
-			if(output !== null)
+			if(output != null)
 			{
-				if(category === OUTPUT_CATEGORY_STDERR)
+				if(category == OUTPUT_CATEGORY_STDERR)
 				{
 					error(output);
 				}
-				else
+				else if(category != OUTPUT_CATEGORY_TELEMETRY)
 				{
 					print(output);
 				}
