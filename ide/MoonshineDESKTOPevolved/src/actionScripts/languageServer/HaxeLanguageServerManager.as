@@ -195,10 +195,21 @@ package actionScripts.languageServer
 		
 		private function boostrapThenStartNativeProcess():void
 		{
-			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable() || !UtilsCore.isNodeAvailable())
+			if(!UtilsCore.isHaxeAvailable())
 			{
 				_previousHaxePath = null;
+				warning("Haxe language code intelligence disabled. To enable, update Haxe location in application settings.");
+				return;
+			}
+			if(!UtilsCore.isNekoAvailable())
+			{
+				warning("Haxe language code intelligence disabled. To enable, update Neko location in application settings.");
+				return;
+			}
+			if(!UtilsCore.isNodeAvailable())
+			{
 				_previousNodePath = null;
+				warning("Haxe language code intelligence disabled. To enable, update Node.js location in application settings.");
 				return;
 			}
 			installDependencies();
